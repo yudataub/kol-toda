@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מבחן חשיבות המגילה</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Heebo', sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        h1, h2, h3 {
+            color: #2d3748;
+        }
+        
+        .question {
+            margin-bottom: 30px;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .option {
+            padding: 15px;
+            background-color: #f3f4f6;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .option:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .option.selected {
+            background-color: #4f46e5;
+            color: white;
+        }
+        
+        .option.correct {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .option.incorrect {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .explanation {
+            padding: 15px;
+            background-color: #f9fafb;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .button:hover {
+            background-color: #4338ca;
+        }
+        
+        .button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .result {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 10px;
+        }
+        
+        .percentage {
+            font-size: 1.5rem;
+            color: #8b5cf6;
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            font-size: 1.25rem;
+            color: #4b5563;
+            margin-bottom: 30px;
+        }
+        
+        .audio-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .icon {
+            vertical-align: middle;
+            width: 20px;
+            height: 20px;
+            margin-left: 5px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Emoji icons */
+        .icon-check {
+            color: #10b981;
+        }
+        
+        .icon-x {
+            color: #ef4444;
+        }
+        
+        .progress {
+            height: 10px;
+            background-color: #e5e7eb;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #4f46e5, #8b5cf6);
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>מבחן בנושא חשיבות קריאת המגילה</h1>
+            <div class="progress">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+        
+        <div class="content" id="quiz-content">
+            <!-- Quiz content will be loaded here by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // Quiz questions data
+        const questions = [
+            {
+                question: "על פי הרמב\"ם, מה היחס בין מקרא מגילה לשאר מצוות התורה?",
+                options: [
+                    "מקרא מגילה נדחה מפני רוב מצוות התורה",
+                    "מקרא מגילה שקול למצוות התורה אך אינו דוחה אותן",
+                    "מקרא מגילה דוחה את כל מצוות התורה למעט מת מצווה שאין לו קוברים",
+                    "מקרא מגילה דוחה רק את המצוות מדרבנן אך לא מצוות מדאורייתא"
+                ],
+                correct: 2,
+                explanation: "הרמב\"ם כותב במפורש בהלכה הראשונה של הלכות מגילה שקריאת המגילה דוחה את כל מצוות התורה, כולל עבודת בית המקדש ותלמוד תורה. היחיד שלא נדחה מפני מקרא מגילה הוא מת מצווה שאין לו קוברים. זוהי הלכה מפתיעה המדגישה את החשיבות העליונה של סיפור נפלאות ה'."
+            },
+            {
+                question: "מהי המשמעות העמוקה של \"כתוב זאת זיכרון בספר\" לפי הדרשה?",
+                options: [
+                    "חובה לכתוב ספר תורה",
+                    "הציווי מתייחס אך ורק לכתיבת פרשת עמלק בתורה",
+                    "זוהי הדרך למחות את עמלק - על ידי תיעוד הניסים וחיזוק האמונה",
+                    "הכוונה לכתיבת מגילת אסתר בלבד"
+                ],
+                correct: 2,
+                explanation: "בדרשה מוסבר שהציווי \"כתוב זאת זיכרון בספר\" מלמד שהדרך למחות את עמלק היא דרך תיעוד הניסים. כאשר יהודי מתעד ניסים, כותב אותם, מספר עליהם לבניו ומעביר את הסיפור מדור לדור, זה מחזק את האמונה ובכך מוחה את עמלק המייצג את הספק והכפירה."
+            },
+            {
+                question: "מדוע קריאת המגילה דוחה אפילו את עבודת בית המקדש?",
+                options: [
+                    "כי פורים חשוב יותר מעבודת המקדש",
+                    "כי סיפור נפלאות ה' הוא הדבר החביב ביותר לפני בורא עולם",
+                    "בגלל סכנת החיים שהייתה בימי פורים",
+                    "כי בימי הפורים לא היה בית מקדש"
+                ],
+                correct: 1,
+                explanation: "בדרשה מוסבר שסיפור נפלאות ה' הוא מהדברים החביבים ביותר לפני בורא עולם, עד כדי כך שהוא דוחה את עבודת בית המקדש ואת כל מצוות התורה. לא מדובר רק בחשיבות הפורים, אלא בערך העליון של סיפור והודאה על ניסי ה'."
+            },
+            {
+                question: "מה היה \"ספר מלחמות ה'\" לפי פירוש הרמב\"ן?",
+                options: [
+                    "שם נרדף לספר התורה",
+                    "ספר שכתב משה רבינו אך לא נכלל בתורה",
+                    "ספר שבו אנשים חכמים תיעדו את המלחמות והניצחונות הנפלאים וייחסו אותם לה'",
+                    "ספר שהיה אמור להיכתב בעתיד על מלחמות המשיח"
+                ],
+                correct: 2,
+                explanation: "הרמב\"ן, כפי שמובא בדרשה, מפרש שהיה \"ספר מלחמות ה'\" בדורות הקדומים, שבו אנשים חכמים היו כותבים ומתעדים את המלחמות הגדולות והניצחונות הנפלאים, והיו מייחסים את המלחמות לה'. זה לא היה חלק מהתורה אלא ספר נפרד שתיעד את ניסי ה'."
+            },
+            {
+                question: "מהו הקשר העמוק בין מחיית עמלק לתיעוד ניסי ה'?",
+                options: [
+                    "עמלק תיעד באופן שקרי את המאורעות, ולכן יש לתעד את האמת",
+                    "עמלק מייצג את הספק והכפירה, ותיעוד הניסים מחזק את האמונה ומוחה את הספק",
+                    "אין קשר מהותי, אלא רק סמיכות פרשיות בתורה",
+                    "עמלק ניסה להשמיד את ספרי הקודש, ולכן יש להרבות בכתיבה"
+                ],
+                correct: 1,
+                explanation: "הדרשה מסבירה שעמלק מייצג את הספק והכפירה, המנסים לצנן את האמונה (כמרומז ב\"אשר קרך בדרך\" - לשון קרירות). הדרך להתגבר על הספק היא דרך תיעוד וסיפור נפלאות ה', שמחזקים את האמונה ובכך מוחים את זכר עמלק באופן רוחני ומהותי."
+            },
+            {
+                question: "מהי הדרשה על הפסוק \"והגדת לבנך ביום ההוא לאמור בעבור זה עשה ה' לי בצאתי ממצרים\"?",
+                options: [
+                    "הקב\"ה עשה את הניסים כדי שההורים יחנכו את ילדיהם להכיר תודה",
+                    "הקב\"ה עשה את הניסים כדי שנספר אותם לבנינו ובכך נחזק את האמונה",
+                    "הקב\"ה עשה את הניסים רק למען בני ישראל באותו הדור",
+                    "הפסוק מלמד שמצוות סיפור יציאת מצרים חלה רק על האבות ולא על האמהות"
+                ],
+                correct: 1,
+                explanation: "בהגדה של פסח נאמר \"והגדת לבנך ביום ההוא לאמור בעבור זה עשה ה' לי בצאתי ממצרים\", ומכאן לומדים שהקב\"ה עשה את הניסים ביציאת מצרים בעבור שנספר לבנינו את הניסים והנפלאות הללו. זוהי מטרת הניסים - שנספר אותם לדורות הבאים ובכך נחזק את האמונה."
+            },
+            {
+                question: "לפי המשמעות העמוקה של \"להשמיע בקול תודה ולספר כל נפלאותיך\", מהי עיקר ההודאה?",
+                options: [
+                    "השמעת קול תודה בתפילה וברכות",
+                    "עריכת סעודת הודיה",
+                    "היכולת לספר את נפלאות ה' כדי שבני אדם יראו את גדולת ה'",
+                    "קיום מצוות מתוך הכרת הטוב"
+                ],
+                correct: 2,
+                explanation: "בדרשה מובא פירוש לפסוק \"להשמיע בקול תודה ולספר כל נפלאותיך\", ולפיו עיקר ההודאה היא היכולת לספר את נפלאות ה', שעל ידי כך יראו בני אדם את גדולת ה'. ההודאה האמיתית היא בהפצת גדולת ה' לאחרים."
+            },
+            {
+                question: "איזו פרשנות מובאת בדרשה לביטוי \"אשר קרך בדרך\" בהקשר של עמלק?",
+                options: [
+                    "עמלק היה האויב הקר והאכזרי ביותר של ישראל",
+                    "עמלק תקף בדרך מארב וללא התראה מוקדמת",
+                    "עמלק הביא לקרירות באמונה וניסה לצנן את אמונת ישראל",
+                    "עמלק קרה במקרה בדרך ולא בכוונה תחילה"
+                ],
+                correct: 2,
+                explanation: "בדרשה מוסבר שהביטוי \"אשר קרך בדרך\" מתפרש מלשון קרירות - עמלק מנסה לצנן את האמונה של ישראל ולהכניס ספק. זהו מהות הרוע של עמלק - לא רק התקפה פיזית אלא התקפה על האמונה עצמה."
+            },
+            {
+                question: "מדוע לדעת חז\"ל והרמב\"ם קריאת המגילה חשובה יותר מכל מצוות התורה?",
+                options: [
+                    "בגלל ההיסטוריה המיוחדת של מגילת אסתר",
+                    "כי היא תוקנה על ידי אנשי כנסת הגדולה",
+                    "לא בגלל המגילה עצמה, אלא בגלל מה שהיא מייצגת - סיפור נפלאות ה' המחזק את האמונה",
+                    "כי היא הייתה המצווה האחרונה שניתנה לישראל"
+                ],
+                correct: 2,
+                explanation: "הדרשה מסבירה שחשיבותה של קריאת המגילה אינה בטקסט עצמו, אלא במה שהיא מייצגת: \"כתוב זאת זיכרון בספר\" - סיפור נפלאות ה' שהיו עמנו, המחזק את האמונה בבורא עולם ומעביר אותה לדורות הבאים. זוהי הסיבה שהרמב\"ם פוסק שקריאת המגילה דוחה מצוות אחרות."
+            },
+            {
+                question: "על פי הדרשה, מהי המשמעות העמוקה של \"שירו לו זמרו לו שיחו בכל נפלאותיו\"?",
+                options: [
+                    "יש לקיים שלוש מצוות נפרדות: שירה, זמרה ושיחה",
+                    "השיחה היומיומית שלנו צריכה להיות מלאה בדברי נפלאות ה' וחסדיו",
+                    "צריך להתפלל בקול רם ובניגון",
+                    "יש להודות לה' רק בזמני שמחה ושירה"
+                ],
+                correct: 1,
+                explanation: "החפץ חיים, כמובא בדרשה, פירש את הפסוק \"שירו לו זמרו לו שיחו בכל נפלאותיו\" כך: לשיר ודאי צריך, לזמר ודאי צריך, לשוחח ודאי שצריך - אבל במה לשוחח? \"בכל נפלאותיו\". השיחה היומיומית שלנו צריכה להיות בדברי נפלאותיו של הקב\"ה ולא רק בזמני תפילה מיוחדים."
+            },
+            {
+                question: "מהו היישום המעשי של \"כתוב זאת זיכרון בספר\" בחיי היום-יום לפי הדרשה?",
+                options: [
+                    "לקרוא פרק בתנ\"ך כל יום",
+                    "לתעד באופן אישי את החסדים והניסים שה' עושה עמנו ולהעבירם מדור לדור",
+                    "לכתוב חידושי תורה",
+                    "להקפיד על כתיבת ספר תורה מהודר"
+                ],
+                correct: 1,
+                explanation: "הדרשה מלמדת שיישום \"כתוב זאת זיכרון בספר\" בחיינו הוא שכל אחד יתעד את ניסי ה' וחסדיו בחייו האישיים, ויעביר זאת מדור לדור. כאשר אדם חווה דבר נפלא - הצלה ממחלה, מציאת פרנסה, שידוך טוב, או כל דבר אחר - עליו לתעד זאת, לספר לאחרים ולהודות לה' בפרהסיה."
+            },
+            {
+                question: "מהי התכלית האמיתית של כל המצוות לפי הדרשה?",
+                options: [
+                    "קיום רצון ה' בלבד",
+                    "אמונה והודאה לה'",
+                    "תיקון המידות ושיפור החברה",
+                    "ההישרדות של עם ישראל לאורך הדורות"
+                ],
+                correct: 1,
+                explanation: "בדרשה מוסבר שמטרת התורה וכל המצוות היא להביא אותנו לאמונה והכרה בה'. לכן, כאשר אנו מספרים את ניסי ה', אנו בעצם מגיעים לתכלית של כל התורה כולה. זו הסיבה שמקרא מגילה, שכל כולו הוא סיפור נפלאות ה', דוחה את כל המצוות - כי הוא מביא לתכלית האמיתית של כל המצוות: האמונה וההודאה לה'."
+            }
+        ];
+
+        // Quiz state variables
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedOption = null;
+        let showingExplanation = false;
+        let quizCompleted = false;
+
+        // Sound effects using basic Web Audio API
+        let audioContext;
+        let correctSound, incorrectSound, completionSound;
+
+        // Initialize audio
+        function initAudio() {
+            try {
+                // Create audio context
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Function to create a quick beep sound
+                function createBeepSound(frequency, type, duration) {
+                    return function() {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        
+                        oscillator.type = type;
+                        oscillator.frequency.value = frequency;
+                        
+                        gainNode.gain.value = 0.1;
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        oscillator.start();
+                        setTimeout(() => oscillator.stop(), duration);
+                    };
+                }
+                
+                // Create sound effects
+                correctSound = function() {
+                    const osc1 = audioContext.createOscillator();
+                    const osc2 = audioContext.createOscillator();
+                    const osc3 = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    osc1.type = 'sine';
+                    osc2.type = 'sine';
+                    osc3.type = 'sine';
+                    
+                    osc1.frequency.value = 523.25; // C5
+                    osc2.frequency.value = 659.25; // E5
+                    osc3.frequency.value = 783.99; // G5
+                    
+                    gainNode.gain.value = 0.1;
+                    
+                    osc1.connect(gainNode);
+                    osc2.connect(gainNode);
+                    osc3.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    osc1.start();
+                    setTimeout(() => osc2.start(), 100);
+                    setTimeout(() => osc3.start(), 200);
+                    
+                    setTimeout(() => {
+                        osc1.stop();
+                        osc2.stop();
+                        osc3.stop();
+                    }, 500);
+                };
+                
+                incorrectSound = function() {
+                    const osc1 = audioContext.createOscillator();
+                    const osc2 = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    osc1.type = 'sawtooth';
+                    osc2.type = 'sawtooth';
+                    
+                    osc1.frequency.value = 329.63; // E4
+                    osc2.frequency.value = 311.13; // Eb4
+                    
+                    gainNode.gain.value = 0.1;
+                    
+                    osc1.connect(gainNode);
+                    osc2.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    osc1.start();
+                    setTimeout(() => {
+                        osc1.stop();
+                        osc2.start();
+                    }, 200);
+                    setTimeout(() => osc2.stop(), 500);
+                };
+                
+                completionSound = function() {
+                    const notes = [
+                        { freq: 523.25, time: 0 },    // C5
+                        { freq: 587.33, time: 200 },  // D5
+                        { freq: 659.25, time: 400 },  // E5
+                        { freq: 698.46, time: 600 },  // F5
+                        { freq: 783.99, time: 800 }   // G5
+                    ];
+                    
+                    notes.forEach(note => {
+                        setTimeout(() => {
+                            const osc = audioContext.createOscillator();
+                            const gainNode = audioContext.createGain();
+                            
+                            osc.type = 'sine';
+                            osc.frequency.value = note.freq;
+                            
+                            gainNode.gain.value = 0.1;
+                            
+                            osc.connect(gainNode);
+                            gainNode.connect(audioContext.destination);
+                            
+                            osc.start();
+                            setTimeout(() => osc.stop(), 300);
+                        }, note.time);
+                    });
+                };
+                
+                return true;
+            } catch (error) {
+                console.error("Web Audio API is not supported in this browser", error);
+                return false;
+            }
+        }
+
+        // DOM Element references
+        const quizContent = document.getElementById('quiz-content');
+        const progressBar = document.getElementById('progress-bar');
+
+        // Start the quiz
+        function startQuiz() {
+            initAudio();
+            showQuestion();
+        }
+
+        // Display the current question
+        function showQuestion() {
+            if (quizCompleted) {
+                showResults();
+                return;
+            }
+
+            // Update progress bar
+            progressBar.style.width = `${(currentQuestion / questions.length) * 100}%`;
+            
+            const question = questions[currentQuestion];
+            
+            // Create HTML for the question
+            let html = `
+                <div class="question">
+                    <h2>שאלה ${currentQuestion + 1} מתוך ${questions.length}</h2>
+                    <p>${question.question}</p>
+                    
+                    <div class="options">
+            `;
+            
+            // Add options
+            question.options.forEach((option, index) => {
+                html += `
+                    <div class="option" onclick="selectOption(${index})">
+                        ${option}
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    
+                    <div class="explanation" id="explanation">
+                        <p><strong>הסבר:</strong> ${question.explanation}</p>
+                    </div>
+                    
+                    <div class="navigation">
+                        <button class="button" id="check-button" onclick="checkAnswer()" disabled>בדוק תשובה</button>
+                        <button class="button" id="next-button" onclick="nextQuestion()" style="display: none;">לשאלה הבאה</button>
+                    </div>
+                </div>
+            `;
+            
+            quizContent.innerHTML = html;
+        }
+
+        // Handle option selection
+        function selectOption(index) {
+            if (showingExplanation) return;
+            
+            selectedOption = index;
+            
+            // Update UI
+            const options = document.querySelectorAll('.option');
+            options.forEach((option, i) => {
+                if (i === index) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+            
+            // Enable check button
+            document.getElementById('check-button').disabled = false;
+        }
+
+        // Check if the selected answer is correct
+        function checkAnswer() {
+            if (selectedOption === null || showingExplanation) return;
+            
+            showingExplanation = true;
+            
+            const question = questions[currentQuestion];
+            const isCorrect = selectedOption === question.correct;
+            
+            // Update UI
+            const options = document.querySelectorAll('.option');
+            options.forEach((option, i) => {
+                if (i === question.correct) {
+                    option.classList.add('correct');
+                } else if (i === selectedOption) {
+                    option.classList.remove('selected');
+                    if (i !== question.correct) {
+                        option.classList.add('incorrect');
+                    }
+                }
+            });
+            
+            // Show explanation
+            document.getElementById('explanation').style.display = 'block';
+            
+            // Update buttons
+            document.getElementById('check-button').style.display = 'none';
+            document.getElementById('next-button').style.display = 'block';
+            
+            // Update score
+            if (isCorrect) {
+                score++;
+                if (correctSound) correctSound();
+            } else {
+                if (incorrectSound) incorrectSound();
+            }
+        }
+
+        // Move to the next question
+        function nextQuestion() {
+            selectedOption = null;
+            showingExplanation = false;
+            
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                showQuestion();
+            } else {
+                quizCompleted = true;
+                showResults();
+                if (completionSound) completionSound();
+            }
+        }
+
+        // Show quiz results
+        function showResults() {
+            const percentage = Math.round((score / questions.length) * 100);
+            
+            let message = "";
+            if (percentage === 100) {
+                message = "כל הכבוד! ידע מושלם בחשיבות קריאת המגילה וסיפור נפלאות ה'!";
+            } else if (percentage >= 80) {
+                message = "עבודה מצוינת! הבנה עמוקה מאוד של חשיבות סיפור נפלאות ה'!";
+            } else if (percentage >= 60) {
+                message = "יפה מאוד! המשך ללמוד ולהעמיק בחשיבות סיפור נפלאות ה'!";
+            } else {
+                message = "המשך ללמוד ולהעמיק בהבנת חשיבות קריאת המגילה וסיפור נפלאות ה'!";
+            }
+            
+            let html = `
+                <div class="result">
+                    <h2>🎉 סיימת את החידון! 🎉</h2>
+                    
+                    <div class="score">
+                        ${score} מתוך ${questions.length}
+                    </div>
+                    
+                    <div class="percentage">
+                        ${percentage}%
+                    </div>
+                    
+                    <div class="message">
+                        ${message}
+                    </div>
+                    
+                    <button class="button" onclick="resetQuiz()">נסה שוב את החידון</button>
+                </div>
+            `;
+            
+            quizContent.innerHTML = html;
+            progressBar.style.width = '100%';
+        }
+
+        // Reset the quiz
+        function resetQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            selectedOption = null;
+            showingExplanation = false;
+            quizCompleted = false;
+            
+            showQuestion();
+        }
+
+        // Start the quiz when the page loads
+        window.onload = startQuiz;
+    </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<div style="font-family: system-ui, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+    <div id="quiz-score" style="text-align: center; font-size: 1.5em; margin: 20px 0;">שאלה <span id="current-question">1</span> מתוך 10</div>
+    <div id="quiz"></div>
+    <audio id="success-audio" preload="auto">
+        <source src="https://yudataub.github.io/kol-toda-audio/normal_67b8789131bb3.mp3" type="audio/mpeg">
+    </audio>
+</div>
+
+<script>
+    const questions = [
+        { question: "מי היה בלק?", options: ["מלך מדין", "מלך מואב", "מלך עמון", "מלך אדום"], correct: "מלך מואב" },
+        // הוסף את שאר השאלות כאן כמו בקוד המקורי
+    ];
+
+    let currentQuestion = 0;
+    let correctAnswers = 0;
+
+    function showQuestion() {
+        const quizDiv = document.getElementById('quiz');
+        const question = questions[currentQuestion];
+        quizDiv.innerHTML = `
+            <div style="font-size: 1.4em; margin-bottom: 24px; font-weight: bold;">${question.question}</div>
+            <div>
+                ${question.options.map(opt => `<button onclick="checkAnswer('${opt}')" style="display: block; width: 100%; padding: 15px; margin: 12px 0; border: 2px solid #e0e0e0; border-radius: 8px; background: white; cursor: pointer; text-align: right; font-size: 1.1em;">${opt}</button>`).join('')}
+            </div>
+            <div id="feedback" style="margin-top: 20px; padding: 15px; border-radius: 8px; display: none;"></div>
+            <button id="next-btn" onclick="nextQuestion()" style="display: none; width: 100%; padding: 15px; background: #2196F3; color: white; border: none; border-radius: 8px; margin-top: 20px; cursor: pointer;">השאלה הבאה</button>
+        `;
+        document.getElementById('current-question').textContent = currentQuestion + 1;
+    }
+
+    function checkAnswer(selected) {
+        const question = questions[currentQuestion];
+        const buttons = document.querySelectorAll('#quiz button');
+        const feedback = document.getElementById('feedback');
+        const nextBtn = document.getElementById('next-btn');
+
+        buttons.forEach(button => {
+            button.disabled = true;
+            if (button.textContent === question.correct) button.style.background = '#4CAF50';
+            else if (button.textContent === selected) button.style.background = '#f44336';
+        });
+
+        feedback.style.display = 'block';
+        if (selected === question.correct) {
+            correctAnswers++;
+            feedback.style.backgroundColor = '#e8f5e9';
+            feedback.textContent = 'כל הכבוד! תשובה נכונה!';
+        } else {
+            feedback.style.backgroundColor = '#ffebee';
+            feedback.textContent = 'טעות. התשובה הנכונה היא: ' + question.correct;
+        }
+        nextBtn.style.display = 'block';
+    }
+
+    function nextQuestion() {
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+            showQuestion();
+        } else if (correctAnswers === questions.length) {
+            document.getElementById('quiz').innerHTML = '<h2 style="text-align: center; color: #4CAF50;">🎉 כל הכבוד! סיימת את החידון בהצלחה! 🎉</h2>';
+            document.getElementById('success-audio').play().catch(e => console.log('Audio failed:', e));
+        }
+    }
+
+    showQuestion();
+</script>

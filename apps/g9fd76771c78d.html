@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>חידון פרשת בלק</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .quiz-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .question {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .options button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            text-align: right;
+            font-size: 1em;
+        }
+        .options button:hover {
+            background: #f5f5f5;
+        }
+        .correct {
+            background: #4CAF50 !important;
+            color: white;
+        }
+        .incorrect {
+            background: #f44336 !important;
+            color: white;
+        }
+        .feedback {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .next-btn {
+            display: none;
+            width: 100%;
+            padding: 10px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        .score {
+            text-align: center;
+            font-size: 1.5em;
+            margin: 20px 0;
+        }
+        #completion-message {
+            display: none;
+            text-align: center;
+            font-size: 1.5em;
+            color: #4CAF50;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="score">שאלה <span id="current-question">1</span> מתוך 10</div>
+        <div id="quiz"></div>
+        <div id="completion-message">
+            <h2>🎉 כל הכבוד! סיימת את החידון! 🎉</h2>
+            <button onclick="resetQuiz()">התחל מחדש</button>
+        </div>
+        <audio id="success-audio">
+            <!-- Replace this src with your hosted audio file -->
+            <source src="https://yudataub.github.io/kol-toda-audio/normal_67b8789131bb3.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "מי היה בלק?",
+                options: ["מלך מדין", "מלך מואב", "מלך עמון", "מלך אדום"],
+                correct: "מלך מואב"
+            },
+            {
+                question: "מדוע שלח בלק לקרוא לבלעם?",
+                options: ["כדי שיברך את מואב", "כדי שילחם בישראל", "כדי שיקלל את ישראל", "כדי שיכרות ברית שלום"],
+                correct: "כדי שיקלל את ישראל"
+            },
+            {
+                question: "מה אמר ה' לבלעם בפעם הראשונה?",
+                options: ["לך איתם", "אל תלך עמהם", "קלל את העם", "ברך את העם"],
+                correct: "אל תלך עמהם"
+            },
+            {
+                question: "מה קרה לאתון בלעם בדרך?",
+                options: ["ברחה ממנו", "ראתה מלאך ודיברה", "נפלה ומתה", "הלכה לכיוון אחר"],
+                correct: "ראתה מלאך ודיברה"
+            },
+            {
+                question: "כמה מזבחות בנה בלעם בכל פעם?",
+                options: ["שניים", "שלושה", "שבעה", "עשרה"],
+                correct: "שבעה"
+            },
+            {
+                question: "מה היה המשל הראשון של בלעם?",
+                options: ["הן עם כלביא יקום", "מה טובו אוהליך יעקב", "מן ארם ינחני בלק", "מי מנה עפר יעקב"],
+                correct: "מן ארם ינחני בלק"
+            },
+            {
+                question: "כמה פעמים ניסה בלעם לקלל את ישראל?",
+                options: ["פעם אחת", "פעמיים", "שלוש פעמים", "ארבע פעמים"],
+                correct: "שלוש פעמים"
+            },
+            {
+                question: "מה היה חטא בעל פעור?",
+                options: ["מלחמה במואב", "עבודה זרה וזנות", "דיבור לשון הרע", "גניבת ממון"],
+                correct: "עבודה זרה וזנות"
+            },
+            {
+                question: "מי קינא את קנאת ה' במעשה פעור?",
+                options: ["משה רבנו", "אהרן הכהן", "פנחס בן אלעזר", "יהושע בן נון"],
+                correct: "פנחס בן אלעזר"
+            },
+            {
+                question: "מה הייתה עצת בלעם למואב?",
+                options: ["להילחם בישראל בחרב", "לכרות ברית שלום", "להחטיא את ישראל", "לברוח מישראל"],
+                correct: "להחטיא את ישראל"
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let correctAnswers = 0;
+
+        function showQuestion() {
+            const quizDiv = document.getElementById('quiz');
+            const question = questions[currentQuestion];
+
+            let html = `
+                <div class="question">${question.question}</div>
+                <div class="options">
+                    ${question.options.map(option => `
+                        <button onclick="checkAnswer('${option}')">${option}</button>
+                    `).join('')}
+                </div>
+                <div class="feedback"></div>
+                <button class="next-btn" onclick="nextQuestion()">השאלה הבאה</button>
+            `;
+
+            quizDiv.innerHTML = html;
+            document.getElementById('current-question').textContent = currentQuestion + 1;
+        }
+
+        function checkAnswer(selected) {
+            const question = questions[currentQuestion];
+            const buttons = document.querySelectorAll('.options button');
+            const feedback = document.querySelector('.feedback');
+            const nextBtn = document.querySelector('.next-btn');
+
+            buttons.forEach(button => {
+                button.disabled = true;
+                if (button.textContent === question.correct) {
+                    button.classList.add('correct');
+                } else if (button.textContent === selected) {
+                    button.classList.add('incorrect');
+                }
+            });
+
+            if (selected === question.correct) {
+                correctAnswers++;
+                feedback.style.display = 'block';
+                feedback.style.backgroundColor = '#e8f5e9';
+                feedback.textContent = 'כל הכבוד! תשובה נכונה!';
+            } else {
+                feedback.style.display = 'block';
+                feedback.style.backgroundColor = '#ffebee';
+                feedback.textContent = 'טעות. התשובה הנכונה היא: ' + question.correct;
+            }
+
+            nextBtn.style.display = 'block';
+
+            // Check if all questions are answered correctly
+            if (correctAnswers === questions.length) {
+                const audio = document.getElementById('success-audio');
+                audio.play().catch(e => console.log('Audio playback failed:', e));
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showCompletion();
+            }
+        }
+
+        function showCompletion() {
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('completion-message').style.display = 'block';
+            document.querySelector('.score').style.display = 'none';
+        }
+
+        function resetQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            correctAnswers = 0;
+            document.getElementById('quiz').style.display = 'block';
+            document.getElementById('completion-message').style.display = 'none';
+            document.querySelector('.score').style.display = 'block';
+            showQuestion();
+        }
+
+        // Start the quiz
+        showQuestion();
+    </script>
+</body>
+</html>

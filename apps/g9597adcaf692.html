@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>עץ המשפחה: מלוי עד משה ואהרון</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Assistant', 'Noto Sans Hebrew', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .main-title {
+            font-size: 3.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .instructions {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 3px solid #f59e0b;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 50px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .instructions h3 {
+            color: #92400e;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .instructions p {
+            font-size: 1.3em;
+            color: #78350f;
+            line-height: 1.8;
+        }
+
+        .tree-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            padding: 40px 20px;
+            background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 20px;
+            border: 3px solid #0ea5e9;
+            position: relative;
+        }
+
+        .generation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            width: 100%;
+            position: relative;
+        }
+
+        .generation::after {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 40px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .generation:last-child::after {
+            display: none;
+        }
+
+        .person-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            border: 4px solid #667eea;
+            border-radius: 20px;
+            padding: 25px 35px;
+            min-width: 200px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+            position: relative;
+        }
+
+        .person-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+            border-color: #f093fb;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .person-card::before {
+            content: '👤';
+            font-size: 3em;
+            display: block;
+            margin-bottom: 10px;
+            filter: grayscale(0.3);
+            transition: all 0.3s ease;
+        }
+
+        .person-card:hover::before {
+            transform: scale(1.2) rotate(5deg);
+            filter: grayscale(0);
+        }
+
+        /* אמוג'י ייחודי לכל דמות */
+        .person-card.levi::before { content: '👴'; }
+        .person-card.kehat::before { content: '🧔'; }
+        .person-card.amram::before { content: '👨'; }
+        .person-card.moses::before { content: '📜'; }
+        .person-card.aaron::before { content: '⚱️'; }
+        .person-card.gershon::before { content: '👨‍🦳'; }
+        .person-card.merari::before { content: '👨‍🦱'; }
+
+        .person-name {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+        }
+
+        .person-info {
+            font-size: 1.1em;
+            color: #64748b;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .person-age {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 1em;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .generation-label {
+            position: absolute;
+            right: -120px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1.2em;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .brothers {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .brothers .person-card {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            border-color: #0ea5e9;
+            opacity: 0.7;
+        }
+
+        .brothers .person-card:hover {
+            opacity: 1;
+            background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+        }
+
+        .main-line {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #f59e0b;
+            border-width: 5px;
+        }
+
+        .final-generation {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border: 5px solid #22c55e;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+            }
+            50% {
+                box-shadow: 0 15px 40px rgba(34, 197, 94, 0.6);
+            }
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            border: 3px solid #6366f1;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 50px;
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .info-box h3 {
+            color: #4338ca;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-box li {
+            font-size: 1.3em;
+            margin: 15px 0;
+            padding-right: 40px;
+            position: relative;
+            line-height: 1.8;
+            color: #312e81;
+        }
+
+        .info-box li::before {
+            content: '✨';
+            position: absolute;
+            right: 0;
+            font-size: 1.5em;
+        }
+
+        .legend {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 3px solid #f59e0b;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2em;
+            color: #78350f;
+            font-weight: 600;
+        }
+
+        .legend-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 3px solid;
+        }
+
+        .legend-main {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #f59e0b;
+        }
+
+        .legend-brothers {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            border-color: #0ea5e9;
+        }
+
+        .legend-final {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: #22c55e;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+            border: 3px solid #7e22ce;
+            border-radius: 15px;
+            padding: 35px;
+            margin-top: 60px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(126, 34, 206, 0.15);
+        }
+
+        .footer h4 {
+            color: #7e22ce;
+            margin: 25px 0 15px 0;
+            font-size: 1.5em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .main-title {
+                font-size: 2em;
+            }
+
+            .generation-label {
+                position: static;
+                transform: none;
+                margin-bottom: 20px;
+            }
+
+            .person-card {
+                min-width: 150px;
+                padding: 20px 25px;
+            }
+
+            .person-name {
+                font-size: 1.5em;
+            }
+
+            .brothers {
+                flex-direction: column;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="main-title">🌳 עץ המשפחה: מלוי עד משה ואהרון 🌳</h1>
+            <p class="subtitle">למדו את סדר הדורות מספר שמות פרק ו</p>
+        </div>
+
+        <div class="instructions">
+            <h3>📚 איך להשתמש בעץ המשפחה?</h3>
+            <p><strong>העבירו את העכבר</strong> על כל דמות כדי לראות אותה מתבלטת! 🎯<br>
+            <strong>שימו לב</strong> לצבעים השונים - הם מסמנים את השושלת הראשית! 🎨<br>
+            <strong>עקבו</strong> אחרי הקווים מלמעלה למטה - זה סדר הדורות! ⬇️</p>
+        </div>
+
+        <div class="tree-container">
+            <!-- דור 1: לוי -->
+            <div class="generation">
+                <span class="generation-label">דור 1️⃣</span>
+                <div class="person-card levi main-line">
+                    <div class="person-name">לוי</div>
+                    <div class="person-info">בן יעקב אבינו</div>
+                    <div class="person-age">חי 137 שנה</div>
+                </div>
+            </div>
+
+            <!-- דור 2: בני לוי -->
+            <div class="generation">
+                <span class="generation-label">דור 2️⃣</span>
+                <div class="brothers">
+                    <div class="person-card gershon brothers">
+                        <div class="person-name">גרשון</div>
+                        <div class="person-info">בן לוי</div>
+                    </div>
+                    <div class="person-card kehat main-line">
+                        <div class="person-name">קהת</div>
+                        <div class="person-info">בן לוי</div>
+                        <div class="person-age">חי 133 שנה</div>
+                    </div>
+                    <div class="person-card merari brothers">
+                        <div class="person-name">מררי</div>
+                        <div class="person-info">בן לוי</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- דור 3: בני קהת -->
+            <div class="generation">
+                <span class="generation-label">דור 3️⃣</span>
+                <div class="brothers">
+                    <div class="person-card brothers">
+                        <div class="person-name">יצהר</div>
+                        <div class="person-info">בן קהת</div>
+                    </div>
+                    <div class="person-card amram main-line">
+                        <div class="person-name">עמרם</div>
+                        <div class="person-info">בן קהת</div>
+                        <div class="person-age">חי 137 שנה</div>
+                    </div>
+                    <div class="person-card brothers">
+                        <div class="person-name">חברון</div>
+                        <div class="person-info">בן קהת</div>
+                    </div>
+                    <div class="person-card brothers">
+                        <div class="person-name">עוזיאל</div>
+                        <div class="person-info">בן קהת</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- דור 4: משה ואהרון -->
+            <div class="generation">
+                <span class="generation-label">דור 4️⃣</span>
+                <div class="brothers">
+                    <div class="person-card aaron final-generation">
+                        <div class="person-name">אהרן</div>
+                        <div class="person-info">בן עמרם ויוכבד</div>
+                        <div class="person-age">⚱️ הכהן הגדול</div>
+                    </div>
+                    <div class="person-card moses final-generation">
+                        <div class="person-name">משה</div>
+                        <div class="person-info">בן עמרם ויוכבד</div>
+                        <div class="person-age">📜 רבינו</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box legend-main"></div>
+                <span>השושלת הישירה</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box legend-brothers"></div>
+                <span>אחים נוספים</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box legend-final"></div>
+                <span>משה ואהרן!</span>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h3>💎 עובדות מעניינות על עץ המשפחה</h3>
+            <ul>
+                <li><strong>לוי</strong> היה בנו השלישי של יעקב אבינו - הוא חי 137 שנה!</li>
+                <li><strong>קהת</strong> היה בן לוי - ממנו יצאה משפחת הכהנים והלוויים</li>
+                <li><strong>עמרם</strong> נשא את דודתו יוכבד - והם ילדו את משה ואהרן!</li>
+                <li><strong>אהרן</strong> היה הכהן הגדול הראשון - הוא הדליק את המנורה במשכן</li>
+                <li><strong>משה רבינו</strong> הוציא את עם ישראל ממצרים וקיבל את התורה בהר סיני!</li>
+                <li>מלוי עד משה ואהרון יש רק <strong>4 דורות</strong> - זה מראה כמה הם חיו הרבה שנים!</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <strong style="font-size: 1.3em; color: #7e22ce;">נוצר במיוחד עבורכם על ידי:</strong><br>
+            <strong style="font-size: 1.4em; color: #2563eb;">הרב יהודה טאוב</strong><br>
+            <p style="margin: 10px 0; font-size: 1.1em;">קרית אתא</p>
+            <p style="font-size: 1.2em;">📞 <strong>ליצירת קשר:</strong> 0527139520</p>
+            
+            <div style="margin-top: 30px; padding: 25px; background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%); border-radius: 10px; border: 2px solid #2563eb;">
+                <h4>🎧 שיעורים נוספים של הרב</h4>
+                <p style="font-size: 1.15em; margin: 15px 0;"><strong>ניתן לשמוע עוד שיעורים נפלאים:</strong></p>
+                <p style="font-size: 1.15em; margin: 10px 0;">📻 <strong>קול הלשון - קול תודה:</strong> 03-6171190</p>
+                <p style="font-size: 1.15em; margin: 10px 0;">🌐 <strong>באתר הקול החמישי:</strong> <a href="../index.html" style="color: #2563eb; text-decoration: none; font-weight: 600;">www.kol-toda.co.il</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // הוספת אפקטים אינטראקטיביים נוספים
+        document.querySelectorAll('.person-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const name = this.querySelector('.person-name').textContent;
+                const info = this.querySelector('.person-info').textContent;
+                alert(`🎯 בחרתם ב${name}!\n\n${info}`);
+            });
+        });
+
+        // אנימציה עם הגלילה
+        const cards = document.querySelectorAll('.person-card');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeIn 0.8s ease-in';
+                }
+            });
+        });
+
+        cards.forEach(card => observer.observe(card));
+
+        // הוספת CSS לאנימציה
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

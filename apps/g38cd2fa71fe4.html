@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>שושלת לוי - מצגת אינטראקטיבית מלאה</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Assistant', 'Noto Sans Hebrew', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .main-title {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            font-size: 1.4em;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .verse-reference {
+            font-size: 1.2em;
+            color: #7e22ce;
+            font-weight: 600;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .instructions {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border: 3px solid #22c55e;
+            border-radius: 20px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+        }
+
+        .instructions h3 {
+            color: #166534;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .instructions p {
+            font-size: 1.3em;
+            color: #14532d;
+            line-height: 1.8;
+        }
+
+        .family-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 20px;
+            border: 3px solid #0ea5e9;
+        }
+
+        .person-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            border: 4px solid #667eea;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+            position: relative;
+        }
+
+        .person-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            border-color: #f093fb;
+        }
+
+        .person-card.active {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #f59e0b;
+            border-width: 5px;
+            transform: scale(1.05);
+        }
+
+        .person-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+            filter: grayscale(0.3);
+            transition: all 0.3s ease;
+        }
+
+        .person-card:hover .person-icon {
+            transform: scale(1.2) rotate(5deg);
+            filter: grayscale(0);
+        }
+
+        .person-name {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 8px;
+        }
+
+        .person-relation {
+            font-size: 1em;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .person-age {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .lineage-display {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            border: 5px solid #6366f1;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 40px 0;
+            min-height: 300px;
+            display: none;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+            animation: slideIn 0.5s ease;
+        }
+
+        .lineage-display.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .lineage-title {
+            font-size: 2.5em;
+            color: #4338ca;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .lineage-chain {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .chain-item {
+            background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
+            border: 4px solid #f59e0b;
+            border-radius: 15px;
+            padding: 20px 40px;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #92400e;
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+            position: relative;
+            min-width: 300px;
+            text-align: center;
+        }
+
+        .chain-item::after {
+            content: '⬇️';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5em;
+        }
+
+        .chain-item:last-child::after {
+            display: none;
+        }
+
+        .chain-item.highlight {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: #22c55e;
+            border-width: 6px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .children-section {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 3px solid #f59e0b;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .children-title {
+            font-size: 2em;
+            color: #92400e;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .children-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .child-card {
+            background: white;
+            border: 3px solid #f59e0b;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #92400e;
+        }
+
+        .child-card .icon {
+            font-size: 2em;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .generation-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 1em;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .special-info {
+            background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+            border: 3px solid #2563eb;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .special-info h4 {
+            color: #1e40af;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .special-info p {
+            font-size: 1.2em;
+            color: #1e3a8a;
+            line-height: 1.8;
+        }
+
+        .legend {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 3px solid #f59e0b;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2em;
+            color: #78350f;
+            font-weight: 600;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+            border: 3px solid #7e22ce;
+            border-radius: 15px;
+            padding: 35px;
+            margin-top: 60px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(126, 34, 206, 0.15);
+        }
+
+        .footer h4 {
+            color: #7e22ce;
+            margin: 25px 0 15px 0;
+            font-size: 1.5em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            .main-title {
+                font-size: 2em;
+            }
+
+            .family-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 15px;
+            }
+
+            .chain-item {
+                font-size: 1.4em;
+                min-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="main-title">🌳 עץ המשפחה המלא של שבט לוי 🌳</h1>
+            <p class="subtitle">לחץ על כל דמות כדי לראות את השושלת שלה!</p>
+            <div class="verse-reference">📖 שמות פרק ו, פסוקים יד-כה</div>
+        </div>
+
+        <div class="instructions">
+            <h3>🎯 איך המצגת עובדת?</h3>
+            <p><strong>לחץ</strong> על כל אדם כדי לראות את השושלת המלאה שלו! 👆<br>
+            <strong>תראה</strong> את כל הדורות מיעקב אבינו עד אליו! 📜<br>
+            <strong>גלה</strong> מי הילדים שלו ומידע מיוחד! ✨</p>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span>👤 = אדם רגיל</span>
+            </div>
+            <div class="legend-item">
+                <span>📜 = משה רבינו</span>
+            </div>
+            <div class="legend-item">
+                <span>⚱️ = כהן</span>
+            </div>
+            <div class="legend-item">
+                <span>🔥 = נספה באש</span>
+            </div>
+        </div>
+
+        <h2 style="text-align: center; color: #667eea; font-size: 2.5em; margin: 30px 0;">🔵 בחר דמות מהעץ:</h2>
+
+        <div class="family-grid" id="familyGrid">
+            <!-- הדמויות ייווצרו באמצעות JavaScript -->
+        </div>
+
+        <div class="lineage-display" id="lineageDisplay">
+            <h2 class="lineage-title" id="lineageTitle"></h2>
+            <div class="lineage-chain" id="lineageChain"></div>
+            <div id="childrenSection"></div>
+            <div id="specialInfo"></div>
+        </div>
+
+        <div class="footer">
+            <strong style="font-size: 1.3em; color: #7e22ce;">נוצר במיוחד עבורכם על ידי:</strong><br>
+            <strong style="font-size: 1.4em; color: #2563eb;">הרב יהודה טאוב</strong><br>
+            <p style="margin: 10px 0; font-size: 1.1em;">קרית אתא</p>
+            <p style="font-size: 1.2em;">📞 <strong>ליצירת קשר:</strong> 0527139520</p>
+            
+            <div style="margin-top: 30px; padding: 25px; background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%); border-radius: 10px; border: 2px solid #2563eb;">
+                <h4>🎧 שיעורים נוספים של הרב</h4>
+                <p style="font-size: 1.15em; margin: 15px 0;"><strong>ניתן לשמוע עוד שיעורים נפלאים:</strong></p>
+                <p style="font-size: 1.15em; margin: 10px 0;">📻 <strong>קול הלשון - קול תודה:</strong> 03-6171190</p>
+                <p style="font-size: 1.15em; margin: 10px 0;">🌐 <strong>באתר הקול החמישי:</strong> <a href="../index.html" style="color: #2563eb; text-decoration: none; font-weight: 600;">www.kol-toda.co.il</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // מאגר מידע מלא על כל הדמויות מהפסוקים
+        const familyData = {
+            // בני ראובן (פסוק יד) - מוזכרים אך לא חלק מעץ לוי
+            
+            // בני שמעון (פסוק טו) - מוזכרים אך לא חלק מעץ לוי
+            
+            // שבט לוי - העץ המרכזי
+            'יעקב': {
+                name: 'יעקב אבינו',
+                icon: '👴',
+                relation: 'אבי האומה',
+                parent: null,
+                children: ['ראובן', 'שמעון', 'לוי'],
+                generation: 0,
+                specialInfo: 'יעקב אבינו היה אבי שנים עשר השבטים. הוא זכה לשבט הכהונה והלוויה שיצאו מבנו לוי.',
+                age: null
+            },
+            'ראובן': {
+                name: 'ראובן',
+                icon: '👤',
+                relation: 'בכור יעקב',
+                parent: 'יעקב',
+                children: ['חנוך', 'פלוא', 'חצרון', 'כרמי'],
+                generation: 1,
+                specialInfo: 'ראובן היה הבכור, אך איבד את הבכורה. בניו הקימו את משפחות ראובן.',
+                age: null
+            },
+            'שמעון': {
+                name: 'שמעון',
+                icon: '👤',
+                relation: 'בן יעקב',
+                parent: 'יעקב',
+                children: ['ימואל', 'ימין', 'אוהד', 'יכין', 'צוחר', 'שאול'],
+                generation: 1,
+                specialInfo: 'שמעון היה מהאחים שמכרו את יוסף. בניו הקימו את משפחות שמעון, כולל שאול בן הכנענית.',
+                age: null
+            },
+            'לוי': {
+                name: 'לוי',
+                icon: '👤',
+                relation: 'בן יעקב',
+                parent: 'יעקב',
+                children: ['גרשון', 'קהת', 'מררי'],
+                generation: 1,
+                specialInfo: 'לוי זכה לשבט הכהונה והלוויה! כל הכהנים והלוויים יוצאים ממנו.',
+                age: '137 שנה'
+            },
+            'גרשון': {
+                name: 'גרשון',
+                icon: '👤',
+                relation: 'בן לוי',
+                parent: 'לוי',
+                children: ['לבני', 'שמעי'],
+                generation: 2,
+                specialInfo: 'גרשון היה הבכור של לוי. משפחתו שמרה על יריעות המשכן.',
+                age: null
+            },
+            'קהת': {
+                name: 'קהת',
+                icon: '👤',
+                relation: 'בן לוי',
+                parent: 'לוי',
+                children: ['עמרם', 'יצהר', 'חברון', 'עוזיאל'],
+                generation: 2,
+                specialInfo: 'קהת הוא אבי משפחת הכהנים! ממנו יצאו משה, אהרן, וכל הכהנים.',
+                age: '133 שנה'
+            },
+            'מררי': {
+                name: 'מררי',
+                icon: '👤',
+                relation: 'בן לוי',
+                parent: 'לוי',
+                children: ['מחלי', 'מושי'],
+                generation: 2,
+                specialInfo: 'מררי היה הצעיר של בני לוי. משפחתו שמרה על קרשי המשכן.',
+                age: null
+            },
+            'לבני': {
+                name: 'לבני',
+                icon: '👤',
+                relation: 'בן גרשון',
+                parent: 'גרשון',
+                children: [],
+                generation: 3,
+                specialInfo: 'לבני היה בן גרשון, ממשפחת הלוויים השומרים על המשכן.',
+                age: null
+            },
+            'שמעי': {
+                name: 'שמעי',
+                icon: '👤',
+                relation: 'בן גרשון',
+                parent: 'גרשון',
+                children: [],
+                generation: 3,
+                specialInfo: 'שמעי היה בן גרשון, ממשפחת הלוויים השומרים על המשכן.',
+                age: null
+            },
+            'עמרם': {
+                name: 'עמרם',
+                icon: '👤',
+                relation: 'בן קהת',
+                parent: 'קהת',
+                children: ['אהרן', 'משה', 'מרים'],
+                generation: 3,
+                specialInfo: 'עמרם נשא את דודתו יוכבד! הם ילדו את המנהיגים הגדולים: משה, אהרן ומרים.',
+                age: '137 שנה'
+            },
+            'יצהר': {
+                name: 'יצהר',
+                icon: '👤',
+                relation: 'בן קהת',
+                parent: 'קהת',
+                children: ['קרח', 'נפג', 'זכרי'],
+                generation: 3,
+                specialInfo: 'יצהר היה אחי עמרם. בנו קרח מרד במשה במדבר.',
+                age: null
+            },
+            'חברון': {
+                name: 'חברון',
+                icon: '👤',
+                relation: 'בן קהת',
+                parent: 'קהת',
+                children: [],
+                generation: 3,
+                specialInfo: 'חברון היה אחד מבני קהת. שמו נקשר לעיר חברון המקודשת.',
+                age: null
+            },
+            'עוזיאל': {
+                name: 'עוזיאל',
+                icon: '👤',
+                relation: 'בן קהת',
+                parent: 'קהת',
+                children: ['מישאל', 'אלצפן', 'סתרי'],
+                generation: 3,
+                specialInfo: 'עוזיאל היה הצעיר של בני קהת. בניו עזרו בהוצאת נדב ואביהוא שנספו.',
+                age: null
+            },
+            'מחלי': {
+                name: 'מחלי',
+                icon: '👤',
+                relation: 'בן מררי',
+                parent: 'מררי',
+                children: [],
+                generation: 3,
+                specialInfo: 'מחלי היה בן מררי, ממשפחת הלוויים השומרים על קרשי המשכן.',
+                age: null
+            },
+            'מושי': {
+                name: 'מושי',
+                icon: '👤',
+                relation: 'בן מררי',
+                parent: 'מררי',
+                children: [],
+                generation: 3,
+                specialInfo: 'מושי היה בן מררי, ממשפחת הלוויים השומרים על קרשי המשכן.',
+                age: null
+            },
+            'אהרן': {
+                name: 'אהרן הכהן',
+                icon: '⚱️',
+                relation: 'בן עמרם ויוכבד',
+                parent: 'עמרם',
+                children: ['נדב', 'אביהוא', 'אלעזר', 'איתמר'],
+                generation: 4,
+                specialInfo: 'אהרן היה הכהן הגדול הראשון! הוא הדליק את המנורה ועבד בקדש. נשא את אלישבע בת עמינדב אחות נחשון.',
+                age: null
+            },
+            'משה': {
+                name: 'משה רבינו',
+                icon: '📜',
+                relation: 'בן עמרם ויוכבד',
+                parent: 'עמרם',
+                children: ['גרשום', 'אליעזר'],
+                generation: 4,
+                specialInfo: 'משה רבינו - מנהיג עם ישראל! הוציא את עם ישראל ממצרים, קיבל את התורה בהר סיני, והנהיג את העם 40 שנה במדבר.',
+                age: '120 שנה'
+            },
+            'מרים': {
+                name: 'מרים הנביאה',
+                icon: '👩',
+                relation: 'בת עמרם ויוכבד',
+                parent: 'עמרם',
+                children: [],
+                generation: 4,
+                specialInfo: 'מרים הנביאה שמרה על משה כתינוק ביאור, הובילה את הנשים בשירה על הים, והעם שתה בזכותה.',
+                age: null
+            },
+            'קרח': {
+                name: 'קרח',
+                icon: '👤',
+                relation: 'בן יצהר',
+                parent: 'יצהר',
+                children: ['אסיר', 'אלקנה', 'אביאסף'],
+                generation: 4,
+                specialInfo: 'קרח מרד במשה ובאהרן במדבר, וטען שכל העדה קדושה. הוא ועדתו נבלעו באדמה.',
+                age: null
+            },
+            'נפג': {
+                name: 'נפג',
+                icon: '👤',
+                relation: 'בן יצהר',
+                parent: 'יצהר',
+                children: [],
+                generation: 4,
+                specialInfo: 'נפג היה אחי קרח, בן יצהר.',
+                age: null
+            },
+            'זכרי': {
+                name: 'זכרי',
+                icon: '👤',
+                relation: 'בן יצהר',
+                parent: 'יצהר',
+                children: [],
+                generation: 4,
+                specialInfo: 'זכרי היה אחי קרח, בן יצהר.',
+                age: null
+            },
+            'מישאל': {
+                name: 'מישאל',
+                icon: '👤',
+                relation: 'בן עוזיאל',
+                parent: 'עוזיאל',
+                children: [],
+                generation: 4,
+                specialInfo: 'מישאל עזר להוציא את גופות נדב ואביהוא שנשרפו באש ה\'.',
+                age: null
+            },
+            'אלצפן': {
+                name: 'אלצפן',
+                icon: '👤',
+                relation: 'בן עוזיאל',
+                parent: 'עוזיאל',
+                children: [],
+                generation: 4,
+                specialInfo: 'אלצפן עזר להוציא את גופות נדב ואביהוא שנשרפו באש ה\'.',
+                age: null
+            },
+            'סתרי': {
+                name: 'סתרי',
+                icon: '👤',
+                relation: 'בן עוזיאל',
+                parent: 'עוזיאל',
+                children: [],
+                generation: 4,
+                specialInfo: 'סתרי היה בן עוזיאל.',
+                age: null
+            },
+            'נדב': {
+                name: 'נדב',
+                icon: '🔥',
+                relation: 'בן אהרן',
+                parent: 'אהרן',
+                children: [],
+                generation: 5,
+                specialInfo: 'נדב היה בכור אהרן. הוא ואחיו אביהוא הקריבו אש זרה בלא צווי ונשרפו באש ה\'.',
+                age: null
+            },
+            'אביהוא': {
+                name: 'אביהוא',
+                icon: '🔥',
+                relation: 'בן אהרן',
+                parent: 'אהרן',
+                children: [],
+                generation: 5,
+                specialInfo: 'אביהוא היה בן אהרן. הוא ואחיו נדב הקריבו אש זרה ונשרפו באש ה\'.',
+                age: null
+            },
+            'אלעזר': {
+                name: 'אלעזר',
+                icon: '⚱️',
+                relation: 'בן אהרן',
+                parent: 'אהרן',
+                children: ['פינחס'],
+                generation: 5,
+                specialInfo: 'אלעזר הפך לכהן גדול אחרי אביו אהרן. הוא נשא מבנות פוטיאל.',
+                age: null
+            },
+            'איתמר': {
+                name: 'איתמר',
+                icon: '⚱️',
+                relation: 'בן אהרן',
+                parent: 'אהרן',
+                children: [],
+                generation: 5,
+                specialInfo: 'איתמר היה הצעיר של בני אהרן. הוא שימש ככהן והיה ממונה על לוויי משפחות גרשון ומררי.',
+                age: null
+            },
+            'גרשום': {
+                name: 'גרשום',
+                icon: '👤',
+                relation: 'בן משה',
+                parent: 'משה',
+                children: [],
+                generation: 5,
+                specialInfo: 'גרשום היה בכור משה רבינו. נולד במדין, ושמו פירושו "גר הייתי בארץ נכריה".',
+                age: null
+            },
+            'אליעזר': {
+                name: 'אליעזר',
+                icon: '👤',
+                relation: 'בן משה',
+                parent: 'משה',
+                children: [],
+                generation: 5,
+                specialInfo: 'אליעזר היה בנו השני של משה רבינו. שמו פירושו "אלוקי אבי בעזרי".',
+                age: null
+            },
+            'אסיר': {
+                name: 'אסיר',
+                icon: '👤',
+                relation: 'בן קרח',
+                parent: 'קרח',
+                children: [],
+                generation: 5,
+                specialInfo: 'אסיר היה בן קרח. למרות שאביו מרד, בני קרח לא מתו והיו משוררים גדולים בבית המקדש.',
+                age: null
+            },
+            'אלקנה': {
+                name: 'אלקנה',
+                icon: '👤',
+                relation: 'בן קרח',
+                parent: 'קרח',
+                children: [],
+                generation: 5,
+                specialInfo: 'אלקנה היה בן קרח. צאצאיו כללו את שמואל הנביא!',
+                age: null
+            },
+            'אביאסף': {
+                name: 'אביאסף',
+                icon: '👤',
+                relation: 'בן קרח',
+                parent: 'קרח',
+                children: [],
+                generation: 5,
+                specialInfo: 'אביאסף היה בן קרח. למרות שאביו מרד, בני קרח לא מתו.',
+                age: null
+            },
+            'פינחס': {
+                name: 'פינחס',
+                icon: '⚱️',
+                relation: 'בן אלעזר',
+                parent: 'אלעזר',
+                children: [],
+                generation: 6,
+                specialInfo: 'פינחס קינא לה\' והרג את זמרי ואת כזבי. בזכות קנאותו זכה הוא וצאצאיו לכהונת עולם!',
+                age: null
+            },
+            // בני ראובן
+            'חנוך': {
+                name: 'חנוך',
+                icon: '👤',
+                relation: 'בן ראובן',
+                parent: 'ראובן',
+                children: [],
+                generation: 2,
+                specialInfo: 'חנוך היה בן ראובן הבכור. הקים את משפחת החנוכי.',
+                age: null
+            },
+            'פלוא': {
+                name: 'פלוא',
+                icon: '👤',
+                relation: 'בן ראובן',
+                parent: 'ראובן',
+                children: [],
+                generation: 2,
+                specialInfo: 'פלוא היה בן ראובן. הקים את משפחת הפלואי.',
+                age: null
+            },
+            'חצרון': {
+                name: 'חצרון',
+                icon: '👤',
+                relation: 'בן ראובן',
+                parent: 'ראובן',
+                children: [],
+                generation: 2,
+                specialInfo: 'חצרון היה בן ראובן. הקים את משפחת החצרוני.',
+                age: null
+            },
+            'כרמי': {
+                name: 'כרמי',
+                icon: '👤',
+                relation: 'בן ראובן',
+                parent: 'ראובן',
+                children: [],
+                generation: 2,
+                specialInfo: 'כרמי היה בן ראובן. הקים את משפחת הכרמי.',
+                age: null
+            },
+            // בני שמעון
+            'ימואל': {
+                name: 'ימואל',
+                icon: '👤',
+                relation: 'בן שמעון',
+                parent: 'שמעון',
+                children: [],
+                generation: 2,
+                specialInfo: 'ימואל היה בן שמעון. הקים את משפחת הימואלי.',
+                age: null
+            },
+            'ימין': {
+                name: 'ימין',
+                icon: '👤',
+                relation: 'בן שמעון',
+                parent: 'שמעון',
+                children: [],
+                generation: 2,
+                specialInfo: 'ימין היה בן שמעון. הקים את משפחת הימיני.',
+                age: null
+            },
+            'אוהד': {
+                name: 'אוהד',
+                icon: '👤',
+                relation: 'בן שמעון',
+                parent: 'שמעון',
+                children: [],
+                generation: 2,
+                specialInfo: 'אוהד היה בן שמעון. הקים את משפחת האוהדי.',
+                age: null
+            },
+            'יכין': {
+                name: 'יכין',
+                icon: '👤',
+                relation: 'בן שמעון',
+                parent: 'שמעון',
+                children: [],
+                generation: 2,
+                specialInfo: 'יכין היה בן שמעון. הקים את משפחת היכיני.',
+                age: null
+            },
+            'צוחר': {
+                name: 'צוחר',
+                icon: '👤',
+                relation: 'בן שמעון',
+                parent: 'שמעון',
+                children: [],
+                generation: 2,
+                specialInfo: 'צוחר היה בן שמעון. הקים את משפחת הצוחרי.',
+                age: null
+            },
+            'שאול': {
+                name: 'שאול בן הכנענית',
+                icon: '👤',
+                relation: 'בן שמעון',
+                parent: 'שמעון',
+                children: [],
+                generation: 2,
+                specialInfo: 'שאול היה בן שמעון מאשה כנענית. הקים את משפחת השאולי.',
+                age: null
+            }
+        };
+
+        // יצירת כרטיסיות הדמויות
+        function createFamilyCards() {
+            const grid = document.getElementById('familyGrid');
+            
+            // רשימת דמויות מרכזיות להצגה (לא כולם, רק המרכזיים)
+            const mainCharacters = [
+                'יעקב', 'ראובן', 'שמעון', 'לוי',
+                'גרשון', 'קהת', 'מררי',
+                'לבני', 'שמעי',
+                'עמרם', 'יצהר', 'חברון', 'עוזיאל',
+                'מחלי', 'מושי',
+                'משה', 'אהרן', 'מרים',
+                'נדב', 'אביהוא', 'אלעזר', 'איתמר',
+                'קרח', 'נפג', 'זכרי',
+                'מישאל', 'אלצפן', 'סתרי',
+                'גרשום', 'אליעזר',
+                'אסיר', 'אלקנה', 'אביאסף',
+                'פינחס',
+                'חנוך', 'פלוא', 'חצרון', 'כרמי',
+                'ימואל', 'ימין', 'אוהד', 'יכין', 'צוחר', 'שאול'
+            ];
+
+            mainCharacters.forEach(personId => {
+                const person = familyData[personId];
+                if (person) {
+                    const card = document.createElement('div');
+                    card.className = 'person-card';
+                    card.onclick = () => showLineage(personId);
+                    
+                    card.innerHTML = `
+                        <div class="person-icon">${person.icon}</div>
+                        <div class="person-name">${person.name}</div>
+                        <div class="person-relation">${person.relation}</div>
+                        ${person.age ? `<div class="person-age">${person.age}</div>` : ''}
+                        <div class="generation-badge">דור ${person.generation + 1}</div>
+                    `;
+                    
+                    grid.appendChild(card);
+                }
+            });
+        }
+
+        // הצגת השושלת של דמות נבחרת
+        function showLineage(personId) {
+            const person = familyData[personId];
+            if (!person) return;
+
+            // הסרת סימון פעיל מכל הכרטיסיות
+            document.querySelectorAll('.person-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // סימון הכרטיסייה הנוכחית
+            event.target.closest('.person-card').classList.add('active');
+
+            // בניית שרשרת השושלת
+            const lineage = [];
+            let currentPerson = person;
+            
+            while (currentPerson) {
+                lineage.unshift(currentPerson);
+                currentPerson = currentPerson.parent ? familyData[currentPerson.parent] : null;
+            }
+
+            // הצגת השושלת
+            const lineageDisplay = document.getElementById('lineageDisplay');
+            const lineageTitle = document.getElementById('lineageTitle');
+            const lineageChain = document.getElementById('lineageChain');
+            const childrenSection = document.getElementById('childrenSection');
+            const specialInfo = document.getElementById('specialInfo');
+
+            lineageTitle.innerHTML = `🎯 השושלת של ${person.name} ${person.icon}`;
+            
+            lineageChain.innerHTML = '';
+            lineage.forEach((ancestor, index) => {
+                const chainItem = document.createElement('div');
+                chainItem.className = 'chain-item';
+                if (index === lineage.length - 1) {
+                    chainItem.classList.add('highlight');
+                }
+                chainItem.innerHTML = `
+                    ${ancestor.icon} <strong>${ancestor.name}</strong>
+                    ${ancestor.age ? `<br><span style="font-size: 0.7em;">(${ancestor.age})</span>` : ''}
+                `;
+                lineageChain.appendChild(chainItem);
+            });
+
+            // הצגת ילדים אם יש
+            if (person.children && person.children.length > 0) {
+                const childrenHTML = `
+                    <div class="children-section">
+                        <h3 class="children-title">👶 ילדי ${person.name}:</h3>
+                        <div class="children-list">
+                            ${person.children.map(childId => {
+                                const child = familyData[childId];
+                                return child ? `
+                                    <div class="child-card">
+                                        <span class="icon">${child.icon}</span>
+                                        ${child.name}
+                                    </div>
+                                ` : '';
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+                childrenSection.innerHTML = childrenHTML;
+            } else {
+                childrenSection.innerHTML = '';
+            }
+
+            // הצגת מידע מיוחד
+            if (person.specialInfo) {
+                specialInfo.innerHTML = `
+                    <div class="special-info">
+                        <h4>✨ מידע מעניין</h4>
+                        <p>${person.specialInfo}</p>
+                    </div>
+                `;
+            } else {
+                specialInfo.innerHTML = '';
+            }
+
+            lineageDisplay.classList.add('show');
+            
+            // גלילה חלקה למידע
+            lineageDisplay.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // אתחול
+        document.addEventListener('DOMContentLoaded', () => {
+            createFamilyCards();
+        });
+    </script>
+</body>
+</html>

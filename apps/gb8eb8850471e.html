@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>משחק: מלך או מושל?</title>
+<style>
+  :root{
+    --bg: #0f172a;          /* slate-900 */
+    --card: #111827;        /* gray-900 */
+    --accent: #22d3ee;      /* cyan-400 */
+    --accent2:#a78bfa;      /* violet-400 */
+    --ok:#22c55e;           /* green-500 */
+    --bad:#ef4444;          /* red-500 */
+    --text:#e5e7eb;         /* gray-200 */
+    --muted:#94a3b8;        /* slate-400 */
+    --btn:#1f2937;          /* gray-800 */
+    --btnHover:#374151;     /* gray-700 */
+    --chip:#0ea5e9;         /* sky-500 */
+  }
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, "Noto Sans Hebrew", "Rubik", "Assistant", sans-serif;
+    background: radial-gradient(1200px 800px at 50% -20%, #1e293b, #0b1020) fixed;
+    color: var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+  }
+  .app{
+    width: min(920px, 96vw);
+  }
+  .head{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin-bottom:18px;
+  }
+  h1{
+    margin:0;
+    font-size: clamp(22px, 4.2vw, 34px);
+    letter-spacing: .3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-weight:800;
+  }
+  .controls{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+  .btn{
+    border:1px solid #2a3345;
+    background: linear-gradient(180deg, #0f172a, #0b1222);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 12px;
+    cursor:pointer;
+    font-weight:700;
+    transition:.15s ease-in-out transform, .15s background;
+  }
+  .btn:hover{ transform: translateY(-1px); background: linear-gradient(180deg, #121a30, #0e1528); }
+  .pill{ font-size:14px; color:var(--muted); border:1px dashed #334155; padding:8px 10px; border-radius:999px;}
+  .card{
+    background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+    border:1px solid #283244;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  .question{
+    background: linear-gradient(180deg, #0b1222, #0a1020);
+    border:1px solid #1f2937;
+    border-radius: 16px;
+    padding: 18px 16px;
+  }
+  .q-text{
+    font-size: clamp(18px, 3.3vw, 26px);
+    font-weight:800;
+    line-height:1.4;
+    display:flex; align-items:center; gap:10px;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 10px; border-radius:999px; font-size:13px; font-weight:700;
+    background:#0b2a3a; color:#9de3ff; border:1px solid #124055;
+  }
+  .answers{
+    display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:16px;
+  }
+  .a-btn{
+    background: linear-gradient(180deg, #182235, #131b2c);
+    border:1px solid #263145;
+    border-radius: 16px;
+    padding: 16px;
+    font-size: clamp(18px, 3.1vw, 22px);
+    font-weight:900;
+    cursor:pointer;
+    transition:.15s ease-in-out transform, .15s background, .2s border-color;
+  }
+  .a-btn:hover{ transform: translateY(-1px); background: linear-gradient(180deg, #1b2740, #14203a); }
+  .a-btn.ok{ border-color: var(--ok); box-shadow: 0 0 0 3px rgba(34,197,94,.15) inset; }
+  .a-btn.bad{ border-color: var(--bad); box-shadow: 0 0 0 3px rgba(239,68,68,.15) inset; }
+  .explain{
+    margin-top:12px; font-size: 16px; color: #cbd5e1;
+    background: #0b1426; border:1px solid #243048; padding:12px 14px; border-radius: 12px;
+  }
+  .foot{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:14px;
+  }
+  .score{ font-weight:800; font-size:16px; color:#d1fae5;}
+  .progress{
+    position:relative; height:12px; width:100%; background:#0b1221; border:1px solid #223049; border-radius:999px; overflow:hidden;
+  }
+  .bar{position:absolute; right:0; top:0; bottom:0; width:0%; background: linear-gradient(90deg, var(--accent2), var(--accent)); transition: width .3s ease;}
+  .toast{
+    position:fixed; top:16px; inset-inline:0; display:flex; justify-content:center; z-index:100;
+    pointer-events:none;
+  }
+  .toast > div{
+    pointer-events:all;
+    background: #071022;
+    border:1px solid #223149;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight:800;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  }
+  /* Confetti */
+  .confetti{ position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index: 200; }
+  .confetti i{
+    position:absolute; width:10px; height:16px; opacity:0; transform: translateY(-20px) rotate(0deg);
+    animation: drop 1.8s ease-out forwards;
+  }
+  @keyframes drop{
+    10%{opacity:1}
+    100%{ transform: translateY(110vh) rotate(600deg); opacity:0 }
+  }
+  .muted{ color: var(--muted) }
+  .small{ font-size: 13px; }
+  .hidden{ display:none }
+  .flex{ display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+  .spacer{ flex:1 }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="head">
+      <h1>🎮 משחק: מלך או מושל?</h1>
+      <div class="controls">
+        <span class="pill">מצב כיתה: <strong>הסברים מופעלים</strong></span>
+        <button class="btn" id="toggleExplain">הסתר/הצג הסברים</button>
+        <button class="btn" id="restartBtn">התחל מחדש ↻</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="question">
+        <div class="q-text">
+          <span class="chip">בחרו:</span>
+          <span id="qText"></span>
+        </div>
+        <div class="answers">
+          <button class="a-btn" id="kingBtn">👑 מלך</button>
+          <button class="a-btn" id="govBtn">🏛️ מושל</button>
+        </div>
+        <div class="explain" id="explainBox"></div>
+      </div>
+
+      <div class="foot">
+        <div class="score" id="scoreBox">ניקוד: 0 ✔︎ | שגיאות: 0 ✖︎</div>
+        <div class="spacer"></div>
+        <div class="progress" aria-label="התקדמות">
+          <div class="bar" id="bar"></div>
+        </div>
+      </div>
+      <div class="flex small muted" style="margin-top:10px">
+        <span>טיפ: <strong>מלך</strong> – נבחרים אליו מרצון. <strong>מושל</strong> – סמכות מתוקף תפקיד או כוח.</span>
+      </div>
+    </div>
+    <div class="toast" id="toast" aria-live="polite"></div>
+    <div class="confetti" id="confetti"></div>
+  </div>
+
+<script>
+const DATA = [
+  // הכל מנוסח בקצרה וברור לתלמידים
+  {text:"יו\"ר מועצת תלמידים בבית הספר", correct:"מלך", why:"נבחר בהצבעה של התלמידים."},
+  {text:"קפטן קבוצת הכדורגל בכיתה", correct:"מלך", why:"החברים בוחרים בו שינהיג אותם."},
+  {text:"ראש ועד כיתה", correct:"מלך", why:"נבחר ע\"י בני הכיתה לייצג אותם."},
+  {text:"ראש העיר", correct:"מלך", why:"נבחר בבחירות דמוקרטיות."},
+  {text:"חבר כנסת", correct:"מלך", why:"נבחר ע\"י העם בבחירות."},
+
+  {text:"המפקח שמגיע לבדוק את המורים", correct:"מושל", why:"סמכותו מתוקף תפקידו, לא בחירת התלמידים."},
+  {text:"המנהלת (מול התלמידים)", correct:"מושל", why:"יש לה סמכות בתוקף תפקיד, גם בלי בחירת התלמידים."},
+  {text:"השופט במשחק כדורגל", correct:"מושל", why:"שולט בכללים ומתוקף תפקידו קובע."},
+  {text:"שוטר ברחוב", correct:"מושל", why:"אוכף חוקים מתוקף סמכותו."},
+  {text:"מורה בשיעור", correct:"מושל", why:"קובע סדר וכללים מתוקף תפקידו."},
+
+  {text:"רכז חוג שבחרו בו ההורים", correct:"מלך", why:"נבחר ע\"י מצביעים (ההורים/קהילה)."},
+  {text:"מפקד כיתה במסדר שהמורה מינה", correct:"מושל", why:"מונה מלמעלה; לא נבחר ע\"י הכיתה."},
+  {text:"שוער תורן שהוכרע בהצבעה", correct:"מלך", why:"נקבע בבחירה דמוקרטית."},
+  {text:"אחראי כיבוד שהמורה קבעה", correct:"מושל", why:"סמכותו ניתנה מתוקף החלטת המורה."},
+  {text:"ועד הורים כיתתי", correct:"מלך", why:"נבחר ע\"י ההורים בבחירות."},
+  {text:"מועצת נוער עירונית", correct:"מלך", why:"נבחרים בבחירה של בני הנוער."},
+  {text:"רכז תנועה שמונה ע\"י המנהלת", correct:"מושל", why:"תפקידו בא ממינוי – לא מבחירה כללית."},
+  {text:"שופט תחרות רובוטיקה בבית ספר", correct:"מושל", why:"סמכות מקצועית מתוקף תפקידו כשופט."},
+  {text:"קצין בטיחות שמורה מינתה לטיול", correct:"מושל", why:"מינוי סמכותי לצורך בטיחות – לא בחירות."},
+  {text:"נשיא המדינה (בישראל)", correct:"מלך", why:"נבחר ע\"י הכנסת בהצבעה."},
+
+  // שלושה פריטים מתוך דוגמאות המשתמש
+  {text:"המפקח שמגיע לבדוק את המורים (דוגמת המשתמש)", correct:"מושל", why:"סמכות מתוקף תפקיד."},
+  {text:"ראש העיר (דוגמת המשתמש)", correct:"מלך", why:"נבחר בבחירות."},
+  {text:"המנהלת בשביל התלמידים (דוגמת המשתמש)", correct:"מושל", why:"סמכות מתוקף תפקיד."}
+];
+
+let queue = [];
+let idx = 0;
+let score = 0;
+let wrong = 0;
+let showExplain = true;
+
+const qText = document.getElementById('qText');
+const explainBox = document.getElementById('explainBox');
+const kingBtn = document.getElementById('kingBtn');
+const govBtn = document.getElementById('govBtn');
+const bar = document.getElementById('bar');
+const scoreBox = document.getElementById('scoreBox');
+const toast = document.getElementById('toast');
+const confetti = document.getElementById('confetti');
+const restartBtn = document.getElementById('restartBtn');
+const toggleExplain = document.getElementById('toggleExplain');
+
+function shuffle(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+function init(){
+  queue = [...DATA];
+  shuffle(queue);
+  idx = 0; score = 0; wrong = 0;
+  scoreBox.textContent = `ניקוד: ${score} ✔︎ | שגיאות: ${wrong} ✖︎`;
+  bar.style.width = "0%";
+  explainBox.textContent = "";
+  setQuestion();
+}
+function setQuestion(){
+  if(idx >= queue.length){
+    qText.textContent = "סיימתם את כל הכרטיסים! כל הכבוד 🎉";
+    kingBtn.disabled = true; govBtn.disabled = true;
+    celebrate();
+    return;
+  }
+  const q = queue[idx];
+  qText.textContent = q.text;
+  explainBox.textContent = showExplain ? "לחצו על אחד הכפתורים: מלך או מושל." : "";
+  kingBtn.classList.remove('ok','bad');
+  govBtn.classList.remove('ok','bad');
+  updateProgress();
+}
+function updateProgress(){
+  const pct = Math.round((idx) / queue.length * 100);
+  bar.style.width = pct + "%";
+}
+function popToast(msg, ok=true){
+  toast.innerHTML = `<div style="border-color:${ok?'#14532d':'#5b1111'}; color:${ok?'#bbf7d0':'#fecaca'}">${msg}</div>`;
+  setTimeout(()=> toast.innerHTML = "", 1200);
+}
+function blip(ok=true){
+  // Simple WebAudio blip
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = ok? 880 : 220;
+    g.gain.value = 0.2;
+    o.connect(g); g.connect(ctx.destination);
+    o.start();
+    setTimeout(()=>{ o.stop(); ctx.close(); }, 170);
+  }catch(e){ /* ignore */ }
+}
+function celebrate(){
+  // spawn confetti
+  for(let i=0;i<120;i++){
+    const piece = document.createElement('i');
+    const hue = (Math.random()*360)|0;
+    piece.style.left = (Math.random()*100) + "vw";
+    piece.style.background = `hsl(${hue} 90% 60%)`;
+    piece.style.transform = `translateY(-20px) rotate(${Math.random()*360}deg)`;
+    piece.style.animationDelay = (Math.random()*0.8) + "s";
+    piece.style.width = (6 + Math.random()*10) + "px";
+    piece.style.height = (8 + Math.random()*14) + "px";
+    confetti.appendChild(piece);
+    setTimeout(()=> piece.remove(), 2200);
+  }
+  popToast("מעולה! סיום המשחק ✨", true);
+}
+function answer(sel){
+  const q = queue[idx];
+  const isKing = sel === "מלך";
+  const ok = q.correct === sel;
+
+  if(ok){ score++; blip(true); }
+  else { wrong++; blip(false); }
+
+  scoreBox.textContent = `ניקוד: ${score} ✔︎ | שגיאות: ${wrong} ✖︎`;
+  const btnOk = q.correct === "מלך" ? kingBtn : govBtn;
+  const btnBad = q.correct !== "מלך" ? kingBtn : govBtn;
+  btnOk.classList.add('ok');
+  btnBad.classList.add('bad');
+
+  if(showExplain){
+    explainBox.innerHTML = ok
+      ? `✅ נכון! <strong>${q.correct}</strong> – ${q.why}`
+      : `❌ לא מדויק. התשובה: <strong>${q.correct}</strong>. ${q.why}`;
+  } else {
+    explainBox.textContent = "";
+  }
+
+  popToast(ok ? "נכון!" : "נסה שוב בפעם הבאה", ok);
+
+  setTimeout(()=>{
+    idx++;
+    setQuestion();
+  }, 600);
+}
+
+kingBtn.addEventListener('click', ()=> answer("מלך"));
+govBtn.addEventListener('click', ()=> answer("מושל"));
+restartBtn.addEventListener('click', ()=>{
+  kingBtn.disabled = false; govBtn.disabled = false;
+  init();
+});
+toggleExplain.addEventListener('click', ()=>{
+  showExplain = !showExplain;
+  document.querySelector('.pill strong').textContent = showExplain ? "הסברים מופעלים" : "הסברים כבויים";
+  if(!showExplain) explainBox.textContent = "";
+});
+
+init();
+</script>
+</body>
+</html>
