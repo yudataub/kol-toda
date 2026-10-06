@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>משחק קריאת שמע — מצאי את המקום הנכון</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #101b36;
+    --bg-deep: #0a1327;
+    --panel: #17264a;
+    --panel-2: #1d2e58;
+    --gold: #e7bb56;
+    --gold-soft: #f3d999;
+    --parchment: #f6efe0;
+    --parchment-dim: #cdd3e6;
+    --a: #ef7f66;
+    --a-soft: #f6b39f;
+    --b: #3fc2b0;
+    --b-soft: #9be3d8;
+    --g: #b78ae8;
+    --g-soft: #d9c1f5;
+    --line: rgba(231,187,86,0.25);
+    --ok: #6bd06b;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  html,body{ margin:0; padding:0; height:100%; }
+  body{
+    font-family:'Heebo',sans-serif;
+    direction:rtl;
+    color: var(--parchment);
+    background:
+      radial-gradient(ellipse 60% 40% at 15% 0%, rgba(231,187,86,0.10), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 100% 10%, rgba(63,194,176,0.08), transparent 60%),
+      linear-gradient(180deg, var(--bg-deep) 0%, var(--bg) 14%, var(--bg) 100%);
+    min-height:100vh;
+    overflow-x:hidden;
+    user-select:none;
+  }
+
+  /* -------- header -------- */
+  header{ text-align:center; padding: 30px 16px 10px; }
+  .eyebrow{
+    display:inline-block; font-weight:700; letter-spacing:.13em; font-size:12px;
+    color: var(--gold); background: rgba(231,187,86,0.08); border:1px solid var(--line);
+    padding:5px 16px; border-radius:999px; margin-bottom:14px;
+  }
+  h1{
+    font-family:'Frank Ruhl Libre',serif; font-weight:900;
+    font-size: clamp(24px,5vw,36px); margin:0 0 6px; color:var(--parchment);
+  }
+  h1 em{ font-style:normal; color:var(--gold); }
+  .instructions{
+    max-width:520px; margin: 8px auto 0; color:var(--parchment-dim); font-size:14.5px; line-height:1.6;
+  }
+
+  /* -------- parasha tabs / progress -------- */
+  .tabs{
+    display:flex; justify-content:center; gap:10px; margin: 22px auto 0; max-width: 640px; padding: 0 16px;
+  }
+  .tab{
+    flex:1; text-align:center; padding:10px 8px; border-radius:14px;
+    background: var(--panel); border:1px solid var(--line);
+    font-weight:700; font-size:13.5px; color: var(--parchment-dim);
+    position:relative; transition: all .25s ease;
+  }
+  .tab.active{ background: linear-gradient(135deg,var(--panel-2),var(--panel)); color: var(--gold-soft); border-color: var(--gold); box-shadow: 0 8px 20px rgba(0,0,0,.3); }
+  .tab .dots{ display:flex; gap:5px; justify-content:center; margin-top:7px; }
+  .tab .dots i{ width:7px;height:7px;border-radius:50%; background: rgba(255,255,255,.15); display:block; }
+  .tab .dots i.done{ background: var(--ok); }
+  .tab .dots i.cur{ background: var(--gold); }
+
+  /* -------- stage -------- */
+  #stage{ max-width: 680px; margin: 26px auto; padding: 0 16px 60px; position:relative; }
+
+  .group-card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 22px 20px 26px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.35);
+    animation: fadeIn .35s ease;
+  }
+  @keyframes fadeIn{ from{ opacity:0; transform: translateY(10px);} to{opacity:1; transform:none;} }
+
+  .group-title{ display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+  .group-title .ico{
+    font-size:22px; width:42px; height:42px; border-radius:12px; flex:none;
+    display:flex; align-items:center; justify-content:center; background: rgba(231,187,86,.12);
+  }
+  .group-title h2{ font-family:'Frank Ruhl Libre'; font-weight:700; font-size:19px; margin:0; color:var(--gold-soft); }
+  .group-title .sub{ font-size:11.5px; color:var(--parchment-dim); font-weight:400; }
+
+  .slots{ display:grid; grid-template-columns: repeat(3,1fr); gap:12px; margin-bottom: 22px; }
+  .slot{
+    min-height: 96px;
+    border-radius:16px;
+    border: 2.5px dashed rgba(255,255,255,.18);
+    background: rgba(255,255,255,.02);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding: 10px 8px;
+    position:relative;
+    transition: border-color .18s ease, background .18s ease, transform .12s ease;
+  }
+  .slot .label{
+    position:absolute; top:8px; font-size:10.5px; font-weight:700; letter-spacing:.05em;
+    color: var(--parchment-dim); opacity:.7;
+  }
+  .slot[data-part="0"] .label{ color: var(--a-soft); }
+  .slot[data-part="1"] .label{ color: var(--b-soft); }
+  .slot[data-part="2"] .label{ color: var(--g-soft); }
+  .slot.hover{ border-color: var(--gold); background: rgba(231,187,86,.08); transform: scale(1.03); }
+  .slot.filled{ border-style: solid; }
+  .slot[data-part="0"].filled{ border-color: var(--a); background: rgba(239,127,102,.10); }
+  .slot[data-part="1"].filled{ border-color: var(--b); background: rgba(63,194,176,.10); }
+  .slot[data-part="2"].filled{ border-color: var(--g); background: rgba(183,138,232,.10); }
+  .slot .check{ position:absolute; top:6px; left:8px; font-size:14px; opacity:0; transition: opacity .2s; }
+  .slot.filled .check{ opacity:1; }
+
+  .tray{ display:grid; grid-template-columns: repeat(3,1fr); gap:12px; min-height: 96px; }
+  .card{
+    border-radius:14px; padding:14px 10px;
+    background: linear-gradient(160deg, var(--panel-2), var(--panel));
+    border:1px solid var(--line);
+    box-shadow: 0 8px 18px rgba(0,0,0,.3);
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:'Frank Ruhl Libre'; font-weight:500; font-size: 16px; line-height:1.6;
+    color: var(--parchment);
+    cursor: grab;
+    touch-action: none;
+    min-height: 96px;
+  }
+  .card:active{ cursor:grabbing; }
+  .card.dragging{
+    position: fixed; z-index: 500; pointer-events:none;
+    box-shadow: 0 22px 40px rgba(0,0,0,.5);
+    transition: none !important;
+    opacity: .97;
+  }
+  .card.returning{ transition: left .28s cubic-bezier(.2,.8,.3,1.2), top .28s cubic-bezier(.2,.8,.3,1.2); }
+  .card.snapping{ transition: left .25s ease, top .25s ease; }
+  .card.placed{ position:static !important; box-shadow:none; cursor:default; opacity:.98; }
+  .card.wrong-shake{ animation: shake .35s ease; }
+  @keyframes shake{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .placeholder{ visibility:hidden; }
+
+  .next-hint{
+    text-align:center; margin-top:18px; font-size:13.5px; color: var(--ok); font-weight:700;
+    opacity:0; transition:opacity .3s;
+  }
+  .next-hint.show{ opacity:1; }
+
+  /* -------- interstitial -------- */
+  .overlay{
+    position:fixed; inset:0; z-index:900;
+    background: rgba(8,13,28,.88);
+    backdrop-filter: blur(4px);
+    display:flex; align-items:center; justify-content:center;
+    padding: 20px;
+    opacity:0; pointer-events:none; transition: opacity .3s;
+  }
+  .overlay.show{ opacity:1; pointer-events:all; }
+  .overlay-card{
+    background: linear-gradient(160deg,var(--panel-2),var(--panel));
+    border:1px solid var(--gold); border-radius: 26px;
+    padding: 40px 32px; max-width: 420px; text-align:center;
+    box-shadow: 0 30px 80px rgba(0,0,0,.6);
+    transform: scale(.9); transition: transform .3s;
+  }
+  .overlay.show .overlay-card{ transform: scale(1); }
+  .overlay-emoji{ font-size:56px; margin-bottom:10px; }
+  .overlay-card h2{ font-family:'Frank Ruhl Libre'; font-size:26px; color:var(--gold-soft); margin: 0 0 10px; }
+  .overlay-card p{ color:var(--parchment-dim); font-size:14.5px; line-height:1.6; margin: 0 0 24px; }
+  .btn{
+    display:inline-block; font-family:'Heebo'; font-weight:700; font-size:15px;
+    background: var(--gold); color: var(--bg-deep); border:none; border-radius: 999px;
+    padding: 13px 30px; cursor:pointer; box-shadow: 0 10px 24px rgba(231,187,86,.3);
+    transition: transform .15s ease;
+  }
+  .btn:hover{ transform: translateY(-2px); }
+  .btn.ghost{ background: transparent; border: 1.5px solid var(--gold); color: var(--gold-soft); box-shadow:none; margin-inline-start:10px; }
+
+  /* -------- explanation overlay -------- */
+  .explain-overlay{ align-items:flex-start; padding: 20px 12px; overflow-y:auto; }
+  .explain-card{
+    background: linear-gradient(160deg,var(--panel-2),var(--panel));
+    border:1px solid var(--gold); border-radius: 24px;
+    max-width: 620px; width:100%; margin: 20px auto;
+    padding: 30px 26px 26px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.6);
+    transform: scale(.95); transition: transform .3s;
+    text-align: right;
+  }
+  .explain-overlay.show .explain-card{ transform: scale(1); }
+  .explain-card.wide{ max-width: 880px; }
+
+  /* -------- summary table -------- */
+  .summary-head{ text-align:center; margin-bottom: 22px; }
+  .summary-head .badge{
+    display:inline-block; font-size:12px; font-weight:700; letter-spacing:.1em;
+    color: var(--bg-deep); background: var(--gold); padding: 4px 14px; border-radius:999px; margin-bottom:12px;
+  }
+  .summary-head h2{ font-family:'Frank Ruhl Libre'; font-weight:900; font-size: 26px; margin:0 0 6px; color: var(--parchment); }
+  .summary-head .sub{ font-family:'Frank Ruhl Libre'; font-size:16px; color: var(--gold-soft); }
+
+  .summary-legend{
+    display:flex; justify-content:center; gap:14px; margin-bottom: 20px; flex-wrap:wrap;
+  }
+  .summary-legend span{
+    display:flex; align-items:center; gap:7px; font-size:12.5px; color: var(--parchment-dim);
+  }
+  .summary-legend i{ width:12px; height:12px; border-radius:50%; display:block; }
+  .summary-legend i.a{ background: var(--a); } .summary-legend i.b{ background: var(--b); } .summary-legend i.g{ background: var(--g); }
+
+  .table-scroll{ overflow-x:auto; padding-bottom: 4px; margin-bottom: 6px; }
+  .summary-table{
+    width:100%; min-width: 620px;
+    border-collapse: separate; border-spacing: 0 10px;
+  }
+  .summary-table thead th{
+    font-family:'Frank Ruhl Libre'; font-weight:700; font-size:13px; color: var(--gold-soft);
+    padding: 0 12px 4px; text-align:center;
+  }
+  .summary-table thead th:first-child{ text-align:right; width: 30%; }
+  .summary-table tbody tr{ background: rgba(255,255,255,.025); }
+  .summary-table tbody tr td:first-child{
+    border-radius: 12px 0 0 12px;
+    text-align:right; padding-right: 16px;
+  }
+  .summary-table tbody tr td:last-child{ border-radius: 0 12px 12px 0; }
+  .summary-table td{
+    padding: 14px 10px; font-family:'Frank Ruhl Libre'; font-weight:500; font-size: 14.5px;
+    color: var(--parchment); text-align:center; vertical-align:middle; line-height:1.55;
+  }
+  .summary-table td.topic{
+    font-weight:700; color: var(--gold-soft); font-size:14px; white-space:nowrap;
+  }
+  .summary-table td.topic .ico{ margin-inline-end:6px; }
+  .summary-table td.a{ background: rgba(239,127,102,.09); border-top:2px solid var(--a); border-bottom:2px solid var(--a); }
+  .summary-table td.b{ background: rgba(63,194,176,.09); border-top:2px solid var(--b); border-bottom:2px solid var(--b); }
+  .summary-table td.g{ background: rgba(183,138,232,.09); border-top:2px solid var(--g); border-bottom:2px solid var(--g); }
+
+  .summary-continue{ text-align:center; margin-top: 20px; }
+
+  .explain-head{ text-align:center; margin-bottom: 20px; }
+  .explain-head .badge{
+    display:inline-block; font-size:12px; font-weight:700; letter-spacing:.1em;
+    color: var(--bg-deep); background: var(--gold); padding: 4px 14px; border-radius:999px; margin-bottom:12px;
+  }
+  .explain-head h2{ font-family:'Frank Ruhl Libre'; font-weight:900; font-size: 26px; margin:0; color: var(--parchment); }
+  .explain-head .preface-verse{
+    font-family:'Frank Ruhl Libre'; font-weight:500; font-size: 15.5px; color: var(--gold-soft);
+    margin-top: 10px; line-height:1.6;
+  }
+
+  .verse-box{
+    background: rgba(231,187,86,.08);
+    border: 1.5px solid var(--gold);
+    border-radius: 16px;
+    padding: 18px 20px;
+    text-align:center;
+    margin: 18px 0;
+  }
+  .verse-box p{
+    font-family:'Frank Ruhl Libre'; font-weight:700; font-size: 22px; color: var(--gold-soft); margin:0; line-height:1.6;
+  }
+  .verse-note{
+    text-align:center; font-size:13px; color: var(--parchment-dim); margin: -10px 0 18px; font-style: italic;
+  }
+
+  .intro-box{
+    background: rgba(255,255,255,.03);
+    border-right: 4px solid var(--b);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+  }
+  .intro-box p{ margin:0; font-size:14.5px; line-height:1.8; color: var(--parchment-dim); }
+
+  .klali-label{
+    font-size: 12.5px; font-weight:700; color: var(--gold); letter-spacing:.05em;
+    margin: 22px 0 4px; display:flex; align-items:center; gap:8px;
+  }
+  .klali-label::before{ content:"›"; font-size:16px; }
+  .klali-text{ font-family:'Frank Ruhl Libre'; font-weight:700; font-size:17px; color:var(--parchment); margin: 0 0 18px; }
+
+  .subtopics-label{ font-size:12.5px; font-weight:700; color: var(--parchment-dim); letter-spacing:.05em; margin-bottom: 12px; }
+
+  .part-block{
+    border-radius: 14px;
+    padding: 14px 16px 16px;
+    margin-bottom: 12px;
+    background: rgba(255,255,255,.025);
+    border-top: 3px solid var(--a);
+  }
+  .part-block.b{ border-top-color: var(--b); }
+  .part-block.g{ border-top-color: var(--g); }
+  .part-block .row1{ display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+  .part-block .num{
+    font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;
+    color: var(--bg-deep); background: var(--a-soft);
+  }
+  .part-block.b .num{ background: var(--b-soft); }
+  .part-block.g .num{ background: var(--g-soft); }
+  .part-block .phrase{ font-family:'Frank Ruhl Libre'; font-weight:700; font-size:17px; color: var(--parchment); }
+  .part-block .subtitle{ font-size: 13px; color: var(--gold-soft); font-weight:700; margin-bottom:8px; }
+  .part-block ul{ margin:0; padding-inline-start: 20px; }
+  .part-block li{ font-size: 13.5px; line-height:1.75; color: var(--parchment-dim); margin-bottom:4px; }
+
+  .goal-box{
+    background: rgba(63,194,176,.07);
+    border-right: 4px solid var(--b);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin: 20px 0 6px;
+  }
+  .goal-box .goal-title{
+    font-family:'Frank Ruhl Libre'; font-weight:700; font-size:15.5px; color: var(--b-soft); margin-bottom:10px;
+  }
+  .goal-box .goal-item{ font-size:13.5px; line-height:1.75; color: var(--parchment-dim); margin-bottom:8px; }
+  .goal-box .goal-item:last-child{ margin-bottom:0; }
+  .goal-box .goal-item strong{ color: var(--parchment); }
+
+  .checklist-title{
+    font-family:'Frank Ruhl Libre'; font-weight:700; font-size:16px; color: var(--gold-soft);
+    margin: 22px 0 12px; display:flex; align-items:center; gap:8px;
+  }
+  .check-item{
+    display:flex; align-items:flex-start; gap:10px; cursor:pointer;
+    background: rgba(255,255,255,.025); border-radius:12px; padding:10px 12px; margin-bottom:8px;
+    transition: background .15s ease;
+  }
+  .check-item:hover{ background: rgba(255,255,255,.05); }
+  .check-item .box{
+    width:20px; height:20px; border-radius:6px; border:2px solid var(--gold); flex:none; margin-top:1px;
+    display:flex; align-items:center; justify-content:center; font-size:13px; color: var(--bg-deep);
+    transition: background .15s ease;
+  }
+  .check-item.checked .box{ background: var(--gold); }
+  .check-item span.txt{ font-size: 13.5px; line-height:1.65; color: var(--parchment-dim); transition: color .15s ease; }
+  .check-item.checked span.txt{ color: var(--parchment-dim); text-decoration: line-through; opacity:.7; }
+
+  .explain-continue{ text-align:center; margin-top: 24px; }
+
+  .confetti{ position:fixed; top:-20px; z-index:950; font-size: 22px; pointer-events:none; animation: fall linear forwards; }
+  @keyframes fall{ to{ transform: translateY(105vh) rotate(360deg); opacity: .3; } }
+
+  footer{ text-align:center; color:var(--parchment-dim); font-size:12.5px; padding: 10px 20px 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="eyebrow">משחק למידה</span>
+  <h1>מִי שַׁיָּךְ לְאָן? <em>גררי את הכרטיסים</em></h1>
+  <p class="instructions">בכל נושא יש שלושה כרטיסים. גררי כל כרטיס לתא הנכון — חלק א, חלק ב או חלק ג. כשכל הכרטיסים במקום, עוברים אוטומטית לנושא הבא.</p>
+</header>
+
+<div class="tabs" id="tabs"></div>
+
+<div id="stage"></div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <div class="overlay-emoji" id="overlayEmoji">🎉</div>
+    <h2 id="overlayTitle"></h2>
+    <p id="overlayText"></p>
+    <button class="btn" id="overlayBtn"></button>
+  </div>
+</div>
+
+<div class="overlay explain-overlay" id="explainOverlay">
+  <div class="explain-card" id="explainCard"></div>
+</div>
+
+<div class="overlay explain-overlay" id="summaryOverlay">
+  <div class="explain-card wide" id="summaryCard"></div>
+</div>
+
+<footer>שלושה חלקים, קשר אחד — קריאת שמע ❤</footer>
+
+<script>
+/* ================== DATA ================== */
+const PARASHOT = [
+  {
+    name: "פרשה ראשונה",
+    subtitle: "וְאָהַבְתָּ",
+    groups: [
+      { icon:"💛", title:"אֵיךְ אוֹהֲבִים אֶת ה׳", sub:"שלוש דרגות של אהבה",
+        items:["בְּכָל לְבָבְךָ","וּבְכָל נַפְשְׁךָ","וּבְכָל מְאֹדֶךָ"] },
+      { icon:"📜", title:"הַמִּצְוָה שֶׁעַל הַלֵּב", sub:"והיו הדברים האלה...",
+        items:["אֲשֶׁר אָנֹכִי מְצַוְּךָ","הַיּוֹם","עַל לְבָבֶךָ"] },
+      { icon:"👨‍👩‍👧", title:"מָתַי מְלַמְּדִים אֶת הַיְלָדִים", sub:"ושננתם לבניך ודברת בם",
+        items:["בְּשִׁבְתְּךָ בְּבֵיתֶךָ","וּבְלֶכְתְּךָ בַדֶּרֶךְ","וּבְשָׁכְבְּךָ וּבְקוּמֶךָ"] },
+      { icon:"✋", title:"הַפְּעֻלּוֹת הַמַּעֲשִׂיּוֹת", sub:"תפילין ומזוזה",
+        items:["וּקְשַׁרְתָּם לְאוֹת עַל יָדֶךָ","וְהָיוּ לְטֹטָפֹת בֵּין עֵינֶיךָ","וּכְתַבְתָּם עַל מְזֻזוֹת בֵּיתֶךָ וּבִשְׁעָרֶיךָ"] },
+    ]
+  },
+  {
+    name: "פרשה שנייה",
+    subtitle: "וְהָיָה אִם שָׁמֹעַ",
+    groups: [
+      { icon:"💛", title:"הַדֶּרֶךְ לְקִיּוּם הַמִּצְווֹת", sub:"וְהָיָה אִם שָׁמֹעַ תִּשְׁמְעוּ אֶל מִצְוֹתַי אֲשֶׁר אָנֹכִי מְצַוֶּה אֶתְכֶם הַיּוֹם",
+        items:["לְאַהֲבָה אֶת ה׳ אֱלֹהֵיכֶם","וּלְעָבְדוֹ בְּכָל לְבַבְכֶם","וּבְכָל נַפְשְׁכֶם"] },
+      { icon:"🌧️", title:"הַשָּׂכָר", sub:"גשם, יבול ושובע",
+        items:["וְנָתַתִּי מְטַר אַרְצְכֶם בְּעִתּוֹ יוֹרֶה וּמַלְקוֹשׁ","וְאָסַפְתָּ דְגָנֶךָ וְתִירֹשְׁךָ וְיִצְהָרֶךָ","וְנָתַתִּי עֵשֶׂב בְּשָׂדְךָ לִבְהֶמְתֶּךָ וְאָכַלְתָּ וְשָׂבָעְתָּ"] },
+      { icon:"⚠️", title:"הָאַזְהָרָה", sub:"השמרו לכם פן יפתה לבבכם",
+        items:["וְסַרְתֶּם","וַעֲבַדְתֶּם אֱלֹהִים אֲחֵרִים","וְהִשְׁתַּחֲוִיתֶם לָהֶם"] },
+      { icon:"🥀", title:"הָעֹנֶשׁ", sub:"וחרה אף ה׳ בכם",
+        items:["וְעָצַר אֶת הַשָּׁמַיִם וְלֹא יִהְיֶה מָטָר","וְהָאֲדָמָה לֹא תִתֵּן אֶת יְבוּלָהּ","וַאֲבַדְתֶּם מְהֵרָה מֵעַל הָאָרֶץ הַטֹּבָה אֲשֶׁר ה׳ נֹתֵן לָכֶם"] },
+      { icon:"✋", title:"חוֹזְרִים וְזוֹכְרִים", sub:"על הלב, על היד, בין העיניים",
+        items:["וְשַׂמְתֶּם אֶת דְּבָרַי אֵלֶּה עַל לְבַבְכֶם וְעַל נַפְשְׁכֶם","וּקְשַׁרְתֶּם אֹתָם לְאוֹת עַל יֶדְכֶם","וְהָיוּ לְטוֹטָפֹת בֵּין עֵינֵיכֶם"] },
+      { icon:"📖", title:"לִמּוּד הַבָּנִים וְהַמְּזוּזָה", sub:"",
+        items:["וְלִמַּדְתֶּם אֹתָם אֶת בְּנֵיכֶם לְדַבֵּר בָּם","בְּשִׁבְתְּךָ בְּבֵיתֶךָ וּבְלֶכְתְּךָ בַדֶּרֶךְ וּבְשָׁכְבְּךָ וּבְקוּמֶךָ","וּכְתַבְתָּם עַל מְזוּזוֹת בֵּיתֶךָ וּבִשְׁעָרֶיךָ"] },
+      { icon:"🌍", title:"הַבְּרָכָה", sub:"אריכות ימים",
+        items:["לְמַעַן יִרְבּוּ יְמֵיכֶם וִימֵי בְנֵיכֶם","עַל הָאֲדָמָה אֲשֶׁר נִשְׁבַּע ה׳ לַאֲבֹתֵיכֶם לָתֵת לָהֶם","כִּימֵי הַשָּׁמַיִם עַל הָאָרֶץ"] },
+    ]
+  }
+];
+const PART_LABELS = ["חלק א","חלק ב","חלק ג"];
+const PART_COLOR_CLASS = ["","b","g"];
+
+/* ================== EXPLANATION PAGES ================== */
+/* keyed by "pIndex-gIndex" — only groups listed here get an explanation page after a correct finish */
+const EXPLANATIONS = {
+  "0-0": {
+    badge: "כללי",
+    title: "מַדְרֵגוֹת אַהֲבַת ה'",
+    intro: "התורה מלמדת אותנו שאהבת השם היא לא רק הרגשה אחת, אלא מסע שמורכב משלוש מדרגות. מדרגות אלו מראות לנו כיצד לאהוב את ה' עם הרצונות שלנו, עם החיים שלנו ועם כל מה שיש לנו.",
+    verse: "בְּכָל לְבָבְךָ וּבְכָל נַפְשְׁךָ וּבְכָל מְאֹדֶךָ",
+    klali: "הַמַּדְרֵגוֹת לְאַהֲבַת ה'",
+    subtopicsLabel: "פירוק הפסוק לשלושת החלקים",
+    parts: [
+      {
+        phrase: "בְּכָל לְבָבְךָ",
+        subtitle: "לאהוב עם כל הרצונות",
+        bullets: [
+          "חז\"ל מסבירים שצריך לאהוב את ה' ב\"שני יצריך\" – גם ביצר הטוב וגם ביצר הרע.",
+          "הכוונה היא שהאהבה לה' צריכה להיות גדולה וחזקה יותר מכל שאר התאוות והחשקים שלנו.",
+          "כשאנחנו מוותרים על תענוג קטן (כמו כוס קפה או ממתק) כי אנחנו רוצים להתקרב לה', אנחנו הופכים את היצר הרע לאהבת ה'."
+        ]
+      },
+      {
+        phrase: "וּבְכָל נַפְשְׁךָ",
+        subtitle: "לאהוב עם הנשמה ועם כל החיים",
+        bullets: [
+          "הדרך לאהוב את ה' \"בכל הנפש\" היא על ידי הסתכלות בבריאה המופלאה.",
+          "כאשר אדם רואה את הנפלאות בטבע ואת החכמה העצומה של ה', הנפש שלו מתמלאת באהבה ובתשוקה לדעת את ה'.",
+          "בנוסף, מדרגה זו מלמדת שעלינו לאהוב את ה' גם אם זה דורש מאיתנו למסור את החיים והנפש שלנו למענו."
+        ]
+      },
+      {
+        phrase: "וּבְכָל מְאֹדֶךָ",
+        subtitle: "לאהוב עם כל הרכוש ובכל מצב",
+        bullets: [
+          "המילה \"מאודך\" מלמדת שעלינו לאהוב את ה' עם כל הממון והרכוש ששייכים לנו.",
+          "רבי עקיבא מלמד ש\"מאודך\" זה גם מלשון \"מידה\": בכל מידה ומצב שה' מודד לנו בחיים, עלינו להודות לו מאוד.",
+          "המבחן לאהבה אמיתית הוא היכולת להודות לה' מכל הלב, גם כשטוב לנו וגם כשקשה לנו."
+        ]
+      }
+    ],
+    checklistTitle: "📝 צ'ק ליסט לתלמיד למעשה",
+    checklist: [
+      "בכל לבבך: לוותר היום על משהו קטן שבא לי לעשות, רק כדי להראות לה' שאני אוהב אותו יותר.",
+      "בכל נפשך: לעצור רגע בחוץ, להסתכל על הטבע (שמש, עץ או ציפור) ולהרגיש אהבה למי שברא אותם.",
+      "בכל מאודך: להגיד \"תודה רבה ה'\" על מה שיש לי (משחקים, בגדים), וגם אם קרה לי משהו קצת לא נעים היום."
+    ]
+  },
+  "0-1": {
+    badge: "כללי",
+    title: "הַמִּצְוָה שֶׁעַל הַלֵּב",
+    intro: "הפסוק \"וְהָיוּ הַדְּבָרִים הָאֵלֶּה\" מתוך קריאת שמע מלמד אותנו סוד גדול. הוא מסביר לתלמידים כיצד אפשר לקיים את המצוות מתוך שמחה, קשר אישי ואהבה עמוקה.",
+    verse: "וְהָיוּ הַדְּבָרִים הָאֵלֶּה",
+    klali: "הגישה הנכונה לקיום התורה",
+    subtopicsLabel: "פירוק הפסוק לשלושת החלקים",
+    parts: [
+      {
+        phrase: "אֲשֶׁר אָנֹכִי מְצַוְּךָ",
+        subtitle: "הקשר האישי שלך",
+        bullets: [
+          "מילים אלו מלמדות אותנו להרגיש יחס מיוחד וקרוב.",
+          "עליך להרגיש כאילו הקדוש ברוך הוא בעצמו מצווה את המצווה הזו ישירות אליך.",
+          "תדמיין כאילו אתה היהודי היחידי בכל הבריאה, והמצווה ניתנה במיוחד בשבילך."
+        ]
+      },
+      {
+        phrase: "הַיּוֹם",
+        subtitle: "התחדשות במקום שעמום",
+        bullets: [
+          "המילה \"היום\" באה למנוע הרגשה של הרגל, כדי שלא נחשוב שמדובר בחוקים ישנים.",
+          "צריך להתייחס לכל מצווה כאילו ציוו עליה ממש היום, ורק להיום.",
+          "גישה כזו של התחדשות מולידה בלב חביבות ושמחה אחרת לגמרי בקיום המצוות."
+        ]
+      },
+      {
+        phrase: "עַל לְבָבֶךָ",
+        subtitle: "להכניס את הדברים פנימה",
+        bullets: [
+          "אהבת השם לא נכנסת ללב בבת אחת או ברגע אחד.",
+          "צריך לחשוב על הדברים תמיד, לשנן אותם, ולדאוג שהם יהיו חקוקים בתוך הלב.",
+          "כאשר אתה שם את הדברים \"על לבבך\" ומתבונן בהם, מתוך כך אתה לומד להכיר את מי שאמר והיה העולם, ומתדבק בדרכיו."
+        ]
+      }
+    ],
+    checklist: [
+      "תרגיש מיוחד: לפני קיום מצווה (כמו נטילת ידיים או כיבוד הורים), זכור שהקדוש ברוך הוא מבקש זאת אישית ממך.",
+      "תחשוב שזה היום: אל תעשה מצוות מתוך הרגל. תחשוב שקיבלת את המצווה ממש \"היום\" ותעשה אותה בשמחה ובהתלהבות.",
+      "תכניס ללב: קח לעצמך דקה ביום לחשוב על המצוות שאתה עושה, כדי שהן לא יישארו רק כדיבורים בפה, אלא ייכנסו לך עמוק אל הלב."
+    ]
+  },
+  "0-2": {
+    badge: "כללי",
+    title: "מָתַי מְלַמְּדִים אֶת הַיְלָדִים",
+    intro: "התורה מסבירה לנו שהלימוד והחינוך אינם שייכים רק לזמן או למקום אחד, אלא הם צריכים להקיף את כל שעות היממה ואת כל מצבי החיים. להלן ההסבר של שלושת החלקים בצורה שמותאמת לילדים, המראה כיצד ללמוד בכל מצב.",
+    verse: "וְדִבַּרְתָּ בָּם בְּשִׁבְתְּךָ בְּבֵיתֶךָ וּבְלֶכְתְּךָ בַדֶּרֶךְ וּבְשָׁכְבְּךָ וּבְקוּמֶךָ",
+    klali: "סִגְנוֹנוֹת הַלִּמּוּד בַּיּוֹמְיוֹם שֶׁלָּנוּ",
+    subtopicsLabel: "פירוק הפסוק לשלושת החלקים",
+    parts: [
+      {
+        phrase: "בְּשִׁבְתְּךָ בְּבֵיתֶךָ",
+        subtitle: "לימוד לעומק (עיון)",
+        bullets: [
+          "כשאנחנו יושבים בנחת בבית, זה הזמן המיועד ללמוד בעיון ובהעמקה.",
+          "בבית יש לנו שקט, מנוחה וישוב הדעת. לכן, אפשר לפתוח ספר, להתרכז היטב, ולשאול שאלות כדי להבין כל פרט עד הסוף."
+        ]
+      },
+      {
+        phrase: "וּבְלֶכְתְּךָ בַדֶּרֶךְ",
+        subtitle: "חזרה ובקיאות",
+        bullets: [
+          "כשאנחנו הולכים בדרך או נוסעים, קשה ללמוד לעומק, ולכן זה הזמן ללימוד של \"בקיאות\".",
+          "הכוונה היא לחזור בראש או בעל פה על דברים שכבר למדנו, או ללמוד דברים פשוטים יותר שלא דורשים ריכוז חזק כמו ישיבה ליד שולחן בבית."
+        ]
+      },
+      {
+        phrase: "וּבְשָׁכְבְּךָ וּבְקוּמֶךָ",
+        subtitle: "חיבור תמידי ביום ובלילה",
+        bullets: [
+          "מילים אלו מלמדות אותנו על החובה ללמוד ולהתחבר לתורה גם ביום וגם בלילה.",
+          "הלימוד מקיף אותנו תמיד: מהרגע שאנחנו פוקחים עיניים בבוקר (\"בקומך\") ועד הרגע שאנחנו הולכים לישון (\"בשכבך\")."
+        ]
+      }
+    ],
+    goal: {
+      title: "המטרה הגדולה של הפסוק",
+      items: [
+        { lead:"הכלת כל החיים", text:"המטרה היא להראות שהתורה לא מנותקת מהחיים, אלא נמצאת איתנו בכל מצב ובכל מקום." },
+        { lead:"חינוך מתוך רצון", text:"כאשר אנו מחברים את התורה לכל שעות היום שלנו בצורה טבעית, אנו זוכים לחנך את עצמנו (ואת הילדים) עד למצב שבו נרצה ללמוד מעצמנו מתוך אהבה." }
+      ]
+    },
+    checklistTitle: "📝 צ'ק ליסט לתלמיד למעשה",
+    checklist: [
+      "זמן לעומק בבית: מצא לך בכל יום כמה דקות כשאתה יושב בשקט בבית, ולמד משהו אחד לעומק כדי להבין אותו היטב.",
+      "תורה בדרך: כשאתה הולך לבית הספר או מחכה לאוטובוס, נסה להיזכר ולחזור בעל פה על פסוק, משנה או סיפור מעניין שלמדת.",
+      "בוקר ולילה: התחל את היום שלך (בקומך) עם מחשבה טובה או תפילה קצרה, וסיים את היום (בשכבך) עם קריאת שמע על המיטה."
+    ]
+  },
+  "0-3": {
+    badge: "כללי",
+    title: "הַפְּעֻלּוֹת הַמַּעֲשִׂיּוֹת",
+    intro: "פסוקים אלו מלמדים אותנו על שלוש מצוות מעשיות שמחברות את הגוף, המחשבה והבית שלנו אל הקדושה ואל אהבת השם.",
+    verse: "וּקְשַׁרְתָּם לְאוֹת עַל יָדֶךָ וְהָיוּ לְטֹטָפֹת בֵּין עֵינֶיךָ וּכְתַבְתָּם עַל מְזֻזוֹת בֵּיתֶךָ וּבִשְׁעָרֶיךָ",
+    klali: "הַמִּצְווֹת הַמַּעֲשִׂיּוֹת: גּוּף, מַחֲשָׁבָה וּבַיִת",
+    subtopicsLabel: "פירוק הפסוקים לשלושת החלקים",
+    parts: [
+      {
+        phrase: "וּקְשַׁרְתָּם לְאוֹת עַל יָדֶךָ",
+        subtitle: "תפילין של יד",
+        bullets: [
+          "חיבור ללב: התפילין של יד מונחות על הזרוע כנגד הלב, כדי להזכיר לנו שכל הרצונות והרגשות שלנו צריכים להיות מכוונים לה'.",
+          "לב אחד: בתפילין של יד יש רק בית אחד (תא אחד כנגד הלב), כדי ללמד אותנו שהאדם צריך להיות קודם כל עם \"לב אחד\" שלם לאביו שבשמים.",
+          "כמו טבעת נישואין: אנו קושרים את התפילין על היד בכל יום כמו טבעת, כסמל לאהבה ולקשר החזק והתמידי שיש בינינו לבין הקדוש ברוך הוא.",
+          "קודם מתקנים את עצמנו: מניחים קודם את התפילין של יד, ללמדנו שבתחילה על האדם לעבוד על עצמו ולתקן את המידות שלו מבפנים. מסיבה זו התפילין של יד גם מכוסות בבגד, כדי להזכיר לנו את העבודה האישית, הצנועה והשקטה של הלב."
+        ]
+      },
+      {
+        phrase: "וְהָיוּ לְטֹטָפֹת בֵּין עֵינֶיךָ",
+        subtitle: "תפילין של ראש",
+        bullets: [
+          "חיבור למוח ולמחשבה: התפילין של ראש מונחות בדיוק כנגד המוח, כדי להזכיר לנו לקדש את המחשבות והשכל שלנו.",
+          "חיבור בין השכל ללב: יחד עם התפילין של יד, המטרה של התפילין היא ליצור חיבור אמיתי בין השכל (המחשבה) לבין הלב (הרגש).",
+          "תכשיט של אהבה: התפילין משמשות כ\"טוטפות\" (כמו תכשיט או עדי) כדי שאהבת השם תהיה תמיד לנגד עינינו ולא נשכח אותה אפילו לרגע.",
+          "הפצת האור לעולם: בתפילין של ראש יש ארבעה בתים נפרדים. זהו רמז לכך שאחרי שתיקנו את עצמנו בלב, התפקיד שלנו הוא להפיץ את האור והתורה החוצה, לארבע כנפות העולם."
+        ]
+      },
+      {
+        phrase: "וּכְתַבְתָּם עַל מְזֻזוֹת בֵּיתֶךָ וּבִשְׁעָרֶיךָ",
+        subtitle: "מצוות מזוזה",
+        bullets: [
+          "תזכורת בכל כניסה: ה' ציווה עלינו לשים מזוזה בכל פתח של חדר. כך, בכל פעם שאנחנו עוברים בדלת, ניזכר בתפקיד המרכזי שלנו בעולם – אהבת השם.",
+          "הבית כמקדש: המזוזה הופכת את הבית הרגיל שלנו למעין \"משכן\" קטן שבו שורה השכינה.",
+          "בורא ומנהיג: המזוזה מזכירה לנו בכל רגע שיש בורא ומנהיג לעולם, ושכל מה שיש לנו בבית באמת מסור אליו."
+        ]
+      }
+    ],
+    checklistTitle: "📝 צ'ק ליסט לתלמיד למעשה",
+    checklist: [
+      "היד והלב: כשאני עושה מעשה או פעולה במשך היום, אזכור לכוון את הרצון והלב שלי לעשיית טוב (כמו התפילין שכנגד הלב).",
+      "הראש והמחשבה: אשתדל לשמור על מחשבות טובות וטהורות, ולזכור שה' איתי בכל מקום.",
+      "מבט על המזוזה: בכל פעם שאעבור בדלת ואראה את המזוזה, אזכור לשמור על אווירה של אהבה וקדושה בתוך הבית."
+    ]
+  },
+  "1-0": {
+    badge: "כללי",
+    title: "הַדֶּרֶךְ לְקִיּוּם הַמִּצְווֹת",
+    prefaceVerse: "וְהָיָה אִם שָׁמֹעַ תִּשְׁמְעוּ אֶל מִצְוֹתַי אֲשֶׁר אָנֹכִי מְצַוֶּה אֶתְכֶם הַיּוֹם",
+    intro: "הפסוק הזה מתוך הפרשה השנייה של קריאת שמע מלמד אותנו מהי המטרה האמיתית של קיום המצוות, וכיצד עלינו לעשות אותן בצורה הטובה ביותר.",
+    verse: "לְאַהֲבָה אֶת ה' אֱלֹהֵיכֶם וּלְעָבְדוֹ בְּכָל לְבַבְכֶם וּבְכָל נַפְשְׁכֶם",
+    klali: "הַדֶּרֶךְ הַנְּכוֹנָה לְקַיֵּם מִצְווֹת",
+    subtopicsLabel: "פירוק הפסוק לשלושת החלקים",
+    parts: [
+      {
+        phrase: "לְאַהֲבָה אֶת ה' אֱלֹהֵיכֶם",
+        subtitle: "המטרה של הכל",
+        bullets: [
+          "התורה מגלה לנו שקיום המצוות הוא לא סתם רשימה של מטלות שאנחנו חייבים לעשות.",
+          "המטרה המרכזית של כל המצוות היא אחת: להגיע לאהבת ה'.",
+          "כשאנחנו עושים מצווה, אנחנו צריכים לזכור שזהו כלי שעוזר לנו להתקרב לאבינו שבשמיים ולאהוב אותו יותר."
+        ]
+      },
+      {
+        phrase: "וּלְעָבְדוֹ בְּכָל לְבַבְכֶם",
+        subtitle: "עֲבוֹדַת הַלֵּב",
+        bullets: [
+          "המשמעות של \"וּלְעָבְדוֹ בְּכָל לְבַבְכֶם\" בקיום המצוות היא שהכוונה והשתתפות הלב הן העיקר, ולא רק הביצוע הטכני של האיברים.",
+          "המצוות הן \"עבודת הלב\" — הכלל \"רחמנא ליבא בעי\" מלמד שאין די במעשים פיזיים לבדם, אלא העיקר הוא שהלב יהיה טהור ויכוון לעבודה אמיתית.",
+          "הלב נחשב למלך המנהיג והמושל על כל שאר חלקי הגוף. אם הלב אינו מביא את עצמו לעבודת ה', הפעולות של שאר האיברים נחשבות כלא כלום.",
+          "תכלית המעשים הטובים אינה הפעולה של האיברים גרידא, אלא כוונת הלב הנלווית אליהם. לפי ספר חרדים, בכל מצווה שאדם עושה עליו לכוון במחשבתו שהוא עושה זאת לשם עשיית רצונו של בורא עולם.",
+          "הדרגה העליונה בעבודת ה' היא כאשר יש לאדם לב שמשתוקק ורוצה לעשות את רצון ה'."
+        ]
+      },
+      {
+        phrase: "וּבְכָל נַפְשְׁכֶם",
+        subtitle: "עם חשק ושמחה",
+        bullets: [
+          "לא מספיק לעשות מצוות, צריך לעשות אותן עם כל הנשמה והחיות שלנו.",
+          "המילה \"נפשכם\" מלמדת אותנו שעלינו לגשת למצוות עם המון חשק ושמחה.",
+          "כשאנחנו שמים את ההתלהבות והמרץ שלנו בתוך המצווה, היא מאירה ומשמחת הרבה יותר, ואנחנו זוכים לדבקות אמיתית בה'."
+        ]
+      }
+    ],
+    checklistTitle: "📝 צ'ק ליסט לתלמיד למעשה",
+    checklist: [
+      "מטרה מול העיניים: לפני שאני מתחיל לקיים מצווה, אזכור שהמטרה שלה היא לעזור לי לאהוב את ה'.",
+      "תפילה מהלב: בתפילה הבאה, אשתדל לבקש מה' בקשה אחת ממש מכל הלב, כמו בן שמבקש מאבא אהוב.",
+      "מצווה עם חיוך: אבחר היום מצווה אחת (כמו כיבוד הורים או עזרה לחבר) ואעשה אותה בשמחה גדולה, עם המון חשק והתלהבות."
+    ]
+  },
+  "1-1": {
+    badge: "כללי",
+    title: "הַשָּׂכָר",
+    intro: "פסוקים אלו מתארים את הברכה הגדולה שנקבל מבורא עולם בארץ ישראל בזכות שמירת המצוות.",
+    verse: "וְנָתַתִּי מְטַר אַרְצְכֶם בְּעִתּוֹ יוֹרֶה וּמַלְקוֹשׁ וְאָסַפְתָּ דְגָנֶךָ וְתִירֹשְׁךָ וְיִצְהָרֶךָ",
+    klali: "סֵדֶר הַבְּרָכָה וְהַשֶּׁפַע בְּאֶרֶץ יִשְׂרָאֵל",
+    subtopicsLabel: "פירוק הפסוקים לשלושת החלקים",
+    parts: [
+      {
+        phrase: "וְנָתַתִּי מְטַר אַרְצְכֶם בְּעִתּוֹ יוֹרֶה וּמַלְקוֹשׁ",
+        subtitle: "גשם בזמנו",
+        bullets: [
+          "בארץ ישראל אנחנו נמצאים תחת השגחה ישירה של בורא עולם, שמוריד לנו גשם בזמן המדויק.",
+          "ארץ ישראל אינה סתם אדמה, אלא היא ארץ רוחנית ומיוחדת.",
+          "הפירות שגדלים בה נהיים מתוקים ונפלאים רק כאשר היהודים שגרים בה מתוקים ונפלאים ומקיימים מצוות."
+        ]
+      },
+      {
+        phrase: "וְאָסַפְתָּ דְגָנֶךָ וְתִירֹשְׁךָ וְיִצְהָרֶךָ",
+        subtitle: "אסיפת היבול",
+        bullets: [
+          "בזכות הגשם שה' מוריד בעיתו, יש לנו אוכל לאסוף מהשדה.",
+          "התורה מבטיחה שאם נשמע בקול ה' ונאהב אותו, נזכה לקבל את כל השפע החקלאי הזה."
+        ]
+      },
+      {
+        phrase: "וְנָתַתִּי עֵשֶׂב בְּשָׂדְךָ לִבְהֶמְתֶּךָ וְאָכַלְתָּ וְשָׂבָעְתָּ",
+        subtitle: "רחמים על בעלי החיים",
+        bullets: [
+          "הפסוק מסדר קודם את האוכל לבהמה ורק אחר כך לאדם.",
+          "התורה מלמדת אותנו כאן הלכה חשובה ברחמנות: רק כאשר לבהמות ולחיות שלנו יש אוכל, מותר גם לנו לאכול ולשבוע."
+        ]
+      }
+    ],
+    checklistTitle: "📝 צ'ק ליסט לתלמיד למעשה",
+    checklist: [
+      "התנהגות מתוקה: אזכור שהמעשים הטובים שלי משפיעים על ארץ ישראל ועושים את הפירות שלה מתוקים יותר.",
+      "תודה על השפע: אכיר תודה על האוכל שיש לי, כי הוא מגיע בזכות הגשם והשגחת ה'.",
+      "רחמנות לפני סעודה: לפני שאני מתיישב לאכול, אבדוק אם חיות המחמד שלי קיבלו את האוכל שלהן קודם."
+    ]
+  },
+  "1-2": {
+    badge: "כללי",
+    title: "הָאַזְהָרָה",
+    intro: "פסוק זה מזהיר אותנו מפני תהליך מסוכן של הידרדרות רוחנית. הוא מלמד כיצד פיתוי קטן של הלב יכול להוביל אותנו בסופו של דבר לטעויות קשות מאוד.",
+    verse: "הִשָּׁמְרוּ לָכֶם פֶּן יִפְתֶּה לְבַבְכֶם",
+    versenote: "הסכנה מתחילה כאשר הלב שלנו מתפתה, ומתעסק יותר מדי בדברים גשמיים וחומריים.",
+    klali: "סַכָּנַת הַמִּדְרוֹן הֶחָלַקְלָק",
+    subtopicsLabel: "שלבי ההידרדרות",
+    parts: [
+      {
+        phrase: "וְסַרְתֶּם",
+        subtitle: "עזיבת התורה",
+        bullets: [
+          "הצעד הראשון של הנפילה הוא לסטות מן הדרך ולפרוש מלימוד התורה.",
+          "כאשר אדם מתרחק מהתורה ומהמצוות, הוא מאבד את ההגנה החזקה ביותר שלו."
+        ]
+      },
+      {
+        phrase: "וַעֲבַדְתֶּם אֱלֹהִים אֲחֵרִים",
+        subtitle: "חיבור להשפעות רעות",
+        bullets: [
+          "בלי תורה, התוצאה המיידית היא נפילה להשפעות לא טובות.",
+          "רש\"י מסביר שברגע שאדם פורש מן התורה, הוא ישר הולך ונדבק בעבודה זרה וברעיונות שליליים."
+        ]
+      },
+      {
+        phrase: "וְהִשְׁתַּחֲוִיתֶם לָהֶם",
+        subtitle: "שעבוד מוחלט",
+        bullets: [
+          "זהו השלב הסופי במדרון.",
+          "האדם כבר לא רק מושפע מהרע, אלא ממש משתחווה לו, מתמכר אליו ומשתעבד אליו לחלוטין."
+        ]
+      }
+    ],
+    checklistTitle: "📝 צ'ק ליסט לתלמיד למעשה",
+    checklist: [
+      "שמירה על הלב: לשים לב לא להתפתות יותר מדי למשחקים, מסכים או דברים חומריים, כדי לא להשכיח מהלב את בורא עולם.",
+      "דבק בתורה: להקפיד ללמוד משהו מן התורה בכל יום (כמו פרשת שבוע או משנה), כדי שלא נגיע לשלב הראשון של \"וסרתם\".",
+      "סינון השפעות: להתרחק מדברים לא טובים שיכולים להשפיע עלינו לרעה, ולהישאר תמיד מחוברים למעשים טובים וקדושים."
+    ]
+  },
+  "1-3": {
+    badge: "כללי",
+    title: "הָעֹנֶשׁ",
+    intro: "פסוק זה מתוך קריאת שמע מתאר את התוצאות והעונשים שיגיעו אלינו אם נתפתה אחר יצרנו ונתרחק מדרך התורה. הפסוק מחולק לשלושה שלבים ברורים המקבילים לברכות שהובטחו לנו קודם לכן.",
+    verse: "וְעָצַר אֶת הַשָּׁמַיִם וְלֹא יִהְיֶה מָטָר וְהָאֲדָמָה לֹא תִתֵּן אֶת יְבוּלָהּ וַאֲבַדְתֶּם מְהֵרָה מֵעַל הָאָרֶץ הַטֹּבָה",
+    klali: "הָעֹנֶשׁ עַל עֲזִיבַת הַתּוֹרָה",
+    subtopicsLabel: "פירוק הפסוק לשלושת החלקים",
+    parts: [
+      {
+        phrase: "וְעָצַר אֶת הַשָּׁמַיִם וְלֹא יִהְיֶה מָטָר",
+        subtitle: "עצירת השפע מלמעלה",
+        bullets: [
+          "זהו שלב העונש הראשון, שבו נפסק השפע הבסיסי ביותר שמגיע מלמעלה.",
+          "העונש עומד בדיוק כנגד הברכה שהובטחה למקיימי המצוות קודם לכן: \"וְנָתַתִּי מְטַר אַרְצְכֶם בְּעִתּוֹ יוֹרֶה וּמַלְקוֹשׁ\"."
+        ]
+      },
+      {
+        phrase: "וְהָאֲדָמָה לֹא תִתֵּן אֶת יְבוּלָהּ",
+        subtitle: "האדמה מסרבת לתת",
+        bullets: [
+          "המשמעות של עונש זה היא חוסר ברכה בתוך האדמה עצמה.",
+          "המקורות מסבירים שאפילו אם האדם ינסה להתאמץ ולהשקות את השדה בעצמו בכוחו הפיזי, האדמה תסרב להוציא את היבול שלה.",
+          "חלק זה מהווה את ההיפך המוחלט מהברכה המקבילה: \"וְאָסַפְתָּ דְגָנֶךָ וְתִירֹשְׁךָ וְיִצְהָרֶךָ\"."
+        ]
+      },
+      {
+        phrase: "וַאֲבַדְתֶּם מְהֵרָה מֵעַל הָאָרֶץ הַטֹּבָה אֲשֶׁר ה' נֹתֵן לָכֶם",
+        subtitle: "גלות מן הארץ",
+        bullets: [
+          "זהו השלב הסופי והקשה ביותר של ההידרדרות והעונש – סילוק וגלות מארץ ישראל.",
+          "בניגוד לחלק של הברכה שבו נאמר רק \"וְאָכַלְתָּ וְשָׂבָעְתָּ\", כאן התורה מוסיפה ומשלימה עונש חמור יותר לעומת השכר המקביל.",
+          "למרות העונש הקשה, התורה עדיין קוראת לה \"הָאָרֶץ הַטֹּבָה\". דבר זה מלמד שהארץ עצמה תמיד נשארת קדושה, מצוינת וטובה, אלא שהיא אינה סובלת אנשים שחוטאים עליה ומקיאה אותם מתוכה."
+        ]
+      }
+    ],
+    checklistTitle: "📝 נקודות לביצוע וסיכום",
+    checklist: [
+      "לזכור תמיד שהגשם, היבול והשפע החומרי אינם קורים מעצמם, אלא תלויים במעשים שלנו ובחיבור שלנו לה'.",
+      "להבין שארץ ישראל דורשת מאיתנו התנהגות מיוחדת, וכדי להישאר בה עלינו לשמור על קדושתה.",
+      "לשים לב להקבלה התמידית שיש בחיים בין בחירה בטוב (שמביאה ברכה ויבול) לבין בחירה ברע (שמביאה עצירת שפע), ולבחור תמיד בדרך הישר."
+    ]
+  },
+  "1-4": {
+    badge: "כללי",
+    title: "חוֹזְרִים וְזוֹכְרִים",
+    intro: "הפסוק הזה מתוך קריאת שמע מלמד אותנו כיצד לקחת את דברי התורה ולהכניס אותם לתוך החיים שלנו, גם במחשבה וגם במעשה. הפסוק מציג שלושה שלבים שדרכם אנו זוכרים את הקדוש ברוך הוא בכל רגע.",
+    verse: "וְשַׂמְתֶּם אֶת דְּבָרַי אֵלֶּה עַל לְבַבְכֶם וְעַל נַפְשְׁכֶם וּקְשַׁרְתֶּם אֹתָם לְאוֹת עַל יֶדְכֶם וְהָיוּ לְטוֹטָפֹת בֵּין עֵינֵיכֶם",
+    klali: "חִבּוּר הַתּוֹרָה אֶל הַגּוּף וְהַנֶּפֶשׁ",
+    subtopicsLabel: "פירוק הפסוק לשלושת החלקים",
+    parts: [
+      {
+        phrase: "וְשַׂמְתֶּם אֶת דְּבָרַי אֵלֶּה עַל לְבַבְכֶם וְעַל נַפְשְׁכֶם",
+        subtitle: "הכנסה פנימה",
+        bullets: [
+          "התורה מבקשת שלא נשמע את הדברים ומיד נשכח אותם.",
+          "צריך \"לשים\" אותם ממש בתוך הלב והנשמה שלנו.",
+          "כיצד עושים זאת? על ידי התבוננות מרובה וחזרה על הדברים שוב ושוב.",
+          "כשחוזרים וחושבים על דברי התורה, הם נחקקות בלב והופכות לחלק מאיתנו."
+        ]
+      },
+      {
+        phrase: "וּקְשַׁרְתֶּם אֹתָם לְאוֹת עַל יֶדְכֶם",
+        subtitle: "תפילין כנגד הלב",
+        bullets: [
+          "התורה לא מסתפקת רק בהרגשה פנימית בלב, אלא מצווה עלינו לעשות מעשה פיזי שיזכיר לנו זאת.",
+          "אנו קושרים את התפילין על היד, במקום שמכוון בדיוק כנגד הלב.",
+          "הפעולה הזו נועדה להזכיר לנו לקשר ולשעבד את הרגשות ואת רצונות הלב אל הקדוש ברוך הוא."
+        ]
+      },
+      {
+        phrase: "וְהָיוּ לְטוֹטָפֹת בֵּין עֵינֵיכֶם",
+        subtitle: "תפילין כנגד המוח",
+        bullets: [
+          "החלק השלישי מדבר על התפילין של ראש, שמונחות בדיוק כנגד המוח שלנו.",
+          "המוח הוא המקום שבו נמצאות המחשבות והשכל שלנו.",
+          "התפילין שעל הראש מזכירות לנו לכוון את כל המחשבות שלנו לקדושה ולעשיית טוב."
+        ]
+      }
+    ],
+    checklistTitle: "📝 צ'ק ליסט לתלמיד למעשה",
+    checklist: [
+      "לשנן ולחזור: לחזור בכל יום על מילים של תורה וקדושה (כמו קריאת שמע), כדי שהן ייכנסו עמוק אל הלב ולא יישכחו.",
+      "היד והלב: להשתמש בידיים לעשיית מעשים טובים, ולזכור שהמעשים שלנו משפיעים על הלב ועל הרצונות שלנו.",
+      "הראש והמוח: להשתדל לשמור על מחשבות נקיות ושמחות, ולזכור שהמחשבות שלנו במוח שייכות לקדוש ברוך הוא."
+    ]
+  },
+  "1-5": {
+    badge: "כללי",
+    title: "לִמּוּד הַבָּנִים וְהַמְּזוּזָה",
+    intro: "פסוקים אלו מתוך קריאת שמע מלמדים אותנו על החובה להעביר את התורה לדור הבא, להקיף את עצמנו בלימוד בכל שעות היום, ולהפוך את הבית שלנו למקום קדוש. ההסבר מותאם במיוחד להבנה של ילדים.",
+    verse: "וְלִמַּדְתֶּם אֹתָם אֶת בְּנֵיכֶם לְדַבֵּר בָּם וּכְתַבְתָּם עַל מְזוּזוֹת בֵּיתֶךָ וּבִשְׁעָרֶיךָ",
+    klali: "חִנּוּךְ, הַתְמָדָה וּקְדֻשַּׁת הַבַּיִת",
+    subtopicsLabel: "פירוק הפסוקים לשלושת החלקים",
+    parts: [
+      {
+        phrase: "וְלִמַּדְתֶּם אֹתָם אֶת בְּנֵיכֶם לְדַבֵּר בָּם",
+        subtitle: "דוגמה אישית וחינוך",
+        bullets: [
+          "רש\"י מפרש שכאשר ילד קטן מתחיל לדבר, המילים הראשונות שצריך ללמד אותו אינן רק \"אבא\" או \"אמא\", אלא מילים של תורה וקדושה.",
+          "התורה אומרת \"בְּשִׁבְתְּךָ בְּבֵיתֶךָ\" ולא \"בְּשִׁבְתָּם\". הדבר מלמד שהחינוך הטוב והמוצלח ביותר לילדים הוא הדוגמה האישית של ההורים והגדולים. כאשר המבוגר מתנהג כשורה, זה משפיע ישירות על הילד.",
+          "המטרה בחינוך היא לא להכריח, אלא ללמד את הילד עד שהוא ירצה ללמוד ולעשות מצוות מעצמו."
+        ]
+      },
+      {
+        phrase: "בְּשִׁבְתְּךָ בְּבֵיתֶךָ וּבְלֶכְתְּךָ בַדֶּרֶךְ וּבְשָׁכְבְּךָ וּבְקוּמֶךָ",
+        subtitle: "תורה בכל מצב",
+        bullets: [
+          "הפסוק בא ללמד אותנו שקשר לתורה אינו דבר של שעה קלה, אלא הוא צריך להקיף את כל שעות היממה ואת כל מצבי החיים.",
+          "בְּשִׁבְתְּךָ בְּבֵיתֶךָ: כשאנחנו יושבים בבית בשקט, זהו הזמן ללמוד לעומק (בעיון).",
+          "וּבְלֶכְתְּךָ בַדֶּרֶךְ: כשאנחנו הולכים או נוסעים, זהו הזמן לחזור על דברים פשוטים בעל פה (בקיאות).",
+          "וּבְשָׁכְבְּךָ וּבְקוּמֶךָ: חובה עלינו ללמוד ולהיות מחוברים לתורה תמיד, גם ביום וגם בלילה."
+        ]
+      },
+      {
+        phrase: "וּכְתַבְתָּם עַל מְזוּזוֹת בֵּיתֶךָ וּבִשְׁעָרֶיךָ",
+        subtitle: "הבית כמקדש",
+        bullets: [
+          "המזוזה מזכירה לנו בכל עת שיש בורא ומנהיג לעולם.",
+          "קביעת המזוזה על הפתח הופכת את הבית הרגיל שלנו למעין \"משכן\" (מקדש מעט) שבו נמצאת הקדושה.",
+          "המזוזה גם מזכירה לנו למסור את הממון שלנו ולעשות בו שימוש לטובת רצון ה'."
+        ]
+      }
+    ],
+    checklistTitle: "📝 צ'ק ליסט לתלמיד למעשה",
+    checklist: [
+      "דוגמה לאחים: להיות מודל לחיקוי חיובי עבור האחים הקטנים בבית וללמד אותם דברים טובים.",
+      "תורה בדרך: לנצל זמני הליכה או המתנה כדי לחזור על פסוק, משנה או הלכה בעל פה.",
+      "מבט על המזוזה: בכל מעבר בפתח הבית, להסתכל על המזוזה ולזכור שהבית שלנו הוא מקום קדוש של ה'."
+    ]
+  },
+  "1-6": {
+    badge: "כללי",
+    title: "הַבְּרָכָה",
+    intro: "הפסוק המסיים את הפרשה השנייה של קריאת שמע מסכם את השכר והמטרה הסופית של קיום התורה והמצוות. הפסוק מלמד אותנו על אריכות ימים, על מעלת ארץ ישראל ועל היכולת שלנו להביא קדושה לעולם.",
+    verse: "לְמַעַן יִרְבּוּ יְמֵיכֶם וִימֵי בְנֵיכֶם עַל הָאֲדָמָה אֲשֶׁר נִשְׁבַּע ה' לַאֲבֹתֵיכֶם לָתֵת לָהֶם כִּימֵי הַשָּׁמַיִם עַל הָאָרֶץ",
+    klali: "הַשָּׂכָר וְהַמַּטָּרָה שֶׁל קִיּוּם הַתּוֹרָה",
+    subtopicsLabel: "פירוק הפסוק לשלושת החלקים",
+    parts: [
+      {
+        phrase: "לְמַעַן יִרְבּוּ יְמֵיכֶם וִימֵי בְנֵיכֶם",
+        subtitle: "חיים ארוכים וטובים",
+        bullets: [
+          "התורה מבטיחה שאם נשמור את המצוות, נזכה לחיים ארוכים וטובים.",
+          "הברכה והשפע אינם ניתנים רק לנו, אלא ממשיכים גם לדורות הבאים אחרינו – \"ימי בניכם\".",
+          "קיום המצוות מתוך אהבה לה' הוא זה שנותן לנו חיים מאושרים ומלאי משמעות."
+        ]
+      },
+      {
+        phrase: "עַל הָאֲדָמָה אֲשֶׁר נִשְׁבַּע ה' לַאֲבֹתֵיכֶם לָתֵת לָהֶם",
+        subtitle: "המתנה של ארץ ישראל",
+        bullets: [
+          "השכר הגדול והשפע האמיתי מגיעים דווקא בארץ ישראל, שהיא המתנה הטובה ביותר שקיימת בעולם.",
+          "הקדוש ברוך הוא נשבע לאבותינו (אברהם, יצחק ויעקב) לתת לנו את הארץ הזו לנצח.",
+          "התורה מלמדת שארץ ישראל אינה סתם אדמה רגילה, אלא ארץ אלוקית וקדושה במיוחד."
+        ]
+      },
+      {
+        phrase: "כִּימֵי הַשָּׁמַיִם עַל הָאָרֶץ",
+        subtitle: "לחבר בין השמיים לארץ",
+        bullets: [
+          "התפקיד המיוחד של כל אדם הוא לחבר בין העולם העליון (השמיים) לעולם התחתון (הארץ).",
+          "הכוונה היא לקחת דברים רגילים ופשוטים של ה\"ארץ\", ולהכניס בהם קדושה רוחנית של \"שמיים\".",
+          "כאשר עם ישראל מקיים את המצוות בתוך ארץ ישראל, הארץ מתקדשת והופכת להיות נפלאה ממש כמו גן עדן."
+        ]
+      }
+    ],
+    checklistTitle: "📝 צ'ק ליסט לתלמיד למעשה",
+    checklist: [
+      "השפעה על כולם: לזכור שהמעשים הטובים שלי מביאים חיים וברכה גם למשפחה שלי.",
+      "אהבת הארץ: להודות לה' מכל הלב על הזכות המיוחדת שנתן לנו לחיות בארץ ישראל היקרה.",
+      "שמיים בארץ: לעשות היום מעשה רגיל אחד (כמו אכילה או משחק) מתוך כוונה טובה, כדי להוריד קדושה מהשמיים אל הארץ."
+    ]
+  }
+};
+
+/* ================== SOUND ================== */
+let actx;
+function ctx(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); return actx; }
+function tone(freq, start, dur, type='sine', gain=0.16){
+  const c = ctx();
+  const o = c.createOscillator();
+  const g = c.createGain();
+  o.type = type; o.frequency.value = freq;
+  o.connect(g); g.connect(c.destination);
+  const t0 = c.currentTime + start;
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(gain, t0 + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.start(t0); o.stop(t0 + dur + 0.02);
+}
+function playCorrect(){ tone(880,0,.16,'sine',.15); tone(1318.5,.09,.22,'sine',.14); }
+function playGroupDone(){ tone(659,0,.12,'sine',.13); tone(880,.1,.12,'sine',.13); tone(1318.5,.2,.28,'sine',.15); }
+function playWrong(){ tone(220,0,.12,'sine',.08); }
+function playClick(){ tone(740,0,.07,'sine',.09); }
+
+/* ================== STATE ================== */
+let pIndex = 0, gIndex = 0;
+const progress = PARASHOT.map(p => p.groups.map(()=>false));
+
+/* ================== RENDER TABS ================== */
+function renderTabs(){
+  const wrap = document.getElementById('tabs');
+  wrap.innerHTML = '';
+  PARASHOT.forEach((p, pi) => {
+    const tab = document.createElement('div');
+    tab.className = 'tab' + (pi===pIndex ? ' active' : '');
+    tab.innerHTML = `${p.name}<div class="dots">${p.groups.map((_,gi)=>{
+      let cls = '';
+      if(progress[pi][gi]) cls='done';
+      else if(pi===pIndex && gi===gIndex) cls='cur';
+      return `<i class="${cls}"></i>`;
+    }).join('')}</div>`;
+    wrap.appendChild(tab);
+  });
+}
+
+/* ================== GAME RENDER ================== */
+function shuffleOnce(arr){
+  const a = arr.map((t,i)=>({t,i}));
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+// remembers the last order shown for each group, and guarantees a different order next time
+const lastOrderByGroup = {};
+function shuffled(arr, groupKey){
+  const lastSig = lastOrderByGroup[groupKey];
+  let a, sig, tries = 0;
+  do{
+    a = shuffleOnce(arr);
+    sig = a.map(o=>o.i).join(',');
+    tries++;
+  } while (sig === lastSig && tries < 25);
+  lastOrderByGroup[groupKey] = sig;
+  return a;
+}
+
+function renderGroup(){
+  renderTabs();
+  const parasha = PARASHOT[pIndex];
+  const group = parasha.groups[gIndex];
+  const stage = document.getElementById('stage');
+
+  const order = shuffled(group.items, pIndex+'-'+gIndex);
+
+  stage.innerHTML = `
+    <div class="group-card">
+      <div class="group-title">
+        <span class="ico">${group.icon}</span>
+        <div>
+          <h2>${group.title}</h2>
+          ${group.sub ? `<div class="sub">${group.sub}</div>` : ''}
+        </div>
+      </div>
+      <div class="slots" id="slots">
+        ${[0,1,2].map(i => `
+          <div class="slot" data-part="${i}" data-filled="0">
+            <span class="label">${PART_LABELS[i]}</span>
+            <span class="check">✅</span>
+          </div>`).join('')}
+      </div>
+      <div class="tray" id="tray"></div>
+      <div class="next-hint" id="nextHint">כל הכבוד! עוברים לנושא הבא...</div>
+    </div>
+  `;
+
+  const tray = document.getElementById('tray');
+  order.forEach(o => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.answer = o.i; // correct part index
+    card.textContent = o.t;
+    tray.appendChild(card);
+    attachDrag(card);
+  });
+}
+
+/* ================== DRAG LOGIC ================== */
+let dragCard = null, offX=0, offY=0, placeholder=null, homeParent=null, homeNextSibling=null;
+
+function attachDrag(card){
+  card.addEventListener('pointerdown', (e) => {
+    if(card.classList.contains('placed')) return;
+    dragCard = card;
+    const rect = card.getBoundingClientRect();
+    offX = e.clientX - rect.left;
+    offY = e.clientY - rect.top;
+
+    // placeholder keeps the tray slot's size while dragging
+    placeholder = document.createElement('div');
+    placeholder.className = 'card placeholder';
+    placeholder.style.width = rect.width+'px';
+    placeholder.style.height = rect.height+'px';
+    homeParent = card.parentNode;
+    homeNextSibling = card.nextSibling;
+    homeParent.insertBefore(placeholder, card);
+
+    card.classList.add('dragging');
+    card.style.width = rect.width+'px';
+    card.style.left = rect.left+'px';
+    card.style.top = rect.top+'px';
+    document.body.appendChild(card);
+    card.setPointerCapture(e.pointerId);
+  });
+
+  card.addEventListener('pointermove', (e) => {
+    if(dragCard !== card) return;
+    card.style.left = (e.clientX - offX) + 'px';
+    card.style.top = (e.clientY - offY) + 'px';
+
+    document.querySelectorAll('.slot').forEach(s => s.classList.remove('hover'));
+    card.style.pointerEvents = 'none';
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    card.style.pointerEvents = '';
+    const slot = under && under.closest('.slot');
+    if(slot && slot.dataset.filled === '0') slot.classList.add('hover');
+  });
+
+  card.addEventListener('pointerup', (e) => {
+    if(dragCard !== card) return;
+    document.querySelectorAll('.slot').forEach(s => s.classList.remove('hover'));
+
+    card.style.pointerEvents = 'none';
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    card.style.pointerEvents = '';
+    const slot = under && under.closest('.slot');
+
+    if(slot && slot.dataset.filled === '0' && slot.dataset.part === card.dataset.answer){
+      // correct!
+      const r = slot.getBoundingClientRect();
+      card.classList.add('snapping');
+      card.style.left = (r.left + (r.width-card.offsetWidth)/2) + 'px';
+      card.style.top = (r.top + (r.height-card.offsetHeight)/2) + 'px';
+      slot.dataset.filled = '1';
+      slot.classList.add('filled');
+      playCorrect();
+      setTimeout(() => {
+        card.classList.remove('dragging','snapping');
+        card.classList.add('placed');
+        card.style.position='static'; card.style.left=''; card.style.top=''; card.style.width='';
+        slot.appendChild(card);
+        placeholder.remove();
+        checkGroupComplete();
+      }, 260);
+    } else if(slot && slot.dataset.filled === '0'){
+      // wrong slot
+      playWrong();
+      returnCard(card);
+      card.classList.add('wrong-shake');
+      setTimeout(()=>card.classList.remove('wrong-shake'), 400);
+    } else {
+      // dropped nowhere useful
+      returnCard(card);
+    }
+    dragCard = null;
+  });
+
+  card.addEventListener('pointercancel', () => { if(dragCard===card){ returnCard(card); dragCard=null; } });
+}
+
+function returnCard(card){
+  const r = placeholder.getBoundingClientRect();
+  card.classList.add('returning');
+  card.style.left = r.left+'px';
+  card.style.top = r.top+'px';
+  setTimeout(() => {
+    card.classList.remove('dragging','returning');
+    card.style.position='static'; card.style.left=''; card.style.top=''; card.style.width='';
+    homeParent.insertBefore(card, homeNextSibling);
+    placeholder.remove();
+  }, 280);
+}
+
+function checkGroupComplete(){
+  const allFilled = [...document.querySelectorAll('.slot')].every(s => s.dataset.filled==='1');
+  if(!allFilled) return;
+  progress[pIndex][gIndex] = true;
+  renderTabs();
+  playGroupDone();
+  spawnConfetti(16);
+
+  const key = pIndex+'-'+gIndex;
+  const explanation = EXPLANATIONS[key];
+
+  if(explanation){
+    setTimeout(() => showExplanation(explanation), 500);
+  } else {
+    document.getElementById('nextHint').classList.add('show');
+    setTimeout(() => { advance(); }, 1100);
+  }
+}
+
+function showExplanation(data){
+  const card = document.getElementById('explainCard');
+  card.innerHTML = `
+    <div class="explain-head">
+      <span class="badge">${data.badge}</span>
+      <h2>${data.title}</h2>
+      ${data.prefaceVerse ? `<div class="preface-verse">${data.prefaceVerse}</div>` : ''}
+    </div>
+    <div class="intro-box"><p>${data.intro}</p></div>
+    <div class="verse-box"><p>${data.verse}</p></div>
+    ${data.versenote ? `<div class="verse-note">${data.versenote}</div>` : ''}
+    <div class="klali-label">כללי</div>
+    <div class="klali-text">${data.klali}</div>
+    <div class="subtopics-label">${data.subtopicsLabel}</div>
+    ${data.parts.map((p,i) => `
+      <div class="part-block ${PART_COLOR_CLASS[i]}">
+        <div class="row1">
+          <span class="num">${PART_LABELS[i]}</span>
+          <span class="phrase">${p.phrase}</span>
+        </div>
+        <div class="subtitle">${p.subtitle}</div>
+        <ul>${p.bullets.map(b => `<li>${b}</li>`).join('')}</ul>
+      </div>
+    `).join('')}
+    ${data.goal ? `
+      <div class="goal-box">
+        <div class="goal-title">${data.goal.title}</div>
+        ${data.goal.items.map(it => `<div class="goal-item"><strong>${it.lead}:</strong> ${it.text}</div>`).join('')}
+      </div>
+    ` : ''}
+    <div class="checklist-title">${data.checklistTitle || '✅ נקודות לביצוע'}</div>
+    ${data.checklist.map(t => `
+      <div class="check-item" onclick="this.classList.toggle('checked'); playClick();">
+        <span class="box">✓</span>
+        <span class="txt">${t}</span>
+      </div>
+    `).join('')}
+    <div class="explain-continue">
+      <button class="btn" onclick="closeExplanation();">המשך למשחק ←</button>
+    </div>
+  `;
+  document.getElementById('explainOverlay').classList.add('show');
+}
+
+function closeExplanation(){
+  document.getElementById('explainOverlay').classList.remove('show');
+  advance();
+}
+
+function advance(){
+  const parasha = PARASHOT[pIndex];
+  if(gIndex < parasha.groups.length - 1){
+    gIndex++;
+    renderGroup();
+  } else {
+    showSummary(pIndex);
+  }
+}
+
+/* ================== SUMMARY TABLE ================== */
+function showSummary(finishedPIndex){
+  const parasha = PARASHOT[finishedPIndex];
+  const card = document.getElementById('summaryCard');
+
+  const rows = parasha.groups.map(g => `
+    <tr>
+      <td class="topic"><span class="ico">${g.icon}</span>${g.title}</td>
+      <td class="a">${g.items[0]}</td>
+      <td class="b">${g.items[1]}</td>
+      <td class="g">${g.items[2]}</td>
+    </tr>
+  `).join('');
+
+  card.innerHTML = `
+    <div class="summary-head">
+      <span class="badge">סיכום</span>
+      <h2>מבנה ${parasha.name}</h2>
+      <div class="sub">${parasha.subtitle}</div>
+    </div>
+    <div class="summary-legend">
+      <span><i class="a"></i> חלק א</span>
+      <span><i class="b"></i> חלק ב</span>
+      <span><i class="g"></i> חלק ג</span>
+    </div>
+    <div class="table-scroll">
+      <table class="summary-table">
+        <thead>
+          <tr><th>נושא</th><th>חלק א</th><th>חלק ב</th><th>חלק ג</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="summary-continue">
+      <button class="btn" id="summaryBtn"></button>
+    </div>
+  `;
+
+  const btn = document.getElementById('summaryBtn');
+  if(finishedPIndex < PARASHOT.length - 1){
+    btn.textContent = `להתחיל את ${PARASHOT[finishedPIndex+1].name} ←`;
+    btn.onclick = () => {
+      document.getElementById('summaryOverlay').classList.remove('show');
+      pIndex++; gIndex=0; renderGroup();
+    };
+  } else {
+    btn.textContent = 'סיימתי — לחגוג! 🏆';
+    btn.onclick = () => {
+      document.getElementById('summaryOverlay').classList.remove('show');
+      showOverlay('all-done');
+    };
+  }
+
+  document.getElementById('summaryOverlay').classList.add('show');
+  spawnConfetti(20);
+}
+
+/* ================== OVERLAYS ================== */
+function showOverlay(kind){
+  const ov = document.getElementById('overlay');
+  const emoji = document.getElementById('overlayEmoji');
+  const title = document.getElementById('overlayTitle');
+  const text = document.getElementById('overlayText');
+  const btn = document.getElementById('overlayBtn');
+
+  emoji.textContent = '🏆';
+  title.textContent = 'סיימת את כל המשחק!';
+  text.textContent = 'הצלחת לחבר את כל שלושת החלקים בכל נושא, בשתי הפרשות של קריאת שמע. יישר כח!';
+  btn.textContent = 'לשחק שוב מההתחלה';
+  btn.onclick = () => { pIndex=0; gIndex=0; progress.forEach(p=>p.fill(false)); hideOverlay(); renderGroup(); };
+
+  ov.classList.add('show');
+  spawnConfetti(28);
+}
+function hideOverlay(){ document.getElementById('overlay').classList.remove('show'); }
+
+function spawnConfetti(n){
+  const emojis = ['🎉','⭐','✨','💛','🌸'];
+  for(let i=0;i<n;i++){
+    const el = document.createElement('div');
+    el.className = 'confetti';
+    el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    el.style.left = Math.random()*100+'vw';
+    el.style.animationDuration = (2.2+Math.random()*1.6)+'s';
+    el.style.fontSize = (16+Math.random()*14)+'px';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 4000);
+  }
+}
+
+/* ================== INIT ================== */
+renderGroup();
+</script>
+
+</body>
+</html>

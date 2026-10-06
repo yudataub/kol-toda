@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>רבי עקיבא - ספר דיגיטלי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#faf3e6;
+    --ink:#2e2a25;
+    --gold:#c9a15a;
+    --card:#f2e8d3;
+    --gold-dark:#a9824a;
+    --shadow: rgba(46,42,37,0.25);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Frank Ruhl Libre', serif;
+    background:
+      radial-gradient(ellipse at top, rgba(201,161,90,0.08), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+  }
+  /* ===== דף בית ===== */
+  #home{
+    max-width:1100px;
+    margin:0 auto;
+    padding:40px 24px 80px;
+    text-align:center;
+  }
+  .main-title{
+    font-size:2.6rem;
+    font-weight:900;
+    color:var(--gold-dark);
+    letter-spacing:1px;
+    margin-bottom:6px;
+    text-shadow:0 1px 0 rgba(255,255,255,0.4);
+  }
+  .sub-title{
+    font-size:1.15rem;
+    color:var(--ink);
+    opacity:0.75;
+    margin-bottom:36px;
+  }
+  .ornament{
+    width:160px;
+    height:14px;
+    margin:0 auto 40px;
+    border-top:2px solid var(--gold);
+    border-bottom:2px solid var(--gold);
+    opacity:0.7;
+  }
+  .cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
+    gap:26px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--gold);
+    border-radius:14px;
+    padding:26px 20px 22px;
+    cursor:pointer;
+    text-align:right;
+    position:relative;
+    transition:transform .25s ease, box-shadow .25s ease;
+    box-shadow:0 4px 10px var(--shadow);
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute; inset:6px;
+    border:1px solid rgba(201,161,90,0.4);
+    border-radius:9px;
+    pointer-events:none;
+  }
+  .card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 12px 24px var(--shadow);
+  }
+  .card-num{
+    display:inline-block;
+    width:38px;height:38px;
+    line-height:38px;
+    text-align:center;
+    border-radius:50%;
+    background:var(--gold);
+    color:var(--bg);
+    font-weight:700;
+    margin-bottom:14px;
+  }
+  .card h3{
+    margin:0 0 10px;
+    font-size:1.3rem;
+    color:var(--gold-dark);
+  }
+  .card p{
+    margin:0;
+    font-size:.95rem;
+    line-height:1.6;
+    opacity:0.85;
+  }
+  .card .icon{
+    font-size:1.6rem;
+    position:absolute;
+    top:20px; left:20px;
+  }
+  .source-link{
+    display:inline-block;
+    margin-top:14px;
+    font-size:.8rem;
+    color:var(--gold-dark);
+    text-decoration:none;
+    border-bottom:1px dotted var(--gold-dark);
+  }
+  .source-link:hover{opacity:.7;}
+
+  /* ===== מצב קורא ===== */
+  #reader{
+    display:none;
+    position:fixed; inset:0;
+    background:var(--bg);
+    z-index:100;
+    flex-direction:column;
+  }
+  #reader.active{display:flex;}
+  .reader-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 20px;
+    border-bottom:2px solid var(--gold);
+    background:var(--card);
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    background:transparent;
+    border:1.5px solid var(--gold);
+    color:var(--gold-dark);
+    padding:8px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:.95rem;
+    transition:.2s;
+  }
+  .btn:hover{background:var(--gold); color:var(--bg);}
+  .reader-title{
+    font-weight:700;
+    color:var(--gold-dark);
+    font-size:1.1rem;
+    text-align:center;
+    flex:1;
+  }
+  .top-actions{display:flex; gap:8px; align-items:center;}
+  #searchBox{
+    font-family:inherit;
+    border:1.5px solid var(--gold);
+    background:var(--bg);
+    color:var(--ink);
+    border-radius:8px;
+    padding:7px 12px;
+    font-size:.9rem;
+    width:180px;
+  }
+  .progress-wrap{
+    height:6px;
+    background:rgba(201,161,90,0.25);
+  }
+  .progress-bar{
+    height:100%;
+    background:var(--gold);
+    width:0%;
+    transition:width .3s;
+  }
+  .reader-body{
+    flex:1;
+    display:flex;
+    position:relative;
+    overflow:hidden;
+  }
+  /* TOC */
+  #toc{
+    width:280px;
+    background:var(--card);
+    border-left:2px solid var(--gold);
+    transform:translateX(100%);
+    transition:transform .3s ease;
+    position:absolute;
+    right:0; top:0; bottom:0;
+    overflow-y:auto;
+    z-index:20;
+    padding:16px;
+  }
+  #toc.open{transform:translateX(0);}
+  #toc h4{
+    color:var(--gold-dark);
+    border-bottom:1px solid var(--gold);
+    padding-bottom:8px;
+    margin-top:0;
+  }
+  .toc-item{
+    padding:10px 8px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:.92rem;
+    margin-bottom:4px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .toc-item:hover{background:rgba(201,161,90,0.2);}
+  .toc-item.current{
+    background:var(--gold);
+    color:var(--bg);
+    font-weight:700;
+  }
+  /* עמוד */
+  .page-stage{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    perspective:1600px;
+  }
+  .page{
+    background:var(--card);
+    border:2px solid var(--gold);
+    border-radius:16px;
+    max-width:680px;
+    width:100%;
+    min-height:480px;
+    max-height:78vh;
+    overflow-y:auto;
+    padding:40px 44px;
+    box-shadow:0 10px 30px var(--shadow);
+    position:relative;
+    animation:flipIn .45s ease;
+  }
+  @keyframes flipIn{
+    from{opacity:0; transform:rotateY(8deg) scale(.97);}
+    to{opacity:1; transform:rotateY(0) scale(1);}
+  }
+  .page::before{
+    content:"";
+    position:absolute; inset:8px;
+    border:1px solid rgba(201,161,90,0.4);
+    border-radius:11px;
+    pointer-events:none;
+  }
+  .page h2{
+    color:var(--gold-dark);
+    text-align:center;
+    margin-top:6px;
+    font-size:1.5rem;
+    border-bottom:2px solid var(--gold);
+    padding-bottom:14px;
+  }
+  .page p{
+    font-size:1.08rem;
+    line-height:2;
+    text-align:justify;
+  }
+  .page mark{
+    background:var(--gold);
+    color:var(--bg);
+    border-radius:3px;
+    padding:0 2px;
+  }
+  .page-num{
+    text-align:center;
+    color:var(--gold-dark);
+    font-size:.85rem;
+    opacity:.7;
+    margin-top:18px;
+  }
+  .nav-arrow{
+    position:absolute;
+    top:50%; transform:translateY(-50%);
+    background:var(--card);
+    border:2px solid var(--gold);
+    color:var(--gold-dark);
+    width:48px;height:48px;
+    border-radius:50%;
+    font-size:1.4rem;
+    cursor:pointer;
+    z-index:10;
+    display:flex; align-items:center; justify-content:center;
+    transition:.2s;
+    box-shadow:0 3px 8px var(--shadow);
+  }
+  .nav-arrow:hover{background:var(--gold); color:var(--bg);}
+  .nav-arrow.prev{right:16px;}
+  .nav-arrow.next{left:16px;}
+  .nav-arrow:disabled{opacity:.25; cursor:default;}
+
+  #searchResults{
+    position:absolute;
+    top:60px; left:20px; right:20px;
+    max-width:400px;
+    margin:0 auto;
+    background:var(--card);
+    border:1.5px solid var(--gold);
+    border-radius:10px;
+    max-height:300px;
+    overflow-y:auto;
+    z-index:30;
+    display:none;
+    box-shadow:0 8px 20px var(--shadow);
+  }
+  .search-result-item{
+    padding:10px 14px;
+    border-bottom:1px solid rgba(201,161,90,0.3);
+    cursor:pointer;
+    font-size:.9rem;
+  }
+  .search-result-item:hover{background:rgba(201,161,90,0.2);}
+  .search-result-item b{color:var(--gold-dark);}
+
+  @media(max-width:640px){
+    #toc{width:82%;}
+    .page{padding:28px 20px;}
+    .nav-arrow{width:38px;height:38px; font-size:1.1rem;}
+    #searchBox{width:120px;}
+    .reader-title{font-size:.95rem;}
+  }
+</style>
+</head>
+<body>
+
+<div id="home">
+  <div class="main-title">רַבִּי עֲקִיבָא</div>
+  <div class="sub-title">מֵרוֹעֶה פָּשׁוּט לְגָדוֹל הַדּוֹר — חֲמִשָּׁה סִפּוּרִים</div>
+  <div class="ornament"></div>
+  <div class="cards" id="cardsContainer"></div>
+</div>
+
+<div id="reader">
+  <div class="reader-top">
+    <button class="btn" onclick="goHome()">⟵ חזרה לדף הבית</button>
+    <div class="reader-title" id="readerTitle"></div>
+    <a class="btn" id="readerSourceLink" href="#" target="_blank">🔗 מקור</a>
+    <div class="top-actions">
+      <input type="text" id="searchBox" placeholder="חיפוש בספר..." oninput="doSearch(this.value)">
+      <button class="btn" onclick="toggleTOC()">☰ תוכן</button>
+    </div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="reader-body">
+    <div id="searchResults"></div>
+    <button class="nav-arrow prev" id="prevBtn" onclick="prevPage()">›</button>
+    <div class="page-stage">
+      <div class="page" id="pageContent"></div>
+    </div>
+    <button class="nav-arrow next" id="nextBtn" onclick="nextPage()">‹</button>
+    <div id="toc">
+      <h4>תוכן העניינים</h4>
+      <div id="tocList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const books = [
+  {
+    icon:"💧",
+    title:"רַבִּי עֲקִיבָא וְהָאֶבֶן הַקָּשָׁה",
+    desc:"עֲקִיבָא הָרוֹעֶה שֶׁלֹּא יָדַע לִקְרֹא, גִּלָּה לְיַד הַבְּאֵר אֵיךְ טִפּוֹת מַיִם חוֹרְצוֹת אֶבֶן קָשָׁה — וְהֵבִין שֶׁגַּם הוּא יָכוֹל לְהִשְׁתַּנּוֹת.",
+    source:"https://gamma.app/docs/x4abppd1n19lzn9",
+    pages:[
+      {h:"רוֹעֶה בֶּהָרִים", t:"בִּימֵי קֶדֶם חַי בְּאֶרֶץ יִשְׂרָאֵל רוֹעֶה צֹאן בְּשֵׁם עֲקִיבָא. כָּל הַיּוֹם הָיָה מוֹלִיךְ אֶת הַצֹּאן בֵּין הֶהָרִים, שׁוֹמֵר עֲלֵיהֶם מִזְּאֵבִים, וּמַשְׁקֶה אוֹתָם מִן הַמַּעְיָנוֹת. עֲקִיבָא הָיָה כְּבָר בֶּן אַרְבָּעִים שָׁנָה, וְעֲדַיִן לֹא יָדַע לִקְרֹא אֲפִלּוּ אוֹת אַחַת מִן הָאָלֶף-בֵּית."},
+      {h:"הַבּוּשָׁה", t:"לִבּוֹ שֶׁל עֲקִיבָא כָּאַב. הוּא רָאָה יְלָדִים קְטַנִּים הוֹלְכִים לְבֵית הַסֵּפֶר, לוֹמְדִים תּוֹרָה, וְהוּא — אִישׁ מְבֻגָּר — לֹא יָדַע דָּבָר. 'הַאִם אֲנִי חֲסַר תַּקָּנָה?' חָשַׁב לְעַצְמוֹ. 'הַאִם מְאֻחָר מִדַּי בִּשְׁבִילִי לִלְמֹד?'"},
+      {h:"לְיַד הַבְּאֵר", t:"יוֹם אֶחָד יָשַׁב עֲקִיבָא לְיַד בְּאֵר מַיִם וְהִסְתַּכֵּל בָּאֶבֶן הַגְּדוֹלָה שֶׁעָמְדָה בְּפִי הַבְּאֵר. הוּא שָׂם לֵב שֶׁבָּאֶבֶן יֵשׁ חוֹר עָמֹק. 'מִי חָצַב אֶת הַחוֹר הַזֶּה בָּאֶבֶן הַקָּשָׁה?' שָׁאַל אֶת עַצְמוֹ בְּפֶלֶא."},
+      {h:"טִפּוֹת שֶׁחוֹרְצוֹת אֶבֶן", t:"אָמְרוּ לוֹ אֲנָשִׁים שֶׁעָמְדוּ שָׁם: 'לֹא אָדָם עָשָׂה זֹאת — טִפּוֹת הַמַּיִם הַנּוֹפְלוֹת מֵעַל בְּמֶשֶׁךְ שָׁנִים רַבּוֹת, טִפָּה אַחַר טִפָּה, הֵן שֶׁחָרְצוּ אֶת הָאֶבֶן הַקָּשָׁה הַזֹּאת.' עֲקִיבָא נִדְהַם. אֶבֶן קָשָׁה כָּל כָּךְ — נִשְׁבְּרָה רַק מִטִּפּוֹת מַיִם רַכּוֹת!"},
+      {h:"הַתּוֹבָנָה הַגְּדוֹלָה", t:"'וּמָה אִם הַמַּיִם הָרַכִּים חוֹרְצִים אֶת הָאֶבֶן הַקָּשָׁה — הֲרֵי דִּבְרֵי תוֹרָה שֶׁהֵם קָשִׁים כְּבַרְזֶל, יָכוֹל שֶׁיֵּחָקְקוּ בְּלִבִּי הָרַךְ!' קָרָא עֲקִיבָא בְּשִׂמְחָה גְּדוֹלָה. הוּא הֵבִין: אִם יַתְמִיד, קְצָת קְצָת, יוֹם אַחַר יוֹם — גַּם הוּא יוּכַל לִלְמֹד."},
+      {h:"אֶל בֵּית הַסֵּפֶר", t:"בְּלֵב נִחוּשׁ הָלַךְ עֲקִיבָא, יַחַד עִם בְּנוֹ הַקָּטָן, אֶל הַמְלַמֵּד. הוּא יָשַׁב בֵּין הַיְלָדִים הַקְּטַנִּים, וְהֵחֵל לִלְמֹד אֶת הָאוֹתִיּוֹת — אָלֶ״ף בֵּי״ת — כְּמוֹ יֶלֶד קָטָן. הַיְלָדִים הִבִּיטוּ בּוֹ בְּפֶלֶא, אֲבָל עֲקִיבָא לֹא הִתְבַּיֵּשׁ."},
+      {h:"טִפָּה אַחַר טִפָּה", t:"בְּכָל יוֹם לָמַד עֲקִיבָא עוֹד קְצָת — אוֹת, מִלָּה, פָּסוּק. הוּא זָכַר אֶת הָאֶבֶן וְאֶת הַמַּיִם, וְהִתְמִיד בְּלִי לְהִתְיָאֵשׁ. שָׁנָה אַחַר שָׁנָה, עֲקִיבָא לָמַד וְהִתְעַלָּה, עַד שֶׁהָיָה לְאֶחָד מִגְּדוֹלֵי הַחֲכָמִים בְּיִשְׂרָאֵל."},
+      {h:"מִסָּפֵק לְרַבִּי", t:"מִי שֶׁפַּעַם לֹא יָדַע לִקְרֹא אַף אוֹת, הָיָה לְרַבִּי עֲקִיבָא — מוֹרֵם שֶׁל אֲלָפִים תַּלְמִידִים, מִגְּדוֹלֵי הַתַּנָּאִים בְּיִשְׂרָאֵל. וְכָל זֶה הֵחֵל מֵרֶגַע אֶחָד לְיַד בְּאֵר מַיִם, כְּשֶׁהֵבִין: לְעוֹלָם לֹא מְאֻחָר מִדַּי לְהַתְחִיל."}
+    ]
+  },
+  {
+    icon:"👰",
+    title:"רַבִּי עֲקִיבָא — מֵרוֹעֶה לִגְדוֹל הַדּוֹר",
+    desc:"סִפּוּר אַהֲבָתָם שֶׁל עֲקִיבָא וְרָחֵל, הַקָּרְבָּן וְהַהַמְתָּנָה שֶׁל 24 שָׁנִים, וְהַהֲפִיכָה לְגָדוֹל הַדּוֹר.",
+    source:"https://gamma.app/docs/3sm3kuhleiispb5",
+    pages:[
+      {h:"רָחֵל מַאֲמִינָה בּוֹ", t:"רָחֵל, בִּתּוֹ שֶׁל כַּלְבָּא שָׂבוּעַ הֶעָשִׁיר, רָאֲתָה בְּעֲקִיבָא הָרוֹעֶה הֶעָנִי מַשֶּׁהוּ שֶׁאַף אֶחָד אַחֵר לֹא רָאָה. 'רוֹאָה אֲנִי בְּךָ צְנִיעוּת מְבֹרֶכֶת,' אָמְרָה לוֹ, 'אִם תֵּלֵךְ לִלְמֹד תּוֹרָה — אֶנָּשֵׂא לְךָ.'"},
+      {h:"הַהַחְלָטָה הַקָּשָׁה", t:"אָבִיהָ שֶׁל רָחֵל כָּעַס מְאֹד עַל הַהַצָּעָה שֶׁלָּהּ. הוּא נִדָּה אוֹתָהּ וְסֵרֵב לָתֵת לָהּ פְּרוּטָה. אַךְ רָחֵל לֹא חָזְרָה בָּהּ. הִיא הֶאֱמִינָה בְּעֲקִיבָא יוֹתֵר מֵאֲשֶׁר הֶאֱמִינָה בְּכֶסֶף אוֹ בְּנוֹחוּת."},
+      {h:"חַיִּים בְּעֹנִי", t:"עֲקִיבָא וְרָחֵל הִתְחַתְּנוּ וְגָרוּ בְּעֹנִי גָּדוֹל — אָמְרוּ עֲלֵיהֶם שֶׁיָּשְׁנוּ בְּמַתְבֵּן שֶׁל תֶּבֶן. לַיְלָה אֶחָד מָצָא רָחֵל תֶּבֶן בִּשְׂעָרָהּ, וְעֲקִיבָא הִבְטִיחַ לָהּ: 'לוּ הָיָה בְּיָדִי, הָיִיתִי נוֹתֵן לָךְ תַּכְשִׁיט זָהָב שֶׁל יְרוּשָׁלַיִם.'"},
+      {h:"הַפְּרֵדָה", t:"בְּגִיל אַרְבָּעִים, בְּעִדּוּד אִשְׁתּוֹ, עָזַב עֲקִיבָא אֶת בֵּיתוֹ כְּדֵי לִלְמֹד תּוֹרָה בְּבֵית הַמִּדְרָשׁ הָרָחוֹק. רָחֵל נִשְׁאֲרָה לְבַדָּהּ, מְגַדֶּלֶת אֶת הַבַּיִת, מַמְתִּינָה בְּסַבְלָנוּת וּבֶאֱמוּנָה."},
+      {h:"שְׁתֵּים-עֶשְׂרֵה שָׁנָה רִאשׁוֹנוֹת", t:"עֲקִיבָא לָמַד תּוֹרָה בְּמָסִירוּת נֶפֶשׁ שְׁתֵּים-עֶשְׂרֵה שָׁנִים רְצוּפוֹת. כְּשֶׁחָזַר לְבֵיתוֹ, שָׁמַע דֶּרֶךְ הַחַלּוֹן אֶת רָחֵל אוֹמֶרֶת לִשְׁכֵנָה: 'לוּ הָיָה בְּיָדִי — הָיִיתִי שׁוֹלַחַת אוֹתוֹ לִלְמֹד עוֹד שְׁתֵּים-עֶשְׂרֵה שָׁנָה.'"},
+      {h:"עוֹד שְׁתֵּים-עֶשְׂרֵה שָׁנָה", t:"עֲקִיבָא, בְּלִי לְהִכָּנֵס הַבַּיְתָה, חָזַר לְבֵית הַמִּדְרָשׁ לְעוֹד שְׁתֵּים-עֶשְׂרֵה שָׁנִים. סַךְ הַכֹּל — עֶשְׂרִים וְאַרְבַּע שָׁנִים שֶׁל פְּרֵדָה, לְמַעַן הַתּוֹרָה."},
+      {h:"הַשִּׁיבָה הַגְּדוֹלָה", t:"כְּשֶׁחָזַר רַבִּי עֲקִיבָא לְבַסּוֹף, הָיוּ עִמּוֹ עֶשְׂרִים וְאַרְבָּעָה אֶלֶף תַּלְמִידִים. רָחֵל רָצָה לִקְרָאתוֹ, וְהַתַּלְמִידִים רָצוּ לְמָנְעָהּ, אַךְ רַבִּי עֲקִיבָא אָמַר: 'הַנִּיחוּ לָהּ — שֶׁלִּי וְשֶׁלָּכֶם, שֶׁלָּהּ הוּא.'"},
+      {h:"מֵרוֹעֶה עָנִי לְגָדוֹל הַדּוֹר", t:"רַבִּי עֲקִיבָא הָיָה לְאֶחָד מִגְּדוֹלֵי חַכְמֵי יִשְׂרָאֵל בְּכָל הַדּוֹרוֹת, מוֹרָם שֶׁל רַבִּי מֵאִיר וְרַבִּי שִׁמְעוֹן בַּר יוֹחַאי וְעוֹד רַבִּים. הַסִּפּוּר שֶׁלּוֹ מְלַמֵּד: אֵין זֶה מְשַׁנֶּה מֵאֵיפֹה מַתְחִילִים, אֶלָּא לְאָן מַגִּיעִים בִּזְכוּת הַתְּמָדָה וְהָאֱמוּנָה."}
+    ]
+  },
+  {
+    icon:"🎵",
+    title:"הַשִּׁיר עַל רַבִּי עֲקִיבָא",
+    desc:"עֲקִיבָא — לֵךְ לִלְמֹד תּוֹרָה. שִׁיר עַל הַמַּסָּע מֵרוֹעֶה תָּמִים לְגָדוֹל הַדּוֹר, עִם כָּל בַּיִת וּפִזְמוֹן.",
+    source:"https://gamma.app/docs/kqlyrqs74s2dwua",
+    pages:[
+      {h:"בַּיִת רִאשׁוֹן", t:"עֲקִיבָא הָרוֹעֶה, בֶּן אַרְבָּעִים שָׁנָה,\nלֹא יָדַע לִקְרֹא אַף אוֹת קְטַנָּה.\nרָחֵל אָמְרָה לוֹ: 'קוּם וּלְמַד,\nהַלֵּב שֶׁלְּךָ טוֹב וְאֵינוֹ עוֹד עֶבֶד.'"},
+      {h:"פִּזְמוֹן", t:"עֲקִיבָא, עֲקִיבָא, לֵךְ לִלְמֹד תּוֹרָה,\nגַּם אִם קָשֶׁה — יֵשׁ בְּךָ אוֹרָה!\nטִפָּה טִפָּה חוֹרֶצֶת אֶבֶן,\nגַּם אַתָּה תִּלְמַד — זֶה בֶּטַח, זֶה בֶּטַח כֵּן!"},
+      {h:"בַּיִת שֵׁנִי", t:"לְיַד הַבְּאֵר רָאָה אֶבֶן נִקְבֶּבֶת,\nמִטִּפּוֹת מַיִם רַכּוֹת — כֹּה מֻפְלֶאת.\n'אִם מַיִם רַכִּים חוֹצְבִים בְּאֶבֶן קָשָׁה,\nגַּם תּוֹרָה תֵּחָקֵק בְּלִבִּי, הִנֵּה!'"},
+      {h:"פִּזְמוֹן", t:"עֲקִיבָא, עֲקִיבָא, לֵךְ לִלְמֹד תּוֹרָה,\nגַּם אִם קָשֶׁה — יֵשׁ בְּךָ אוֹרָה!\nטִפָּה טִפָּה חוֹרֶצֶת אֶבֶן,\nגַּם אַתָּה תִּלְמַד — זֶה בֶּטַח, זֶה בֶּטַח כֵּן!"},
+      {h:"בַּיִת שְׁלִישִׁי — 12 וְעוֹד 12", t:"שְׁתֵּים-עֶשְׂרֵה שָׁנָה בְּבֵית הַמִּדְרָשׁ לָמַד,\nוְעוֹד שְׁתֵּים-עֶשְׂרֵה — לְמַעַן רָחֵל, לְמַעַן הָעָם.\nעֶשְׂרִים וְאַרְבַּע שָׁנִים שֶׁל פְּרֵדָה וּכְמִיהָה,\nעַד שֶׁחָזַר גָּדוֹל, מְלֵא בְּחָכְמָה."},
+      {h:"פִּזְמוֹן", t:"עֲקִיבָא, עֲקִיבָא, לֵךְ לִלְמֹד תּוֹרָה,\nגַּם אִם קָשֶׁה — יֵשׁ בְּךָ אוֹרָה!\nטִפָּה טִפָּה חוֹרֶצֶת אֶבֶן,\nגַּם אַתָּה תִּלְמַד — זֶה בֶּטַח, זֶה בֶּטַח כֵּן!"},
+      {h:"בַּיִת רְבִיעִי — הַשִּׁיבָה", t:"עֶשְׂרִים וְאַרְבָּעָה אֶלֶף תַּלְמִידִים אִתּוֹ שָׁב,\nרָחֵל רָצָה אֵלָיו בְּלֵב אוֹהֵב.\n'שֶׁלִּי וְשֶׁלָּכֶם — שֶׁלָּהּ הוּא בֶּאֱמֶת,'\nאָמַר רַבִּי עֲקִיבָא בְּעֵינַיִם דּוֹמְעוֹת."},
+      {h:"סִיּוּם וּמֶסֶר", t:"הַשִּׁיר מְלַמֵּד: לְעוֹלָם לֹא מְאֻחָר,\nלְהַתְחִיל לִלְמֹד, לַחְלֹם, וּלְהִשְׁתַּחְרֵר.\nטִפָּה קְטַנָּה שֶׁל הַתְמָדָה בְּכָל יוֹם —\nיְכוֹלָה לְשַׁנּוֹת אֶת כָּל הָעוֹלָם, לְעוֹלָם וָעֶד אָמֵן."}
+    ]
+  },
+  {
+    icon:"📜",
+    title:"אָבוֹת דְּרַבִּי נָתָן — הַסִּפּוּר הַמָּקוֹרִי",
+    desc:"נֻסַּח מָלֵא וּמְרֻחָב שֶׁל סִפּוּר רַבִּי עֲקִיבָא, עַל פִּי אָבוֹת דְּרַבִּי נָתָן פֶּרֶק ו', עַד לְמִיתָתוֹ עַל קִדּוּשׁ הַשֵּׁם.",
+    source:"https://gamma.app/docs/llpfqiguirnxt8c",
+    pages:[
+      {h:"מָקוֹר הַסִּפּוּר", t:"מְסֻפָּר בְּ'אָבוֹת דְּרַבִּי נָתָן' פֶּרֶק ו': רַבִּי עֲקִיבָא הָיָה רוֹעֶה שֶׁל בֶּן כַּלְבָּא שָׂבוּעַ. בְּגִיל אַרְבָּעִים שָׁנָה עֲדַיִן לֹא לָמַד תּוֹרָה כְּלָל. פַּעַם אַחַת עָמַד עַל פִּי הַבְּאֵר וְרָאָה אֶבֶן שֶׁחָקְקוּ בָּהּ הַמַּיִם גֻּמָּה."},
+      {h:"הַהִרְהוּר עַל הָאֶבֶן", t:"שָׁאַל: 'מִי חָקַק אֶת הָאֶבֶן הַזֹּאת?' אָמְרוּ לוֹ: 'הַמַּיִם הַנּוֹפְלִים עָלֶיהָ תָּמִיד.' אָמַר רַבִּי עֲקִיבָא: 'רַךְ פִּסֵּל אֶת הַקָּשֶׁה — דִּבְרֵי תוֹרָה שֶׁהֵם קָשִׁים כְּבַרְזֶל, עַל אַחַת כַּמָּה וְכַמָּה שֶׁיַּחְקְקוּ אֶת לִבִּי שֶׁהוּא בָּשָׂר וָדָם.'"},
+      {h:"תְּחִלַּת הַלִּמּוּד", t:"מִיָּד הָלַךְ הוּא וּבְנוֹ וְיָשְׁבוּ לִפְנֵי מְלַמֵּד תִּינוֹקוֹת. אָמַר לוֹ: 'רַבִּי, לַמְּדֵנִי תּוֹרָה.' אָחַז רַבִּי עֲקִיבָא בְּרֹאשׁ הַלּוּחַ, וּבְנוֹ בְּרֹאשׁ הַלּוּחַ הַשֵּׁנִי. כָּתַב לוֹ אָלֶ״ף בֵּי״ת וְלָמַד. כָּתַב לוֹ תּוֹרַת כֹּהֲנִים וְלָמַד — עַד שֶׁלָּמַד אֶת כָּל הַתּוֹרָה כֻּלָּהּ."},
+      {h:"הֵלֶךְ לִפְנֵי חֲכָמִים", t:"הָלַךְ וְיָשַׁב לִפְנֵי רַבִּי אֱלִיעֶזֶר וְלִפְנֵי רַבִּי יְהוֹשֻׁעַ. אָמַר לָהֶם: 'רַבּוֹתַי, פִּתְחוּ לִי טַעַם מִשְׁנָה.' כֵּיוָן שֶׁאָמְרוּ לוֹ הֲלָכָה אַחַת — הָלַךְ וְיָשַׁב לוֹ בְּיָחִיד, וְאָמַר: 'אָלֶ״ף לָמָּה נִכְתְּבָה כָּךְ, בֵּי״ת לָמָּה נִכְתְּבָה כָּךְ?' וְחָזַר וְשָׁאַל אֶת הָרִאשׁוֹנוֹת וְאֶת הָאַחֲרוֹנוֹת."},
+      {h:"עֶשְׂרִים וְאַרְבַּע אֶלֶף תַּלְמִידִים", t:"בְּסוֹפוֹ שֶׁל דָּבָר יָשַׁב וְדָרַשׁ לִפְנֵי הַמֶּלֶךְ וְלִפְנֵי הַשַּׂר. אָמַר: 'בְּשָׁעָה שֶׁלֹּא הָיִיתִי אֶלָּא נִבְחָר בְּתַלְמִידֵי חֲכָמִים הָיִיתִי אוֹמֵר: מִי יִתֵּן לִי תַּלְמִיד חָכָם וְאֶשְׁכֶּנּוּ כַּחֲמוֹר.' וְאָמַר תַּלְמִידָיו: 'רַבִּי, מִנַּיִן לְךָ?' אָמַר לָהֶם: 'מִיָּמַי שֶׁהָיִיתִי עַם הָאָרֶץ.'"},
+      {h:"מָסִירוּת נֶפֶשׁ בַּגְּזֵרוֹת", t:"בִּימֵי גְּזֵרוֹת הָרוֹמָאִים, כְּשֶׁאָסְרוּ עַל לִמּוּד תּוֹרָה בְּעֹנֶשׁ מָוֶת, הִמְשִׁיךְ רַבִּי עֲקִיבָא לְלַמֵּד תּוֹרָה בָּרַבִּים. שָׁאַל אוֹתוֹ פַּפּוֹס בֶּן יְהוּדָה: 'עֲקִיבָא, אֵי אַתָּה מְפַחֵד מִן הַמַּלְכוּת?' מָשַׁל לוֹ רַבִּי עֲקִיבָא מָשָׁל הַשּׁוּעָל וְהַדָּגִים — אִם בְּמַיִם שֶׁהֵם חַיֵּינוּ אָנוּ בְּסַכָּנָה, עַל אַחַת כַּמָּה וְכַמָּה בְּלֹא תּוֹרָה."},
+      {h:"הַמַּאֲסָר", t:"הָרוֹמָאִים תָּפְסוּ אֶת רַבִּי עֲקִיבָא וְאָסְרוּ אוֹתוֹ בְּבֵית הַסֹּהַר, וְעִנּוּ אוֹתוֹ בְּמַסְרֵקוֹת שֶׁל בַּרְזֶל. גַּם בְּשָׁעָה קָשָׁה זוֹ הִמְשִׁיךְ לְלַמֵּד תּוֹרָה לְתַלְמִידָיו שֶׁבָּאוּ לְבַקְּרוֹ."},
+      {h:"'שְׁמַע יִשְׂרָאֵל'", t:"בְּשָׁעַת מוֹתוֹ הָיָה עֵת קְרִיאַת שְׁמַע. הָיוּ סוֹרְקִים אֶת בְּשָׂרוֹ בְּמַסְרְקוֹת שֶׁל בַּרְזֶל, וְהוּא הָיָה מְקַבֵּל עָלָיו עֹל מַלְכוּת שָׁמַיִם. אָמְרוּ לוֹ תַּלְמִידָיו: 'רַבֵּנוּ, עַד כָּאן?' אָמַר לָהֶם: 'כָּל יָמַי הָיִיתִי מִצְטַעֵר עַל פָּסוּק זֶה — וּבְכָל נַפְשְׁךָ — אֲפִלּוּ נוֹטֵל אֶת נַפְשְׁךָ. אָמַרְתִּי: מָתַי יָבֹא לְיָדִי וַאֲקַיְּמֶנּוּ? וְעַכְשָׁו שֶׁבָּא לְיָדִי לֹא אֲקַיְּמֶנּוּ?' וְהֶאֱרִיךְ בְּ'אֶחָד' עַד שֶׁיָּצְתָה נִשְׁמָתוֹ בְּ'אֶחָד'."},
+      {h:"מוֹרֶשֶׁת נִצְחִית", t:"בַּת קוֹל יָצְאָה וְאָמְרָה: 'אַשְׁרֶיךָ רַבִּי עֲקִיבָא שֶׁיָּצְאָה נִשְׁמָתְךָ בְּאֶחָד!' סִפּוּרוֹ שֶׁל רַבִּי עֲקִיבָא — מֵרוֹעֶה שֶׁלֹּא יָדַע קְרֹא וּכְתֹב וְעַד גְּדוֹל הַדּוֹר שֶׁמָּסַר נַפְשׁוֹ עַל קִדּוּשׁ הַשֵּׁם — נִשְׁאָר אֶחָד הַסִּפּוּרִים הַמְּעוֹרְרִים בְּיוֹתֵר בְּתוֹלְדוֹת יִשְׂרָאֵל."}
+    ]
+  },
+  {
+    icon:"🐑",
+    title:"עֲקִיבָא הָרוֹעֶה הַקָּטָן וְנֵס הַמַּיִם הַקְּסוּמִים",
+    desc:"גִּרְסָה מְפֻרֶטֶת לְיַלְדֵי הַגָּן וְהַכִּתָּה — עֲקִיבָא, דּוֹד שִׁמְעוֹן הֶחָכָם, וְהַדֶּרֶךְ מִבּוּשָׁה לְגַאֲוָה.",
+    source:"https://gamma.app/docs/wsc40a7893ew3az",
+    pages:[
+      {h:"עֲקִיבָא הַקָּטָן", t:"הָיָה פַּעַם רוֹעֶה קָטָן בְּשֵׁם עֲקִיבָא. כָּל בֹּקֶר יָצָא עִם הַצֹּאן שֶׁלּוֹ אֶל הֶהָרִים הַיְרֻקִּים. הַכְּבָשִׂים אָהֲבוּ אוֹתוֹ מְאֹד, כִּי הָיָה עָדִין וְטוֹב לֵב."},
+      {h:"הַבּוּשָׁה בְּבֵית הַסֵּפֶר", t:"יוֹם אֶחָד הֵבִיא אוֹתוֹ אָבִיו לְבֵית הַסֵּפֶר. הַיְלָדִים הַקְּטַנִּים כְּבָר יָדְעוּ לִקְרֹא, אֲבָל עֲקִיבָא לֹא הִכִּיר אַף אוֹת. הַיְלָדִים צָחֲקוּ עָלָיו, וְעֲקִיבָא בָּרַח מִבֵּית הַסֵּפֶר בּוֹכֶה מִבּוּשָׁה."},
+      {h:"בּוֹרֵחַ אֶל הֶהָרִים", t:"עֲקִיבָא רָץ הַרְחֵק, הַרְחֵק, עַד שֶׁהִגִּיעַ לְמָקוֹם שֶׁקֵּט לְיַד נַחַל קָטָן. הוּא יָשַׁב עַל אֶבֶן וּבָכָה: 'אֲנִי לְעוֹלָם לֹא אֵדַע לִקְרֹא. אֲנִי כְּבָר גָּדוֹל מִדַּי.'"},
+      {h:"פְּגִישָׁה עִם דּוֹד שִׁמְעוֹן", t:"פִּתְאוֹם הוֹפִיעַ אִישׁ זָקֵן וְחָכָם בְּשֵׁם דּוֹד שִׁמְעוֹן. הוּא רָאָה אֶת עֲקִיבָא בּוֹכֶה וְשָׁאַל: 'מָה קָרָה, יֶלֶד יָקָר?' עֲקִיבָא סִפֵּר לוֹ הַכֹּל בְּעֶצֶב גָּדוֹל."},
+      {h:"הָאֶבֶן וְהַמַּיִם", t:"דּוֹד שִׁמְעוֹן חִיֵּךְ בְּחֹם וְהוֹבִיל אֶת עֲקִיבָא לְיַד בְּאֵר מַיִם. הוּא הֶרְאָה לוֹ אֶבֶן גְּדוֹלָה עִם חוֹר עָמֹק בְּתוֹכָהּ. 'רְאֵה,' אָמַר, 'טִפּוֹת מַיִם קְטַנּוֹת וְרַכּוֹת נָפְלוּ עַל הָאֶבֶן הַזֹּאת שָׁנִים רַבּוֹת — וְעָשׂוּ בָּהּ חוֹר עָמֹק.'"},
+      {h:"אִם אֶבֶן — גַּם אֲנִי!", t:"עֵינֵי עֲקִיבָא נִצְנְצוּ. 'אִם טִפּוֹת קְטַנּוֹת יְכוֹלוֹת לְשַׁנּוֹת אֶבֶן קָשָׁה — גַּם אֲנִי יָכוֹל לְלַמֵּד לְעַצְמִי אוֹת אַחַת בְּכָל יוֹם, קְצָת קְצָת!' דּוֹד שִׁמְעוֹן חִבֵּק אוֹתוֹ בְּגַאֲוָה: 'זֶה בְּדִיּוּק זֶה, יַלְדִּי.'"},
+      {h:"חוֹזֵר בְּנֶחִישׁוּת", t:"עֲקִיבָא רָץ בַּחֲזָרָה לְבֵית הַסֵּפֶר, בְּלֵב מָלֵא אֹמֶץ. הוּא יָשַׁב לְיַד הַיְלָדִים הַקְּטַנִּים וְאָמַר: 'לַמְּדוּ אוֹתִי, בְּבַקָּשָׁה. אֲנִי אֶתְאַמֵּץ.' הַמּוֹרֶה חִיֵּךְ בְּחֹם וְהֵחֵל לְלַמֵּד אוֹתוֹ אוֹת אַחַר אוֹת."},
+      {h:"אוֹת אַחַר אוֹת", t:"בְּכָל יוֹם לָמַד עֲקִיבָא עוֹד אוֹת, עוֹד מִלָּה. לִפְעָמִים הָיָה קָשֶׁה, וְהוּא רָצָה לְוַתֵּר — אֲבָל אָז נִזְכַּר בָּאֶבֶן וּבַמַּיִם, וְהִמְשִׁיךְ בְּלִי לְהִתְיָאֵשׁ. שָׁנָה אַחֲרֵי שָׁנָה הוּא הִתְקַדֵּם."},
+      {h:"עוֹזֵר לְיֶלֶד חָדָשׁ", t:"שָׁנִים לְאַחַר מִכֵּן, כְּשֶׁעֲקִיבָא כְּבָר הָיָה חָכָם גָּדוֹל, הִגִּיעַ לְבֵית מִדְרָשׁוֹ יֶלֶד חָדָשׁ שֶׁגַּם הוּא לֹא יָדַע לִקְרֹא וְהִתְבַּיֵּשׁ. רַבִּי עֲקִיבָא יָשַׁב לְצִדּוֹ בְּחֹם וְאָמַר: 'בּוֹא, אֲסַפֵּר לְךָ עַל אֶבֶן וְעַל טִפּוֹת מַיִם...'"},
+      {h:"הַמֶּסֶר לְכָל יֶלֶד", t:"סִפּוּרוֹ שֶׁל רַבִּי עֲקִיבָא הַקָּטָן מְלַמֵּד אוֹתָנוּ: אֵין דָּבָר שֶׁקָּשֶׁה מִדַּי אִם מַתְמִידִים בּוֹ, קְצָת קְצָת, בְּכָל יוֹם. גַּם אַתֶּם, יְלָדִים יְקָרִים, יְכוֹלִים לִהְיוֹת כְּמוֹ הַמַּיִם — רַכִּים אַךְ מַתְמִידִים — עַד שֶׁתַּגִּיעוּ לְכָל מַה שֶּׁתַּחְלְמוּ עָלָיו."}
+    ]
+  }
+];
+
+let currentBook = 0, currentPage = 0;
+
+function renderHome(){
+  const container = document.getElementById('cardsContainer');
+  container.innerHTML = books.map((b,i)=>`
+    <div class="card" onclick="openBook(${i})">
+      <div class="icon">${b.icon}</div>
+      <div class="card-num">${i+1}</div>
+      <h3>${b.title}</h3>
+      <p>${b.desc}</p>
+      <a class="source-link" href="${b.source}" target="_blank" onclick="event.stopPropagation()">🔗 למקור המצגת המלאה ב-Gamma</a>
+    </div>
+  `).join('');
+}
+
+function openBook(i){
+  currentBook = i;
+  currentPage = 0;
+  document.getElementById('reader').classList.add('active');
+  document.getElementById('readerTitle').textContent = books[i].title;
+  document.getElementById('readerSourceLink').href = books[i].source;
+  renderTOC();
+  renderPage();
+}
+
+function goHome(){
+  document.getElementById('reader').classList.remove('active');
+  document.getElementById('toc').classList.remove('open');
+  document.getElementById('searchBox').value='';
+  document.getElementById('searchResults').style.display='none';
+}
+
+function renderTOC(){
+  const list = document.getElementById('tocList');
+  list.innerHTML = books[currentBook].pages.map((p,i)=>`
+    <div class="toc-item ${i===currentPage?'current':''}" onclick="jumpToPage(${i})">
+      <span>${p.h}</span><span>${i+1}</span>
+    </div>
+  `).join('');
+}
+
+function jumpToPage(i){
+  currentPage = i;
+  renderPage();
+  document.getElementById('toc').classList.remove('open');
+}
+
+function toggleTOC(){
+  document.getElementById('toc').classList.toggle('open');
+}
+
+function renderPage(highlightTerm){
+  const book = books[currentBook];
+  const page = book.pages[currentPage];
+  let text = page.t.replace(/\n/g,'</p><p>');
+  if(highlightTerm){
+    const re = new RegExp('('+highlightTerm.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+    text = text.replace(re, '<mark>$1</mark>');
+  }
+  document.getElementById('pageContent').innerHTML = `
+    <h2>${page.h}</h2>
+    <p>${text}</p>
+    <div class="page-num">עמוד ${currentPage+1} מתוך ${book.pages.length}</div>
+  `;
+  document.getElementById('prevBtn').disabled = currentPage === 0;
+  document.getElementById('nextBtn').disabled = currentPage === book.pages.length-1;
+  const pct = ((currentPage+1)/book.pages.length)*100;
+  document.getElementById('progressBar').style.width = pct+'%';
+  renderTOC();
+}
+
+function nextPage(){
+  const book = books[currentBook];
+  if(currentPage < book.pages.length-1){ currentPage++; renderPage(); }
+}
+function prevPage(){
+  if(currentPage > 0){ currentPage--; renderPage(); }
+}
+
+function doSearch(term){
+  const resultsBox = document.getElementById('searchResults');
+  if(!term.trim()){ resultsBox.style.display='none'; return; }
+  const book = books[currentBook];
+  const matches = [];
+  book.pages.forEach((p,i)=>{
+    const full = p.h + ' ' + p.t;
+    if(full.toLowerCase().includes(term.toLowerCase())){
+      matches.push({idx:i, title:p.h});
+    }
+  });
+  if(matches.length===0){
+    resultsBox.innerHTML = '<div class="search-result-item">אין תוצאות</div>';
+  } else {
+    resultsBox.innerHTML = matches.map(m=>
+      `<div class="search-result-item" onclick="jumpToSearchResult(${m.idx}, '${term.replace(/'/g,"")}')"><b>עמוד ${m.idx+1}:</b> ${m.title}</div>`
+    ).join('');
+  }
+  resultsBox.style.display='block';
+}
+
+function jumpToSearchResult(idx, term){
+  currentPage = idx;
+  renderPage(term);
+  document.getElementById('searchResults').style.display='none';
+  document.getElementById('searchBox').value='';
+}
+
+// מקלדת
+document.addEventListener('keydown', (e)=>{
+  if(!document.getElementById('reader').classList.contains('active')) return;
+  if(e.key === 'ArrowLeft') nextPage();
+  if(e.key === 'ArrowRight') prevPage();
+  if(e.key === 'Escape') goHome();
+});
+
+// מגע - swipe
+let touchStartX = 0;
+document.addEventListener('touchstart', e=>{ touchStartX = e.changedTouches[0].screenX; });
+document.addEventListener('touchend', e=>{
+  if(!document.getElementById('reader').classList.contains('active')) return;
+  const touchEndX = e.changedTouches[0].screenX;
+  const diff = touchEndX - touchStartX;
+  if(Math.abs(diff) > 50){
+    if(diff > 0) prevPage();
+    else nextPage();
+  }
+});
+
+renderHome();
+</script>
+</body>
+</html>

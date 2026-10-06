@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>פורים – ארבעה יסודות</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700;900&display=swap');
+
+    *{margin:0;padding:0;box-sizing:border-box;}
+
+    body{
+      font-family:'Heebo',sans-serif;
+      background:#120830;
+      color:#fff;
+      overflow:hidden;
+      user-select:none;
+    }
+
+    /* ===== STARS ===== */
+    .stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+    .star{position:absolute;border-radius:50%;background:#fff;animation:twinkle ease-in-out infinite;}
+    @keyframes twinkle{0%,100%{opacity:.1;transform:scale(1);}50%{opacity:.9;transform:scale(1.6);}}
+
+    /* ===== CONFETTI ===== */
+    .confetti-wrap{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden;}
+    .cp{position:absolute;top:-16px;border-radius:2px;animation:fall linear infinite;}
+    @keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+
+    /* ===== SLIDE SYSTEM ===== */
+    .wrapper{position:relative;z-index:1;width:100vw;height:100vh;overflow:hidden;}
+    .slide{
+      position:absolute;top:0;left:0;width:100%;height:100%;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:32px 48px;
+      opacity:0;transform:translateX(-80px);
+      transition:all .55s cubic-bezier(.4,0,.2,1);
+      pointer-events:none;
+    }
+    .slide.active{opacity:1;transform:translateX(0);pointer-events:all;}
+    .slide.exit{opacity:0;transform:translateX(80px);}
+
+    /* ===== NAV ===== */
+    .nav{
+      position:fixed;bottom:24px;width:100%;
+      display:flex;justify-content:center;align-items:center;
+      gap:14px;z-index:200;
+    }
+    .nbtn{
+      width:48px;height:48px;border-radius:50%;
+      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+      color:#fff;font-size:20px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      transition:all .2s;
+    }
+    .nbtn:hover{background:rgba(255,215,0,.3);border-color:#FFD700;}
+    .dots{display:flex;gap:8px;}
+    .dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s;}
+    .dot.active{background:#FFD700;transform:scale(1.5);}
+    .counter{position:fixed;top:18px;left:28px;font-size:13px;color:rgba(255,255,255,.35);z-index:200;}
+
+    /* ===== TITLE SLIDE ===== */
+    .s-title{background:radial-gradient(ellipse at center,#3b1278 0%,#120830 70%);}
+    .big-emoji{font-size:90px;animation:bob 2.2s ease-in-out infinite;}
+    @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-16px);}}
+    .main-title{
+      font-size:60px;font-weight:900;text-align:center;margin:14px 0 8px;
+      background:linear-gradient(135deg,#FFD700,#FF6B35,#FFD700);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      filter:drop-shadow(0 0 24px rgba(255,215,0,.4));
+    }
+    .main-sub{font-size:20px;color:#c9a0ff;text-align:center;font-weight:300;}
+    .havaya{display:flex;gap:18px;margin-top:28px;}
+    .hlet{
+      width:56px;height:56px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:26px;font-weight:900;
+      animation:pulse 3s ease-in-out infinite;
+    }
+    .hlet:nth-child(1){background:linear-gradient(135deg,#667eea,#764ba2);animation-delay:0s;}
+    .hlet:nth-child(2){background:linear-gradient(135deg,#f093fb,#f5576c);animation-delay:.25s;}
+    .hlet:nth-child(3){background:linear-gradient(135deg,#4facfe,#00f2fe);animation-delay:.5s;}
+    .hlet:nth-child(4){background:linear-gradient(135deg,#43e97b,#38f9d7);animation-delay:.75s;}
+    @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.14);}}
+
+    /* ===== SECTION TITLE ===== */
+    .sec-title{font-size:38px;font-weight:900;text-align:center;margin-bottom:8px;}
+    .sec-sub{font-size:17px;color:#c0a0ff;text-align:center;margin-bottom:30px;}
+
+    /* ===== 4-CARDS GRID ===== */
+    .grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;width:100%;max-width:900px;}
+    .card{
+      border-radius:18px;padding:22px 20px;position:relative;overflow:hidden;
+      cursor:default;transition:transform .3s,box-shadow .3s;
+      animation:cardIn .5s ease both;
+    }
+    .card:hover{transform:translateY(-5px) scale(1.02);}
+    .c-purple{background:linear-gradient(135deg,#667eea,#764ba2);box-shadow:0 8px 28px rgba(102,126,234,.4);}
+    .c-pink  {background:linear-gradient(135deg,#f093fb,#f5576c);box-shadow:0 8px 28px rgba(245,87,108,.4);}
+    .c-blue  {background:linear-gradient(135deg,#4facfe,#00f2fe);box-shadow:0 8px 28px rgba(79,172,254,.4);}
+    .c-green {background:linear-gradient(135deg,#43e97b,#38f9d7);box-shadow:0 8px 28px rgba(67,233,123,.4);}
+    .card-bg-icon{position:absolute;top:10px;left:14px;font-size:32px;opacity:.2;}
+    .card-emoji{font-size:38px;margin-bottom:8px;}
+    .card-name{font-size:21px;font-weight:900;margin-bottom:6px;}
+    .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+    .tag{background:rgba(255,255,255,.22);border-radius:20px;padding:2px 11px;font-size:12px;font-weight:600;}
+    @keyframes cardIn{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+    .card:nth-child(1){animation-delay:.1s;}
+    .card:nth-child(2){animation-delay:.2s;}
+    .card:nth-child(3){animation-delay:.3s;}
+    .card:nth-child(4){animation-delay:.4s;}
+
+    /* ===== HERO CHARACTERS ===== */
+    .heroes{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;width:100%;max-width:860px;}
+    .hero{
+      border-radius:18px;padding:20px 14px;text-align:center;
+      background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);
+      transition:transform .3s;animation:cardIn .5s ease both;
+    }
+    .hero:hover{transform:translateY(-5px);}
+    .hero-emoji{font-size:52px;margin-bottom:10px;}
+    .hero-name{font-size:18px;font-weight:900;margin-bottom:4px;}
+    .hero-role{font-size:13px;opacity:.7;margin-bottom:8px;}
+    .hero-badge{
+      display:inline-block;border-radius:20px;padding:3px 12px;
+      font-size:12px;font-weight:700;
+    }
+    .hb-purple{background:rgba(102,126,234,.4);}
+    .hb-pink  {background:rgba(245,87,108,.4);}
+    .hb-blue  {background:rgba(79,172,254,.4);}
+    .hb-green {background:rgba(67,233,123,.4);}
+
+    /* ===== GEZEIROT SLIDE ===== */
+    .gez-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;width:100%;max-width:880px;}
+    .gez-card{
+      border-radius:18px;padding:22px 20px;
+      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+      position:relative;overflow:hidden;
+      animation:cardIn .5s ease both;
+    }
+    .gez-card:hover{transform:translateY(-4px);}
+    .gez-num{
+      position:absolute;top:12px;left:16px;
+      font-size:48px;font-weight:900;opacity:.1;line-height:1;
+    }
+    .gez-emoji{font-size:36px;margin-bottom:8px;}
+    .gez-word{font-size:22px;font-weight:900;margin-bottom:4px;}
+    .gez-explain{font-size:14px;line-height:1.6;opacity:.85;}
+    .gez-card.gc1{border-top:3px solid #a78bfa;}
+    .gez-card.gc2{border-top:3px solid #fb7185;}
+    .gez-card.gc3{border-top:3px solid #67e8f9;}
+    .gez-card.gc4{border-top:3px solid #6ee7b7;}
+
+    /* ===== PASUK SLIDE ===== */
+    .pasuk-hero{
+      font-size:28px;font-weight:900;text-align:center;
+      background:linear-gradient(135deg,#FFD700,#FF6B35);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      margin-bottom:28px;line-height:1.5;
+    }
+    .pasuk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;width:100%;max-width:920px;}
+    .pcard{
+      border-radius:16px;padding:20px 14px;text-align:center;
+      animation:cardIn .5s ease both;transition:transform .3s;
+    }
+    .pcard:hover{transform:translateY(-5px);}
+    .pc1{background:linear-gradient(160deg,rgba(167,139,250,.35),rgba(118,75,162,.2));border:1px solid #a78bfa55;}
+    .pc2{background:linear-gradient(160deg,rgba(251,113,133,.35),rgba(245,87,108,.2));border:1px solid #fb718555;}
+    .pc3{background:linear-gradient(160deg,rgba(103,232,249,.35),rgba(0,242,254,.2));border:1px solid #67e8f955;}
+    .pc4{background:linear-gradient(160deg,rgba(110,231,183,.35),rgba(56,249,215,.2));border:1px solid #6ee7b755;}
+    .pw{font-size:24px;font-weight:900;margin-bottom:6px;}
+    .pw1{color:#a78bfa;} .pw2{color:#fb7185;} .pw3{color:#67e8f9;} .pw4{color:#6ee7b7;}
+    .pmeaning{font-size:14px;font-weight:700;margin-bottom:8px;opacity:.9;}
+    .pexplain{font-size:12px;line-height:1.6;opacity:.75;}
+
+    /* ===== HAKBALA SLIDE ===== */
+    .hak-title{
+      font-size:36px;font-weight:900;text-align:center;margin-bottom:24px;
+      background:linear-gradient(135deg,#FFD700,#FF6B35);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    }
+    .hak-table{width:100%;max-width:980px;border-collapse:collapse;font-size:14px;}
+    .hak-table thead tr{background:linear-gradient(135deg,#6a11cb,#2575fc);}
+    .hak-table th{
+      padding:12px 10px;text-align:center;
+      font-size:13px;font-weight:700;color:#FFD700;letter-spacing:.4px;
+    }
+    .hak-table td{
+      padding:11px 10px;text-align:center;
+      border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;
+    }
+    .hak-table tr:nth-child(even) td{background:rgba(255,255,255,.04);}
+    .hak-table tr:hover td{background:rgba(255,215,0,.08);}
+    .hak-table td:first-child{font-weight:900;font-size:16px;}
+    .r1 td:first-child{color:#a78bfa;}
+    .r2 td:first-child{color:#fb7185;}
+    .r3 td:first-child{color:#67e8f9;}
+    .r4 td:first-child{color:#6ee7b7;}
+    .gold{color:#FFD700;font-weight:700;}
+
+    /* ===== SUMMARY SLIDE ===== */
+    .sum-title{
+      font-size:44px;font-weight:900;text-align:center;margin-bottom:24px;
+      background:linear-gradient(135deg,#FFD700,#FF6B35);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    }
+    .sum-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:860px;width:100%;}
+    .scard{border-radius:16px;padding:18px 12px;text-align:center;border:1px solid rgba(255,255,255,.15);}
+    .sc1{background:linear-gradient(160deg,rgba(102,126,234,.3),rgba(118,75,162,.2));}
+    .sc2{background:linear-gradient(160deg,rgba(240,147,251,.3),rgba(245,87,108,.2));}
+    .sc3{background:linear-gradient(160deg,rgba(79,172,254,.3),rgba(0,242,254,.2));}
+    .sc4{background:linear-gradient(160deg,rgba(67,233,123,.3),rgba(56,249,215,.2));}
+    .se{font-size:32px;margin-bottom:8px;}
+    .sn{font-size:15px;font-weight:900;margin-bottom:3px;}
+    .sy{font-size:12px;opacity:.7;}
+    .final-quote{
+      margin-top:24px;max-width:680px;text-align:center;
+      padding:16px 26px;
+      background:rgba(255,215,0,.08);border-radius:16px;
+      border:1px solid rgba(255,215,0,.3);
+      font-size:16px;color:#FFD700;line-height:1.9;
+    }
+  </style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="confetti-wrap" id="confetti"></div>
+<div class="counter" id="counter">1 / 7</div>
+
+<div class="wrapper">
+
+  <!-- ══════════════════════════════
+       SLIDE 1 – TITLE
+  ══════════════════════════════ -->
+  <div class="slide s-title active" id="s0">
+    <div class="big-emoji">🎭</div>
+    <h1 class="main-title">ארבעת יסודות הפורים</h1>
+    <p class="main-sub">לפי שיעורי הרב יצחק גינזבורג שליט"א</p>
+    <div class="havaya">
+      <div class="hlet">י</div>
+      <div class="hlet">ה</div>
+      <div class="hlet">ו</div>
+      <div class="hlet">ה</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SLIDE 2 – FOUR MITZVOT
+  ══════════════════════════════ -->
+  <div class="slide" id="s1">
+    <h2 class="sec-title">📜 ארבע מצוות פורים</h2>
+    <p class="sec-sub">כל מצווה כנגד אות אחת בשם הוי"ה</p>
+    <div class="grid4">
+      <div class="card c-purple">
+        <div class="card-bg-icon">י</div>
+        <div class="card-emoji">📖</div>
+        <div class="card-name">מקרא מגילה</div>
+        <div class="tags">
+          <span class="tag">י׳</span>
+          <span class="tag">קריאת המגילה</span>
+        </div>
+      </div>
+      <div class="card c-pink">
+        <div class="card-bg-icon">ה</div>
+        <div class="card-emoji">🍖</div>
+        <div class="card-name">סעודת פורים</div>
+        <div class="tags">
+          <span class="tag">ה׳</span>
+          <span class="tag">משתה ושמחה</span>
+        </div>
+      </div>
+      <div class="card c-blue">
+        <div class="card-bg-icon">ו</div>
+        <div class="card-emoji">🎁</div>
+        <div class="card-name">משלוח מנות</div>
+        <div class="tags">
+          <span class="tag">ו׳</span>
+          <span class="tag">לשלוח לחברים</span>
+        </div>
+      </div>
+      <div class="card c-green">
+        <div class="card-bg-icon">ה</div>
+        <div class="card-emoji">🪙</div>
+        <div class="card-name">מתנות לאביונים</div>
+        <div class="tags">
+          <span class="tag">ה׳</span>
+          <span class="tag">הכי חשובה!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SLIDE 3 – FOUR HEROES
+  ══════════════════════════════ -->
+  <div class="slide" id="s2">
+    <h2 class="sec-title">👑 ארבעה גיבורי המגילה</h2>
+    <p class="sec-sub">כל גיבור מקביל לאחת ממצוות פורים</p>
+    <div class="heroes">
+      <div class="hero" style="animation-delay:.1s">
+        <div class="hero-emoji">👸</div>
+        <div class="hero-name">אסתר המלכה</div>
+        <div class="hero-role">הצילה את ישראל בנסתר</div>
+        <span class="hero-badge hb-purple">📖 מקרא מגילה</span>
+      </div>
+      <div class="hero" style="animation-delay:.2s">
+        <div class="hero-emoji">😈</div>
+        <div class="hero-name">המן הרשע</div>
+        <div class="hero-role">בא להרע — ונהפוך הוא!</div>
+        <span class="hero-badge hb-pink">🍖 סעודת פורים</span>
+      </div>
+      <div class="hero" style="animation-delay:.3s">
+        <div class="hero-emoji">🧔</div>
+        <div class="hero-name">מרדכי היהודי</div>
+        <div class="hero-role">לא כרע ולא השתחווה</div>
+        <span class="hero-badge hb-blue">🎁 משלוח מנות</span>
+      </div>
+      <div class="hero" style="animation-delay:.4s">
+        <div class="hero-emoji">👑</div>
+        <div class="hero-name">אחשורוש המלך</div>
+        <div class="hero-role">מלך מכל קצות הארץ</div>
+        <span class="hero-badge hb-green">🪙 מתנות לאביונים</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SLIDE 4 – FOUR GEZEIROT
+  ══════════════════════════════ -->
+  <div class="slide" id="s3">
+    <h2 class="sec-title">⚠️ ארבע גזירות המן</h2>
+    <p class="sec-sub">"להשמיד להרוג ולאבד... ושללם לבוז"</p>
+    <div class="gez-grid">
+      <div class="gez-card gc1" style="animation-delay:.1s">
+        <div class="gez-num">1</div>
+        <div class="gez-emoji">📚</div>
+        <div class="gez-word" style="color:#a78bfa">להשמיד</div>
+        <div class="gez-explain">
+          לפי הגאון מווילנה — לא סתם להרוג,<br/>
+          אלא לַהֲשמיד את <strong>הרוחניות</strong>:<br/>
+          את התורה, המצוות ונשמת ישראל.
+        </div>
+      </div>
+      <div class="gez-card gc2" style="animation-delay:.2s">
+        <div class="gez-num">2</div>
+        <div class="gez-emoji">⚔️</div>
+        <div class="gez-word" style="color:#fb7185">להרוג</div>
+        <div class="gez-explain">
+          כפשוטו — להרוג את<br/>
+          <strong>האנשים עצמם</strong>.<br/>
+          גוף ונשמה יחד.
+        </div>
+      </div>
+      <div class="gez-card gc3" style="animation-delay:.3s">
+        <div class="gez-num">3</div>
+        <div class="gez-emoji">🔥</div>
+        <div class="gez-word" style="color:#67e8f9">לאבד</div>
+        <div class="gez-explain">
+          לא רק להרוג — אלא לשרוף<br/>
+          את הגופות כדי שלא יישאר<br/>
+          <strong>שום זכר</strong> (כמו בשואה).
+        </div>
+      </div>
+      <div class="gez-card gc4" style="animation-delay:.4s">
+        <div class="gez-num">4</div>
+        <div class="gez-emoji">💰</div>
+        <div class="gez-word" style="color:#6ee7b7">שללם לבוז</div>
+        <div class="gez-explain">
+          לקחת את כל<br/>
+          <strong>רכוש היהודים</strong> —<br/>
+          עד שלא ישאר להם כלום.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SLIDE 5 – FOUR GIFTS
+  ══════════════════════════════ -->
+  <div class="slide" id="s4">
+    <p class="pasuk-hero">✨ "לַיְּהוּדִים הָיְתָה אוֹרָה וְשִׂמְחָה וְשָׂשׂוֹן וִיקָר" ✨</p>
+    <div class="pasuk-grid">
+      <div class="pcard pc1" style="animation-delay:.1s">
+        <div class="pw pw1">אוֹרָה</div>
+        <div class="pmeaning">= תּוֹרָה 📖</div>
+        <div class="pexplain">
+          חז"ל דרשו:<br/>
+          "אורה — זו תורה"<br/>
+          כנגד <strong>מקרא מגילה</strong>
+        </div>
+      </div>
+      <div class="pcard pc2" style="animation-delay:.2s">
+        <div class="pw pw2">שִׂמְחָה</div>
+        <div class="pmeaning">= יוֹם טוֹב 🎉</div>
+        <div class="pexplain">
+          "שמחה — זה יום טוב"<br/>
+          שמחת חג ומשתה<br/>
+          כנגד <strong>סעודת פורים</strong>
+        </div>
+      </div>
+      <div class="pcard pc3" style="animation-delay:.3s">
+        <div class="pw pw3">שָׂשׂוֹן</div>
+        <div class="pmeaning">= מִילָה 🤝</div>
+        <div class="pexplain">
+          "ששון — זו מילה"<br/>
+          כוח הברית והחיבור<br/>
+          כנגד <strong>משלוח מנות</strong>
+        </div>
+      </div>
+      <div class="pcard pc4" style="animation-delay:.4s">
+        <div class="pw pw4">וִיקָר</div>
+        <div class="pmeaning">= תְּפִילִּין 🎗️</div>
+        <div class="pexplain">
+          "ויקר — אלו תפילין"<br/>
+          גם מלשון יוקר וחשיבות<br/>
+          כנגד <strong>מתנות לאביונים</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SLIDE 6 – HAKBALA TABLE
+  ══════════════════════════════ -->
+  <div class="slide" id="s5" style="background:radial-gradient(ellipse at center,#1e0840,#120830 80%);">
+    <div class="hak-title">🔗 כל ההקבלות – במבט אחד</div>
+    <table class="hak-table">
+      <thead>
+        <tr>
+          <th>מצווה</th>
+          <th>אות הוי"ה</th>
+          <th>גיבור</th>
+          <th>גזירת המן</th>
+          <th>פסוק</th>
+          <th>יסוד הטבע</th>
+          <th>מה היא מתקנת</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="r1">
+          <td>📖 מקרא מגילה</td>
+          <td class="gold">י׳</td>
+          <td>👸 אסתר</td>
+          <td>להשמיד (הרוחניות)</td>
+          <td>"אורה" = תורה</td>
+          <td>🌬️ רוח — אדם</td>
+          <td>מחזירה את הנשמה</td>
+        </tr>
+        <tr class="r2">
+          <td>🍖 סעודת פורים</td>
+          <td class="gold">ה׳</td>
+          <td>😈 המן</td>
+          <td>להרוג (הגוף)</td>
+          <td>"שמחה" = יו"ט</td>
+          <td>🔥 אש — חי</td>
+          <td>מחיה את הנפש</td>
+        </tr>
+        <tr class="r3">
+          <td>🎁 משלוח מנות</td>
+          <td class="gold">ו׳</td>
+          <td>🧔 מרדכי</td>
+          <td>לאבד (הזכר)</td>
+          <td>"ששון" = מילה</td>
+          <td>💧 מים — צומח</td>
+          <td>מצמיחה אהבה</td>
+        </tr>
+        <tr class="r4">
+          <td>🪙 מתנות לאביונים</td>
+          <td class="gold">ה׳</td>
+          <td>👑 אחשורוש</td>
+          <td>שללם לבוז (הממון)</td>
+          <td>"ויקר" = תפילין</td>
+          <td>🌍 עפר — דומם</td>
+          <td>מחיה את המתים!</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════
+       SLIDE 7 – SUMMARY
+  ══════════════════════════════ -->
+  <div class="slide" id="s6" style="background:radial-gradient(ellipse at center,#2d0b5a,#120830 80%);">
+    <div class="sum-title">✨ וְנַהֲפוֹךְ הוּא! ✨</div>
+    <div class="sum-grid">
+      <div class="scard sc1">
+        <div class="se">🌬️📖</div>
+        <div class="sn">מקרא מגילה</div>
+        <div class="sy">כנגד "להשמיד"<br/>→ אורה = תורה</div>
+      </div>
+      <div class="scard sc2">
+        <div class="se">🔥🍖</div>
+        <div class="sn">סעודת פורים</div>
+        <div class="sy">כנגד "להרוג"<br/>→ שמחה = יום טוב</div>
+      </div>
+      <div class="scard sc3">
+        <div class="se">💧🎁</div>
+        <div class="sn">משלוח מנות</div>
+        <div class="sy">כנגד "לאבד"<br/>→ ששון = מילה</div>
+      </div>
+      <div class="scard sc4">
+        <div class="se">🌍🪙</div>
+        <div class="sn">מתנות לאביונים</div>
+        <div class="sy">כנגד "שללם לבוז"<br/>→ ויקר = תפילין</div>
+      </div>
+    </div>
+    <div class="final-quote">
+      🎭 המן רצה <strong>4 רעות</strong> — ה׳ הפך אותן ל<strong>4 מצוות</strong>!<br/>
+      <strong>וְנַהֲפוֹךְ הוּא</strong> — כל הרע הפך לטוב 🌟<br/>
+      <br/>
+      פורים שמח! 🎉🥳🎊
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nbtn" onclick="go(-1)">❮</button>
+  <div class="dots" id="dots"></div>
+  <button class="nbtn" onclick="go(1)">❯</button>
+</nav>
+
+<script>
+  const TOTAL = 7;
+  let cur = 0;
+
+  // dots
+  const dotsEl = document.getElementById('dots');
+  for(let i=0;i<TOTAL;i++){
+    const d=document.createElement('div');
+    d.className='dot'+(i===0?' active':'');
+    d.onclick=()=>goTo(i);
+    dotsEl.appendChild(d);
+  }
+
+  function goTo(n){
+    const slides=document.querySelectorAll('.slide');
+    slides[cur].classList.remove('active');
+    slides[cur].classList.add('exit');
+    setTimeout(()=>slides[cur].classList.remove('exit'),600);
+    cur=n;
+    slides[cur].classList.add('active');
+    document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===cur));
+    document.getElementById('counter').textContent=(cur+1)+' / '+TOTAL;
+  }
+  function go(d){goTo((cur+d+TOTAL)%TOTAL);}
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowLeft'||e.key==='ArrowDown') go(1);
+    if(e.key==='ArrowRight'||e.key==='ArrowUp') go(-1);
+  });
+
+  // stars
+  const starsEl=document.getElementById('stars');
+  for(let i=0;i<90;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;
+      width:${1+Math.random()*3}px;height:${1+Math.random()*3}px;
+      animation-duration:${2+Math.random()*4}s;
+      animation-delay:${Math.random()*5}s;`;
+    starsEl.appendChild(s);
+  }
+
+  // confetti
+  const cols=['#FFD700','#FF6B35','#a78bfa','#fb7185','#67e8f9','#6ee7b7','#fff','#f093fb'];
+  const cEl=document.getElementById('confetti');
+  for(let i=0;i<70;i++){
+    const c=document.createElement('div');
+    c.className='cp';
+    const sz=5+Math.random()*8;
+    c.style.cssText=`left:${Math.random()*100}%;
+      width:${sz}px;height:${sz}px;
+      background:${cols[Math.floor(Math.random()*cols.length)]};
+      border-radius:${Math.random()>.5?'50%':'2px'};
+      animation-duration:${5+Math.random()*8}s;
+      animation-delay:${Math.random()*8}s;`;
+    cEl.appendChild(c);
+  }
+</script>
+</body>
+</html>
