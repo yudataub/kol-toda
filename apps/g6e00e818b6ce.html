@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק 3: משה במדין</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00b4db;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #4facfe;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        
+        .instructions {
+            background: #e3f6ff;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-right: 5px solid #00b4db;
+        }
+        
+        .instructions h2 {
+            color: #00b4db;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .instructions p {
+            color: #333;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        
+        .game-area {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .drop-zone {
+            background: #fff;
+            border: 3px dashed #ccc;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .drop-zone::before {
+            content: attr(data-number);
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2em;
+            font-weight: bold;
+            color: #ddd;
+        }
+        
+        .drop-zone.drag-over {
+            background: #e3f6ff;
+            border-color: #00b4db;
+            border-style: solid;
+            transform: scale(1.02);
+        }
+        
+        .drop-zone.filled {
+            border-style: solid;
+            border-color: #00b4db;
+        }
+        
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            cursor: grab;
+            text-align: center;
+            font-size: 1.1em;
+            line-height: 1.6;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .card:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+        
+        .card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .check-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .check-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .reset-btn {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .reset-btn:hover {
+            background: #5a6268;
+            transform: translateY(-3px);
+        }
+        
+        .result {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 3px solid #28a745;
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 3px solid #dc3545;
+            display: block;
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .score {
+            text-align: center;
+            font-size: 1.3em;
+            color: #00b4db;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        
+        .final-message {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+            text-align: center;
+            border: 3px solid #fdcb6e;
+        }
+        
+        .final-message h3 {
+            color: #d63031;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        
+        .final-message p {
+            color: #2d3436;
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.6em;
+            }
+            
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 מִשְׂחַק סִדּוּר אִירוּעִים 🎮</h1>
+        <div class="subtitle">מִשְׂחָק 3: מֹשֶׁה בְּמִדְיָן - הַכָּרוּת עִם צִפּוֹרָה</div>
+        
+        <div class="instructions">
+            <h2>📖 הוֹרָאוֹת הַמִּשְׂחָק:</h2>
+            <p>גְּרוֹר כָּל כַּרְטִיס לַמָּקוֹם הַנָּכוֹן לְפִי סֵדֶר הָאִירוּעִים בַּפֶּרֶק!</p>
+            <p>לְחַץ עַל "בְּדוֹק תְּשׁוּבָה" כְּדֵי לִרְאוֹת אִם סִדַּרְתָּ נָכוֹן.</p>
+        </div>
+        
+        <h3 style="text-align: center; color: #00b4db; margin-bottom: 20px; font-size: 1.3em;">
+            👇 גְּרוֹר אֶת הַכַּרְטִיסִים לַמְּקוֹמוֹת הָרֵיקִים 👇
+        </h3>
+        
+        <div class="cards-container" id="cardsContainer">
+            <div class="card" draggable="true" data-id="1">מֹשֶׁה יָשַׁב עַל הַבְּאֵר בְּמִדְיָן</div>
+            <div class="card" draggable="true" data-id="2">שֶׁבַע בְּנוֹת כֹּהֵן מִדְיָן בָּאוּ לְהַשְׁקוֹת צֹאן</div>
+            <div class="card" draggable="true" data-id="3">רוֹעִים בָּאוּ וְגֵרְשׁוּ אוֹתָן</div>
+            <div class="card" draggable="true" data-id="4">מֹשֶׁה קָם וְהוֹשִׁיעַ אֶת הַבָּנוֹת</div>
+            <div class="card" draggable="true" data-id="5">מֹשֶׁה הִשְׁקָה אֶת צֹאנָן</div>
+            <div class="card" draggable="true" data-id="6">הַבָּנוֹת חָזְרוּ מַהֵר לְאָבִיהֶן רְעוּאֵל</div>
+            <div class="card" draggable="true" data-id="7">רְעוּאֵל שָׁלַח לִקְרֹא לְמֹשֶׁה</div>
+            <div class="card" draggable="true" data-id="8">מֹשֶׁה הִסְכִּים לָשֶׁבֶת אֵצֶל רְעוּאֵל</div>
+            <div class="card" draggable="true" data-id="9">רְעוּאֵל נָתַן לְמֹשֶׁה אֶת צִפֹּרָה בִּתּוֹ</div>
+            <div class="card" draggable="true" data-id="10">צִפֹּרָה יָלְדָה בֵּן וּמֹשֶׁה קָרָא לוֹ גֵּרְשֹׁם</div>
+        </div>
+        
+        <h3 style="text-align: center; color: #4facfe; margin: 30px 0 20px 0; font-size: 1.3em;">
+            ✨ סַדֵּר כָּאן לְפִי הַסֵּדֶר ✨
+        </h3>
+        
+        <div class="game-area" id="gameArea">
+            <div class="drop-zone" data-number="1"></div>
+            <div class="drop-zone" data-number="2"></div>
+            <div class="drop-zone" data-number="3"></div>
+            <div class="drop-zone" data-number="4"></div>
+            <div class="drop-zone" data-number="5"></div>
+            <div class="drop-zone" data-number="6"></div>
+            <div class="drop-zone" data-number="7"></div>
+            <div class="drop-zone" data-number="8"></div>
+            <div class="drop-zone" data-number="9"></div>
+            <div class="drop-zone" data-number="10"></div>
+        </div>
+        
+        <div class="buttons">
+            <button class="check-btn" onclick="checkAnswer()">✅ בְּדוֹק תְּשׁוּבָה</button>
+            <button class="reset-btn" onclick="resetGame()">🔄 הַתְחֵל מֵחָדָשׁ</button>
+        </div>
+        
+        <div class="result" id="result"></div>
+        <div class="score" id="score"></div>
+        
+        <div class="final-message" style="display: none;" id="finalMessage">
+            <h3>🎊 כָּל הַכָּבוֹד! 🎊</h3>
+            <p>סִיַּמְתָּ בְּהַצְלָחָה אֶת כָּל שְׁלֹשֶׁת הַמִּשְׂחָקִים!</p>
+            <p>עַכְשָׁיו אַתָּה מַכִּיר מְצֻיָּן אֶת פֶּרֶק ב' בְּשֵׁמוֹת!</p>
+            <p style="font-size: 2em; margin-top: 15px;">⭐🏆⭐</p>
+        </div>
+    </div>
+
+    <script>
+        let draggedElement = null;
+        
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+        });
+        
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.addEventListener('dragover', handleDragOver);
+            zone.addEventListener('drop', handleDrop);
+            zone.addEventListener('dragleave', handleDragLeave);
+        });
+        
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+        
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+        }
+        
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            this.classList.add('drag-over');
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+        
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+        
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            
+            this.classList.remove('drag-over');
+            
+            if (draggedElement) {
+                const existingCard = this.querySelector('.card');
+                if (existingCard) {
+                    const originalParent = draggedElement.parentElement;
+                    this.appendChild(draggedElement);
+                    originalParent.appendChild(existingCard);
+                } else {
+                    this.appendChild(draggedElement);
+                }
+                this.classList.add('filled');
+            }
+            
+            return false;
+        }
+        
+        function checkAnswer() {
+            const dropZones = document.querySelectorAll('.drop-zone');
+            let correct = true;
+            let filled = 0;
+            
+            dropZones.forEach((zone, index) => {
+                const card = zone.querySelector('.card');
+                if (card) {
+                    filled++;
+                    const cardId = parseInt(card.getAttribute('data-id'));
+                    if (cardId !== index + 1) {
+                        correct = false;
+                    }
+                }
+            });
+            
+            const resultDiv = document.getElementById('result');
+            const scoreDiv = document.getElementById('score');
+            const finalMessage = document.getElementById('finalMessage');
+            
+            if (filled < 10) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ אוֹפְּס! לֹא מִלֵּאתָ אֶת כָּל הַמְּקוֹמוֹת. נַסֶּה שׁוּב!';
+                scoreDiv.textContent = '';
+                finalMessage.style.display = 'none';
+            } else if (correct) {
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = '🎉 מוּשְׁלָם! סִדַּרְתָּ הַכֹּל נָכוֹן! 🎉<br>אַתָּה מַכִּיר מְצֻיָּן אֶת סִפּוּר מֹשֶׁה בְּמִדְיָן!';
+                scoreDiv.textContent = '⭐ צִיּוּן: 100% ⭐';
+                finalMessage.style.display = 'block';
+            } else {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ לֹא בְּדִיּוּק... נַסֶּה שׁוּב!<br>קְרָא שׁוּב אֶת הַפְּסוּקִים וְחַשֹּׁב עַל הַסֵּדֶר הַנָּכוֹן.';
+                const correctCount = Array.from(dropZones).filter((zone, index) => {
+                    const card = zone.querySelector('.card');
+                    return card && parseInt(card.getAttribute('data-id')) === index + 1;
+                }).length;
+                scoreDiv.textContent = `נְכוֹנוֹת: ${correctCount} מִתּוֹךְ 10`;
+                finalMessage.style.display = 'none';
+            }
+            
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function resetGame() {
+            const cardsContainer = document.getElementById('cardsContainer');
+            const dropZones = document.querySelectorAll('.drop-zone');
+            
+            dropZones.forEach(zone => {
+                const card = zone.querySelector('.card');
+                if (card) {
+                    cardsContainer.appendChild(card);
+                }
+                zone.classList.remove('filled');
+            });
+            
+            const cards = Array.from(cardsContainer.children);
+            cards.sort(() => Math.random() - 0.5);
+            cards.forEach(card => cardsContainer.appendChild(card));
+            
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('score').textContent = '';
+            document.getElementById('finalMessage').style.display = 'none';
+        }
+        
+        window.addEventListener('load', () => {
+            const cardsContainer = document.getElementById('cardsContainer');
+            const cards = Array.from(cardsContainer.children);
+            cards.sort(() => Math.random() - 0.5);
+            cards.forEach(card => cardsContainer.appendChild(card));
+        });
+    </script>
+</body>
+</html>

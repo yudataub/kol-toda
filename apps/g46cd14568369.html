@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>עֲשֵׂה רְצוֹנוֹ כִּרְצוֹנְךָ - מִשְׂחָק לְכִתָּה ב'</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fce7f3 0%, #e9d5ff 50%, #dbeafe 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .header-card {
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #9333ea;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #6b7280;
+        }
+        
+        .score-section {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .score-box {
+            background: #f3e8ff;
+            border: 3px solid #c084fc;
+            border-radius: 15px;
+            padding: 15px 30px;
+            text-align: center;
+        }
+        
+        .score-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #7c3aed;
+        }
+        
+        .score-label {
+            font-size: 0.9rem;
+            color: #7c3aed;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #9333ea 0%, #ec4899 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .situation-card {
+            background: linear-gradient(135deg, #ddd6fe 0%, #fbcfe8 100%);
+            border: 4px solid #a78bfa;
+            text-align: center;
+            padding: 50px 30px;
+        }
+        
+        .emoji-large {
+            font-size: 6rem;
+            margin-bottom: 20px;
+        }
+        
+        .situation-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #5b21b6;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .situation-subtitle {
+            font-size: 1.5rem;
+            color: #7c3aed;
+        }
+        
+        .wrong-card {
+            background: linear-gradient(135deg, #fee2e2 0%, #fed7aa 100%);
+            border: 4px solid #f87171;
+        }
+        
+        .wrong-header {
+            background: #fecaca;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .wrong-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #991b1b;
+            text-align: center;
+        }
+        
+        .correct-card {
+            background: linear-gradient(135deg, #d1fae5 0%, #bfdbfe 100%);
+            border: 4px solid #34d399;
+        }
+        
+        .correct-header {
+            background: #a7f3d0;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .correct-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #065f46;
+            text-align: center;
+        }
+        
+        .response-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1f2937;
+            line-height: 1.8;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .question-card {
+            border: 4px solid;
+            text-align: center;
+        }
+        
+        .question-header {
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .category-emoji {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        
+        .category-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .question-number {
+            font-size: 1.2rem;
+            color: #6b7280;
+            margin-top: 10px;
+        }
+        
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+        }
+        
+        .option-button {
+            background: white;
+            border: 4px solid #d1d5db;
+            padding: 25px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: right;
+            line-height: 1.6;
+        }
+        
+        .option-button:hover:not(:disabled) {
+            background: #f3e8ff;
+            border-color: #9333ea;
+            transform: scale(1.02);
+        }
+        
+        .option-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+            color: white;
+            border: none;
+            padding: 25px 50px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.3);
+        }
+        
+        .button-green {
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+        }
+        
+        .button-red {
+            background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+        }
+        
+        .feedback-card {
+            border: 4px solid;
+            text-align: center;
+            padding: 50px 30px;
+            animation: bounce 0.5s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .feedback-correct {
+            background: linear-gradient(135deg, #d1fae5 0%, #bfdbfe 100%);
+            border-color: #10b981;
+        }
+        
+        .feedback-wrong {
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            border-color: #f59e0b;
+        }
+        
+        .feedback-emoji {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+        
+        .feedback-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+        
+        .feedback-score {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #059669;
+        }
+        
+        .badges-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            border: 4px solid #fbbf24;
+        }
+        
+        .badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .badge {
+            background: #fde68a;
+            border: 2px solid #f59e0b;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #78350f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .badge-icon {
+            font-size: 1.5rem;
+        }
+        
+        .sound-button {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .sound-button:hover {
+            transform: scale(1.1);
+        }
+        
+        .sound-button.disabled {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+        }
+        
+        .final-card {
+            background: white;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .final-header {
+            background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .final-emoji {
+            font-size: 6rem;
+            margin-bottom: 20px;
+        }
+        
+        .final-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #7c3aed;
+        }
+        
+        .final-content {
+            padding: 40px;
+        }
+        
+        .final-score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #7c3aed;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .level-box {
+            background: #fef3c7;
+            border: 3px solid #fbbf24;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .level-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #78350f;
+            margin-bottom: 15px;
+        }
+        
+        .level-text {
+            font-size: 1.3rem;
+            color: #92400e;
+        }
+        
+        .message-box {
+            background: #dbeafe;
+            border: 3px solid #60a5fa;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .message-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 15px;
+        }
+        
+        .message-main {
+            font-size: 1.8rem;
+            color: #1e40af;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .message-subtitle {
+            font-size: 1.3rem;
+            color: #2563eb;
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .situation-title {
+                font-size: 1.5rem;
+            }
+            
+            .response-text {
+                font-size: 1.3rem;
+            }
+            
+            .category-title {
+                font-size: 1.8rem;
+            }
+            
+            .option-button {
+                font-size: 1.2rem;
+            }
+            
+            .button {
+                padding: 20px 40px;
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // מערכת צלילים
+        const playSound = (frequency, duration) => {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            } catch (e) {
+                console.log('Sound not available');
+            }
+        };
+
+        const playSuccessSound = (level) => {
+            const frequencies = [523, 587, 659, 698, 784, 880, 988, 1047];
+            const baseFreq = frequencies[Math.min(level - 1, frequencies.length - 1)];
+            
+            playSound(baseFreq, 0.1);
+            setTimeout(() => playSound(baseFreq * 1.25, 0.1), 100);
+            setTimeout(() => playSound(baseFreq * 1.5, 0.2), 200);
+        };
+
+        const playWrongSound = () => {
+            playSound(200, 0.15);
+        };
+
+        // פידבקים מדורגים
+        const feedbacks = [
+            ["נָכוֹן.", "הוּשְׁלַם.", "מְעֻלֶּה.", "נָקְלַט.", "יָפֶה!"],
+            ["יָפֶה, הִצְלַחְתְּ!", "כָּל הַכָּבוֹד!", "בְּדִיּוּק כָּךְ!", "הִתְקַדַּמְתְּ צַעַד!"],
+            ["נִיצוֹץ שֶׁל שִׂמְחָה ✨", "צַעַד זוֹרֵחַ ⭐", "לֵב שָׂמֵחַ 💖", "אוֹר קָטָן 🌟"],
+            ["אֵיזוֹ מְתוּקָה! הִצְלַחְתְּ!", "מַרְגִּישִׁים אֶת הַשִּׂמְחָה שֶׁלָּךְ!", "בְּחִירָה טוֹבָה, בַּת־חַיִל!"],
+            ["רָאִיתִי שֶׁהִתְאַמַּצְתְּ בֶּאֱמֶת.", "חָשַׁבְתְּ לְאַט – וּבְחׇכְמָה.", "בָּחַרְתְּ בַּטּוֹב גַּם כְּשֶׁלֹּא קַל."],
+            ["עוֹד פֶּרֶק בְּמַסַּע הַשִּׂמְחָה שֶׁלָּךְ.", "אַתְּ מַרְאָה דֶּרֶךְ לַחֲבֵרוֹת בַּכִּתָּה.", "זֶה סִפּוּר שֶׁל עֶזְרָה וְשִׂמְחָה."],
+            ["כִּבַּדְתְּ, הִתְחַשַּׁבְתְּ – לֵב שֶׁל חֶסֶד.", "בְּחִירָה עֲדִינָה – זֶה יֹפִי שֶׁל דֶּרֶךְ.", "שָׂמַחְתְּ בְּעֶזְרָה – זֶה נַחַת רוּחַ."],
+            ["נַרְגִּישׁ יַחַד עוֹד שִׂמְחָה?", "אֵיפֹה הִרְגַּשְׁתְּ שֶׁהַלֵּב שָׂמֵחַ?", "מָה עָזַר לָךְ לִבְחֹר בָּרָצוֹן?"],
+            ["רוֹאִים אוֹר קָטָן סְבִיבֵךְ.", "שִׂמְחָה יָצְאָה מֵהַלֵּב שֶׁלָּךְ.", "נוֹצַר שָׁלוֹם קָטָן בֵּינֵיכֶן."],
+            ["עָשִׂית רְצוֹנוֹ – גַּם כִּרְצוֹנְךָ.", "שִׂמְחַת מִצְוָה – הִיא הָאוֹר שֶׁלָּךְ.", "בִּבְחִירָה קְטַנָּה – בָּנִית עוֹלָם."]
+        ];
+
+        const wrongFeedbacks = [
+            "קָרוֹב! נְחַפֵּשׂ עוֹד טִפָּה שִׂמְחָה.",
+            "חָמוּד! נְנַסֶּה לִבְחֹר בְּנַחַת.",
+            "יָפֶה, עוֹד צַעַד שֶׁל רָצוֹן.",
+            "נְשִׁימָה… מְחַפְּשִׂים דֶּרֶךְ שִׂמְחָה.",
+            "בְּדִיּוּק כָּאן בּוֹחֲרִים מֵחָדָשׁ."
+        ];
+
+        const badges = [
+            { level: 3, name: "נִיצוֹץ שִׂמְחָה", icon: "✨" },
+            { level: 5, name: "לֵב מִתְמִיד", icon: "💖" },
+            { level: 6, name: "שַׁגְרִירַת חֶסֶד", icon: "⭐" },
+            { level: 7, name: "נְסִיכַת נַחַת", icon: "🏆" },
+            { level: 10, name: "בַּת־חַיִל שֶׁל שִׂמְחָה", icon: "👑" }
+        ];
+
+        // סיטואציות המשחק - ללא אימוג'ים בתשובות!
+        const situations = [
+            {
+                id: 1,
+                title: "חֲבֵרָה מְקַלְקֶלֶת אֶת הַמִּשְׂחָק שֶׁלִּי בְּהַפְסָקָה",
+                emoji: "🎮",
+                wrongResponse: {
+                    text: "\"אַתְּ תָּמִיד מְקַלְקֶלֶת! לֹא אֲשַׂחֵק אִתָּךְ יוֹתֵר!\"",
+                    feelings: {
+                        me: { 
+                            correct: "כּוֹעֶסֶת וְעַצְבָּנִית",
+                            wrong: ["שְׂמֵחָה וְרָגוּעָה", "מְרֻצָּה מִמַּה שֶּׁקָּרָה", "אוֹהֶבֶת אֶת הַמַּצָּב"]
+                        },
+                        teacher: {
+                            correct: "הַמּוֹרָה עַצְבָּנִית מֵהַצְּעָקוֹת",
+                            wrong: ["הַמּוֹרָה שְׂמֵחָה", "הַמּוֹרָה גֵּאָה בִּי", "הַמּוֹרָה מוֹדָה לִי"]
+                        },
+                        friends: {
+                            correct: "הַחֲבֵרוֹת מַרְגִּישׁוֹת מְבֻיָּשׁוֹת",
+                            wrong: ["הַחֲבֵרוֹת מַרְגִּישׁוֹת טוֹב", "הַחֲבֵרוֹת רוֹצוֹת לְשַׂחֵק אִתִּי", "הַחֲבֵרוֹת שְׂמֵחוֹת"]
+                        },
+                        result: {
+                            correct: "הַמִּשְׂחָק נִגְמָר בְּרִיב",
+                            wrong: ["הַמִּשְׂחָק נִמְשָׁךְ בְּכֵיף", "כֻּלָּם שְׂמֵחִים", "הַחֲבֵרָה מְבִינָה"]
+                        }
+                    }
+                },
+                correctResponse: {
+                    text: "\"זֶה בְּסֵדֶר, נַתְחִיל מֵחָדָשׁ! כֻּלָּם טוֹעִים לִפְעָמִים\" *מְחַיֶּכֶת*",
+                    feelings: {
+                        me: {
+                            correct: "שְׂמֵחָה וְטוֹבַת לֵב",
+                            wrong: ["כּוֹעֶסֶת וְעַצְבָּנִית", "עַצְבָּנִית מְאֹד", "לֹא רוֹצָה לְשַׂחֵק"]
+                        },
+                        teacher: {
+                            correct: "הַמּוֹרָה גֵּאָה בִּי",
+                            wrong: ["הַמּוֹרָה כּוֹעֶסֶת", "הַמּוֹרָה עַצְבָּנִית", "הַמּוֹרָה מְאֻכְזֶבֶת"]
+                        },
+                        friends: {
+                            correct: "הַחֲבֵרָה מוֹדָה וּמְחַיֶּכֶת",
+                            wrong: ["הַחֲבֵרָה בּוֹכָה", "הַחֲבֵרָה עוֹזֶבֶת", "הַחֲבֵרָה כּוֹעֶסֶת"]
+                        },
+                        result: {
+                            correct: "מִשְׂחָק כֵּיפִי וְיָפֶה בֵּינֵינוּ",
+                            wrong: ["הַמִּשְׂחָק נִפְסָק", "אַף אַחַת לֹא מְשַׂחֶקֶת", "הַכֹּל מְקֻלְקָל"]
+                        }
+                    }
+                }
+            },
+            {
+                id: 2,
+                title: "הַמּוֹרָה שׁוֹאֶלֶת: 'מִי רוֹצָה לְחַלֵּק דַּפִּים?'",
+                emoji: "📚",
+                wrongResponse: {
+                    text: "\"אוּף, לָמָּה תָּמִיד אֲנִי? יֵשׁ עוֹד בַּכִּתָּה!\"",
+                    feelings: {
+                        me: {
+                            correct: "עַצְבָּנִית וְעֲיֵפָה",
+                            wrong: ["שְׂמֵחָה וְגֵאָה", "מְרֻצָּה לַעֲזֹר", "אוֹהֶבֶת אֶת זֶה"]
+                        },
+                        teacher: {
+                            correct: "הַמּוֹרָה מִצְטַעֶרֶת",
+                            wrong: ["הַמּוֹרָה שְׂמֵחָה", "הַמּוֹרָה מוֹדָה", "הַמּוֹרָה גֵּאָה"]
+                        },
+                        friends: {
+                            correct: "הַחֲבֵרוֹת רוֹאוֹת שֶׁאֲנִי לֹא רוֹצָה",
+                            wrong: ["הַחֲבֵרוֹת רוֹצוֹת לַעֲזֹר", "הַחֲבֵרוֹת שְׂמֵחוֹת", "הַחֲבֵרוֹת גֵּאוֹת בִּי"]
+                        },
+                        result: {
+                            correct: "עוֹשָׂה אֶת זֶה לְאַט וּבְלִי שִׂמְחָה",
+                            wrong: ["עוֹשָׂה מָהֵר בְּכֵיף", "הַכֹּל מוּכָן יָפֶה", "כֻּלָּם שְׂמֵחִים"]
+                        }
+                    }
+                },
+                correctResponse: {
+                    text: "\"אֲנִי! אֲנִי אוֹהֶבֶת לַעֲזֹר!\" *קוֹפֶצֶת בְּשִׂמְחָה*",
+                    feelings: {
+                        me: {
+                            correct: "שְׂמֵחָה וְגֵאָה בְּעַצְמִי",
+                            wrong: ["עַצְבָּנִית וְכּוֹעֶסֶת", "עֲיֵפָה מְאֹד", "לֹא רוֹצָה"]
+                        },
+                        teacher: {
+                            correct: "הַמּוֹרָה שְׂמֵחָה וּמוֹדָה לִי",
+                            wrong: ["הַמּוֹרָה כּוֹעֶסֶת", "הַמּוֹרָה עַצְבָּנִית", "הַמּוֹרָה עֲצוּבָה"]
+                        },
+                        friends: {
+                            correct: "הַחֲבֵרוֹת רוֹאוֹת דּוּגְמָה טוֹבָה",
+                            wrong: ["הַחֲבֵרוֹת לֹא שׂוֹמוֹת לֵב", "הַחֲבֵרוֹת כּוֹעֲסוֹת", "הַחֲבֵרוֹת עֲצוּבוֹת"]
+                        },
+                        result: {
+                            correct: "עוֹשָׂה אֶת זֶה מָהֵר וּבַהֲנָאָה",
+                            wrong: ["לוֹקֵחַ זְמַן רַב", "הַדַּפִּים מְבֻלְבָּלִים", "אַף אַחַת לֹא מְסַיַּעַת"]
+                        }
+                    }
+                }
+            },
+            {
+                id: 3,
+                title: "חֲבֵרָה שָׁכְחָה עִפָּרוֹן וּבוֹכָה",
+                emoji: "✏️",
+                wrongResponse: {
+                    text: "\"זֶה לֹא הַבְּעָיָה שֶׁלִּי, הִיא תִּזָּהֵר יוֹתֵר\"",
+                    feelings: {
+                        me: {
+                            correct: "קָשֶׁה בַּלֵּב",
+                            wrong: ["שְׂמֵחָה וְטוֹבָה", "מַרְגִּישָׁה נֶהְדָּר", "גֵּאָה בְּעַצְמִי"]
+                        },
+                        teacher: {
+                            correct: "הַמּוֹרָה עֲצוּבָה מֵהָאֲדִישׁוּת",
+                            wrong: ["הַמּוֹרָה שְׂמֵחָה", "הַמּוֹרָה גֵּאָה", "הַמּוֹרָה מוֹדָה"]
+                        },
+                        friends: {
+                            correct: "הַחֲבֵרָה מַמְשִׁיכָה לִבְכּוֹת",
+                            wrong: ["הַחֲבֵרָה שְׂמֵחָה", "הַחֲבֵרָה מְחַיֶּכֶת", "הַחֲבֵרָה עוֹבֶדֶת"]
+                        },
+                        result: {
+                            correct: "פִּסְפַּסְתִּי הַזְדַּמְנוּת לַעֲזֹר",
+                            wrong: ["עָזַרְתִּי הַרְבֵּה", "כֻּלָּם שְׂמֵחִים", "הַחֲבֵרָה הוֹדָה לִי"]
+                        }
+                    }
+                },
+                correctResponse: {
+                    text: "\"קְחִי מִמֶּנִּי! יֵשׁ לִי עוֹד\" *נוֹתֶנֶת בְּשִׂמְחָה*",
+                    feelings: {
+                        me: {
+                            correct: "מַרְגִּישָׁה טוֹב שֶׁעָזַרְתִּי",
+                            wrong: ["כּוֹעֶסֶת מְאֹד", "לֹא שְׂמֵחָה", "מִצְטַעֶרֶת"]
+                        },
+                        teacher: {
+                            correct: "הַמּוֹרָה גֵּאָה בִּי",
+                            wrong: ["הַמּוֹרָה כּוֹעֶסֶת", "הַמּוֹרָה עַצְבָּנִית", "הַמּוֹרָה מְאֻכְזֶבֶת"]
+                        },
+                        friends: {
+                            correct: "הַחֲבֵרָה מְחַיֶּכֶת וּמוֹדָה",
+                            wrong: ["הַחֲבֵרָה בּוֹכָה", "הַחֲבֵרָה כּוֹעֶסֶת", "הַחֲבֵרָה עוֹזֶבֶת"]
+                        },
+                        result: {
+                            correct: "שְׁתֵּינוּ עוֹבְדוֹת בְּיַחַד",
+                            wrong: ["הַחֲבֵרָה לֹא יְכוֹלָה לַעֲבֹד", "הַכִּתָּה רוֹעֶשֶׁת", "אַף אַחַת לֹא עוֹזֶרֶת"]
+                        }
+                    }
+                }
+            }
+        ];
+
+        function Game() {
+            const [currentSituation, setCurrentSituation] = useState(0);
+            const [phase, setPhase] = useState('wrong-intro');
+            const [currentCategory, setCurrentCategory] = useState(0);
+            const [score, setScore] = useState(0);
+            const [feedbackLevel, setFeedbackLevel] = useState(0);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [feedbackMessage, setFeedbackMessage] = useState("");
+            const [isCorrect, setIsCorrect] = useState(false);
+            const [earnedBadges, setEarnedBadges] = useState([]);
+            const [gameComplete, setGameComplete] = useState(false);
+            const [soundEnabled, setSoundEnabled] = useState(true);
+
+            const situation = situations[currentSituation];
+            const categories = [
+                { id: 'me', title: 'אֲנִי מַרְגִּישָׁה', emoji: '😊' },
+                { id: 'teacher', title: 'הַמּוֹרָה מַרְגִּישָׁה', emoji: '👩‍🏫' },
+                { id: 'friends', title: 'הַחֲבֵרוֹת מַרְגִּישׁוֹת', emoji: '👭' },
+                { id: 'result', title: 'הַתּוֹצָאָה', emoji: '⭐' }
+            ];
+
+            const currentCat = categories[currentCategory];
+            
+            const getCurrentFeelings = () => {
+                const isWrongPhase = phase === 'wrong-question';
+                const feelings = isWrongPhase ? situation.wrongResponse.feelings : situation.correctResponse.feelings;
+                return feelings[currentCat.id];
+            };
+
+            const handleAnswer = (answer) => {
+                const feelings = getCurrentFeelings();
+                const correct = answer === feelings.correct;
+
+                if (correct) {
+                    setIsCorrect(true);
+                    const newScore = score + 10;
+                    setScore(newScore);
+                    
+                    const newLevel = Math.min(Math.floor(newScore / 20), 9);
+                    setFeedbackLevel(newLevel);
+                    
+                    const randomFeedback = feedbacks[newLevel][Math.floor(Math.random() * feedbacks[newLevel].length)];
+                    setFeedbackMessage(randomFeedback);
+                    
+                    if (soundEnabled) playSuccessSound(newLevel + 1);
+                    
+                    badges.forEach(badge => {
+                        if (newLevel + 1 >= badge.level && !earnedBadges.includes(badge.level)) {
+                            setEarnedBadges(prev => [...prev, badge.level]);
+                        }
+                    });
+                } else {
+                    setIsCorrect(false);
+                    const randomWrong = wrongFeedbacks[Math.floor(Math.random() * wrongFeedbacks.length)];
+                    setFeedbackMessage(randomWrong);
+                    if (soundEnabled) playWrongSound();
+                }
+                
+                setShowFeedback(true);
+            };
+
+            const nextStep = () => {
+                setShowFeedback(false);
+                
+                if (!isCorrect) return;
+                
+                if (phase === 'wrong-intro') {
+                    setPhase('wrong-question');
+                    setCurrentCategory(0);
+                } else if (phase === 'wrong-question') {
+                    if (currentCategory < 3) {
+                        setCurrentCategory(currentCategory + 1);
+                    } else {
+                        setPhase('correct-intro');
+                        setCurrentCategory(0);
+                    }
+                } else if (phase === 'correct-intro') {
+                    setPhase('correct-question');
+                    setCurrentCategory(0);
+                } else if (phase === 'correct-question') {
+                    if (currentCategory < 3) {
+                        setCurrentCategory(currentCategory + 1);
+                    } else {
+                        setPhase('situation-complete');
+                    }
+                } else if (phase === 'situation-complete') {
+                    if (currentSituation < situations.length - 1) {
+                        setCurrentSituation(currentSituation + 1);
+                        setPhase('wrong-intro');
+                        setCurrentCategory(0);
+                    } else {
+                        setGameComplete(true);
+                    }
+                }
+            };
+
+            const resetGame = () => {
+                setCurrentSituation(0);
+                setPhase('wrong-intro');
+                setCurrentCategory(0);
+                setScore(0);
+                setFeedbackLevel(0);
+                setShowFeedback(false);
+                setEarnedBadges([]);
+                setGameComplete(false);
+            };
+
+            const progressPercent = ((currentSituation * 2 + (phase !== 'wrong-intro' && phase !== 'situation-complete' ? 1 : 0)) / (situations.length * 2)) * 100;
+
+            // מסך סיום
+            if (gameComplete) {
+                return (
+                    <div className="container" style={{display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh'}}>
+                        <div className="card final-card">
+                            <div className="final-header">
+                                <div className="final-emoji">👑</div>
+                                <div className="final-title">
+                                    כָּל הַכָּבוֹד! סִיַּמְתְּ! 🎉
+                                </div>
+                            </div>
+                            <div className="final-content">
+                                <div className="final-score">
+                                    נִקּוּד סוֹפִי: {score} נְקֻדּוֹת
+                                </div>
+                                
+                                <div className="level-box">
+                                    <div className="level-title">
+                                        🌟 רָמַת הַפִּידְבָּק שֶׁלָּךְ: {feedbackLevel + 1}/10
+                                    </div>
+                                    <div className="level-text">
+                                        {feedbacks[feedbackLevel][0]}
+                                    </div>
+                                </div>
+
+                                {earnedBadges.length > 0 && (
+                                    <div style={{marginBottom: '30px'}}>
+                                        <div style={{fontSize: '1.5rem', fontWeight: 'bold', color: '#7c3aed', textAlign: 'center', marginBottom: '20px'}}>
+                                            הַבַּאדְג'ִים שֶׁלָּךְ:
+                                        </div>
+                                        <div className="badges-container">
+                                            {earnedBadges.map(level => {
+                                                const badge = badges.find(b => b.level === level);
+                                                if (!badge) return null;
+                                                return (
+                                                    <div key={level} className="badge">
+                                                        <span className="badge-icon">{badge.icon}</span>
+                                                        {badge.name}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="message-box">
+                                    <div className="message-title">
+                                        💝 זִכְרִי תָּמִיד:
+                                    </div>
+                                    <div className="message-main">
+                                        "עֲשֵׂה רְצוֹנוֹ כִּרְצוֹנְךָ"
+                                    </div>
+                                    <div className="message-subtitle">
+                                        אַתְּ יְכוֹלָה לִבְחֹר לִהְיוֹת שְׂמֵחָה! 🌈
+                                    </div>
+                                </div>
+
+                                <div style={{textAlign: 'center'}}>
+                                    <button onClick={resetGame} className="button">
+                                        שַׂחֲקִי שׁוּב! 🎮
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // מסך התחלה - הצגת הסיטואציה השגויה
+            if (phase === 'wrong-intro') {
+                return (
+                    <div className="container">
+                        <div className="card header-card">
+                            <div className="score-section">
+                                <div>
+                                    <div className="title">🌟 עֲשֵׂה רְצוֹנוֹ כִּרְצוֹנְךָ</div>
+                                    <div className="subtitle">לַעֲשׂוֹת דְּבָרִים בְּשִׂמְחָה וְלֹא בִּכְפִיָּה!</div>
+                                </div>
+                                
+                                <div style={{display: 'flex', gap: '20px', alignItems: 'center'}}>
+                                    <button 
+                                        onClick={() => setSoundEnabled(!soundEnabled)} 
+                                        className={`sound-button ${!soundEnabled ? 'disabled' : ''}`}
+                                    >
+                                        {soundEnabled ? '🔊' : '🔇'}
+                                    </button>
+                                    
+                                    <div className="score-box">
+                                        <div className="score-number">{score}</div>
+                                        <div className="score-label">נְקֻדּוֹת</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="progress-bar">
+                                <div className="progress-fill" style={{width: `${progressPercent}%`}}></div>
+                            </div>
+                        </div>
+
+                        <div className="card situation-card">
+                            <div className="emoji-large">{situation.emoji}</div>
+                            <div className="situation-title">
+                                💭 מָה אַתְּ הָיִית עוֹשָׂה?
+                            </div>
+                            <div className="situation-title">
+                                {situation.title}
+                            </div>
+                            <div className="situation-subtitle">
+                                🤔 אַתְּ מְגִיבָה...
+                            </div>
+                        </div>
+
+                        <div className="card wrong-card">
+                            <div className="wrong-header">
+                                <div className="wrong-title">
+                                    😔 כְּשֶׁעוֹשִׂים בִּכְפִיָּה...
+                                </div>
+                            </div>
+                            <div className="response-text">
+                                {situation.wrongResponse.text}
+                            </div>
+                            <div style={{textAlign: 'center', marginTop: '30px'}}>
+                                <button 
+                                    onClick={() => setPhase('wrong-question')} 
+                                    className="button button-red"
+                                >
+                                    נַמְשִׁיךְ 👉
+                                </button>
+                            </div>
+                        </div>
+
+                        {earnedBadges.length > 0 && (
+                            <div className="card badges-card">
+                                <div className="badges-container">
+                                    <span style={{fontSize: '1.3rem', fontWeight: 'bold', color: '#78350f'}}>
+                                        הַבַּאדְג'ִים שֶׁלִּי:
+                                    </span>
+                                    {earnedBadges.map(level => {
+                                        const badge = badges.find(b => b.level === level);
+                                        if (!badge) return null;
+                                        return (
+                                            <div key={level} className="badge">
+                                                <span className="badge-icon">{badge.icon}</span>
+                                                {badge.name}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            // מסך הסיטואציה הנכונה
+            if (phase === 'correct-intro') {
+                return (
+                    <div className="container">
+                        <div className="card header-card">
+                            <div className="score-section">
+                                <div>
+                                    <div className="title">🌟 עֲשֵׂה רְצוֹנוֹ כִּרְצוֹנְךָ</div>
+                                    <div className="subtitle">לַעֲשׂוֹת דְּבָרִים בְּשִׂמְחָה וְלֹא בִּכְפִיָּה!</div>
+                                </div>
+                                
+                                <div style={{display: 'flex', gap: '20px', alignItems: 'center'}}>
+                                    <button 
+                                        onClick={() => setSoundEnabled(!soundEnabled)} 
+                                        className={`sound-button ${!soundEnabled ? 'disabled' : ''}`}
+                                    >
+                                        {soundEnabled ? '🔊' : '🔇'}
+                                    </button>
+                                    
+                                    <div className="score-box">
+                                        <div className="score-number">{score}</div>
+                                        <div className="score-label">נְקֻדּוֹת</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="progress-bar">
+                                <div className="progress-fill" style={{width: `${progressPercent}%`}}></div>
+                            </div>
+                        </div>
+
+                        <div className="card situation-card">
+                            <div className="emoji-large">{situation.emoji}</div>
+                            <div className="situation-title">
+                                💭 אוֹתָהּ סִיטוּאַצְיָה...
+                            </div>
+                            <div className="situation-title">
+                                {situation.title}
+                            </div>
+                            <div className="situation-subtitle">
+                                🤔 עַכְשָׁיו בְּדֶרֶךְ אַחֶרֶת...
+                            </div>
+                        </div>
+
+                        <div className="card correct-card">
+                            <div className="correct-header">
+                                <div className="correct-title">
+                                    😊 עֲשֵׂה רְצוֹנוֹ כִּרְצוֹנְךָ!
+                                </div>
+                            </div>
+                            <div className="response-text">
+                                {situation.correctResponse.text}
+                            </div>
+                            <div style={{fontSize: '1.5rem', fontWeight: 'bold', color: '#065f46', textAlign: 'center', marginTop: '20px'}}>
+                                ✅ לָמָּה זֶה מְיֻחָד?
+                            </div>
+                            <div style={{textAlign: 'center', marginTop: '30px'}}>
+                                <button 
+                                    onClick={() => setPhase('correct-question')} 
+                                    className="button button-green"
+                                >
+                                    נַמְשִׁיךְ 👉
+                                </button>
+                            </div>
+                        </div>
+
+                        {earnedBadges.length > 0 && (
+                            <div className="card badges-card">
+                                <div className="badges-container">
+                                    <span style={{fontSize: '1.3rem', fontWeight: 'bold', color: '#78350f'}}>
+                                        הַבַּאדְג'ִים שֶׁלִּי:
+                                    </span>
+                                    {earnedBadges.map(level => {
+                                        const badge = badges.find(b => b.level === level);
+                                        if (!badge) return null;
+                                        return (
+                                            <div key={level} className="badge">
+                                                <span className="badge-icon">{badge.icon}</span>
+                                                {badge.name}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            // מסך השאלות
+            if (phase === 'wrong-question' || phase === 'correct-question') {
+                const feelings = getCurrentFeelings();
+                const allOptions = [feelings.correct, ...feelings.wrong].sort(() => Math.random() - 0.5);
+                const isWrongPhase = phase === 'wrong-question';
+                
+                return (
+                    <div className="container">
+                        <div className="card header-card">
+                            <div className="score-section">
+                                <div>
+                                    <div className="title">🌟 עֲשֵׂה רְצוֹנוֹ כִּרְצוֹנְךָ</div>
+                                </div>
+                                
+                                <div style={{display: 'flex', gap: '20px', alignItems: 'center'}}>
+                                    <button 
+                                        onClick={() => setSoundEnabled(!soundEnabled)} 
+                                        className={`sound-button ${!soundEnabled ? 'disabled' : ''}`}
+                                    >
+                                        {soundEnabled ? '🔊' : '🔇'}
+                                    </button>
+                                    
+                                    <div className="score-box">
+                                        <div className="score-number">{score}</div>
+                                        <div className="score-label">נְקֻדּוֹת</div>
+                                    </div>
+                                    
+                                    <div className="score-box" style={{background: '#dbeafe', borderColor: '#60a5fa'}}>
+                                        <div className="score-number" style={{color: '#1e40af'}}>{feedbackLevel + 1}/10</div>
+                                        <div className="score-label" style={{color: '#1e40af'}}>רָמָה</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={`card question-card ${isWrongPhase ? 'wrong-card' : 'correct-card'}`}>
+                            <div className={`question-header ${isWrongPhase ? 'wrong-header' : 'correct-header'}`}>
+                                <div className="category-emoji">{currentCat.emoji}</div>
+                                <div className={`category-title ${isWrongPhase ? 'wrong-title' : 'correct-title'}`}>
+                                    {currentCat.title}
+                                </div>
+                                <div className="question-number">
+                                    שְׁאֵלָה {currentCategory + 1} מִתּוֹךְ 4
+                                </div>
+                            </div>
+                            <div className="options-container">
+                                {allOptions.map((option, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => handleAnswer(option)}
+                                        disabled={showFeedback}
+                                        className="option-button"
+                                    >
+                                        {option}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {showFeedback && (
+                            <div className={`card feedback-card ${isCorrect ? 'feedback-correct' : 'feedback-wrong'}`}>
+                                <div className="feedback-emoji">
+                                    {isCorrect ? '🎉' : '💭'}
+                                </div>
+                                <div className="feedback-text">
+                                    {feedbackMessage}
+                                </div>
+                                {isCorrect && (
+                                    <div className="feedback-score">
+                                        +10 נְקֻדּוֹת! ⭐
+                                    </div>
+                                )}
+                                <div style={{marginTop: '30px'}}>
+                                    <button
+                                        onClick={nextStep}
+                                        className="button"
+                                    >
+                                        {isCorrect ? 'הַבָּאָה! 👉' : 'נְנַסֶּה שׁוּב 🔄'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {earnedBadges.length > 0 && !showFeedback && (
+                            <div className="card badges-card">
+                                <div className="badges-container">
+                                    <span style={{fontSize: '1.3rem', fontWeight: 'bold', color: '#78350f'}}>
+                                        הַבַּאדְג'ִים שֶׁלִּי:
+                                    </span>
+                                    {earnedBadges.map(level => {
+                                        const badge = badges.find(b => b.level === level);
+                                        if (!badge) return null;
+                                        return (
+                                            <div key={level} className="badge">
+                                                <span className="badge-icon">{badge.icon}</span>
+                                                {badge.name}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            // סיום סיטואציה
+            return (
+                <div className="container" style={{display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh'}}>
+                    <div className="card final-card">
+                        <div className="final-header" style={{background: 'linear-gradient(135deg, #d1fae5 0%, #bfdbfe 100%)'}}>
+                            <div className="final-emoji">🎊</div>
+                            <div className="final-title" style={{color: '#065f46'}}>
+                                כָּל הַכָּבוֹד! סִיַּמְתְּ סִיטוּאַצְיָה! 🌟
+                            </div>
+                        </div>
+                        <div className="final-content" style={{textAlign: 'center'}}>
+                            <button
+                                onClick={nextStep}
+                                className="button"
+                            >
+                                {currentSituation < situations.length - 1 ? 'לַסִּיטוּאַצְיָה הַבָּאָה! 🎯' : 'לְסִיּוּם! 👑'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<Game />, document.getElementById('root'));
+    </script>
+</body>
+</html>

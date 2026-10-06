@@ -1,0 +1,608 @@
+שעשועון: אהבת השם מתוך שמחה
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>שעשועון: אהבת השם מתוך שמחה</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&display=swap');
+
+        :root {
+            --primary-bg: #001f3f;
+            --secondary-bg: #0074D9;
+            --cell-bg: #003366;
+            --cell-hover-bg: #004a8d;
+            --cell-answered-bg: #4a5a6a;
+            --text-color: #ffffff;
+            --gold-color: #FFD700;
+            --correct-color: #28a745;
+            --incorrect-color: #dc3545;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Assistant', sans-serif;
+            direction: rtl;
+            background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg));
+            color: var(--text-color);
+            text-align: center;
+            padding: 20px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--gold-color);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        #scoreboard {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .team-score {
+            font-size: 1.5rem;
+        }
+
+        .team-score span {
+            display: block;
+            font-weight: bold;
+            color: var(--gold-color);
+            font-size: 2rem;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: auto repeat(5, 1fr);
+            gap: 8px;
+            max-width: 900px;
+            margin: 0 auto;
+            aspect-ratio: 5 / 5.5;
+        }
+
+        .category-header {
+            background-color: var(--primary-bg);
+            color: var(--gold-color);
+            font-weight: bold;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            border-radius: 8px;
+            min-height: 60px;
+        }
+
+        .cell {
+            background-color: var(--cell-bg);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--gold-color);
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s;
+            user-select: none;
+        }
+
+        .cell:not(.answered):hover {
+            background-color: var(--cell-hover-bg);
+            transform: scale(1.05);
+        }
+
+        .cell.answered {
+            background-color: var(--cell-answered-bg);
+            color: #aaa;
+            cursor: default;
+            pointer-events: none;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            animation: fadeIn 0.5s;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            color: #333;
+            margin: 10% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 15px;
+            position: relative;
+            text-align: right;
+        }
+        
+        .modal-content.feedback-correct {
+            animation: bounce 0.5s ease;
+            border: 4px solid var(--correct-color);
+        }
+        
+        .modal-content.feedback-incorrect {
+            animation: bounce 0.5s ease;
+            border: 4px solid var(--incorrect-color);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #question-category {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-bg);
+        }
+
+        #question-points {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--gold-color);
+            background-color: var(--primary-bg);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        #question-text {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            min-height: 80px;
+        }
+        
+        .team-selection {
+            margin-bottom: 15px;
+        }
+
+        .team-selection label {
+            margin: 0 10px;
+            font-size: 1.1rem;
+        }
+        
+        #answer-input {
+            width: 100%;
+            padding: 10px;
+            font-family: 'Assistant', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            direction: rtl;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .modal-actions button {
+            flex-grow: 1;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            font-family: 'Assistant', sans-serif;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            transition: opacity 0.3s;
+        }
+        
+        .modal-actions button:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+        
+        .modal-actions button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #submit-answer-btn { background-color: var(--secondary-bg); }
+        #show-answer-btn { background-color: #ffc107; color: #333; }
+        
+        #feedback-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+            height: 50px;
+        }
+        
+        #feedback-display.correct {
+            color: var(--correct-color);
+        }
+
+        #feedback-display.incorrect {
+            color: var(--incorrect-color);
+        }
+        
+        #correct-answer-display {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            display: none;
+        }
+
+        /* Victory Card Styles */
+        #victory-card .modal-content {
+            background: radial-gradient(circle, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
+            background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg));
+            color: white;
+            text-align: center;
+        }
+
+        #victory-card h2 {
+            font-size: 3rem;
+            color: var(--gold-color);
+            margin-bottom: 20px;
+        }
+
+        .trophy {
+            font-size: 100px;
+            display: inline-block;
+            margin-bottom: 20px;
+            animation: rotateTrophy 4s linear infinite;
+        }
+
+        #final-scores-table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+
+        #final-scores-table td, #final-scores-table th {
+            padding: 10px;
+            border: 1px solid var(--gold-color);
+            font-size: 1.2rem;
+        }
+
+        #final-scores-table th {
+            background-color: rgba(255, 215, 0, 0.2);
+            color: var(--gold-color);
+        }
+
+        .educational-message {
+            font-size: 1.3rem;
+            margin-top: 30px;
+            font-style: italic;
+            padding: 15px;
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        @keyframes rotateTrophy {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 2rem; }
+            .category-header { font-size: 0.8rem; min-height: 50px; }
+            .cell { font-size: 1.8rem; }
+            .team-score { font-size: 1rem; }
+            .team-score span { font-size: 1.5rem; }
+            .modal-content { width: 95%; margin: 5% auto; padding: 20px; }
+            #question-text { font-size: 1.2rem; }
+            #victory-card h2 { font-size: 2.2rem; }
+            .trophy { font-size: 80px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>שעשועון: אהבת השם מתוך שמחה</h1>
+
+    <div id="scoreboard">
+        <div class="team-score" id="team1">קבוצה 1 <span id="score1">0</span></div>
+        <div class="team-score" id="team2">קבוצה 2 <span id="score2">0</span></div>
+        <div class="team-score" id="team3">קבוצה 3 <span id="score3">0</span></div>
+    </div>
+
+    <div id="game-board"></div>
+
+    <div id="question-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="question-category"></h2>
+                <div id="question-points"></div>
+            </div>
+            <p id="question-text"></p>
+            <div class="team-selection">
+                <strong>מי עונה?</strong><br>
+                <label><input type="radio" name="team" value="0"> קבוצה 1</label>
+                <label><input type="radio" name="team" value="1"> קבוצה 2</label>
+                <label><input type="radio" name="team" value="2"> קבוצה 3</label>
+            </div>
+            <input type="text" id="answer-input" placeholder="הקלידו את תשובתכם כאן...">
+            <div class="modal-actions">
+                <button id="submit-answer-btn">שלח תשובה</button>
+                <button id="show-answer-btn">הצג תשובה נכונה</button>
+            </div>
+            <div id="feedback-display"></div>
+            <div id="correct-answer-display"></div>
+        </div>
+    </div>
+
+    <div id="victory-card" class="modal">
+        <div class="modal-content">
+            <div class="trophy">🏆</div>
+            <h2 id="winner-announcement">הקבוצה המנצחת!</h2>
+            <table id="final-scores-table">
+                <thead>
+                    <tr>
+                        <th>קבוצה</th>
+                        <th>ניקוד סופי</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <p class="educational-message">
+                אהבת ה' האמיתית צומחת מתוך לב שמח. ככל שנרבה להכיר ולהודות על הטוב שבחיינו, כך נתמלא שמחה ונתקרב אל בורא עולם.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const gameData = [
+            // קטגוריה 1: הודיה - המפתח להכל
+            { category: 'הודיה - המפתח להכל', points: 100, question: 'לפי הרמב"ן, מהי תכלית היצירה וכוונת כל המצוות?', answer: 'תכלית היצירה היא שהאדם יאמין באלוקיו, יודה לו על שבראו, ויכיר את בוראו.', keywords: ['להודות', 'יודה', 'להאמין', 'בראנו', 'תכלית היצירה'] },
+            { category: 'הודיה - המפתח להכל', points: 200, question: 'מה העונש של מי שאינו מודה, לפי חז"ל במסכת חולין?', answer: 'מי שאינו מודה, כל מה שיאכל יהיה לו טעם של עפר, כמו הנחש, והוא מאבד את היכולת ליהנות מהחיים.', keywords: ['עפר', 'נחש', 'טעם', 'לא נהנה', 'ליהנות'] },
+            { category: 'הודיה - המפתח להכל', points: 300, question: 'לפי הלבוש, מדוע תיקן דוד המלך לומר מאה ברכות בכל יום?', answer: "מכיוון שבכל יום מתו 100 אנשים מישראל, ודוד המלך הבין ברוח הקודש שהסיבה היא שלא שיבחו והודו לה' כראוי. מאה הברכות (הודיות) באו כנגד מאה הנפשות ומאז פסקה המגפה.", keywords: ['מאה ברכות', 'מאה אנשים', 'מתו', 'דוד המלך', 'לא הודו'] },
+            { category: 'הודיה - המפתח להכל', points: 400, question: 'מה הקשר בין כפיות טובה כלפי חבר לבין כפירה בהקב"ה, כפי שנלמד מפרעה?', answer: 'מי שכופר בטובתו של חברו, סופו שיכפור בטובתו של הקב"ה. פרעה התחיל בזה שאמר "לא ידעתי את יוסף" (כפה את טובתו), וסיים בכפירה מוחלטת באומרו "לא ידעתי את ה\'".', keywords: ['כופר בטובתו', 'פרעה', 'יוסף', 'חברו', 'הקב"ה'] },
+            { category: 'הודיה - המפתח להכל', points: 500, question: 'כיצד סיפורו של עבד אברהם, אליעזר, מדגים את החשיבות של הודיה מיידית ותפילה אישית?', answer: 'אליעזר לא חיכה. כשהיה לו צורך, הוא פנה לה\' במילים שלו ("שיחה"), וכשראה שהצליח והבין ש"מה\' יצא הדבר", הוא מיד השתחווה ארצה להודות, עוד לפני שהמשיך במשא ומתן.', keywords: ['אליעזר', 'השתחווה', 'מיד', 'ארצה', 'שיחה', 'תפילה'] },
+            // קטגוריה 2: שמחה של מצווה
+            { category: 'שמחה של מצווה', points: 100, question: 'לפי התורה (דברים כ"ח), מהי הסיבה המרכזית לכל הקללות והצרות?', answer: 'הסיבה היא "תַּחַת אֲשֶׁר לֹא עָבַדְתָּ אֶת ה\' אֱלֹקיךָ בְּשִׂמְחָה וּבְטוּב לֵבָב מֵרֹב כֹּל".', keywords: ['בשמחה', 'לא עבדת', 'בטוב לבב', 'קללות', 'צרות'] },
+            { category: 'שמחה של מצווה', points: 200, question: 'כיצד "קונים" את חג השבועות, ובמה זה שונה מחג הפסח או סוכות?', answer: 'את חג השבועות "קונים" על ידי השמחה. זאת בניגוד לפסח שנקנה במצות וסוכות שנקנה בסוכה. השמחה היא המצווה המרכזית והיחידה מדאורייתא בחג זה.', keywords: ['שבועות', 'בשמחה', 'קונים', 'מצה', 'סוכה'] },
+            { category: 'שמחה של מצווה', points: 300, question: 'מהי "עבודה שבשמחה ובטוב לבב" לפי הגמרא בערכין?', answer: "זוהי שירה. כלומר, כשיש לאדם טוב ושפע, העבודה הנדרשת ממנו היא לשיר, לשבח ולהודות לה' על כל הטוב.", keywords: ['שירה', 'לשיר', 'ערכין', 'עבודה'] },
+            { category: 'שמחה של מצווה', points: 400, question: "הסבירו לפי הרמב\"ם מדוע אדם שמונע מעצמו את השמחה בעשיית המצווה ראוי להיענש.", answer: "מכיוון שהשמחה בעשיית המצווה ובאהבת ה' היא \"עבודה גדולה\". מי שמונע זאת מעצמו, למעשה מבזה את העבודה ומראה שהמצווה היא כעול עליו ולא מתנה, מה שמעיד על חוסר אהבה לה'.", keywords: ['עבודה גדולה', 'רמב"ם', 'עול', 'משא', 'ראוי להפרע'] },
+            { category: 'שמחה של מצווה', points: 500, question: 'מדוע, לפי המקורות, חורבן בית שני נגרם גם משנאת חינם וגם מחוסר שמחה? הסבירו את הקשר בין השניים.', answer: "השורש של שניהם הוא חוסר הכרת הטוב. חוסר שמחה בעבודת ה' נובע מחוסר הכרת הטוב כלפי הקב\"ה. שנאת חינם (שמתבטאת בעיקר בחוסר אהבה בתוך הבית) נובעת מחוסר הכרת הטוב כלפי בן/בת הזוג. שני החסרונות נובעים מאותו שורש פגום.", keywords: ['הכרת הטוב', 'שורש', 'שנאת חינם', 'שלום בית', 'חוסר אהבה'] },
+            // קטגוריה 3: מחשבה יוצרת מציאות
+            { category: 'מחשבה יוצרת מציאות', points: 100, question: 'מה הקשר הלשוני בין המילה "שמחה" למילה "מחשבה"?', answer: 'למילים "שמחה" ו"מחשבה" יש את אותן האותיות (ש-מ-ח-ה / מ-ח-ש-ב-ה), מה שרומז על הקשר העמוק ביניהן – השמחה תלויה במחשבה.', keywords: ['אותן אותיות', 'אותיות', 'מחשבה', 'שמחה'] },
+            { category: 'מחשבה יוצרת מציאות', points: 200, question: 'מהי העצה של רבי נחמן מברסלב להתמודדות עם עצבות ומרה שחורה?', answer: 'רבי נחמן לימד ש"מצווה גדולה להיות בשמחה תמיד", ויש להתגבר ולהרחיק את העצבות בכל הכוח.', keywords: ['מצווה גדולה', 'תמיד', 'רבי נחמן', 'להתגבר', 'עצבות'] },
+            { category: 'מחשבה יוצרת מציאות', points: 300, question: 'מה ההבדל בין הפרשנות של אדם אופטימי לכישלון לבין הפרשנות של אדם פסימי, לפי מרטין סליגמן?', answer: 'אדם פסימי מפרש כישלון כדבר קבוע ("אני אף פעם לא מצליח"), בעוד אדם אופטימי רואה בכישלון אירוע חולף וזמני ("הפעם נכשלתי בגלל...").', keywords: ['אופטימי', 'פסימי', 'קבוע', 'חולף', 'זמני', 'פרשנות'] },
+            { category: 'מחשבה יוצרת מציאות', points: 400, question: 'מה ניתן ללמוד מהסיפור על התקרית באצטדיון הכדורגל, שבה הודעה על הרעלת מזון גרמה למאות אנשים להרגיש רע?', answer: 'שהמחשבה והפרשנות שלנו למציאות יכולות להשפיע באופן דרמטי על התחושות הפיזיות והרגשיות שלנו, אפילו יותר מהמציאות האובייקטיבית עצמה.', keywords: ['מחשבה', 'פרשנות', 'אצטדיון', 'הרעלת מזון', 'השפעה'] },
+            { category: 'מחשבה יוצרת מציאות', points: 500, question: 'מהו "יתרון האור מן החושך" וכיצד הוא מסביר את העובדה ש"צדיקים תחילתן ייסורים וסופן שלוה"?', answer: 'לא ניתן להכיר ולהעריך את הטוב (האור) במלואו, אלא אם כן חווים קודם את הרע (החושך). הייסורים בתחילה מאפשרים לצדיקים להבחין בגודל הטובה והשלווה שמגיעים לאחר מכן, ולהודות עליהם בעומק רב יותר.', keywords: ['יתרון האור', 'מן החושך', 'צדיקים', 'ייסורים', 'שלוה', 'להבחין'] },
+            // קטגוריה 4: מהי אהבת ה'?
+            { category: "מהי אהבת ה'?", points: 100, question: "מהי מטרת קיום המצוות, לפי מה שנאמר בקריאת שמע (\"והיה אם שמוע תשמעו...\")?", answer: "המטרה היא \"לאהבה את ה' אלוקיכם\". המצוות הן אמצעי להגיע לאהבת ה'.", keywords: ['לאהבה', "אהבת ה'", 'מטרה', 'אמצעי'] },
+            { category: "מהי אהבת ה'?", points: 200, question: "כיצד אדם משיג אהבת ה', לפי פירוש הגמרא לפסוק \"ואהבת את ה' אלוקיך בכל מאדך\"?", answer: "הפירוש הוא 'בכל מידה ומידה שהוא מודד לך, הוי מודה לו במאוד מאוד'. כלומר, על ידי שמודים לה' על כל דבר, מגיעים לאהוב אותו.", keywords: ['בכל מאדך', 'מודה לו', 'במאוד מאוד', 'מידה ומידה'] },
+            { category: "מהי אהבת ה'?", points: 300, question: "מדוע, על פי הביאור, אמירת 'נעשה ונשמע' במעמד הר סיני ביטאה ביטחון עצום של עם ישראל באהבת ה' אליהם?", answer: "מכיוון שהם בטחו שהקב\"ה הוא אבא אוהב שרוצה רק להיטיב להם. לכן, אם הוא מציע להם את התורה, הם לא צריכים לשאול מה כתוב בה, כי ברור להם שזה הדבר הטוב ביותר עבורם.", keywords: ['נעשה ונשמע', 'בטחון', 'אבא אוהב', 'להיטיב', 'טוב'] },
+            { category: "מהי אהבת ה'?", points: 400, question: "מה ההבדל המהותי בין \"אורח טוב\" ל\"אורח רע\" במשל הגמרא, וכיצד זה קשור לאהבת ה'?", answer: "ההבדל הוא בהשקפת החיים. ה\"אורח הטוב\" מתענג על עצם היכולת להודות, ולכן רואה את כל הטוב כמכוון אליו. לעומתו, ה\"אורח הרע\" לא רוצה להודות ולכן מחפש תירוצים למה לא צריך. היכולת להיות \"אורח טוב\" ולהודות היא הדרך לפתח אהבה כלפי הנותן (הקב\"ה).", keywords: ['אורח טוב', 'אורח רע', 'להודות', 'מתענג', 'השקפת חיים'] },
+            { category: "מהי אהבת ה'?", points: 500, question: "לפי התורה, כיצד מצוות הכרת הטוב כלפי מצרים, למרות כל מה שעשו, מהווה כלי לבניית מידת האהבה כלפי ה'?", answer: "התורה מצווה להכיר טובה למצרים על כך שהיו \"אכסניה בשעת הדחק\". זה בונה את מידת הכרת הטוב באדם. אם אדם מצליח להכיר טובה אפילו לאויב שגרם לו סבל, קל וחומר שיוכל להכיר טובה לבורא עולם, ומידה זו של הכרת הטוב היא שתביא אותו לאהבת ה'.", keywords: ['מצרי', 'לא תתעב', 'אכסניה', 'הכרת הטוב', 'לבנות מידה'] },
+            // קטגוריה 5: עובדות וסיפורים
+            { category: 'עובדות וסיפורים', points: 100, question: 'כיצד, לפי מחקר, חיוך משפיע על אורך החיים?', answer: 'במחקר על שחקני בייסבול נמצא ששחקנים עם חיוכים קורנים חיו בממוצע כ-7 שנים יותר (כמעט 80 שנה) מאשר שחקנים שלא חייכו (כ-73 שנה).', keywords: ['חיוך', 'אורך חיים', 'שחקני בייסבול', '7 שנים', '80 שנה'] },
+            { category: 'עובדות וסיפורים', points: 200, question: 'מהו הפסוק המרכזי מספר תהילים שמקשר בין רצון לחיים טובים לבין שמירת הלשון?', answer: '"מִי הָאִישׁ הֶחָפֵץ חַיִּים... נְצֹר לְשׁוֹנְךָ מֵרָע וּשְׂפָתֶיךָ מִדַּבֵּר מִרְמָה."', keywords: ['החפץ חיים', 'נצור לשונך', 'תהילים'] },
+            { category: 'עובדות וסיפורים', points: 300, question: 'מה למד ה"שפת אמת" מהניסוח "ימים טובים בְּהלל והודאה" לגבי ימי החנוכה?', answer: 'הוא למד שעצם אמירת ההלל וההודאה היא זו שהופכת את הימים ל"ימים טובים", ולא שהם ימים טובים שבהם אומרים הלל והודאה. המהות של היום הטוב היא ההודאה עצמה.', keywords: ['שפת אמת', 'בהלל והודאה', 'עצם ההודאה', 'הופכים'] },
+            { category: 'עובדות וסיפורים', points: 400, question: 'מה היתה טעותם של המרגלים, וכיצד היא קשורה לחוש הראייה של חודש תמוז?', answer: 'טעותם היתה קלקול של חוש הראייה. הם תרו את הארץ "בעין רעה", התמקדו ברע והוציאו דיבה. במקום לראות את הטוב, הם ראו רע, והעונש היה 40 שנה במדבר כנגד 40 יום של ראיית הרע.', keywords: ['מרגלים', 'ראייה', 'עין רעה', 'תמוז', '40 יום'] },
+            { category: 'עובדות וסיפורים', points: 500, question: 'מה ניתן ללמוד מהסיפור על הגאון מווילנה והזקן העני שאכל "אבק קמח" בימות החול ו"ראשי עופות" בשבת?', answer: 'ניתן ללמוד על כוחה של השמחה בחלקו. למרות עוניו המרוד, הזקן היה שמח ומלא הודיה על המעט שהיה לו, והתייחס לאוכל הדל שלו כאל סעודת מלכים. הוא חי בעליצות נפש אמיתית מתוך הכרת הטוב.', keywords: ['הגאון מווילנה', 'זקן', 'עני', 'אבק קמח', 'ראשי עופות', 'שמח בחלקו'] },
+        ];
+
+        let scores = [0, 0, 0];
+        let answeredQuestionsCount = 0;
+        let currentCell = null;
+        let currentQuestionData = null;
+
+        const board = document.getElementById('game-board');
+        const modal = document.getElementById('question-modal');
+        const victoryCard = document.getElementById('victory-card');
+        
+        function initGame() {
+            board.innerHTML = '';
+            scores = [0, 0, 0];
+            answeredQuestionsCount = 0;
+            updateScoreboard();
+
+            const categories = [...new Set(gameData.map(q => q.category))];
+            const pointsValues = [...new Set(gameData.map(q => q.points))].sort((a, b) => a - b);
+            
+            // 1. Create headers
+            categories.forEach(category => {
+                const header = document.createElement('div');
+                header.classList.add('category-header');
+                header.textContent = category;
+                board.appendChild(header);
+            });
+            
+            // 2. Create cells in the correct visual order for CSS Grid
+            pointsValues.forEach(points => {
+                 categories.forEach(category => {
+                    const questionIndex = gameData.findIndex(q => q.category === category && q.points === points);
+                    if (questionIndex === -1) return;
+
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.textContent = points;
+                    cell.dataset.questionIndex = questionIndex;
+                    cell.addEventListener('click', cellClick);
+                    board.appendChild(cell);
+                 });
+            });
+
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('submit-answer-btn').addEventListener('click', checkAnswer);
+            document.getElementById('show-answer-btn').addEventListener('click', showCorrectAnswer);
+        }
+
+        function updateScoreboard() {
+            document.getElementById('score1').textContent = scores[0];
+            document.getElementById('score2').textContent = scores[1];
+            document.getElementById('score3').textContent = scores[2];
+        }
+
+        function cellClick(event) {
+            currentCell = event.currentTarget;
+            if (currentCell.classList.contains('answered')) return;
+            
+            const questionIndex = currentCell.dataset.questionIndex;
+            currentQuestionData = gameData[questionIndex];
+            
+            document.getElementById('question-category').textContent = currentQuestionData.category;
+            document.getElementById('question-points').textContent = `${currentQuestionData.points} נק'`;
+            document.getElementById('question-text').textContent = currentQuestionData.question;
+            
+            // Reset modal state
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').disabled = false;
+            document.getElementById('correct-answer-display').style.display = 'none';
+            document.getElementById('correct-answer-display').textContent = '';
+            document.getElementById('submit-answer-btn').disabled = false;
+            document.getElementById('feedback-display').textContent = '';
+            document.getElementById('feedback-display').className = 'feedback-display';
+            document.querySelector('.modal-content').className = 'modal-content';
+            document.querySelectorAll('input[name="team"]').forEach(radio => radio.checked = false);
+
+            modal.style.display = 'block';
+        }
+        
+        function checkAnswer() {
+            const userAnswer = document.getElementById('answer-input').value;
+            const selectedTeamRadio = document.querySelector('input[name="team"]:checked');
+            
+            if (!selectedTeamRadio) {
+                alert('יש לבחור קבוצה שעונה!');
+                return;
+            }
+            if (!userAnswer.trim()) {
+                alert('יש להזין תשובה!');
+                return;
+            }
+            
+            const teamIndex = parseInt(selectedTeamRadio.value);
+            const { points, keywords } = currentQuestionData;
+
+            const userWords = userAnswer.toLowerCase().split(/\s+/);
+            const lowerCaseKeywords = keywords.map(kw => kw.toLowerCase());
+            const isCorrect = lowerCaseKeywords.some(kw => userWords.includes(kw));
+
+            updateScore(isCorrect, points, teamIndex);
+            
+            // Provide immediate visual feedback
+            const feedbackDisplay = document.getElementById('feedback-display');
+            const modalContent = document.querySelector('#question-modal .modal-content');
+            
+            document.getElementById('submit-answer-btn').disabled = true;
+            document.getElementById('answer-input').disabled = true;
+
+            if (isCorrect) {
+                feedbackDisplay.textContent = 'נכון!';
+                feedbackDisplay.className = 'feedback-display correct';
+                modalContent.classList.add('feedback-correct');
+            } else {
+                feedbackDisplay.textContent = 'לא נכון...';
+                feedbackDisplay.className = 'feedback-display incorrect';
+                modalContent.classList.add('feedback-incorrect');
+            }
+            
+            // Auto-close modal after a delay
+            setTimeout(closeModal, 2500);
+        }
+
+        function updateScore(isCorrect, points, teamIndex) {
+            if (isCorrect) {
+                scores[teamIndex] += points;
+            } else {
+                // Only subtract points for harder questions
+                if (points >= 400) {
+                    scores[teamIndex] -= points;
+                }
+            }
+            updateScoreboard();
+        }
+        
+        function showCorrectAnswer() {
+            const display = document.getElementById('correct-answer-display');
+            display.textContent = `תשובה נכונה: ${currentQuestionData.answer}`;
+            display.style.display = 'block';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+            if (currentCell) {
+                currentCell.classList.add('answered');
+                answeredQuestionsCount++;
+            }
+            if (answeredQuestionsCount >= gameData.length) {
+                setTimeout(showVictoryScreen, 500);
+            }
+        }
+        
+        function showVictoryScreen() {
+            board.style.display = 'none';
+            document.getElementById('scoreboard').style.display = 'none';
+            document.querySelector('h1').style.display = 'none';
+
+            const maxScore = Math.max(...scores);
+            const winningTeams = scores.map((score, index) => ({ score, index }))
+                                     .filter(team => team.score === maxScore);
+
+            let announcement;
+            if (winningTeams.length > 1 && winningTeams.every(t => t.score === winningTeams[0].score)) {
+                announcement = "תיקו! הקבוצות המנצחות הן ";
+                announcement += winningTeams.map(t => `קבוצה ${t.index + 1}`).join(' ו');
+            } else {
+                announcement = `הקבוצה המנצחת היא קבוצה ${winningTeams[0].index + 1}!`;
+            }
+            document.getElementById('winner-announcement').textContent = announcement;
+            
+            const finalScoresBody = document.querySelector('#final-scores-table tbody');
+            finalScoresBody.innerHTML = '';
+            scores.forEach((score, index) => {
+                const row = `<tr><td>קבוצה ${index + 1}</td><td>${score}</td></tr>`;
+                finalScoresBody.innerHTML += row;
+            });
+
+            victoryCard.style.display = 'block';
+        }
+
+        window.onload = initGame;
+    </script>
+
+</body>
+</html>

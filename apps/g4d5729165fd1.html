@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>דין או מנהג — משחק חגי תשרי</title>
+<style>
+  :root{
+    --bg:#0f172a;        /* slate-900 */
+    --card:#111827cc;    /* gray-900/80 */
+    --acc:#22d3ee;       /* cyan-400 */
+    --acc2:#f472b6;      /* pink-400 */
+    --good:#34d399;      /* emerald-400 */
+    --bad:#fb7185;       /* rose-400 */
+    --warn:#fbbf24;      /* amber-400 */
+    --text:#e5e7eb;      /* gray-200 */
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background: radial-gradient(1200px 700px at 80% -10%, #1f2937 0%, var(--bg) 60%);
+    color:var(--text); font-family: "Rubik", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+    min-height:100svh; display:grid; place-items:center; padding:16px;
+  }
+  .app{
+    width:min(900px,100%); background:linear-gradient(180deg,#0b1222aa,#0b122288), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="%2322d3ee" offset="0"/><stop stop-color="%23f472b6" offset="1"/></linearGradient></defs><g fill="none" stroke="url(%23g)" stroke-opacity=".13"><circle cx="40" cy="40" r="38"/><circle cx="160" cy="160" r="70"/><circle cx="280" cy="80" r="50"/></g></svg>') center/400px repeat, var(--card);
+    backdrop-filter: blur(8px);
+    border:1px solid #334155; border-radius:24px; box-shadow: 0 30px 80px #0008;
+    padding:18px 18px 10px;
+  }
+  header{display:flex; gap:12px; align-items:center; margin-bottom:10px}
+  .pill{background:#111827; border:1px solid #334155; color:#cbd5e1; padding:8px 12px; border-radius:999px; font-size:14px}
+  .title{font-size:clamp(22px, 4.2vw, 34px); font-weight:800; letter-spacing:.3px}
+  .sub{opacity:.85; font-size:14px}
+  .row{display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+  .progress{
+    height:10px; background:#1f2937; border:1px solid #334155; border-radius:999px; overflow:hidden; width:100%;
+    box-shadow: inset 0 1px 0 #0007;
+  }
+  .bar{height:100%; width:0%; background: linear-gradient(90deg, var(--acc), var(--acc2)); transition:width .35s ease}
+  .card{
+    margin-top:10px; background: #0b1222cc; border:1px solid #233554; border-radius:20px; padding:22px;
+  }
+  .q{
+    font-size:clamp(18px, 2.8vw, 26px); line-height:1.45; margin:4px 0 14px; font-weight:650;
+  }
+  .btns{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  button{
+    appearance:none; border:1px solid #2d3f61; background:#0b1326; color:#e2e8f0; padding:16px 18px;
+    border-radius:16px; font-size:clamp(16px, 2.4vw, 20px); font-weight:700; cursor:pointer; transition:transform .06s ease, background .2s, border-color .2s, box-shadow .2s;
+  }
+  button:hover{transform:translateY(-1px); box-shadow:0 8px 20px #0007}
+  .b-good{border-color:#14532d; background:linear-gradient(180deg,#062814,#0b1326)}
+  .b-bad{border-color:#4c0519; background:linear-gradient(180deg,#2a0612,#0b1326)}
+  .b-accent{border-color:#1e3a8a; background:linear-gradient(180deg,#0e1a43,#0b1326)}
+  .hud{display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap}
+  .tag{font-weight:700; padding:6px 10px; border-radius:10px; border:1px solid #374151; background:#0b1326; color:#cbd5e1}
+  .tag .num{font-variant-numeric:tabular-nums}
+  .feedback{
+    margin-top:10px; padding:12px 14px; border-radius:14px; font-weight:700; display:none; border:1px solid #374151;
+  }
+  .feedback.show{display:block}
+  .ok{background:#042315; border-color:#14532d; color:#d1fae5}
+  .no{background:#2a0a12; border-color:#4c0519; color:#ffe4e6}
+  .end .big{
+    font-size:clamp(22px,4vw,32px); font-weight:900; margin:0 0 8px;
+  }
+  .end p{margin:6px 0; opacity:.9}
+  .small{font-size:13px; opacity:.85}
+  .grid-2{display:grid; grid-template-columns:1fr; gap:10px}
+  @media(min-width:720px){ .grid-2{grid-template-columns:1fr 1fr} }
+  .ghost{opacity:.6}
+  footer{display:flex; justify-content:center; margin-top:8px}
+  .mini{font-size:12px; opacity:.7}
+  canvas#confetti{position:fixed; inset:0; pointer-events:none}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<div class="app" role="application" aria-label="דין או מנהג — משחק חגי תשרי">
+  <header class="row">
+    <span class="pill">חגי תשרי</span>
+    <div class="title">דין או מנהג — משחק מחשב</div>
+  </header>
+
+  <div class="row">
+    <div class="progress" aria-label="התקדמות">
+      <div class="bar" id="bar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="hud">
+    <div class="tag">שאלה <span class="num" id="qNum">1</span>/<span class="num" id="qTotal">29</span></div>
+    <div class="tag">ניקוד: <span class="num" id="score">0</span></div>
+  </div>
+
+  <section class="card" id="game">
+    <div class="q" id="qText">...</div>
+    <div class="btns">
+      <button id="btnDin" class="b-accent">דִּין</button>
+      <button id="btnMinhag" class="b-accent">מִנְהָג</button>
+    </div>
+    <div id="feedback" class="feedback" aria-live="polite"></div>
+  </section>
+
+  <section class="card end" id="end" style="display:none">
+    <div class="big" id="finalTitle">כל הכבוד!</div>
+    <p id="finalScore"></p>
+    <div class="grid-2" style="margin-top:8px">
+      <button id="again" class="b-good">שחק/י שוב ↻</button>
+      <button id="showKey" class="b-bad">הצג מפתח תשובות</button>
+    </div>
+    <div id="answerKey" class="feedback show ghost small" style="display:none; margin-top:12px"></div>
+  </section>
+
+  <footer><div class="mini">טיפ: אפשר ללמד גם דרך "מחשבים" — לחצו דין/מנהג וראו פידבק מיידי עם צליל וקונפטי.</div></footer>
+</div>
+
+<script>
+/* ------------------------ תוכן השאלות (מהחוברות) ------------------------ */
+/* הערה: "correct" = "din" או "minhag" */
+const QUESTIONS = [
+  // אלול
+  {t:"תקיעת שופר בכל חודש אלול.", correct:"minhag", src:"אלול ה'"},
+  {t:"אמירת סליחות (ספרדים מר\"ח, אשכנזים שבוע לפני ר\"ה).", correct:"minhag", src:"הלכות ו'"},
+  {t:"אמירת \"לְדָוִד ה' אוֹרִי וְיִשְׁעִי\" באלול.", correct:"minhag", src:"ג–ד"},
+  {t:"התרת נדרים בערב ראש השנה.", correct:"minhag", src:"תשרי ה'"},
+  // ראש השנה
+  {t:"תקיעת שופר בראש השנה.", correct:"din", src:"הלכות ו'"},
+  {t:"מלכויות, זכרונות ושופרות בתפילת מוסף.", correct:"din", src:"הלכות ו'"},
+  {t:"תשליך – הליכה אל מים ואמירת פסוקים.", correct:"minhag", src:"אלול ה'"},
+  {t:"סימנים בסעודת ראש השנה (תפוח בדבש, ראש כבש וכו').", correct:"minhag", src:"תשרי ה'"},
+  {t:"הנחת פרי חדש בלילה השני כדי לברך \"שהחיינו\".", correct:"minhag", src:"הלכות ו'"},
+  {t:"ברכת \"שהחיינו\" בלילה הראשון של ראש השנה.", correct:"din", src:"הלכות ו'"},
+  {t:"ראש השנה נחוג יומיים — \"יומא אריכתא\".", correct:"din", src:"הלכות ו'"},
+  // יום כיפור
+  {t:"וידוי — \"אשמנו, בגדנו\".", correct:"din", src:"תשרי ה'"},
+  {t:"צום מהתורה למבוגרים ביום הכיפורים.", correct:"din", src:"הלכות ו'"},
+  {t:"תענית קטנים (חינוך בגיל 9–11 בהדרגה).", correct:"din", src:"הלכות ו'"},
+  {t:"כפרות בערב יום כיפור (תרנגול/דג/כסף).", correct:"minhag", src:"תשרי ה'"},
+  {t:"אמירת \"כל נדרי\" בפתיחת יום הכיפורים.", correct:"minhag", src:"תשרי ה' / ג–ד"},
+  {t:"אמירת \"אבינו מלכנו\" בעשי\"ת וביוה\"כ.", correct:"minhag", src:"הלכות ו'"},
+  {t:"קריאת ספר יונה במנחה של יום הכיפורים.", correct:"minhag", src:"תשרי ה'"},
+  {t:"נשיאת כפיים בתפילת נעילה (כשהזמן עדיין יום).", correct:"din", src:"הלכות ו'"},
+  {t:"אמירת י\"ג מידות — מותר רק בציבור (לא ביחיד).", correct:"din", src:"הלכות ו'"},
+  // סוכות
+  {t:"אכילת פת בליל יו\"ט ראשון בסוכה — חובה.", correct:"din", src:"הלכות ו'"},
+  {t:"מצוות ישיבה בסוכה כל שבעת הימים.", correct:"din", src:"הלכות ו'"},
+  {t:"ברכת \"לישב בסוכה\" כשאוכלים פת כשיעור.", correct:"din", src:"הלכות ו'"},
+  {t:"קישוט הסוכה בנוי וקישוטים.", correct:"minhag", src:"הלכות ו'"},
+  {t:"שמחת בית השואבה.", correct:"minhag", src:"תשרי ה'"},
+  {t:"נטילת לולב וארבעת המינים (דאורייתא ביום הראשון).", correct:"din", src:"הלכות ו'"},
+  {t:"\"וְשָׂמַחְתָּ בְּחַגֶּךָ\" — שמחת החג.", correct:"din", src:"הלכות ו'"},
+  {t:"מתחילים לבנות סוכה מיד בצאת יום כיפור.", correct:"minhag", src:"תשרי ה'"},
+  {t:"לישון בסוכה (עיקר הדין — חלק מישיבה בסוכה).", correct:"din", src:"הלכות ו'"},
+];
+
+/* ------------------------------- מצב המשחק ------------------------------ */
+let i = 0, score = 0;
+const total = QUESTIONS.length;
+const els = {
+  bar: document.getElementById('bar'),
+  qNum: document.getElementById('qNum'),
+  qTotal: document.getElementById('qTotal'),
+  score: document.getElementById('score'),
+  qText: document.getElementById('qText'),
+  fb: document.getElementById('feedback'),
+  game: document.getElementById('game'),
+  end: document.getElementById('end'),
+  finalTitle: document.getElementById('finalTitle'),
+  finalScore: document.getElementById('finalScore'),
+  answerKey: document.getElementById('answerKey'),
+  btnDin: document.getElementById('btnDin'),
+  btnMinhag: document.getElementById('btnMinhag'),
+  again: document.getElementById('again'),
+  showKey: document.getElementById('showKey'),
+};
+els.qTotal.textContent = total;
+
+/* ------------------------------- סאונדים ------------------------------- */
+/* שימוש ב-WebAudio כדי לא להזדקק לקבצים חיצוניים */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function beep(freq=660, dur=0.12, type='sine', vol=0.07){
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.value = vol;
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start();
+  setTimeout(()=>{o.stop()}, dur*1000);
+}
+function correctSound(){ beep(740,0.11,'triangle',0.06); setTimeout(()=>beep(980,0.14,'triangle',0.06),100); }
+function wrongSound(){ beep(180,0.16,'sawtooth',0.06); setTimeout(()=>beep(140,0.2,'sawtooth',0.05),140); }
+function winSound(){ [660,880,990,1320].forEach((f,k)=>setTimeout(()=>beep(f,0.11,'triangle',0.07), k*120)); }
+
+/* -------------------------------- קונפטי ------------------------------- */
+const conf = document.getElementById('confetti');
+const cx = conf.getContext('2d');
+let confettiPieces=[];
+function spawnConfetti(n=80){
+  const W=conf.width=window.innerWidth, H=conf.height=window.innerHeight;
+  for(let j=0;j<n;j++){
+    confettiPieces.push({
+      x: Math.random()*W, y: -10-Math.random()*H*0.2,
+      s: 6+Math.random()*8, a: Math.random()*Math.PI,
+      v: 1+Math.random()*3, w: (Math.random()*2-1)*0.12,
+      c: Math.random()<.5? '#22d3ee' : '#f472b6'
+    });
+  }
+}
+function drawConfetti(){
+  const W=conf.width=window.innerWidth, H=conf.height=window.innerHeight;
+  cx.clearRect(0,0,W,H);
+  confettiPieces = confettiPieces.filter(p=>p.y<H+20);
+  confettiPieces.forEach(p=>{
+    p.y+=p.v; p.x+=Math.sin(p.a)*0.8; p.a+=p.w;
+    cx.save();
+    cx.translate(p.x,p.y); cx.rotate(p.a);
+    cx.fillStyle=p.c; cx.fillRect(-p.s/2,-p.s/2,p.s,p.s);
+    cx.restore();
+  });
+  requestAnimationFrame(drawConfetti);
+}
+drawConfetti();
+
+/* ------------------------------- הצגת שאלה ------------------------------ */
+function render(){
+  const q = QUESTIONS[i];
+  els.qNum.textContent = i+1;
+  els.qText.textContent = q.t;
+  els.bar.style.width = `${((i)/total)*100}%`;
+  els.fb.className = 'feedback';
+  els.fb.textContent = '';
+}
+render();
+
+/* --------------------------- בדיקת תשובה ולוגיקה ----------------------- */
+function answer(kind){
+  const q = QUESTIONS[i];
+  const isCorrect = (kind === q.correct);
+  if(isCorrect){
+    score++; els.score.textContent = score;
+    els.fb.className = 'feedback show ok';
+    els.fb.textContent = 'נכון! 🎯';
+    correctSound(); spawnConfetti(35);
+  }else{
+    els.fb.className = 'feedback show no';
+    els.fb.textContent = 'לא נכון... נסו לחשוב שוב 📚';
+    wrongSound();
+  }
+  // כפתור "שאלה הבאה"
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = (i < total-1) ? 'הבא ▶' : 'סיום ▶';
+  nextBtn.className = isCorrect ? 'b-good' : 'b-bad';
+  nextBtn.style.marginTop = '10px';
+  nextBtn.onclick = next;
+  els.fb.appendChild(document.createElement('br'));
+  els.fb.appendChild(nextBtn);
+  // נטרול לחיצה כפולה לפני מעבר
+  els.btnDin.disabled = true; els.btnMinhag.disabled = true;
+  setTimeout(()=>{ els.btnDin.disabled=false; els.btnMinhag.disabled=false; }, 220);
+}
+function next(){
+  if(i<total-1){ i++; render(); }
+  else { finish(); }
+}
+els.btnDin.addEventListener('click', ()=>answer('din'));
+els.btnMinhag.addEventListener('click', ()=>answer('minhag'));
+
+/* -------------------------------- סיום משחק ----------------------------- */
+function finish(){
+  els.bar.style.width = '100%';
+  els.game.style.display = 'none';
+  els.end.style.display = 'block';
+  const pct = Math.round( (score/total)*100 );
+  els.finalTitle.textContent = pct>=90 ? 'אלופים! 🌟' : pct>=70 ? 'יפה מאוד! 🙌' : 'כל התחלה קשה 🙂';
+  els.finalScore.textContent = `עניתם נכון על ${score} מתוך ${total} (${pct}%).`;
+  winSound(); spawnConfetti(120);
+}
+els.again.onclick = ()=>{ i=0; score=0; els.score.textContent=0; els.end.style.display='none'; els.game.style.display='block'; render(); };
+els.showKey.onclick = ()=>{
+  els.answerKey.style.display = els.answerKey.style.display==='none' ? 'block' : 'none';
+  if(els.answerKey.dataset.filled) return;
+  const lines = QUESTIONS.map((q,idx)=> `${idx+1}. ${q.t} — ${q.correct==='din'?'דין':'מנהג'} (${q.src})`);
+  els.answerKey.innerHTML = lines.join("<br>");
+  els.answerKey.dataset.filled = "1";
+};
+
+/* נגישות: קיצורים מהמקלדת */
+window.addEventListener('keydown', (e)=>{
+  if(document.activeElement.tagName==='INPUT' || document.activeElement.tagName==='TEXTAREA') return;
+  if(e.key==='1' || e.key==='ArrowRight') answer('din');
+  if(e.key==='2' || e.key==='ArrowLeft') answer('minhag');
+  if(e.key==='Enter') next();
+});
+</script>
+</body>
+</html>

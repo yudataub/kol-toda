@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>משחק חמשת החומשים – 5 דרגות</title>
+  <style>
+    :root{
+      --bg: #0f172a;          /* slate-900 */
+      --card: #111827;        /* gray-900 */
+      --muted:#1f2937;        /* gray-800 */
+      --acc1:#22d3ee;         /* cyan-400 */
+      --acc2:#a78bfa;         /* violet-400 */
+      --acc3:#f59e0b;         /* amber-500 */
+      --good:#10b981;         /* emerald-500 */
+      --bad:#ef4444;          /* red-500 */
+      --text:#e5e7eb;         /* gray-200 */
+    }
+    html,body{height:100%;}
+    body{
+      margin:0; font-family: system-ui, "Segoe UI", Arial, Helvetica, sans-serif;
+      background: radial-gradient(1200px 800px at 80% -10%, #1e293b, #0b1020 60%, #070a14);
+      color: var(--text);
+    }
+    .container{max-width: 980px; margin: 0 auto; padding: 24px;}
+    .card{background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+          border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+          backdrop-filter: blur(6px);}
+    .header{display:flex; gap:16px; align-items:center; justify-content:space-between; padding:16px 20px;}
+    .brand{display:flex; gap:12px; align-items:center;}
+    .brand .logo{width:42px; height:42px; border-radius:50%; background: conic-gradient(from 0deg, var(--acc1), var(--acc2), var(--acc3), var(--acc1));}
+    .brand h1{margin:0; font-size: clamp(18px, 3vw, 28px); letter-spacing:0.5px}
+
+    .screen{padding: 24px;}
+    .title{font-size: clamp(20px, 3.2vw, 30px); margin: 0 0 8px 0}
+    .subtitle{opacity:0.9; margin:0 0 22px 0}
+
+    .levels{display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:14px}
+    .level{
+      border-radius: 16px; padding: 16px; background: #0b1328;
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+      cursor:pointer; position:relative; overflow:hidden;
+    }
+    .level:hover{ transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,.35); border-color: rgba(255,255,255,0.16)}
+    .level h3{margin: 0 0 6px 0}
+    .pill{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-size: 12px; border:1px solid rgba(255,255,255,0.12)}
+
+    .status{display:flex; gap:8px; align-items:center; font-size:13px; opacity:.9}
+
+    .q-card{padding:18px; border:1px solid rgba(255,255,255,.08); background:#0b1328; border-radius:16px}
+    .question{font-size: clamp(18px, 2.6vw, 22px); margin:0 0 10px 0}
+
+    .options{display:grid; gap:10px; margin-top:8px}
+    .btn{padding:12px 14px; border-radius:12px; background:#0f1a34; border:1px solid rgba(255,255,255,.1);
+         color:var(--text); cursor:pointer; text-align:center; font-size:16px;
+         transition: transform .08s ease, background .15s ease, border-color .15s ease}
+    .btn:hover{ transform: translateY(-1px); background:#12204a}
+    .btn[disabled]{opacity:.6; cursor:not-allowed}
+    .btn.primary{ background: linear-gradient(180deg, #0ea5e9, #2563eb); border:0; color:white; font-weight:700}
+
+    .opt{background:#111b35}
+    .opt.correct{background: rgba(16,185,129,.15); border-color: rgba(16,185,129,.45)}
+    .opt.wrong{background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.45)}
+
+    .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+    .space{height:12px}
+
+    .progress{height: 12px; border-radius:999px; background: rgba(255,255,255,.08); overflow:hidden}
+    .bar{height:100%; width:0%; background: linear-gradient(90deg, var(--acc1), var(--acc2)); transition: width .25s ease}
+
+    .stats{display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; margin: 12px 0}
+    .stat{padding:10px 12px; border:1px solid rgba(255,255,255,.08); border-radius:12px; background:#0b1328; text-align:center}
+    .stat .big{font-weight:800; font-size:20px}
+
+    .hidden{display:none}
+    .center{display:flex; align-items:center; justify-content:center}
+
+    .toast{position:fixed; inset-inline-start: 24px; bottom: 24px; background: #0e1a33; border: 1px solid rgba(255,255,255,.1);
+           padding: 10px 14px; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,.35); opacity:0; transform: translateY(10px);
+           transition: opacity .18s ease, transform .18s ease;}
+    .toast.show{opacity:1; transform: translateY(0)}
+
+    .footer{opacity:.8; font-size:12px; text-align:center; margin-top: 16px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <h1>משחק חמשת החומשים · 5 דרגות</h1>
+        </div>
+        <div class="pill" id="levelPill">מצב: מסך פתיחה</div>
+      </div>
+      <div class="screen" id="screenStart">
+        <h2 class="title">בחרו דרגה והתחילו לשחק</h2>
+        <p class="subtitle">מהקל למומחים: נזהה חומש לפי נושאים, פרשיות ומצוות. אפשר להתקדם לפי הסדר או לבחור דרגה חופשית.</p>
+        <div class="levels" id="levelsGrid"></div>
+        <div class="space"></div>
+        <div class="progress"><div class="bar" id="xpBar"></div></div>
+        <div class="footer">טיפ: יש שתי הזדמנויות לכל שאלה. נקודות בונוס על רצף תשובות נכונות! 🎯</div>
+      </div>
+
+      <div class="screen hidden" id="screenPlay">
+        <div class="row" style="justify-content:space-between">
+          <div class="pill" id="levelName"></div>
+          <div class="pill">שאלה <span id="qIndex">1</span>/<span id="qTotal">5</span></div>
+        </div>
+        <div class="space"></div>
+        <div class="q-card">
+          <h3 class="question" id="qText">—</h3>
+          <div class="options" id="opts"></div>
+          <div class="space"></div>
+          <div class="row">
+            <button class="btn" id="btnSkip">דלג</button>
+            <button class="btn" id="btnFinish">סיים דרגה</button>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><div>ניקוד</div><div class="big" id="score">0</div></div>
+          <div class="stat"><div>רצף נכון</div><div class="big" id="streak">0</div></div>
+          <div class="stat"><div>ניסיונות נשארו</div><div class="big" id="tries">2</div></div>
+        </div>
+        <div class="progress"><div class="bar" id="levelBar"></div></div>
+      </div>
+
+      <div class="screen hidden" id="screenEnd">
+        <h2 class="title" id="endTitle">כל הכבוד!</h2>
+        <p class="subtitle" id="endSubtitle">סיכום הדרגה</p>
+        <div class="stats">
+          <div class="stat"><div>ניקוד בדרגה</div><div class="big" id="endScore">0</div></div>
+          <div class="stat"><div>נכון מתוך</div><div class="big" id="endCorrect">0/0</div></div>
+          <div class="stat"><div>שיא רצף</div><div class="big" id="endBestStreak">0</div></div>
+        </div>
+        <div class="row">
+          <button class="btn" id="btnAgain">שחק שוב דרגה</button>
+          <button class="btn primary" id="btnNext">לדרגה הבאה ▶</button>
+          <button class="btn" id="btnHome">בחירת דרגה</button>
+        </div>
+        <div class="footer">המשיכו לאתגר הבא – בדרגה 5 תצטרכו לקשר בין חומש, פרשה ומצווה מדויקת 📜✨</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">—</div>
+
+  <script>
+  // -------------------------------------------
+  // נתוני המשחק: 5 דרגות, שאלות מרובות־ברירה
+  // אפשר לערוך/להרחיב בקלות. כל אופציה היא מחרוזת.
+  // correct הוא הטקסט המדויק של התשובה הנכונה.
+  // -------------------------------------------
+  const LEVELS = [
+    {
+      id: 1,
+      name: "דרגה 1 – היכרות כללית",
+      color: "linear-gradient(90deg,#22d3ee,#38bdf8)",
+      questions: [
+        { q: "איזה נושא כללי שייך בעיקר לחומש בראשית?",
+          options: ["מסעות במדבר", "בריאת העולם והאבות", "בניית המשכן", "דיני קרבנות"], correct: "בריאת העולם והאבות" },
+        { q: "באיזה חומש מסופר על יציאת מצרים ומתן תורה?",
+          options: ["ויקרא", "שמות", "דברים", "במדבר"], correct: "שמות" },
+        { q: "באיזה חומש מופיעים דיני הקרבנות והקדושה?",
+          options: ["בראשית", "שמות", "ויקרא", "דברים"], correct: "ויקרא" },
+        { q: "באיזה חומש מסופרים המסעות והאירועים במדבר?",
+          options: ["דברים", "שמות", "במדבר", "ויקרא"], correct: "במדבר" },
+        { q: "איזה חומש הוא נאומי משה וסיכום לפני הכניסה לארץ?",
+          options: ["שמות", "ויקרא", "דברים", "בראשית"], correct: "דברים" },
+      ]
+    },
+    {
+      id: 2,
+      name: "דרגה 2 – נושא מרכזי לכל חומש",
+      color: "linear-gradient(90deg,#a78bfa,#60a5fa)",
+      questions: [
+        { q: "הנושא המרכזי של ספר שמות הוא:",
+          options: ["קדושה וטהרה", "גאולת ישראל", "בריאת העולם", "נאומי פרידה"], correct: "גאולת ישראל" },
+        { q: "ספר בראשית מדגיש בעיקר:",
+          options: ["הנהגה במדבר", "יסודות האמונה והאבות", "מצוות החגים", "מלחמות הארץ"], correct: "יסודות האמונה והאבות" },
+        { q: "ספר ויקרא עוסק בעיקר ב:",
+          options: ["דיני קרבנות וקדושה", "שירת הים", "מרגלים", "ברכת כהנים"], correct: "דיני קרבנות וקדושה" },
+        { q: "ספר במדבר מתאר בעיקר:",
+          options: ["נאומי משה", "מסעות וניסיונות המדבר", "בריאת העולם", "בנייה וכלים"], correct: "מסעות וניסיונות המדבר" },
+        { q: "ספר דברים מתמקד ב:",
+          options: ["סיפור האבות", "הוצאה מעבדות", "נאומי משה וחזרה על מצוות", "הקמת המשכן"], correct: "נאומי משה וחזרה על מצוות" },
+      ]
+    },
+    {
+      id: 3,
+      name: "דרגה 3 – פרשיות עיקריות בכל חומש",
+      color: "linear-gradient(90deg,#f59e0b,#f97316)",
+      questions: [
+        { q: "הפרשיות נח, לך לך, וישב שייכות ל:",
+          options: ["שמות", "דברים", "בראשית", "ויקרא"], correct: "בראשית" },
+        { q: "הפרשיות שמות, בא, בשלח, יתרו שייכות ל:",
+          options: ["שמות", "ויקרא", "דברים", "במדבר"], correct: "שמות" },
+        { q: "הפרשיות ויקרא, שמיני, אחרי מות, קדושים הן בספר:",
+          options: ["ויקרא", "דברים", "בראשית", "במדבר"], correct: "ויקרא" },
+        { q: "הפרשיות בהעלותך, קורח, בלק, פינחס הן בספר:",
+          options: ["דברים", "במדבר", "בראשית", "ויקרא"], correct: "במדבר" },
+        { q: "הפרשיות דברים, עקב, ראה, שופטים הן בספר:",
+          options: ["דברים", "ויקרא", "שמות", "בראשית"], correct: "דברים" },
+      ]
+    },
+    {
+      id: 4,
+      name: "דרגה 4 – נושאים מפורטים ומצוות",
+      color: "linear-gradient(90deg,#34d399,#10b981)",
+      questions: [
+        { q: "'קריעת ים סוף' ומעמד סיני שייכים לחומש:", options: ["ויקרא","שמות","בראשית","דברים"], correct: "שמות"},
+        { q: "'דיני טומאה וטהרה' ו'שמיטה ויובל' שייכים ל:", options: ["ויקרא","במדבר","בראשית","דברים"], correct: "ויקרא"},
+        { q: "'סיפור המרגלים' ו'מי מריבה' – בספר:", options: ["שמות","במדבר","דברים","בראשית"], correct: "במדבר"},
+        { q: "'ברכת המזון' ו'אהבת ה\' – בספר:", options: ["דברים","שמות","במדבר","ויקרא"], correct: "דברים"},
+        { q: "'ברית בין הבתרים' ו'חלום יעקב' – בספר:", options: ["דברים","שמות","בראשית","ויקרא"], correct: "בראשית"},
+      ]
+    },
+    {
+      id: 5,
+      name: "דרגה 5 – מומחים: חומש × פרשה × מצווה",
+      color: "linear-gradient(90deg,#f472b6,#a78bfa)",
+      questions: [
+        { q: "באיזו פרשה מופיעות 'מצוות החגים' (שבת, פסח, ספירה, שבועות, סוכות)?",
+          options: ["ויקרא – אמור", "ויקרא – שמיני", "במדבר – קורח", "שמות – משפטים"], correct: "ויקרא – אמור" },
+        { q: "באיזו פרשה מפורטים 'קרבנות המוספים לחגים'?",
+          options: ["במדבר – פינחס", "ויקרא – אחרי מות", "שמות – יתרו", "דברים – שופטים"], correct: "במדבר – פינחס" },
+        { q: "'בניית המשכן וכליו' מופיעה בעיקר ב:",
+          options: ["שמות – תרומה/תצוה", "ויקרא – ויקרא", "בראשית – ויצא", "דברים – ואתחנן"], correct: "שמות – תרומה/תצוה" },
+        { q: "'קריאת שמע' ועשרת הדיברות השניים – היכן?",
+          options: ["דברים – ואתחנן", "שמות – יתרו", "ויקרא – קדושים", "במדבר – בהעלותך"], correct: "דברים – ואתחנן" },
+        { q: "'חלום יעקב וסולם' נמצא ב:",
+          options: ["בראשית – ויצא", "בראשית – וישב", "שמות – שמות", "דברים – עקב"], correct: "בראשית – ויצא" },
+      ]
+    }
+  ];
+
+  // מצב גלובלי
+  let state = {
+    levelIndex: 0,
+    qIndex: 0,
+    score: 0,
+    correctCount: 0,
+    bestStreak: 0,
+    streak: 0,
+    tries: 2,
+    answered: false,
+    order: [],
+    xp: 0 // אחוז חוויית משתמש במסך הבית
+  };
+
+  // עזר: ערבוב מערך
+  const shuffle = (arr)=>arr.map(v=>({v, r:Math.random()})).sort((a,b)=>a.r-b.r).map(o=>o.v);
+
+  // צלילונים עם WebAudio
+  const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  function beep(type='sine', freq=660, dur=0.12, vol=0.2){
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.value = vol; o.connect(g); g.connect(audioCtx.destination);
+    o.start(); setTimeout(()=>o.stop(), dur*1000);
+  }
+  function soundCorrect(){
+    beep('sine', 660, .08); setTimeout(()=>beep('sine', 880, .1), 90);
+  }
+  function soundWrong(){
+    beep('sawtooth', 160, .12, .25); setTimeout(()=>beep('square', 120, .14, .2), 120);
+  }
+
+  // UI refs
+  const elStart = document.getElementById('screenStart');
+  const elPlay  = document.getElementById('screenPlay');
+  const elEnd   = document.getElementById('screenEnd');
+  const levelsGrid = document.getElementById('levelsGrid');
+  const levelPill = document.getElementById('levelPill');
+  const xpBar = document.getElementById('xpBar');
+
+  const levelName = document.getElementById('levelName');
+  const qIndexEl = document.getElementById('qIndex');
+  const qTotalEl = document.getElementById('qTotal');
+  const qText = document.getElementById('qText');
+  const opts = document.getElementById('opts');
+  const levelBar = document.getElementById('levelBar');
+  const scoreEl = document.getElementById('score');
+  const streakEl = document.getElementById('streak');
+  const triesEl = document.getElementById('tries');
+
+  const btnSkip = document.getElementById('btnSkip');
+  const btnFinish = document.getElementById('btnFinish');
+
+  const endTitle = document.getElementById('endTitle');
+  const endSubtitle = document.getElementById('endSubtitle');
+  const endScore = document.getElementById('endScore');
+  const endCorrect = document.getElementById('endCorrect');
+  const endBestStreak = document.getElementById('endBestStreak');
+  const btnAgain = document.getElementById('btnAgain');
+  const btnNext = document.getElementById('btnNext');
+  const btnHome = document.getElementById('btnHome');
+  const toast = document.getElementById('toast');
+
+  // בניית כרטיסי דרגות
+  function buildLevels(){
+    levelsGrid.innerHTML = '';
+    LEVELS.forEach((L, idx)=>{
+      const el = document.createElement('button');
+      el.className = 'level';
+      el.style.background = `linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02)), ${L.color}`;
+      el.innerHTML = `
+        <h3>🔹 ${L.name}</h3>
+        <div class="status">5 שאלות • מתאים ל${idx===0? 'מתחילים' : idx<3? 'מתקדמים' : 'מומחים'}</div>
+      `;
+      el.addEventListener('click', ()=>startLevel(idx));
+      levelsGrid.appendChild(el);
+    });
+  }
+
+  // התחלת דרגה
+  function startLevel(idx){
+    Object.assign(state, { levelIndex: idx, qIndex: 0, score: 0, correctCount: 0, bestStreak: 0, streak: 0, tries: 2, answered:false });
+    const L = LEVELS[idx];
+    state.order = shuffle([...Array(L.questions.length).keys()]);
+    qTotalEl.textContent = L.questions.length;
+    levelName.textContent = L.name;
+    levelPill.textContent = `מצב: משחק – ${L.name}`;
+    levelBar.style.width = '0%';
+    scoreEl.textContent = '0'; streakEl.textContent='0'; triesEl.textContent='2';
+    show(elStart, false); show(elEnd, false); show(elPlay, true);
+    renderQuestion();
+  }
+
+  function renderQuestion(){
+    const L = LEVELS[state.levelIndex];
+    const qIdx = state.order[state.qIndex];
+    const item = L.questions[qIdx];
+    qText.textContent = item.q;
+    qIndexEl.textContent = state.qIndex + 1;
+    triesEl.textContent = state.tries;
+    state.answered = false;
+
+    // אפשרויות
+    opts.innerHTML = '';
+    const all = shuffle(item.options.slice());
+    all.forEach(txt=>{
+      const b = document.createElement('button');
+      b.className = 'btn opt';
+      b.textContent = txt;
+      b.addEventListener('click', ()=>chooseOption(b, txt, item.correct));
+      opts.appendChild(b);
+    });
+  }
+
+  function chooseOption(btn, chosen, correct){
+    if(state.answered) return;
+    if(chosen === correct){
+      btn.classList.add('correct');
+      soundCorrect();
+      state.answered = true;
+      state.score += 10 + Math.min(state.streak*2, 10); // בונוס רצף
+      state.correctCount += 1;
+      state.streak += 1; state.bestStreak = Math.max(state.bestStreak, state.streak);
+      scoreEl.textContent = state.score.toString();
+      streakEl.textContent = state.streak.toString();
+      toastMsg('כל הכבוד! תשובה נכונה ✅');
+      setTimeout(nextQuestion, 450);
+    } else {
+      btn.classList.add('wrong');
+      soundWrong();
+      state.streak = 0; streakEl.textContent='0';
+      state.tries -= 1; triesEl.textContent = state.tries.toString();
+      shake(opts);
+      toastMsg(state.tries>0? 'לא מדויק… נסו שוב' : `התשובה הנכונה: ${correct}`);
+      if(state.tries<=0){
+        // נעילת השאלה – סימון הנכונה
+        Array.from(opts.children).forEach(el=>{
+          if(el.textContent===correct) el.classList.add('correct');
+        });
+        state.answered = true;
+        setTimeout(nextQuestion, 650);
+      }
+    }
+  }
+
+  function nextQuestion(){
+    const L = LEVELS[state.levelIndex];
+    state.qIndex += 1; state.tries = 2;
+    const pct = Math.round((state.qIndex / L.questions.length) * 100);
+    levelBar.style.width = pct + '%';
+    if(state.qIndex >= L.questions.length){
+      endLevel();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  function endLevel(){
+    show(elPlay, false); show(elEnd, true);
+    const L = LEVELS[state.levelIndex];
+    const pass = state.correctCount >= Math.ceil(L.questions.length*0.6);
+    endTitle.textContent = pass? 'כל הכבוד! עמדתם באתגר 🏆' : 'סיום דרגה – נסו שוב 💪';
+    endSubtitle.textContent = `${L.name}`;
+    endScore.textContent = state.score.toString();
+    endCorrect.textContent = `${state.correctCount}/${L.questions.length}`;
+    endBestStreak.textContent = state.bestStreak.toString();
+
+    // צבירת XP למסך הבית
+    state.xp = Math.min(100, state.xp + (pass? 20:8));
+    xpBar.style.width = state.xp + '%';
+
+    btnNext.disabled = (state.levelIndex === LEVELS.length-1);
+    levelPill.textContent = `מצב: סיכום – ${L.name}`;
+  }
+
+  // בקרים
+  btnSkip.addEventListener('click', ()=>{
+    toastMsg('שאלה דולגה.'); nextQuestion();
+  });
+  btnFinish.addEventListener('click', endLevel);
+  btnHome.addEventListener('click', ()=>{ show(elEnd,false); show(elStart,true); levelPill.textContent='מצב: מסך פתיחה'; });
+  btnAgain.addEventListener('click', ()=> startLevel(state.levelIndex));
+  btnNext.addEventListener('click', ()=> startLevel(Math.min(state.levelIndex+1, LEVELS.length-1)));
+
+  // עזרי UI
+  function show(el, on=true){ el.classList.toggle('hidden', !on); }
+  function shake(el){ el.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:180}); }
+  function toastMsg(msg){ toast.textContent = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 1200); }
+
+  // אתחול
+  buildLevels();
+  </script>
+</body>
+</html>
