@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🕎 חֲנֻכָּה: מְהַדְּרִין מִן הַמְהַדְּרִין! 💫</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+            text-align: right;
+            line-height: 2;
+            font-size: 1.2em;
+        }
+
+        .game-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #fffef7 0%, #fff8e1 100%);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        h1 {
+            color: #1e3c72;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #7e22ce;
+            font-size: 2em;
+            margin: 30px 0 20px 0;
+            text-align: center;
+        }
+
+        .intro-screen, .lesson-content, .question-container, .certificate {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #fef3c7 0%, #fde68a 100%);
+            padding: 15px;
+            border-right: 5px solid #f59e0b;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        .inspiration-box {
+            background: linear-gradient(120deg, #dbeafe 0%, #bfdbfe 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 3px dashed #3b82f6;
+            text-align: center;
+            font-size: 1.1em;
+            font-style: italic;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.3em;
+            cursor: pointer;
+            margin: 15px 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .answer-btn {
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            color: #1f2937;
+            padding: 20px;
+            margin: 12px 0;
+            border: 3px solid #d1d5db;
+            border-radius: 15px;
+            font-size: 1.15em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: right;
+        }
+
+        .answer-btn:hover {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-color: #3b82f6;
+            transform: translateX(-5px);
+        }
+
+        .answer-btn.correct {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-color: #10b981;
+            animation: pulse 0.5s ease;
+        }
+
+        .answer-btn.wrong {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-color: #ef4444;
+            animation: shake 0.5s ease;
+        }
+
+        .feedback {
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 15px;
+            font-size: 1.2em;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .feedback.correct {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 3px solid #10b981;
+            color: #065f46;
+        }
+
+        .feedback.wrong {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 3px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e5e7eb;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 25px 0;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 1.5em;
+            color: #1e3c72;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .certificate {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%);
+            border: 8px double #92400e;
+            text-align: center;
+            padding: 50px;
+        }
+
+        .certificate h2 {
+            color: #92400e;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+
+        .certificate-name {
+            font-size: 2.2em;
+            color: #7e22ce;
+            margin: 25px 0;
+            font-weight: bold;
+        }
+
+        .contact-info {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 30px 0;
+            text-align: center;
+            border: 3px solid #6366f1;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                font-size: 1em;
+                padding: 10px;
+            }
+            
+            .game-container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            h2 {
+                font-size: 1.5em;
+            }
+            
+            .btn {
+                padding: 15px 30px;
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container" id="gameContainer"></div>
+
+    <script>
+        // הגדרות קבועות
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec';
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // משתנים גלובליים
+        let userName = "";
+        let currentLesson = -1;
+        let score = 0;
+        let lessonScore = 0;
+        let answeredQuestions = [];
+
+        // נתוני השיעורים
+        const lessons = [
+            {
+                title: "שָׁלוֹשׁ רָמוֹת בְּהַדְלָקַת נֵרוֹת חֲנֻכָּה 🕎",
+                content: `
+                    <p>🌟 <strong>בּוֹאוּ נִלְמַד עַל הַדְלָקַת נֵרוֹת חֲנֻכָּה!</strong> 🕎</p>
+                    <p>הַתַּלְמוּד אוֹמֵר לָנוּ שֶׁיֵּשׁ <strong>שָׁלוֹשׁ דְּרָכִים</strong> לְהַדְלִיק נֵרוֹת חֲנֻכָּה. כָּל דֶּרֶךְ יוֹתֵר יָפָה מֵהַקּוֹדֶמֶת! ✨</p>
+                    <div class="highlight">
+                        💡 <strong>הָרָמָה הָרִאשׁוֹנָה - "נֵר אִישׁ וּבֵיתוֹ":</strong><br>
+                        זֹאת אוֹמֶרֶת שֶׁמַּדְלִיקִים נֵר אֶחָד לְכָל הַבַּיִת בְּכָל לַיְלָה. זוֹ הַדֶּרֶךְ הַפְּשׁוּטָה וְהַיָּפָה!
+                    </div>
+                    <div class="highlight">
+                        ⭐ <strong>הָרָמָה הַשְּׁנִיָּה - "הַמְהַדְּרִין":</strong><br>
+                        אֲנָשִׁים שֶׁרוֹצִים לְהָדֵר אֶת הַמִּצְוָה מַדְלִיקִים נֵר לְכָל אֶחָד וְאֶחָד מִבְּנֵי הַבַּיִת. כָּל אֶחָד מֵאִיר אֶת הַבַּיִת! 💖
+                    </div>
+                    <div class="highlight">
+                        🏆 <strong>הָרָמָה הַשְּׁלִישִׁית - "מְהַדְּרִין מִן הַמְהַדְּרִין":</strong><br>
+                        זוֹ הַדֶּרֶךְ הַכִי מְיֻחֶדֶת! מוֹסִיפִים נֵר בְּכָל לַיְלָה - כְּמוֹ שֶׁהַנֵּס גָּדַל כָּל יוֹם! 🌈
+                    </div>
+                    <div class="inspiration-box">
+                        🙏 כְּשֶׁאֲנַחְנוּ מַדְלִיקִים נֵרוֹת, אֲנַחְנוּ מַרְגִּישִׁים אֶת אַהֲבַת הַשֵּׁם! הוּא נָתַן לָנוּ נֵס נִפְלָא וְשָׂמֵחַ כְּשֶׁאֲנַחְנוּ זוֹכְרִים אוֹתוֹ 💫
+                    </div>
+                `,
+                questions: [
+                    {
+                        question: "כַּמָּה רָמוֹת שֶׁל הַדְלָקָה יֵשׁ בַּחֲנֻכָּה לְפִי הַתַּלְמוּד? 🤔",
+                        answers: [
+                            "שָׁלוֹשׁ רָמוֹת - נֵר אִישׁ וּבֵיתוֹ, מְהַדְּרִין, וּמְהַדְּרִין מִן הַמְהַדְּרִין",
+                            "שְׁתֵּי רָמוֹת בִּלְבַד - רָמָה רְגִילָה וְרָמָה מְיֻחֶדֶת לְמִי שֶׁרוֹצֶה",
+                            "אַרְבַּע רָמוֹת שׁוֹנוֹת - לְכָל מִשְׁפָּחָה יֵשׁ מִנְהָג אַחֵר לְגַמְרֵי",
+                            "חָמֵשׁ רָמוֹת - כְּנֶגֶד חֲמִשָּׁה חֻמְּשֵׁי תוֹרָה שֶׁאָנוּ לוֹמְדִים בְּחֲנֻכָּה"
+                        ],
+                        correct: 0,
+                        explanation: "יוֹפִי! 🌟 הַתַּלְמוּד מְלַמֵּד אוֹתָנוּ שֶׁיֵּשׁ בְּדִיּוּק שָׁלוֹשׁ רָמוֹת. כָּל רָמָה מְלַמֶּדֶת אוֹתָנוּ דֶּרֶךְ אַחֶרֶת לֶאֱהֹב אֶת הַשֵּׁם!"
+                    },
+                    {
+                        question: "מָה זֶה 'נֵר אִישׁ וּבֵיתוֹ' - הָרָמָה הָרִאשׁוֹנָה? 🏠",
+                        answers: [
+                            "מַדְלִיקִים נֵר אֶחָד בְּכָל לַיְלָה עֲבוּר כָּל בְּנֵי הַבַּיִת יַחַד",
+                            "כָּל אָדָם בַּבַּיִת מַדְלִיק שְׁמוֹנָה נֵרוֹת בְּכָל פַּעַם שֶׁהוּא בָּא הַבַּיְתָה",
+                            "מַדְלִיקִים שְׁנֵי נֵרוֹת - אֶחָד לָאָב וְאֶחָד לָאֵם בִּלְבַד",
+                            "כָּל חֶדֶר בַּבַּיִת צָרִיךְ חֲנֻכִּיָּה מְיֻחֶדֶת שֶׁלּוֹ עִם נֵר אֶחָד"
+                        ],
+                        correct: 0,
+                        explanation: "נָכוֹן מְאוֹד! 💖 זֶה אוֹמֵר שֶׁכָּל הַמִּשְׁפָּחָה מִתְאַחֶדֶת סְבִיב נֵר אֶחָד. הַשֵּׁם אוֹהֵב כְּשֶׁהַמִּשְׁפָּחָה מְאֻחֶדֶת!"
+                    },
+                    {
+                        question: "מָה מְיֻחָד בְּ'מְהַדְּרִין מִן הַמְהַדְּרִין' - הָרָמָה הַשְּׁלִישִׁית? ✨",
+                        answers: [
+                            "מוֹסִיפִים נֵר בְּכָל לַיְלָה - בַּלַּיְלָה הָרִאשׁוֹן נֵר אֶחָד, בַּשֵּׁנִי שְׁנַיִם וְכָךְ הָלְאָה",
+                            "מַדְלִיקִים תָּמִיד שְׁמוֹנָה נֵרוֹת בְּכָל לַיְלָה מֵהַהַתְחָלָה עַד הַסּוֹף",
+                            "כָּל אֶחָד בּוֹחֵר כַּמָּה נֵרוֹת הוּא רוֹצֶה לְהַדְלִיק לְפִי מַה שֶּׁהוּא מַרְגִּישׁ",
+                            "מַדְלִיקִים רַק בְּלֵילוֹת הַשַּׁבָּת וְהַחַגִּים הַמְּיֻחָדִים שֶׁל חֲנֻכָּה"
+                        ],
+                        correct: 0,
+                        explanation: "מְעֻלֶּה! 🎯 כָּל לַיְלָה מוֹסִיפִים נֵר - כְּמוֹ שֶׁהָאוֹר וְהַנֵּס גְּדֵלִים! הַשֵּׁם שָׂמֵחַ כְּשֶׁאָנוּ מוֹסִיפִים אוֹר בָּעוֹלָם!"
+                    }
+                ]
+            },
+            {
+                title: "רַשִּׁ״י וְהָרַמְבַּ״ם - שְׁתֵּי דְּרָכִים לְהָבִין 📚",
+                content: `
+                    <p>🎓 <strong>עַכְשָׁיו נִלְמַד עַל שְׁנֵי חֲכָמִים גְּדוֹלִים!</strong> 💎</p>
+                    <p>רַשִּׁ״י וְהָרַמְבַּ״ם הֵם חֲכָמִים מְפֻרְסָמִים שֶׁלִּמְּדוּ אוֹתָנוּ תּוֹרָה. הֵם הֵבִינוּ אֶת הַהִדּוּר בְּנֵרוֹת חֲנֻכָּה בְּאֹפֶן שׁוֹנֶה! 🌟</p>
+                    <div class="highlight">
+                        📖 <strong>שִׁיטַת רַשִּׁ״י - הִדּוּר בָּאָדָם:</strong><br>
+                        רַשִּׁ״י כָּתַב "מְהַדְּרִין אַחַר הַמִּצְווֹת". הַמִּלָּה "מְהַדְּרִין" זֶה כְּמוֹ "מְחַזֵּר" - כְּמוֹ שֶׁאָדָם מְחַזֵּר אַחֲרֵי דָּבָר חָשׁוּב! 💪<br>
+                        רַשִּׁ״י מְלַמֵּד שֶׁהַהִדּוּר הוּא שֶׁכָּל אֶחָד מַדְלִיק בְּעַצְמוֹ. כָּל אֶחָד יָכוֹל לִהְיוֹת שָׁלִיחַ שֶׁל הַשֵּׁם!
+                    </div>
+                    <div class="highlight">
+                        📜 <strong>שִׁיטַת הָרַמְבַּ״ם - הִדּוּר בַּמִּצְוָה:</strong><br>
+                        הָרַמְבַּ״ם דִּבֵּר עַל "הַמְהַדֵּר אֶת הַמִּצְוָה" - זֶה אוֹמֵר לַעֲשׂוֹת אֶת הַמִּצְוָה עַצְמָהּ יוֹתֵר יָפָה! 🌈<br>
+                        כְּמוֹ שֶׁבּוֹחֲרִים לוּלָב נָאֶה אוֹ אֶתְרוֹג מְהֻדָּר - כָּךְ מוֹסִיפִים נֵרוֹת בְּכָל לַיְלָה!
+                    </div>
+                    <div class="inspiration-box">
+                        💖 הַשֵּׁם אוֹהֵב אוֹתָנוּ בְּכָל דֶּרֶךְ שֶׁאָנוּ בּוֹחֲרִים! גַּם אִם מַדְלִיקִים לְבַד, גַּם אִם מַדְלִיקִים יַחַד - הָעִקָּר שֶׁאָנוּ עוֹשִׂים זֹאת בְּאַהֲבָה! 🙏
+                    </div>
+                `,
+                questions: [
+                    {
+                        question: "מָה הַפֵּרוּשׁ שֶׁל הַמִּלָּה 'מְהַדְּרִין' לְפִי רַשִּׁ״י? 🤓",
+                        answers: [
+                            "מְחַזְּרִים אַחֲרֵי הַמִּצְוָה - כָּל אֶחָד רוֹצֶה לְקַיֵּם אוֹתָהּ בְּעַצְמוֹ",
+                            "עוֹשִׂים אֶת הַמִּצְוָה רַק פַּעַם אַחַת בַּשָּׁנָה בְּצוּרָה מְיֻחֶדֶת מְאוֹד",
+                            "קוֹנִים חֲנֻכִּיָּה יְקָרָה וּמְפֹאֶרֶת מִזָּהָב טָהוֹר וּמְהֻדָּר",
+                            "מַדְלִיקִים נֵרוֹת רַק בְּבֵית הַכְּנֶסֶת וְלֹא בַּבַּיִת הַפְּרָטִי שֶׁלָּנוּ"
+                        ],
+                        correct: 0,
+                        explanation: "מַמָּשׁ כָּךְ! 🎯 רַשִּׁ״י מְלַמֵּד שֶׁכָּל אֶחָד רוֹצֶה לִהְיוֹת שָׁלִיחַ שֶׁל הַשֵּׁם וּלְקַיֵּם אֶת הַמִּצְוָה בְּעַצְמוֹ. זֶה כָּל כָּךְ יָפֶה!"
+                    },
+                    {
+                        question: "לְפִי הָרַמְבַּ״ם, בְּמָה מִתְבַּטֵּא הַהִדּוּר בְּנֵרוֹת חֲנֻכָּה? 🕯️",
+                        answers: [
+                            "בְּהוֹסָפַת נֵרוֹת בְּכָל לַיְלָה - הַמִּצְוָה עַצְמָהּ נַעֲשֵׂית יוֹתֵר מְהֻדֶּרֶת",
+                            "בְּכָךְ שֶׁכָּל הַמִּשְׁפָּחָה שָׁרָה שִׁירִים בְּזְמַן הַהַדְלָקָה בְּקוֹל רָם",
+                            "בְּכָךְ שֶׁמַּדְלִיקִים אֶת הַנֵּרוֹת דַּוְקָא בְּשַׁעַת חֲצוֹת הַלַּיְלָה בִּלְבַד",
+                            "בְּשִׁימוּשׁ בְּשֶׁמֶן זַיִת דַּוְקָא וְלֹא בְּנֵרוֹת שַׁעֲוָה אוֹ דּוֹנָג"
+                        ],
+                        correct: 0,
+                        explanation: "נִפְלָא! 💫 הָרַמְבַּ״ם מְלַמֵּד שֶׁכְּשֶׁמּוֹסִיפִים נֵר בְּכָל לַיְלָה, הַמִּצְוָה עַצְמָהּ הוֹפֶכֶת לִמְהֻדֶּרֶת יוֹתֵר!"
+                    },
+                    {
+                        question: "מָה הַהֶבְדֵּל הָעִקָּרִי בֵּין רַשִּׁ״י לְהָרַמְבַּ״ם? 🎭",
+                        answers: [
+                            "רַשִּׁ״י מְדַבֵּר עַל הִדּוּר בָּאָדָם, הָרַמְבַּ״ם עַל הִדּוּר בַּמִּצְוָה עַצְמָהּ",
+                            "רַשִּׁ״י אוֹמֵר לְהַדְלִיק בַּבֹּקֶר, הָרַמְבַּ״ם אוֹמֵר רַק בָּעֶרֶב בִּלְבַד",
+                            "רַשִּׁ״י מְחַיֵּב שְׁמוֹנָה נֵרוֹת תָּמִיד, הָרַמְבַּ״ם מְחַיֵּב רַק נֵר אֶחָד",
+                            "רַשִּׁ״י מְדַבֵּר רַק עַל גְּבָרִים, הָרַמְבַּ״ם מְדַבֵּר גַּם עַל נָשִׁים"
+                        ],
+                        correct: 0,
+                        explanation: "מְעֻלֶּה! 🌟 רַשִּׁ״י מְלַמֵּד שֶׁהַהִדּוּר הוּא שֶׁכָּל אֶחָד יְקַיֵּם בְּעַצְמוֹ, וְהָרַמְבַּ״ם מְלַמֵּד שֶׁהַהִדּוּר הוּא בְּהוֹסָפַת נֵרוֹת!"
+                    }
+                ]
+            },
+            {
+                title: "הַמִּנְהָג הָאַשְׁכְּנַזִּי - כָּל אֶחָד מֵאִיר! 💡",
+                content: `
+                    <p>🌍 <strong>בּוֹאוּ נִלְמַד עַל הַמִּנְהָג שֶׁל יְהוּדֵי אַשְׁכְּנַז!</strong> ⭐</p>
+                    <p>הָרַמַ״א הָיָה חָכָם גָּדוֹל שֶׁלִּמֵּד אֶת יְהוּדֵי אַשְׁכְּנַז (אֵירוֹפָּה). הוּא אָמַר שֶׁיֵּשׁ דֶּרֶךְ מְיֻחֶדֶת לְהַדְלִיק נֵרוֹת! 🎨</p>
+                    <div class="highlight">
+                        🏡 <strong>הַמִּנְהָג הָאַשְׁכְּנַזִּי:</strong><br>
+                        כָּל אֶחָד מִבְּנֵי הַבַּיִת מַדְלִיק חֲנֻכִּיָּה <strong>מִשֶּׁלּוֹ</strong>! 💪<br>
+                        בַּלַּיְלָה הָרִאשׁוֹן - כָּל אֶחָד מַדְלִיק נֵר אֶחָד.<br>
+                        בַּלַּיְלָה הַשֵּׁנִי - כָּל אֶחָד מַדְלִיק שְׁנֵי נֵרוֹת.<br>
+                        וְכָךְ הָלְאָה עַד שְׁמוֹנָה!
+                    </div>
+                    <div class="highlight">
+                        ✨ <strong>לָמָּה זֶה כָּל כָּךְ מְיֻחָד?</strong><br>
+                        כִּי אָז כָּל אֶחָד יָכוֹל לִהְיוֹת שָׁלִיחַ שֶׁל הַשֵּׁם! גַּם הַיְּלָדִים הַקְּטַנִּים מַדְלִיקִים בְּעַצְמָם וּמַרְגִּישִׁים חֵלֶק מֵהַנֵּס! 🎉<br>
+                        זֶה כְּמוֹ שֶׁכָּל אֶחָד אוֹמֵר: "גַּם אֲנִי רוֹצֶה לְהוֹדוֹת לַשֵּׁם עַל הַנֵּס!"
+                    </div>
+                    <div class="inspiration-box">
+                        🙏 הַשֵּׁם שָׂמֵחַ כְּשֶׁכָּל אֶחָד מֵאִיר אֶת הָעוֹלָם! גַּם אִם אַתָּה קָטָן, גַּם אִם אַתָּה גָּדוֹל - הָאוֹר שֶׁלְּךָ חָשׁוּב! כָּל נֵר שֶׁאַתָּה מַדְלִיק מַגִּיעַ עַד לַשָּׁמַיִם! 💖✨
+                    </div>
+                `,
+                questions: [
+                    {
+                        question: "לְפִי הַמִּנְהָג הָאַשְׁכְּנַזִּי, מִי מַדְלִיק חֲנֻכִּיָּה? 👨‍👩‍👧‍👦",
+                        answers: [
+                            "כָּל אֶחָד מִבְּנֵי הַבַּיִת מַדְלִיק חֲנֻכִּיָּה מְיֻחֶדֶת מִשֶּׁלּוֹ",
+                            "רַק אַבָּא מַדְלִיק עֲבוּר כָּל הַמִּשְׁפָּחָה וְהַיְּלָדִים רַק צוֹפִים",
+                            "רַק הַבֵּן הַבְּכוֹר מַדְלִיק וְהַשְּׁאָר עוֹזְרִים לוֹ לְהָכִין",
+                            "אַבָּא וְאִמָּא מַדְלִיקִים יַחַד חֲנֻכִּיָּה אַחַת גְּדוֹלָה בִּלְבַד"
+                        ],
+                        correct: 0,
+                        explanation: "נָכוֹן מְאוֹד! 🎊 בַּמִּנְהָג הָאַשְׁכְּנַזִּי, כָּל אֶחָד מַדְלִיק בְּעַצְמוֹ - וְזֶה נוֹתֵן לְכָל אֶחָד אֶת הַתְּחוּשָׁה שֶׁהוּא חֵלֶק מֵהַנֵּס!"
+                    },
+                    {
+                        question: "כַּמָּה נֵרוֹת יִהְיוּ בַּבַּיִת בַּלַּיְלָה הָרְבִיעִי אִם יֵשׁ 4 יְלָדִים? 🧮",
+                        answers: [
+                            "16 נֵרוֹת - כִּי כָּל אֶחָד מֵ־4 הַיְּלָדִים מַדְלִיק 4 נֵרוֹת",
+                            "4 נֵרוֹת בִּלְבַד - כִּי מַדְלִיקִים חֲנֻכִּיָּה אַחַת לְכָל הַבַּיִת",
+                            "8 נֵרוֹת - מַדְלִיקִים שְׁתֵּי חֲנֻכִּיּוֹת עִם 4 נֵרוֹת בְּכָל אַחַת",
+                            "12 נֵרוֹת - 3 יְלָדִים מַדְלִיקִים 4 נֵרוֹת כָּל אֶחָד"
+                        ],
+                        correct: 0,
+                        explanation: "מְעֻלֶּה! 🌟 4 יְלָדִים כֶּפֶל 4 נֵרוֹת = 16 נֵרוֹת! הַבַּיִת מָלֵא אוֹר! הַשֵּׁם שָׂמֵחַ כְּשֶׁרוֹאֶה כָּל כָּךְ הַרְבֵּה אוֹר!"
+                    },
+                    {
+                        question: "לָמָּה חָשׁוּב שֶׁכָּל אֶחָד יַדְלִיק בְּעַצְמוֹ? 💭",
+                        answers: [
+                            "כְּדֵי שֶׁכָּל אֶחָד יַרְגִּישׁ שֶׁהוּא שָׁלִיחַ שֶׁל הַשֵּׁם וְחֵלֶק מֵהַנֵּס",
+                            "כְּדֵי שֶׁהַבַּיִת יִהְיֶה יוֹתֵר בָּהִיר וְלֹא יִהְיֶה חוֹשֶׁךְ בּוֹ",
+                            "כְּדֵי לַחְסֹךְ זְמַן וְשֶׁכָּל אֶחָד יְסַיֵּם מָהֵר אֶת הַהַדְלָקָה",
+                            "כְּדֵי שֶׁיִּהְיֶה יוֹתֵר שֶׁמֶן זַיִת לְכָל הַלֵּילוֹת שֶׁל חֲנֻכָּה"
+                        ],
+                        correct: 0,
+                        explanation: "נִפְלָא! 💖 כְּשֶׁכָּל אֶחָד מַדְלִיק בְּעַצְמוֹ, הוּא מַרְגִּישׁ קָרוֹב לַשֵּׁם וְחָשׁוּב! גַּם אִם אַתָּה קָטָן - הָאוֹר שֶׁלְּךָ מְאִיר אֶת הָעוֹלָם!"
+                    }
+                ]
+            },
+            {
+                title: "הַמִּנְהָג הַסְּפָרַדִּי - הַבַּיִת כְּאֶחָד 🏠",
+                content: `
+                    <p>🌟 <strong>עַכְשָׁיו נִלְמַד עַל הַמִּנְהָג שֶׁל יְהוּדֵי סְפָרַד!</strong> 🕎</p>
+                    <p>הָרַמְבַּ״ם לִמֵּד אֶת יְהוּדֵי סְפָרַד (מִזְרָח וְצָפוֹן אַפְרִיקָה). הַמִּנְהָג שֶׁלָּהֶם שׁוֹנֶה וְיָפֶה! 💎</p>
+                    <div class="highlight">
+                        🕯️ <strong>הַמִּנְהָג הַסְּפָרַדִּי:</strong><br>
+                        <strong>בַּעַל הַבַּיִת</strong> מַדְלִיק חֲנֻכִּיָּה אַחַת עֲבוּר כָּל הַמִּשְׁפָּחָה! 👨‍👩‍👧‍👦<br>
+                        בַּלַּיְלָה הָרִאשׁוֹן - נֵר אֶחָד לְכָל הַבַּיִת.<br>
+                        בַּלַּיְלָה הַשֵּׁנִי - שְׁנֵי נֵרוֹת לְכָל הַבַּיִת.<br>
+                        וְכָךְ הָלְאָה עַד שְׁמוֹנָה!
+                    </div>
+                    <div class="highlight">
+                        🌈 <strong>לָמָּה דֶּרֶךְ זוֹ מְיֻחֶדֶת?</strong><br>
+                        כִּי כָּל הַמִּשְׁפָּחָה מִתְאַחֶדֶת סְבִיב חֲנֻכִּיָּה אַחַת! 💖<br>
+                        זֶה מְלַמֵּד אוֹתָנוּ שֶׁהַבַּיִת הוּא יְחִידָה אַחַת גְּדוֹלָה שֶׁעוֹבֶדֶת אֶת הַשֵּׁם יַחַד! כֻּלָּם יוֹשְׁבִים, צוֹפִים, שָׁרִים - וּמַרְגִּישִׁים אֶת אַהֲבַת הַשֵּׁם יַחַד! ✨
+                    </div>
+                    <div class="inspiration-box">
+                        🙏 הַשֵּׁם אוֹהֵב גַּם כְּשֶׁאָנוּ עוֹבְדִים אוֹתוֹ יַחַד! כְּשֶׁהַמִּשְׁפָּחָה מְאֻחֶדֶת, זֶה כְּמוֹ לֵב אֶחָד גָּדוֹל שֶׁאוֹהֵב אֶת הַשֵּׁם! שְׁתֵּי הַדְּרָכִים יָפוֹת - הָעִקָּר שֶׁאָנוּ עוֹשִׂים זֹאת בְּשִׂמְחָה! 💫💖
+                    </div>
+                `,
+                questions: [
+                    {
+                        question: "לְפִי הַמִּנְהָג הַסְּפָרַדִּי, מִי מַדְלִיק אֶת הַנֵּרוֹת? 👨",
+                        answers: [
+                            "בַּעַל הַבַּיִת מַדְלִיק חֲנֻכִּיָּה אַחַת עֲבוּר כָּל הַמִּשְׁפָּחָה",
+                            "כָּל הַיְּלָדִים מַדְלִיקִים יַחַד נֵר אֶחָד בִּזְמַן אֶחָד מַמָּשׁ",
+                            "הַסַּבְתָא וְהַסָּבָא מַדְלִיקִים בִּשְׁבִיל כָּל הַמִּשְׁפָּחָה הַמֻּרְחֶבֶת",
+                            "כָּל אֶחָד מַדְלִיק בְּתוֹרוֹ אֶת אוֹתָהּ חֲנֻכִּיָּה לְפִי גִּילוֹ"
+                        ],
+                        correct: 0,
+                        explanation: "נָכוֹן! 🎯 בַּעַל הַבַּיִת מַדְלִיק עֲבוּר כֻּלָּם, וְכָל הַמִּשְׁפָּחָה מִתְכַּנֶּסֶת סְבִיבוֹ. זֶה מְלַמֵּד עַל אַחְדוּת!"
+                    },
+                    {
+                        question: "מָה הַדֶּרֶךְ הַמְּיֻחֶדֶת שֶׁל הַמִּנְהָג הַסְּפָרַדִּי? 🤝",
+                        answers: [
+                            "הַמִּשְׁפָּחָה כֻּלָּהּ מִתְאַחֶדֶת סְבִיב חֲנֻכִּיָּה אַחַת וְעוֹבֶדֶת אֶת הַשֵּׁם יַחַד",
+                            "חוֹסְכִים הַרְבֵּה שֶׁמֶן זַיִת כִּי צְרִיכִים רַק חֲנֻכִּיָּה אַחַת קְטַנָּה",
+                            "קַל יוֹתֵר לָנוּ לִסְפֹּר כַּמָּה נֵרוֹת הִדְלַקְנוּ בְּכָל לַיְלָה",
+                            "הַהַדְלָקָה מְהִירָה יוֹתֵר וְאֶפְשָׁר לְהַמְשִׁיךְ לִשְׁאָר פְּעֻלּוֹת הָעֶרֶב"
+                        ],
+                        correct: 0,
+                        explanation: "מְעֻלֶּה! 💖 כְּשֶׁהַמִּשְׁפָּחָה מִתְאַחֶדֶת - זֶה כְּמוֹ לֵב אֶחָד שֶׁאוֹהֵב אֶת הַשֵּׁם! אַחְדוּת הִיא דָּבָר חָשׁוּב מְאוֹד!"
+                    },
+                    {
+                        question: "מַה מְשֻׁתָּף לִשְׁנֵי הַמִּנְהָגִים - הָאַשְׁכְּנַזִּי וְהַסְּפָרַדִּי? 🌍",
+                        answers: [
+                            "בִּשְׁנֵיהֶם מוֹסִיפִים נֵר בְּכָל לַיְלָה וּמְבַטְּאִים אַהֲבַת הַשֵּׁם בְּשִׂמְחָה",
+                            "בִּשְׁנֵיהֶם רַק הַגְּבָרִים מַדְלִיקִים וְהַנָּשִׁים רַק צוֹפוֹת מֵרָחוֹק",
+                            "בִּשְׁנֵיהֶם חַיָּבִים לְהַדְלִיק דַּוְקָא בְּשֶׁמֶן זַיִת וְלֹא בְּנֵרוֹת אֲחֵרִים",
+                            "בִּשְׁנֵיהֶם מַדְלִיקִים תָּמִיד שְׁמוֹנָה נֵרוֹת בְּכָל לַיְלָה מֵהַהַתְחָלָה"
+                        ],
+                        correct: 0,
+                        explanation: "נִפְלָא! 🌟 גַּם אַשְׁכְּנַזִים וְגַם סְפָרַדִּים מוֹסִיפִים נֵר בְּכָל לַיְלָה! הָעִקָּר - לַעֲשׂוֹת זֹאת בְּאַהֲבָה וּבְשִׂמְחָה!"
+                    }
+                ]
+            }
+        ];
+
+        // פונקציות עזר
+        function shuffleArray(arr) {
+            const newArr = [...arr];
+            for (let i = newArr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+            }
+            return newArr;
+        }
+
+        function playSound(frequencies, duration = 200) {
+            frequencies.forEach((freq, index) => {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = freq;
+                    oscillator.type = 'sine';
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + duration / 1000);
+                }, index * duration);
+            });
+        }
+
+        async function sendScoreToTeacher() {
+            const now = new Date();
+            const data = {
+                name: userName,
+                score: `${score}/12`,
+                percentage: `${Math.round((score/12)*100)}%`,
+                gameName: document.title,
+                date: now.toLocaleDateString('he-IL'),
+                time: now.toLocaleTimeString('he-IL')
+            };
+            
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'text/plain'},
+                    body: JSON.stringify(data)
+                });
+                console.log('✅ הַנְּתוּנִים נִשְׁלְחוּ בְּהַצְלָחָה!');
+            } catch (error) {
+                console.error('❌ שְׁגִיאָה בְּשִׁלּוּחַ:', error);
+            }
+        }
+
+        // פונקציות תצוגה
+        function renderIntro() {
+            const container = document.getElementById('gameContainer');
+            container.innerHTML = `
+                <div class="intro-screen">
+                    <h1>🕎 חֲנֻכָּה: מְהַדְּרִין מִן הַמְהַדְּרִין! 💫</h1>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <p style="font-size: 1.4em; line-height: 2;">
+                            שָׁלוֹם יְלָדִים יְקָרִים! 🌟<br>
+                            בּוֹאוּ נִלְמַד יַחַד עַל נֵרוֹת חֲנֻכָּה!<br>
+                            נְגַלֶּה סוֹדוֹת מְיֻחָדִים עַל הַדְלָקַת הַנֵּרוֹת 🕯️<br>
+                            וְנַרְגִּישׁ אֶת אַהֲבַת הַשֵּׁם בְּכָל שִׁיעוּר! 💖
+                        </p>
+                    </div>
+                    <div class="inspiration-box">
+                        🙏 הַשֵּׁם שָׂמֵחַ כְּשֶׁאֲנַחְנוּ לוֹמְדִים תּוֹרָה!<br>
+                        כָּל מִלָּה שֶׁנִּלְמַד מַאִירָה אֶת הָעוֹלָם! ✨
+                    </div>
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="btn" onclick="startGame()">בּוֹאוּ נַתְחִיל! 🎯</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function startGame() {
+            userName = prompt("מָה שִׁמְךָ? 💫");
+            if (!userName || userName.trim() === "") {
+                userName = "תַּלְמִיד יָקָר";
+            }
+            currentLesson = 0;
+            score = 0;
+            renderLesson(0);
+        }
+
+        function renderLesson(index) {
+            if (index >= lessons.length) {
+                showCertificate();
+                return;
+            }
+
+            currentLesson = index;
+            lessonScore = 0;
+            answeredQuestions = [];
+            
+            const lesson = lessons[index];
+            const container = document.getElementById('gameContainer');
+            
+            container.innerHTML = `
+                <h1>${lesson.title}</h1>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${((index + 1) / lessons.length) * 100}%">
+                        שִׁיעוּר ${index + 1} מִתּוֹךְ ${lessons.length}
+                    </div>
+                </div>
+                <div class="score-display">
+                    נִקּוּד: ${score} 🌟
+                </div>
+                <div class="lesson-content">
+                    ${lesson.content}
+                </div>
+                <div style="text-align: center; margin: 30px 0;">
+                    <button class="btn" onclick="startQuiz(${index})">בּוֹא נַעֲנֶה עַל שְׁאֵלוֹת! 🎯</button>
+                </div>
+            `;
+        }
+
+        function startQuiz(lessonIndex) {
+            const lesson = lessons[lessonIndex];
+            answeredQuestions = new Array(lesson.questions.length).fill(false);
+            renderQuestion(lessonIndex, 0);
+        }
+
+        function renderQuestion(lessonIndex, questionIndex) {
+            const lesson = lessons[lessonIndex];
+            const question = lesson.questions[questionIndex];
+            const container = document.getElementById('gameContainer');
+            
+            const shuffledAnswers = shuffleArray(question.answers.map((answer, idx) => ({
+                text: answer,
+                isCorrect: idx === question.correct
+            })));
+            
+            container.innerHTML = `
+                <h2>שְׁאֵלָה ${questionIndex + 1} מִתּוֹךְ ${lesson.questions.length}</h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${((questionIndex + 1) / lesson.questions.length) * 100}%">
+                        ${questionIndex + 1}/${lesson.questions.length}
+                    </div>
+                </div>
+                <div class="question-container">
+                    <h3 style="margin-bottom: 30px; font-size: 1.4em;">${question.question}</h3>
+                    <div id="answersContainer">
+                        ${shuffledAnswers.map((answer, idx) => `
+                            <button class="answer-btn" onclick="checkAnswer(${lessonIndex}, ${questionIndex}, ${answer.isCorrect})" id="answer-${idx}">
+                                ${answer.text}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="feedback"></div>
+                </div>
+            `;
+        }
+
+        function checkAnswer(lessonIndex, questionIndex, isCorrect) {
+            const lesson = lessons[lessonIndex];
+            const question = lesson.questions[questionIndex];
+            const feedbackDiv = document.getElementById('feedback');
+            const buttons = document.querySelectorAll('.answer-btn');
+            
+            buttons.forEach(btn => btn.disabled = true);
+            
+            const encouragingWords = [
+                `מְצֻיָּן, ${userName}!`,
+                `נִפְלָא, ${userName}!`,
+                `כָּל הַכָּבוֹד, ${userName}!`,
+                `פַּצְצָה, ${userName}!`
+            ];
+            
+            if (isCorrect) {
+                score++;
+                lessonScore++;
+                answeredQuestions[questionIndex] = true;
+                playSound([523.25, 659.25, 783.99]); // C-E-G
+                
+                const randomEncouragement = encouragingWords[Math.floor(Math.random() * encouragingWords.length)];
+                
+                feedbackDiv.innerHTML = `
+                    <div class="feedback correct">
+                        <div style="font-size: 1.5em; margin-bottom: 15px;">${randomEncouragement} ⭐</div>
+                        <p>${question.explanation}</p>
+                        <p style="margin-top: 20px; font-style: italic;">
+                            💖 הַשֵּׁם שָׂמֵחַ כְּשֶׁרוֹאֶה אֶת אַהֲבָתוֹ בְּלִבְּךָ, ${userName}!
+                        </p>
+                    </div>
+                `;
+            } else {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback wrong">
+                        <div style="font-size: 1.3em; margin-bottom: 15px;">לֹא בְּדִיּוּק, ${userName}... 🤔</div>
+                        <p>${question.explanation}</p>
+                        <p style="margin-top: 20px; font-style: italic;">
+                            💡 נַסֶּה שׁוּב, ${userName} — לִפְעָמִים גַּם בְּדֶרֶךְ לַטְּעוּת אָנוּ לוֹמְדִים לְאַהֵב אֶת הַשֵּׁם!
+                        </p>
+                    </div>
+                `;
+            }
+            
+            setTimeout(() => {
+                if (questionIndex < lesson.questions.length - 1) {
+                    renderQuestion(lessonIndex, questionIndex + 1);
+                } else {
+                    showLessonSummary(lessonIndex);
+                }
+            }, 3500);
+        }
+
+        function showLessonSummary(lessonIndex) {
+            const container = document.getElementById('gameContainer');
+            const lesson = lessons[lessonIndex];
+            const percentage = (lessonScore / lesson.questions.length) * 100;
+            
+            let message, emoji, soundFreqs;
+            
+            if (lessonScore === lesson.questions.length) {
+                message = `מַדְהִים, ${userName}! 🏆 אַתָּה שׁוֹלֵט! אַתָּה חַי בְּאַהֲבַת ה׳! 🎉`;
+                emoji = "🏆";
+                soundFreqs = [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25];
+                playSound(soundFreqs, 200);
+            } else if (percentage >= 66) {
+                message = `כִּמְעַט מֻשְׁלָם, ${userName}! 💪 מַמָּשׁ כְּמוֹ בְּאַהֲבָה — מַמְשִׁיךְ לִצְמֹחַ 🌱`;
+                emoji = "💪";
+                playSound([523.25, 659.25, 783.99], 200);
+            } else {
+                container.innerHTML = `
+                    <div class="lesson-content">
+                        <h2>בּוֹא נְנַסֶּה שׁוּב, ${userName} 💙</h2>
+                        <p style="font-size: 1.3em; text-align: center; margin: 30px 0;">
+                            בּוֹא נַעֲבֹר עַל הַשִּׁיעוּר עוֹד פַּעַם בְּאַהֲבָה וּבְסַבְלָנוּת 💖<br>
+                            הַשֵּׁם אוֹהֵב אוֹתְךָ גַּם כְּשֶׁטּוֹעִים - הָעִקָּר לִלְמֹד! 🙏
+                        </p>
+                        <div style="text-align: center;">
+                            <button class="btn" onclick="renderLesson(${lessonIndex})">בּוֹא נְנַסֶּה שׁוּב! 🔄</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="lesson-content">
+                    <h2 style="text-align: center; font-size: 2.2em;">${emoji} ${message}</h2>
+                    <div class="score-display">
+                        צִיּוּן בַּשִּׁיעוּר: ${lessonScore}/${lesson.questions.length}
+                    </div>
+                    <div class="inspiration-box">
+                        ✨ הַשֵּׁם גֵּאֶה בְּךָ, ${userName}! כָּל שִׁיעוּר שֶׁלָּמַדְתָּ מֵאִיר אֶת הָעוֹלָם! 🌟
+                    </div>
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="btn" onclick="renderLesson(${lessonIndex + 1})">
+                            ${lessonIndex < lessons.length - 1 ? 'לַשִּׁיעוּר הַבָּא! 🚀' : 'לַסִּיּוּם! 🏆'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showCertificate() {
+            const percentage = Math.round((score / 12) * 100);
+            const container = document.getElementById('gameContainer');
+            
+            playSound([523.25, 659.25, 783.99, 1046.50, 783.99, 659.25], 300);
+            
+            container.innerHTML = `
+                <div class="certificate">
+                    <h2>🏆 תְּעוּדַת הִצְטַיְּנוּת 🏆</h2>
+                    <p style="font-size: 1.5em; margin: 25px 0;">
+                        תְּעוּדָה זוֹ מוּעֲנֶקֶת בְּגַאֲוָה לְ:
+                    </p>
+                    <div class="certificate-name">${userName}</div>
+                    <p style="font-size: 1.4em; margin: 25px 0; line-height: 2;">
+                        שֶׁסִּיֵּם בְּהַצְלָחָה אֶת מִשְׂחַק הַלִּימּוּד<br>
+                        "חֲנֻכָּה: מְהַדְּרִין מִן הַמְהַדְּרִין"<br>
+                        וְהִשִּׂיג צִיּוּן: <strong style="font-size: 1.3em; color: #7e22ce;">${score}/12 (${percentage}%)</strong>
+                    </p>
+                    <div class="inspiration-box" style="margin: 30px 0;">
+                        📖 "וְאָהַבְתָּ אֵת ה׳ אֱלֹקֶיךָ בְּכָל לְבָבְךָ וּבְכָל נַפְשְׁךָ וּבְכָל מְאֹדֶךָ" 💖
+                    </div>
+                    <div style="background: white; padding: 25px; border-radius: 15px; margin: 30px 0; text-align: right;">
+                        <h3 style="color: #7e22ce; margin-bottom: 20px; text-align: center;">שְׁאֵלוֹת לְמַחְשָׁבָה 💭</h3>
+                        <p style="font-size: 1.2em; line-height: 2; margin: 15px 0;">
+                            🤔 אֵיךְ אוּכַל לְהָבִיא יוֹתֵר אַהֲבַת ה׳ לַלִּימּוּד הַבָּא שֶׁלִּי?<br>
+                            💡 אֵיזוֹ מִצְוָה אֲנִי רוֹצֶה לְקַיֵּם הַיּוֹם מִתּוֹךְ שִׂמְחָה?<br>
+                            ✨ אֵיךְ אֲנִי יָכוֹל לְהָאִיר אֶת הָעוֹלָם כְּמוֹ נֵרוֹת חֲנֻכָּה?
+                        </p>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 3px solid #f59e0b;">
+                        <h3 style="color: #92400e; margin-bottom: 20px; text-align: center; font-size: 1.8em;">🎉 מַזָּל טוֹב, ${userName}! 🎁</h3>
+                        <p style="font-size: 1.3em; line-height: 2; text-align: center;">
+                            נִכְנַסְתָּ לְהַגְרָלָה נוֹשֵׂאת פְּרָסִים!<br>
+                            📋 לְרִישׁוּם לְחַץ כָּאן:<br>
+                            <a href="https://forms.gle/A66uubei4XSX6SG2A" target="_blank" style="color: #7e22ce; font-weight: bold; font-size: 1.2em;">
+                                טוֹפֶס הָרִישׁוּם לְהַגְרָלָה 🎊
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                <div class="contact-info">
+                    <p style="font-size: 1.3em; line-height: 2;">
+                        נִבְנָה בְּאַהֲבָה עַל יְדֵי:<br>
+                        <strong style="font-size: 1.2em;">הָרַב יְהוּדָה טָאוּב מִקִּרְיַת אַתָּא</strong><br>
+                        📞 לִפְרָטִים: 0527139520
+                    </p>
+                </div>
+            `;
+            
+            // שליחת הציון למורה
+            sendScoreToTeacher();
+        }
+
+        // התחלת המשחק
+        renderIntro();
+    </script>
+</body>
+</html>
