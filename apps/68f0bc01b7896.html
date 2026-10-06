@@ -1,0 +1,77 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+	<title>Custom HTML Iframe</title>
+	<style type="text/css">
+		body {
+			margin: 0;
+		}
+	</style>
+</head>
+<body>
+	<iframe src="/versions/2/wizard/modules/customIframePlugin/iframe.html?v=vc1790858920" style="width: 100%; height: px;" frameborder="0"></iframe></body>
+
+<!-- scripts -->
+<script>
+	
+	// Global variables
+	var scrollbarHeightOffset = 20;
+	var lastHeight;
+	var newHeight;
+
+	// Check if the iframe is adaptive or not
+		// On document height change we seed to tell the parent window resize this window
+	onElementHeightChange(document.body, function() {
+		resize((lastHeight + scrollbarHeightOffset));
+	});
+
+    // Set initialize height 
+    resize((lastHeight + scrollbarHeightOffset));
+    // we the height again just to be sure if there is a slow computer or something else it will fix it (we didn't found a bug when we removed it)
+    setTimeout(function() {
+    	resize((lastHeight + scrollbarHeightOffset));
+    }, 1000);
+    setTimeout(function() {
+    	resize((lastHeight + scrollbarHeightOffset));
+    }, 5000);
+
+	/**
+	 * The function is detecting whenever the element height is changed
+	 * and running the callback to adapt the iframe element
+	 */
+	function onElementHeightChange( elm, callback ) {
+		// refresh the variable
+		lastHeight = elm.clientHeight;
+		// the function is checking with a timer if the element height is changed
+		(function run() {
+			// get new element height
+			newHeight = elm.clientHeight;
+			// check if height is changed
+			if ( lastHeight != newHeight ) {
+				lastHeight = newHeight;
+				callback();
+			}
+			// clear timer
+			if ( elm.onElementHeightChangeTimer ) {
+				clearTimeout(elm.onElementHeightChangeTimer);
+			}
+			// add new timer
+			elm.onElementHeightChangeTimer = setTimeout(run, 200);
+		})();
+	}
+	
+	/**
+	 * Resize this iframe from the parent
+	 */
+	function resize( height ) {		
+		window.parent.postMessage({
+			id: "app_iframe_protect_script_68f0bc01b7896",
+			eventType: 'resize',
+			height: height
+		},"*");
+	}
+
+</script>
+</html>
