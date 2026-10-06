@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=ce5491e5-e8a2-46ea-bed2-75bad535ed89
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>יצוא קוד HTML לקובץ</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 24px;
+    direction: rtl;
+  }
+  h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 8px;
+  }
+  p.sub {
+    text-align: center;
+    color: #666;
+    margin-bottom: 24px;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  }
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #34495e;
+  }
+  .dropzone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    border: 2px dashed #b0bec5;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 16px;
+    color: #555;
+    font-size: 14px;
+    background: #fafbfc;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .dropzone.dragover {
+    background: #eaf3fb;
+    border-color: #2980b9;
+  }
+  textarea {
+    width: 100%;
+    height: 320px;
+    font-family: Consolas, monospace;
+    font-size: 14px;
+    direction: ltr;
+    text-align: left;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    resize: vertical;
+  }
+  .row {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  button {
+    background: #2980b9;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background 0.2s;
+  }
+  button:hover {
+    background: #1f6391;
+  }
+  button.secondary {
+    background: #7f8c8d;
+  }
+  button.secondary:hover {
+    background: #636e72;
+  }
+  .preview-wrap {
+    margin-top: 24px;
+  }
+  .preview-wrap h2 {
+    color: #34495e;
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+  .preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .preview-header h2 {
+    margin-bottom: 0;
+  }
+  .preview-header button {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+  .preview-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .fmt-btn {
+    background: #ecf0f1;
+    color: #2c3e50;
+    padding: 6px 12px;
+    min-width: 34px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+  }
+  .fmt-btn:hover {
+    background: #dfe6e9;
+  }
+  iframe:fullscreen {
+    height: 100vh;
+  }
+  iframe {
+    width: 100%;
+    height: 400px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+  }
+  .msg {
+    margin-top: 10px;
+    color: #27ae60;
+    font-weight: bold;
+    min-height: 20px;
+  }
+  .hint {
+    color: #888;
+    font-size: 13px;
+    margin: 0 0 8px;
+  }
+  iframe.editable {
+    outline: 2px dashed #2980b9;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>יצוא קוד HTML לקובץ מוכן</h1>
+  <p class="sub">הדבק כאן קוד HTML, תן שם לקובץ, ולחץ "הורד קובץ HTML"</p>
+
+  <div class="dropzone" id="dropzone">
+    <span>📂 גררו לכאן קובץ HTML, או</span>
+    <button type="button" class="secondary" onclick="document.getElementById('fileInput').click()">בחרו קובץ</button>
+    <input type="file" id="fileInput" accept=".html,.htm,text/html" hidden onchange="handleFileSelect(event)">
+  </div>
+
+  <label for="code">קוד HTML:</label>
+  <textarea id="code" placeholder="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;  &lt;head&gt;...&lt;/head&gt;&#10;  &lt;body&gt;...&lt;/body&gt;&#10;&lt;/html&gt;"></textarea>
+
+  <div class="row">
+    <input type="text" id="filename" placeholder="שם הקובץ (לדוגמה: page)" value="index">
+    <button onclick="downloadHTML()">⬇ הורד קובץ HTML</button>
+    <button class="secondary" onclick="previewHTML()">👁 תצוגה מקדימה</button>
+    <button class="secondary" onclick="downloadPDF()">📄 שמירה כ-PDF (הדפסה)</button>
+  </div>
+
+  <div class="msg" id="msg"></div>
+
+  <div class="preview-wrap">
+    <div class="preview-header">
+      <h2>תצוגה מקדימה</h2>
+      <div class="preview-toolbar">
+        <button class="fmt-btn" onmousedown="event.preventDefault()" onclick="formatText('bold')" title="הדגשה"><b>B</b></button>
+        <button class="fmt-btn" onmousedown="event.preventDefault()" onclick="formatText('underline')" title="קו תחתון"><u>U</u></button>
+        <button class="secondary" onclick="openFullscreen()">⛶ פתח בחלון מלא</button>
+      </div>
+    </div>
+    <p class="hint">אפשר לסמן טקסט בתצוגה ולהדגיש (B) או להוסיף קו תחתון (U), וכן לתקן ישירות שגיאות כתיב — הכל ישתקף אוטומטית בקוד למעלה.</p>
+    <iframe id="preview"></iframe>
+  </div>
+</div>
+
+<script>
+function getContent() {
+  const code = document.getElementById('code').value;
+  if (code.trim().toLowerCase().startsWith('<!doctype') || code.trim().toLowerCase().startsWith('<html')) {
+    return code;
+  }
+  return '<!DOCTYPE html>\n<html lang="he" dir="rtl">\n<head>\n<meta charset="UTF-8">\n<title>מסמך</title>\n</head>\n<body>\n' + code + '\n</body>\n</html>';
+}
+
+function loadFile(file) {
+  if (!file) return;
+  const validExt = /\.(html?|txt)$/i.test(file.name);
+  if (!validExt && file.type !== 'text/html') {
+    document.getElementById('msg').textContent = 'נא להעלות קובץ HTML בלבד';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    document.getElementById('code').value = e.target.result;
+
+    let name = file.name.replace(/\.(html?|txt)$/i, '');
+    document.getElementById('filename').value = name || 'index';
+
+    previewHTML();
+    document.getElementById('msg').textContent = 'הקובץ "' + file.name + '" נטען ונפתח בתצוגה המקדימה';
+  };
+  reader.onerror = function () {
+    document.getElementById('msg').textContent = 'שגיאה בקריאת הקובץ';
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function handleFileSelect(event) {
+  const file = event.target.files[0];
+  loadFile(file);
+  event.target.value = '';
+}
+
+(function setupDropzone() {
+  document.addEventListener('DOMContentLoaded', function () {
+    const zone = document.getElementById('dropzone');
+    ['dragenter', 'dragover'].forEach(function (evt) {
+      zone.addEventListener(evt, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        zone.classList.add('dragover');
+      });
+    });
+    ['dragleave', 'drop'].forEach(function (evt) {
+      zone.addEventListener(evt, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        zone.classList.remove('dragover');
+      });
+    });
+    zone.addEventListener('drop', function (e) {
+      const file = e.dataTransfer.files[0];
+      loadFile(file);
+    });
+  });
+})();
+
+function downloadHTML() {
+  const content = getContent();
+  let name = document.getElementById('filename').value.trim() || 'index';
+  if (!name.toLowerCase().endsWith('.html')) name += '.html';
+
+  const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  document.getElementById('msg').textContent = 'הקובץ "' + name + '" הורד בהצלחה!';
+}
+
+let syncTimer = null;
+
+function previewHTML() {
+  const content = getContent();
+  const iframe = document.getElementById('preview');
+  iframe.classList.remove('editable');
+
+  iframe.onload = function () {
+    const doc = iframe.contentDocument;
+    if (!doc || !doc.body) return;
+
+    doc.body.setAttribute('contenteditable', 'true');
+    doc.body.setAttribute('spellcheck', 'true');
+    iframe.classList.add('editable');
+
+    doc.addEventListener('input', function () {
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(function () { syncPreviewToCode(iframe); }, 400);
+    });
+  };
+
+  iframe.srcdoc = content;
+}
+
+function getCleanHtml(iframe) {
+  const doc = iframe.contentDocument;
+  if (!doc || !doc.documentElement) return null;
+
+  const clone = doc.documentElement.cloneNode(true);
+  const cloneBody = clone.querySelector('body');
+  if (cloneBody) {
+    cloneBody.removeAttribute('contenteditable');
+    cloneBody.removeAttribute('spellcheck');
+  }
+
+  return '<!DOCTYPE html>\n' + clone.outerHTML;
+}
+
+function syncPreviewToCode(iframe) {
+  const html = getCleanHtml(iframe);
+  if (html === null) return;
+  document.getElementById('code').value = html;
+  document.getElementById('msg').textContent = 'התיקון סונכרן אוטומטית לקוד למעלה';
+}
+
+function formatText(command) {
+  const iframe = document.getElementById('preview');
+  const doc = iframe.contentDocument;
+  if (!doc || !doc.body || doc.body.getAttribute('contenteditable') !== 'true') {
+    document.getElementById('msg').textContent = 'יש להציג תצוגה מקדימה לפני עיצוב הטקסט';
+    return;
+  }
+
+  const selection = doc.getSelection();
+  if (!selection || selection.isCollapsed) {
+    document.getElementById('msg').textContent = 'יש לסמן טקסט בתצוגה המקדימה תחילה';
+    return;
+  }
+
+  iframe.contentWindow.focus();
+  doc.execCommand(command, false, null);
+  syncPreviewToCode(iframe);
+}
+
+function openFullscreen() {
+  const iframe = document.getElementById('preview');
+  const doc = iframe.contentDocument;
+  if (!doc || !doc.body || !doc.body.innerHTML.trim()) {
+    document.getElementById('msg').textContent = 'יש להציג תצוגה מקדימה לפני פתיחה בחלון מלא';
+    return;
+  }
+
+  const fsEnabled = document.fullscreenEnabled || document.webkitFullscreenEnabled || document.mozFullScreenEnabled || document.msFullscreenEnabled;
+  const request = iframe.requestFullscreen || iframe.webkitRequestFullscreen || iframe.mozRequestFullScreen || iframe.msRequestFullscreen;
+
+  if (!request || fsEnabled === false) {
+    openInNewTab(iframe);
+    return;
+  }
+
+  try {
+    const result = request.call(iframe);
+    if (result && typeof result.catch === 'function') {
+      result.catch(function () { openInNewTab(iframe); });
+    }
+  } catch (e) {
+    openInNewTab(iframe);
+  }
+}
+
+function injectSyncScript(html) {
+  const syncScript = '\n<script id="__sync_injector__">' +
+    '(function(){' +
+    'document.body.setAttribute("contenteditable","true");' +
+    'document.body.setAttribute("spellcheck","true");' +
+    'var t;' +
+    'document.addEventListener("input", function(){' +
+    'clearTimeout(t);' +
+    't = setTimeout(function(){' +
+    'try {' +
+    'if (window.opener && window.opener.receiveExternalEdit) {' +
+    'var clone = document.documentElement.cloneNode(true);' +
+    'var injected = clone.querySelector("#__sync_injector__");' +
+    'if (injected) injected.remove();' +
+    'var b = clone.querySelector("body");' +
+    'if (b) { b.removeAttribute("contenteditable"); b.removeAttribute("spellcheck"); }' +
+    'window.opener.receiveExternalEdit("<!DOCTYPE html>\\n" + clone.outerHTML);' +
+    '}' +
+    '} catch (e) {}' +
+    '}, 400);' +
+    '});' +
+    '})();' +
+    '<\/script>\n';
+
+  if (/<\/body>/i.test(html)) {
+    return html.replace(/<\/body>/i, syncScript + '</body>');
+  }
+  return html + syncScript;
+}
+
+window.receiveExternalEdit = function (html) {
+  document.getElementById('code').value = html;
+  document.getElementById('msg').textContent = 'התיקון מהחלון החדש סונכרן אוטומטית לקוד';
+  previewHTML();
+};
+
+function openInNewTab(iframe) {
+  const html = getCleanHtml(iframe);
+  if (html === null) return;
+
+  const editableHtml = injectSyncScript(html);
+  const blob = new Blob([editableHtml], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+
+  if (!win) {
+    document.getElementById('msg').textContent = 'הדפדפן חסם את פתיחת החלון החדש — יש לאשר חלונות קופצים באתר';
+  } else {
+    document.getElementById('msg').textContent = 'הדף נפתח בלשונית חדשה — תיקונים שם יסונכרנו אוטומטית לקוד';
+  }
+
+  setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+}
+
+function downloadPDF() {
+  const iframe = document.getElementById('preview');
+  const doc = iframe.contentDocument;
+  if (!doc || !doc.body || !doc.body.innerHTML.trim()) {
+    document.getElementById('msg').textContent = 'יש להציג תצוגה מקדימה לפני השמירה כ-PDF';
+    return;
+  }
+
+  document.getElementById('msg').textContent = 'בחלון ההדפסה שנפתח, בחרו ביעד "Save as PDF" / "שמור כ-PDF"';
+
+  iframe.contentWindow.focus();
+  iframe.contentWindow.print();
+}
+</script>
+</body>
+</html>
