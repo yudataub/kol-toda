@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>קטלוג שיעורים - ספר שופטים</title>
+<style>
+  :root {
+    --bg: #eff6ff; --card: #ffffff; --ink: #17203a; --muted: #5b6b8c;
+    --accent: #1d4ed8; --accent2: #d97706; --border: #e1e9fb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(180deg, #dbeafe 0%, #eff6ff 350px, #fffbeb 100%);
+    color: var(--ink); min-height: 100vh;
+  }
+  header { padding: 30px 20px 18px; text-align: center; position: relative; }
+  .instructions-box {
+    position: absolute; top: 18px; right: 20px; max-width: 240px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 12px 14px; text-align: right; font-size: 0.76rem; line-height: 1.5;
+    color: var(--muted); box-shadow: 0 2px 8px rgba(29,78,216,0.08);
+  }
+  .instructions-box b { color: var(--accent); }
+  .instructions-box .reset-link {
+    display: inline-block; margin-top: 8px; color: #b91c1c; cursor: pointer;
+    text-decoration: underline; font-size: 0.74rem;
+  }
+  @media (max-width: 800px) {
+    .instructions-box { position: static; max-width: 420px; margin: 14px auto 0; }
+  }
+  header h1 {
+    margin: 0 0 6px; font-size: 1.9rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  header p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+  .search-wrap {
+    max-width: 700px; margin: 16px auto 0; padding: 0 20px;
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;
+  }
+  #search {
+    flex: 1; min-width: 220px; padding: 12px 16px; border-radius: 12px;
+    border: 1px solid var(--border); font-size: 1rem; background: var(--card);
+    box-shadow: 0 1px 4px rgba(29,78,216,0.07);
+  }
+  #search:focus { outline: 2px solid var(--accent2); }
+  .show-hidden-toggle {
+    display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--muted);
+    background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+    padding: 8px 14px; cursor: pointer; white-space: nowrap;
+  }
+  .tabs {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    padding: 18px 20px 10px; max-width: 1080px; margin: 0 auto;
+  }
+  .tab-btn {
+    flex-shrink: 0; display: flex; align-items: center; gap: 6px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+    padding: 9px 16px; cursor: pointer; font-size: 0.88rem; color: var(--ink);
+    white-space: nowrap; transition: all .15s;
+  }
+  .tab-btn:hover { border-color: var(--accent2); }
+  .tab-btn.active {
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    color: white; border-color: transparent;
+  }
+  .tab-count { background: rgba(0,0,0,0.08); border-radius: 999px; padding: 1px 8px; font-size: 0.75rem; }
+  .tab-btn.active .tab-count { background: rgba(255,255,255,0.28); }
+  main { max-width: 920px; margin: 0 auto; padding: 10px 20px 60px; }
+  .topic-heading { display: flex; align-items: baseline; gap: 10px; margin: 18px 0 12px; }
+  .topic-heading h2 { margin: 0; font-size: 1.4rem; }
+  .topic-heading span.count { color: var(--muted); font-size: 0.9rem; }
+  .category-group {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    margin-bottom: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(29,78,216,0.05);
+  }
+  .category-header {
+    padding: 13px 18px; display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; background: linear-gradient(90deg, #eef4ff, #ffffff);
+  }
+  .category-title { font-weight: 600; font-size: 0.98rem; }
+  .category-count { font-size: 0.78rem; color: var(--muted); background: var(--bg); padding: 3px 10px; border-radius: 999px; }
+  .category-toggle { color: var(--accent); font-size: 0.9rem; margin-inline-start: 10px; }
+  .file-list { display: block; }
+  .file-list.collapsed { display: none; }
+  .file-row-wrap { display: flex; align-items: center; gap: 2px; border-top: 1px solid var(--border); transition: background .12s; }
+  .file-row-wrap:hover { background: #f7faff; }
+  .file-row-wrap.is-hidden { opacity: 0.45; }
+  .icon-btn {
+    flex-shrink: 0; background: none; border: none; cursor: pointer; font-size: 1.02rem;
+    padding: 10px 5px; line-height: 1; color: #a9b8dd; transition: transform .1s;
+  }
+  .icon-btn:hover { transform: scale(1.18); color: var(--accent); }
+  .rating-box { display: flex; align-items: center; gap: 1px; flex-shrink: 0; padding: 4px 6px; border-radius: 8px; }
+  .rating-box.mine { background: #fff7e0; box-shadow: inset 0 0 0 1px #f5c94d; }
+  .rating-star { cursor: pointer; font-size: 0.95rem; color: #d8ddec; transition: transform .08s; line-height: 1; }
+  .rating-star:hover { transform: scale(1.2); }
+  .rating-star.filled { color: #f5b301; }
+  .rating-meta { font-size: 0.66rem; color: var(--muted); margin-inline-start: 5px; white-space: nowrap; }
+  .file-row { display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 0; text-decoration: none; color: var(--ink); flex: 1; min-width: 0; }
+  .file-icon { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; flex-shrink: 0; }
+  .file-name { flex: 1; font-size: 0.9rem; line-height: 1.35; }
+  .file-name.renamed::after { content: " (שם ערוך)"; font-size: 0.68rem; color: var(--accent2); font-weight: 400; }
+  .file-size { font-size: 0.72rem; color: var(--muted); flex-shrink: 0; white-space: nowrap; }
+  .file-type-badge { font-size: 0.7rem; padding: 2px 9px; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
+  .hidden-badge { font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; background: #fee2e2; color: #b91c1c; flex-shrink: 0; }
+  .empty-state { text-align: center; color: var(--muted); padding: 60px 20px; display: none; }
+  footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 20px; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(23,32,58,0.45); display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--card); border-radius: 16px; padding: 22px; max-width: 360px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+  .modal-box h3 { margin: 0 0 14px; font-size: 1.05rem; }
+  .modal-box label { display: block; font-size: 0.82rem; color: var(--muted); margin: 12px 0 4px; }
+  .modal-box select { width: 100%; padding: 9px 10px; border-radius: 9px; border: 1px solid var(--border); font-size: 0.9rem; background: #fff; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 18px; justify-content: flex-end; }
+  .modal-btn { padding: 9px 18px; border-radius: 9px; border: none; cursor: pointer; font-size: 0.88rem; }
+  .modal-btn.save { background: var(--accent); color: white; }
+  .modal-btn.cancel { background: var(--bg); color: var(--ink); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="instructions-box">
+    <b>⭐ דירוג משותף</b><br>
+    לוחצים על אחד מ-5 הכוכבים ליד כל קובץ כדי לדרג אותו. הדירוג נשמר בענן ומשותף לכל מי שפותח את הקטלוג הזה.<br><br>
+    <b>✏️ שינוי שם | 🙈 הסתרה | 📁 העברה</b><br>
+    אפשר לערוך שם תצוגה, להסתיר קובץ, או להעביר אותו לנושא/קטגוריה אחרים - שינויים אלו אישיים ונשמרים רק אצלך בדפדפן.
+    <div class="reset-link" id="resetLink">איפוס ההתאמות האישיות שלי</div>
+  </div>
+  <h1>קטלוג שיעורים - ספר שופטים</h1>
+  <p id="fileCountLine">280 סרטונים ומצגות מאורגנים לפי פרק, כולל הקדמה לספר</p>
+</header>
+
+<div class="search-wrap">
+  <input id="search" type="text" placeholder="חיפוש בכל הנושאים לפי שם קובץ..." />
+  <label class="show-hidden-toggle">
+    <input type="checkbox" id="showHiddenChk" />
+    הצג קבצים מוסתרים
+  </label>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<main id="main"></main>
+<div class="empty-state" id="emptyState">לא נמצאו קבצים תואמים לחיפוש</div>
+
+<footer>
+  <div style="font-weight:600; color:var(--accent); margin-bottom:4px;">הרב יהודה טאוב</div>
+  <div>הקישורים פותחים ישירות ב-Google Drive</div>
+</footer>
+
+<div class="modal-overlay" id="moveModal">
+  <div class="modal-box">
+    <h3>📁 העברת קובץ</h3>
+    <label>נושא יעד</label>
+    <select id="moveTopicSelect"></select>
+    <label>קטגוריה יעד</label>
+    <select id="moveCategorySelect"></select>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" id="moveCancelBtn">ביטול</button>
+      <button class="modal-btn save" id="moveSaveBtn">שמירה</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getFirestore, doc, getDocs, collection, query, where, documentId, runTransaction
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const firebaseConfig = {"apiKey": "AIzaSyBgjtJk9Wrw-lPpFlPBaQ6RHfqQ58R58LA", "authDomain": "gamma-catalog.firebaseapp.com", "projectId": "gamma-catalog", "storageBucket": "gamma-catalog.firebasestorage.app", "messagingSenderId": "184606827021", "appId": "1:184606827021:web:e39a832b5bc12fe87aeb44"};
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+
+const ratingsCache = new Map(); // id -> {sum, count}
+
+function chunkArr(arr, n) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n));
+  return out;
+}
+
+async function fetchRatings(ids) {
+  const need = [...new Set(ids)].filter(id => !ratingsCache.has(id));
+  if (need.length === 0) return;
+  const batches = chunkArr(need, 10);
+  await Promise.all(batches.map(async (b) => {
+    b.forEach(id => ratingsCache.set(id, { sum: 0, count: 0 }));
+    try {
+      const q = query(collection(db, 'ratings'), where(documentId(), 'in', b));
+      const snap = await getDocs(q);
+      snap.forEach(d => ratingsCache.set(d.id, d.data()));
+    } catch (e) {
+      console.error('fetchRatings failed', e);
+    }
+  }));
+}
+
+async function submitRating(id, newValue, oldValue) {
+  const ref = doc(db, 'ratings', id);
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    let sum = 0, count = 0;
+    if (snap.exists()) { sum = snap.data().sum || 0; count = snap.data().count || 0; }
+    if (oldValue) { sum += (newValue - oldValue); } else { sum += newValue; count += 1; }
+    tx.set(ref, { sum, count });
+  });
+}
+
+window.__ratingsApi = { fetchRatings, submitRating, ratingsCache };
+window.dispatchEvent(new Event('ratings-ready'));
+</script>
+
+<script>
+const ORDER = ["הקדמה לספר", "פרק א", "פרק ב", "פרק ג", "פרק ד", "פרק ה", "פרק ו", "פרק ז", "פרק ח", "פרק ט", "פרק י", "פרק יא", "פרק יב", "פרק יג", "פרק יד", "פרק טו", "פרק טז", "פרק יז", "פרק יח", "פרק יט", "פרק כ", "פרק כא", "שונות"];
+const FLAT_ITEMS = [{"id":"yt_WDmYAuAVvUM","name":"פטירת יהושע, מאפייני תקופת השופטים - יאיר לבני","type":"video","size":"","topic":"הקדמה לספר","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/WDmYAuAVvUM"},{"id":"10pn5u0N1ZktA5GjzToxbP7X8XwjH_slX","name":"מצגת - פטירת יהושע, מאפייני תקופת השופטים - יאיר לבני","type":"ppt","size":"","topic":"הקדמה לספר","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/10pn5u0N1ZktA5GjzToxbP7X8XwjH_slX/edit?usp=sharing&ouid=104507935455606641865&rtpof=true&sd=true"},{"id":"yt_7LQir900WOA","name":"כיבוש נחלת יהודה, התרשלות בהורשת הגויים - יאיר לבני","type":"video","size":"","topic":"פרק א","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/7LQir900WOA"},{"id":"1wWFLWYRAjKsKs4zV3TuZ1WxXhUfYni_4","name":"מצגת - כיבוש נחלת יהודה, התרשלות בהורשת הגויים - יאיר לבני","type":"ppt","size":"","topic":"פרק א","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1wWFLWYRAjKsKs4zV3TuZ1WxXhUfYni_4/edit?usp=sharing&ouid=104507935455606641865&rtpof=true&sd=true"},{"id":"yt_qau12tb62Wg","name":"עם ישראל בבוכים, מחזוריות ספר שופטים - יאיר לבני","type":"video","size":"","topic":"פרק ב","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/qau12tb62Wg"},{"id":"1_Kt-lZqU4rxhCp3N8UTQS3LGNAtW1-qY","name":"מצגת - עם ישראל בבוכים, מחזוריות ספר שופטים - יאיר לבני","type":"ppt","size":"","topic":"פרק ב","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1_Kt-lZqU4rxhCp3N8UTQS3LGNAtW1-qY/edit?usp=sharing&ouid=104507935455606641865&rtpof=true&sd=true"},{"id":"yt_G-0HOr2E80c","name":"עתניאל בן קנז - יאיר לבני","type":"video","size":"","topic":"פרק ג","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/G-0HOr2E80c"},{"id":"1eRm4ioZ5zne9JQV-YtQM-39ANEMOBJqd","name":"מצגת - עתניאל בן קנז - יאיר לבני","type":"ppt","size":"","topic":"פרק ג","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1eRm4ioZ5zne9JQV-YtQM-39ANEMOBJqd/edit?usp=sharing&ouid=104507935455606641865&rtpof=true&sd=true"},{"id":"yt_npQKKVxQcH8","name":"אהוד בן גרא - יאיר לבני","type":"video","size":"","topic":"פרק ג","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/npQKKVxQcH8"},{"id":"19-gw39EIPoTO-csRFW164tUmPM2a_rJ5","name":"מצגת - אהוד בן גרא - יאיר לבני","type":"ppt","size":"","topic":"פרק ג","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/19-gw39EIPoTO-csRFW164tUmPM2a_rJ5/edit?usp=sharing&ouid=104507935455606641865&rtpof=true&sd=true"},{"id":"yt_FmwxaeyK9YI","name":"ברק ודבורה - יאיר לבני","type":"video","size":"","topic":"פרק ד","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/FmwxaeyK9YI"},{"id":"1NZ5ludlb95pvU7izFtHPud28KuiZFAd9","name":"מצגת - ברק ודבורה - יאיר לבני","type":"ppt","size":"","topic":"פרק ד","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1NZ5ludlb95pvU7izFtHPud28KuiZFAd9/edit?usp=sharing&ouid=104507935455606641865&rtpof=true&sd=true"},{"id":"yt_N1uCMtv5_yU","name":"שירת דבורה - יאיר לבני","type":"video","size":"","topic":"פרק ה","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/N1uCMtv5_yU"},{"id":"1dlwUHFxJjn6wHi0FkIW5_VoM-yBR9Y82","name":"מצגת - שירת דבורה - יאיר לבני","type":"ppt","size":"","topic":"פרק ה","category":"שיעורים - סרטונים ומצגות","url":"https://drive.google.com/file/d/1dlwUHFxJjn6wHi0FkIW5_VoM-yBR9Y82/view?usp=sharing"},{"id":"yt_-mFRfbHJ5Ic","name":"מינוי גדעון - יאיר ליברמן","type":"video","size":"","topic":"פרק ו","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=-mFRfbHJ5Ic"},{"id":"1j47DOogwqPQ8wwKbuNCzh-cnBTvQQyKd","name":"מצגת - מינוי גדעון - יאיר ליברמן","type":"ppt","size":"","topic":"פרק ו","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1j47DOogwqPQ8wwKbuNCzh-cnBTvQQyKd/edit?usp=sharing&ouid=116363173236091848464&rtpof=true&sd=true"},{"id":"yt_EZMWobfTSls","name":"המלקקים - יאיר ליברמן","type":"video","size":"","topic":"פרק ז","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=EZMWobfTSls"},{"id":"1ROvvCy9nJzwe4EHv0_te1pobtJMf2tWc","name":"מצגת - המלקקים - יאיר ליברמן","type":"ppt","size":"","topic":"פרק ז","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1ROvvCy9nJzwe4EHv0_te1pobtJMf2tWc/edit?usp=sharing&ouid=116363173236091848464&rtpof=true&sd=true"},{"id":"yt_QJ1VkslujSw","name":"מלחמת מדין - יאיר ליברמן","type":"video","size":"","topic":"פרק ז","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=QJ1VkslujSw"},{"id":"1I_PofB2-RLe69Y8ZOS8dNHL0EORlDGtd","name":"מצגת - מלחמת מדין - יאיר ליברמן","type":"ppt","size":"","topic":"פרק ז","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1I_PofB2-RLe69Y8ZOS8dNHL0EORlDGtd/edit?usp=sharing&ouid=116363173236091848464&rtpof=true&sd=true"},{"id":"yt_CVCU1E4tUIg","name":"האפוד - יאיר ליברמן","type":"video","size":"","topic":"פרק ח","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=CVCU1E4tUIg"},{"id":"yt_XadkKDI4-P0","name":"המרדף - יאיר ליברמן","type":"video","size":"","topic":"פרק ח","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=XadkKDI4-P0"},{"id":"yt_SkUf4IE5TUQ","name":"משל יותם - יאיר ליברמן","type":"video","size":"","topic":"פרק ט","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=SkUf4IE5TUQ"},{"id":"1Nqb099fprOZfiRB3Ax8DMW70hybUlikl","name":"מצגת - משל יותם - יאיר ליברמן","type":"ppt","size":"","topic":"פרק ט","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1Nqb099fprOZfiRB3Ax8DMW70hybUlikl/edit?usp=sharing&ouid=116363173236091848464&rtpof=true&sd=true"},{"id":"yt_6A-lC8hWgRc","name":"יפתח הגלעדי - יאיר ליברמן","type":"video","size":"","topic":"פרק יא","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/6A-lC8hWgRc"},{"id":"1SzAPd-mnmcKBMISm9iWbvO8nGOx2UDzV","name":"מצגת - יפתח הגלעדי - יאיר ליברמן","type":"ppt","size":"","topic":"פרק יא","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1SzAPd-mnmcKBMISm9iWbvO8nGOx2UDzV/edit?usp=sharing&ouid=116363173236091848464&rtpof=true&sd=true"},{"id":"yt_8EGu4BJsb2Y","name":"בת יפתח - יאיר ליברמן","type":"video","size":"","topic":"פרק יא","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=8EGu4BJsb2Y"},{"id":"yt_OFOLBMo1bk4","name":"מפלת האריה - יאיר ליברמן","type":"video","size":"","topic":"פרק יד","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=OFOLBMo1bk4"},{"id":"1Y_DtUE2zTercQQvVlaSie00_IEgzwF-3","name":"מצגת - מפלת האריה - יאיר ליברמן","type":"ppt","size":"","topic":"פרק יד","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1Y_DtUE2zTercQQvVlaSie00_IEgzwF-3/edit?usp=share_link&ouid=109352894508317643797&rtpof=true&sd=true"},{"id":"yt_kCibZCTZ1hk","name":"החידה - יאיר ליברמן","type":"video","size":"","topic":"פרק יד","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=kCibZCTZ1hk"},{"id":"15ehDHtEau-RYhuudo06pKv0XPy4AwJvp","name":"מצגת - החידה - יאיר ליברמן","type":"ppt","size":"","topic":"פרק יד","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/15ehDHtEau-RYhuudo06pKv0XPy4AwJvp/edit?usp=share_link&ouid=109352894508317643797&rtpof=true&sd=true"},{"id":"yt_Io7mCXt3TFk","name":"לידת שמשון - יאיר ליברמן","type":"video","size":"","topic":"פרק יג","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=Io7mCXt3TFk"},{"id":"1CM9cVVJ0kQPmBqiZkKOjkUjhC7h87Lxs","name":"מצגת - לידת שמשון - יאיר ליברמן","type":"ppt","size":"","topic":"פרק יג","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1CM9cVVJ0kQPmBqiZkKOjkUjhC7h87Lxs/edit?usp=share_link&ouid=109352894508317643797&rtpof=true&sd=true"},{"id":"yt_Bl7AEa2KeBw","name":"מעשה ההסגרה - יאיר ליברמן","type":"video","size":"","topic":"פרק טו","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=Bl7AEa2KeBw"},{"id":"1bzhcgllWw7Wx_3AlyxFFNQclWpmitzFZ","name":"מצגת - מעשה ההסגרה - יאיר ליברמן","type":"ppt","size":"","topic":"פרק טו","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1bzhcgllWw7Wx_3AlyxFFNQclWpmitzFZ/edit?usp=share_link&ouid=109352894508317643797&rtpof=true&sd=true"},{"id":"yt_pO6eP76qJEk","name":"מעשה השועלים - יאיר ליברמן","type":"video","size":"","topic":"פרק טו","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=pO6eP76qJEk"},{"id":"1DU9Hklnh-VgxQkXyLwKccdre7t6IAg5I","name":"מצגת - מעשה השועלים - יאיר ליברמן","type":"ppt","size":"","topic":"פרק טו","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1DU9Hklnh-VgxQkXyLwKccdre7t6IAg5I/edit?usp=share_link&ouid=109352894508317643797&rtpof=true&sd=true"},{"id":"yt_gX2MYMtEij0","name":"לחי החמור - יאיר ליברמן","type":"video","size":"","topic":"פרק טו","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=gX2MYMtEij0"},{"id":"1-isIHaZyfGwfWt4fxar1LvTBJUvdC0Tu","name":"מצגת - לחי החמור - יאיר ליברמן","type":"ppt","size":"","topic":"פרק טו","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1-isIHaZyfGwfWt4fxar1LvTBJUvdC0Tu/edit?usp=share_link&ouid=109352894508317643797&rtpof=true&sd=true"},{"id":"yt_RYfQuJDaUbw","name":"שערי עזה - יאיר ליברמן","type":"video","size":"","topic":"פרק טז","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=RYfQuJDaUbw"},{"id":"1m9swqLD_ELXi59BZGLnloLvRn60DNKex","name":"מצגת - שערי עזה - יאיר ליברמן","type":"ppt","size":"","topic":"פרק טז","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1m9swqLD_ELXi59BZGLnloLvRn60DNKex/edit?usp=share_link&ouid=109352894508317643797&rtpof=true&sd=true"},{"id":"yt_Ho6dy7BzBN8","name":"שמשון ודלילה - יאיר ליברמן","type":"video","size":"","topic":"פרק טז","category":"שיעורים - סרטונים ומצגות","url":"https://www.youtube.com/watch?v=Ho6dy7BzBN8"},{"id":"1wdcOK6r9-VCXN7ewoQHrSjwPU6sAWUDF","name":"מצגת - שמשון ודלילה - יאיר ליברמן","type":"ppt","size":"","topic":"פרק טז","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1wdcOK6r9-VCXN7ewoQHrSjwPU6sAWUDF/edit?usp=share_link&ouid=109352894508317643797&rtpof=true&sd=true"},{"id":"yt_Tp7MTesv_m8","name":"מות שמשון - ישראל יוקל","type":"video","size":"","topic":"פרק טז","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/Tp7MTesv_m8"},{"id":"1dNAVKbPBaAirclmJ7Qcg66s9n_WQo3UW","name":"מצגת - מות שמשון - ישראל יוקל","type":"ppt","size":"","topic":"פרק טז","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1dNAVKbPBaAirclmJ7Qcg66s9n_WQo3UW/edit?usp=share_link&ouid=109352894508317643797&rtpof=true&sd=true"},{"id":"yt_KH4DWZOTQxU","name":"פסל מיכה - ישראל יוקל","type":"video","size":"","topic":"פרק יז","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/KH4DWZOTQxU"},{"id":"1Mjn1LEBpoEtP1tKGWTUBoMVX-4VuAs5g","name":"מצגת - פסל מיכה - ישראל יוקל","type":"ppt","size":"","topic":"פרק יז","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1Mjn1LEBpoEtP1tKGWTUBoMVX-4VuAs5g/edit?usp=share_link&ouid=109352894508317643797&rtpof=true&sd=true"},{"id":"yt_TkzqEM5CnsY","name":"בני דן מחפשים נחלה-א - ישראל יוקל","type":"video","size":"","topic":"פרק יח","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/TkzqEM5CnsY"},{"id":"1zIYnYL2woQwfzjL1FY_0iWz_wCC6gaAL","name":"מצגת - בני דן מחפשים נחלה-א - ישראל יוקל","type":"ppt","size":"","topic":"פרק יח","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1zIYnYL2woQwfzjL1FY_0iWz_wCC6gaAL/edit?usp=share_link&ouid=109352894508317643797&rtpof=true&sd=true"},{"id":"yt_EiKw1QH_V5Y","name":"בני דן מחפשים נחלה-ב - ישראל יוקל","type":"video","size":"","topic":"פרק יח","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/EiKw1QH_V5Y"},{"id":"yt_XO1DwEDpQVc","name":"פילגש בגבעה- החטא - ישראל יוקל","type":"video","size":"","topic":"פרק יט","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/XO1DwEDpQVc"},{"id":"1wz4HcD5jhbwMu6ZWZQBhO-ZTw9jeGw7D","name":"מצגת - פילגש בגבעה- החטא - ישראל יוקל","type":"ppt","size":"","topic":"פרק יט","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1wz4HcD5jhbwMu6ZWZQBhO-ZTw9jeGw7D/edit?usp=share_link&ouid=116363173236091848464&rtpof=true&sd=true"},{"id":"yt_TQxxVORyuCc","name":"פילגש בגבעה- מלחמת השבטים - ישראל יוקל","type":"video","size":"","topic":"פרק כ","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/TQxxVORyuCc"},{"id":"1LlUI4d6gOliHHM_Wx70MIBgi5QQD3Tzy","name":"מצגת - פילגש בגבעה- מלחמת השבטים - ישראל יוקל","type":"ppt","size":"","topic":"פרק כ","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1LlUI4d6gOliHHM_Wx70MIBgi5QQD3Tzy/edit?usp=share_link&ouid=116363173236091848464&rtpof=true&sd=true"},{"id":"yt_UxYJ2eQc370","name":"פילגש בגבעה- שיקום שבט בנימין - ישראל יוקל","type":"video","size":"","topic":"פרק כא","category":"שיעורים - סרטונים ומצגות","url":"https://youtu.be/UxYJ2eQc370"},{"id":"1qMy_KrTJXlF9PFyQvDmEegThjG9Vfhu4","name":"מצגת - פילגש בגבעה- שיקום שבט בנימין - ישראל יוקל","type":"ppt","size":"","topic":"פרק כא","category":"שיעורים - סרטונים ומצגות","url":"https://docs.google.com/presentation/d/1qMy_KrTJXlF9PFyQvDmEegThjG9Vfhu4/edit?usp=share_link&ouid=116363173236091848464&rtpof=true&sd=true"},{"id":"1VXcFrYIF-AvX2YLXggaKwESxLzO0IxSB","name":"______שופטים פרק יג.docx","type":"word","size":"21KB","topic":"פרק יג","category":"דפי עבודה ומבחנים"},{"id":"1cW-loa1dGRA5gHE79ZLRfT6518Ug9gQ6","name":"א - חידון פרשת שמות.docx","type":"word","size":"127KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1QXxm-CUEcLHQ4afeNG-a6rKA_Nk_qygUPnewW1yHQ9Y","name":"גדעון - נכון או לא","type":"other","size":"9KB","topic":"פרק ו","category":"דפי עבודה ומבחנים"},{"id":"15ntCTL_TUTJMRme0uYq19RBrHjECkOnXOTLDlgx1u1k","name":"גדעון- מבדק","type":"other","size":"2KB","topic":"פרק ו","category":"דפי עבודה ומבחנים"},{"id":"1X0cY4SsswNRBzqmfzkbarhC4XKU3xBUO","name":"גלגל מבנה ספר שופטים - מתוקן.pdf","type":"pdf","size":"319KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1eml8jViaCllqgc2GOblx-qy2frbCNwJ5","name":"גלגל מבנה ספר שופטים.pdf","type":"pdf","size":"132KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1mPRAoczd9JaBJkKxTH0yaGbt-lsGB6qhRzenoXVYbbA","name":"דמותו של שממעון הגיבור","type":"other","size":"1024B","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1bJkw6s_zv17pjcatOveXeFD_stfq-q45","name":"דמותו של שממעון הגיבור.pdf","type":"pdf","size":"319KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1OYhW5nDO03-MIwamHw4pxTvRehFb6lco","name":"דף חזרה מבדק ספר שופטים פרקים א-ד (3).docx","type":"word","size":"15KB","topic":"פרק א","category":"דפי עבודה ומבחנים"},{"id":"1mKJQNoGp9J3GlU7_x74E9E4IjySqvvWXVtp6ihLN8Jk","name":"דף חזרה פרקים א-ג שופטים","type":"other","size":"1.4MB","topic":"פרק א","category":"דפי עבודה ומבחנים"},{"id":"1sEl8PioXrsKa0wttQ2LBgyss3XyYMVk3HvnrZPu6HOA","name":"דף עבודה","type":"other","size":"5KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1okRQhhF5oJiQMqckIaf8C2rS-Q_vj7Vl9srzBKpwBIk","name":"דפי עבודה שופטים ניסים כהן","type":"other","size":"","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1PHnbiXhcjGRe6g2n-Mk5UqIhW2hi0PCUzYunMdc6TjA","name":"הדגם_המחזורי_בספר_שופטים_לתלייה","type":"other","size":"5KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1MZq3yMI47nAEKnWW_RuKGZjauSefvDcj","name":"הדגם_המחזורי_בספר_שופטים_לתלייה.pdf","type":"pdf","size":"76KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1TyiYLX13M9pYfPuySn7W3Sh0VpI7xz9B","name":"הקדמה לספר שופטים","type":"other","size":"127KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1U-YyhhribvnWaYBiKuS--7heYzP_dz78","name":"הקדמה לשופטים 2","type":"other","size":"245KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1U0cjscnHQoYW-m4_uA55TWlaKAioEQL3","name":"הקדמה לשופטים 4","type":"other","size":"318KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1DerwO4NfdkfYXVAGrGtLWm0VslaN9vHG","name":"הקדמה ספר שופטים","type":"other","size":"15KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"16eeyDkLWORjp8_iIiRuGo47C7eQse4Bi","name":"הקדמה- שופטים.pdf","type":"pdf","size":"105KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1odrWcJ92AtKXZ_DRO-At1LMjHa_6oAAq","name":"השופט גדעון בן יואש","type":"other","size":"195KB","topic":"פרק ו","category":"דפי עבודה ומבחנים"},{"id":"1Jkt2jRhG804kHPB5JgO2Qa2pbjqew6DxDozRbB4A6u4","name":"חוברת חזרה לספר שופטים","type":"other","size":"73KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1VWTKTXtYkawrlrT7UCXd3-we3McYQrDH","name":"חוברת ללימוד ספר שופטים- שירה עמר.pdf","type":"pdf","size":"1.2MB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1f2Wb2I1xWGG9tVV8vc8cQWrcDE3GLbwl","name":"חוברת עבודה לספר שופטים.pdf","type":"pdf","size":"1.4MB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1HfskVNvcVIwnkcYAgW8zVV55ESCzEjNKGeHPwH5LJp8","name":"חוברת שופטים ב","type":"other","size":"12.0MB","topic":"פרק ב","category":"דפי עבודה ומבחנים"},{"id":"1QVL2TnLtAbVxR2ETqqOJo3PKBH0UQKz9YlnTGZ2TbOA","name":"חוברת שופטים ניסים כהן","type":"other","size":"","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"18E5PxZZhPbmk7gGVfHi8nFQW15wN_yLY","name":"חזרה ו,ז,ח גדעון","type":"other","size":"19KB","topic":"פרק ו","category":"דפי עבודה ומבחנים"},{"id":"1MNUMcXaJWnZ2kdSgMjbb_YdJUQmDnD4AT1LqJ0Lhxng","name":"חזרה יג -טז","type":"other","size":"5KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1SiAKCYiyaT_3JgD7hV5udKOs32qA6zdd","name":"חזרה שמשון הגיבור.pdf","type":"pdf","size":"103KB","topic":"פרק יג","category":"דפי עבודה ומבחנים"},{"id":"1_9ne8V8rjXMGe4ctbBNvg1crXUP6tQFOHNFpfEm2aeU","name":"חידון על ספר שופטים","type":"other","size":"13KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"197PGqFr_ddC4lnxWLOrIadha9ju8dXul","name":"טבלת תקופת השופטים.docx","type":"word","size":"15KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1z2-2tcD9ioWpEa9Zf3Bus4_-REdANEhH4jHBu-JAmW8","name":"מבחן","type":"other","size":"90KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1roxxnnmh3Hyn3FjnW-VErSKjtKzwKD45","name":"מבחן בנביא - שופטים ד'-ה'.doc","type":"word","size":"19KB","topic":"פרק ד","category":"דפי עבודה ומבחנים"},{"id":"1s1oGZiPiOtdRzd7YDTSpNAB4_9AuhTmY","name":"מבחן בנביא - שופטים ד'-ה'.pdf","type":"pdf","size":"248KB","topic":"פרק ד","category":"דפי עבודה ומבחנים"},{"id":"1cAwM0X0g709o5mCIZHb_Y3aPsNpPoy5y9D2cHtpVDuo","name":"מבחן בספר שופטים יד-טז מאליהו אמסלם","type":"other","size":"4KB","topic":"פרק יד","category":"דפי עבודה ומבחנים"},{"id":"18UDjgRCNNs0jZ75_1kFjQD1RPljR63iH","name":"מבחן בשופטים א- ד.docx","type":"word","size":"46KB","topic":"פרק א","category":"דפי עבודה ומבחנים"},{"id":"17YWufKmD-zeMSHfK9LgMXMKp4MXjKlyw","name":"מבחן גדעון","type":"other","size":"25KB","topic":"פרק ו","category":"דפי עבודה ומבחנים"},{"id":"1m2vBmN_j0gTz_teWtklWiqTDVzoa2huf","name":"מבחן פרקים ו-ט שופטים.docx","type":"word","size":"48KB","topic":"פרק ו","category":"דפי עבודה ומבחנים"},{"id":"1f2bA0D-vmTFEnMFxtsK0LzAE19KOWEOr","name":"מבחן-א-ג.pdf","type":"pdf","size":"187KB","topic":"פרק א","category":"דפי עבודה ומבחנים"},{"id":"1f2qSxWwkfg6E2hHBqaAlFUB-t0LE0Pbf","name":"מבחן-פרקים-ד-ה.pdf","type":"pdf","size":"167KB","topic":"פרק ד","category":"דפי עבודה ומבחנים"},{"id":"1f3POCtk2SBMMjaMShIB4GZyUi4qe5Epw","name":"מבחן-פרקים-ו-ח.pdf","type":"pdf","size":"165KB","topic":"פרק ו","category":"דפי עבודה ומבחנים"},{"id":"18rw33-ArE77n8SQTtxS0nxiBioblHZgP","name":"מבנה ספר שופטים - לפי פרקים.docx","type":"word","size":"15KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1f4C9BrTiH8ik2EhiwMXHBelVF1yGKNXu","name":"מי-אמר-למי-שופטים-ו-ח.pdf","type":"pdf","size":"122KB","topic":"פרק ו","category":"דפי עבודה ומבחנים"},{"id":"1twxWX6D1J79TWtXK6mCeWvoGFZ5H_Ze0","name":"מפה-פרק-טו.pdf","type":"pdf","size":"356KB","topic":"פרק טו","category":"דפי עבודה ומבחנים"},{"id":"1fxHa8GbaEt0hPrz_2C0ZuDU1NdxZiYBjO_KkcG5MLMM","name":"מצגת למידה דבורה וברק","type":"other","size":"3.9MB","topic":"פרק ד","category":"דפי עבודה ומבחנים"},{"id":"1Fz87j_6vG06dyd0oW_1rQgMP8qS0Z1QM","name":"משימת הערכה שופטים א-ח.pdf","type":"pdf","size":"125KB","topic":"פרק א","category":"דפי עבודה ומבחנים"},{"id":"1fDBd6RetT2NP1m_2YcSAJBDxolUrXwuy","name":"משפחת-בני-לוי-.pdf","type":"pdf","size":"390KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"16ZhatWa-aRYRJUtltEoJjvcMxyTT1kh6","name":"נושאי הפרקים שמואל א.docx","type":"word","size":"13KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1cXGFlCPxOT6dbvce6exVwgbDiX-zzN9J","name":"סיכום ספר שופטים בשלימות - מעוצב.pdf","type":"pdf","size":"270KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1HnucnSOTPsSxMcX9gHEFkvBInHGLJZ2Rz_8RjpnmLJU","name":"סיכום שמשון ","type":"other","size":"95KB","topic":"פרק יג","category":"דפי עבודה ומבחנים"},{"id":"1viqHvp8r3UcAC-_H5uNBYysD0YxH6wYS","name":"ספר שופטים - בוחן.pdf","type":"pdf","size":"311KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1h2tixBDuYu5hLw933NJtgCBRpOntrloxlNeGnjrpgVA","name":"ספר שופטים - הקדמה","type":"other","size":"3KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1g3MBu5euhdQgK_23bD82Vlt-LR_fWOgP","name":"ספר שופטים כללי","type":"other","size":"16KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1rlbr6-eMUVz_QYXtQNsixPUrLtYIdjOt","name":"ספר_שופטים_1_חוברת_קיץ_לתרגול_בתנ_ך_מתאים_לכיתות_יסודי_להדפסה.pdf","type":"pdf","size":"385KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1ATqj02P4N-yiha18rXzuaW6RKMzYD_xplIaj6w-7jmw","name":"עבודה מסכמת שופטים","type":"other","size":"5KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"19ERWXXdtdQLt0pdvWdeCQO3IBbMmHAS1","name":"עבודת כיתה שופטים פרקים א-ד.docx","type":"word","size":"58KB","topic":"פרק א","category":"דפי עבודה ומבחנים"},{"id":"17hOvDXTXewc4A3GNsBtwNYPZ2sEM1Lh-v3Bozn2xas8","name":"עותק של שופטים ד מפה","type":"other","size":"370KB","topic":"פרק ד","category":"דפי עבודה ומבחנים"},{"id":"1PRgmyVNk85oPA8AZh70oySV4R28yE-6D","name":"עיצוב שיר לשופטים - חדש.pdf","type":"pdf","size":"270KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1fDN7nh2bZQPiIW4yNngiHAEjyd6zwRUx","name":"על-מי-נאמר-ובאיזה-ענין-שופטים-ו-ח.pdf","type":"pdf","size":"127KB","topic":"פרק ו","category":"דפי עבודה ומבחנים"},{"id":"1aLSDfTF9godWyTdrXWNnq0eHhgMw0-VJ","name":"עתניאל בן קנז.pdf","type":"pdf","size":"226KB","topic":"פרק ג","category":"דפי עבודה ומבחנים"},{"id":"1_87ks3pPdDrsP8km7pV6v5xFU5G1ubfGI-HsUGBXfH8","name":"פלגש בגבעה","type":"other","size":"4KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1iZE02gV3vxAzGtAJBBvm-oieYlNbm6LHKTS_ds2DJ-w","name":"פרק ה","type":"other","size":"2KB","topic":"פרק ה","category":"דפי עבודה ומבחנים"},{"id":"1hi2rgP8N8PWXvKf5OUAUY9qGazUyJDyb","name":"פרק ה' שירת דבורה.docx","type":"word","size":"16KB","topic":"פרק ה","category":"דפי עבודה ומבחנים"},{"id":"1c_WXI-n76zh89q_seYkocAhz0g6-3vcC","name":"פרק יג-טו","type":"other","size":"17KB","topic":"פרק יג","category":"דפי עבודה ומבחנים"},{"id":"1-iEnvVxtIU7EMsFmljfyQUEcgK54BEWD","name":"פרק-יז שופטים.pdf","type":"pdf","size":"1.4MB","topic":"פרק יז","category":"דפי עבודה ומבחנים"},{"id":"1b_jO6KYKojEAAzxC_9jvo2TTeWh3PhhT","name":"פרקים ד-ה דבורה הנביאה וברק בן אבינועם.pdf","type":"pdf","size":"180KB","topic":"פרק ד","category":"דפי עבודה ומבחנים"},{"id":"1gil8ySh_bYnMn4ij3a9Gbk3GDemL8epS","name":"פרקים ז-י שמואל א שאלות מבגרויות.docx","type":"word","size":"183KB","topic":"פרק ז","category":"דפי עבודה ומבחנים"},{"id":"10zBi7C35wG8ZTQY5v--ELrUSUkj3pb7VJdB05VZ1MLM","name":"ציר השופטים","type":"other","size":"4KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1vrc40gbwQ7LCCR3b_TE1s6yC0G1Sa6wm","name":"שאלות הכנה ומבדקים.doc","type":"word","size":"138KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1fFNOKxg3CjpkQUC1fH8CqW8esZYl78fw","name":"שאלות-ותשובות-חזרה-ו-ז-ח.pdf","type":"pdf","size":"148KB","topic":"פרק ז","category":"דפי עבודה ומבחנים"},{"id":"1fK_R8URYECA8r82QBAd7h1yYpbj62A2Y","name":"שאלות-חזרה-א-ג.pdf","type":"pdf","size":"173KB","topic":"פרק א","category":"דפי עבודה ומבחנים"},{"id":"1fLRdjl3pa6rpmiqd5BfrXLmrSw0OJTTd","name":"שאלות-חזרה-ד-ה.pdf","type":"pdf","size":"96KB","topic":"פרק ד","category":"דפי עבודה ומבחנים"},{"id":"1BpY03mEzreJJKw1DE6zPX14qMlXGROHN","name":"שופטים - מבוא - דף עבודה - פא.pdf","type":"pdf","size":"777KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"1ob7-RkuHN3WZExV3IG9XXcEx2Eh6rwbj","name":"שופטים ו-ח","type":"other","size":"22KB","topic":"פרק ו","category":"דפי עבודה ומבחנים"},{"id":"1rvwGq8KJHbrwPO4CXLxcXj3daju3R07b","name":"שופטים טו - שועלי שמשון - מנוקד.pdf","type":"pdf","size":"587KB","topic":"פרק טו","category":"דפי עבודה ומבחנים"},{"id":"1qNlLK8mEypxgEN1jsw1_0sFWlmT_f-2Syv6W0ASJ3RU","name":"שופטים יא-יב - סיכום יפתח - חוברת","type":"other","size":"7KB","topic":"פרק יא","category":"דפי עבודה ומבחנים"},{"id":"1NUkwXmZ8PEPjiE1_gRcKWGt7dAw_zpvj","name":"שופטים יא-יב - סיכום יפתח - חוברת.pdf","type":"pdf","size":"520KB","topic":"פרק יא","category":"דפי עבודה ומבחנים"},{"id":"18VJS2U2ZtCI1h5lk_RQH1jkxPEeEJDZs","name":"שופטים פרק ו, פסוקים יא - כד.docx","type":"word","size":"890KB","topic":"פרק ו","category":"דפי עבודה ומבחנים"},{"id":"18gKbmWa-AeyNZhmlPYd_jVdGNu0CxH1P","name":"שופטים פרק ו, פסוקים כה - לב.docx","type":"word","size":"112KB","topic":"פרק ו","category":"דפי עבודה ומבחנים"},{"id":"1vmf6XS3ypcbpwcNMaBL9AYoLPGlb1jgx","name":"שופטים פרק ו.docx","type":"word","size":"18KB","topic":"פרק ו","category":"דפי עבודה ומבחנים"},{"id":"1vtHg1aBmxdJYM2IkxorRHhgH80mUtKyO","name":"שופטים פרק ז.docx","type":"word","size":"133KB","topic":"פרק ז","category":"דפי עבודה ומבחנים"},{"id":"1vdadYuDYopEczoXQyBGoXUFTIm0OOX93","name":"שופטים פרק י (3).docx","type":"word","size":"18KB","topic":"פרק י","category":"דפי עבודה ומבחנים"},{"id":"1sCZUozMrwtkqoEmSdqXJ3srAztDagpdB","name":"שירת דבורה - נושאים 1.pdf","type":"pdf","size":"104KB","topic":"פרק ד","category":"דפי עבודה ומבחנים"},{"id":"1_XBpOM62jmFm9t9FLhQqS6DpPmzLUwg3","name":"שירת דבורה.pdf","type":"pdf","size":"59KB","topic":"פרק ד","category":"דפי עבודה ומבחנים"},{"id":"1hxswtOYiB3qeOM6XyJXJvMMIXAbZ1pH5","name":"שמואל א פרק א דף עבודה.docx","type":"word","size":"21KB","topic":"פרק א","category":"דפי עבודה ומבחנים"},{"id":"1mOIh8ZvAjiNwk1FWsufkahrFVcQsnPz8","name":"שמואל א פרק ה-ו דף עבודה.doc","type":"word","size":"64KB","topic":"פרק ה","category":"דפי עבודה ומבחנים"},{"id":"1fJl-J1DUwLDLBH5vcbIvtxA1kQki7EHf","name":"תקופת השופטים סיכום בטבלה","type":"other","size":"16KB","topic":"הקדמה לספר","category":"דפי עבודה ומבחנים"},{"id":"109bqvySD0zRXtJDLj7z8P2FzNwH76-zvzaR9BDIQ_fk","name":"תשובות","type":"other","size":"6KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1cWAMJIcoqg2B2j4F_cp5OKs8EuHLJaJE","name":"תשובות לספר שופטיםם.pdf","type":"pdf","size":"159KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"19zM-YK7t7hJRYwKJoR-QJesiO8wr3J0Z","name":"‏מעגל החטא והעונש בשופטים","type":"other","size":"73KB","topic":"שונות","category":"דפי עבודה ומבחנים"},{"id":"1vk8gly03xWPJdmzUDZtAyTQUkKUHlwbc","name":"‏‏‏‏שופטים פרק ח'.docx","type":"word","size":"21KB","topic":"פרק ח","category":"דפי עבודה ומבחנים"},{"id":"1veHCQLAPpqcu9PaY8rYHtD9PsYBukcAM","name":"‏‏‏‏‏‏שופטים פרק ט.docx","type":"word","size":"27KB","topic":"פרק ט","category":"דפי עבודה ומבחנים"},{"id":"1naW-ySGAhnWMXno7aDaUcVlcK3f0xzxu","name":"21. שופטים יז פסל מיכה הקדשת הפסל והכהן [נשמר אוטומטית].pptx","type":"ppt","size":"4.2MB","topic":"פרק יז","category":"מצגות"},{"id":"1nczCqV5pka0Nbzbpk8aoqAZeSY6kS2_7","name":"22. שופטים יח פסל מיכה- בני דן.pptx","type":"ppt","size":"6.9MB","topic":"פרק יח","category":"מצגות"},{"id":"1nTCuV9KaXwAtsfdZO5KnV78Coty1e0ER","name":"23. מעשה פילגש בגבעה פרק יט [נשמר אוטומטית].pptx","type":"ppt","size":"5.3MB","topic":"פרק יט","category":"מצגות"},{"id":"11tGPmYKhypHsI5o7_Xc8oyIcy1WmH0EQ","name":"_מצגת פרק ה.pptx","type":"ppt","size":"10.4MB","topic":"פרק ה","category":"מצגות"},{"id":"14HMJvouIfeN2Ilm0l59uom7O-whNEPbmHuAx4xgqNns","name":"_פרק ג - השופט הראשון","type":"other","size":"2.4MB","topic":"פרק ג","category":"מצגות"},{"id":"1Y_5yw9Ubyh2nkTXP0MS2N6ePTjkL4fVJ-vC0AgVn4k0","name":"_שופטים פרק ג","type":"other","size":"1.3MB","topic":"פרק ג","category":"מצגות"},{"id":"1nJIiV3GdJ702rEkIj4uFX5EWi95PmMr45CsPj7YGHsg","name":"אל תקלל חרש","type":"other","size":"237KB","topic":"שונות","category":"מצגות"},{"id":"1-h_s23l0Yuc-jjiIyUM5n67mcW5XlxAB6wGvaQBPRdo","name":"גדעון בן יואש – פרק ו המשך ופרק ז","type":"other","size":"422KB","topic":"פרק ו","category":"מצגות"},{"id":"18E-jG2mBylEeZzFpYWQBZl2_TVylhvqz","name":"המרוץ למיליון שופטים","type":"other","size":"1.7MB","topic":"שונות","category":"מצגות"},{"id":"19KsD6eTR4j6XxGPFxEYxB3x8fEz6KmXT","name":"הקדמה - ספר שופטים.pptx","type":"ppt","size":"201KB","topic":"הקדמה לספר","category":"מצגות"},{"id":"1U1Hsuu5XhD83kbJV_FJw_QLwz7hn1x7e","name":"הקדמה לשופטים 3","type":"other","size":"247KB","topic":"הקדמה לספר","category":"מצגות"},{"id":"1YIgx8D0W73RyJA_h8tXFXQL2mJXV2_Wj","name":"הקדמה ספר שופטים (4).pptx","type":"ppt","size":"940KB","topic":"הקדמה לספר","category":"מצגות"},{"id":"11wK6E6RS5wRQJ-_TFSXhptbecrP9RDRB","name":"הקדמה ספר שופטים.pptx","type":"ppt","size":"940KB","topic":"הקדמה לספר","category":"מצגות"},{"id":"12sJedf__Ouport5LO9801ZGIYgULmY8o6Hrb7SAo-dU","name":"חידון ספר שופטים","type":"other","size":"6.6MB","topic":"שונות","category":"מצגות"},{"id":"15KlEt8sluTiFzwF6nUNNkEI-tJggsLpP1pelaerHtcY","name":"יפתח הגלעדי – חלק ג","type":"other","size":"8KB","topic":"פרק יא","category":"מצגות"},{"id":"1Wkl9D8t7ajA6VHaxRQ275MxhNQJH7ChG3-6WVdqH714","name":"כיתות ו' - מבוא לספר שופטים","type":"other","size":"37KB","topic":"הקדמה לספר","category":"מצגות"},{"id":"18kDpyBnai6-qilmKgQsxuRqrLjNNBiNB","name":"מחזוריות ספר שופטים.pptx","type":"ppt","size":"200KB","topic":"שונות","category":"מצגות"},{"id":"1pENaYHbMd3DeGehDMh0QZ4GRSv_CwpG6","name":"מינוי השופטים.pptx","type":"ppt","size":"2.6MB","topic":"שונות","category":"מצגות"},{"id":"120qodudO1eAHCEUjeA2Fh7SAcSI0zIa9","name":"מעגל חוזר ספר שופטים_20240714_185519_0000.pdf","type":"pdf","size":"20KB","topic":"שונות","category":"מצגות"},{"id":"1C9j2YE53chbrewV-autoCtCREMgevaHsoFgG0d12Vi0","name":"מצגת - שופטים פרק ב","type":"other","size":"263KB","topic":"פרק ב","category":"מצגות"},{"id":"1YKM4_s36EsAV1iCbOTdj3spUr7ylR3SO3X9pd7pMDTA","name":"מצגת גדעון פרק ו","type":"other","size":"1.2MB","topic":"פרק ו","category":"מצגות"},{"id":"13qO2_f-7r6DXc30MGzFdZrqEuGaJzHVvlY2ZynAPCog","name":"מצגת גדעון פרק ז","type":"other","size":"6.5MB","topic":"פרק ז","category":"מצגות"},{"id":"1pGbQkuO7LLRbIYqK1b10Mn6hMpxfN_nl","name":"מצגת האשה מתמנה פרקים יד-טו.pdf","type":"pdf","size":"2.3MB","topic":"פרק יד","category":"מצגות"},{"id":"1uYA2GjHbhwmAfaDAehvANQTc7MC0ZlyK","name":"מצגת חידות שופטים.pptx","type":"ppt","size":"3.0MB","topic":"שונות","category":"מצגות"},{"id":"1OPyCTt9mBYo4OutdcZCMoaD4KsZdT828","name":"מצגת למידה דבורה וברק.pdf","type":"pdf","size":"1.9MB","topic":"פרק ד","category":"מצגות"},{"id":"1ABe1bmqzUdh40dz-XbAyQOGKKNusVgp7l9aUUgmvDug","name":"מצגת למידה יפתח","type":"other","size":"2.5MB","topic":"פרק יא","category":"מצגות"},{"id":"1iz2pZjJl9a3JHo5vEQM_0Hf0T4bNEe9p","name":"מצגת למידה יפתח.pdf","type":"pdf","size":"1.5MB","topic":"פרק יא","category":"מצגות"},{"id":"1L16iDi4U7XPZ7pTEUK7g101MNeUQ8S35SuEfIJUwCN8","name":"מצגת למידה שופטים קטנים י, יב","type":"other","size":"1.3MB","topic":"שונות","category":"מצגות"},{"id":"1RL1wl80L-lR9dpNxMN5WNB-ayUKxg-8_","name":"מצגת למידה שופטים קטנים י, יב.pdf","type":"pdf","size":"405KB","topic":"שונות","category":"מצגות"},{"id":"1n1ZPYSlxPQp39C3zv7yKMMTwgnoS984OHDNZXaTHFE8","name":"מצגת מחזוריות בספר שופטים","type":"other","size":"","topic":"שונות","category":"מצגות"},{"id":"1ugzFYXJHHPH0eFWrE08guFApkRu39R-v","name":"מצגת מחזוריות בספר שופטים.ppt","type":"ppt","size":"546KB","topic":"שונות","category":"מצגות"},{"id":"190laXEKFTGKSbIovNUxXtW8LLRZY4096","name":"מצגת מלוה שופטים 4 פרק ג1.pptx","type":"ppt","size":"1.1MB","topic":"פרק ג","category":"מצגות"},{"id":"18hx3XvFGro7R43IpNMSlfgk-TnbpJPiu","name":"מצגת מלוה שופטים ג אהוד בן גרא.pptx","type":"ppt","size":"3.6MB","topic":"פרק ג","category":"מצגות"},{"id":"18OXBGbcNrHyDmyyHVXm9bR5kXUmwGxtf","name":"מצגת מלווה שופטים פרק ה שירת דבורה.pptm","type":"ppt","size":"10.5MB","topic":"פרק ה","category":"מצגות"},{"id":"1RuVi5SXh1PR3F2J3QTZIqmgxRf92HpVf","name":"מצגת סיכום.ppt","type":"ppt","size":"754KB","topic":"שונות","category":"מצגות"},{"id":"1yZVmGLiwkO5VeF4r92fOWazACP93krOThP9w0vCd7Lo","name":"מצגת שופטים ד","type":"other","size":"5.3MB","topic":"פרק ד","category":"מצגות"},{"id":"12x54aR6IVeUJxoyq3xUL58Zrub-6Yoqz29QQUeKKfM8","name":"מצגת שופטים פרק א","type":"other","size":"1.1MB","topic":"פרק א","category":"מצגות"},{"id":"1W-R_m77ZkrRHpbfn8AAOfRCpRuR8tvsAgi0EALU9vgo","name":"מצגת-הקדמה-לספר-שופטים.pptm","type":"ppt","size":"1.8MB","topic":"הקדמה לספר","category":"מצגות"},{"id":"196V_eC_jWxZtsx1Ny7hm9iYcgkcMh59e","name":"נביא שופטים גדעון.pdf","type":"pdf","size":"378KB","topic":"פרק ו","category":"מצגות"},{"id":"1sbmrEt3BU32yknYuzwLO-XC1mMD7VvnIObEZwvZ7SyQ","name":"עותק של משחק. פרק ד","type":"other","size":"10KB","topic":"פרק ד","category":"מצגות"},{"id":"1vWXxyyOAXUyhhu9LhGpZ2AMFtQrcQyyE","name":"עותק של פסל מיכה.pdf","type":"pdf","size":"821KB","topic":"פרק יז","category":"מצגות"},{"id":"1qx4PvjywoOB0_C_BOzwzKq9CczSBkCHxsMZtYjlR0gg","name":"עותק של פרק יג הולדת.שמשון","type":"other","size":"225KB","topic":"פרק יג","category":"מצגות"},{"id":"11B6apWFU3jWqT9xqvtevmMzkXafzelELoXtqLh3rH4I","name":"פרק ג - 3 עתניאל","type":"other","size":"2.4MB","topic":"פרק ג","category":"מצגות"},{"id":"18PpZiBfL2BpkZEtFoRUFMbPEH-J2syB7","name":"פרק ו כה - לב - גדעון בן יואש.pptx","type":"ppt","size":"1.7MB","topic":"פרק ו","category":"מצגות"},{"id":"1atdmbkbreZonoSRoO49-thyKYgcLHnxf","name":"פרק ז שופטים.pptx","type":"ppt","size":"2.8MB","topic":"פרק ז","category":"מצגות"},{"id":"1J3gR-S9sFg0p3Lv_M5-uIxGOG2J2KE1xyMFIA0M7Hlk","name":"פרק ח","type":"other","size":"826KB","topic":"פרק ח","category":"מצגות"},{"id":"1Kk7mDgTHpzDKsgqCf_zAacv4-vkjoun9Wy916bD8XfM","name":"פרק ט ","type":"other","size":"20KB","topic":"פרק ט","category":"מצגות"},{"id":"1-11BM0IAtPztw86mO1m19oLwYZAytesg","name":"פרק ט , משל יותם.pptx","type":"ppt","size":"132KB","topic":"פרק ט","category":"מצגות"},{"id":"1xiBfYMFrBR2lPhpjFwYo4CQC3njaxBGl-Rs7iK0uMgE","name":"פרק יג הולדת.שמשון","type":"other","size":"243KB","topic":"פרק יג","category":"מצגות"},{"id":"1aaLe_zMnqrwVZjFXeIAHAw7lNIrqdVKeVVeiB6t4UtY","name":"פרק יט פס א ב","type":"other","size":"187KB","topic":"פרק יט","category":"מצגות"},{"id":"183bpN1bVwAjewp0M2QGqt-Im_V8eygGSzz0TSCYOyf8","name":"פרק יט פסוקים ד-ט","type":"other","size":"12KB","topic":"פרק יט","category":"מצגות"},{"id":"1W2f-2lK4kSgAg2gsrEJSL8b4iVTk6OW5","name":"פתיחה-לספר-שופטים-פרק-ב.pptx","type":"ppt","size":"783KB","topic":"פרק ב","category":"מצגות"},{"id":"1ukfXlmEnNctTFzYTg0in8qxscVhI5mL5","name":"קיר פעיל ספר שופטים.pptx","type":"ppt","size":"132KB","topic":"שונות","category":"מצגות"},{"id":"11KLA1Cjasgvh6y7zQirPW40ztBqcvin2","name":"שופטים פרק ב' (3).pptx","type":"ppt","size":"8.3MB","topic":"פרק ב","category":"מצגות"},{"id":"18zPHYnGlU7wCyfSCjDmRliujduNTjJZu","name":"שופטים פרק ב'.pdf","type":"pdf","size":"205KB","topic":"פרק ב","category":"מצגות"},{"id":"1uV0h_Cjo8R7ZDY03D1tYvWIGz4SD20rq","name":"שופטים פרק ב'.pptx","type":"ppt","size":"8.3MB","topic":"פרק ב","category":"מצגות"},{"id":"1usim6G--MULA10fNAPXafm8vuhYzuK8k","name":"שופטים פרק ג","type":"other","size":"290KB","topic":"פרק ג","category":"מצגות"},{"id":"1GxDnnvv3BWJi2D_1gFSZTBWTs1ATbiQC","name":"שופטים פרק ג' (3).pptx","type":"ppt","size":"11.5MB","topic":"פרק ג","category":"מצגות"},{"id":"1uanPmz8DlIY11yv35pGfKWuqycOtiJUn","name":"שופטים פרק ג'.pptx","type":"ppt","size":"11.5MB","topic":"פרק ג","category":"מצגות"},{"id":"18me8WvSp_vKe_GkN9ysWN1KCZVQfScyb","name":"שופטים פרק ד מצגת מלווה.pptx","type":"ppt","size":"8.5MB","topic":"פרק ד","category":"מצגות"},{"id":"1JX9hPE-xaXt0-sYFJIo3LP1NBiMbtBSM","name":"שופטים פרק ד.pptx","type":"ppt","size":"9.1MB","topic":"פרק ד","category":"מצגות"},{"id":"1FvX6L0SnAICqw2hO3bBNQ0ag4MWuPWFU","name":"שופטים פרק ה- שירת דבורה.pptx","type":"ppt","size":"6.1MB","topic":"פרק ה","category":"מצגות"},{"id":"1-mWEb2RNMFvTo6opoNZ90X70gIBDr-98","name":"שופטים פרק ו.pptx","type":"ppt","size":"9.4MB","topic":"פרק ו","category":"מצגות"},{"id":"1iXOqZkoYtbhc_0sqTSpjJwVyd2OddMP-6D-RgZqx2_8","name":"שופטים פרק ז","type":"other","size":"3.5MB","topic":"פרק ז","category":"מצגות"},{"id":"14E6j1weJHPvBW1_Jh-quoNeN4vRbd2sC","name":"שופטים פרק ז.pptx","type":"ppt","size":"18.6MB","topic":"פרק ז","category":"מצגות"},{"id":"1-iLosgXuOgfom8LGUygdi2krUEl8E0Ed","name":"שופטים פרק ז.pptx","type":"ppt","size":"3.7MB","topic":"פרק ז","category":"מצגות"},{"id":"1jRte3tK7_nPRpZOUd-ofGZLbge3P6CzmBE2PcYNeIPA","name":"שופטים פרק ח","type":"other","size":"1.5MB","topic":"פרק ח","category":"מצגות"},{"id":"1-X6Y5YK-oMKUFwWZ_XwUahJKKLn1okUL","name":"שופטים פרק ח-1.pptx","type":"ppt","size":"1.7MB","topic":"פרק ח","category":"מצגות"},{"id":"1MEW1xyOFt--6fxZtITMJFFzy48t7QOK9","name":"שופטים פרק ח.pptx","type":"ppt","size":"4.7MB","topic":"פרק ח","category":"מצגות"},{"id":"1J6mGMcUvTjqC2k2ywnnz9efwZZsfBZVyJwDhNxOUpCA","name":"שופטים פרק ט","type":"other","size":"3.0MB","topic":"פרק ט","category":"מצגות"},{"id":"1O70s5bbehqURwC1t3wIZ3nfIxhWBI_OxvoCf3yLAlgE","name":"שופטים פרק טו","type":"other","size":"949KB","topic":"פרק טו","category":"מצגות"},{"id":"11D7GtXmAfNi0yqoBDUzJBBDFy2QqDG9jmgokD0LKKag","name":"שופטים פרק טז","type":"other","size":"3.2MB","topic":"פרק טז","category":"מצגות"},{"id":"1lDATu-wpDx2DguNwbPPaCyBbhu_m1yp6CkIfG-nr9RA","name":"שופטים פרק י","type":"other","size":"302KB","topic":"פרק י","category":"מצגות"},{"id":"1JJToi-6y4ZmZaETEu3J1BK41Ps8GqFzk","name":"שופטים פרק י.pptx","type":"ppt","size":"360KB","topic":"פרק י","category":"מצגות"},{"id":"1wd78Sdt6-jVi1ej_RkMfBW343Poupy6u8BfCQ775rJc","name":"שופטים פרק יב","type":"other","size":"26KB","topic":"פרק יב","category":"מצגות"},{"id":"1uV8VXTewKqawut-HgHUarwyt4K6NX6GC","name":"שופטים פרק יב'.pptx","type":"ppt","size":"740KB","topic":"פרק יב","category":"מצגות"},{"id":"1uciEqLQzHRJeXXYfwDG6epYBcfKRmcE3","name":"שופטים פרק יב'.pptx","type":"ppt","size":"997KB","topic":"פרק יב","category":"מצגות"},{"id":"1sFa0wXe37PG5W-9qF_ZHGJw9H7LJjTlWClQtM_dyqes","name":"שופטים פרק יג הולדת.שמשון","type":"other","size":"243KB","topic":"פרק יג","category":"מצגות"},{"id":"1uekyhO9Ddyckypx_qAriEJ0gtiWSWjtH","name":"שופטים פרק יג הולדת.שמשון-1.pptx","type":"ppt","size":"324KB","topic":"פרק יג","category":"מצגות"},{"id":"1VVDmNzBT78KKSp0_kfqpkSFaAvArFXup","name":"שופטים פרק יג הולדת.שמשון.pptx","type":"ppt","size":"324KB","topic":"פרק יג","category":"מצגות"},{"id":"1nnY7NyhU1Yq-9GpTDLBMmeQIzpZOT_v8","name":"שופטים פרק יג' '.pdf","type":"pdf","size":"859KB","topic":"פרק יג","category":"מצגות"},{"id":"1BiKgdyIfIy03Cw0T1_s3yiuj0LjVJ6xD","name":"שופטים פרק יד.pptx","type":"ppt","size":"4.4MB","topic":"פרק יד","category":"מצגות"},{"id":"1cSpcAO66uaGQSqWhN70sTsl_lzZ0jRc_","name":"שופטים פרק יז.pptx","type":"ppt","size":"1.2MB","topic":"פרק יז","category":"מצגות"},{"id":"1w8-GzobQyFyt8PDoe6aED3KSJgnoY-C916BnLC1Ybuw","name":"שופטים פרק יח","type":"other","size":"830KB","topic":"פרק יח","category":"מצגות"},{"id":"1gkz1WY94BPBZRQ1zmpwwxFdGnLHCpH4k","name":"שופטים פרק יח.pptx","type":"ppt","size":"951KB","topic":"פרק יח","category":"מצגות"},{"id":"1gz49MTLp7e_TfMTD5Z0DwvKLuH3dpdyZ","name":"שופטים פרק יט.pptx","type":"ppt","size":"765KB","topic":"פרק יט","category":"מצגות"},{"id":"1h0krOa6lU6oTZhF0q1Nj4w10II0aS8lG","name":"שופטים פרק כ מעודכן.pptx","type":"ppt","size":"1.1MB","topic":"פרק כ","category":"מצגות"},{"id":"1gwF6_cRKVpB1F-NisKPxG4lKkKPETFSo","name":"שופטים פרק כא.pptx","type":"ppt","size":"428KB","topic":"פרק כא","category":"מצגות"},{"id":"1kJakAFiaIFZ64mjvcr5Zjn1r1M1jbve1","name":"שירת דבורה","type":"other","size":"9.9MB","topic":"פרק ד","category":"מצגות"},{"id":"1sHfNUWvuYbYx1b_YN-RBION8a3QGXVnx","name":"שירת דבורה.pptm","type":"ppt","size":"865KB","topic":"פרק ד","category":"מצגות"},{"id":"1qIDBhniAw-IJwFoQVYxWrvn_mkOFXxZ8","name":"כ-גבולות-שבטים.pdf","type":"pdf","size":"416KB","topic":"שונות","category":"קיר ומפות ועיצוב"},{"id":"1rm9WfLcRnO22dvdU_3rPVjjcGE1FQRd9","name":"כותרת-_שופטים-.pdf","type":"pdf","size":"89KB","topic":"שונות","category":"קיר ומפות ועיצוב"},{"id":"1nj6G78I0PVpoR1I2m90EeIGWsBJdUsDWMIimCy4n4qE","name":"כותרת-_שופטים-_רגינה_מוסרי","type":"other","size":"9KB","topic":"שונות","category":"קיר ומפות ועיצוב"},{"id":"1udU-DpOjB7Ni7A-J6VKa2NfBKWeo0zpC","name":"מעגל שופטים פרק ב'.pdf","type":"pdf","size":"450KB","topic":"פרק ב","category":"קיר ומפות ועיצוב"},{"id":"1f844iioco9DcId8iTPmBToEtiYndgn18","name":"מפה-פרק-יט.pdf","type":"pdf","size":"348KB","topic":"פרק יט","category":"קיר ומפות ועיצוב"},{"id":"1ydOD9tjsIsNYHscVnVymk22PJKn-VXXQ","name":"מפת מקומות חשובים בספר שופטים.pdf","type":"pdf","size":"152KB","topic":"שונות","category":"קיר ומפות ועיצוב"},{"id":"11tvVYOZTwtU3dZk2wfz47aXLWAWq3Tb3","name":"מפת-מסעות-שבט-דן-פרק-יח.pdf","type":"pdf","size":"409KB","topic":"פרק יח","category":"קיר ומפות ועיצוב"},{"id":"1xsdAE4fhMgB4pnxDC465YDYtNdEMTqOa","name":"מפת-נחלת-בנימין-פרק-כ.pdf","type":"pdf","size":"426KB","topic":"פרק כ","category":"קיר ומפות ועיצוב"},{"id":"1w9yfJNgZTmYAFJy4uNr75CiMjRt9vQyk","name":"מפת-סיבוב-ארץ-אדום-פרק-יא.pdf","type":"pdf","size":"490KB","topic":"פרק יא","category":"קיר ומפות ועיצוב"},{"id":"1lLTEs-Rmoo9OiO5Vb9EiXSKDPjAozLIs","name":"משחק דומינו לשיעור צפייה סופי כולל בת יפתח.pdf","type":"pdf","size":"670KB","topic":"פרק יא","category":"קיר ומפות ועיצוב"},{"id":"1ZjxlglGueQeZtxtocUDH3cV7q7Y8-AWY","name":"ספר שופטים מעגל החטא והעונש.pdf","type":"pdf","size":"1.1MB","topic":"שונות","category":"קיר ומפות ועיצוב"},{"id":"1RIESSpOAN2DVM3se2iaNsLsOnn66R3QF","name":"קיר שופטים.pdf","type":"pdf","size":"1.4MB","topic":"שונות","category":"קיר ומפות ועיצוב"},{"id":"1ZUFI9jHlKE14m-bTfEjxE-frIox_crxk","name":"שופטים לקיר.pdf","type":"pdf","size":"9.9MB","topic":"שונות","category":"קיר ומפות ועיצוב"},{"id":"1letT3hFRGrBZIWtiN8cS7WRJ9ogJfOAq","name":"הוראות לתחנה משחק הדומינו.pdf","type":"pdf","size":"105KB","topic":"שונות","category":"חומרים כלליים נוספים"},{"id":"1lP80BeEbD3-6X-kkLyaSXHNMn6Nf_tk3","name":"הוראות לתחנה משחק הזיכרון.pdf","type":"pdf","size":"82KB","topic":"שונות","category":"חומרים כלליים נוספים"},{"id":"19V0HEusvwXMKdrlW-cOlL1H_QgaVKOng","name":"הערכה חלופית - פרקי שמשון","type":"other","size":"299KB","topic":"פרק י","category":"דפי עבודה ומבחנים"},{"id":"10xE3okihERzLpLfIAS3z5BTa4chrwEgm","name":"הציוויים לשופטים (דברים פרק א)- טבלה למילוי- פתרונות מוסתרים.docx","type":"word","size":"14KB","topic":"פרק א","category":"דפי עבודה ומבחנים"},{"id":"1lVmK0yPX4SgvJCkkxMgqh7WTCPxhTWtu","name":"טַבְלַת סִכּוּם משחק הזיכרון.pdf","type":"pdf","size":"37KB","topic":"שונות","category":"חומרים כלליים נוספים"},{"id":"1JQ7oR0msZLZqC2yuVWekB3z2QiZufEJV","name":"מבדק שופטים פרק ו-ח.docx","type":"word","size":"17KB","topic":"פרק ו","category":"דפי עבודה ומבחנים"},{"id":"1bY8qil8Rr8jvGJF0r2EQSfHK8aObrSkH","name":"מבחן שופטים א-ד מנוקד סופי.pdf","type":"pdf","size":"145KB","topic":"פרק א","category":"דפי עבודה ומבחנים"},{"id":"19MXEpv3fx1M_9-7xIwD7cd0B4CnHwekl","name":"מחברת שופטים.pdf","type":"pdf","size":"401KB","topic":"שונות","category":"חומרים כלליים נוספים"},{"id":"1vsPEuVQJQ9fuK5Soh9-5X6JEEt1BR_Bw","name":"מצגת לסיום ספר שופטים.pptx","type":"ppt","size":"1.2MB","topic":"שונות","category":"מצגות"},{"id":"1uZXYtukeLL8tmzBm4eXeC8CuJKdw2mp7","name":"משחק זיכרון-ביטויים מהתנך- יהושע שופטים- תמר מישאל.pdf","type":"pdf","size":"1.2MB","topic":"שונות","category":"חומרים כלליים נוספים"},{"id":"1lWJGo6ezIPDXhjDMdEvqg2_vbBpps_Qy","name":"סיכום לספר שופטים.docx","type":"word","size":"1.2MB","topic":"שונות","category":"חומרים כלליים נוספים"},{"id":"1TwdT0c4C10sxSnjRZEWTix9l5_mDUbOs","name":"סימניה ספר שופטים.pdf","type":"pdf","size":"165KB","topic":"שונות","category":"קיר ומפות ועיצוב"},{"id":"1SeHTfQ46fZIzPTTVVXAjoQDTriXoAWdy","name":"סימניה שופטים","type":"other","size":"165KB","topic":"שונות","category":"קיר ומפות ועיצוב"},{"id":"1iBrwCWoKpN1-0rfXbFVtGeqXtDQHBewk","name":"עטיפה למחברת שופטים מנאוה מן.pdf","type":"pdf","size":"326KB","topic":"שונות","category":"קיר ומפות ועיצוב"},{"id":"1H3f2CBUefgALNqCoY1QGsCbTYhpkYPoe","name":"עטיפות למחברות נביא תורה.pdf","type":"pdf","size":"86KB","topic":"שונות","category":"קיר ומפות ועיצוב"},{"id":"1w0GI6WuYzzczTbssGKKZvrxFh2eADOPr","name":"פרק יח - נחלת בני דן ופסל מיכה -1.pptx","type":"ppt","size":"988KB","topic":"פרק יח","category":"מצגות"},{"id":"1tBYlGFw2WmM138l8fM-bXS9fmDeLihzL","name":"שאלות בנביא שופטים.docx","type":"word","size":"107KB","topic":"שונות","category":"חומרים כלליים נוספים"},{"id":"1CtlaZtA5jxSY_312XCBqNcjdrZSOUtUM5y-N7ivQ0k8","name":"שופטים","type":"other","size":"","topic":"שונות","category":"חומרים כלליים נוספים"},{"id":"1wGkY5hVaCCHo-Iq6HOirH1aSa2hY9Znt","name":"שופטים יט - כא, פילגש בגבעה.pptx","type":"ppt","size":"1.1MB","topic":"פרק יט","category":"מצגות"},{"id":"1u_U7aQ-fmU3Cvi7_0BlYDM9Q7EfgZRTh","name":"שופטים פרק ז קל.pdf","type":"pdf","size":"1.3MB","topic":"פרק ז","category":"חומרים כלליים נוספים"},{"id":"1JjIl_utPce8YXHFeID-OKZ7UWVALWLl5","name":"שופטים פרק ח.pdf","type":"pdf","size":"131KB","topic":"פרק ח","category":"חומרים כלליים נוספים"},{"id":"1w16sjTXK2GzJFZHxWJ0_ekLO6RzBFLvx","name":"שופטים פרק יח .docx","type":"word","size":"151KB","topic":"פרק יח","category":"חומרים כלליים נוספים"},{"id":"1w40_Pog0jRfdOSS6nPnQMzhF-4gGIEEY","name":"שופטים פרק יט.docx","type":"word","size":"154KB","topic":"פרק יט","category":"חומרים כלליים נוספים"},{"id":"1wAyZPl4KXYlIvWkXgAvqjpnq-F2tI-nx","name":"שופטים פרק כ.docx","type":"word","size":"155KB","topic":"פרק כ","category":"חומרים כלליים נוספים"},{"id":"1w6VvSEFz0dcmdSb9D33aUDgadT98XakK","name":"שופטים פרק כא.docx","type":"word","size":"152KB","topic":"פרק כא","category":"חומרים כלליים נוספים"},{"id":"1ekYkAmPgkhaapRTYfW1Mw4Uyj4KvqG-S","name":"שמות השופטים.pdf","type":"pdf","size":"493KB","topic":"שונות","category":"חומרים כלליים נוספים"},{"id":"18fqpYfjCr2ZiAfAujXO1mMCyy7utSPCs","name":"תכנון שנתי ויקרא שופטים לכיתות ד תשפא קורונה.pdf","type":"pdf","size":"306KB","topic":"שונות","category":"חומרים כלליים נוספים"},{"id":"1wdBeTeMcFP2JE6hSWvWUGVUfgqtp4rFl","name":"תעודת זהות השופטים.pdf","type":"pdf","size":"1.9MB","topic":"שונות","category":"קיר ומפות ועיצוב"},{"id":"1HwYSXJauYI_Z0YKxcmupI94SoSjtVHEm","name":"תפזורות סֵפֶר שופטים.pdf","type":"pdf","size":"366KB","topic":"שונות","category":"חומרים כלליים נוספים"},{"id":"1xhV9TBRVba7N4hxnS3yweNKxVNo9UvLL","name":"תרשים שמואל א.docx","type":"word","size":"15KB","topic":"שונות","category":"דפי עבודה ומבחנים"}];
+const CATEGORY_ICONS = {"שיעורים - סרטונים ומצגות": "🎬", "דפי עבודה ומבחנים": "✏️", "מצגות": "🖥️", "קיר ומפות ועיצוב": "🗺️", "חומרים כלליים נוספים": "🗂️"};
+const CATEGORY_ORDER = ["שיעורים - סרטונים ומצגות", "דפי עבודה ומבחנים", "מצגות", "קיר ומפות ועיצוב", "חומרים כלליים נוספים"];
+const TOPIC_EMOJI = {"הקדמה לספר": "🚩", "פרק א": "📖", "פרק ב": "📖", "פרק ג": "📖", "פרק ד": "📖", "פרק ה": "📖", "פרק ו": "📖", "פרק ז": "📖", "פרק ח": "📖", "פרק ט": "📖", "פרק י": "📖", "פרק יא": "📖", "פרק יב": "📖", "פרק יג": "📖", "פרק יד": "📖", "פרק טו": "📖", "פרק טז": "📖", "פרק יז": "📖", "פרק יח": "📖", "פרק יט": "📖", "פרק כ": "📖", "פרק כא": "📖", "שונות": "📚"};
+const TYPE_META = {"pdf": {"label": "PDF", "color": "#e11d48", "bg": "#fde8ec", "icon": "📕"}, "word": {"label": "Word", "color": "#2563eb", "bg": "#e8eefd", "icon": "📘"}, "ppt": {"label": "PowerPoint", "color": "#ea580c", "bg": "#fdece0", "icon": "📙"}, "excel": {"label": "Excel", "color": "#16a34a", "bg": "#e7f7ec", "icon": "📗"}, "image": {"label": "תמונה", "color": "#9333ea", "bg": "#f3e8fd", "icon": "🖼️"}, "audio": {"label": "שמע", "color": "#c2410c", "bg": "#ffedd5", "icon": "🎵"}, "video": {"label": "וידאו", "color": "#be185d", "bg": "#fce7f3", "icon": "🎬"}, "web": {"label": "דף אינטרנט", "color": "#0d9488", "bg": "#e6fbf8", "icon": "🌐"}, "other": {"label": "קובץ", "color": "#64748b", "bg": "#eef1f5", "icon": "📄"}, "folder": {"label": "תיקייה", "color": "#0d9488", "bg": "#e6fbf8", "icon": "📁"}};
+
+let currentTopic = ORDER[0];
+let currentQuery = '';
+let showHidden = false;
+let moveTargetId = null;
+
+const LS_PREFIX = 'shoftim_v1_';
+const RENAME_KEY = LS_PREFIX + 'renamed';
+const HIDDEN_KEY = LS_PREFIX + 'hidden';
+const MOVE_KEY = LS_PREFIX + 'moved';
+const MY_RATING_KEY = LS_PREFIX + 'myratings';
+
+function loadSet(key) { try { return new Set(JSON.parse(localStorage.getItem(key) || '[]')); } catch (e) { return new Set(); } }
+function loadMap(key) { try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return {}; } }
+function saveSet(key, set) { try { localStorage.setItem(key, JSON.stringify([...set])); } catch (e) {} }
+function saveMap(key, map) { try { localStorage.setItem(key, JSON.stringify(map)); } catch (e) {} }
+
+let HIDDEN = loadSet(HIDDEN_KEY);
+let RENAMED = loadMap(RENAME_KEY);
+let MOVED = loadMap(MOVE_KEY);
+let MY_RATINGS = loadMap(MY_RATING_KEY);
+
+function isHidden(id) { return HIDDEN.has(id); }
+function displayNameFor(item) { return RENAMED[item.id] || item.name; }
+function effectiveTopic(item) { return (MOVED[item.id] && MOVED[item.id].topic) || item.topic; }
+function effectiveCategory(item) { return (MOVED[item.id] && MOVED[item.id].category) || item.category; }
+
+function toggleHidden(id) { if (HIDDEN.has(id)) HIDDEN.delete(id); else HIDDEN.add(id); saveSet(HIDDEN_KEY, HIDDEN); render(); }
+
+function renderRatingBoxContent(box, id) {
+  const api = window.__ratingsApi;
+  const data = (api && api.ratingsCache.get(id)) || null;
+  const avg = data && data.count ? data.sum / data.count : 0;
+  const count = data ? data.count : 0;
+  const mine = MY_RATINGS[id] || 0;
+  box.classList.toggle('mine', !!mine);
+  box.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const s = document.createElement('span');
+    s.className = 'rating-star' + (i <= Math.round(avg) ? ' filled' : '');
+    s.textContent = i <= Math.round(avg) ? '★' : '☆';
+    s.title = mine ? `הדירוג שלך: ${mine}` : `דרגו ${i}`;
+    s.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); rateItem(id, i, box); });
+    box.appendChild(s);
+  }
+  const meta = document.createElement('span');
+  meta.className = 'rating-meta';
+  meta.textContent = count ? `${avg.toFixed(1)} (${count})` : 'דרגו ראשונים';
+  box.appendChild(meta);
+}
+
+function buildRatingBox(id) {
+  const box = document.createElement('span');
+  box.className = 'rating-box';
+  box.id = 'rt-' + id;
+  renderRatingBoxContent(box, id);
+  return box;
+}
+
+function rateItem(id, value, box) {
+  const old = MY_RATINGS[id] || 0;
+  MY_RATINGS[id] = value;
+  saveMap(MY_RATING_KEY, MY_RATINGS);
+  const api = window.__ratingsApi;
+  if (!api) return;
+  const cur = api.ratingsCache.get(id) || { sum: 0, count: 0 };
+  const nextSum = cur.sum + (old ? value - old : value);
+  const nextCount = cur.count + (old ? 0 : 1);
+  api.ratingsCache.set(id, { sum: nextSum, count: nextCount });
+  renderRatingBoxContent(box, id);
+  api.submitRating(id, value, old).catch(err => {
+    console.error('שגיאה בשמירת הדירוג', err);
+    alert('שגיאה בשמירת הדירוג לשרת - נסו שוב מאוחר יותר');
+  });
+}
+
+function updateRatingsUI(ids) {
+  if (!ids.length) return;
+  const doIt = () => {
+    window.__ratingsApi.fetchRatings(ids).then(() => {
+      ids.forEach(id => {
+        const box = document.getElementById('rt-' + id);
+        if (box) renderRatingBoxContent(box, id);
+      });
+    });
+  };
+  if (window.__ratingsApi) doIt();
+  else window.addEventListener('ratings-ready', doIt, { once: true });
+}
+
+function renameItem(id, currentName) {
+  const newName = prompt('שם חדש לתצוגה בקטלוג:', currentName);
+  if (newName === null) return;
+  const trimmed = newName.trim();
+  if (!trimmed) delete RENAMED[id]; else RENAMED[id] = trimmed;
+  saveMap(RENAME_KEY, RENAMED);
+  render();
+}
+
+function openMoveModal(id, curTopic, curCategory) {
+  moveTargetId = id;
+  const tSel = document.getElementById('moveTopicSelect');
+  const cSel = document.getElementById('moveCategorySelect');
+  tSel.innerHTML = ORDER.map(t => `<option value="${t}">${TOPIC_EMOJI[t] || ''} ${t}</option>`).join('');
+  tSel.value = curTopic;
+  cSel.innerHTML = CATEGORY_ORDER.map(c => `<option value="${c}">${CATEGORY_ICONS[c] || ''} ${c}</option>`).join('');
+  cSel.value = CATEGORY_ORDER.includes(curCategory) ? curCategory : CATEGORY_ORDER[0];
+  document.getElementById('moveModal').classList.add('open');
+}
+function closeMoveModal() { document.getElementById('moveModal').classList.remove('open'); moveTargetId = null; }
+
+document.getElementById('moveCancelBtn').addEventListener('click', closeMoveModal);
+document.getElementById('moveModal').addEventListener('click', (e) => { if (e.target.id === 'moveModal') closeMoveModal(); });
+document.getElementById('moveSaveBtn').addEventListener('click', () => {
+  if (!moveTargetId) return;
+  const topic = document.getElementById('moveTopicSelect').value;
+  const category = document.getElementById('moveCategorySelect').value;
+  MOVED[moveTargetId] = { topic, category };
+  saveMap(MOVE_KEY, MOVED);
+  closeMoveModal();
+  render();
+});
+
+document.getElementById('resetLink').addEventListener('click', () => {
+  if (!confirm('לאפס שינויי שם, הסתרות והעברות אישיות שביצעת בדפדפן זה? (הדירוגים המשותפים בענן לא יימחקו)')) return;
+  localStorage.removeItem(RENAME_KEY);
+  localStorage.removeItem(HIDDEN_KEY); localStorage.removeItem(MOVE_KEY);
+  HIDDEN = new Set(); RENAMED = {}; MOVED = {};
+  render();
+});
+
+function buildDriveUrl(id) { return 'https://drive.google.com/file/d/' + id + '/view'; }
+
+function buildGroups() {
+  const groups = {};
+  ORDER.forEach(t => { groups[t] = {}; });
+  FLAT_ITEMS.forEach(item => {
+    if (isHidden(item.id) && !showHidden) return;
+    const t = effectiveTopic(item);
+    const c = effectiveCategory(item);
+    if (!groups[t]) groups[t] = {};
+    if (!groups[t][c]) groups[t][c] = [];
+    groups[t][c].push(item);
+  });
+  return groups;
+}
+
+function renderTabs(groups) {
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = ORDER.map(t => {
+    const cats = groups[t] || {};
+    const n = Object.values(cats).reduce((s, arr) => s + arr.length, 0);
+    const active = t === currentTopic ? ' active' : '';
+    return `<button class="tab-btn${active}" data-topic="${t}">
+      <span class="tab-emoji">${TOPIC_EMOJI[t] || '📄'}</span>
+      <span class="tab-label">${t}</span>
+      <span class="tab-count">${n}</span></button>`;
+  }).join('');
+}
+
+function render() {
+  const groups = buildGroups();
+  renderTabs(groups);
+
+  const main = document.getElementById('main');
+  const empty = document.getElementById('emptyState');
+  main.innerHTML = '';
+
+  const q = currentQuery.trim();
+  const topicsToShow = q ? ORDER : [currentTopic];
+  let anyResults = false;
+  const visibleIds = [];
+
+  topicsToShow.forEach(topic => {
+    const cats = groups[topic] || {};
+    const sortedCats = CATEGORY_ORDER.filter(c => cats[c] && cats[c].length);
+    Object.keys(cats).forEach(c => { if (!sortedCats.includes(c)) sortedCats.push(c); });
+
+    let topicHasResults = false;
+    let topicTotal = 0;
+    const catBlocks = [];
+
+    sortedCats.forEach(cat => {
+      const items = (cats[cat] || []).filter(it => !q || displayNameFor(it).includes(q));
+      if (items.length === 0) return;
+      topicHasResults = true;
+      topicTotal += items.length;
+
+      const group = document.createElement('div');
+      group.className = 'category-group';
+      const header = document.createElement('div');
+      header.className = 'category-header';
+      header.innerHTML = `<span class="category-title">${CATEGORY_ICONS[cat] || '📄'} ${cat}</span>
+        <span style="display:flex;align-items:center;">
+          <span class="category-count">${items.length}</span>
+          <span class="category-toggle">▾</span>
+        </span>`;
+      const list = document.createElement('div');
+      list.className = 'file-list';
+      items.forEach(item => {
+        const meta = TYPE_META[item.type] || TYPE_META.other;
+        const hidden = isHidden(item.id);
+        const renamed = !!RENAMED[item.id];
+        const name = displayNameFor(item);
+        visibleIds.push(item.id);
+
+        const rowWrap = document.createElement('div');
+        rowWrap.className = 'file-row-wrap' + (hidden ? ' is-hidden' : '');
+
+        const ratingBox = buildRatingBox(item.id);
+
+        const renameBtn = document.createElement('button');
+        renameBtn.className = 'icon-btn';
+        renameBtn.type = 'button';
+        renameBtn.title = 'שינוי שם תצוגה';
+        renameBtn.textContent = '✏️';
+        renameBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); renameItem(item.id, name); });
+
+        const moveBtn = document.createElement('button');
+        moveBtn.className = 'icon-btn';
+        moveBtn.type = 'button';
+        moveBtn.title = 'העברה לנושא/קטגוריה אחרים';
+        moveBtn.textContent = '📁';
+        moveBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openMoveModal(item.id, topic, cat); });
+
+        const hideBtn = document.createElement('button');
+        hideBtn.className = 'icon-btn';
+        hideBtn.type = 'button';
+        hideBtn.title = hidden ? 'שחזור הקובץ (הצגה מחדש)' : 'הסתרת הקובץ';
+        hideBtn.textContent = hidden ? '👁️' : '🙈';
+        hideBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleHidden(item.id); });
+
+        const row = document.createElement('a');
+        row.className = 'file-row';
+        row.href = item.url || buildDriveUrl(item.id);
+        row.target = '_blank';
+        row.rel = 'noopener noreferrer';
+        row.innerHTML = `
+          <span class="file-icon" style="background:${meta.bg}">${meta.icon}</span>
+          <span class="file-name${renamed ? ' renamed' : ''}">${name}</span>
+          ${item.size ? `<span class="file-size">${item.size}</span>` : ''}
+          ${hidden ? '<span class="hidden-badge">מוסתר</span>' : ''}
+          <span class="file-type-badge" style="background:${meta.bg};color:${meta.color}">${meta.label}</span>
+        `;
+
+        rowWrap.appendChild(ratingBox);
+        rowWrap.appendChild(renameBtn);
+        rowWrap.appendChild(moveBtn);
+        rowWrap.appendChild(hideBtn);
+        rowWrap.appendChild(row);
+        list.appendChild(rowWrap);
+      });
+      header.addEventListener('click', () => {
+        list.classList.toggle('collapsed');
+        header.querySelector('.category-toggle').textContent = list.classList.contains('collapsed') ? '◂' : '▾';
+      });
+      group.appendChild(header);
+      group.appendChild(list);
+      catBlocks.push(group);
+    });
+
+    if (!topicHasResults) return;
+    anyResults = true;
+
+    if (q) {
+      const heading = document.createElement('div');
+      heading.className = 'topic-heading';
+      heading.innerHTML = `<h2>${TOPIC_EMOJI[topic] || '📄'} ${topic}</h2><span class="count">${topicTotal} תוצאות</span>`;
+      main.appendChild(heading);
+    }
+    catBlocks.forEach(b => main.appendChild(b));
+  });
+
+  empty.style.display = anyResults ? 'none' : 'block';
+  updateRatingsUI(visibleIds);
+}
+
+document.getElementById('search').addEventListener('input', (e) => { currentQuery = e.target.value; render(); });
+document.getElementById('showHiddenChk').addEventListener('change', (e) => { showHidden = e.target.checked; render(); });
+document.getElementById('tabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  currentTopic = btn.dataset.topic;
+  document.getElementById('search').value = '';
+  currentQuery = '';
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

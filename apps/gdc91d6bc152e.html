@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>קטלוג קול תודה</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI','Arial Hebrew',Arial,sans-serif;direction:rtl;background:linear-gradient(135deg,#e0f7fa 0%,#f3e5f5 28%,#fff9c4 58%,#e8f5e9 100%);min-height:100vh;color:#0f172a}
+#main-header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.92);backdrop-filter:blur(14px);padding:16px 20px 10px;box-shadow:0 2px 12px rgba(0,0,0,0.08)}
+.h1-link{text-decoration:none}
+h1{font-size:clamp(1.4rem,4vw,2rem);font-weight:800;background:linear-gradient(135deg,#7c3aed,#f59e0b,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px}
+.subtitle{color:#475569;font-size:.9rem;margin-bottom:10px}
+.stats{display:flex;flex-wrap:wrap;gap:8px;font-size:.82rem;color:#64748b;margin-bottom:10px}
+.stats span{background:#f1f5f9;padding:3px 10px;border-radius:20px}
+#search-wrap{position:relative;max-width:520px}
+#search{width:100%;padding:10px 16px;border:2px solid #e2e8f0;border-radius:999px;font-size:.95rem;font-family:inherit;direction:rtl;outline:none;transition:border .2s}
+#search:focus{border-color:#7c3aed}
+#clear-btn{display:none;position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;font-size:1rem}
+#sticky-nav{position:sticky;top:0;z-index:99;background:rgba(255,255,255,0.88);backdrop-filter:blur(10px);padding:8px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);overflow-x:auto;white-space:nowrap}
+#sticky-nav::-webkit-scrollbar{height:3px}
+#sticky-nav::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+.nav-btn{display:inline-flex;align-items:center;gap:5px;margin:0 3px;padding:6px 12px;border:1.5px solid var(--bord);border-radius:999px;background:var(--light);color:#1e293b;font-family:inherit;font-size:.78rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.nav-btn:hover,.nav-btn.active{background:var(--acc);color:#fff;border-color:var(--acc)}
+.nav-badge{background:rgba(0,0,0,0.1);border-radius:999px;padding:1px 6px;font-size:.7rem;font-weight:700}
+.nav-btn.active .nav-badge{background:rgba(255,255,255,0.3)}
+#content{max-width:900px;margin:0 auto;padding:20px 16px 60px}
+.topic-card{background:rgba(255,255,255,0.88);border-radius:16px;box-shadow:0 5px 20px rgba(0,0,0,0.07);margin-bottom:22px;overflow:hidden;scroll-margin-top:150px}
+.topic-header{padding:16px 20px 12px}
+.topic-title-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.topic-emoji{font-size:2rem;line-height:1;flex-shrink:0}
+.topic-name{font-size:1.15rem;font-weight:700;color:#1e293b}
+.topic-desc{font-size:.82rem;color:#64748b;margin-top:2px}
+.badge{margin-right:auto;flex-shrink:0;color:#fff;padding:3px 10px;border-radius:999px;font-size:.75rem;font-weight:700;align-self:flex-start}
+.toggle-btn{background:none;border:1.5px solid currentColor;border-radius:8px;padding:6px 14px;font-family:inherit;font-size:.82rem;cursor:pointer;font-weight:600;transition:all .2s}
+.toggle-btn:hover{opacity:.75}
+.file-list-wrap{padding:0 20px 16px}
+.file-list{list-style:none;border-top:1px solid #f1f5f9;padding-top:10px}
+.frow{display:flex;align-items:baseline;gap:8px;padding:6px 8px;border-radius:8px;transition:background .15s}
+.frow:hover{background:rgba(0,0,0,0.04)}
+.femoji{font-size:.9rem;flex-shrink:0}
+.fname{color:#1d4ed8;text-decoration:none;font-size:.875rem;word-break:break-word;flex:1}
+.fname:hover{text-decoration:underline;color:#7c3aed}
+.fsize{color:#94a3b8;font-size:.75rem;white-space:nowrap;flex-shrink:0}
+.subs-wrap{padding:8px 20px 16px}
+.sub-section{margin-bottom:14px;border-radius:10px;overflow:hidden;border:1px solid #f1f5f9}
+.sub-header{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;cursor:pointer;user-select:none}
+.sub-header:hover{filter:brightness(0.97)}
+.sub-name{font-weight:700;font-size:.9rem;color:#1e293b}
+.sub-count{font-size:.78rem;font-weight:600}
+.sub-body{display:none}
+.sub-body .file-list{padding:4px 12px 8px;border-top:1px solid #f1f5f9}
+.sub-toggle{font-size:.75rem;color:#94a3b8;margin-right:auto}
+#no-results{display:none;text-align:center;padding:40px;color:#64748b;font-size:1.1rem}
+@media(max-width:600px){#main-header{padding:12px}h1{font-size:1.3rem}.topic-title-row{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<header id="main-header">
+  <a href="https://drive.google.com/drive/folders/1QOgykGqgiASlfBhnO8yHIn7_fzGyktP8" target="_blank" class="h1-link"><h1>📂 ספריית קול תודה</h1></a>
+  <p class="subtitle">קטלוג נושאי – לחץ על נושא לצפייה בקבצים</p>
+  <div class="stats">
+    <span>📄 547 קבצים</span>
+    <span>🗂️ 10 נושאים</span>
+    <span>📅 26/02/2026</span>
+    <span><a href="https://drive.google.com/drive/folders/1QOgykGqgiASlfBhnO8yHIn7_fzGyktP8" target="_blank" style="color:#7c3aed;text-decoration:none;">🔗 Google Drive</a></span>
+  </div>
+  <div id="search-wrap">
+    <input id="search" type="text" placeholder="🔍 חפש קובץ או נושא..." oninput="liveSearch(this.value)" />
+    <button id="clear-btn" onclick="clearSearch()">✕</button>
+  </div>
+</header>
+<nav id="sticky-nav"><button class="nav-btn" id="nav-ulonot_he" onclick="goTo('ulonot_he')" style="--acc:#7c3aed;--light:#f3e8ff;--bord:#c4b5fd;">📰 עלוני קול תודה – עברית <span class="nav-badge">145</span></button>
+<button class="nav-btn" id="nav-ulonot_en" onclick="goTo('ulonot_en')" style="--acc:#0891b2;--light:#e0f7fa;--bord:#67e8f9;">🌍 עלוני קול תודה – אנגלית <span class="nav-badge">19</span></button>
+<button class="nav-btn" id="nav-mizmor_music" onclick="goTo('mizmor_music')" style="--acc:#b45309;--light:#fef3c7;--bord:#fcd34d;">🎵 מזמור לתודה – ניגונים ומוזיקה <span class="nav-badge">68</span></button>
+<button class="nav-btn" id="nav-shirim" onclick="goTo('shirim')" style="--acc:#dc2626;--light:#fee2e2;--bord:#fca5a5;">🎶 שירי הודיה – טוב להודות <span class="nav-badge">12</span></button>
+<button class="nav-btn" id="nav-sfarim" onclick="goTo('sfarim')" style="--acc:#db2777;--light:#fce7f3;--bord:#f9a8d4;">📚 ספרי הודיה ומאמרים <span class="nav-badge">134</span></button>
+<button class="nav-btn" id="nav-mizmor_iyun" onclick="goTo('mizmor_iyun')" style="--acc:#d97706;--light:#fffbeb;--bord:#fcd34d;">📖 מזמור לתודה – עיון וסיפורים <span class="nav-badge">43</span></button>
+<button class="nav-btn" id="nav-srtim" onclick="goTo('srtim')" style="--acc:#4f46e5;--light:#e0e7ff;--bord:#a5b4fc;">🎬 סרטי הודיה – הרצאות <span class="nav-badge">21</span></button>
+<button class="nav-btn" id="nav-nisuin" onclick="goTo('nisuin')" style="--acc:#0f766e;--light:#ccfbf1;--bord:#5eead4;">💒 הקול החמישי – הודיה בנישואין <span class="nav-badge">17</span></button>
+<button class="nav-btn" id="nav-asher_yatzar" onclick="goTo('asher_yatzar')" style="--acc:#9333ea;--light:#faf5ff;--bord:#d8b4fe;">🙏 אשר יצר <span class="nav-badge">10</span></button>
+<button class="nav-btn" id="nav-chinuch" onclick="goTo('chinuch')" style="--acc:#059669;--light:#d1fae5;--bord:#6ee7b7;">🎓 חינוך, שיעורים וחנוכה <span class="nav-badge">78</span></button></nav>
+<main id="content">
+<section class="topic-card" id="ulonot_he" style="border-left:4px solid #7c3aed;" data-tid="ulonot_he">
+  <div class="topic-header" style="background:#f3e8ff;">
+    <div class="topic-title-row">
+      <span class="topic-emoji">📰</span>
+      <div><h2 class="topic-name">עלוני קול תודה – עברית</h2><p class="topic-desc">עלוני חודש בעברית מתשע״ד עד תשפ״ו</p></div>
+      <span class="badge" style="background:#7c3aed;">145 קבצים</span>
+    </div>
+    <button class="toggle-btn" onclick="toggleTopic('ulonot_he')" style="color:#7c3aed;">▼ הצג קבצים</button>
+  </div>
+  <div class="file-list-wrap" id="list-ulonot_he" style="display:none;"><ul class="file-list"><li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1cCyvbHoWfGbWJtPZJd9nzXL1XlAWUX45/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">1-תשרי התשעז.pdf</a><span class="fsize">4.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/13YRjF5S9bhjU75Y4IQWDlELpvz2c-sEJ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">1-תשרי התשעח.pdf</a><span class="fsize">2.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1TZXqU-jFWyWYpOxzv4EVru0Th3CG-ie_/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">1-תשרי.pdf</a><span class="fsize">237KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1adOtgk1FacIq7iZfYqCfiTEHtAZJJ8k6/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">10-סיון התשעו.pdf</a><span class="fsize">2.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1Ggm9Va6ZHO2vjdHPIXvcNV-03OxM8jJY/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">10-סיון.pdf</a><span class="fsize">2.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1CJkk2-Hcscbu-cnaQDR43HNMC0f5WLle/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">10-תמוז התשעז.pdf</a><span class="fsize">4.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1gS5Ma2X9AFmHJ-NU4-Pf1Veoy9O8kskV/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">10-תמוז.pdf</a><span class="fsize">1.9MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1oDWCodjz-WIEgx21MRO4hwVFZnhAvh6J/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">11-אב התשעז.pdf</a><span class="fsize">2.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1QTHtZgysZOG-ta4oksMYQNdOHsgo5cEy/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">11-אב.pdf</a><span class="fsize">2.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1cae197hPw-oNEgKOsBcjDzeNEQ0hhNdi/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">11-תמוז התשעו.pdf</a><span class="fsize">2.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1wtpPddjb7mdB5pbTq-Vc-4a7RV7kwkQe/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">12-אב התשעו.pdf</a><span class="fsize">2.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1yRCqeyzueKQA2WR_wjbhgG4ZpHlp9f9H/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">12-אלול התשעז.pdf</a><span class="fsize">1.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1_odynEApTRzUxYvmc93tCTPueTS4S2FR/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">12-אלול.pdf</a><span class="fsize">2.9MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/16XCV8RZX2xEneobBRgdc3Y6OpBoZHyYo/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">13-אלול התשעו.pdf</a><span class="fsize">1.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1B0VFRr_Cp3-YGxN46Q4faX92xi1NbAAi/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">2-חשון התשעח.pdf</a><span class="fsize">2.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1CfxaGjsmCURHfIbPxqf6bo7TRIwcep8z/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">2-חשון תשעז.pdf</a><span class="fsize">3.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1IVkp1qt0Z97XvYy82kYxJSdQ1sRnc79f/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">2-חשון.pdf</a><span class="fsize">243KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1I-SJUmSmS7riu93veDnKYwe_H58LR9bW/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">3-כסלו התשעז.pdf</a><span class="fsize">10.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1HGKcHZkLweivnPTdt0eYaBu4dY5m0iOm/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">3-כסלו תשע''ח.pdf</a><span class="fsize">21.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1u_QeC9tVaas2usfo36qvodvTu7krnWLl/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">3-כסלו תשעו.pdf</a><span class="fsize">12.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1-H9s2ENE47R7ER1hwn4Pxb1g7bRRzw-v/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">3-כסלו.pdf</a><span class="fsize">239KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1ZWoeuBOkCbMWWp48oCT6u_0vH7jYf3r0/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">4-טבת התשעו.pdf</a><span class="fsize">3.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1oUyOIFy50D3IShp3irX9x2sorx1SCwpo/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">4-טבת התשעז.pdf</a><span class="fsize">5.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1JfL__MkH3H68AycN_dhhZaTaHKWu3Yez/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">4-טבת התשעח.pdf</a><span class="fsize">1.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/17aSdiyHHJkLZkHRGzc_0vc1NkgkgN5DH/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">4-טבת.pdf</a><span class="fsize">249KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1w3uIFUjhAF3OuUZsF6F5Tn2JiauXNtBk/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">5-שבט התשעז.pdf</a><span class="fsize">2.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1ZZdGy9xHBg68uCJ9BApp4ZXftAdKuym7/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">5-שבט התשעח.pdf</a><span class="fsize">2.9MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1pBB0JqjzYWkWJsmjDiWlgKbDrNXgUuRH/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">5-שבט תשעו.pdf</a><span class="fsize">1.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/113qKvwbIXoip-MuTPmsiJxM1WeNtSLzi/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">5-שבט.pdf</a><span class="fsize">272KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/15r1hHNcfRoqhxXoXh_MF5GQ6f1NpIUM9/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">6-אדר א.pdf</a><span class="fsize">11.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1KEOr97aYJOJBDnKm9BfDSazsQFS-a9V0/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">6-אדר התשעז.pdf</a><span class="fsize">3.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1RsVqn08yJlEZcQ2ik3aTXZuA5vnHr2CH/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">6-אדר התשעח.pdf</a><span class="fsize">3.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1IIkIWr7WVxrqahf50LaeqhOxfRb0L2HC/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">6-אדר.pdf</a><span class="fsize">311KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1CRXlyKtvijUs9oB6suFE3wR4k7jibvCe/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">7-אדר ב התשעו.pdf</a><span class="fsize">1.9MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1TqJYKuz-jspD10PE3mGB3M2my3blUYV2/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">7-ניסן התשעז.pdf</a><span class="fsize">5.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1qJkhzyuRBP5dTlTtHVlAf5zDtTtcqRai/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">7-ניסן התשעח.pdf</a><span class="fsize">6.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1gDyWVfR2boYDb2cM0RGnhkdRo4h_ukCQ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">7-ניסן.pdf</a><span class="fsize">848KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/19bgvUqRQSJZbioQwLS8WhdPO1t2V4eAf/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">8-אייר התשעז.pdf</a><span class="fsize">2.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1AsKzGMv1usyFZBi7zpNns9icisp64mob/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">8-אייר התשעח.pdf</a><span class="fsize">1.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/18hDuXLZrWXEAnA43jl-3NE6KOEQxfsso/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">8-אייר.pdf</a><span class="fsize">1.9MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1JI5PyVZkAKgFjzeHr5xbxP-OHKcDk5In/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">8-ניסן התשעו.pdf</a><span class="fsize">4.9MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1UVidFlG60XNPUVHlsQJxDGS-JgqLxwjM/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">8-סיון התשעז.pdf</a><span class="fsize">3.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/10WwNDeY6yPaLZe8OI8lYQSjqC1IVzT04/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">9-אייר התשעו.pdf</a><span class="fsize">1.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1yxeJ9fG0wx8VgTp32EWBQT8PVro7XRrf/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">9-סיון התשעח.pdf</a><span class="fsize">2.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/14GNSpY479IvSpw1yMQHpA3dtI26GNiaa/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">Mקול תודה חשון תשפא.pdf</a><span class="fsize">2.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1_qCpTfHv3jNGRQeFOkyPJf6nRi1Qwfei/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אב התשפM.pdf</a><span class="fsize">2.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1mpTbYyxx0WwOrerO3Uz7FjPW4CqShwiD/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אב פב לשליחה.pdf</a><span class="fsize">1.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/15JePcia6fmsBjQdOthTxzYkbX1j7eYKx/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אב פד.pdf</a><span class="fsize">3.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1wrUzdQeOeWuMUX3lCtZNoUW_JzWFYLA8/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אב תשפ''ג.pdf</a><span class="fsize">1.9MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1Sa7nifMKKDEMharpckyRz2fMtCW0dhHp/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אב תשפא עברית.pdf</a><span class="fsize">869KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1oM7psqUxdrnOBAXNkQLR4XKXs2wgIiu8/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אב.pdf</a><span class="fsize">180KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1pKyHUN3vpJWfEIjuZCKU5XGfyFZbIt8t/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אבלות החורבן.pdf</a><span class="fsize">505KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/15FP7xYLtHW0eVtSfTTrQ_y2MBsgT2GeX/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אדר א.pdf</a><span class="fsize">3.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1nR87TtKzXa26YpWNGOzhz3xjn6DU8wx2/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אדר ב' פ''ד.pdf</a><span class="fsize">4.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1CovUHBW5X3B2i0L-2U5qu_IcslhiA1DS/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אדר התשפM.pdf</a><span class="fsize">2.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1se04lZLVlvuea7OcacjB9GHcQYLjqI-4/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אדר פה.pdf</a><span class="fsize">2.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1U4qQktxZswnSQlgReVVlxUoSnT-CkiL_/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אדר פו.pdf</a><span class="fsize">4.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgdHVHTjIzSFhqemtydWdNcVVhNnBLaVdvZ01N/view?usp=drivesdk&resourcekey=0-bhgMtp7B68mWFsMK0m5rNQ" target="_blank" rel="noopener" class="fname">אדר תשעח.pdf</a><span class="fsize">873KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1TBJlNsTrIYUszbErcGGd2KqcbfscvTaf/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אדר תשפ''א עברית.pdf</a><span class="fsize">1.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1s1k7EpB5PHj6KScW9hcpev1mn97lTK1Z/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אדר תשפ''ג.pdf</a><span class="fsize">3.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1iiOm8fVq4h-V7KKu28A0kI2Xx_1Ar5KN/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אוסף עלוני קול תודה.pdf</a><span class="fsize">282.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/13ExDaYEs5e668kNWg3IOMKs_cTP7-972/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אייר התשפM (3).pdf</a><span class="fsize">2.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1r03yX1bsqw0ll-B6PIgxezbz8XtiH2Zi/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אייר מוקטן.pdf</a><span class="fsize">4.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1utP6QY8Akjl26Jo7Xp_xOtXJaIyIxW9V/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אייר פ''ג.pdf</a><span class="fsize">2.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1bq5ge4ZU6fgYmIwsOf6C7kDq0hDsSuyG/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אייר תשפ''ד .pdf</a><span class="fsize">714KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1gz4YS_x9kJ3PgKZl1jWlE3q0q4qgxHNY/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אייר תשפ''ה.pdf</a><span class="fsize">1.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1EmG7OGTzbHjVbKWQMDVdh4zmQbX7YDAL/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אייר תשפא.pdf</a><span class="fsize">2.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgZXFvdUU5TFpiUjlDR2dqUnNaOVdnZFdKZnQ4/view?usp=drivesdk&resourcekey=0-j9WM3hMOyJvXcSsDdY8q6w" target="_blank" rel="noopener" class="fname">אייר-סיון.pdf</a><span class="fsize">1.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1UBwVN9ZnYwpb4sOr9b8YBuvJEv6GDvdT/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אלול התשפM.pdf</a><span class="fsize">2.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1CnG4SUTINO1NyoL9APrfW70z2vyfykMR/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אלול תשפ''ד.pdf</a><span class="fsize">1.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1xNlXBCrtWmqZc-0SCz2K3vCXOWqsOzv2/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אלול תשפב-1.pdf</a><span class="fsize">2.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1QCdtoC8s0bfnblnV_Gq2UY1c4aFMAj9n/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אלול.pdf</a><span class="fsize">211KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1ysETCwlce2eGH4uH82nliu1PckdOtJ20/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">חשון התשעט 4.pdf</a><span class="fsize">3.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1eoKINa6MOXW21NTtpyzwRd8tSylQjbjt/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">חשון לשליחה פב.pdf</a><span class="fsize">2.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgX0U1V2hjUzRJX2RidUVmRUJaY0JUQk9yenl3/view?usp=drivesdk&resourcekey=0-pUKw6LmhZkNnHIPo87cvvw" target="_blank" rel="noopener" class="fname">חשון מיילים.pdf</a><span class="fsize">2.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/10kp2I4H_hyQiG6tYFuEQJW_-Y9j-jCQN/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">חשון תשפ.pdf</a><span class="fsize">953KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1FhHS9Iq5uFpXGSfvuN-0VXJ4u7k9hv8t/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">חשיבות אמירת מזמור לתודה בחתונה - קול תודה טבת תשעט.pdf</a><span class="fsize">1.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1hT04SdPhPQfmtz5_8pn5dsgDvydIZ-89/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טבת התשעט.pdf</a><span class="fsize">1.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgcjBzdmp6WU9EZGdKc1dIenlGZEc1dFJFdVVF/view?usp=drivesdk&resourcekey=0-KJWiHT1w7lRWbPw7KiYr_A" target="_blank" rel="noopener" class="fname">טבת התשפM.pdf</a><span class="fsize">2.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1V9vLIgr2yN9Xckmc6Dzrwb8GcH7JYirM/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טבת התשפבM.pdf</a><span class="fsize">2.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1Me7m002J0VDok28IxuKWzO7jvnGu05x5/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טבת פג.pdf copy.pdf</a><span class="fsize">1.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1yLpGzTFzqshWujMypMFrlM0nKAI8ehf7/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טבת פה .pdf</a><span class="fsize">3.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/18uotHFEdIVyZ6_vyUoPOcaRk-HS7JIUJ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טבת תשפא.pdf</a><span class="fsize">1.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1zrexwr-HdAVzVTT-DuG8QpzKhEAMHn65/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טבת תשפב.pdf</a><span class="fsize">5.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1vcMLoofrSpBg-pXHi4OlenVLhkUgsJ_L/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טבת תשפד.pdf</a><span class="fsize">6.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgTU9UX3YyZjBMNG1DOG1kMnUyMW1HaXV2MG1n/view?usp=drivesdk&resourcekey=0-TMQ2CHhCutuAUo9AHL_KdQ" target="_blank" rel="noopener" class="fname">כסלו.pdf</a><span class="fsize">4.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1H2w8NnqZO2V5DEy2fJkOnXKQgsYT-Nrl/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מפתח החיים  טבת תשע''ז.pdf</a><span class="fsize">5.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1HtRou0mXM4dxT34K6-uxjw2SmVZdvzF5/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מקבץ עלוני קול תודה תש''פ.pdf</a><span class="fsize">31.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1V9EjEO_SLVEFmfYPiI7ExqdIGvrAfZoT/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ניסן פ''ג מ.pdf</a><span class="fsize">1.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/129B8wt8uAYCrzUAVXmLHDZB57dPwoCco/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ניסן פ''ד ...pdf</a><span class="fsize">1.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1sLQaPSBJkjrwEzyqBI0oVlecsULqOZNP/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ניסן פה למייל.pdf</a><span class="fsize">1.9MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1xHdYpFa0YGucCjTtUfW1DBtalQux57y-/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ניסן תשפ''ד.pdf</a><span class="fsize">3.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1QX78dFCHUgEKx9QlWwfGelQhAZvWxswe/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">סיון התשפMM.pdf</a><span class="fsize">2.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1hBM9NrT0EAndq3qvVbvauOofFk0mHWia/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">סיון פב לשליחה.pdf</a><span class="fsize">4.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1JtTdv7MEGN_YVUFdars9X_JJcs5O_fla/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">סיון תשפ''ג.pdf</a><span class="fsize">3.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1_gXWeSjxFpS1lGZFogXr3raixE_vwgLd/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה אב תשפגM.pdf</a><span class="fsize">819KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1AAQqO7FIHvCKS6GMLKC83BHCN7e_fimR/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה אדר א התשפבM.pdf</a><span class="fsize">2.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/16lzazQAz7RnEuBYzLSrQJT92zIN17E6u/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה אדר ב התשפד הפצה-1.pdf</a><span class="fsize">1.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1j4jM2POaHyDVIZPBxINCQggZwBYTWGJE/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה אדר התשפגM-1.pdf</a><span class="fsize">859KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/17pH44eMjvt0oo81wEcSkKWNVCjYsHcil/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה אדר התשפד.pdf</a><span class="fsize">1.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1FWdyqa6ssSLpfvojb2DN_Ue9j3ys1ujl/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה אייר התשפבM.pdf</a><span class="fsize">840KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1dsxPUSMDO1gQ1aj031MwQdlfe4Y8rgAY/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה אלול התשפבM.pdf</a><span class="fsize">819KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1U2GZFlwjQLPCZPA13jdKmxUtLWBEBwBX/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה אלול תשפג.pdf</a><span class="fsize">2.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1lx45KStAKtFDlwXWJvdsMC52D9FtflfK/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה חשון תשפד.pdf</a><span class="fsize">1.9MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1EmQnnxRytHVBUjiipvl0iwdqt3svIcCu/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה טבת התשפגM.pdf</a><span class="fsize">869KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1uwWmTh1KG47R6LiK91Oz5AD-Ece15jEp/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה טבת התשפדM.pdf</a><span class="fsize">812KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1GfkWmKE-WFAczQsaYmrqGkyxGXrpS7eh/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה כסלו התשפבMM.pdf</a><span class="fsize">1.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1r6SSb5cnZLMXjdvEM1dL0a5-JMDAE1AG/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה כסלו התשפד.pdf</a><span class="fsize">5.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1FgrT938ZM6rXMF3GwJyNX9wvh_LiHRTZ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה כסלו תשפגM.pdf</a><span class="fsize">2.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1hfuRLedmSvr1fFWxBSB33UoMxMpesUiY/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה ניסן התשפבMM.pdf</a><span class="fsize">863KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1lXIiGs7gLaxrRMfnhpfLL6yBpuqMhhD3/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה סיון התשפבM.pdf</a><span class="fsize">2.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1rRr-jgOsJtSwYjZFEUY0vDmzQpw6Rler/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה שבט התשפד M.pdf</a><span class="fsize">789KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1gQdOqOLYAneCM8nDw9jKhhVwM3X5ej3h/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה שבט תשפבM.pdf</a><span class="fsize">2.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1xLuOSYBiW5CrTAWW_x2UhMoBXVT3PLAZ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה שבט תשפגM.pdf</a><span class="fsize">896KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1YqRqXcuMBkkWWw0bCrfVmXwREh1JFPTg/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה תמוז אב תשפבM.pdf</a><span class="fsize">825KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1POvO8JVOh7lZHpkrD7YqXJfjflf7e0A7/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה תמוז תשפא MM.pdf</a><span class="fsize">825KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1AazZS6LiWxnFOyRdxzkOu4OURvU6Q8Mp/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה תשפ"ב.pdf</a><span class="fsize">17.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1HTd4_n3-wghbmaswoXibLgsDGLDLbRDu/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה תשפ''א.pdf</a><span class="fsize">50.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1zv9ichDlrHqlXRBaIvisOTBZJKg0ikKc/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה תשפג.pdf</a><span class="fsize">16.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1h8bWR7HzYhc-2C-jNdP_FlaGz18zCJ1j/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה תשרי התשפאM.pdf</a><span class="fsize">2.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1vQqusuD3VrZwRqryFYLdKoBNZqgcdfLe/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה תשרי התשפבM.pdf</a><span class="fsize">850KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1d6ku-ypPJr3D1FunQYR1OndmBd9xP3mq/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה תשרי התשפגM.pdf</a><span class="fsize">846KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/13MDq6vLXK9VoX6TRkImFm5WMdY9apTHm/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה תשרי התשפד.pdf</a><span class="fsize">2.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1w7Eo9KoifzHsFYj0goipirMkA28ediA4/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול_תודה_התשעה.pdf</a><span class="fsize">34.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1tdNlPS_H2Hz0A0rMZGF9hP1Drz4F38n5/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול_תודה_התשעו.pdf</a><span class="fsize">42.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/14zvgtwVFTl-BfTg0FpvCaPyn5GLpgSlW/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול_תודה_התשעז.pdf</a><span class="fsize">40.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1bPcgFrr76janB61KsPYj2oxOFFHsVkbo/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול_תודה_התשעח.pdf</a><span class="fsize">56.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/17dQWHBqnjY5_f_EOmqORJuUQqS0KfixN/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול_תודה_התשעט.pdf</a><span class="fsize">76.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgMFRXNWJhREFWb3c3NjhMb0JtbWo3OVVxRUE0/view?usp=drivesdk&resourcekey=0-Lu_Lr-P74X4WvArb__PyAg" target="_blank" rel="noopener" class="fname">שבט התשפM.pdf</a><span class="fsize">2.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/14RZ_WSqVdqMOLnzqK2d0PamWpZVl_5r4/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שבט עברית תשפא מוקטן.pdf</a><span class="fsize">1.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1I0SHdMMrN2TGMuyL7_IhxLnGH0kPP4ft/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שבט פ'ג.pdf</a><span class="fsize">1008KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/16lHADneIKqwPmTzjokvav5IVmnJQIMTS/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שבט פה .pdf</a><span class="fsize">1.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgWHV6XzFRaVd6MEYtWEIwZGREb3h6bzRTZTNN/view?usp=drivesdk&resourcekey=0-xXWGUhaw2YkmBOmyfEXAmQ" target="_blank" rel="noopener" class="fname">שבט תשעח.pdf</a><span class="fsize">13.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1APFgtVWnoSVRERS15JBl0UjlBGZ5ZkZA/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שבט תשעט.pdf</a><span class="fsize">1.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1CwFEUKPTP2NSkEzYSmDwmTanB8IxNtwc/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שיעורי קול תודה לחנוכה - חוברת מסכמת 20 שיעורים תשפו.pdf</a><span class="fsize">17.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1H2LCUPsmjIG7T3uITErXsK8cvYa6HacI/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תמוז התשפM.pdf</a><span class="fsize">2.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1SVczqUKEwlAMdhj8dOYpsc3OPX-7wog1/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תמוז לשליחה.pdf</a><span class="fsize">954KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/154Y2m-jiWSQB21KwVb7zvdrt6p4D_xOA/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תמוז מוכן תשפ (3).pdf</a><span class="fsize">5.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/10ArDiytWcrTGla8DTTsonZFbt9vTjOBP/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תמוז פג.pdf</a><span class="fsize">8.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1rYg2Pxhja1ct7YUKYVKiQghnU7aEyrzP/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תמוז פד.pdf</a><span class="fsize">2.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1AlhQyAyEUkegobdOhpmljOCJXCtie5FI/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תמוז תשפג.pdf</a><span class="fsize">698KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1eKvm7jtQ-Ih7RsDxP6e6wV7HFtUJse8H/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תשרי פה.pdf</a><span class="fsize">1.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgMmJWWnVkMnd1NWtGSXl1TjNwZXlwR1VPOVRN/view?usp=drivesdk&resourcekey=0-PDJr596hx3K4bDKQjFH5-w" target="_blank" rel="noopener" class="fname">תשרי תשפ למיילים.pdf</a><span class="fsize">1.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1bYlyKbUWp2mowG-gauwplUqsWj0CVDWW/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תשרי תשפ'''א.pdf</a><span class="fsize">4.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1oFdgYtvsa4wfZVzBXaZtrxspIFI0rz-_/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">‏‏ט''ו בשבט תשע''ח.pdf</a><span class="fsize">3.8MB</span></li></ul></div>
+</section>
+<section class="topic-card" id="ulonot_en" style="border-left:4px solid #0891b2;" data-tid="ulonot_en">
+  <div class="topic-header" style="background:#e0f7fa;">
+    <div class="topic-title-row">
+      <span class="topic-emoji">🌍</span>
+      <div><h2 class="topic-name">עלוני קול תודה – אנגלית</h2><p class="topic-desc">Monthly newsletters in English 5775–5784</p></div>
+      <span class="badge" style="background:#0891b2;">19 קבצים</span>
+    </div>
+    <button class="toggle-btn" onclick="toggleTopic('ulonot_en')" style="color:#0891b2;">▼ הצג קבצים</button>
+  </div>
+  <div class="file-list-wrap" id="list-ulonot_en" style="display:none;"><ul class="file-list"><li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgX1RqTnhjeHJwWTdzNVRrUERhckFnWGFIZDRB/view?usp=drivesdk&resourcekey=0-mqQyRvP-j_YajM_oFlXY3g" target="_blank" rel="noopener" class="fname">3סיון 5778.pdf</a><span class="fsize">528KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgTnNJSGlYaWJxNGRCeTMxVFpjMlB6enBpS3F3/view?usp=drivesdk&resourcekey=0-DXDcWd1aCzsLrvmExFiKvg" target="_blank" rel="noopener" class="fname">Adar 5777, KOL TODA English, Issue 22.pdf</a><span class="fsize">1.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgZWVfdE55andhVmhnZVpRcVh2Nk9hZFNSWEhz/view?usp=drivesdk&resourcekey=0-RExTbL7UemqpY4Od_scVDg" target="_blank" rel="noopener" class="fname">Cheshvan 5776, Kol Toda English.pdf</a><span class="fsize">2.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgV19oTE56U2llcUY1RnJMN2FwVnVjNmFPRmhv/view?usp=drivesdk&resourcekey=0-YDoRfy_1riIWiEjSodIIWQ" target="_blank" rel="noopener" class="fname">Elul 5776, Kol Toda English, Issue 17.pdf</a><span class="fsize">1.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgUDNXWHNrN0tYM0VnSlRFN0dibFFGQTdmNDBB/view?usp=drivesdk&resourcekey=0-N7PLWCUrSrYw1vPCSX5rrA" target="_blank" rel="noopener" class="fname">IYAR 5778.pdf</a><span class="fsize">527KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgTmZzWFNYdHRDempLMHBoT3FUSXo0QXc0dkI4/view?usp=drivesdk&resourcekey=0-FIM2YJSqKjGVFth9l0LW4Q" target="_blank" rel="noopener" class="fname">Iyar 5776, KOL TODA English, Issue 13.pdf</a><span class="fsize">1.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgM05qc0pXZkM3NUNiYVNfUDh0VHdYdTVjTDdB/view?usp=drivesdk&resourcekey=0-AJiK8jjoCKLxcxY-68FM7A" target="_blank" rel="noopener" class="fname">Iyar 5777, Kol Toda English, Issue 24.pdf</a><span class="fsize">834KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgNURlMWJvYzBRSHZ5dEdfb00tQ2xHdkg5RWhz/view?usp=drivesdk&resourcekey=0-9PTiz2OOSCvYadB80msvgA" target="_blank" rel="noopener" class="fname">KOL TODA Elul 5775 English newsletter.pdf</a><span class="fsize">2.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgSDdLTW45b3ZXNVVXZEI5MXhVWnNXdVBwTFFv/view?usp=drivesdk&resourcekey=0-GPBCvkAY2fEjVieGm4f9HQ" target="_blank" rel="noopener" class="fname">KOL TODA newsletter, AV 5775, English.pdf</a><span class="fsize">1.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgLUpWRWhUeTczWUxyZkRzM2VraUVNd01VQVcw/view?usp=drivesdk&resourcekey=0-N0BlWopn0wJ6qjEiOM0Xdg" target="_blank" rel="noopener" class="fname">Kislev 5776, KOL TODA, Issue 7.pdf</a><span class="fsize">1.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgWVNNdjRPWDlDOGl2X1pXTEdBWW82NE1sRjNv/view?usp=drivesdk&resourcekey=0-ZhQLFAwiWYxbd8v9qvcMZQ" target="_blank" rel="noopener" class="fname">Kislev 5780.pdf</a><span class="fsize">2.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgM0VQRkFQWktVdm5mSVhCdDVLbFRFQllKRTc4/view?usp=drivesdk&resourcekey=0-N3BiYjFtV_m408C48Fg5Zg" target="_blank" rel="noopener" class="fname">Kol Toda Iyar newsletter, .pdf</a><span class="fsize">2.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgUzZZTHdIYXlFblRqak1TVVpQeTlJU3MzU2pB/view?usp=drivesdk&resourcekey=0-3md6sd1Nc0tUEpZ2c--wxg" target="_blank" rel="noopener" class="fname">NISSAN 5778.pdf</a><span class="fsize">10.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1Ifvaj_O96SDIEgitbq4yi9oPSHLHF-AK/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">SIVAN.pdf</a><span class="fsize">3.9MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgNWxJeXExb2N4YmpQT2NWMnFySEVDc3NyN0o4/view?usp=drivesdk&resourcekey=0-vK9kESfyk5P0yqzSMoMx4w" target="_blank" rel="noopener" class="fname">Tammuz 5778 NEWSLETTER.pdf</a><span class="fsize">552KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1Lial6xIMfGnFYmGWw6rz6HoOpb-POe3r/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אב תשפ''א אנגלית.pdf</a><span class="fsize">2.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/14IAC0lunUry2pZltZNKF6jDDIB1TMqFa/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אנגלית אדר ב'.pdf</a><span class="fsize">5.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1rgg1NkpHPE2ilugMk5dejqp0IEGQS3Nl/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שבט אנגלית תשפב.pdf</a><span class="fsize">4.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/10FnZSjO9rLc6hNvxgB-42SfDqMEUdahJ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תשרי פב אנגלית.pdf</a><span class="fsize">1.1MB</span></li></ul></div>
+</section>
+<section class="topic-card" id="mizmor_music" style="border-left:4px solid #b45309;" data-tid="mizmor_music">
+  <div class="topic-header" style="background:#fef3c7;">
+    <div class="topic-title-row">
+      <span class="topic-emoji">🎵</span>
+      <div><h2 class="topic-name">מזמור לתודה – ניגונים ומוזיקה</h2><p class="topic-desc">ניגונים, הקלטות ומנגינות</p></div>
+      <span class="badge" style="background:#b45309;">68 קבצים</span>
+    </div>
+    <button class="toggle-btn" onclick="toggleTopic('mizmor_music')" style="color:#b45309;">▼ הצג קבצים</button>
+  </div>
+  <div class="file-list-wrap" id="list-mizmor_music" style="display:none;"><ul class="file-list"><li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1kofd5rEhaMpU3dVnQOYfz8p3Q2_xbsxe/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">01 מזמור לתודה הולחן ע''י משה הלוי וייס.mp3</a><span class="fsize">7.3MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1l3ffpAqiqmCNWQQvkR5Cc9gF2dnfBrZ2/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">01הקדמה.mp3</a><span class="fsize">2.4MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1K2SiioY7aqPCVvEtjCfDauIS6RZGOLpB/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">02_יהודה_רכניץ.mp3</a><span class="fsize">844KB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1ZIGB1zftPmOEEmKnDJMLpXotWnN0GnWQ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">03במנגינת_הייליגער_באשעפער.mp3</a><span class="fsize">3.6MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1yXathoudEX6cNM3F6rW_1XFh2SHc9fky/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">04_ניגונו_של_הצדיק_ניוונר_משגיח_נובהרדוק.mp3</a><span class="fsize">5.2MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1xZH5OXZMAyf95yccY5KOhHRNy0PZ7XAY/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">05יואלי_קליין_ושיעה_גרוס_-_מזמור_לתודה05.mp3</a><span class="fsize">6.4MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1Hv0NfPmAvRsk8CAs93o2MW2QFOnWn4GQ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">06מזמור_לתודה_לכבוד_יובל_גייטסהד.mp3</a><span class="fsize">6.4MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1tEcjC2_qtusSXOnAL-PzU5KoIPb7s89E/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">07מזמור_לתודה_בלחן_חדש.mp3</a><span class="fsize">3.3MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1uaZc0ziu7SpzrqPotPGo9GkxDq0wgJWG/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">08מזמור_לתודה_-_צלילי_הנפש_-_הרב_חיים_שיר.mp3</a><span class="fsize">13.6MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1wUOGw1W0dU3o1L_u-lk6f0DoUMK4PLWM/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">09מזמור_לתודה__במנגנינת_צהלי_ורוני_בלי_שם_ה'09.mp3</a><span class="fsize">1.3MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1CWZrNj6qTvebbuOcLmf7WEd8tQAy1fIE/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">10הרב_יוסף_צבי_ברייער_ע.mp3</a><span class="fsize">7.2MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1u5S_qQGZzLX0x4dEHXaNcxGNGbAT6i1a/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">11מנשה_אלבז_בביכ_יהודי_קווקז.mp3</a><span class="fsize">2.3MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1Euk5AZkKymaCIq2GK7JDrTeuVepvD7gZ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">12_מזמור_לתודה_הולחן_ע''י_משה_הלוי_וייס.mp3</a><span class="fsize">7.3MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1AvqQd1orA53pmhOtcK9jTIm1FzZmqqga/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">13מזמור_לתודה_במנגינת_כי_אנו_עמך.mp3</a><span class="fsize">1.8MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1xWFVeUQ_bnFOn2aQ8Nexe55hzo0ki5dc/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">14ביאור_מזמור_לתודה_הרב_טאוב.mp3</a><span class="fsize">1.4MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1A8rJVGNxogUnvHJDGBbDaxiQtknTrVhQ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">15במזמור_לתודה_כל_יסודות_היהדות_-_הרב_צבי_פריינד_-_קול_תודה_-_גברים_-_ה'_ניסן,_תשע'ח1201289.mp3</a><span class="fsize">4.4MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1fFoTrRGRfVSWpIJEJI2zK-UwqRvtRpmS/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">16הרב_שלמה_אסולין_ביאור_מזמור_לתודה.mp3</a><span class="fsize">46.4MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1MqNvEn47ubt38d6sfRrBscQcGKAmY8Dh/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">17הרב_סימון-מזמור_לתודה-עולם_של_הודיה_(אוסף_שיעורים).mp3</a><span class="fsize">21.0MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1GtPGy1d2akADvM86ARKDZK1ru8l9kKOY/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">18סיום.mp3</a><span class="fsize">4.0MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/118CU0UImRfM7tWnv8HQ44R0iFdGp-88T/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">66_-_מזמור_לתודה.mp3</a><span class="fsize">5.3MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1EcRrAN6zbQfCRUHK8hjEq4JGoRTRgb4-/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אהרן קליין מגיש מוטי רוזנפלד - 'מזמור לתודה'.mp4</a><span class="fsize">8.9MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1X_c11ttYTCFZMy6DTqguq5r80n7XYbCK/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הרב  יוסף צבי ברייער.mp3</a><span class="fsize">1.7MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1Xl34X0J_GHKa0mhs0Zzz4jbcX8HbzCK-/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הרב קלצקין מספר על כוחו של מזמור לתודה.mp3</a><span class="fsize">2.2MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/161P8kFxQtAENQrdzo2JpMq4L3dC9MK2R/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">יואלי קליין ושיעה גרוס - מזמור לתודה.mp3</a><span class="fsize">6.4MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1wAc92Z3KZOZ8aY5UTEmNPmyZl8mON0J6/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">לחן מיוחד של מזמור לתודה, לכבוד אירוע יובל המאה לק''ק גיטסהעד בשנת תשמ''ז, בו השתתף הגה''צ ר' יהודה זאב סג''ל ר''י מנטשסטר זצוק''ל, ובשמעו את השיר הזה התמלא בהתלהבות ובהתרגשות.mp3</a><span class="fsize">5.1MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/18UM0v4p6Px-Zg0v7ZLF2gn5G-AcAmeWt/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ליטאי.mp3</a><span class="fsize">333KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/17Izgv3St-7d1WaMyFk4cMFuue8XvIv9o/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לדוד - ילד.wav</a><span class="fsize">778KB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1i0emoiX0BFsyvPvPx_aGnIR8wVg2CyYt/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה  במנגנינת צהלי ורוני בלי שם ה'.mp3</a><span class="fsize">1.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1F8v3prv_bAVpAL0D99gNRTSRmoguYOUU/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה - מנגינה נא הקם מלכות דוד ושלמה.wav</a><span class="fsize">11.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1N2c7bL569BEV4-OvZISgLjCN-J38SD9U/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה - מנגינת אבינו מלכנו.wav</a><span class="fsize">12.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1k5LEnv7vlqNxsp0br2A8dVjBovYSEhMn/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה - מנגינת איש חסיד היה.wav</a><span class="fsize">1.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1fWIIkgZqL9ug8TkPCqJpTxGN7CPs2AdM/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה - מנגינת למען אחי ורעי.wav</a><span class="fsize">12.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1tTm3TMjYxnAJIbl1bTPRAJeX372o4ILF/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה - מנגינת מזמור לדוד,_וטהר לבנו.wav</a><span class="fsize">11.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/16laflcsHYycKV_YKm7XblxnuHrz-NCXG/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה - מנגינת עוד ישמע.wav</a><span class="fsize">12.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/150DcGFrKijcRiVgiNdgzIGsuNobrZhPQ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה - מנגינת קלי אתה ואודך.wav</a><span class="fsize">12.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1_1Vb9TsSuRu9NeYQfzZxnfofoObN1uTj/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה - מנגינת קלי אתה ואודך_ילד שר.wav</a><span class="fsize">12.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1UGq27-ha9U0yrCsO7TVcgtvMrOYwbBwb/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה - מנגינת קלי אתה ואודך_מנגינה רגועה.wav</a><span class="fsize">17.4MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1dwNwXm0Bp6djVOfDFEz87cncKtpKBE4n/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה - צלילי הנפש - הרב חיים שיר.mp3</a><span class="fsize">13.6MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/15FfJJnHGesVhCIjMSAmSnOUvzTRKtl_o/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה -יהודה שוקרון ואלעד כהן.mp3</a><span class="fsize">1.8MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1zbalnw1AOs4TL-YlLz717zT8w7f3fl37/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה I אברהם פריד I מתנה טובה Mizmor L'sooda I Avraham Fried I Shir I.mp3</a><span class="fsize">4.5MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1fksTYuEXc-k-wQ0RcWXupRuMMC_7biU0/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה בחתונה.mp3</a><span class="fsize">904KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1K1QJ478Rhc5Fd_6FoT4AGYJSRl-9cW4E/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה במנגינות טובים מאורות_כה אמר השם_אחת שאלתי_אין ערוך לך.wav</a><span class="fsize">15.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1AcVdG01eYkfYEmG4FETY3Eaw0XTa1yDL/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה במנגינת אילן אילן.ogg</a><span class="fsize">283KB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1-3a7Pyv7HYsapfkcBtRqJVh7WfPVB9rf/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה במנגינת אל אדון על כל המעשים.mp3</a><span class="fsize">2.9MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1PafhEi0r3cWtK0jduPANA1hjclpex9x9/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה במנגינת הייליגער באשעפער.mp3</a><span class="fsize">730KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1YXw2Cdy5ont3FjIXIjEg2gVDATTaGoyX/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה במנגינת יוונים נקבצו עלי.ogg</a><span class="fsize">1.7MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1uD5y_EwFJbZlsdDHHq_C5smrNKwHz23t/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה במנגינת כי אנו עמך.mp4</a><span class="fsize">80.0MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1jdkpCRGY_wZWJGt043KHQMeYrmXGPNZA/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה במנגינת צהלי ורוני הברה ספרדית.mp3</a><span class="fsize">1.3MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1VmL4wikOxyvPbTdphtGBKf_WeX8HKbDN/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה במנגינת צהלי ורוני עם שם ה'.mp3</a><span class="fsize">1.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1MRtdT4U-FDLFPM6Uzh5ugsHj_1BF7PDW/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה בניגון חבד.wav</a><span class="fsize">1011KB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1Qlb0Cg5NEMuxToI57XGFMvteIljYh_Y-/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה בניגון לכה דודי.mp3</a><span class="fsize">466KB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1b5RTz6ROEHLB6pevnSdAB3VQn5310H4W/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה בקצב שמח.mp3</a><span class="fsize">8.1MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1UABNeb2My21pJLpOqdNxk064J3wrNYOu/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה הרב סימון.mp3</a><span class="fsize">461KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1pz1Zl3fv-nZVtVKfJX7uJWLy7Z46kayU/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה הרב שלום ארוש.wma</a><span class="fsize">1.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1mI87QDVI9TsHGp_tcuVZwyIns6WUFjZU/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה מנגינת באש ובמים.ogg</a><span class="fsize">3.1MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1SOyDpKFdXDSW0F918CevwTd-cfrXjqyU/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה מנגינת מזמור לדוד.mp3</a><span class="fsize">345KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1yDJEMYMtU2PwWgpIKcwkM8vzJ2bKxmFi/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה נדב שיר - מצגת טבע.mp4</a><span class="fsize">489.4MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1leaFUDBOurEmP1hL_DdywI2PSz6fypSP/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה סעודת הודיה מאה שנה לקהלת גייטסהעד.mp3</a><span class="fsize">4.9MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1kJa4ZpPdWPdBo4MWCDAOypIsdTk1tCg-/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה ר שלמה יהודה רכניץ.mp3</a><span class="fsize">947KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1TSQjLckP-z1yqtUeabAhsUCoW-nHtdxP/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה, הריעו לה'.mp4</a><span class="fsize">5.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/16y2onp-ouyom8uYQvgbiJiOmE-7bgp6O/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה- כי הרבית.wav</a><span class="fsize">10.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgQVZzUEtHNFBzZVVwNHNvY3kxM2FpeWh2emIw/view?usp=drivesdk&resourcekey=0-lyfNLGf6lezkkvRKgDYwmQ" target="_blank" rel="noopener" class="fname">מזמור לתודה.wma</a><span class="fsize">3.4MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1H1d29rYB9wfhQrrHdiscKK09H9zWOY5M/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מנגינה ספרדית.mp3</a><span class="fsize">303KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1FR__uVjBPPTZKl1tHEHEBSfYRt79j6Ml/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מנגינה עתיקה.wav</a><span class="fsize">765KB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1xnoU331fEVEpkRBqSGnZ2m2suLa5WayP/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מנשה אלבז מזמור לתודה בבה''כ מורשת יהודי קווקז.mp3</a><span class="fsize">5.0MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1SR7_QUh6ssVqbRlxAhWvIWEIEEKxwHAC/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ניגונו של הצדיק ר ישראל ניוונר זצל משגיח נובהרדוק צרפת.mp3</a><span class="fsize">1.2MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1akF9S_Gk3GeKOaN3xrp0qh4sjQgF38O4/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שיר הכול לטובה.mp3</a><span class="fsize">11.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1lC7-uNuf78bQWvDgcRkdbkxJW5bG8yWg/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תלמוד תורה סנהדרין.wav</a><span class="fsize">1.4MB</span></li></ul></div>
+</section>
+<section class="topic-card" id="shirim" style="border-left:4px solid #dc2626;" data-tid="shirim">
+  <div class="topic-header" style="background:#fee2e2;">
+    <div class="topic-title-row">
+      <span class="topic-emoji">🎶</span>
+      <div><h2 class="topic-name">שירי הודיה – טוב להודות</h2><p class="topic-desc">קליפים ושירי וידאו</p></div>
+      <span class="badge" style="background:#dc2626;">12 קבצים</span>
+    </div>
+    <button class="toggle-btn" onclick="toggleTopic('shirim')" style="color:#dc2626;">▼ הצג קבצים</button>
+  </div>
+  <div class="file-list-wrap" id="list-shirim" style="display:none;"><ul class="file-list"><li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1tr3MfA3Lr6VKJtPM9Aig8W_yQYWARbcx/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">It is good to thank god-טוב להודות לה`.mp4</a><span class="fsize">21.5MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1R7-GV0IEQGqv8wd81pRHLmkaLCZP47nr/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">Tov Le'Hodot - Rabbi Shlomo Carlebach - טוב להודות - רבי שלמה קרליבך.mp4</a><span class="fsize">2.6MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1zae-YtLPZJYsDOaUW0JcE820yL2iLk8v/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אברהם פריד - אני מאמין - טוב להודות -  avraham fried - ani maamin -tov leodot.mp4</a><span class="fsize">5.4MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1DlFQ5E-tSr8DRXehuzEA9SSBXQE81deR/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טוב להודות לה' - יונה קפלן.mp4</a><span class="fsize">2.4MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1O6LZqpu1LnpPHlxwlm2u34rE383A2F2w/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טוב להודות להשם - TOV LEHODOT LEHASHEM.mp4</a><span class="fsize">20.8MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1aBuHEUNiKpBZAN2H_FV6m9EHOG1NvIV8/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טוב להודות לשם.mp4</a><span class="fsize">27.6MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1mVQP_gs1tUWBonH80ELmWBzzU4ixMxj0/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טוב להודות.mp4</a><span class="fsize">6.1MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1oYm8A0_GvYfmTcwe8wBUzwktow84_Afu/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">יום השבת טוב להודות - יגל יעקב מנגינה ספרדית.mp4</a><span class="fsize">16.7MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1_t9DOPq3yDqsBBPLH2qnFrC0MViErafu/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ילד הפלא ארי רייך - טוב להודות. הקליפ הרשמי.עם מקהלת מלכות. נפלא!!!.mp4</a><span class="fsize">38.0MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1eIVaqSk8OJLISBGz8V0btqhqAF_rsVoC/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כמה טוב השם, תודה רבה לך השם יתברך.mp4</a><span class="fsize">4.2MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1F-IEVza3rasfFCL0qXlvFXzEgCKMuGnc/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">פרחי מיאמי - טוב להודות.mp4</a><span class="fsize">8.4MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1JRWAiiZVVcah_O-IrHpTMQkDUnqj_6Tv/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שיר טוב להודות לה'.mp4</a><span class="fsize">15.2MB</span></li></ul></div>
+</section>
+<section class="topic-card" id="sfarim" style="border-left:4px solid #db2777;" data-tid="sfarim">
+  <div class="topic-header" style="background:#fce7f3;">
+    <div class="topic-title-row">
+      <span class="topic-emoji">📚</span>
+      <div><h2 class="topic-name">ספרי הודיה ומאמרים</h2><p class="topic-desc">ספרים, מאמרים וחומר עיוני</p></div>
+      <span class="badge" style="background:#db2777;">134 קבצים</span>
+    </div>
+    <button class="toggle-btn" onclick="toggleTopic('sfarim')" style="color:#db2777;">▼ הצג קבצים</button>
+  </div>
+  <div class="file-list-wrap" id="list-sfarim" style="display:none;"><div class="subs-wrap"><div class="sub-section">
+  <div class="sub-header" style="background:#fce7f3;border-right:3px solid #db2777;">
+    <span class="sub-name">📗 ספרים שלמים</span>
+    <span class="sub-count" style="color:#db2777;">22 קבצים</span>
+  <span class="sub-toggle">▲</span></div>
+  <div class="sub-body"><ul class="file-list"><li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1s38hRG41dIf1vJzUwRhE-YrBYgbQGw5y/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">חוברת כל העלונים.pdf</a><span class="fsize">25.2MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/0B9ePH5TFKeqgSUVIWklYRHVSMEppY2JNaTUyR1dWY1A2QVRj/edit?usp=drivesdk&ouid=109877959675478301091&resourcekey=0-U6ILpxlLJA15TCktxbKJVg&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">חי בתודה קובץ וורד.doc</a><span class="fsize">1.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1LNVULy3DV6G4PBgkXr-Y7bKQD4MNTyWz/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טוב להודות חלק א - מעלת מזמור לתודה.pdf</a><span class="fsize">4.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1sBOsxL7bjM_nstvxhGX7tCqfTDpQlZCq/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טוב להודות חלק ב - ביאור מזמור לתודה א- יט.pdf</a><span class="fsize">5.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1KLB5zIjhjz9M7Qn1z_a6yRtRZHWKWKs7/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טוב להודות חלק ב למייל.pdf</a><span class="fsize">795KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1jwm1N9EBTIk_Q_p0tY7VNK7xrQDXnrvG/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טוב להודות חלק ג - ביאור מזמור לתודה כ - מ.pdf</a><span class="fsize">7.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1uu-Sd2RRkX_MwUQdmhqvB6mc27cxWs6X/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טוב להודות על מזמור לתודה המקוצר.pdf</a><span class="fsize">5.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1l1x6oD2SILIhTgY57YPg9EbYXtuc6wx8/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טוב להודות על מזמור לתודה.pdf</a><span class="fsize">4.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1UzuUDtkSQqUGz1-6sOL5JcjYzVcavFiB/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טוב_להודות_חלק_ב_למייל.pdf</a><span class="fsize">795KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1WuPwjtgJ6gpC3pDArGJwHYF7A0d2aKTx/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טוב_להודות_על_מזמור_לתודה.pdf</a><span class="fsize">4.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgTUQ1bFNfYW5qVGtSOFNTY1pIZ2FXSDk2VTBZ/view?usp=drivesdk&resourcekey=0-u5yriCNMDPw2ZXFueooJ7A" target="_blank" rel="noopener" class="fname">ספר התודה - הרב יוסף דוד סוקר.pdf</a><span class="fsize">9.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgQUQ1NWNGN1NKcTdlRmQzWWJTUnFlQjRNdWxn/view?usp=drivesdk&resourcekey=0-VbzxZUmzJY7C5AuSw1PCyw" target="_blank" rel="noopener" class="fname">ספר חי בתודה.pdf</a><span class="fsize">2.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1DxnPJOJAqFOqtX7a8Qz1TrZYKuSuQjHR/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ספר מקיף על ההודאה - טוב להודות הרב סמט.pdf</a><span class="fsize">47.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1z7RxWgadOBU8dRlQCm-d_XpaSkijQIkl/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ספר נאמני השם - אהבת השם, הרב לוגסי שליט''א-חלק א.pdf</a><span class="fsize">9.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1G4ONZ7sO2gYwfdPZpH6TXXAeLXB9avVO/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ספר נאמני השם ללא סימונים.pdf</a><span class="fsize">21.9MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgdW9TUWpqTkdMYkk/view?usp=drivesdk&resourcekey=0-YYOkLIjBakdpBHROofD6uw" target="_blank" rel="noopener" class="fname">עלי דרך חלק א.pdf</a><span class="fsize">26.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgbkZSeTNzVEl1aW8/view?usp=drivesdk&resourcekey=0-owtEFFRQDNXFxjStXTCuzA" target="_blank" rel="noopener" class="fname">עלי דרך חלק ב.pdf</a><span class="fsize">32.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgOVJ4N3lxRzZEN2RLZVZqbTBjdHFzOG9fSldz/view?usp=drivesdk&resourcekey=0-5czZgVXIA83U9ShGIty7-g" target="_blank" rel="noopener" class="fname">פירות הילולים.pdf</a><span class="fsize">7.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1MI0ovGcq9sURmF6mZ2itf_xSsPpBUpgv/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול אומרים הודו - הרב דניאל צוקרמן.pdf</a><span class="fsize">7.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqga3ZEX0djWlk1NXpXcVVfNHNKN1RvZVdjWVcw/view?usp=drivesdk&resourcekey=0-B-1svyruxHXdne_Kn0woxQ" target="_blank" rel="noopener" class="fname">שערי אהבה.pdf</a><span class="fsize">6.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1B9kIGUlAmLzS8ZK2QB3xEMtNzTewVpMy/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שערי הודיה - מדריך מעשי לחיי הודיה.pdf</a><span class="fsize">3.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgNTF0anhsZUl1eXQzMDJEVUxzY0xnMmYtUmpn/view?usp=drivesdk&resourcekey=0-OL4jnIp4p1-EHMfbPGjgOQ" target="_blank" rel="noopener" class="fname">תן תודה - הרב לוגסי.pdf</a><span class="fsize">5.0MB</span></li></ul></div>
+</div><div class="sub-section">
+  <div class="sub-header" style="background:#fce7f3;border-right:3px solid #db2777;">
+    <span class="sub-name">📝 מאמרים וחוברות</span>
+    <span class="sub-count" style="color:#db2777;">93 קבצים</span>
+  <span class="sub-toggle">▲</span></div>
+  <div class="sub-body"><ul class="file-list"><li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/122wTYYM75Eoq1TXPgr98pKSXvR5gLRc1/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">-- פסח.pdf</a><span class="fsize">2.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1kbpBt30ESeyT0h8kKPumvWFNaOG77SAG/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">--חג השבועות  תשע'''ד.pdf</a><span class="fsize">1.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/10pvUgskqdaukRu1llMaU0xMO4Z_MYkMp/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">04012200.PDF</a><span class="fsize">446KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1FhVToV_se_ZtkLF9jJirLMbtpb-R0mgz/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">121אלול (3).pdf</a><span class="fsize">4.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1X4mM7HF1DcdcU80edQrJxRHXuAojs51W/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ACFrOgCY7m6dy_MObRvDlnrfmKQg6Sbf8BjkF5hhsbzzcD4x-JiNADLkDDXk2Ii0LJ7Cbbe9F-4B-TdMy5wA1BCWYTSMaxw9MwVDPTDDzmiNPx5-mXweZqJ5_wthDtc=.pdf</a><span class="fsize">857KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1gaQdrm-_p1W_veR9dz84rAFS1e3nbpNS/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בליטה קטנה בצוואר  הלקח שבסיפור  הרב אשר קובלסקי.mp4</a><span class="fsize">59.2MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/197AMSUkdzCpAk5A0b5YnhaEkpcZ8fJ2W/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">בר מצוה.docx</a><span class="fsize">28KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1NNt07pM8b1hEzby_6D3C-seIw-onkbcg/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">ברית שלמה לוי סיון תשעט.docx</a><span class="fsize">33KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgT2V3SFprT1FNRlp3eU9DdVlvQ2Q5a085ZWs0/view?usp=drivesdk&resourcekey=0-V55772K0BxOReQqfVNyf9w" target="_blank" rel="noopener" class="fname">גם זו לטובה - הרב מרגולין.pdf</a><span class="fsize">1.5MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1Ikira9V-W9vFAKScaErx3B8BGFAFYd06/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">דברי תודה אינם מקבלים טומאה - הרב ארוש.doc</a><span class="fsize">30.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1cXeirE02Kkyqu8JLM2KA_HIe8FaEgkup/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">דוגמא לספר על טו בשבט.pdf</a><span class="fsize">6.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/16VuilIkDlccanxqv6lq_d2azDub_k0Xa/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">דפוס חשוון פ'ה.pdf</a><span class="fsize">4.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgcUt2S05waFNxTXJnVUdmSlUtZGM4NC1UMDRB/view?usp=drivesdk&resourcekey=0-sN1QYd170Wv-ti9tI-kxIw" target="_blank" rel="noopener" class="fname">הברכה על המרור-כיצד מודים על יסורים.pdf</a><span class="fsize">430KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1tKx1E46FrB75ij_N4fDf3xNICTCi__5W/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ההודיה במעגל השנה.pdf</a><span class="fsize">7.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1hr1yeeWEU3CH6b0x1v7DS7x85T7QD_HH/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ההשתתפות בשמחת חתן וכלה תשע''ג.pdf</a><span class="fsize">523KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1OBitQZbn6Cc8C2mJftDr2nPWV0gE2Boy/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הישועה בזכות ההודיה - הלקח שבסיפור - הרב אשר קובלסקי.mp4</a><span class="fsize">86.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1fTqE11ml8bnaxZs5kustIjuVWY4I0I3f/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הכרת הטוב כהלכה - דניאל הימן.pdf</a><span class="fsize">26.9MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1t_J3Q4cSiQ5ls_P9dLV93r2ClekcL58yz56P_xQLIBc/edit?usp=drivesdk" target="_blank" rel="noopener" class="fname">הלל</a><span class="fsize">85KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1SHQbm8P8wL4yiXwH9nBnrY-dS8k2JB6p/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">המשמח חתן וכלה כאילו הקריב תודה - במשנת המהר''ל.pdf</a><span class="fsize">112KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/11gf4cblnXZVxaBfYYj-7MYNQaS7dtdbd/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הרב אברז'ל בנושא ההודיה.pdf</a><span class="fsize">5.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgcldjeVY5M2VUSVk3ZzJncURVMkk4M1FMcVEw/view?usp=drivesdk&resourcekey=0-3geDpsyld9rEDrHqg37oNw" target="_blank" rel="noopener" class="fname">השמחה ההודיה והשירה בתוספת הנהגות צדיקים.pdf</a><span class="fsize">861KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1qinAv3bXb0-n9qsNgovzDc1plIdwgqwA/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">חג הסוכות תשע''ו.pdf</a><span class="fsize">538KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1_FoCGMByrg5xZwTjUGRFbrI-lVkOtBtV/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">חומר בנושא ההודיה.pdf</a><span class="fsize">740KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1ICItCCYEbRAxobrd79-N12LeWCxnmpWC/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">חשוון למיל.pdf</a><span class="fsize">3.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1rp3bklthqcRNxxDv9NPqssCSEx2ojt1n/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">חשוון פ'ד.pdf</a><span class="fsize">9.4MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1e_E42K4kbAQ-jN0mQjHR4YI9jg5zO-eA/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">חתונה כצן תשעט.docx</a><span class="fsize">23KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/13k87D0yHhUWRfhYn9ZWBcG6-i9Ccl-qM/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טוב אב להגהה.pdf</a><span class="fsize">340KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1jAKpEu3JP3BN9zvAK4h--URu6k5p-sOK/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">טוב להודות2.pdf</a><span class="fsize">683KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1XXGuGJHp68GcfGzIxdRPA49D9Fs1XV7K/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">יא - תמצית.docx</a><span class="fsize">18KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1B_8VY6C0SBRAXq_WziSyIsUA6PeXuSFj/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">יב.docx</a><span class="fsize">28KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1GAYpabRjCF4raZzXFX2FPnn3DRnw8UJ7/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">יג - תמצית.docx</a><span class="fsize">18KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1Wzjb0eGXmrqzL922asPpemmCMxf3KdF_/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">יד.docx</a><span class="fsize">27KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1rixHZ35ewsmU-oC9MiUjK77T6bK1oGGr/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">יה תמצית.docx</a><span class="fsize">19KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1u3X6dX9LNA0hU4rzFjULohck_7WlKeT-/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">יו.docx</a><span class="fsize">29KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1C2Bupo62QDCPGwLlbr_FGLR4OSzPEQx_/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">יודוך רעיוני - הרב לוגסי.pdf</a><span class="fsize">1.6MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/17w8sbGLzAHX5BSNs_cpX8Wz8T0aDJvYZ/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">יז תמצית.docx</a><span class="fsize">18KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1pwzVReaeXpXLAaZ-e2tCHCQwejWBGgRh/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">יח.docx</a><span class="fsize">33KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1QGkk7g0YTym7eXxJMHKJamdcOxpiGWTD/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">יט תמצית.docx</a><span class="fsize">19KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1rOUEL9dZ_I_xRFkz9nagCEm_TAHsgzcG/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">כא תמצית.docx</a><span class="fsize">21KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1ST-w7VoBRHyrYcVcep7FEWnTSriM21Dm/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">כב.docx</a><span class="fsize">33KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1m7TYFy1G82GzDmhPjmb14yCIylKj9Qj0/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">כג תמצית.docx</a><span class="fsize">19KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1d82Fpeq8hG7ACO4kUFi5tdNbvCst62fd/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">כד.docx</a><span class="fsize">41KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1QfSIHvMCIHMcqfzySkbTMose4YbHuXhV/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">כה תמצית.docx</a><span class="fsize">20KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/18wTtstKhZLqcjLSBL3bGlJV3eUvVQqWU/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">כו.docx</a><span class="fsize">39KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1ypFLQQ-bNhcuQvuADdF3wUCbtW6KIJQ1/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">כז תמצית.docx</a><span class="fsize">23KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/13fiAC-z3E6Q0WX6bdAjnNzft6MuLIHMn/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">כח.docx</a><span class="fsize">27KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1Cph6Ht77KTbCiZ_O9qvLvIKZ5XuSbjzo/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">כט תמצית.docx</a><span class="fsize">19KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1Vp-munViwBoRf6x5jHpSc6XNNU7fBKL-/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כסליו פג copy.pdf</a><span class="fsize">1.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1JXC9KU-CiZ48Uqo9B1bi_czNuS_zWKPQ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כסליו פה.pdf</a><span class="fsize">5.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1q9SQikQ3mFGAYfJEuCjVrl2G7nns2h03/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כסליו תש''פ.pdf</a><span class="fsize">1.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1pfnBw7YVl_SNBdwzOsmlqL-3IqqkR5re/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כסליו תשפ"א.pdf</a><span class="fsize">1.7MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1myILPchUCuosNilSm6o4wRezuFrqfnwh/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">לא תמצית.docx</a><span class="fsize">19KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1_Z4ihRKy9JNnyPE0jh0Is9BPqnZVChoO/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">לב.docx</a><span class="fsize">33KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1gzP10xgx2TldDQq0EoxLLZ2UTh8n8WHF/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">לג תמצית.docx</a><span class="fsize">18KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1nWinCKmGjb9hb0d6JkXds8b2CK0bum1O/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">לד.docx</a><span class="fsize">37KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1_3xLiccwmJGDcfa-VgUlwWjyH8NHpDrp/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">לה תמצית.docx</a><span class="fsize">19KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1e7FSzTgNWehduqcvCexFJj2k9yITxZj6/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">לו.docx</a><span class="fsize">40KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1iRnwlYq7uCbo_DDDuUl_KBY7GKCDM18l/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">לז תמצית.docx</a><span class="fsize">20KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1tME_qkaK1xozagS-MtRnDF3FEgcr-IoA/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">לח.docx</a><span class="fsize">44KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1Rdq54trQo3QF598ECYIMbvuKYRACr7t8/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">לט תמצית.docx</a><span class="fsize">20KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1dFzq5AsqK5L72jwh7X8V7V3wdtsXyCv7/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מאמרי קול תודה לחודש כסלו.pdf</a><span class="fsize">1.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1FCJmzDqZSVR7Ur7NCoxY769xNAZS3BSQ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מדוע לא תקנו סעודות.pdf</a><span class="fsize">85KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1Ea2PNJFDmQJIXQcaiq8Wl1ZVOiv01hkN/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מועדי אהבה .pdf</a><span class="fsize">11.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1HoQOCZEkHTQjiroMdfUZ-UOjsPUWXiIK/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור_לתודה_המקצוע_שלי_-_הרב_אביגדור_מילר_.pdf</a><span class="fsize">308KB</span></li>
+<li class="frow"><span class="femoji">🌐</span><a href="https://drive.google.com/file/d/1Om5MK4_ofu8tuX2qJK7TAfPe42x6_COH/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מפתח לכל שיעורי הביטחון.html</a><span class="fsize">37KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgRkg1U1VtSktuOW54U0RBdERiS3ZGdXpoMjBj/view?usp=drivesdk&resourcekey=0-zgoB-noChEfJVEX-YOs-UQ" target="_blank" rel="noopener" class="fname">מפתח קול תודה.pdf</a><span class="fsize">1.6MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1GyXkHIa769CDost3em4aNkhFptvsj2YL/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">מקור החיוב להודות בשמחת חתן וכלה.docx</a><span class="fsize">15KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/17aaa96ZcQXd-hVHLBxqkrgoAd1M6uw_g/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מקור מהתורה להודות בשמחת חתן וכלה ועוד.pdf</a><span class="fsize">646KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1VCyLCwQj6qIa9fMVKtuN0DWLdNhGk6I7/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">נר למאה למייל.pdf</a><span class="fsize">5.9MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1h4zRjnvy376-wu9sIEIIxzrI0SRT2mqc/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">נשמת כל חי לדפוס.pdf</a><span class="fsize">5.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1-519gXgFYLkFiE2l9AtNr6EZ0eU4YQ-O/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">סגולת מזמור המאה.pdf</a><span class="fsize">592KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1q0aByLDpLnq5vNQDLLg0ZaTj_o94QeeN/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">סיוון פד.pdf</a><span class="fsize">3.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1AU8DuXIRHNo-Lo_oYalrz-T3QJnyAwpl/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">סיוון תשפא225.pdf</a><span class="fsize">1.5MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1EUkrrZJ-KsmVDTmtNI9_Qai71oBzSYMR/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">סיפור ושיר עם עופר שמיר לומר תודה - הרב עופר שמיר HD.mp4</a><span class="fsize">131.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1KfmztS9BRkbARUZU3RzFljCkCD1E51MT/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ספר חיי אדם קרבן תודה - עם מקורות וביאורים.pdf</a><span class="fsize">337KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1drIrk5tf9x_jb3NSK3n0De_V94Dejvlo/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">עבודה מקיפה על נושא ההודאה.docx</a><span class="fsize">77KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgOVRzUDdURkNkLXljazlBeVpIOUpvRVRkRnpr/view?usp=drivesdk&resourcekey=0-jYWJrh6RffWs5xkufEtGFw" target="_blank" rel="noopener" class="fname">עלון אב 1.pdf</a><span class="fsize">486KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1t6ShvnbS3MY7Hf3ElKVcMLPGJwi885_v/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">עלון תשרי פג.pdf</a><span class="fsize">1.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgODZ3SmJhajNva0dWbTFYcnEwcFp1akFMODNN/view?usp=drivesdk&resourcekey=0-HzLtWvjDoOu4M9HbIj_uRA" target="_blank" rel="noopener" class="fname">עלון תשרי.pdf</a><span class="fsize">550KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1kuMYttFF2fMHHqq0kzhAebcO4n0eXWHJ/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">פורים תשפ_ה.docx</a><span class="fsize">24KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/0B9ePH5TFKeqgRWRWdThRamhzS1U/edit?usp=drivesdk&ouid=109877959675478301091&resourcekey=0-TElKdjlMq1Nn3Iy9WGEFXQ&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">פסוקי הודיה.doc</a><span class="fsize">54KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1lvHikCxpdkSsZJNHn4k8Y8k29EQcU2UU/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">פרח ההודיה.docx</a><span class="fsize">595KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1PJHEOzT-wlzfIQbknnBR5H2XzAN0SOTN/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">צדיקים מודים להשם.pdf</a><span class="fsize">4.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1AKRBbO4xRRvyzEPmaMk0BtwYjpPvMI60/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה אדר א.pdf</a><span class="fsize">2.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1KUgiTOb5NVN21QK6ZitLaIfOC0v_uvaY/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה אדר ב MM.pdf</a><span class="fsize">889KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1Aymi1MpA9cttULLe-8CeOJVjHSp0qXe4/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קול תודה ניסן פג M.pdf</a><span class="fsize">879KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgTkdwYUJJOXZYblJRRkhlZFFXd2RYNXJ5OUxj/view?usp=drivesdk&resourcekey=0-gyIK4E_sQTTO68tn2jDwCw" target="_blank" rel="noopener" class="fname">קונטרס ואמונתך בלילות.pdf</a><span class="fsize">333KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1khC9pWR-qt5Ga8tBR50DSUZrhxS6qUvh/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קונטרס נועם מאור השבת תשע''ו.pdf</a><span class="fsize">1.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1SE7mXlwTxRk9_t2GSll20I3g5cWwMlKa/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">רשימת שירי הודיה.pdf</a><span class="fsize">2.4MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1gJSEiI_4_fxOViNhwKr8o__AKMuGB3-D/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">שבועות תשע_ג לנשים.docx</a><span class="fsize">34KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1YSyQuJgXzffTcZ_00fYPvyIkrLl7QYo_/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שיחת הרב הכסטר.pdf</a><span class="fsize">2.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1o0VvCATypnYN8Heg-jeaP8j4e9Z-3YPy/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שערי אהבה קבלת היסורים.pdf</a><span class="fsize">660KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1l2kiW_IOsXseiqUvY1k6nqcRyPZ0iC9G/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תפילות בנושא ההודיה.pdf</a><span class="fsize">508KB</span></li></ul></div>
+</div><div class="sub-section">
+  <div class="sub-header" style="background:#fce7f3;border-right:3px solid #db2777;">
+    <span class="sub-name">👩 לעולם אודך ונשים</span>
+    <span class="sub-count" style="color:#db2777;">4 קבצים</span>
+  <span class="sub-toggle">▲</span></div>
+  <div class="sub-body"><ul class="file-list"><li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1L9Y-9fhsDfyiJXgRXtaaa2s3vn3QPnJ6/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">THE GIFT OF LIFE  X.pdf</a><span class="fsize">5.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1w3oWAcMZwvAaZzrLVlJWtXBfjcfWEy_-/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ליהודים היתה אורה ושמחה.pdf</a><span class="fsize">1.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1Evu4LLfOcVObQAEnXqBXHFpOmforVGYM/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שכינה ביניהם להפצה  .pdf</a><span class="fsize">4.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1tBi9nm8e4aKMCopHFk3OjvKulZ-6Xa7o/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תוף מרים .pdf</a><span class="fsize">3.2MB</span></li></ul></div>
+</div><div class="sub-section">
+  <div class="sub-header" style="background:#fce7f3;border-right:3px solid #db2777;">
+    <span class="sub-name">📌 כיסים, ברכונים ועלונים להדפסה</span>
+    <span class="sub-count" style="color:#db2777;">15 קבצים</span>
+  <span class="sub-toggle">▲</span></div>
+  <div class="sub-body"><ul class="file-list"><li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgcUQ5M0p1d3RxWW8wV3dVWWZZWXJtaHF3U1pF/view?usp=drivesdk&resourcekey=0-glrMzbuGC6LgWt-iFml_qQ" target="_blank" rel="noopener" class="fname">1-11.pdf</a><span class="fsize">5.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1RPq0C-yt-kfmnHszWJeEcJ--o6sc131w/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">l718.pdf</a><span class="fsize">4.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/19JxjKZVYRVQD-Ig4bkwkQIiF17LpAaZO/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ברכת כהנים.pdf</a><span class="fsize">259KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgNEdmU04xYm1RQzVjb3FCTUo0SnJYSzBRYUhF/view?usp=drivesdk&resourcekey=0-vdJfqDJFbXTuYtCMNF2fig" target="_blank" rel="noopener" class="fname">כיצד מנקים לפסח בשמחה ובקלות.pdf</a><span class="fsize">3.3MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/16E6CaMww98CfUXwMipQm87TF08BjX_ID/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מגנט לנישואין מספר 2.pdf</a><span class="fsize">1.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1D_IX8ZXcItL_zjlgb6CvQ5DJl_w5MIRb/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מכתב מבורא עולם.pdf</a><span class="fsize">414KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1K-1FWTCfIqVQLvomdfRVnHnbR5HgJT1y/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מתנות של הודיה.pdf</a><span class="fsize">435KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1T7gh2fK4CPFN13H6X7Eq5tkgtOCzB3FQ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">נשמת.pdf</a><span class="fsize">572KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1bJRsioih89ea6drSP-APM-m5hsiJeWY4/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">סידור תפלה פסוקי דזמרא וק''ש.pdf</a><span class="fsize">504KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1kvk6Ac1dM0wsCGxKHVhBwqR0doiNUwB9/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">פנקס הפלא.pdf</a><span class="fsize">1.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1g6rsFgw2uttR5lkOprlevxV71gv8JFv4/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">קונטרס אבלות מרוממת A5.pdf</a><span class="fsize">1.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1SOjDZXwpndCe9zNCo7EcXXB58zT86KLK/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ראש חודש .pdf</a><span class="fsize">962KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1Iag4JYxzxBRzimbuEydNDxrvPmlbS6tH/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">רעיונות להודות 1בעמודחדש.pdf</a><span class="fsize">847KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/17ooKaFpgxWV0lEtasvrwPqw8Zkm_y5gd/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תפלה A5 .pdf</a><span class="fsize">1.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1jD9zT8AjicmuBndFrm-chjLYSMT7T6TC/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">‏‏ ‏‏אשרי יושבי ביתיך.pdf</a><span class="fsize">794KB</span></li></ul></div>
+</div></div></div>
+</section>
+<section class="topic-card" id="mizmor_iyun" style="border-left:4px solid #d97706;" data-tid="mizmor_iyun">
+  <div class="topic-header" style="background:#fffbeb;">
+    <div class="topic-title-row">
+      <span class="topic-emoji">📖</span>
+      <div><h2 class="topic-name">מזמור לתודה – עיון וסיפורים</h2><p class="topic-desc">מאמרים, סגולת י״ג וסיפורי ישועה</p></div>
+      <span class="badge" style="background:#d97706;">43 קבצים</span>
+    </div>
+    <button class="toggle-btn" onclick="toggleTopic('mizmor_iyun')" style="color:#d97706;">▼ הצג קבצים</button>
+  </div>
+  <div class="file-list-wrap" id="list-mizmor_iyun" style="display:none;"><ul class="file-list"><li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1yTaCWFglI27JJz5f_-Wx4driTMzRU_SV/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אבנים או דולרים - ישיבת אור דוד.pdf</a><span class="fsize">276KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1NxhL3k0rZO0Zy_7CWQBSWyc7RPiItY1D/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בזכות 40 יום מזמור לתודה.pdf</a><span class="fsize">999KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/13kJPiZtNA7xjQbMJ7eIX0F_6cUU1PiwR/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בזכות מנגינת מזמור לתודה.pdf</a><span class="fsize">155KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1HFbu49no1W-5dgI_LDwVzpXWt6cHjXO0/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בזכות סגולת י''ג.pdf</a><span class="fsize">1.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1I5yyNRIff6Q-sByPmTxj_TB6jIfVGiyb/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בזכות שירת מזמור לתודה.pdf</a><span class="fsize">720KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1DK3_Gh-yLHc2-XGCZ4HbTkxjOd9TbdL7/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בזכות_40_יום_מזמור_לתודה.pdf</a><span class="fsize">999KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1cJne03k7WwLNJRYdJ9LkhJtQSN7FdYLl/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בזכות_מנגינת_מזמור_לתודה.pdf</a><span class="fsize">155KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1zpi22k5QVKq5-WwaKXCLMR7HJ75xCHPu/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בזכות_שירת_מזמור_לתודה.pdf</a><span class="fsize">720KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1SL1HaVFvf5aRZ2mLd2OIK98mlwkWBCkS/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בשמים גילו כשיהודים שרים - נחשב כשירת הלווים.pdf</a><span class="fsize">353KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1LjPJAAaS1kDIz1hhUcb5RgtG3V0sbgVf/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">האצבעות שחזרו בזכות מזמור לתודה.pdf</a><span class="fsize">293KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1M7tghwDER-ZelTxs03ljLMn6ARgvxbMU/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הדירה שהגיעה בזכות מזמור לתודה.pdf</a><span class="fsize">973KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1qUvo1CdWMjX8JKu3HCsc_B2gF1FtxU61/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הדירה_שהגיעה_בזכות_מזמור_לתודה.pdf</a><span class="fsize">973KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1Sg85oITzMhzm23JBwl8WMBJHSitlPcpa/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">המחלה שנעלמה בזכות ניגון מזמור לתודה.pdf</a><span class="fsize">482KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1GJtCX-ksguudgrHAsDqMNmapGaWTyaao/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הצלת נפשי בזכות ההודיה.pdf</a><span class="fsize">727KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1fiarxZy3MJWqw91Atsd3UMYELZpvw5WH/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">השגחה פרטית - אצבעות ההודיה.pdf</a><span class="fsize">1.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1G3xrsQF1M6uZ05raOO-4eWeGcIpdpoLc/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">חובת ההודאה - סיפור מהרב לוינשטין.pdf</a><span class="fsize">437KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1CKsHbDce8d-iNKrSEtI0MUYbCKid4GSm/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">חתן וכלה ומזמור לתודה.docx</a><span class="fsize">16KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1sBnjn1jFuspEjGpA4ak2IWP2_uHyfJmi/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כוחה של מנגינת מזמור לתודה.pdf</a><span class="fsize">715KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1kEPCxO7TIErVFL5D0LoqEUWyLodeV-oy/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כוחה_של_מנגינת_מזמור_לתודה.pdf</a><span class="fsize">715KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/12MY6Kd0ZdaHGeMrQvplwAAXqjYSFinrp/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כוחו של מזמור לתודה בניגון.pdf</a><span class="fsize">402KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/12M2rL5-9q1C-Ony-R06gCumZcmuCH2VO/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כריכה מזמור לתודה.pdf</a><span class="fsize">1.9MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1cMBHynAWOGJWvHg0Tvo4CXkWr6na2j9R/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מאמר על מזמור לתודה.pdf</a><span class="fsize">384KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1IU9cgfFg8tt-1TD0ruCqvgXmmFMcwHhn/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מגנט מזמור לתודה אינו בטל.pdf</a><span class="fsize">530KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1PAfIhldBW2vXyt__RgM7fCrTHtWWABMe/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מגנט מזמור לתודה מחלוק לפי הפירוש.pdf</a><span class="fsize">306KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/15ShsCNZgEyTX9tUm_SEjIjuHfv4puBnh/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מגנט מזמור לתודה עם חמשה מעלות.pdf</a><span class="fsize">841KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1HmWfwYnraQu97LEwZCUV3nbSat33MYBO/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מגנט מזמור לתודה קלאסי.pdf</a><span class="fsize">588KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1pzAFi11UcIsOgSpb0qWkK2krYXL6sD-M/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מדוע ההודיה צריכה להאמר בשירה.pdf</a><span class="fsize">2.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/11mRlX3_leHrMq5PtA0e_uHk83Hp_3Wxo/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מדוע מזמור לתודה לא בטל לעתיד לבוא.pdf</a><span class="fsize">257KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1N_0bMfqUYyPMBKNxdKqnyL4iyOfxamfe/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה - מתוך הדיסק לילדים - מתנה ושמה תודה.mp4</a><span class="fsize">18.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1VH5C8aiUBB9z7OxU8g9dRa5R8pty76Uo/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה - פותח מאה שערים של שפע.pdf</a><span class="fsize">675KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/11MjlVeD-YGBor9QZE1TljX6oiLA8nU0h/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה כתחליף לקרבן תודה.pdf</a><span class="fsize">792KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1giB_X9K1i-OQ-a4x546abjeT49iC8xOY/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה לחתונה.pdf</a><span class="fsize">1014KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/176CJpltQNtM6jINsWZHkOZ7RizFZq61W/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה עם באורם של חכמי ישראל.pdf</a><span class="fsize">9.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1gspzyY-OY6yFIN5fGEXlduWxpTuFsSRT/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מתנת ההודאה.pdf</a><span class="fsize">981KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1LOvyxc65mbK9BubMfQO6Y5-xrrB85Ph7/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מתנת_ההודאה.pdf</a><span class="fsize">981KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/18gisZwqqr876glxMYFy2R__PKGV7W9IT/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">סגולת_מזמור_המאה - מזמור לתודה.pdf</a><span class="fsize">592KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1MOMV7CZkOSx_DuBa1puBn0ha-oc0JrbJ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">סיפור_מזמור_לתודה_-_מציל_חיים.pdf</a><span class="fsize">482KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1cxGFWY5Tre_Q6CIpVEX-1aIgC-Zwoxvv/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">עבדו את ה' שאתם בשמחה - בשירה ובהודיה.pdf</a><span class="fsize">651KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1GEoqJAbcupw-GowKAxql1cuqgnEtZ0iz/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">עיניים במתנה - ישיבת אור דוד.pdf</a><span class="fsize">275KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1NDQrUr9dA-hQtUtYU-WPBqsL8-lkhWOy/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">עיקר ההודיה לרצות שכולם יודו.pdf</a><span class="fsize">401KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1kYpHs0viCRPP4udQl83EMZZYWRQACk-d/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">קונטרס סגולת י''ג במזמור לתודה.docx</a><span class="fsize">30KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1PK9t_UZyGXsyxXBp_SGrMZouUbraY1iP/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שירה שמביאה דירה - ישיבת אור דוד.pdf</a><span class="fsize">297KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1_Gzbai6v9cg0sDlI0L7T9HA01mkxdbfk/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שירת מזמור לתודה היא טעימה ממעדני הגאולה.pdf</a><span class="fsize">1.9MB</span></li></ul></div>
+</section>
+<section class="topic-card" id="srtim" style="border-left:4px solid #4f46e5;" data-tid="srtim">
+  <div class="topic-header" style="background:#e0e7ff;">
+    <div class="topic-title-row">
+      <span class="topic-emoji">🎬</span>
+      <div><h2 class="topic-name">סרטי הודיה – הרצאות</h2><p class="topic-desc">שיעורים מרבנים ומחנכים</p></div>
+      <span class="badge" style="background:#4f46e5;">21 קבצים</span>
+    </div>
+    <button class="toggle-btn" onclick="toggleTopic('srtim')" style="color:#4f46e5;">▼ הצג קבצים</button>
+  </div>
+  <div class="file-list-wrap" id="list-srtim" style="display:none;"><ul class="file-list"><li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1dtle1xFai9daq4g2KtJzY0sX3vscXvNh/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">איך אני עושה הכרת תודה ולמה זה שינה לי את החיים.mp4</a><span class="fsize">30.6MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1cv_IGn1RNCEeOfMUF77-A9mbVcfwUvf6/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אמרו תודה רבה דר טל בן שחר.mp4</a><span class="fsize">18.4MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1RLS_6RVYhv0fY-2CuBagkMxghuInQQJi/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ה.אליהו שירי,המילה שמתכנתת את תת המודע-חלק אR.Eliyahu Shiri,Subconscious Word Program-Part A ✔.mp4</a><span class="fsize">54.1MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1m7Uzgh9DGTVmIporvNq5xwoV6cmzkOn6/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הגדיל ה' לעשות עימנו - מבצע עם כלביא.mp4</a><span class="fsize">17.1MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1Nan8dBRFFTX5WnlkCSfiHWGLArcx3Rhu/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הרב אשר דרוק - בר בי רב - יום שכולו תורה ציפורי בני ברק - ו' אייר תשע'ז.mp4</a><span class="fsize">159.8MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/12z0kbKq1XDJhgs9AToqDK8JLJ1o3I_5e/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הרב יוסף סוקר - חשיבות התודה - נפלא!.mp4</a><span class="fsize">74.8MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1Dx7Gb3Ms4ZJB6ZQYa6qFQhwpbXuy4lBt/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מדיטציה לרגיעה, העלאת התדר והכרת תודה.mp4</a><span class="fsize">24.0MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/13h52dSenXYTYj4GNQf_ATpvThO-dRZ-L/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מצמרר! כמה אנחנו צריכים להגיד תודה בכל יום! למה בכו החולה בן ה93 והרופא האיטלקי הרב רונן שאולוב.mp4</a><span class="fsize">22.7MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1ZmMaNPxAgUsB8mj9qmPd69h74pYO1jpy/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ניגון חדש מהרב שלום ארוש.mp4</a><span class="fsize">12.4MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1r5ivnOldiuNEo2HvwMjiLYGpFd4jcsU9/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">נשמת כל חי - הרב יוסף מוראדי באולפני הידברות (חלק 1).mp4</a><span class="fsize">259.1MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1DqJ83cNe-tAgcOg2YHT-XqhxTmVQoQ1m/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">נשמת כל חי - הרב יוסף מוראדי באולפני הידברות (חלק 2).mp4</a><span class="fsize">280.9MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1GaWoUolslDOI4MauW_wOciygGwLoOb59/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">נשמת כל חי - הרב יוסף מוראדי באולפני הידברות (חלק 3).mp4</a><span class="fsize">278.4MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1w_Lpqp4QRbF1Grec4SBd0UuZSJc_8M3P/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">נשמת כל חי - הרב יוסף מוראדי באולפני הידברות (חלק 4).mp4</a><span class="fsize">283.9MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1nP9BdV6kPaYo2A94yj2K3MnPwXgvcS05/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">נשמת מקוצר - עם תמונות יפות.mp4</a><span class="fsize">10.1MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1sCMxqLjB-3YNCPLweLoQgwnuToeSc89W/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">פסח תשעט לילה של תודה והודאה - הרב אשר דרוק HD.mp4</a><span class="fsize">150.3MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1jd23GheMQqytiET22XiR45kPf2y1HSmQ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">רגע של מוסר - כי בשמחה תצאו.mp4</a><span class="fsize">31.7MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1p_g43xwGzg3r1Yc8tUfG9w2ic0ub3Jy8/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">רוצים להיות מאושרים היו אסירי תודה! הרצאת TED מרגשת במיוחד.mp4</a><span class="fsize">65.5MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1qv0Rbn0kd_y_s5QB-Pa42ybC8wTSJUPu/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שירת נשמת כל חי הרב יוסף מוראדי.mp4</a><span class="fsize">89.7MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1LL9dWp9QGjFTdyWY4z3OFnDXNcrP7eXQ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שירת נשמת ללא תזמורת.mp4</a><span class="fsize">13.4MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1zaC6kv5HzcD4H3t9-II3KQabVV1Qkp98/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תודה לה' והכל יתגשם!  הרב שלום ארוש - תקצירים.mp4</a><span class="fsize">21.5MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1sYOJI8KNM4nGtxaXi0gI_qHQtzeSyABl/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תודה, הודאה וישועה  הרב שלום ארוש - קליפים קצרים.mp4</a><span class="fsize">26.7MB</span></li></ul></div>
+</section>
+<section class="topic-card" id="nisuin" style="border-left:4px solid #0f766e;" data-tid="nisuin">
+  <div class="topic-header" style="background:#ccfbf1;">
+    <div class="topic-title-row">
+      <span class="topic-emoji">💒</span>
+      <div><h2 class="topic-name">הקול החמישי – הודיה בנישואין</h2><p class="topic-desc">הודיה בשמחת חתן וכלה</p></div>
+      <span class="badge" style="background:#0f766e;">17 קבצים</span>
+    </div>
+    <button class="toggle-btn" onclick="toggleTopic('nisuin')" style="color:#0f766e;">▼ הצג קבצים</button>
+  </div>
+  <div class="file-list-wrap" id="list-nisuin" style="display:none;"><ul class="file-list"><li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1kxvPfHnqFJNW_xXBDStBgv6NZ0tfSBf3/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">בכי או שירה הבחירה בידינו.docx</a><span class="fsize">16KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/19GKgQIWhGzAeDrDcHChnL623ibLK6YGk/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">המנגינה של עוד ישמע.pdf</a><span class="fsize">312KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgak0wLUtOSEpwLTRJQ3dndHhxRzA2dWNobnFB/view?usp=drivesdk&resourcekey=0-B6pd_Gf24QPN7iaJv_OOiA" target="_blank" rel="noopener" class="fname">הקול החמישי - באור של הודיה לשבע ברכות.pdf</a><span class="fsize">14.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1P-OZG4KZf5xN2cn0519rkV9b2CywXddw/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הקול החמישי - מלא.pdf</a><span class="fsize">5.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1QQLZ9Rir2Zq61usS1RYF6Mss-yIDIOx_/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הקול החמישי באור של הודיה לשבע ברכות.pdf</a><span class="fsize">8.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1rFwCNyfUp_vG9anGjQeCd9W8sC2l3EwU/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הקול החמישי בחודש החמישי.pdf</a><span class="fsize">1.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/0B9ePH5TFKeqgXzMyVXRNN19RODFsdW9JSXczSnNDY2l1Y3ZZ/view?usp=drivesdk&resourcekey=0-XbbPfvE_Q5qhiTnZItSKSA" target="_blank" rel="noopener" class="fname">הקול החמישי דוגמה למייל.pdf</a><span class="fsize">5.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1eEvcFKjGxYHmDuz4Cp0l8p02V3KQRFBq/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הקול החמישי הרב טאוב  אספקלריא.pdf</a><span class="fsize">302KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1FCoeHDJ-L4gFQuQ6HkZYwX2NrnvlhiyA/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">יצירה בשביל להודות.docx</a><span class="fsize">27KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1xuo8En6Bd68sSJJD3VzTROdRdtKAq8YA/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כיצד מרקדין לפני החתן להדפסה.pdf</a><span class="fsize">3.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/18ABrJ4YjYDMaLbEiL0CLQUKiMGk4HOxG/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כיצד מרקדין לפני החתן להדפסה2.pdf</a><span class="fsize">3.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1ut0hpIHekATphXxTCDSFKYDfpImm1Koz/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה בנישואין - מתוך הספר טוב להודות.pdf</a><span class="fsize">1.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1rRa3oH1AlNjbe1GxXzjHVBBcgE5egeEf/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה בנישואין פרק ד.pdf</a><span class="fsize">4.7MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1pA5rsphFgnWbxfS44BiSOzhyNKpyQrsS/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">סגולה נפלאה לזווג הגון במהרה.docx</a><span class="fsize">711KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1AqhNnO2kqTtarROopBjwAMj4mwKNV_5g/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">עותק של הקול החמישי - באור של הודיה לשבע ברכות.pdf</a><span class="fsize">14.1MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/19X-nCuAZEmkbRBOcKi1Yg5NajJkQMLLZ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">עותק של הקול החמישי דוגמה למייל.pdf</a><span class="fsize">5.8MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1wbrlPWL-ZwkNpnzR8EPVZJcaBtfkXjgN/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">רעיונות כיצד להכניס את הקול החמישי לחתונה.docx</a><span class="fsize">19KB</span></li></ul></div>
+</section>
+<section class="topic-card" id="asher_yatzar" style="border-left:4px solid #9333ea;" data-tid="asher_yatzar">
+  <div class="topic-header" style="background:#faf5ff;">
+    <div class="topic-title-row">
+      <span class="topic-emoji">🙏</span>
+      <div><h2 class="topic-name">אשר יצר</h2><p class="topic-desc">עלונים, שיעורים וסרטים על אשר יצר</p></div>
+      <span class="badge" style="background:#9333ea;">10 קבצים</span>
+    </div>
+    <button class="toggle-btn" onclick="toggleTopic('asher_yatzar')" style="color:#9333ea;">▼ הצג קבצים</button>
+  </div>
+  <div class="file-list-wrap" id="list-asher_yatzar" style="display:none;"><ul class="file-list"><li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1u0QL8iVMfoRcdqzXr1TtKPRhX26WyBBi/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אשר יצר ספרד.pdf</a><span class="fsize">1.8MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1t81OGy_PTd2JH6Ugw248g7xmCf5nWO6A/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אשר יצר עלון.pdf</a><span class="fsize">2.0MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1MZ2hOcFoU1RKfw5QzVlaa-MZbhpy1-S7/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ברכת אשר יצר - סרטון מחזק ביותר - עוזי אליהו.mp4</a><span class="fsize">403.3MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1QOZ5vdZ4Hrc3GiLdvhdtpxMG0Gv68wwg/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הרב אשר דרוק - הודייה לה' - באשר יצר.mp4</a><span class="fsize">18.9MB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1Ni9t1W-XvYmKtMqkFYcY7r1hgaeDHvVo/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הרב הבר -אשר יצר את האדם בחכמה - קול תודה - גברים - יט' טבת תשע'ז.mp3</a><span class="fsize">5.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1Lvs4M0lrgqwEd6p3H5n-vtajsga3azsQ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כיס אשכנז.pdf</a><span class="fsize">1.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1p94zaHAS8bIGFRxdw_jzQq1PirGqj5os/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כיס ספרד.pdf</a><span class="fsize">1.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1T_V-6vSxXNH4IO7axGu3mbHtBbY_t5Rs/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כיס עמ.pdf</a><span class="fsize">1.2MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1WvG0oxB8UFtWm-wtcBj1IMuQk2Z04k5K/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מחפש להיות בריא לא להזדקק לרופאים קבלו את הסגולה  - ברכת אשר יצר.mp4</a><span class="fsize">151.5MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1UoIfP8GoJb9VBnfgZWy4uAa_Dqx9jf3_/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">נס רפואי בזכות אשר יצר הרב שלמה לוינשטיין חולה כליות סכנת מות.mp4</a><span class="fsize">54.3MB</span></li></ul></div>
+</section>
+<section class="topic-card" id="chinuch" style="border-left:4px solid #059669;" data-tid="chinuch">
+  <div class="topic-header" style="background:#d1fae5;">
+    <div class="topic-title-row">
+      <span class="topic-emoji">🎓</span>
+      <div><h2 class="topic-name">חינוך, שיעורים וחנוכה</h2><p class="topic-desc">מדריכי הוראה, פעילויות לילדים וחנוכה</p></div>
+      <span class="badge" style="background:#059669;">78 קבצים</span>
+    </div>
+    <button class="toggle-btn" onclick="toggleTopic('chinuch')" style="color:#059669;">▼ הצג קבצים</button>
+  </div>
+  <div class="file-list-wrap" id="list-chinuch" style="display:none;"><div class="subs-wrap"><div class="sub-section">
+  <div class="sub-header" style="background:#d1fae5;border-right:3px solid #059669;">
+    <span class="sub-name">📋 שיעורים ומדריכים למורים</span>
+    <span class="sub-count" style="color:#059669;">23 קבצים</span>
+  <span class="sub-toggle">▲</span></div>
+  <div class="sub-body"><ul class="file-list"><li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1-8Qicza8HTzoA57zpVgnc7lpv3TsbBoW/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אמא תודה.mp4</a><span class="fsize">55.7MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1PDLQS5XQzaaMOk78U1d4tO9-Jc9gWoV4/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">בטחון והשתדלות בקיצור לנשים.docx</a><span class="fsize">28KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1zKUeFxMLTHxsXdX1-VpYTJazBMMmYg1J/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">גליון 243 - ואתחנן.pdf</a><span class="fsize">155KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1MRpl7WzR7wUdyX57Etkxi3FE04jDm7qA/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">גליון 251 - האזינו - סוכות.pdf</a><span class="fsize">715KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1tC7OQx8em1csLiEvtLzH5StYK46sEkVm/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">גליון 267 - בשלח.pdf</a><span class="fsize">720KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1l3Fg-agVGwuk3ONp4jTknqPBSK9VC4w2/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">גליון 276 - פסח.pdf</a><span class="fsize">713KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1AxcqH2eRVJeBqvgoBCKAywTq_0-hrQOA/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">גליון 345 - כי תבוא.pdf</a><span class="fsize">219KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/14-tPykrtS2JrMOxdyWohCb8wnLGQENOh/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">גליון 35 בשלח יתרו.pdf</a><span class="fsize">1.4MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1q3GHq6W6SdOQ6wGfYiOX04jqLay8L1_8/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">הכרת הטוב לנשים.docx</a><span class="fsize">32KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1uwxkiEbz2O01Fwx9-hVYfd6TI4p4Sm0G/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">חדר בריחה.mp4</a><span class="fsize">88.2MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1ZRYwUTZPaZO8-evcng73_B7xX-HyB-nw/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">חמשה שיעורים על עין טובה נפלא!.doc</a><span class="fsize">60KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1_8eIIJ--UYVd0p9ZjG5pYbBhnN34U8Gl/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">יחידה 10- שכבה צעירה - ושוב תודה.pdf</a><span class="fsize">805KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1_AH-ln-BG_yc2VauvkrpENK6xq_i0Jq0/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">ללמד את הילד לומר תודה - ולהתכוון לזה.doc</a><span class="fsize">42KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1HnSZJzGSrlJ5jvIUsAsEm4RSHT8zf5Py/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מדריך להודיה עלה לתרופה.pdf</a><span class="fsize">257KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1DQhT509AV3wIQUa8RkaBdYMIzh_sw9bz/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מדרשים.mp4</a><span class="fsize">89.4MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1oWKlkkYh9WBUv9m2LMK30pbaMADsuace/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מצגת ארמון.mp4</a><span class="fsize">96.1MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1UomPnmwLsjUgk5JKbYhLJ8YAf_BWj6iF/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">משימות הווה מעודכן.mp4</a><span class="fsize">92.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1dZtKM-lopOBBOC5kESEFZusu3-hEp8nU/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">סדרת שיעורים לילדים בנושא עין טובה.pdf</a><span class="fsize">2.1MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1_ZZXXPeMjFD1zqd2B1DDISJAPfdRP5BL/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">עבודה יפה על קרבן תודה.doc</a><span class="fsize">142KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1-WyEMO7rtaQ_r6ouq0KcSqkUgxyRv92h/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">ראיה חיובית - ליקוטי מוהר''ן רפב.doc</a><span class="fsize">16KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1Zwe5p3iJnd-GpX_wWwPCa1UOVq__seZZ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ריקוד סיום.mp4</a><span class="fsize">140.6MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1kPtRSbAwwwnIIOnEX0bNnZraELEXcf8h/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">תודה- חלק א.doc</a><span class="fsize">5KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1X1S37ES6Qv4SJ1Qt_hVKGiYYMhchqUPf/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">תודה- חלק ב.doc</a><span class="fsize">7KB</span></li></ul></div>
+</div><div class="sub-section">
+  <div class="sub-header" style="background:#d1fae5;border-right:3px solid #059669;">
+    <span class="sub-name">🕎 חנוכה</span>
+    <span class="sub-count" style="color:#059669;">11 קבצים</span>
+  <span class="sub-toggle">▲</span></div>
+  <div class="sub-body"><ul class="file-list"><li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1COVEPKJRnQHHgVCcW1uhI6EabpJNrEo7/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">--חנוכה.pdf</a><span class="fsize">404KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1u6MdbFS0fcDAklN4xftSGPmcomgyXusZ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אור חדש - מבוגרים וילדים לומדים יחדיו את אורות החנוכה.pdf</a><span class="fsize">18.6MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/16o2E35CXcOvDouqzB5FqMXq3xGyzSiLn/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אכילת הסופגנים בחנוכה כעין אכילת חלות תודה.pdf</a><span class="fsize">38KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/11N5VaGvTq-X0LP-LzZWw-zGazIJ0Lgzb/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">באור נפלאה בהודאה של חנוכה - מודה על הרע.pdf</a><span class="fsize">84KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1pOVB10U-BN4uLXIQn5YeH2YjhKZ_4yph/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">האתרוג של חנוכה - הודאה.pdf</a><span class="fsize">464KB</span></li>
+<li class="frow"><span class="femoji">🎵</span><a href="https://drive.google.com/file/d/1Cv2MdF1xOokQ78YwcVdih7a40Rel31LE/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">ההקלטה מזאת חנוכה בבעלזא כשכל הקהל שר את המזמור לתודה בליווי כינור.mp3</a><span class="fsize">8.2MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1VdMIABaqulOULtwg-p69g5gnKrSyUATE/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">חנוכה פותח את ידיך לבית הכנסת הספרדי.docx</a><span class="fsize">30KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1dWZcTN7Hi1xYN6u_GDn0I1CJvgoIOdI_/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">להודות ולהלל חנוכה תשע''ט.pdf</a><span class="fsize">1.4MB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/15WanAAL6-SKDUQ1XXZVpNeJ8b6-_JntP/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה, רננו צדיקים, נר ח' זאת חנוכה תשע''ז בחצר הקודש בעלזא.mp4</a><span class="fsize">10.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1RhiDhjfZ73iW9-OKIbpfqCbN4FvVIF6_/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">נושאי מאמרי חנוכה בגיליונות קול תודה.pdf</a><span class="fsize">518KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/17cfAELF9hQ33feZAu1M2aYhSxf2eJlTm/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">על מה להודות בחנוכה.pdf</a><span class="fsize">217KB</span></li></ul></div>
+</div><div class="sub-section">
+  <div class="sub-header" style="background:#d1fae5;border-right:3px solid #059669;">
+    <span class="sub-name">🎮 פעילויות ומשחקים לילדים</span>
+    <span class="sub-count" style="color:#059669;">5 קבצים</span>
+  <span class="sub-toggle">▲</span></div>
+  <div class="sub-body"><ul class="file-list"><li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1TH9KIRZY2oGs0F9obGjYI_s8h8CD-dZi/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">לעולם אודך 3.pdf</a><span class="fsize">22.4MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1cnjSeF8__hgOR0Eib_ANzpkrm8pTAarU/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">לעולם אודך פרח.pdf</a><span class="fsize">860KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1EYMFuDWS3tVaReArk40mg2CA_6lc1fob/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מוצרים לעולם אודך.pdf</a><span class="fsize">2.5MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1ShnJdHdQhjWsgE8iMrro8RpObrZ6eN0c/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">משחקי הודיה.rtf</a><span class="fsize">51KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/18y-9RMnef-G3rv9HI4AKDlTSF97RnZjf/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">עלון לעולם אודך 2.pdf</a><span class="fsize">445KB</span></li></ul></div>
+</div><div class="sub-section">
+  <div class="sub-header" style="background:#d1fae5;border-right:3px solid #059669;">
+    <span class="sub-name">🎓 תוכנית הודיה לבת מצווה</span>
+    <span class="sub-count" style="color:#059669;">3 קבצים</span>
+  <span class="sub-toggle">▲</span></div>
+  <div class="sub-body"><ul class="file-list"><li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1x4xCR4SoHf6VaUaB25zNZmQn7Eu8voI0/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אוצר ההודיה לבת מצווה.pdf</a><span class="fsize">6.5MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1PdqKQ7I-THFvoHqI-o-I9Tr7HnUcHVbf/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">דרשה סיום בית יעקב תשע_ה.docx</a><span class="fsize">25KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1yk_-ODl7XVjAtQeKq5n_bBdbiwKxcB4a/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">שבועות תשפד לבנות.docx</a><span class="fsize">30KB</span></li></ul></div>
+</div><div class="sub-section">
+  <div class="sub-header" style="background:#d1fae5;border-right:3px solid #059669;">
+    <span class="sub-name">✋ הפעלה והכרת הטוב</span>
+    <span class="sub-count" style="color:#059669;">9 קבצים</span>
+  <span class="sub-toggle">▲</span></div>
+  <div class="sub-body"><ul class="file-list"><li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1u7uNqdNAdQ433A0DrfnPrxI1ss3OWU4e/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הכרת הטוב   העומק באמירת תודה  הודאה בחסרון.mp4</a><span class="fsize">37.0MB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1j1u_PwVQgce4YQmvnRZ3RzpxoAxcWXl3/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">הכרת הטוב - הודיה לה'.doc</a><span class="fsize">10KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1J6g3hDO3s32KL_krqidJhtXw8IMDR_3q/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">הכרת הטוב - שיעור פתיחה.doc</a><span class="fsize">5KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/16Syj3G5Qapxl5yVPWW1ZamqfCHXe9l30/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">הכרת הטוב להורים.doc</a><span class="fsize">7KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1wi0IF1oPt22cwcwZXnvLNydsMCyaYGGw/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הכרת הטוב של הרב שך זצוקל - הרב חיים זאיד שליטא.mp4</a><span class="fsize">43.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1aK4Nzpdxxu7udMf5uuzbL-xgKB_b4iqL/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הפעלה להכרת הטוב.pdf</a><span class="fsize">252KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1dFUBXHKvkLBrQbxSvR-mjIAu2h7SkArs/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הרב יצחק פנגר - קצרים סיפור מרתק !! הכרת הטוב !!.mp4</a><span class="fsize">13.9MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1Gk4JRYD4iRufym9xqwrzPft5oPN5OOHg/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מאמר ארוך על הכרת הטוב הרב חגי ולוסקי.pdf</a><span class="fsize">187KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1nC2MhzmsxX_t538GkzKbEkzKcsSWrJzo/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">פעילות לילדים בנושא הכרת הטוב.pdf</a><span class="fsize">369KB</span></li></ul></div>
+</div><div class="sub-section">
+  <div class="sub-header" style="background:#d1fae5;border-right:3px solid #059669;">
+    <span class="sub-name">🙏 תכנית לימוד לברכות</span>
+    <span class="sub-count" style="color:#059669;">2 קבצים</span>
+  <span class="sub-toggle">▲</span></div>
+  <div class="sub-body"><ul class="file-list"><li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1p-tJ5LXUbD2ktSpzgxBXRdEJ8ZPoYrcc/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">התבוננות פנימית בברכות השחר.pdf</a><span class="fsize">221KB</span></li>
+<li class="frow"><span class="femoji">📝</span><a href="https://docs.google.com/document/d/1MU9M-HNdBtzMQ3Fu2WJDJuuk-YnRAXA1/edit?usp=drivesdk&ouid=109877959675478301091&rtpof=true&sd=true" target="_blank" rel="noopener" class="fname">תכנית לימוד בנושא ברכות למלמדים וגננות, כולל סיפור לילדים.rtf</a><span class="fsize">46KB</span></li></ul></div>
+</div><div class="sub-section">
+  <div class="sub-header" style="background:#d1fae5;border-right:3px solid #059669;">
+    <span class="sub-name">📖 סיפורי ישועה</span>
+    <span class="sub-count" style="color:#059669;">25 קבצים</span>
+  <span class="sub-toggle">▲</span></div>
+  <div class="sub-body"><ul class="file-list"><li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1yTaCWFglI27JJz5f_-Wx4driTMzRU_SV/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">אבנים או דולרים - ישיבת אור דוד.pdf</a><span class="fsize">276KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1NxhL3k0rZO0Zy_7CWQBSWyc7RPiItY1D/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בזכות 40 יום מזמור לתודה.pdf</a><span class="fsize">999KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/13kJPiZtNA7xjQbMJ7eIX0F_6cUU1PiwR/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בזכות מנגינת מזמור לתודה.pdf</a><span class="fsize">155KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1I5yyNRIff6Q-sByPmTxj_TB6jIfVGiyb/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בזכות שירת מזמור לתודה.pdf</a><span class="fsize">720KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1DK3_Gh-yLHc2-XGCZ4HbTkxjOd9TbdL7/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בזכות_40_יום_מזמור_לתודה.pdf</a><span class="fsize">999KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1cJne03k7WwLNJRYdJ9LkhJtQSN7FdYLl/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בזכות_מנגינת_מזמור_לתודה.pdf</a><span class="fsize">155KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1zpi22k5QVKq5-WwaKXCLMR7HJ75xCHPu/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בזכות_שירת_מזמור_לתודה.pdf</a><span class="fsize">720KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1gaQdrm-_p1W_veR9dz84rAFS1e3nbpNS/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">בליטה קטנה בצוואר  הלקח שבסיפור  הרב אשר קובלסקי.mp4</a><span class="fsize">59.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1LjPJAAaS1kDIz1hhUcb5RgtG3V0sbgVf/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">האצבעות שחזרו בזכות מזמור לתודה.pdf</a><span class="fsize">293KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1M7tghwDER-ZelTxs03ljLMn6ARgvxbMU/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הדירה שהגיעה בזכות מזמור לתודה.pdf</a><span class="fsize">973KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1qUvo1CdWMjX8JKu3HCsc_B2gF1FtxU61/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הדירה_שהגיעה_בזכות_מזמור_לתודה.pdf</a><span class="fsize">973KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1OBitQZbn6Cc8C2mJftDr2nPWV0gE2Boy/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הישועה בזכות ההודיה - הלקח שבסיפור - הרב אשר קובלסקי.mp4</a><span class="fsize">86.7MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1Sg85oITzMhzm23JBwl8WMBJHSitlPcpa/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">המחלה שנעלמה בזכות ניגון מזמור לתודה.pdf</a><span class="fsize">482KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1GJtCX-ksguudgrHAsDqMNmapGaWTyaao/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">הצלת נפשי בזכות ההודיה.pdf</a><span class="fsize">727KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1fiarxZy3MJWqw91Atsd3UMYELZpvw5WH/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">השגחה פרטית - אצבעות ההודיה.pdf</a><span class="fsize">1.0MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1G3xrsQF1M6uZ05raOO-4eWeGcIpdpoLc/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">חובת ההודאה - סיפור מהרב לוינשטין.pdf</a><span class="fsize">437KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1sBnjn1jFuspEjGpA4ak2IWP2_uHyfJmi/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כוחה של מנגינת מזמור לתודה.pdf</a><span class="fsize">715KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1kEPCxO7TIErVFL5D0LoqEUWyLodeV-oy/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">כוחה_של_מנגינת_מזמור_לתודה.pdf</a><span class="fsize">715KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1N_0bMfqUYyPMBKNxdKqnyL4iyOfxamfe/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מזמור לתודה - מתוך הדיסק לילדים - מתנה ושמה תודה.mp4</a><span class="fsize">18.5MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1gspzyY-OY6yFIN5fGEXlduWxpTuFsSRT/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">מתנת ההודאה.pdf</a><span class="fsize">981KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1EUkrrZJ-KsmVDTmtNI9_Qai71oBzSYMR/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">סיפור ושיר עם עופר שמיר לומר תודה - הרב עופר שמיר HD.mp4</a><span class="fsize">131.2MB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1MOMV7CZkOSx_DuBa1puBn0ha-oc0JrbJ/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">סיפור_מזמור_לתודה_-_מציל_חיים.pdf</a><span class="fsize">482KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1GEoqJAbcupw-GowKAxql1cuqgnEtZ0iz/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">עיניים במתנה - ישיבת אור דוד.pdf</a><span class="fsize">275KB</span></li>
+<li class="frow"><span class="femoji">📄</span><a href="https://drive.google.com/file/d/1PK9t_UZyGXsyxXBp_SGrMZouUbraY1iP/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">שירה שמביאה דירה - ישיבת אור דוד.pdf</a><span class="fsize">297KB</span></li>
+<li class="frow"><span class="femoji">🎬</span><a href="https://drive.google.com/file/d/1sYOJI8KNM4nGtxaXi0gI_qHQtzeSyABl/view?usp=drivesdk" target="_blank" rel="noopener" class="fname">תודה, הודאה וישועה  הרב שלום ארוש - קליפים קצרים.mp4</a><span class="fsize">26.7MB</span></li></ul></div>
+</div></div></div>
+</section>
+<div id="no-results">🔍 לא נמצאו תוצאות.</div>
+</main>
+<script>
+function toggleTopic(id){
+  const wrap=document.getElementById('list-'+id);
+  const btn=wrap.previousElementSibling.querySelector('.toggle-btn');
+  const open=wrap.style.display!=='none';
+  wrap.style.display=open?'none':'block';
+  btn.textContent=open?'▼ הצג קבצים':'▲ הסתר קבצים';
+}
+function goTo(id){
+  const wrap=document.getElementById('list-'+id);
+  const btn=wrap.previousElementSibling.querySelector('.toggle-btn');
+  if(wrap.style.display==='none'){wrap.style.display='block';btn.textContent='▲ הסתר קבצים';}
+  document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});
+}
+// Sub-section toggle
+document.addEventListener('click',function(e){
+  const hdr=e.target.closest('.sub-header');
+  if(!hdr)return;
+  const body=hdr.nextElementSibling;
+  const tog=hdr.querySelector('.sub-toggle');
+  if(!body)return;
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  if(tog)tog.textContent=open?'▼':'▲';
+});
+// Open all sub-sections by default
+document.querySelectorAll('.sub-body').forEach(b=>b.style.display='block');
+document.querySelectorAll('.sub-toggle').forEach(t=>t.textContent='▲');
+
+function liveSearch(q){
+  document.getElementById('clear-btn').style.display=q?'block':'none';
+  q=q.trim().toLowerCase();
+  let any=false;
+  document.querySelectorAll('.topic-card').forEach(card=>{
+    const tid=card.dataset.tid;
+    const tname=card.querySelector('.topic-name').textContent.toLowerCase();
+    const rows=card.querySelectorAll('.frow');
+    let tm=tname.includes(q),rc=0;
+    rows.forEach(row=>{
+      const txt=row.querySelector('.fname').textContent.toLowerCase();
+      const show=!q||tm||txt.includes(q);
+      row.style.display=show?'':'none';
+      if(show)rc++;
+    });
+    card.querySelectorAll('.sub-section').forEach(sub=>{
+      const vis=sub.querySelectorAll('.frow:not([style*="display: none"])').length;
+      sub.style.display=(!q||tm||vis>0)?'':'none';
+    });
+    const show=!q||tm||rc>0;
+    card.style.display=show?'':'none';
+    if(show){any=true;if(q){const w=document.getElementById('list-'+tid);const b=w.previousElementSibling.querySelector('.toggle-btn');w.style.display='block';b.textContent='▲ הסתר קבצים';}}
+  });
+  document.getElementById('no-results').style.display=any?'none':'block';
+}
+function clearSearch(){document.getElementById('search').value='';liveSearch('');}
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+      const a=document.getElementById('nav-'+e.target.id);
+      if(a)a.classList.add('active');
+    }
+  });
+},{threshold:0.15,rootMargin:'-100px 0px -60% 0px'});
+document.querySelectorAll('.topic-card').forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>

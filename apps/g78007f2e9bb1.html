@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>שבח תיאורי - Spinner Loader</title>
+  <style>
+    :root{
+      --bg:#07111f;
+      --panel:#0d1b2f;
+      --panel2:#10243f;
+      --text:#eef7ff;
+      --muted:#a9c0d8;
+      --cyan:#38d9ff;
+      --blue:#4f7cff;
+      --green:#5cffb1;
+      --yellow:#ffe66d;
+      --danger:#ff6b6b;
+      --line:rgba(255,255,255,.12);
+      --shadow:0 22px 70px rgba(0,0,0,.45);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(56,217,255,.25), transparent 32%),
+        radial-gradient(circle at 85% 18%, rgba(92,255,177,.14), transparent 28%),
+        radial-gradient(circle at 50% 95%, rgba(79,124,255,.24), transparent 35%),
+        var(--bg);
+      color:var(--text);
+      line-height:1.7;
+      overflow-x:hidden;
+    }
+    .wrap{max-width:1180px;margin:0 auto;padding:28px 18px 70px}
+    .hero{
+      position:relative;
+      min-height:430px;
+      border:1px solid var(--line);
+      border-radius:34px;
+      overflow:hidden;
+      background:linear-gradient(145deg, rgba(13,27,47,.96), rgba(7,17,31,.92));
+      box-shadow:var(--shadow);
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:20px;
+      padding:42px;
+    }
+    .hero:before{
+      content:"";
+      position:absolute;inset:-2px;
+      background:linear-gradient(90deg, transparent, rgba(56,217,255,.16), transparent);
+      animation:sweep 4.5s linear infinite;
+      pointer-events:none;
+    }
+    @keyframes sweep{0%{transform:translateX(-70%)}100%{transform:translateX(70%)}}
+    .hero-content{position:relative;z-index:2}
+    .tag{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:8px 14px;border-radius:999px;
+      background:rgba(56,217,255,.1);border:1px solid rgba(56,217,255,.35);
+      color:#c9f7ff;font-weight:700;margin-bottom:18px
+    }
+    h1{font-size:clamp(2.2rem,5vw,5rem);line-height:1.02;margin:0 0 18px;font-weight:900;letter-spacing:-1px}
+    .subtitle{font-size:1.25rem;color:var(--muted);max-width:690px;margin:0 0 26px}
+    .type-line{
+      display:inline-block;
+      color:var(--green);
+      font-weight:900;
+      font-size:1.25rem;
+      border-left:3px solid var(--green);
+      padding-left:8px;
+      white-space:nowrap;
+      overflow:hidden;
+      width:0;
+      animation:typing 3.2s steps(34,end) .4s forwards, cursor .7s infinite;
+    }
+    @keyframes typing{to{width:34ch}}
+    @keyframes cursor{50%{border-color:transparent}}
+    .loader-stage{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;min-height:320px}
+    .loader-card{
+      width:min(390px,100%);aspect-ratio:1/1;border-radius:50%;position:relative;
+      display:flex;align-items:center;justify-content:center;
+      background:radial-gradient(circle, rgba(16,36,63,.88) 0 44%, transparent 45%), conic-gradient(from 0deg, var(--cyan), var(--blue), var(--green), transparent 78%);
+      animation:spin 1.35s linear infinite;
+      filter:drop-shadow(0 0 35px rgba(56,217,255,.28));
+    }
+    .loader-card:after{content:"";position:absolute;inset:34px;border-radius:50%;background:var(--panel);border:1px solid var(--line)}
+    .loader-inner{position:absolute;z-index:3;text-align:center;animation:counterspin 1.35s linear infinite;color:var(--text)}
+    .loader-inner b{display:block;font-size:3.4rem;line-height:1}.loader-inner span{color:var(--muted);font-weight:700}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes counterspin{to{transform:rotate(-360deg)}}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:22px}
+    .card,.wide,.compare,.formula{
+      background:linear-gradient(180deg, rgba(16,36,63,.92), rgba(13,27,47,.94));
+      border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:0 15px 45px rgba(0,0,0,.23)
+    }
+    .card h3,.wide h2,.compare h2,.formula h2{margin:0 0 10px;color:#fff;font-size:1.35rem}
+    .num{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:rgba(56,217,255,.13);border:1px solid rgba(56,217,255,.4);color:var(--cyan);font-weight:900;margin-bottom:12px}
+    .wide{margin-top:18px}.wide ul{margin:0;padding:0 20px}.wide li{margin:10px 0}
+    .compare{margin-top:18px}.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .bad,.good{border-radius:20px;padding:18px;border:1px solid var(--line)}
+    .bad{background:rgba(255,107,107,.09)}.good{background:rgba(92,255,177,.09)}
+    .label{font-weight:900;margin-bottom:10px}.bad .label{color:var(--danger)}.good .label{color:var(--green)}
+    .row{padding:12px 0;border-top:1px dashed var(--line)}
+    .formula{margin-top:18px;text-align:center;background:linear-gradient(135deg, rgba(56,217,255,.14), rgba(92,255,177,.09), rgba(16,36,63,.96))}
+    .formula .big{font-size:clamp(1.8rem,4vw,3.2rem);font-weight:950;color:var(--yellow);line-height:1.15;margin:10px 0}
+    .pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:18px}.pill{padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid var(--line);color:#dff7ff;font-weight:700}
+    .examples{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:18px}
+    .quote{border-right:4px solid var(--cyan);padding:12px 16px;background:rgba(56,217,255,.07);border-radius:14px;margin:10px 0;color:#eaffff}
+    footer{margin-top:22px;text-align:center;color:var(--muted);font-weight:700}
+    @media(max-width:850px){.hero{grid-template-columns:1fr;padding:28px}.grid,.examples,.compare-grid{grid-template-columns:1fr}.loader-card{width:280px}.type-line{font-size:1rem;animation:typingMobile 3s steps(24,end) .4s forwards, cursor .7s infinite}@keyframes typingMobile{to{width:24ch}}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-content">
+        <div class="tag">⏳ Spinner Loader · שבח שמטעין מבפנים</div>
+        <h1>שבח תיאורי</h1>
+        <p class="subtitle">במקום לחלק לתלמיד תוויות כמו “מדהים”, “גאון” או “ילד טוב” — המורה מתאר בדיוק מה הוא רואה: מאמץ, תהליך, בחירה, התמדה ותרומה. כך הילד לא תלוי במחמאה; הוא לומד לראות את הכוחות שלו בעצמו.</p>
+        <div class="type-line">טוען אמון... מזהה מאמץ...</div>
+      </div>
+      <div class="loader-stage" aria-label="טבעת טעינה מסתובבת">
+        <div class="loader-card">
+          <div class="loader-inner"><b>⏳</b><span>Loading Growth</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card"><div class="num">1</div><h3>מתארים מעשה</h3><p>השבח אינו שופט את הילד אלא משקף פעולה: “סידרת את המחברת לפי שלבים”, “חזרת לבדוק את התשובה”, “שיתפת חבר חדש במשחק”.</p></article>
+      <article class="card"><div class="num">2</div><h3>מחזקים תהליך</h3><p>המיקוד עובר מהתוצאה הסופית אל הדרך: מאמץ, ריכוז, סבלנות, בחירה טובה וניסיון נוסף אחרי קושי.</p></article>
+      <article class="card"><div class="num">3</div><h3>מאפשרים הפנמה</h3><p>כשהמורה מתאר עובדות, התלמיד מסיק בעצמו: “אני מסוגל”, “אני מתמיד”, “יש בי אחריות”. זו מוטיבציה פנימית ולא ריצוי.</p></article>
+    </section>
+
+    <section class="compare">
+      <h2>לפני ואחרי: ממחמאה כללית לשבח תיאורי</h2>
+      <div class="compare-grid">
+        <div class="bad">
+          <div class="label">פחות מדויק</div>
+          <div class="row">“איזה ילד טוב היית היום.”</div>
+          <div class="row">“תשובה מדהימה!”</div>
+          <div class="row">“אתה פשוט גאון.”</div>
+          <div class="row">“איזה ציור מושלם.”</div>
+        </div>
+        <div class="good">
+          <div class="label">שבח תיאורי</div>
+          <div class="row">“במשך עשר דקות עבדת בשקט וחזרת למשימה גם כשהיה רעש סביבך.”</div>
+          <div class="row">“הסברת את הדרך, לא רק את התשובה. זה עזר לכיתה להבין.”</div>
+          <div class="row">“ניסית שתי דרכים שונות עד שמצאת פתרון.”</div>
+          <div class="row">“אני רואה שבחרת צבעים בעדינות והשקעת בפרטים הקטנים.”</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wide">
+      <h2>למה זה עובד?</h2>
+      <ul>
+        <li><b>מפחית תלות באישור חיצוני:</b> הילד לא מחכה שהמורה יחליט אם הוא “טוב”, אלא מקבל מידע ברור על מה עבד.</li>
+        <li><b>בונה דימוי עצמי יציב:</b> התלמיד מזהה בעצמו תכונות מתוך המעשים שלו: התמדה, אחריות, רגישות ויכולת.</li>
+        <li><b>נשמע אמין:</b> שבח ספציפי קשה לבטל. הוא לא נשמע כמו סיסמה, אלא כמו עדות לכך שהמורה באמת ראה.</li>
+        <li><b>מחזק התנהגות רצויה:</b> כשהמורה מתאר פעולה טובה, הוא מסמן לכיתה כולה מה כדאי לשחזר.</li>
+      </ul>
+    </section>
+
+    <section class="examples">
+      <article class="card"><h3>משפטים מוכנים למורה</h3><div class="quote">“ראיתי שלא ויתרת גם אחרי שטעית בפעם הראשונה.”</div><div class="quote">“הדרך שבה חיכית לתורך נתנה מקום גם לאחרים.”</div><div class="quote">“החזרת את עצמך למשימה בלי שאזכיר לך. זו אחריות.”</div><div class="quote">“הפעם כתבת את כל השלבים, ולכן קל להבין את החשיבה שלך.”</div></article>
+      <article class="card"><h3>טעויות שכדאי להימנע מהן</h3><ul><li>לא להפוך כל דבר ל“וואו” — עודף מחמאות מוזיל את המילים.</li><li>לא לתייג אופי: “אתה חכם”, “אתה עצלן”, “אתה ילד טוב”.</li><li>לא להשתמש בשבח כדי לשלוט: “כל הכבוד, אז עכשיו תעשה גם...”</li><li>לא להשוות בין תלמידים. השבח מתאר את התקדמות הילד ביחס לעצמו.</li></ul></article>
+    </section>
+
+    <section class="wide">
+      <h2>תרגיל קצר: להפוך מחמאה לתיאור</h2>
+      <p>לפני שאתה נותן מחמאה, עצור שנייה ושאל את עצמך: <b>מה בדיוק ראיתי?</b> איזו פעולה? איזה מאמץ? איזו בחירה? איזה שינוי קטן?</p>
+      <div class="pills"><span class="pill">ראיתי ש...</span><span class="pill">שמת לב ל...</span><span class="pill">בחרת ל...</span><span class="pill">התמדת למרות...</span><span class="pill">זה עזר ל...</span></div>
+    </section>
+
+    <section class="formula">
+      <h2>נוסחת הזהב</h2>
+      <div class="big">עובדה + מאמץ + השפעה</div>
+      <p>“ראיתי שכתבת גם כשזה היה קשה, וחזרת לבדוק את עצמך — זה עזר לך לסיים את המשימה בצורה מדויקת יותר.”</p>
+    </section>
+
+    <footer>שבח תיאורי הוא לא קישוט לשיעור — הוא דרך לומר לתלמיד: ראיתי אותך באמת.</footer>
+  </main>
+</body>
+</html>

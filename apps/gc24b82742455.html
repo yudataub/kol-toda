@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מאגר המקורות התורניים המקיף</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .search-box {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 3px solid #e9ecef;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.1em;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .category {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .category:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .category.tanach {
+            border-color: #ff6b6b;
+            background: linear-gradient(135deg, #fff 0%, #ffe5e5 100%);
+        }
+
+        .category.mishnah {
+            border-color: #4ecdc4;
+            background: linear-gradient(135deg, #fff 0%, #e5fffe 100%);
+        }
+
+        .category.gemara {
+            border-color: #ffd93d;
+            background: linear-gradient(135deg, #fff 0%, #fffbe5 100%);
+        }
+
+        .category.halacha {
+            border-color: #95e1d3;
+            background: linear-gradient(135deg, #fff 0%, #f0fdf9 100%);
+        }
+
+        .category.machshava {
+            border-color: #c7b8ea;
+            background: linear-gradient(135deg, #fff 0%, #f5f3ff 100%);
+        }
+
+        .category.chassidut {
+            border-color: #ff9ff3;
+            background: linear-gradient(135deg, #fff 0%, #fff0fe 100%);
+        }
+
+        .category.musar {
+            border-color: #feca57;
+            background: linear-gradient(135deg, #fff 0%, #fffaec 100%);
+        }
+
+        .category.responsa {
+            border-color: #48dbfb;
+            background: linear-gradient(135deg, #fff 0%, #e8f9fd 100%);
+        }
+
+        .category-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .category-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .category-count {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .sources-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .category.expanded .sources-list {
+            max-height: 2000px;
+        }
+
+        .source-item {
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border-right: 4px solid currentColor;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .source-item:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .source-link {
+            color: inherit;
+            text-decoration: none;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .source-link:hover {
+            text-decoration: underline;
+        }
+
+        .expand-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .expand-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .stats {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .categories {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 מאגר המקורות התורניים המקיף</h1>
+            <p class="subtitle">אוסף עצום של ספרי קודש ומקורות תורניים - מתנ"ך ועד לפוסקים בני זמננו</p>
+        </header>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 חפש מקור, ספר או נושא...">
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number">35+</div>
+                <div class="stat-label">מחברות NotebookLM</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">1000+</div>
+                <div class="stat-label">ספרי קודש</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">8</div>
+                <div class="stat-label">תחומי ידע</div>
+            </div>
+        </div>
+
+        <div class="categories" id="categoriesContainer">
+            <!-- תנ"ך ומפרשיו -->
+            <div class="category tanach" data-category="tanach">
+                <div class="category-icon">📖</div>
+                <div class="category-title">תנ"ך ומפרשיו</div>
+                <div class="category-count">8 מחברות</div>
+                <div class="sources-list">
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/575ef762-8f61-4595-8fd4-92ee91f091b2" class="source-link" target="_blank">באורי הראשונים על כל התנ"ך</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/1a70a17d-3539-4d45-b216-eb9a635a210d" class="source-link" target="_blank">אחרונים על כל הנ"ך</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/1a70a17d-3539-4d45-b216-eb9a635a210d" class="source-link" target="_blank">ראשונים ואחרונים על כל התורה</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/ac7a456b-dcfd-4ce3-b697-fbcaf45f4038" class="source-link" target="_blank">מדרשי חז"ל על התורה והנ"ך</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/06827315-f85b-4a93-90fb-d5649402e607" class="source-link" target="_blank">נ"ך ומפרשיו - מאגר תורת אמת</a>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleCategory(this)">הצג מקורות ↓</button>
+            </div>
+
+            <!-- משנה וגמרא -->
+            <div class="category mishnah" data-category="mishnah">
+                <div class="category-icon">📜</div>
+                <div class="category-title">משנה וגמרא</div>
+                <div class="category-count">6 מחברות</div>
+                <div class="sources-list">
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/c5e74da6-4e55-4a96-ae26-6e6c6837b564" class="source-link" target="_blank">חברותא על כל הש"ס</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/89e18ce2-ead9-4e8d-8765-7758bf7efa8a" class="source-link" target="_blank">מפרשי המשנה - ראשונים</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/4dd95124-e058-488d-beba-a58acdb9782e" class="source-link" target="_blank">באור האחרונים על ששה סדרי משנה</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/8bce08e6-7994-4392-b4ae-79bb27e67c66" class="source-link" target="_blank">מאגר מקיף על הש"ס</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/eafc0f3b-d5c2-4cd2-b145-062a59dcff3f" class="source-link" target="_blank">אוצר התורה - חלק א' על הש"ס</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/4637218b-7c3a-4edb-bb4c-e75df89a7233" class="source-link" target="_blank">שיעורים מראשי ישיבות מכל הארץ</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/6e364c83-9433-42f1-85c9-384f845dfd44" class="source-link" target="_blank">מאגר מפרשים למסכת אבות</a>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleCategory(this)">הצג מקורות ↓</button>
+            </div>
+
+            <!-- הלכה ופוסקים -->
+            <div class="category halacha" data-category="halacha">
+                <div class="category-icon">⚖️</div>
+                <div class="category-title">הלכה ופוסקים</div>
+                <div class="category-count">9 מחברות</div>
+                <div class="sources-list">
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/b866d5fd-551f-4584-9368-f426472555fa" class="source-link" target="_blank">שמירת שבת כהלכתה ואורחות שבת</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/ae4fafcb-f977-4938-af78-2bc43814a203" class="source-link" target="_blank">פסקי תשובות</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/bbc804bc-b60e-42ae-9af5-ced8df699071" class="source-link" target="_blank">מפרשי השו"ע על אורח חיים</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/ded4cba7-871a-42a4-b3cb-39e163c4d68b" class="source-link" target="_blank">מאגר עצום - שו"תים והלכה</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/6d80c57b-42f9-43ae-9b7a-cde3d6723c3f" class="source-link" target="_blank">ספרי הלכה ושולחן ערוך ומפרשיו</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/89509f82-52c5-46cd-9620-7dad93b216e1" class="source-link" target="_blank">משנה ברורה עם באור הלכה ובית יוסף</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/0a418074-2eee-4a2a-bac4-aaabf18fdc68" class="source-link" target="_blank">ספרי הרב אליעזר מלמד</a>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleCategory(this)">הצג מקורות ↓</button>
+            </div>
+
+            <!-- שו"ת -->
+            <div class="category responsa" data-category="responsa">
+                <div class="category-icon">💬</div>
+                <div class="category-title">שאלות ותשובות</div>
+                <div class="category-count">מאות ספרי שו"ת</div>
+                <div class="sources-list">
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/ded4cba7-871a-42a4-b3cb-39e163c4d68b" class="source-link" target="_blank">מאגר שו"תים עצום - כל הגדולים</a>
+                    </div>
+                    <div class="source-item">
+                        <span class="source-link">כולל: אגרות משה, יביע אומר, ציץ אליעזר, שבט הלוי, חזון עובדיה ועוד מאות ספרי שו"ת</span>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleCategory(this)">הצג מקורות ↓</button>
+            </div>
+
+            <!-- מחשבה ומוסר -->
+            <div class="category machshava" data-category="machshava">
+                <div class="category-icon">💭</div>
+                <div class="category-title">מחשבה ומוסר</div>
+                <div class="category-count">5 מחברות</div>
+                <div class="sources-list">
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/91b21e8c-d8ca-4489-8ccb-a4a0c47177f2" class="source-link" target="_blank">מחשבת ישראל ומוסר</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/13df4414-619e-4b4e-8b4e-4ba1335d0283" class="source-link" target="_blank">ספרי מוסר של בני דורנו</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/35347a7f-4976-4e47-aeda-0bd63515bbdd" class="source-link" target="_blank">ספרי יסוד במחשבת ישראל</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/f012a086-f7d2-4d84-a44d-558227857539" class="source-link" target="_blank">מענה השקפה ומוסר - הרב אביגדר מילר זצ"ל</a>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleCategory(this)">הצג מקורות ↓</button>
+            </div>
+
+            <!-- חסידות וקבלה -->
+            <div class="category chassidut" data-category="chassidut">
+                <div class="category-icon">✨</div>
+                <div class="category-title">חסידות וקבלה</div>
+                <div class="category-count">3 מחברות</div>
+                <div class="sources-list">
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/334543c2-6b08-49c5-93de-c50703fcec90" class="source-link" target="_blank">ספרי קבלה</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/ff394184-6afd-4a57-b539-2a2977cae29e" class="source-link" target="_blank">ספרי חסידות</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/e787e879-5c37-4f42-9540-1eb64c19c101" class="source-link" target="_blank">ליקוטי הלכות - ר' נתן מברסלב</a>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleCategory(this)">הצג מקורות ↓</button>
+            </div>
+
+            <!-- סיפורי צדיקים -->
+            <div class="category musar" data-category="stories">
+                <div class="category-icon">👴</div>
+                <div class="category-title">סיפורי גדולי ישראל</div>
+                <div class="category-count">2 מחברות</div>
+                <div class="sources-list">
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/d19e36e3-71f4-4ac9-8074-69fa6f1c9b4c" class="source-link" target="_blank">סיפורי תנאים ואמוראים</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/84a1505e-f420-45f7-9e21-a932b3e7b038" class="source-link" target="_blank">סיפורי ארץ ישראל ועוד</a>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleCategory(this)">הצג מקורות ↓</button>
+            </div>
+
+            <!-- מחברים ספציפיים -->
+            <div class="category tanach" data-category="authors">
+                <div class="category-icon">✍️</div>
+                <div class="category-title">ספרי מחברים ספציפיים</div>
+                <div class="category-count">7 מחברות</div>
+                <div class="sources-list">
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/a6f73d3e-1495-4921-b47d-b565c096c848" class="source-link" target="_blank">ספרי ר' חיים קניבסקי זצ"ל</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/e2cd7167-d9a5-48c2-82c0-2694720bffec" class="source-link" target="_blank">ספרי הרב יואל שוורץ זצ"ל</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/4b77ab11-a70d-42fe-b9d3-4ffe6653bf1c" class="source-link" target="_blank">ספרי בעל שערי אהבה - הרב דוד שטיינהויז</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/000d0f94-1b0b-4afe-8da2-d686db3b5553" class="source-link" target="_blank">ספרי הרב אריאב</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/63dfc767-33d0-434a-92fd-9d07257cce9e" class="source-link" target="_blank">ספרי הרב גנוט</a>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleCategory(this)">הצג מקורות ↓</button>
+            </div>
+
+            <!-- נושאים מיוחדים -->
+            <div class="category gemara" data-category="special">
+                <div class="category-icon">🌟</div>
+                <div class="category-title">נושאים מיוחדים</div>
+                <div class="category-count">4 מחברות</div>
+                <div class="sources-list">
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/be03c923-c940-46bd-9cfe-a4b5c6ba7e51" class="source-link" target="_blank">ניסי ה' ועוזו במדינת ישראל</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/f09c43f2-8c14-4666-adc9-51e467ccd400" class="source-link" target="_blank">מבית מורשה - תלמוד תורה</a>
+                    </div>
+                    <div class="source-item">
+                        <a href="https://notebooklm.google.com/notebook/85cf0ddd-f90d-49b6-ae60-0eabedcac6bc" class="source-link" target="_blank">מאגר ספרים עצום - מבית אוצרייא</a>
+                    </div>
+                </div>
+                <button class="expand-btn" onclick="toggleCategory(this)">הצג מקורות ↓</button>
+            </div>
+        </div>
+
+        <footer>
+            <p>נבנה על ידי הרב יהודה טאוב | מאגר מקורות תורניים מקיף | © 2026</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">כל המקורות מבוססים על NotebookLM ומאפשרים חיפוש וחקירה מתקדמים</p>
+        </footer>
+    </div>
+
+    <script>
+        function toggleCategory(button) {
+            const category = button.parentElement;
+            const isExpanded = category.classList.contains('expanded');
+            
+            if (isExpanded) {
+                category.classList.remove('expanded');
+                button.textContent = 'הצג מקורות ↓';
+            } else {
+                category.classList.add('expanded');
+                button.textContent = 'הסתר מקורות ↑';
+            }
+        }
+
+        // חיפוש
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const categories = document.querySelectorAll('.category');
+            
+            categories.forEach(category => {
+                const title = category.querySelector('.category-title').textContent.toLowerCase();
+                const sources = Array.from(category.querySelectorAll('.source-link'))
+                    .map(s => s.textContent.toLowerCase())
+                    .join(' ');
+                
+                if (title.includes(searchTerm) || sources.includes(searchTerm)) {
+                    category.style.display = 'block';
+                    if (searchTerm.length > 0) {
+                        category.classList.add('expanded');
+                        category.querySelector('.expand-btn').textContent = 'הסתר מקורות ↑';
+                    }
+                } else {
+                    category.style.display = 'none';
+                }
+            });
+        });
+
+        // אנימציה בטעינת הדף
+        document.addEventListener('DOMContentLoaded', function() {
+            const categories = document.querySelectorAll('.category');
+            categories.forEach((cat, index) => {
+                setTimeout(() => {
+                    cat.style.opacity = '0';
+                    cat.style.transform = 'translateY(20px)';
+                    cat.style.transition = 'all 0.5s ease';
+                    
+                    setTimeout(() => {
+                        cat.style.opacity = '1';
+                        cat.style.transform = 'translateY(0)';
+                    }, 50);
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

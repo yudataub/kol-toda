@@ -1,0 +1,408 @@
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בין המצרים - כל השיעורים</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(160deg, #2b1a1a 0%, #5a2b2b 45%, #1f1414 100%);
+    color: #222;
+    padding: 30px 16px 60px;
+  }
+  .header {
+    max-width: 1000px;
+    margin: 0 auto 20px;
+    text-align: center;
+    color: #fff;
+    padding: 30px 20px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 18px;
+  }
+  .header h1 {
+    margin: 0 0 8px;
+    font-size: 2.1em;
+    background: linear-gradient(90deg, #ffb37a, #ffe0a8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .header p {
+    margin: 4px 0;
+    color: #f0d8d8;
+    font-size: 1em;
+  }
+  .header a.playall {
+    display: inline-block;
+    margin-top: 16px;
+    background: #ff4b4b;
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 1.05em;
+    box-shadow: 0 4px 14px rgba(255,75,75,0.4);
+  }
+  .savebar {
+    max-width: 1000px;
+    margin: 0 auto 24px;
+    text-align: center;
+  }
+  .savebar button {
+    background: #17284d;
+    color: #ffd76a;
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .savebar button:disabled { opacity: 0.7; cursor: default; }
+  .savebar .note { color: #e6c8c8; font-size: 0.78em; margin-top: 6px; }
+  .grid {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    transition: transform .15s ease;
+  }
+  .card:hover { transform: translateY(-4px); }
+  .thumb-wrap {
+    position: relative;
+    display: block;
+    aspect-ratio: 16/9;
+    background: #000;
+  }
+  .thumb-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .thumb-wrap .duration {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    font-size: 0.78em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    direction: ltr;
+  }
+  .thumb-wrap .playicon {
+    position: absolute;
+    top: 50%; right: 50%;
+    transform: translate(50%, -50%);
+    width: 54px; height: 54px;
+    background: rgba(255,0,0,0.85);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.9;
+  }
+  .thumb-wrap .playicon svg { width: 22px; height: 22px; fill: #fff; margin-right: -3px; }
+  .num {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: #5a2b2b;
+    color: #ffdca8;
+    font-weight: bold;
+    font-size: 0.85em;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .info {
+    padding: 12px 14px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .info h3 {
+    margin: 0;
+    font-size: 1em;
+    line-height: 1.4;
+    color: #4a2020;
+  }
+  .info a.watch {
+    color: #cf0000;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.92em;
+  }
+  .info a.watch:hover { text-decoration: underline; }
+
+  .shiur-box {
+    margin-top: auto;
+    border-top: 1px dashed #ddd;
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .shiur-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #4a2020;
+    color: #ffe0c0;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .shiur-btn.set { background: #2e7d32; color: #fff; }
+  .shiur-btn.empty { opacity: 0.55; }
+  .shiur-edit {
+    font-size: 0.78em;
+    color: #888;
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    align-self: flex-start;
+  }
+
+  .footer {
+    max-width: 1000px;
+    margin: 30px auto 0;
+    text-align: center;
+    color: #e6c8c8;
+    font-size: 0.85em;
+  }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>ימי בין המצרים</h1>
+    <p>הרב יהודה טאוב - לומדים לראות גאולה</p>
+    <p>9 שיעורים לימי בין המצרים</p>
+    <a class="playall" href="https://www.youtube.com/watch?v=AOsbVJyBEWI&list=PL-duJNLPKmlgsQ7evnBgnWSHslQjipj0O" target="_blank">▶ הפעלת כל הפלייליסט</a>
+  </div>
+
+  <div class="savebar">
+    <button id="connectBtn" onclick="connectFile()">🔗 חבר לקובץ הזה כדי לשמור קישורים ישירות בתוכו</button>
+    <button id="exportBtn" onclick="exportStaticVersion()">📤 ייצוא גרסה סטטית להעלאה לאתר</button>
+    <div class="note">"חבר לקובץ" - לעריכה נוחה אצלכם במחשב (Chrome/Edge בלבד). "ייצוא גרסה סטטית" - זה הקובץ שיש להעלות לאתר / Google Sites, כי הוא לא תלוי בג'אווה סקריפט ולכן יעבוד בכל מקום.</div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="footer">אם לא חיברתם קובץ, הקישורים נשמרים רק בדפדפן הזה (localStorage). לאחר חיבור קובץ, כל קישור שתוסיפו נכתב ישירות לתוך קובץ ה-HTML - כך שתוכלו להעתיק את הקובץ המעודכן לאתר שלכם.</div>
+
+<script id="dataScript">
+window.__SAVED_LINKS__ = {};
+</script>
+<script>
+const videos = [
+  {id:"AOsbVJyBEWI", title:"001-מזמור לאסף - חלק א, ימי בין המצרים", dur:"8:32"},
+  {id:"tE5CBRj7Uhw", title:"002-מזמור לאסף -חלק ב, ימי בין המצרים", dur:"9:02"},
+  {id:"9sSD3QIrtyA", title:"003-מזמור לאסף- חלק ג בזכות השיר והשבח נצא מהצרות והגלות, ימי בין המצרים", dur:"10:14"},
+  {id:"C4TnTZTq76w", title:"004-להודות ולשבח להקדוש ברוך הוא ללא הפסקה לעולם, ימי בין המצרים", dur:"10:48"},
+  {id:"EY4_jD_99eI", title:"005-הסגולה הגדולה לקבל באהבה את הגזירה, ימי בין המצרים", dur:"13:38"},
+  {id:"B61b8ersV9U", title:"006-768-ביאור עבודת הלב של אבלות החורבן, ימי בין המצרים", dur:"8:32"},
+  {id:"62rjgSFoawg", title:"007-1059-ההודיה הדרך לגאולה, ימי בין המצרים", dur:"8:58"},
+  {id:"plSi7yvrFS4", title:"008-1329-ההודיה במגילת איכה, ימי בין המצרים", dur:"9:06"},
+  {id:"VVrlyq3CJFY", title:"009-1585-ההודיה בתשעה באב, ימי בין המצרים", dur:"14:06"}
+];
+
+const STORAGE_KEY = 'beinHametzarimShiurLinks';
+
+function loadLinks() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch(e) { return {}; }
+}
+function saveLinksLocal(links) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+}
+
+const grid = document.getElementById('grid');
+const links = Object.assign(loadLinks(), window.__SAVED_LINKS__ || {});
+
+let fileHandle = null;
+
+async function connectFile() {
+  if (!window.showOpenFilePicker) {
+    alert('הדפדפן הזה לא תומך בשמירה ישירה לקובץ. אפשר להשתמש ב-Chrome או Edge, או להמשיך לעבוד עם שמירה בדפדפן בלבד.');
+    return;
+  }
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: 'HTML file', accept: { 'text/html': ['.html'] } }]
+    });
+    const perm = await handle.requestPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') {
+      alert('לא ניתנה הרשאת כתיבה לקובץ.');
+      return;
+    }
+    fileHandle = handle;
+    const btn = document.getElementById('connectBtn');
+    btn.textContent = '✅ מחובר לקובץ - קישורים נשמרים אוטומטית';
+    btn.disabled = true;
+  } catch (e) {
+    // user cancelled picker
+  }
+}
+
+async function saveToFile() {
+  if (!fileHandle) return;
+  const dataScriptEl = document.getElementById('dataScript');
+  dataScriptEl.textContent = `window.__SAVED_LINKS__ = ${JSON.stringify(links)};`;
+  const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  try {
+    const writable = await fileHandle.createWritable();
+    await writable.write(htmlContent);
+    await writable.close();
+  } catch (e) {
+    alert('שגיאה בשמירה לקובץ: ' + e.message);
+  }
+}
+
+videos.forEach((v, i) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <a class="thumb-wrap" href="https://www.youtube.com/watch?v=${v.id}&list=PL-duJNLPKmlgsQ7evnBgnWSHslQjipj0O&index=${i+1}" target="_blank">
+      <span class="num">${i+1}</span>
+      <img src="https://img.youtube.com/vi/${v.id}/hqdefault.jpg" alt="${v.title}">
+      <span class="duration">${v.dur}</span>
+      <span class="playicon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+    </a>
+    <div class="info">
+      <h3>${v.title}</h3>
+      <a class="watch" href="https://www.youtube.com/watch?v=${v.id}&list=PL-duJNLPKmlgsQ7evnBgnWSHslQjipj0O&index=${i+1}" target="_blank">צפייה בסרטון ←</a>
+      <div class="shiur-box" data-id="${v.id}"></div>
+    </div>
+  `;
+  grid.appendChild(card);
+  renderShiurBox(card.querySelector('.shiur-box'), v.id);
+});
+
+function renderShiurBox(box, id) {
+  const url = links[id];
+  box.innerHTML = '';
+  if (url) {
+    const a = document.createElement('a');
+    a.className = 'shiur-btn set';
+    a.href = url;
+    a.target = '_blank';
+    a.textContent = '📖 קרא את השיעור כתוב';
+    box.appendChild(a);
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'shiur-edit';
+    editBtn.textContent = 'עדכון הקישור';
+    editBtn.onclick = () => promptForLink(box, id);
+    box.appendChild(editBtn);
+  } else {
+    const btn = document.createElement('button');
+    btn.className = 'shiur-btn empty';
+    btn.textContent = '➕ הוסף קישור לשיעור כתוב';
+    btn.onclick = () => promptForLink(box, id);
+    box.appendChild(btn);
+  }
+}
+
+async function promptForLink(box, id) {
+  const current = links[id] || '';
+  const url = window.prompt('הדבק את הכתובת (URL) של השיעור הכתוב:', current);
+  if (url === null) return;
+  const trimmed = url.trim();
+  if (trimmed) {
+    links[id] = trimmed;
+  } else {
+    delete links[id];
+  }
+  saveLinksLocal(links);
+  renderShiurBox(box, id);
+  await saveToFile();
+}
+
+function exportStaticVersion() {
+  const cardsHtml = videos.map((v, i) => {
+    const url = links[v.id];
+    const shiurHtml = url
+      ? `<a class="shiur-btn set" href="${url}" target="_blank" rel="noopener">📖 קרא את השיעור כתוב</a>`
+      : `<span class="shiur-btn empty" style="cursor:default;">אין עדיין קישור לשיעור כתוב</span>`;
+    return `
+    <div class="card">
+      <a class="thumb-wrap" href="https://www.youtube.com/watch?v=${v.id}&list=PL-duJNLPKmlgsQ7evnBgnWSHslQjipj0O&index=${i+1}" target="_blank" rel="noopener">
+        <span class="num">${i+1}</span>
+        <img src="https://img.youtube.com/vi/${v.id}/hqdefault.jpg" alt="${v.title}">
+        <span class="duration">${v.dur}</span>
+        <span class="playicon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+      </a>
+      <div class="info">
+        <h3>${v.title}</h3>
+        <a class="watch" href="https://www.youtube.com/watch?v=${v.id}&list=PL-duJNLPKmlgsQ7evnBgnWSHslQjipj0O&index=${i+1}" target="_blank" rel="noopener">צפייה בסרטון ←</a>
+        <div class="shiur-box">${shiurHtml}</div>
+      </div>
+    </div>`;
+  }).join('\n');
+
+  const staticStyle = document.querySelector('style').textContent
+    .replace(/\.savebar[\s\S]*?\n  \}\n/g, '')
+    .replace(/\.savebar \.note[\s\S]*?\n  \}\n/g, '');
+
+  const staticHtml = `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בין המצרים - כל השיעורים</title>
+<style>${staticStyle}</style>
+</head>
+<body>
+  <div class="header">
+    <h1>ימי בין המצרים</h1>
+    <p>הרב יהודה טאוב - לומדים לראות גאולה</p>
+    <p>9 שיעורים לימי בין המצרים</p>
+    <a class="playall" href="https://www.youtube.com/watch?v=AOsbVJyBEWI&list=PL-duJNLPKmlgsQ7evnBgnWSHslQjipj0O" target="_blank" rel="noopener">▶ הפעלת כל הפלייליסט</a>
+  </div>
+  <div class="grid">${cardsHtml}
+  </div>
+</body>
+</html>`;
+
+  const blob = new Blob([staticHtml], { type: 'text/html' });
+  const url2 = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url2;
+  a.download = 'bein_hametzarim_static.html';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url2);
+}
+</script>
+
+</body>
+</html>

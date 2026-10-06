@@ -1,0 +1,856 @@
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>סדר את החכמים לפי הדורות</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&display=swap');
+
+:root {
+  --parchment:#f5e6c8; --parchment-dark:#e8d5a3; --parchment-deep:#d4b97a;
+  --ink:#2c1810; --ink-light:#5c3a1e;
+  --c1:#7b4ea0; --c2:#b05a1a;
+  --gold:#c9972b; --gold-light:#f0d080;
+  --success:#2d8a2d; --error:#9b1c1c;
+  --shadow:rgba(44,24,16,.25);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family:'Heebo',sans-serif; background:#1a0e05; min-height:100vh;
+  display:flex; flex-direction:column; align-items:center; padding:14px;
+  background-image:
+    radial-gradient(ellipse at 20% 10%,rgba(201,151,43,.15) 0%,transparent 50%),
+    radial-gradient(ellipse at 80% 90%,rgba(123,78,160,.12) 0%,transparent 50%);
+}
+
+.header { text-align:center; margin-bottom:14px; width:100%; max-width:980px; }
+.header h1 {
+  font-size:clamp(1.4rem,3.5vw,2.1rem); font-weight:900; color:var(--gold-light);
+  text-shadow:0 2px 8px rgba(0,0,0,.7),0 0 30px rgba(201,151,43,.4); margin-bottom:5px;
+}
+.header p { color:var(--parchment); font-size:.9rem; opacity:.8; }
+
+.status-bar { display:flex; gap:12px; justify-content:center; margin-bottom:14px; flex-wrap:wrap; }
+.stat-pill {
+  background:rgba(255,255,255,.08); border:1px solid var(--gold); border-radius:20px;
+  padding:5px 16px; color:var(--gold-light); font-weight:700; font-size:.88rem;
+  display:flex; align-items:center; gap:7px;
+}
+.stat-pill span { font-weight:300; opacity:.75; }
+
+.game-wrapper { display:flex; flex-direction:column; gap:18px; width:100%; max-width:980px; }
+
+.period-block { border-radius:16px; overflow:hidden; border:1px solid rgba(201,151,43,.3); }
+.period-title { display:flex; align-items:center; gap:10px; padding:13px 20px; font-weight:900; font-size:1rem; color:#fff; }
+.period-title.t-zugot  { background:linear-gradient(90deg,var(--c1),#4a1d70); }
+.period-title.t-tanaim { background:linear-gradient(90deg,var(--c2),#6a2800); }
+.period-title .pt-sub { font-weight:300; font-size:.78rem; opacity:.8; margin-top:2px; }
+
+.cards-pool {
+  padding:12px 14px; display:flex; flex-wrap:wrap; gap:9px; min-height:56px;
+  background:rgba(0,0,0,.28); border-top:1px solid rgba(255,255,255,.05);
+  transition:background .2s, box-shadow .2s;
+}
+.cards-pool.drag-over { background:rgba(201,151,43,.12); box-shadow:inset 0 0 18px rgba(201,151,43,.3); }
+.pool-empty-hint { color:rgba(201,151,43,.35); font-size:.8rem; font-weight:700; padding:14px; width:100%; text-align:center; }
+.cards-pool:not(:has(.sage-card)) .pool-empty-hint { display:block; }
+.cards-pool:has(.sage-card) .pool-empty-hint { display:none; }
+
+.sage-card {
+  background:var(--parchment); border-radius:9px; padding:8px 11px;
+  cursor:grab; user-select:none; border:2px solid var(--parchment-deep);
+  box-shadow:0 3px 9px var(--shadow);
+  transition:transform .15s,box-shadow .15s,opacity .15s,border-color .2s;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  width:112px; font-family:'Heebo',sans-serif; position:relative; touch-action:none;
+}
+.sage-card:hover { transform:translateY(-3px) scale(1.04); box-shadow:0 8px 20px var(--shadow); }
+.sage-card.dragging { opacity:.25; transform:scale(.95); }
+.sage-card.zugot-card  { border-color:var(--c1); }
+.sage-card.tanaim-card { border-color:var(--c2); }
+.card-icon { font-size:1.55rem; line-height:1; }
+.card-name { font-weight:700; font-size:.74rem; color:var(--ink); text-align:center; line-height:1.3; }
+.card-dot { width:7px;height:7px;border-radius:50%;position:absolute;top:5px;left:7px; }
+.zugot-card .card-dot { background:var(--c1); }
+.tanaim-card .card-dot { background:var(--c2); }
+
+/* return button on wrongly-placed card */
+.return-btn {
+  position:absolute; top:-7px; right:-7px;
+  width:20px; height:20px; border-radius:50%;
+  background:var(--error); color:#fff; border:2px solid var(--parchment);
+  font-size:.7rem; font-weight:900; cursor:pointer;
+  display:none; align-items:center; justify-content:center; line-height:1;
+  z-index:5; padding:0;
+}
+.sage-card.placed-wrong .return-btn { display:flex; }
+.sage-card.placed-wrong { border-color:var(--error) !important; }
+
+.gen-section { background:rgba(245,230,200,.04); border:1px solid rgba(201,151,43,.22); border-radius:14px; padding:14px; }
+.gen-label { text-align:center; color:var(--gold-light); font-weight:700; font-size:.95rem; margin-bottom:12px; }
+
+.gen-tabs { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
+.gen-tab {
+  min-width:48px; height:48px; border-radius:24px; padding:0 10px;
+  border:2px solid rgba(201,151,43,.4); background:rgba(255,255,255,.05);
+  color:var(--gold-light); font-weight:900; font-size:1rem; cursor:pointer;
+  transition:all .2s; display:flex; align-items:center; justify-content:center;
+  position:relative; gap:5px;
+}
+.gen-tab .tab-letter { font-size:1.1rem; }
+.gen-tab:hover { border-color:var(--gold); background:rgba(201,151,43,.15); transform:scale(1.06); }
+.gen-tab.active { border-color:var(--gold); background:rgba(201,151,43,.25); box-shadow:0 0 14px rgba(201,151,43,.4); }
+.gen-tab.zugot-tab.active  { border-color:var(--c1); background:rgba(123,78,160,.25); box-shadow:0 0 14px rgba(123,78,160,.4); }
+.gen-tab.tanaim-tab.active { border-color:var(--c2); background:rgba(176,90,26,.25); box-shadow:0 0 14px rgba(176,90,26,.4); }
+.gen-tab.complete { border-color:var(--success) !important; background:rgba(45,138,45,.3) !important; }
+.gen-tab .tab-count {
+  position:absolute; top:-5px; right:-5px; background:var(--gold); color:var(--ink);
+  width:18px; height:18px; border-radius:50%; font-size:.62rem; font-weight:900;
+  display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s;
+}
+.gen-tab .tab-count.visible { opacity:1; }
+.gen-tab.complete .tab-count { background:var(--success); color:#fff; }
+.gen-tab .tab-check {
+  position:absolute; top:-6px; left:-6px; width:18px; height:18px;
+  background:var(--success); color:#fff; border-radius:50%;
+  font-size:.7rem; display:none; align-items:center; justify-content:center;
+}
+.gen-tab.complete .tab-check { display:flex; }
+
+.drop-zone {
+  min-height:100px; border-radius:12px; padding:10px;
+  border:2px dashed rgba(201,151,43,.35); background:rgba(255,255,255,.03);
+  display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start;
+  transition:background .2s,border-color .2s,box-shadow .2s; position:relative;
+}
+.drop-zone.drag-over { background:rgba(201,151,43,.14); border-color:var(--gold); border-style:solid; box-shadow:0 0 16px rgba(201,151,43,.35); }
+.drop-zone.gen-complete { border-color:var(--success); border-style:solid; background:rgba(45,138,45,.08); }
+.drop-zone .empty-hint {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  color:rgba(201,151,43,.22); font-size:.85rem; font-weight:700; pointer-events:none; white-space:nowrap; text-align:center;
+}
+.drop-zone:has(.sage-card) .empty-hint { display:none; }
+
+/* INFO CARD (revealed after completing a generation) */
+.gen-story {
+  margin-top:12px; border-radius:12px; overflow:hidden;
+  max-height:0; opacity:0; transition:max-height .5s ease, opacity .4s ease;
+  border:1px solid transparent;
+}
+.gen-story.open {
+  max-height:600px; opacity:1;
+  border-color:var(--gold);
+  background:linear-gradient(145deg,rgba(201,151,43,.14),rgba(123,78,160,.1));
+}
+.gen-story-inner { padding:16px 18px; }
+.gen-story-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.gen-story-head .gs-badge { font-size:1.5rem; }
+.gen-story-head .gs-title { font-weight:900; font-size:1.05rem; color:var(--gold-light); }
+.gen-story-head .gs-years { font-size:.78rem; color:var(--parchment-dark); opacity:.8; margin-right:auto; }
+.gen-story-text { color:var(--parchment); font-size:.86rem; line-height:1.7; }
+.gen-story-text strong { color:var(--gold-light); }
+
+@keyframes correctPulse { 0%{box-shadow:0 0 0 0 rgba(45,200,45,.8)} 60%{box-shadow:0 0 0 16px rgba(45,200,45,0)} 100%{box-shadow:none} }
+.drop-zone.just-correct { animation:correctPulse .55s ease-out; }
+
+.float-badge {
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(.5);
+  background:linear-gradient(135deg,#1a6e1a,#2d9e2d); color:#fff;
+  font-size:1.5rem; font-weight:900; padding:16px 34px; border-radius:50px;
+  z-index:200; opacity:0; pointer-events:none; box-shadow:0 8px 40px rgba(0,200,0,.5);
+  font-family:'Heebo',sans-serif; white-space:nowrap;
+}
+@keyframes badgePop {
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.4)} 25%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}
+  55%{opacity:1;transform:translate(-50%,-50%) scale(.97)} 75%{opacity:1;transform:translate(-50%,-62%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-78%) scale(.9)}
+}
+.float-badge.popping { animation:badgePop 1.1s cubic-bezier(.22,1,.36,1) forwards; }
+
+/* Generation-complete celebration */
+.gen-celebrate {
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(.5);
+  background:linear-gradient(135deg,#7b4ea0,#c9972b); color:#fff; text-align:center;
+  font-weight:900; padding:22px 44px; border-radius:24px;
+  z-index:201; opacity:0; pointer-events:none;
+  box-shadow:0 10px 50px rgba(201,151,43,.6); font-family:'Heebo',sans-serif;
+}
+.gen-celebrate .gc-big { font-size:1.8rem; margin-bottom:4px; }
+.gen-celebrate .gc-small { font-size:1rem; font-weight:400; opacity:.95; }
+@keyframes celebratePop {
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-8deg)}
+  20%{opacity:1;transform:translate(-50%,-50%) scale(1.1) rotate(3deg)}
+  40%{transform:translate(-50%,-50%) scale(.97) rotate(-1deg)}
+  60%{transform:translate(-50%,-50%) scale(1) rotate(0)}
+  85%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-58%) scale(.95)}
+}
+.gen-celebrate.celebrating { animation:celebratePop 1.8s cubic-bezier(.22,1,.36,1) forwards; }
+
+.btn-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+.btn { padding:10px 24px; border-radius:30px; border:none; cursor:pointer; font-family:'Heebo',sans-serif; font-size:.9rem; font-weight:700; transition:transform .15s,box-shadow .15s; }
+.btn:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.35); }
+.btn:active { transform:scale(.97); }
+.btn-check  { background:linear-gradient(135deg,var(--gold),#e0a820); color:var(--ink); }
+.btn-hint   { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); color:var(--parchment); }
+.btn-reset  { background:rgba(155,28,28,.25); border:1px solid rgba(155,28,28,.5); color:#f5b0b0; }
+.btn-reveal { background:linear-gradient(135deg,var(--c1),var(--c2)); color:#fff; }
+
+.feedback-banner { text-align:center; padding:12px 20px; border-radius:12px; font-weight:700; font-size:.95rem; display:none; animation:fadeIn .3s; }
+.feedback-banner.show { display:block; }
+.feedback-banner.success { background:rgba(45,122,45,.2); border:1px solid var(--success); color:#7ddc7d; }
+.feedback-banner.partial { background:rgba(201,151,43,.15); border:1px solid var(--gold); color:var(--gold-light); }
+.feedback-banner.error   { background:rgba(155,28,28,.2); border:1px solid var(--error); color:#f5a0a0; }
+
+.win-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:100; align-items:center; justify-content:center; flex-direction:column; animation:fadeIn .4s; }
+.win-overlay.show { display:flex; }
+.win-box { background:linear-gradient(145deg,#2a1505,#1a0e05); border:2px solid var(--gold); border-radius:20px; padding:34px 40px; text-align:center; max-width:420px; width:90%; box-shadow:0 0 60px rgba(201,151,43,.3); }
+.win-box h2 { color:var(--gold-light); font-size:2rem; margin-bottom:10px; }
+.win-box p { color:var(--parchment); font-size:1rem; line-height:1.6; margin-bottom:20px; }
+.win-stars { font-size:2.5rem; letter-spacing:6px; margin-bottom:8px; }
+
+.hint-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:90; align-items:center; justify-content:center; }
+.hint-overlay.show { display:flex; }
+.hint-box { background:var(--parchment); border-radius:16px; padding:22px 26px; max-width:480px; width:92%; max-height:80vh; overflow-y:auto; color:var(--ink); direction:rtl; }
+.hint-box h3 { font-size:1.1rem; margin-bottom:10px; }
+.hint-period-title { font-weight:900; font-size:.88rem; color:var(--ink-light); margin:12px 0 5px; }
+.hint-gen { margin-bottom:9px; }
+.hint-gen-num { font-weight:900; color:var(--gold); font-size:.84rem; margin-bottom:3px; }
+.hint-gen-names { font-size:.79rem; color:var(--ink); line-height:1.6; padding-right:8px; }
+.close-btn { float:left; background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--ink-light); margin-bottom:6px; }
+
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+.shake { animation:shake .4s; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes popIn { 0%{transform:scale(.7);opacity:0} 70%{transform:scale(1.08)} 100%{transform:scale(1);opacity:1} }
+.pop-in { animation:popIn .28s ease forwards; }
+
+@media(max-width:580px){
+  .sage-card{width:96px;font-size:.7rem;}
+  .gen-tab{min-width:42px;height:42px;font-size:.9rem;}
+  .btn{padding:8px 15px;font-size:.82rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚖️ סדר את החכמים לפי הדורות</h1>
+  <p>גרור כל חכם לדור הנכון שלו — ובכל דור שתשלים, תיחשף סיפור התקופה!</p>
+</div>
+
+<div class="status-bar">
+  <div class="stat-pill">⏱️ <span>זמן:</span> <span id="timer">0:00</span></div>
+  <div class="stat-pill">✅ <span>הונחו נכון:</span> <span id="correct-count">0</span> / <span id="total-count">0</span></div>
+  <div class="stat-pill">🏆 <span>דורות שהושלמו:</span> <span id="gens-done">0</span> / 10</div>
+</div>
+
+<div class="game-wrapper">
+
+  <!-- ZUGOT POOL -->
+  <div class="period-block">
+    <div class="period-title t-zugot">
+      <span style="font-size:1.4rem">🕍</span>
+      <div>אנשי כנסת הגדולה והזוגות<div class="pt-sub">מקבלת התורה מהנביאים – עד החורבן (70 לספירה)</div></div>
+    </div>
+    <div class="cards-pool" id="pool-zugot"><div class="pool-empty-hint">— כל החכמים שובצו —</div></div>
+  </div>
+
+  <!-- ZUGOT GENERATIONS -->
+  <div class="gen-section">
+    <div class="gen-label">🕍 שיבצו כל חכם לדור הנכון – אנשי כנסת הגדולה והזוגות</div>
+    <div class="gen-tabs" id="tabs-zugot"></div>
+    <div id="zones-zugot"></div>
+    <div id="story-zugot"></div>
+  </div>
+
+  <!-- TANAIM POOL -->
+  <div class="period-block">
+    <div class="period-title t-tanaim">
+      <span style="font-size:1.4rem">📜</span>
+      <div>תקופת התנאים<div class="pt-sub">כ-40 לספירה – 220 לספירה (חתימת המשנה)</div></div>
+    </div>
+    <div class="cards-pool" id="pool-tanaim"><div class="pool-empty-hint">— כל החכמים שובצו —</div></div>
+  </div>
+
+  <!-- TANAIM GENERATIONS -->
+  <div class="gen-section">
+    <div class="gen-label">📜 שיבצו כל חכם לדור הנכון – תקופת התנאים</div>
+    <div class="gen-tabs" id="tabs-tanaim"></div>
+    <div id="zones-tanaim"></div>
+    <div id="story-tanaim"></div>
+  </div>
+
+  <div class="feedback-banner" id="feedback"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-check"  onclick="checkAnswers()">✅ בדוק תשובות</button>
+    <button class="btn btn-hint"   onclick="showHint()">💡 רמז</button>
+    <button class="btn btn-reveal" onclick="revealAnswers()">👁️ גלה הכל</button>
+    <button class="btn btn-reset"  onclick="resetGame()">🔄 התחל מחדש</button>
+  </div>
+</div>
+
+<div class="win-overlay" id="win-overlay">
+  <div class="win-box">
+    <div class="win-stars" id="win-stars">⭐⭐⭐</div>
+    <h2>🎉 כל הכבוד!</h2>
+    <p id="win-msg"></p>
+    <button class="btn btn-check" onclick="resetGame();document.getElementById('win-overlay').classList.remove('show')">🔄 שחק שוב</button>
+  </div>
+</div>
+
+<div class="hint-overlay" id="hint-overlay" onclick="if(event.target===this)closeHintBtn()">
+  <div class="hint-box">
+    <button class="close-btn" onclick="closeHintBtn()">✕</button>
+    <h3>💡 הסדר הנכון לפי דורות</h3>
+    <div id="hint-content"></div>
+  </div>
+</div>
+
+<div class="float-badge" id="float-badge">✅ מצוין!</div>
+<div class="gen-celebrate" id="gen-celebrate"><div class="gc-big">🎊 דור הושלם!</div><div class="gc-small"></div></div>
+
+<script>
+// ══════════════════════════════════════════════
+// DATA — חכמים, דורות וסיפורי תקופה
+// ══════════════════════════════════════════════
+
+// ZUGOT — 5 דורות (א-ה) לפי החלוקה החדשה
+const ZUGOT_GENS = {
+  1: { letter:'א', label:'אנשי כנסת הגדולה', years:'תחילת בית שני',
+       sages:['zg_1','zg_2'],
+       story:'<strong>אנשי כנסת הגדולה</strong> קיבלו את מסורת התורה מן הנביאים והעבירו אותה הלאה. הם תיקנו תקנות, ברכות ותפילות לעם ישראל. <strong>שמעון הצדיק</strong> היה מ"שיירי כנסת הגדולה" — האחרון שבהם. הוא חי בתחילת ימי הבית השני, ולפי המסורת אף יצא לקראת <strong>אלכסנדר מוקדון</strong> ומנע ממנו לפגוע בבית המקדש.' },
+  2: { letter:'ב', label:'הזוגות הראשונים', years:'כ-180–140 לפנה"ס',
+       sages:['zg_3','zg_4','zg_5','zg_6'],
+       story:'תקופת <strong>הזוגות</strong> החלה: בכל דור עמדו שני חכמים בראש העם — אחד <strong>נשיא</strong> והשני <strong>אב בית דין</strong>. הזוג הראשון: <strong>יוסי בן יועזר ויוסי בן יוחנן</strong>, שחיו בימי גזרות אנטיוכוס ונצחון המכבים. אחריהם הזוג השני: <strong>יהושע בן פרחיה וניתאי הארבלי</strong>.' },
+  3: { letter:'ג', label:'יהודה בן טבאי, שמעון בן שטח ובני דורם', years:'כ-100 לפנה"ס',
+       sages:['zg_7','zg_8','zg_9','zg_10','zg_11'],
+       story:'הזוג השלישי: <strong>יהודה בן טבאי ושמעון בן שטח</strong>. בדורם פעלו גם חסידים ועושי-מופתים: <strong>חוני המעגל</strong>, שהתפלל על הגשמים ועג עוגה; <strong>חנן הנחבא</strong>, נכדו של חוני, שהיה מתחבא מרוב צניעות; ו<strong>אבא חלקיה</strong>, שגם הוא נודע בתפילתו על הגשם.' },
+  4: { letter:'ד', label:'שמאי והלל', years:'כ-30 לפנה"ס',
+       sages:['zg_12','zg_13'],
+       story:'הזוג החמישי והאחרון של הזוגות: <strong>הלל הזקן ושמאי הזקן</strong>. <strong>הלל</strong> עלה מבבל והחל לנהוג בנשיאות מאה שנה לפני החורבן, ונודע בענוותנותו וסבלנותו. <strong>שמאי</strong> היה אב בית הדין. מחלוקותיהם — "בית הלל ובית שמאי" — מלוות אותנו עד היום.' },
+  5: { letter:'ה', label:'רבן גמליאל הזקן ושמואל הקטן', years:'כ-10–70 לספירה',
+       sages:['zg_14','zg_15'],
+       story:'<strong>רבן גמליאל הזקן</strong> — בנו של שמעון, נכדו של הלל — נהג בנשיאות במאה השנים שלפני החורבן. <strong>שמואל הקטן</strong> היה דור-ההמשך; יצאה עליו בת-קול שהוא ראוי לשכינה כהלל, אלא שאין דורו זכאי. הוא זה שתיקן ביבנה את "ברכת המינים" לבקשת רבן גמליאל.' },
+};
+
+// TANAIM — 5 דורות לפי ה-PDF
+const TANAIM_GENS = {
+  1: { letter:'1', label:'דור החורבן', years:'40–80 לספירה',
+       sages:['tn_1','tn_2','tn_3','tn_4','tn_5','tn_6'],
+       story:'הדור שחי סביב <strong>חורבן הבית (70 לספירה)</strong>. <strong>רבן יוחנן בן זכאי</strong> — הקטן שבתלמידי הלל — הציל את התורה כשייסד את המרכז ב<strong>יבנה</strong>. <strong>יונתן בן עוזיאל</strong> היה הגדול שבתלמידי הלל. בדור זה גם <strong>ר׳ צדוק</strong>, <strong>ר׳ חנינא בן דוסא</strong> (איש המופת והתפילה) ו<strong>שמואל הקטן</strong>.' },
+  2: { letter:'2', label:'דור יבנה', years:'80–110 לספירה',
+       sages:['tn_7','tn_8','tn_9','tn_10','tn_11','tn_12'],
+       story:'דור <strong>יבנה</strong> בהנהגת <strong>רבן גמליאל דיבנה</strong> כנשיא. תלמידיו המובהקים של ריב"ז עומדים במרכז: <strong>ר׳ אליעזר בן הורקנוס</strong> ("בור סוד שאינו מאבד טיפה") ו<strong>ר׳ יהושע בן חנניה</strong> — שביניהם לרבן גמליאל היו מחלוקות סוערות. בדור זה גם <strong>ר׳ טרפון</strong>, <strong>נחום איש גמזו</strong> ("גם זו לטובה") ו<strong>ר׳ אלעזר בן ערך</strong>.' },
+  3: { letter:'3', label:'דור יבנה המאוחר', years:'110–135 לספירה',
+       sages:['tn_13','tn_14','tn_15','tn_16'],
+       story:'דור הענקים שלקראת <strong>מרד בר כוכבא</strong>. <strong>ר׳ עקיבא</strong> — שהחל ללמוד תורה בגיל 40 והפך לגדול הדור, "דרש כל קוץ וקוץ"; <strong>ר׳ ישמעאל</strong>, בעל י"ג המידות; <strong>ר׳ אלעזר בן עזריה</strong>, שמונה לנשיא בגיל צעיר; ו<strong>ר׳ יוסי הגלילי</strong>.' },
+  4: { letter:'4', label:'דור אושא — תלמידי ר׳ עקיבא', years:'135–170 לספירה',
+       sages:['tn_17'],
+       story:'אחרי מרד בר כוכבא עבר המרכז ל<strong>אושא</strong> שבגליל. <strong>חמשת תלמידי ר׳ עקיבא</strong> הקימו מחדש את עולם התורה: <strong>ר׳ מאיר</strong>, <strong>ר׳ יהודה</strong>, <strong>ר׳ יוסי</strong>, <strong>ר׳ שמעון (בר יוחאי)</strong> ו<strong>ר׳ אלעזר בן שמוע</strong>. הם נשאו את רוב המשניות שבידינו.' },
+  5: { letter:'5', label:'רבי יהודה הנשיא', years:'170–220 לספירה',
+       sages:['tn_18'],
+       story:'<strong>רבי יהודה הנשיא</strong> — "רבי" — חותם את תקופת התנאים. הוא נולד ביום שמת ר׳ עקיבא, ובו התקיים "תורה וגדולה במקום אחד". מפעלו הגדול: <strong>חתימת המשנה (כ-220 לספירה)</strong> — ששמרה את התורה שבעל-פה לכל הדורות.' },
+};
+
+const ALL_SAGES = {
+  // ZUGOT
+  zg_1:  { name:'אנשי כנסת הגדולה', icon:'📜', period:'zugot', gen:1 },
+  zg_2:  { name:'שמעון הצדיק',      icon:'👑', period:'zugot', gen:1 },
+  zg_3:  { name:'יוסי בן יועזר',    icon:'🏺', period:'zugot', gen:2 },
+  zg_4:  { name:'יוסי בן יוחנן',    icon:'🌆', period:'zugot', gen:2 },
+  zg_5:  { name:'יהושע בן פרחיה',   icon:'🌾', period:'zugot', gen:2 },
+  zg_6:  { name:'ניתאי הארבלי',     icon:'⚔️', period:'zugot', gen:2 },
+  zg_7:  { name:'יהודה בן טבאי',    icon:'📏', period:'zugot', gen:3 },
+  zg_8:  { name:'שמעון בן שטח',     icon:'⚖️', period:'zugot', gen:3 },
+  zg_9:  { name:'חוני המעגל',        icon:'🌧️', period:'zugot', gen:3 },
+  zg_10: { name:'חנן הנחבא',         icon:'🙏', period:'zugot', gen:3 },
+  zg_11: { name:'אבא חלקיה',         icon:'🌿', period:'zugot', gen:3 },
+  zg_12: { name:'הלל הזקן',          icon:'📖', period:'zugot', gen:4 },
+  zg_13: { name:'שמאי הזקן',         icon:'🏗️', period:'zugot', gen:4 },
+  zg_14: { name:'רבן גמליאל הזקן',  icon:'🌟', period:'zugot', gen:5 },
+  zg_15: { name:'שמואל הקטן',        icon:'🕊️', period:'zugot', gen:5 },
+
+  // TANAIM
+  tn_1:  { name:'רבן יוחנן בן זכאי',  icon:'🕍', period:'tanaim', gen:1 },
+  tn_2:  { name:'יונתן בן עוזיאל',     icon:'🦅', period:'tanaim', gen:1 },
+  tn_3:  { name:'רבי צדוק',            icon:'✡️', period:'tanaim', gen:1 },
+  tn_4:  { name:'ר׳ חנינא בן דוסא',   icon:'🌙', period:'tanaim', gen:1 },
+  tn_5:  { name:'שמואל הקטן',          icon:'🕊️', period:'tanaim', gen:1 },
+  tn_6:  { name:'ר׳ אלעזר ב"ר צדוק',  icon:'📋', period:'tanaim', gen:1 },
+  tn_7:  { name:'רבן גמליאל דיבנה',   icon:'⚡', period:'tanaim', gen:2 },
+  tn_8:  { name:'ר׳ אליעזר בן הורקנוס',icon:'🔥',period:'tanaim', gen:2 },
+  tn_9:  { name:'ר׳ יהושע בן חנניה',  icon:'🎭', period:'tanaim', gen:2 },
+  tn_10: { name:'ר׳ טרפון',            icon:'🍇', period:'tanaim', gen:2 },
+  tn_11: { name:'נחום איש גמזו',       icon:'🌈', period:'tanaim', gen:2 },
+  tn_12: { name:'ר׳ אלעזר בן ערך',    icon:'💧', period:'tanaim', gen:2 },
+  tn_13: { name:'ר׳ עקיבא',            icon:'🌹', period:'tanaim', gen:3 },
+  tn_14: { name:'ר׳ ישמעאל',           icon:'⛰️', period:'tanaim', gen:3 },
+  tn_15: { name:'ר׳ אלעזר בן עזריה',  icon:'🏛️', period:'tanaim', gen:3 },
+  tn_16: { name:'ר׳ יוסי הגלילי',     icon:'🐟', period:'tanaim', gen:3 },
+  tn_17: { name:'חמשת תלמידי ר"ע',   icon:'👥', period:'tanaim', gen:4 },
+  tn_18: { name:'רבי יהודה הנשיא',    icon:'📋', period:'tanaim', gen:5 },
+};
+
+const GENS = { zugot:ZUGOT_GENS, tanaim:TANAIM_GENS };
+const TOTAL = Object.keys(ALL_SAGES).length;
+document.getElementById('total-count').textContent = TOTAL;
+
+const CORRECT_MSGS = ['✅ מצוין!','🌟 כן כן כן!','🎉 נכון!','🏆 יפהפה!','⭐ אלוף!','🔥 מושלם!','💡 בדיוק!'];
+
+let state = {
+  placed:{}, correct:new Set(), gensDone:new Set(),
+  attempts:0, startTime:null, timerInterval:null, revealed:false,
+  activeTab:{zugot:1,tanaim:1},
+};
+
+// ══════════════════════════════════════════════
+// AUDIO
+// ══════════════════════════════════════════════
+let audioCtx=null;
+function getACtx(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+function playCorrect(){
+  try{ const ctx=getACtx();
+    [[523.25,0],[783.99,.15]].forEach(([f,d])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.value=f; const t=ctx.currentTime+d;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.35,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.45);
+      o.start(t);o.stop(t+.5);
+    });}catch(e){}
+}
+// Special melody when a whole generation is completed
+function playGenComplete(){
+  try{ const ctx=getACtx();
+    // Ascending major arpeggio + flourish: C E G C E (celebratory)
+    const notes=[523.25,659.25,783.99,1046.5,1318.5,1046.5];
+    notes.forEach((f,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination);
+      o.type='triangle';o.frequency.value=f; const t=ctx.currentTime+i*.12;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.3,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+.55);
+      o.start(t);o.stop(t+.6);
+    });
+    // soft bell harmony
+    [[1046.5,.0],[1568,.24]].forEach(([f,d])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.value=f; const t=ctx.currentTime+d;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.12,t+.05);g.gain.exponentialRampToValueAtTime(.001,t+.9);
+      o.start(t);o.stop(t+1);
+    });
+  }catch(e){}
+}
+function playWin(){
+  try{ const ctx=getACtx();
+    [523.25,659.25,783.99,1046.5,1318.5,1568].forEach((f,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.value=f; const t=ctx.currentTime+i*.13;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.3,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+.5);
+      o.start(t);o.stop(t+.55);
+    });}catch(e){}
+}
+
+// ══════════════════════════════════════════════
+// BUILD
+// ══════════════════════════════════════════════
+function buildGame() {
+  // Build tabs + zones dynamically
+  ['zugot','tanaim'].forEach(period => {
+    const tabsEl  = document.getElementById(`tabs-${period}`);
+    const zonesEl = document.getElementById(`zones-${period}`);
+    tabsEl.innerHTML=''; zonesEl.innerHTML='';
+    const isZugot = period==='zugot';
+    const cls = isZugot ? 'zugot-tab' : 'tanaim-tab';
+
+    for (let g=1; g<=5; g++) {
+      const gd = GENS[period][g];
+      // tab
+      const tab=document.createElement('div');
+      tab.className=`gen-tab ${cls}` + (g===1?' active':'');
+      tab.setAttribute('data-period',period); tab.setAttribute('data-gen',g);
+      tab.onclick=()=>selectTab(period,g);
+      tab.innerHTML=`<span class="tab-check">✓</span><span class="tab-letter">${gd.letter}</span>
+                     <div class="tab-count" id="cnt-${period}-${g}">0</div>`;
+      tabsEl.appendChild(tab);
+
+      // zone
+      const dz=document.createElement('div');
+      dz.className='drop-zone'; dz.id=`drop-${period}-${g}`;
+      dz.setAttribute('data-period',period); dz.setAttribute('data-gen',g);
+      dz.style.display = g===1?'flex':'none';
+      dz.innerHTML=`<div class="empty-hint">גרור לכאן את חכמי הדור<br>"${gd.label}"</div>`;
+      dz.addEventListener('dragover',onDragOver);
+      dz.addEventListener('dragleave',onDragLeave);
+      dz.addEventListener('drop',onDrop);
+      zonesEl.appendChild(dz);
+    }
+  });
+
+  // Pools
+  ['zugot','tanaim'].forEach(period => {
+    const pool=document.getElementById(`pool-${period}`);
+    pool.querySelectorAll('.sage-card').forEach(c=>c.remove());
+    const ids=Object.keys(ALL_SAGES).filter(id=>ALL_SAGES[id].period===period);
+    ids.sort(()=>Math.random()-.5).forEach(id=>pool.appendChild(makeCard(id)));
+    // pool is a drop target too (to return cards)
+    pool.setAttribute('data-period',period);
+    pool.setAttribute('data-pool','1');
+    pool.addEventListener('dragover',onDragOver);
+    pool.addEventListener('dragleave',onDragLeave);
+    pool.addEventListener('drop',onDrop);
+  });
+
+  // stories containers
+  ['zugot','tanaim'].forEach(period=>{
+    document.getElementById(`story-${period}`).innerHTML='';
+  });
+
+  selectTab('zugot', state.activeTab.zugot);
+  selectTab('tanaim', state.activeTab.tanaim);
+  updateCountBadges(); updateUI(); hideFeedback();
+}
+
+function makeCard(id) {
+  const s=ALL_SAGES[id];
+  const el=document.createElement('div');
+  el.className=`sage-card ${s.period}-card pop-in`;
+  el.id=`card-${id}`; el.setAttribute('data-id',id); el.setAttribute('draggable','true');
+  el.innerHTML=`<button class="return-btn" onclick="returnToPool('${id}',event)" title="החזר">↩</button>
+                <div class="card-dot"></div><div class="card-icon">${s.icon}</div><div class="card-name">${s.name}</div>`;
+  el.addEventListener('dragstart',onDragStart);
+  el.addEventListener('dragend',onDragEnd);
+  el.addEventListener('touchstart',onTouchStart,{passive:false});
+  el.addEventListener('touchmove',onTouchMove,{passive:false});
+  el.addEventListener('touchend',onTouchEnd);
+  return el;
+}
+
+// ══════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════
+function selectTab(period,gen) {
+  state.activeTab[period]=gen;
+  document.querySelectorAll(`.gen-tab[data-period="${period}"]`).forEach(t=>{
+    t.classList.toggle('active', parseInt(t.getAttribute('data-gen'))===gen);
+  });
+  for(let g=1;g<=5;g++){
+    const dz=document.getElementById(`drop-${period}-${g}`);
+    if(dz) dz.style.display = g===gen?'flex':'none';
+  }
+  // Show story for this gen only if it's already completed
+  renderStory(period, gen);
+}
+
+// ══════════════════════════════════════════════
+// DRAG — desktop
+// ══════════════════════════════════════════════
+let draggingId=null;
+function onDragStart(e){ if(state.revealed)return; draggingId=e.currentTarget.getAttribute('data-id'); e.currentTarget.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; if(!state.startTime)startTimer(); }
+function onDragEnd(e){ e.currentTarget.classList.remove('dragging'); draggingId=null; }
+function onDragOver(e){ e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function onDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
+function onDrop(e){
+  e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+  if(!draggingId||state.revealed)return;
+  if(e.currentTarget.getAttribute('data-pool')) returnToPool(draggingId);
+  else placeCard(draggingId,e.currentTarget);
+}
+
+// ══════════════════════════════════════════════
+// DRAG — touch
+// ══════════════════════════════════════════════
+let touchCard=null,touchClone=null,tOffX=0,tOffY=0;
+function onTouchStart(e){
+  if(state.revealed)return;
+  touchCard=e.currentTarget; draggingId=touchCard.getAttribute('data-id');
+  if(!state.startTime)startTimer();
+  const r=touchCard.getBoundingClientRect();
+  tOffX=e.touches[0].clientX-r.left; tOffY=e.touches[0].clientY-r.top;
+  touchClone=touchCard.cloneNode(true);
+  touchClone.style.cssText=`position:fixed;z-index:9999;pointer-events:none;opacity:.85;width:${r.width}px;height:${r.height}px;left:${e.touches[0].clientX-tOffX}px;top:${e.touches[0].clientY-tOffY}px;transition:none;`;
+  document.body.appendChild(touchClone); touchCard.style.opacity='.3'; e.preventDefault();
+}
+function onTouchMove(e){
+  if(!touchClone)return; e.preventDefault();
+  const t=e.touches[0];
+  touchClone.style.left=(t.clientX-tOffX)+'px'; touchClone.style.top=(t.clientY-tOffY)+'px';
+  document.querySelectorAll('.drop-zone,.cards-pool').forEach(d=>d.classList.remove('drag-over'));
+  touchClone.style.display='none';
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  touchClone.style.display='';
+  if(el){ const tgt=el.closest('.drop-zone,.cards-pool'); if(tgt)tgt.classList.add('drag-over'); }
+}
+function onTouchEnd(e){
+  if(!touchClone)return;
+  const t=e.changedTouches[0];
+  touchClone.style.display='none';
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  touchClone.style.display='';
+  document.body.removeChild(touchClone); touchClone=null;
+  if(touchCard)touchCard.style.opacity=''; touchCard=null;
+  document.querySelectorAll('.drop-zone,.cards-pool').forEach(d=>d.classList.remove('drag-over'));
+  if(draggingId){
+    const tgt = el ? el.closest('.drop-zone,.cards-pool') : null;
+    if(tgt){
+      if(tgt.getAttribute('data-pool')) returnToPool(draggingId);
+      else placeCard(draggingId,tgt);
+    }
+  }
+  draggingId=null;
+}
+
+// ══════════════════════════════════════════════
+// RETURN TO POOL
+// ══════════════════════════════════════════════
+function returnToPool(cardId,ev) {
+  if(ev){ev.stopPropagation();}
+  if(state.revealed)return;
+  const sage=ALL_SAGES[cardId];
+  const el=document.getElementById(`card-${cardId}`);
+  if(el)el.remove();
+  // If it was part of a completed gen, undo that
+  if(state.placed[cardId]){
+    const {period,gen}=state.placed[cardId];
+    state.gensDone.delete(`${period}-${gen}`);
+    const dz=document.getElementById(`drop-${period}-${gen}`);
+    if(dz)dz.classList.remove('gen-complete');
+    const tab=document.querySelector(`.gen-tab[data-period="${period}"][data-gen="${gen}"]`);
+    if(tab)tab.classList.remove('complete');
+    // close story if open
+    const story=document.getElementById(`story-${period}`);
+    if(story && parseInt(story.getAttribute('data-gen'))===gen){
+      story.innerHTML='';
+    }
+  }
+  state.correct.delete(cardId);
+  delete state.placed[cardId];
+  const pool=document.getElementById(`pool-${sage.period}`);
+  const fresh=makeCard(cardId); pool.appendChild(fresh);
+  updateCountBadges(); updateUI(); hideFeedback();
+}
+
+// ══════════════════════════════════════════════
+// PLACE CARD
+// ══════════════════════════════════════════════
+function placeCard(cardId,dropZone) {
+  const sage=ALL_SAGES[cardId];
+  const dzPeriod=dropZone.getAttribute('data-period');
+  const dzGen=parseInt(dropZone.getAttribute('data-gen'));
+
+  if(sage.period!==dzPeriod){ showFeedback('❌ החכם הזה שייך לתקופה אחרת!','error'); return; }
+
+  // remove from current spot
+  const existing=document.getElementById(`card-${cardId}`);
+  if(existing)existing.remove();
+
+  // if it leaves a previously-complete gen, undo completeness
+  if(state.placed[cardId]){
+    const prev=state.placed[cardId];
+    if(prev.gen!==dzGen){
+      state.gensDone.delete(`${prev.period}-${prev.gen}`);
+      const pdz=document.getElementById(`drop-${prev.period}-${prev.gen}`);
+      if(pdz)pdz.classList.remove('gen-complete');
+      const ptab=document.querySelector(`.gen-tab[data-period="${prev.period}"][data-gen="${prev.gen}"]`);
+      if(ptab)ptab.classList.remove('complete');
+    }
+  }
+
+  state.placed[cardId]={period:dzPeriod,gen:dzGen};
+  const card=makeCard(cardId); dropZone.appendChild(card);
+
+  const isCorrect = dzGen===sage.gen;
+  if(isCorrect){
+    state.correct.add(cardId);
+    card.classList.remove('placed-wrong');
+    dropZone.classList.add('just-correct');
+    dropZone.addEventListener('animationend',()=>dropZone.classList.remove('just-correct'),{once:true});
+    playCorrect(); showFloatingBadge();
+  } else {
+    state.correct.delete(cardId);
+    card.classList.add('placed-wrong'); // shows return button + red border
+  }
+
+  updateCountBadges(); updateUI(); hideFeedback();
+  checkGenComplete(dzPeriod,dzGen);
+
+  if(state.correct.size===TOTAL){ stopTimer(); setTimeout(()=>{playWin();showWin();},700); }
+}
+
+// ══════════════════════════════════════════════
+// CHECK GENERATION COMPLETE
+// ══════════════════════════════════════════════
+function checkGenComplete(period,gen) {
+  const key=`${period}-${gen}`;
+  if(state.gensDone.has(key))return;
+  const required=GENS[period][gen].sages;
+  // gen complete = every required sage is correctly placed here
+  const allHere=required.every(id=>state.placed[id] && state.placed[id].period===period && state.placed[id].gen===gen && state.correct.has(id));
+  // and no EXTRA wrong cards sitting in this zone
+  const dz=document.getElementById(`drop-${period}-${gen}`);
+  const cardsInZone=[...dz.querySelectorAll('.sage-card')].map(c=>c.getAttribute('data-id'));
+  const noWrong=cardsInZone.every(id=>ALL_SAGES[id].gen===gen);
+
+  if(allHere && noWrong){
+    state.gensDone.add(key);
+    dz.classList.add('gen-complete');
+    const tab=document.querySelector(`.gen-tab[data-period="${period}"][data-gen="${gen}"]`);
+    if(tab)tab.classList.add('complete');
+    // celebrate!
+    playGenComplete();
+    showGenCelebrate(GENS[period][gen].label);
+    renderStory(period,gen,true);
+    updateGensDone();
+  }
+}
+
+// ══════════════════════════════════════════════
+// STORY PANEL
+// ══════════════════════════════════════════════
+function renderStory(period,gen,forceOpen) {
+  const cont=document.getElementById(`story-${period}`);
+  const key=`${period}-${gen}`;
+  // Only show story if this gen is completed (or revealed)
+  if(!state.gensDone.has(key) && !state.revealed){
+    cont.innerHTML=''; cont.removeAttribute('data-gen'); return;
+  }
+  const gd=GENS[period][gen];
+  const isZugot=period==='zugot';
+  cont.setAttribute('data-gen',gen);
+  cont.innerHTML=`
+    <div class="gen-story ${forceOpen?'':'open'}" id="storybox-${period}">
+      <div class="gen-story-inner">
+        <div class="gen-story-head">
+          <span class="gs-badge">${isZugot?'🕍':'📜'}</span>
+          <span class="gs-title">${gd.letter}. ${gd.label}</span>
+          <span class="gs-years">${gd.years}</span>
+        </div>
+        <div class="gen-story-text">${gd.story}</div>
+      </div>
+    </div>`;
+  // trigger open animation
+  requestAnimationFrame(()=>{ const sb=document.getElementById(`storybox-${period}`); if(sb)sb.classList.add('open'); });
+}
+
+// ══════════════════════════════════════════════
+// CHECK BUTTON
+// ══════════════════════════════════════════════
+function checkAnswers() {
+  if(state.revealed)return;
+  state.attempts++; document.getElementById('attempts')&&(document.getElementById('attempts').textContent=state.attempts);
+  let correctNow=0,wrongNow=0;
+  Object.keys(ALL_SAGES).forEach(id=>{
+    const p=state.placed[id];
+    if(p && p.gen===ALL_SAGES[id].gen) correctNow++;
+    else if(p) wrongNow++;
+  });
+  // shake wrong cards
+  Object.keys(ALL_SAGES).forEach(id=>{
+    const p=state.placed[id]; const el=document.getElementById(`card-${id}`);
+    if(el && p && p.gen!==ALL_SAGES[id].gen){
+      el.classList.add('shake','placed-wrong');
+      el.addEventListener('animationend',()=>el.classList.remove('shake'),{once:true});
+    }
+  });
+  updateUI();
+  if(correctNow===TOTAL){ stopTimer(); setTimeout(()=>{playWin();showWin();},400); }
+  else if(correctNow>0) showFeedback(`✅ ${correctNow} מתוך ${TOTAL} נכונים${wrongNow>0?` · ${wrongNow} במקום הלא נכון (לחץ ↩ או גרור בחזרה)`:''}`,'partial');
+  else showFeedback('❌ נסה שוב — תוכל לעשות את זה!','error');
+}
+
+// ══════════════════════════════════════════════
+// REVEAL
+// ══════════════════════════════════════════════
+function revealAnswers() {
+  state.revealed=true; stopTimer();
+  ['zugot','tanaim'].forEach(period=>{
+    const pool=document.getElementById(`pool-${period}`);
+    pool.querySelectorAll('.sage-card').forEach(c=>c.remove());
+    for(let g=1;g<=5;g++){ const dz=document.getElementById(`drop-${period}-${g}`); dz.querySelectorAll('.sage-card').forEach(c=>c.remove()); }
+  });
+  Object.keys(ALL_SAGES).forEach(id=>{
+    const s=ALL_SAGES[id];
+    const dz=document.getElementById(`drop-${s.period}-${s.gen}`);
+    state.placed[id]={period:s.period,gen:s.gen}; state.correct.add(id);
+    const card=makeCard(id); card.setAttribute('draggable','false'); dz.appendChild(card);
+    dz.classList.add('gen-complete');
+  });
+  ['zugot','tanaim'].forEach(period=>{ for(let g=1;g<=5;g++){ state.gensDone.add(`${period}-${g}`); const tab=document.querySelector(`.gen-tab[data-period="${period}"][data-gen="${g}"]`); if(tab)tab.classList.add('complete'); } });
+  ['zugot','tanaim'].forEach(period=>selectTab(period,state.activeTab[period]));
+  updateCountBadges(); updateUI(); updateGensDone();
+  showFeedback('👁️ הוצג הסדר הנכון! עבור בין הדורות לקרוא את הסיפורים.','partial');
+}
+
+// ══════════════════════════════════════════════
+// WIN / CELEBRATE
+// ══════════════════════════════════════════════
+function showWin() {
+  const t=getElapsed();
+  let stars='⭐⭐⭐',msg='מדהים! שיבצת את כל החכמים בכל הדורות נכון!<br>אתה אלוף זיכרון הדורות! 🏆';
+  if(state.attempts>3){stars='⭐⭐';msg='כל הכבוד! הצלחת אחרי כמה ניסיונות!';}
+  if(state.attempts>6){stars='⭐';msg='הצלחת! תרגל עוד ותהיה מצוין!';}
+  document.getElementById('win-stars').textContent=stars;
+  document.getElementById('win-msg').innerHTML=msg+`<br><small style="opacity:.6">זמן: ${fmt(t)}</small>`;
+  document.getElementById('win-overlay').classList.add('show');
+}
+function showGenCelebrate(label) {
+  const c=document.getElementById('gen-celebrate');
+  c.querySelector('.gc-small').textContent=`"${label}" — קרא את הסיפור למטה!`;
+  c.classList.remove('celebrating'); void c.offsetWidth; c.classList.add('celebrating');
+}
+function showFloatingBadge() {
+  const b=document.getElementById('float-badge');
+  b.textContent=CORRECT_MSGS[Math.floor(Math.random()*CORRECT_MSGS.length)];
+  b.classList.remove('popping'); void b.offsetWidth; b.classList.add('popping');
+}
+
+// ══════════════════════════════════════════════
+// HINT
+// ══════════════════════════════════════════════
+function showHint() {
+  const box=document.getElementById('hint-content'); box.innerHTML='';
+  [{period:'zugot',label:'🕍 אנשי כנסת הגדולה והזוגות'},{period:'tanaim',label:'📜 תקופת התנאים'}].forEach(({period,label})=>{
+    const h=document.createElement('div'); h.className='hint-period-title'; h.textContent=label; box.appendChild(h);
+    for(let g=1;g<=5;g++){
+      const gd=GENS[period][g];
+      const wrap=document.createElement('div'); wrap.className='hint-gen';
+      const names=gd.sages.map(id=>`${ALL_SAGES[id].icon} ${ALL_SAGES[id].name}`).join('  •  ');
+      wrap.innerHTML=`<div class="hint-gen-num">דור ${gd.letter} — ${gd.label} (${gd.years})</div><div class="hint-gen-names">${names}</div>`;
+      box.appendChild(wrap);
+    }
+  });
+  document.getElementById('hint-overlay').classList.add('show');
+}
+function closeHintBtn(){ document.getElementById('hint-overlay').classList.remove('show'); }
+
+// ══════════════════════════════════════════════
+// RESET / HELPERS
+// ══════════════════════════════════════════════
+function resetGame() {
+  state={ placed:{}, correct:new Set(), gensDone:new Set(), attempts:0, startTime:null, timerInterval:null, revealed:false, activeTab:{zugot:1,tanaim:1} };
+  document.getElementById('timer').textContent='0:00';
+  document.getElementById('win-overlay').classList.remove('show');
+  hideFeedback(); updateGensDone(); buildGame();
+}
+function updateCountBadges() {
+  ['zugot','tanaim'].forEach(period=>{ for(let g=1;g<=5;g++){
+    const dz=document.getElementById(`drop-${period}-${g}`); if(!dz)continue;
+    const cnt=dz.querySelectorAll('.sage-card').length;
+    const badge=document.getElementById(`cnt-${period}-${g}`);
+    if(badge){ badge.textContent=cnt; badge.classList.toggle('visible',cnt>0); }
+  }});
+}
+function updateUI(){ document.getElementById('correct-count').textContent=state.correct.size; }
+function updateGensDone(){ document.getElementById('gens-done').textContent=state.gensDone.size; }
+function showFeedback(msg,type){ const el=document.getElementById('feedback'); el.className=`feedback-banner show ${type}`; el.innerHTML=msg; }
+function hideFeedback(){ document.getElementById('feedback').classList.remove('show'); }
+function startTimer(){ state.startTime=Date.now(); state.timerInterval=setInterval(()=>document.getElementById('timer').textContent=fmt(getElapsed()),1000); }
+function stopTimer(){ clearInterval(state.timerInterval); }
+function getElapsed(){ return state.startTime?Math.floor((Date.now()-state.startTime)/1000):0; }
+function fmt(s){ return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
+
+// ── INIT ──
+buildGame();
+</script>
+</body>
+</html>

@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>למידה מבוססת פרויקטים – PBL</title>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222638;
+    --border: #2e3347;
+    --gold: #d4a843;
+    --gold-light: #f0c96a;
+    --gold-dim: rgba(212,168,67,0.12);
+    --text: #e8e4d9;
+    --text-dim: #9a9580;
+    --blue-acc: #4a90d9;
+    --red-acc: #e05a5a;
+    --green-acc: #5abf8a;
+    --purple-acc: #9b6fd4;
+    --teal-acc: #4ac4c4;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Heebo', sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0f1117 0%, #1a1d27 50%, #0d1320 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 52px 24px 44px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(212,168,67,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: var(--gold-dim);
+    border: 1px solid rgba(212,168,67,0.35);
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 16px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-weight: 900;
+    font-size: clamp(26px, 5vw, 46px);
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 10px;
+  }
+  .hero h1 span { color: var(--gold); }
+  .hero p {
+    color: var(--text-dim);
+    font-size: 15px;
+    max-width: 520px;
+    margin: 0 auto 24px;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .stat-num {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .stat-label { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+
+  /* ── WRAPPER ── */
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 36px 20px 60px;
+  }
+
+  /* ── ACCORDION ── */
+  .accordion { display: flex; flex-direction: column; gap: 8px; }
+
+  .acc-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  .acc-item:hover { border-color: rgba(212,168,67,0.3); }
+  .acc-item.open {
+    border-color: rgba(212,168,67,0.5);
+    box-shadow: 0 0 0 1px rgba(212,168,67,0.15), 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  /* colour stripe per category */
+  .acc-item[data-cat="problem"]  { border-right: 3px solid var(--red-acc); }
+  .acc-item[data-cat="skills"]   { border-right: 3px solid var(--blue-acc); }
+  .acc-item[data-cat="theory"]   { border-right: 3px solid var(--purple-acc); }
+  .acc-item[data-cat="pbl"]      { border-right: 3px solid var(--gold); }
+  .acc-item[data-cat="process"]  { border-right: 3px solid var(--teal-acc); }
+  .acc-item[data-cat="teacher"]  { border-right: 3px solid var(--green-acc); }
+  .acc-item[data-cat="stories"]  { border-right: 3px solid #e8864a; }
+  .acc-item[data-cat="balance"]  { border-right: 3px solid var(--gold-light); }
+
+  .acc-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: right;
+    color: inherit;
+  }
+  .acc-header:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+
+  .acc-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .acc-item.open .acc-icon { background: var(--gold-dim); }
+
+  .acc-meta { flex: 1; min-width: 0; }
+  .acc-chapter {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .acc-title {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .acc-item.open .acc-title { color: var(--gold-light); }
+
+  .acc-arrow {
+    font-size: 14px;
+    color: var(--text-dim);
+    transition: transform 0.3s;
+    flex-shrink: 0;
+  }
+  .acc-item.open .acc-arrow { transform: rotate(180deg); color: var(--gold); }
+
+  /* ── BODY (collapsible) ── */
+  .acc-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+  .acc-item.open .acc-body { max-height: 4000px; }
+
+  .acc-content {
+    padding: 4px 20px 24px 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── CONTENT COMPONENTS ── */
+  .highlight-box {
+    background: var(--gold-dim);
+    border: 1px solid rgba(212,168,67,0.25);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 14px 0;
+    font-size: 15px;
+    color: var(--gold-light);
+    font-style: italic;
+  }
+  .highlight-box strong { font-style: normal; }
+
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 13px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .tag.red    { border-color: rgba(224,90,90,0.4); color: var(--red-acc); }
+  .tag.green  { border-color: rgba(90,191,138,0.4); color: var(--green-acc); }
+  .tag.blue   { border-color: rgba(74,144,217,0.4); color: var(--blue-acc); }
+  .tag.gold   { border-color: rgba(212,168,67,0.4); color: var(--gold); }
+  .tag.purple { border-color: rgba(155,111,212,0.4); color: var(--purple-acc); }
+
+  .principle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 14px 0;
+  }
+  @media (max-width: 540px) { .principle-grid { grid-template-columns: 1fr; } }
+
+  .principle-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .principle-card h4 {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 15px;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .principle-card p { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+
+  .step-list { list-style: none; margin: 12px 0; }
+  .step-list li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .step-list li:last-child { border-bottom: none; }
+  .step-num {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--gold-dim);
+    border: 1px solid rgba(212,168,67,0.4);
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  table.compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 14px 0;
+  }
+  table.compare th {
+    background: var(--surface2);
+    color: var(--gold);
+    padding: 10px 14px;
+    font-weight: 700;
+    border: 1px solid var(--border);
+    text-align: right;
+  }
+  table.compare td {
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  table.compare tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+  .story-card {
+    background: var(--surface2);
+    border-right: 3px solid #e8864a;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 14px 0;
+  }
+  .story-card h4 {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 15px;
+    color: #e8864a;
+    margin-bottom: 8px;
+  }
+  .story-card p { font-size: 13.5px; line-height: 1.7; color: var(--text); }
+
+  .checklist { list-style: none; margin: 12px 0; }
+  .checklist li {
+    padding: 7px 0;
+    font-size: 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check-box {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin: 18px 0 8px;
+  }
+
+  p.body-text {
+    font-size: 14.5px;
+    color: var(--text);
+    line-height: 1.75;
+    margin: 10px 0;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-dim);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .footer span { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">📚 מדריך לימוד</div>
+  <h1>למידה מבוססת <span>פרויקטים</span></h1>
+  <p>חינוך בעידן השינויים – מהנחנו המסורתי לעשייה אמיתית</p>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-num">14</span><span class="stat-label">פרקים</span></div>
+    <div class="stat"><span class="stat-num">4</span><span class="stat-label">עקרונות מחמ"ה</span></div>
+    <div class="stat"><span class="stat-num">5</span><span class="stat-label">אתגרים מרכזיים</span></div>
+    <div class="stat"><span class="stat-num">PBL</span><span class="stat-label">מודל הלמידה</span></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+<div class="accordion" id="acc">
+
+  <!-- 1 -->
+  <div class="acc-item" data-cat="problem">
+    <button class="acc-header" onclick="toggle(this)">
+      <div class="acc-icon">🔴</div>
+      <div class="acc-meta">
+        <div class="acc-chapter">פרק 1</div>
+        <div class="acc-title">המשבר – למה המערכת אינה מספיקה?</div>
+      </div>
+      <span class="acc-arrow">▼</span>
+    </button>
+    <div class="acc-body">
+      <div class="acc-content">
+        <p class="body-text">דורות על דורות בנו בתי ספר על עיקרון אחד: <strong>שינון, העברה, ובחינה</strong>. המורה מעביר, התלמיד קולט, ודפים ומבחנים מודדים הצלחה.</p>
+        <div class="highlight-box">"כל אחד מאיתנו יש את כל הידע האנושי זמין בשברי שנייה בכיס"</div>
+        <div class="section-title">מדוע זה כבר לא עובד?</div>
+        <div class="tag-list">
+          <span class="tag red">🔴 ידע זמין לכולם – בחינם</span>
+          <span class="tag red">🔴 המורה כ"גוגל בשרי"?</span>
+          <span class="tag red">🔴 נדרשות מיומנויות חדשות לחלוטין</span>
+        </div>
+        <p class="body-text">עידן המידע שינה את הכללים – אך המערכת החינוכית טרם הבינה זאת. שינון הפך לחסר-ערך כאשר כל תשובה זמינה בשנייה. צריך ללמד <strong>אחרת</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="acc-item" data-cat="skills">
+    <button class="acc-header" onclick="toggle(this)">
+      <div class="acc-icon">💡</div>
+      <div class="acc-meta">
+        <div class="acc-chapter">פרק 2</div>
+        <div class="acc-title">מיומנויות המאה ה-21 – 4 כישורים קריטיים</div>
+      </div>
+      <span class="acc-arrow">▼</span>
+    </button>
+    <div class="acc-body">
+      <div class="acc-content">
+        <p class="body-text">אלו הכישורים שתלמידים <em>חייבים</em> לרכוש – לא עוד ידע לשינון, אלא יכולות לחיים:</p>
+        <div class="principle-grid">
+          <div class="principle-card">
+            <h4>1️⃣ איסוף מידע</h4>
+            <p>הידע לא חסר – יש עודף. צריך לדעת: <strong>איפה למצוא</strong> ואיך לחפש בחכמה.</p>
+          </div>
+          <div class="principle-card">
+            <h4>2️⃣ סינון וזיהוי</h4>
+            <p>לא הכל שנמצא בגוגל אמיתי. נדרשת <strong>חשיבה ביקורתית</strong>: מה אני באמת צריך?</p>
+          </div>
+          <div class="principle-card">
+            <h4>3️⃣ עבודת צוות</h4>
+            <p>בחיים האמיתיים תמיד עובדים בקבוצות. צריך ללמוד <strong>כיצד להתנהל ביחד</strong>.</p>
+          </div>
+          <div class="principle-card">
+            <h4>4️⃣ חשיבה ביקורתית</h4>
+            <p>לא להיות צרכן פסיבי. תמיד לשאול: <strong>למה? האם זה נכון? מה החלופות?</strong></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="acc-item" data-cat="theory">
+    <button class="acc-header" onclick="toggle(this)">
+      <div class="acc-icon">📖</div>
+      <div class="acc-meta">
+        <div class="acc-chapter">פרק 3</div>
+        <div class="acc-title">הרעיון המהפכני של ג'ון דיואי</div>
+      </div>
+      <span class="acc-arrow">▼</span>
+    </button>
+    <div class="acc-body">
+      <div class="acc-content">
+        <p class="body-text">ג'ון דיואי, פילוסוף חינוך מהמאה הקודמת, אמר משהו פשוט אבל גאוני:</p>
+        <div class="highlight-box">"כדי שהלמידה תהיה משמעותית, הלומדים חייבים להיות <strong>אקטיביים</strong>"</div>
+        <div class="section-title">מה זה אומר בפועל?</div>
+        <div class="tag-list">
+          <span class="tag green">✅ לבנות ידע מתוך עשייה</span>
+          <span class="tag green">✅ התנסויות אמיתיות</span>
+          <span class="tag green">✅ קשרים חברתיים</span>
+          <span class="tag green">✅ יציאה מהדפים אל החיים</span>
+        </div>
+        <p class="body-text">הרעיון הזה הוא הבסיס לכל מה שנקרא היום "למידה פעילה" – ומהווה את היסוד הפילוסופי של PBL.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="acc-item" data-cat="pbl">
+    <button class="acc-header" onclick="toggle(this)">
+      <div class="acc-icon">🏗️</div>
+      <div class="acc-meta">
+        <div class="acc-chapter">פרק 4</div>
+        <div class="acc-title">PBL – מה זה בעצם? הגדרה ישרה</div>
+      </div>
+      <span class="acc-arrow">▼</span>
+    </button>
+    <div class="acc-body">
+      <div class="acc-content">
+        <div class="highlight-box">"מודל למידה שמה שמניע את כל העסק הוא <strong>יצירת תוצר סופי</strong>"</div>
+        <p class="body-text">אבל רגע – יש הבדל גדול בין פוסטר יפה שעשו לבין <strong>פרויקט אקדמי אמיתי</strong>.</p>
+        <p class="body-text">ההבדל טמון בעקרונות שעומדים מאחורי הפרויקט – ולכן נוצאה שיטת <strong>המחמ"ה</strong> (ראה פרק הבא).</p>
+        <div class="tag-list">
+          <span class="tag gold">🎯 תוצר = מנוע הלמידה</span>
+          <span class="tag gold">🎯 לא סתם "לעשות משהו"</span>
+          <span class="tag gold">🎯 ערך מחוץ לכיתה</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="acc-item" data-cat="pbl">
+    <button class="acc-header" onclick="toggle(this)">
+      <div class="acc-icon">🔑</div>
+      <div class="acc-meta">
+        <div class="acc-chapter">פרק 5</div>
+        <div class="acc-title">עקרונות המחמ"ה – ארבעה עמודי היסוד</div>
+      </div>
+      <span class="acc-arrow">▼</span>
+    </button>
+    <div class="acc-body">
+      <div class="acc-content">
+        <div class="principle-grid">
+          <div class="principle-card">
+            <h4>מ' – משמעותי 🎯</h4>
+            <p>הפרויקט חייב להיות משמעותי לאדם ולעולם – עם ערך <strong>מחוץ לכיתה</strong>, לא סתם עבור הציון.</p>
+          </div>
+          <div class="principle-card">
+            <h4>ח' – חקר פעיל 🔍</h4>
+            <p>לא קריאה בוויקיפדיה בלבד – אלא <strong>יציאה לשדה, בדיקה עצמית, חקירה אמיתית</strong>.</p>
+          </div>
+          <div class="principle-card">
+            <h4>מ' – מבוגר מוביל 👨‍🏫</h4>
+            <p>המורה לא מעביר ידע בלבד – הוא <strong>מנחה ומכוון</strong> את התהליך. שם, אבל לא "הורג".</p>
+          </div>
+          <div class="principle-card">
+            <h4>א' – אקדמי / שאלה פורייה ❓</h4>
+            <p>לא "כן/לא" – אלא שאלה פתוחה. <strong>"איך נוכל להפחית את זיהום הרעש בשכונה?"</strong></p>
+          </div>
+        </div>
+        <div class="highlight-box">דוגמה לשאלה פורייה: "מדוע עצים חשובים לעיר?" – <strong>שאלה פתוחה, מעניינת, ללא תשובה אחת</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="acc-item" data-cat="process">
+    <button class="acc-header" onclick="toggle(this)">
+      <div class="acc-icon">🔄</div>
+      <div class="acc-meta">
+        <div class="acc-chapter">פרק 6</div>
+        <div class="acc-title">תהליך PBL – שישה שלבים מהתחלה לסוף</div>
+      </div>
+      <span class="acc-arrow">▼</span>
+    </button>
+    <div class="acc-body">
+      <div class="acc-content">
+        <ul class="step-list">
+          <li><div class="step-num">1</div><div><strong>הצגת השאלה הפורייה</strong> – מורה מציג אתגר ללא תשובה מוכנה. התלמידים סקרנים וחשמלוניים.</div></li>
+          <li><div class="step-num">2</div><div><strong>בחירת התוצר</strong> – <em>התלמידים בוחרים</em>: סרט? מדריך? מוצר? הבעלות היא המפתח.</div></li>
+          <li><div class="step-num">3</div><div><strong>תכנון וחקר מסודר</strong> – יציאה לשדה, ראיונות, ניסויים. לא משימה קלה – חקירה ממוקדת.</div></li>
+          <li><div class="step-num">4</div><div><strong>טיוטות ומשוב מקדם 🔁</strong> – הגרסה הראשונה לעולם אינה הסופית. משוב → שיפור → משוב שוב.</div></li>
+          <li><div class="step-num">5</div><div><strong>הצגה בפני קהל אמיתי</strong> – לא רק למורה. קהל אמיתי משנה <em>הכל</em>.</div></li>
+          <li><div class="step-num">6</div><div><strong>רפלקציה</strong> – איך כפינו? מה היה קשה? מה הצלחנו? הקול הפנימי.</div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="acc-item" data-cat="pbl">
+    <button class="acc-header" onclick="toggle(this)">
+      <div class="acc-icon">🆚</div>
+      <div class="acc-meta">
+        <div class="acc-chapter">פרק 7</div>
+        <div class="acc-title">ההבדל ההכרחי – PBL לעומת למידה מבוססת בעיות</div>
+      </div>
+      <span class="acc-arrow">▼</span>
+    </button>
+    <div class="acc-body">
+      <div class="acc-content">
+        <table class="compare">
+          <tr>
+            <th>היבט</th>
+            <th>PBL – מבוסס פרויקטים</th>
+            <th>Problem-Based Learning</th>
+          </tr>
+          <tr>
+            <td>מה מקבלים?</td>
+            <td>תוצר מוגדר</td>
+            <td>פתרון לא בהכרח ברור</td>
+          </tr>
+          <tr>
+            <td>דוגמה</td>
+            <td>בנה דגם גשר פועל</td>
+            <td>איך להפחית זיהום רעש?</td>
+          </tr>
+          <tr>
+            <td>ודאות</td>
+            <td>תשובה ברורה</td>
+            <td><strong>אי-ודאות מוחלטת</strong></td>
+          </tr>
+          <tr>
+            <td>גיל מתאים</td>
+            <td>צעיר יותר</td>
+            <td>בוגרים יותר</td>
+          </tr>
+        </table>
+        <div class="highlight-box">למידה מבוססת בעיות פותחה בשנות ה-70 בבתי ספר לרפואה בקנדה – כי בעולם האמיתי <strong>אין פתרונות מוכנים</strong>.</div>
+        <p class="body-text">המטרה הגדולה: <strong>פיתוח למידה עצמאית והכוונה עצמית</strong> – כלים אנליטיים לכל בעיה עתידית.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8 -->
+  <div class="acc-item" data-cat="teacher">
+    <button class="acc-header" onclick="toggle(this)">
+      <div class="acc-icon">👨‍🏫</div>
+      <div class="acc-meta">
+        <div class="acc-chapter">פרק 8</div>
+        <div class="acc-title">המהפך בתפקיד המורה</div>
+      </div>
+      <span class="acc-arrow">▼</span>
+    </button>
+    <div class="acc-body">
+      <div class="acc-content">
+        <div class="principle-grid">
+          <div class="principle-card">
+            <h4>❌ תפקיד ישן</h4>
+            <p>מעביר ידע כמו צינור. הלוח → דפים. שינון = הצלחה.</p>
+          </div>
+          <div class="principle-card">
+            <h4>✅ תפקיד חדש – PBL</h4>
+            <p>מנחה התהליך. שואל שאלות מאתגרות. <strong>יודע לשתוק</strong>. מקבל את הרעש כעדות ללמידה.</p>
+          </div>
+        </div>
+        <div class="section-title">מה צריך להשתנות בנפש המורה?</div>
+        <div class="tag-list">
+          <span class="tag red">🔴 הפסק להרצות ברצף</span>
+          <span class="tag red">🔴 שחרר שליטה (זה לא קל!)</span>
+          <span class="tag red">🔴 התרגל לאי-ודאות</span>
+          <span class="tag red">🔴 הרגל עצמך לרעש בכיתה</span>
+        </div>
+        <div class="highlight-box">"זה לא למידה, זה פדיחות!" – האתגר הגדול הוא <strong>אמון בתהליך</strong> גם כשזה לא נראה מסודר.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9 -->
+  <div class="acc-item" data-cat="problem">
+    <button class="acc-header" onclick="toggle(this)">
+      <div class="acc-icon">🚧</div>
+      <div class="acc-meta">
+        <div class="acc-chapter">פרק 9</div>
+        <div class="acc-title">5 אתגרים מערכתיים שמחנקים את הרעיון</div>
+      </div>
+      <span class="acc-arrow">▼</span>
+    </button>
+    <div class="acc-body">
+      <div class="acc-content">
+        <ul class="step-list">
+          <li><div class="step-num" style="background:rgba(224,90,90,0.15);border-color:rgba(224,90,90,0.4);color:var(--red-acc)">1</div><div><strong>חופש אקדמי vs תוכנית קשיחה</strong> – החלום: חקירה חופשית. המציאות: תוכנית מוכתבת מראש.</div></li>
+          <li><div class="step-num" style="background:rgba(224,90,90,0.15);border-color:rgba(224,90,90,0.4);color:var(--red-acc)">2</div><div><strong>עומק vs הספק</strong> – PBL דורש צלילה לעומק. המערכת דורשת הספק רחב. שניהם יחד? <em>בלתי אפשרי.</em></div></li>
+          <li><div class="step-num" style="background:rgba(224,90,90,0.15);border-color:rgba(224,90,90,0.4);color:var(--red-acc)">3</div><div><strong>שילוב תחומים vs חלוקה קשיחה</strong> – PBL משלב תחומים; בתיכון יש קירות בין מקצועות. "מי שלומד תנ"ך ללא גיאוגרפיה – לא מבין כמו שצריך".</div></li>
+          <li><div class="step-num" style="background:rgba(224,90,90,0.15);border-color:rgba(224,90,90,0.4);color:var(--red-acc)">4</div><div><strong>הערכה ומבחנים</strong> – PBL בודק מיומנויות ותהליך; בגרות ומיצ"ב בודקים ידע. בתי ספר <em>נמנעים</em> מפרויקטים בגלל זה.</div></li>
+          <li><div class="step-num" style="background:rgba(224,90,90,0.15);border-color:rgba(224,90,90,0.4);color:var(--red-acc)">5</div><div><strong>גודל הכיתה – 35-40 תלמידים!</strong> – מורה אחד ללוות 8-10 קבוצות במקביל? <em>בלתי אפשרי מעשית</em> ללא ארגון מחדש.</div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10 -->
+  <div class="acc-item" data-cat="stories">
+    <button class="acc-header" onclick="toggle(this)">
+      <div class="acc-icon">💪</div>
+      <div class="acc-meta">
+        <div class="acc-chapter">פרק 10</div>
+        <div class="acc-title">סיפורים מעשיים – זה בעצם עובד!</div>
+      </div>
+      <span class="acc-arrow">▼</span>
+    </button>
+    <div class="acc-body">
+      <div class="acc-content">
+        <div class="story-card">
+          <h4>📖 סיפור 1: ונדליזם → אחריות → שינוי 180°</h4>
+          <p><strong>המצב:</strong> 14 בנים עושים ונדליזם; צוות מורים תשוש.<br>
+          <strong>הפתרון:</strong> שיתוף הקבוצה בבניית בית הספר – אדניות מעץ, שתילת פרחים, הקמת המרחב.<br>
+          <strong>התוצאה:</strong> 🌟 הפסיקו את הונדליזם לחלוטין. 🌟 התחייבו לשמור על מה שבנו. 🌟 הכיתה נזכרת עד היום!</p>
+        </div>
+        <div class="divider"></div>
+        <div class="story-card">
+          <h4>📱 סיפור 2: חצי שעה למשוואות בגרויות</h4>
+          <p><strong>הצוות:</strong> 20 תלמידים בקבוצות של 3, חצי שעה, נושא: משוואה עם נעלם אחד.<br>
+          <strong>השיטה:</strong> בינה מלאכותית מותאמת – שאלות בדרגות קושי שונות, משוב אישי בטלפון.<br>
+          <strong>התוצאה:</strong> 🎯 כל 20 התלמידים הבינו! כל תלמיד ראה בדיוק איפה הוא נמצא.</p>
+        </div>
+        <div class="highlight-box">"לקיחת אחריות משנה הכל" – כשתלמיד בונה משהו, הוא לא הורס אותו.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11 -->
+  <div class="acc-item" data-cat="pbl">
+    <button class="acc-header" onclick="toggle(this)">
+      <div class="acc-icon">🎯</div>
+      <div class="acc-meta">
+        <div class="acc-chapter">פרק 11</div>
+        <div class="acc-title">העקרונות החשובים – לא ה-PBL עצמו</div>
+      </div>
+      <span class="acc-arrow">▼</span>
+    </button>
+    <div class="acc-body">
+      <div class="acc-content">
+        <div class="highlight-box">"לא ה-PBL עצמו קדוש – אלא <strong>העקרונות</strong> שמאחוריו!"</div>
+        <div class="principle-grid">
+          <div class="principle-card">
+            <h4>⚡ עקרון 1: התלמיד אקטיבי</h4>
+            <p>אם הילדים לוקחים חלק בעשייה – הלמידה <strong>קרתה</strong>. זה כל הסוד.</p>
+          </div>
+          <div class="principle-card">
+            <h4>🔗 עקרון 2: רב-תחומיות</h4>
+            <p>מי שלומד תנ"ך ללא גיאוגרפיה – לא מבין. "אפיקים בנגב" – <strong>מי שלא ראה את זה לא חווה את הנביא</strong>.</p>
+          </div>
+          <div class="principle-card" style="grid-column: span 2;">
+            <h4>🌍 עקרון 3: שינוי חברתי</h4>
+            <p>להתנהל בחברה, לנהל משא ומתן, להתמודד עם התנגדויות, דרך ארץ וערכים – <strong>זה לא ניתן ללמוד מהלוח.</strong></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12 -->
+  <div class="acc-item" data-cat="balance">
+    <button class="acc-header" onclick="toggle(this)">
+      <div class="acc-icon">⚖️</div>
+      <div class="acc-meta">
+        <div class="acc-chapter">פרק 12</div>
+        <div class="acc-title">נקודת האיזון – לא "זרוק הכל"</div>
+      </div>
+      <span class="acc-arrow">▼</span>
+    </button>
+    <div class="acc-body">
+      <div class="acc-content">
+        <div class="principle-grid">
+          <div class="principle-card">
+            <h4>❌ קוטב א: המסורתי</h4>
+            <p>מורה = כוח עליון. תלמידים = קולטים בלבד.</p>
+          </div>
+          <div class="principle-card">
+            <h4>❌ קוטב ב: ה"משוחרר"</h4>
+            <p>מורה = נעלם לגמרי. תלמידים = עושים הכל.</p>
+          </div>
+        </div>
+        <div class="highlight-box">הדרך התיכונה: <strong>ידע + הנהגה</strong> מהמורה ✅  <strong>חקר + יוזמה</strong> מהתלמיד</div>
+        <div class="tag-list">
+          <span class="tag gold">🌟 המטרה: שהתלמידים ירצו ללמוד</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 13 -->
+  <div class="acc-item" data-cat="problem">
+    <button class="acc-header" onclick="toggle(this)">
+      <div class="acc-icon">🔮</div>
+      <div class="acc-meta">
+        <div class="acc-chapter">פרק 13</div>
+        <div class="acc-title">הביקורת – האם המערכת מסוגלת לשינוי?</div>
+      </div>
+      <span class="acc-arrow">▼</span>
+    </button>
+    <div class="acc-body">
+      <div class="acc-content">
+        <div class="highlight-box">"האם המערכת שלנו בכלל <strong>מסוגלת</strong> להכיל את המהפכה הזו?"</div>
+        <p class="body-text">הידע זמין לכולם. הכישורים החברתיים, ערכים, ודרך ארץ – לא ניתנים ללמידה בהרצאה. צריך לשנות <strong>את כל שיטות הלימוד</strong>.</p>
+        <div class="section-title">שינוי תרבותי נדרש בכל הרמות</div>
+        <div class="tag-list">
+          <span class="tag purple">🏫 חדרי מורים</span>
+          <span class="tag purple">👨‍⚖️ הנהלות</span>
+          <span class="tag purple">📋 תוכניות לימוד</span>
+          <span class="tag purple">📊 שיטות מבחן</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14 -->
+  <div class="acc-item" data-cat="balance">
+    <button class="acc-header" onclick="toggle(this)">
+      <div class="acc-icon">✨</div>
+      <div class="acc-meta">
+        <div class="acc-chapter">פרק 14</div>
+        <div class="acc-title">לסיום – נקודת תקווה ומסר מעשי</div>
+      </div>
+      <span class="acc-arrow">▼</span>
+    </button>
+    <div class="acc-body">
+      <div class="acc-content">
+        <ul class="step-list">
+          <li><div class="step-num" style="background:rgba(212,168,67,0.2);border-color:rgba(212,168,67,0.5);color:var(--gold)">1</div><div><strong>התחלה קטנה = תוצאה גדולה 🌱</strong> – "ככל שהדבר הזה ינוסה, אפילו בקטנה, זה ייתפס יותר ויותר."</div></li>
+          <li><div class="step-num" style="background:rgba(212,168,67,0.2);border-color:rgba(212,168,67,0.5);color:var(--gold)">2</div><div><strong>לא חייבים את כל ה-PBL 📌</strong> – אבל העקרונות שמאחוריו? <em>חיוניים</em>. אקטיביות, רב-תחומיות, שינוי חברתי.</div></li>
+          <li><div class="step-num" style="background:rgba(212,168,67,0.2);border-color:rgba(212,168,67,0.5);color:var(--gold)">3</div><div><strong>פתיחת עולם חדש 🌟</strong> – תלמידים עם חשיבה ביקורתית, עבודת צוות, וכישורים אמיתיים למציאות.</div></li>
+        </ul>
+        <div class="highlight-box">אתה לא חייב להיות <strong>מושלם</strong>.<br>אתה צריך להיות <strong>בכיוון הנכון.</strong> ✨</div>
+
+        <div class="divider"></div>
+        <div class="section-title">רשימת בדיקה – מה למדת?</div>
+        <ul class="checklist">
+          <li><div class="check-box"></div><div>מהו PBL? – מודל שתוצר = מנוע הלמידה</div></li>
+          <li><div class="check-box"></div><div>עקרונות המחמ"ה – משמעותי, חקר, מבוגר, אקדמי</div></li>
+          <li><div class="check-box"></div><div>ההבדל בין PBL ללמידה מבוססת בעיות</div></li>
+          <li><div class="check-box"></div><div>תפקיד המורה החדש – מנחה, לא מרצה</div></li>
+          <li><div class="check-box"></div><div>5 אתגרים מערכתיים – תוכנית, הספק, שילוב, בחינות, גודל כיתה</div></li>
+          <li><div class="check-box"></div><div>3 עקרונות עמוקים – אקטיביות, רב-תחומיות, חברתיות</div></li>
+          <li><div class="check-box"></div><div>כיצד מתחילים – בקטן, עם עיקרון אחד, בשיווי משקל</div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end accordion -->
+</div><!-- end container -->
+
+<div class="footer">
+  <span>למידה מבוססת פרויקטים – PBL</span> | חינוך בעידן השינויים
+</div>
+
+<script>
+function toggle(btn) {
+  const item = btn.closest('.acc-item');
+  const isOpen = item.classList.contains('open');
+
+  // Close all
+  document.querySelectorAll('.acc-item.open').forEach(el => {
+    if (el !== item) el.classList.remove('open');
+  });
+
+  // Toggle current
+  item.classList.toggle('open', !isOpen);
+
+  // Scroll into view smoothly after opening
+  if (!isOpen) {
+    setTimeout(() => {
+      const rect = item.getBoundingClientRect();
+      const scrollTop = window.scrollY + rect.top - 16;
+      window.scrollTo({ top: scrollTop, behavior: 'smooth' });
+    }, 50);
+  }
+}
+
+// Open first item on load
+document.addEventListener('DOMContentLoaded', () => {
+  const first = document.querySelector('.acc-item');
+  if (first) first.classList.add('open');
+});
+</script>
+</body>
+</html>

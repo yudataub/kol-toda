@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>קטלוג צלצולים</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;900&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Rubik', sans-serif;
+  background: linear-gradient(135deg,#f5f7fb,#eef1f8);
+  color: #222;
+  padding-bottom: 60px;
+}
+header {
+  background: linear-gradient(135deg,#5b3cc4,#8a4fff);
+  color: #fff;
+  padding: 24px 16px;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,.15);
+}
+header h1 { font-size: 1.8rem; font-weight: 900; margin-bottom: 6px; }
+header .sub { font-size: .95rem; opacity:.9; }
+.search-wrap {
+  position: sticky; top:0; z-index: 50;
+  background: #fff;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.search-wrap input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1.05rem;
+  border-radius: 12px;
+  border: 2px solid #d6d6f5;
+  outline: none;
+  font-family: inherit;
+}
+.search-wrap input:focus { border-color: #8a4fff; }
+.counts {
+  text-align: center;
+  margin-top: 8px;
+  font-size: .9rem;
+  color: #555;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 16px; }
+.category {
+  margin-bottom: 22px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
+.category-header {
+  padding: 12px 18px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff;
+  display:flex; justify-content: space-between; align-items:center;
+}
+.category-items { padding: 6px 10px; }
+.item {
+  display:flex; justify-content: space-between; align-items:center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: .95rem;
+}
+.item:last-child { border-bottom: none; }
+.item .title { flex:1; word-break: break-word; }
+.item .badge-doc {
+  background:#ffefc2; color:#7a5a00; font-size:.75rem; font-weight:700;
+  padding:2px 8px; border-radius:8px; margin-right:8px;
+}
+.item a.play {
+  white-space: nowrap;
+  text-decoration: none;
+  background: #f3effd;
+  color: #5b3cc4;
+  font-weight:700;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: .85rem;
+  transition: background .15s;
+}
+.item a.play:hover { background:#e0d4ff; }
+.hidden { display:none !important; }
+
+/* category color coding */
+.cat-0 .category-header{background:linear-gradient(135deg,#ff7e5f,#feb47b);}
+.cat-1 .category-header{background:linear-gradient(135deg,#36d1dc,#5b86e5);}
+.cat-2 .category-header{background:linear-gradient(135deg,#42e695,#3bb2b8);}
+.cat-3 .category-header{background:linear-gradient(135deg,#f6d365,#fda085);}
+.cat-4 .category-header{background:linear-gradient(135deg,#a18cd1,#fbc2eb);}
+.cat-5 .category-header{background:linear-gradient(135deg,#84fab0,#8fd3f4);}
+.cat-6 .category-header{background:linear-gradient(135deg,#fa709a,#fee140);}
+.cat-7 .category-header{background:linear-gradient(135deg,#30cfd0,#330867);}
+.cat-8 .category-header{background:linear-gradient(135deg,#ff9a9e,#fad0c4);}
+.cat-9 .category-header{background:linear-gradient(135deg,#a8edea,#fed6e3);color:#444;}
+.cat-10 .category-header{background:linear-gradient(135deg,#ffecd2,#fcb69f);color:#444;}
+.cat-11 .category-header{background:linear-gradient(135deg,#667eea,#764ba2);}
+.cat-12 .category-header{background:linear-gradient(135deg,#f093fb,#f5576c);}
+.cat-13 .category-header{background:linear-gradient(135deg,#4facfe,#00f2fe);}
+.cat-14 .category-header{background:linear-gradient(135deg,#43e97b,#38f9d7);color:#333;}
+.cat-15 .category-header{background:linear-gradient(135deg,#fbc2eb,#a6c1ee);color:#444;}
+.cat-16 .category-header{background:linear-gradient(135deg,#fdcbf1,#e6dee9);color:#444;}
+.cat-17 .category-header{background:linear-gradient(135deg,#c79081,#dfa579);}
+.cat-18 .category-header{background:linear-gradient(135deg,#ee9ca7,#ffdde1);color:#444;}
+.cat-19 .category-header{background:linear-gradient(135deg,#2c3e50,#4ca1af);}
+</style>
+</head>
+<body>
+<header>
+  <h1>קטלוג צלצולים</h1>
+  <div class="sub" id="totalLine"></div>
+</header>
+<div class="search-wrap">
+  <input type="text" id="search" placeholder="חיפוש לפי שם או קטגוריה..." />
+  <div class="counts" id="counts"></div>
+</div>
+<div class="container" id="container"></div>
+
+<script>
+// f = [title, driveId, category, isPdf(optional 1)]
+const files = [
+["תפילה שמואל 75 שניות","10fPecZ5dgyJ_5SzyCBcHk6vwXcXLVBYP","תפילה ואמונה"],
+["תן לי תפילה","1rU66XCfLNdnYyjc3tRxjM-O2vdDSh_yJ","תפילה ואמונה"],
+["תן לי תפילה דקה וחצי","1tO8yYkAGpkgjNcYTCeNd7iInnUFLnzpC","תפילה ואמונה"],
+["שמואל - תן לי תפילה","1EuBw-E93dDz3OvkUCt1X7RLg-uISSCaV","תפילה ואמונה"],
+["שלמה ארצי - שיר בבוקר בבוקר (פתאום קם אדם)","170UOwxxcK17Nyl6ZAWNg2oX1WC-XxDYB","שירי בוקר והשכמה"],
+["שיר השמחה - שוקי סלומון & ישי לפידות","1L-kPJMG7tY3qm3UjglwIigdBm4It5-Cu","שירי שמחה וזמר"],
+["שיר השמחה 72 שניות","1ZKjsA5oUk-_IDXJiOxvAnP0dPEwlTs1k","שירי שמחה וזמר"],
+["שיר השמחה 103 שניות","1yBWBeeQJCRW88RhnvFF8Kptmhha7BQyL","שירי שמחה וזמר"],
+["שיר האלף בית - שירי ילדות","1yOu3tWSosoDYL91YGhJVwi9xbRn3sZRa","שירי ילדים ובית ספר"],
+["עקיבא - הכל עוד אפשרי","14tcot5f58-CONMQRgD2PnSkJ064nlfnc","שירי שמחה וזמר"],
+["מחרוזת שירי בני עקיבא","1jqYWUpv6FY1TxhspFKfkIWrk3E7qcjkf","שירי שמחה וזמר"],
+["מה אשיב דקה וחצי","1R3mZG20k3KEglalu4Ri_1zl-BNpD_EVD","תפילה ואמונה"],
+["ישי ריבו - סיבת הסיבות","1sQofRZ8nDpgfKazrp79UBdh4h-3s56Pf","תפילה ואמונה"],
+["חנן בן ארי & איזי - אדון הסליחות","1VTexaH7uRwu2vF-hsesFsu5g3ggfvqtn","חגים - אלול וימים נוראים"],
+["הבוקר1","12sditnwIFhOQnz0JdwlvVq7_WUPFBq9T","שירי בוקר והשכמה"],
+["הבוקר","1iLBXWh_FIpZUXvBuqqGagZq9okDhU4kR","שירי בוקר והשכמה"],
+["הבה נפיץ את האור הגדול","17CJ_FvQDCIsjXcaT5Vf9a4XLIu0bUprz","חגים - חנוכה"],
+["האקדמיה ללשון העברית - שיר בעברית","1LClIR3AG_4XhWNWTmgpFXQ6DzVaxmv_T","שבוע השפה העברית"],
+["גאולה דקה לבוקר","1Oco-vN25el5ciO7cdNziYxwcAvwdrlfN","תפילה ואמונה"],
+["אזעקת תרגול דקה וחצי","1mAKeSyCtJeQiVFKVsY6SAnKGDb-hBMHI","אזעקות ותרגולים"],
+["אזעקה לתרגיל ירי טילים","1buFMHMd3BxiKVWpmAE7tCWbFBMCFud3z","אזעקות ותרגולים"],
+["אזעקה דקה וחצי","1fp2n5K3y6NJ_cEk-VPd5rEP5DCTKIzVn","אזעקות ותרגולים"],
+["אדון הסליחות 2 דקות","1t3qzq6tH6q5ue6Aq8NLiV165EWJz47Ty","חגים - אלול וימים נוראים"],
+["יונתן רזאל - חלקת אלוהים","1nRG7gnEINqu8hk_n9z3mCsQXhmxQ6SWK","ירושלים וארץ ישראל"],
+["יהושע לימוני - חבלי משיח (נעמי שמר)","1Z7Oxuq-lHtwxUocexXCc_50174mwt6X6","תפילה ואמונה"],
+["בנימין לנדאו - ייבנה המקדש","1pipUyDCrG0zxdKCnU3vQB2G3q-iH5S6D","תפילה ואמונה"],
+["אמני ישראל - פותח את ידיך","1PSAtzF3tuRjKDvKnK-1FgysjKjF2PIR5","תפילה ואמונה"],
+["והערב - יעקב שוואקי","1YLunpFE1vFbvLvINtLLye8hagROdF0w1","תפילה ואמונה"],
+["פתאום קם אדם 50 שניות","1flU2uSDzEf2KpRjaa4F8o6WY94Dpgmbb","שירי בוקר והשכמה"],
+["קדש חייך בתורה 30 שניות","1xJovBNvQLxuMjxZkdlKVB-ZS2D8-9nez","תפילה ואמונה"],
+["תמיד יש סיבה 30 שניות","19U2E7Q4ImjQOqB0ZlLn8YFzLbzy3zULu","שירי שמחה וזמר"],
+["קדש חייך בתורה 15 שניות","1BCEEUAF7E5B13iOX7Dszz4WCweSl0ZwU","תפילה ואמונה"],
+["אבי בן ישראל - שירי הכנסת ספר תורה מחרוזת","1p7xyDb3NAgvgmYg-x9GI3vDUOR1zbF64","תפילה ואמונה"],
+["פתאום קם אדם 30 שניות","1hh2F8dZcoqfhxnQWQ52OZXt-3y3O6mZO","שירי בוקר והשכמה"],
+["מה אשיב חצי דקה","1n47tNg4SfAzcs7WtSu47oLWErvlABjB9","תפילה ואמונה"],
+["עקיבא - בשעה אחת 40 שניות","1ZeLarwU7A2KzjrC_0ar9WfI39pj_Qfah","שירי שמחה וזמר"],
+["מחשבות טובות 15","1rkC74GHNsWX0mM-VvaaYeZ0HxEFcvjbY","תפילה ואמונה"],
+["מחשבות טובות 30","1RJ8B13DsgtQh276s-iINUdWQlnhpCexf","תפילה ואמונה"],
+["פותח את ידיך 36","1pmK_DF2zcnCwx8Op6PxaKpvaPQoHexJZ","תפילה ואמונה"],
+["עקיבא - בשעה אחת 15 שניות","1AS_i8qILBZnVliTOWUiSq2DY2bFSMZxf","שירי שמחה וזמר"],
+["פותח את ידך 60 שניות","1KSX0QOf8hJ9qcb8koXltz5m6WquBeZHB","תפילה ואמונה"],
+["לך לך עקיבא 15 שניות","1TICVFC5kTzYqTDgbvP96T3E-1XmgBtQq","שירי שמחה וזמר"],
+["מה אשיב רבע 2","1onGHnZrAz4vpW0G4KFVBMDvzsVyxESek","תפילה ואמונה"],
+["לך לך עקיבא 30 שניות","1UHHt6SiKFhLaMnnfvc7N-qS-iHWg3kdM","שירי שמחה וזמר"],
+["כניסה לשיעור","1-uyuN3cpdH5sItzC9c6fCnMeJ5vISOZn","שירי ילדים ובית ספר"],
+["יציאה להפסקה","1IvWXISqwcSr13ntzpTx8tVE3_hkJiAdA","שירי ילדים ובית ספר"],
+["לובשת הזברה פיגמה","1pcw0MgQ6l9p_0UdBpprDJ07lef_IsnAC","שירי ילדים ובית ספר"],
+["כניסה לשיעור (2)","1IJWBwrOQ3qjM0RlfXudWTmpwlAMFSls9","שירי ילדים ובית ספר"],
+["ישתבח שמו 20 שניות","1RW3IJEEmj8Vvf0NrFwyJ4OHCta3Rae3m","תפילה ואמונה"],
+["BARYO - לא נפסיק את השמחה","1Vft80aSn4YqqZZaTjgmmS3-UXfUTSGhh","שירי שמחה וזמר"],
+["חבלי משיח 16","1JxG8nbKjifFF_9Wz0Uwg_VtrhmM6ozBp","תפילה ואמונה"],
+["אשר בחר בנו 50 שניות","15_B7rt98c8kyyz0su4zVYh8zOgVaY5Ol","תפילה ואמונה"],
+["הקהל את העם 30 שניות","17MXVaUcr2YjBJxM_MUsiOmlBtO6hTyln","חגים - סוכות ותשרי"],
+["חבלי משיח 41","1fv7tEyHDyKl6bA4qCjBwmPl9xcQLD3Mf","תפילה ואמונה"],
+["בני השש ובני השבע 15 שניות","1fABEulYns55I-XjENTlLrkkKoTZbp7P8","שירי ילדים ובית ספר"],
+["ונהיה אנחנו 25 שניות","1ixJD8tQhzdp17Szj-B6QHb5Nm7ijFz2V","שירי שמחה וזמר"],
+["בין שיעורים (2)","1SqRvUAZgVcD7gVqM1iQL3Fc5EiEllyrU","שירי ילדים ובית ספר"],
+["הבה נפיץ 40 שניות","1tPaPpxReAVGZ54pxEq3cl5IXQOoFzy9n","חגים - חנוכה"],
+["הקהל את העם 15 שניות","1exy7fGbCsbJmQAtF8TfDeOZtiLbyl3JT","חגים - סוכות ותשרי"],
+["בין שיעורים","1t9lsni2OWGA2F9-Y-_PkapzpdS-NxzRi","שירי ילדים ובית ספר"],
+["26 שניות BARYO - לא נפסיק את השמחה","1ksZR-162GHpz8SsuIV65H3Gan9981ZnH","שירי שמחה וזמר"],
+["אדון הסליחות חנן בן ארי 25 שניות","109mkli-V0VXDIiLJ4om0DI57kyaPfFdC","חגים - אלול וימים נוראים"],
+["גאולה 18 שניות בין שיעורים","1bn65KfL9kshFS7mCFQnV_nVBuQ7druKB","תפילה ואמונה"],
+["אדון הסליחות חנן בן ארי 12 שניות","1GhgSGjHZviF4EPn8QIMKkVuX-NFIdo8w","חגים - אלול וימים נוראים"],
+["בני השש ובני השבע 15 שניות - עותק","1dvkv5Dtzr3ZKj-l3YsqdIbovui0YJqcO","שירי ילדים ובית ספר"],
+["13 שניות BARYO - לא נפסיק את השמחה","1uKnhkuKDyxAIG2PsLO7f312WTpB_P1ET","שירי שמחה וזמר"],
+
+["מחשבות טובות - 29","1rFEcIxeRsWk_Pn-f4HTVfGgL27A_Xr5V","תפילה ואמונה"],
+["תתן אחרית לעמך א - 31","1BbIx5YCkSyhgLLGPXodpThKiXqOrXU0t","חיזוק ותפילה למלחמה"],
+["ריבון העולמים - פריד - ב 30","1J7tURMHLfzoiUz6hFDtHp4PKiaCdgqG2","תפילה ואמונה"],
+["שיר השמיטה - כי נשמור השביעית - 26","1neYUsPiiqcAc93v1dwscZ8tbljU0cRu1","שירי שמחה וזמר"],
+["ריבון העולמים - פריד - א 30","1gXk2Xz-yr8IFDhDGs4Z_PEJR4xQQIhmm","תפילה ואמונה"],
+["סיבת הסיבות פזמון - 39","1UtES0TIXie4zXyMkeoII5utS5mOOmA7z","תפילה ואמונה"],
+["תתן אחרית לעמך ג - 20","171hA5-H9uDAmYvpg_96jlB5A2B7L-w3B","חיזוק ותפילה למלחמה"],
+["סיבת הסיבות פזמון - 25","1M5HgwFygbILMIuo3IhemNvPsHRccnNnp","תפילה ואמונה"],
+["תתן אחרית לעמך ה - 20","1JUAF_G8-_YJtsA4rVMkEc3L1SXQWUAhz","חיזוק ותפילה למלחמה"],
+["קטנתי - 25","1-M1W6QT8KG_PJpFMhjnMbRsNyDrrV1Xz","תפילה ואמונה"],
+["סיבת הסיבות בית - 31","1OvM0YPrsY0AZaQGQcztoAyjh6DeOYR4d","תפילה ואמונה"],
+["ואפילו בהסתרה א 37","1uYDISx7vgN5J5uzDKwY4wHhO7b4kUDfa","תפילה ואמונה"],
+["ואפילו בהסתרה ג 38","1jKFQ4qPEGMxcZR74e14zdciNk_YbLwlK","תפילה ואמונה"],
+["כנפי רוח ב 31","1CqquKj0SoDLeaOoFRiWKlvrvDFTQ3FWq","שירי שמחה וזמר"],
+["כנפי רוח ג 32","16sSB3oMbr7Dy3kpHhOnxCpwF4j0gmucF","שירי שמחה וזמר"],
+["ואפילו בהסתרה ב 32","1xk8nPbIwHdEV4liy8GvUW5eik--l0fyv","תפילה ואמונה"],
+["כמה טוב שנפגשנו - 32","16kOv1ab_vAcwv4pgZ6Fh9aMwLV_1DA2B","שירי שמחה וזמר"],
+["כנפי רוח א 30","1kCGnIQze5aY4vWEtIvtByhLc9EsbNjX1","שירי שמחה וזמר"],
+["חזק חזק א 23","1JHgTyK-pRr68T_BtM9_CGDHLQB2UTfCs","חיזוק ותפילה למלחמה"],
+["וזכני ב 28","11kL2NhN6mnb6jtvcB_tmal8HzhnVBpuH","תפילה ואמונה"],
+["המלאך הגואל אותי ב - 30 (1)","1ES3L471DOO-iwG1t_1zJYtkUckNr7r6h","תפילה ואמונה"],
+["ואפילו בהסתרה ד 33","1fUTOVtzuKa7VyxmLzVvHRAqdtC7GWsjQ","תפילה ואמונה"],
+["וזכני א 29","1fMf-jwVWQbl19NQU1TSHhS-7_4bUs5SS","תפילה ואמונה"],
+["המלאך הגואל אותי ב - 30","1JEe2tyk_GrxacbPq90ugDClqK0izXW6A","תפילה ואמונה"],
+["יותר - אבישי רוזן - 29","1VCzRr11Hs-y3oDnYcU3vLkW2i_BMt99b","שירי שמחה וזמר"],
+["חזק חזק ב 22","1pQuVnoYeAMR2lUZRfTyPsCUub1w95HiH","חיזוק ותפילה למלחמה"],
+["חזק חזק ג 21","1JJkGkCWnwC8baT0EMyq_R2zbhUkPmXXd","חיזוק ותפילה למלחמה"],
+["כי לה' המלוכה א 27","1KH9rCCbPhAbkrZv6jUDR7MUem2FKu6aw","תפילה ואמונה"],
+["כי לה' המלוכה ב 23","11LmJ75raFztjNB2KT4XBw7pUWd-tPv5r","תפילה ואמונה"],
+["המלאך הגואל אותי א - 28","1kI8_Zlsrx1FvgvVNL7lCHCBJ8NviJhBg","תפילה ואמונה"],
+
+["תפילה לעני","1oXdYngalTohusUqgpLvn8Bx0AjAfhXLY","תפילה ואמונה"],
+["תפילה לעני ב 27","1mZh-Z45y9wEfkUls1B1Sf2HCPBVU4sVm","תפילה ואמונה"],
+["תפילה לעני א 28","1svhIhSmw2WEmcIrYzb-tmJ9R44_JD41z","תפילה ואמונה"],
+["נחכה לך - ישי ריבו","1Yel83ICALNNnwpcXzzW7-v3RU1ndIJlI","תפילה ואמונה"],
+["נחכה לך - ישי ריבו א 29","1KDQRQ_GqItvFBiOBMFi_JvjcMdSCZ3yQ","תפילה ואמונה"],
+["ואפילו בהסתרה א 37 (2)","1hfaxIkel-xnT-Q34Un-BM57zDlKluCeb","תפילה ואמונה"],
+["ואפילו בהסתרה ב 32 (2)","1DK1zkKe1chPHMU1BOXQdTbVP4YhLT3PR","תפילה ואמונה"],
+
+["צלצול-לך לך","1ggFEKULI3jUz4_Q-OAJaPowbTB1ea2Yz","תפילה ואמונה"],
+["צלצול-ימי החנוכה","1BVw9gjlZefIelTNPmslCx0LZx6Vdqa63","חגים - חנוכה"],
+["צלצול-אם על המלך טוב","1TLYUtDKZhrEmWLGscdv32DtB0-QIXYhH","תפילה ואמונה"],
+["צלצול- שבט אחים ואחיות ווקאלי","1txwyAPe6jznEiJcQjEjR76TkMGq1OeLE","שירי שמחה וזמר"],
+["צלצול- על הניסים","1W_LS_xpsDICJbDRerHbqarMl6yH_b4LP","חגים - חנוכה"],
+["צלצול- ירושלים את חלום","1qY4bm6II7wucr45VOPwV5wfs-1K3oE30","ירושלים וארץ ישראל"],
+["צלצול- ימי החנוכה","1KA0XsP3w58RfMp_R7Ui_PI6R6HpXbwnj","חגים - חנוכה"],
+["צלצול- ועל הכל ביצוע יותר טוב","1Pz2Z78aWVfjA90Lr-NA9HtQ2nQ9uuKPw","תפילה ואמונה"],
+["צלצול- הכל עוד אפשרי","1ULDumSC9fikOps2Sl14EHQXrLVHG87sD","שירי שמחה וזמר"],
+["צלצול- בצאת ישראל","1uI3VwhQgHzMCDr80aqHiR-Cic3sdm5E9","ירושלים וארץ ישראל"],
+["צלצול- בית ספר ירוק","1pfcHtgAT2UjNzL-XLYetkEMQlnGmUhYM","שירי ילדים ובית ספר"],
+["צלצול- אשר בחר בנו","1eW6Qrw9dpDIFb3P6VcO9FqVr7LDk2Ts-","תפילה ואמונה"],
+["צלצול- אשר בחר בנו 2","1eeGEKdW7tRB_-T6Dcgiyw0wZspck8Dn9","תפילה ואמונה"],
+["צלצול- ארץ צבי","1YAX1jqghlv46cMKT8w1HW086kWlm176C","ירושלים וארץ ישראל"],
+["צלצול- אם מצאתי חן בעיניך","1qxthIgY0f-oTF6U6H3qnQJKCZOAyPjhK","תפילה ואמונה"],
+["צלצול- אורות גבוהים 2","1n_3Nb3_0qxP1zK5GVBYwA2rOCf595yTS","תפילה ואמונה"],
+["צלצול- אביהם של ישראל","19DeTRqjp1DJQWE_vXboOPX-WUdAKB-yr","תפילה ואמונה"],
+["צלצול דקה- מזמור לתודה","1i5lv8Q9VB2fkiK67wLEqV5WpD3f3UWOO","תפילה ואמונה"],
+["צלצול אנא ה' הושיעה נא","1bS0j1ctORkaZpn61fyH_43cWzz1cBO4N","תפילה ואמונה"],
+["צלצול 2- אנא ה' הושיעה נא","1BiuZ9XYqfI-Gtl-vnY0-db-zFJvzBFqJ","תפילה ואמונה"],
+["אם מצאתי חן בעיניך המלך- צלצול","10GUIpQUhMXgbxwbAvRdX1cyY8TJXI866","תפילה ואמונה"],
+["צלצול-ואהבת לרעך כמוך - עותק","1CYDjM18G1c_7Kc_D_n_YZdZXekzUnkNX","תפילה ואמונה"],
+["צלצול- תמיד אליך1 - עותק","1mV3n-eYo9QjHWAnF_EPneCLih127xrnF","תפילה ואמונה"],
+["צלצול-תודה לך שיינפלד","1z84AFfUm0_H6Ve9o4E3TIvKV8r6RT0yY","תפילה ואמונה"],
+["צלצול-הכל משמים-2 - עותק","1qaqDNF7UfuMi8gHPlIwLMIIsrPyVikSY","תפילה ואמונה"],
+["צלצול-תן לי אור 39","1-D38s5TeNbjb5EGTJFB7UJEWJv984kez","תפילה ואמונה"],
+["צלצול-הכל משמים- 1 - עותק","1qrtxgCe45SRfnZL9vgROwQ6YITVJegQE","תפילה ואמונה"],
+["צלצול-שלום לך ארץ נהדרת","17bCzX1l4zwSg2qw13FFAMa1lRXn8NT-m","ירושלים וארץ ישראל"],
+["צלצול-רק בגלל הרוח","1JpsPmUxMiuvUIPBTLhfJRS6RHgK8D1Qh","שירי שמחה וזמר"],
+["צלצול-ילדי המרפסות - עותק","1fUtaqDt42fe1YpWGeUx8n03JpBd2j62B","שירי ילדים ובית ספר"],
+["צלצול- מה אהבתי תורתך - עותק","1qygAJdP2LUKj3Fx8Ez-A2r3C2P8VownC","תפילה ואמונה"],
+["צלצול-פותח את ידיך","1Fyu0umtJqNHNLzhbwubiA6sGhAk1ptaG","תפילה ואמונה"],
+["צלצול-ניגון צמאה","1XlAMNoF7fU8TciH4oinDLcMYzf2fkRZa","תפילה ואמונה"],
+["צלצול-כנפי רוח1","1UJ3oGTmHuTJW3XU51bynVOZRO7t7dvHj","שירי שמחה וזמר"],
+["צלצול-ואהבת לרעך כמוך","1KLnov2OMSOQmeiDua73Faxy3Axhazo_P","תפילה ואמונה"],
+["צלצול-מזמור לתודה","1YoBfAYz0Ws4bI1WDsvuTKpdhBp98Oecx","תפילה ואמונה"],
+["צלצול-עוד לא אבדה תקוותנו","1VdUQO-z--N0Jv2D2pOG51pb9x3NN_LIX","ירושלים וארץ ישראל"],
+["צלצול-הטוב כי לא כלו רחמיך","1oxJkkFf1cvy4SYKffpn6JVMJ4NlxEoEq","תפילה ואמונה"],
+["צלצול-סדר העבודה","1xccFlqedzsJye77Dmj9QGZVRhi0X0X3y","חגים - אלול וימים נוראים"],
+["צלצול-ילדי המרפסות","1L_ot1xMdqEsjCR4A7077peqfG64COCZ5","שירי ילדים ובית ספר"],
+["צלצול-ירושלים של זהב","13FgPeQbBjCX8U2DPGSpxjHl6fXy4xtuA","ירושלים וארץ ישראל"],
+["צלצול-הכל משמים-2","1vO08km5no-LFjvbiJIc_q3T5RzA_HQug","תפילה ואמונה"],
+["צלצול-חנוכה נרקוד נשמח2","1coiLzl0Hd5WfXKsZlY3BjxgM4YOmyQ_J","חגים - חנוכה"],
+["צלצול-משנכנס אדר","1R64V3TltoILpz6rmG5vnm4DhfH6aLugb","חגים - פורים ואדר"],
+["צלצול-בזכות אהבת חינם שיינפלד","1I8jsQ9zlQr52PZr-jtkilvWryGo4jDpe","תפילה ואמונה"],
+["צלצול-הכל משמים- 1","1xcVT7GxbZF5QOciaJlvh4Lr6-AarOsb2","תפילה ואמונה"],
+["צלצול-צל ומי באר","1nAuxOqC4HHQSfLu71-GaC_hdImszDFYn","תפילה ואמונה"],
+["צלצול- שיבנה בית המקדש","1nGIUjv805HxavQMEvYLp5RUp5EDLS-ot","תפילה ואמונה"],
+["צלצול- שירבעברית 40ש","1nDZ3Jxzftbx3dEI-J_Hn2iNzwZpRXDOa","שבוע השפה העברית"],
+["צלצול- שבתי בבית ה'","1dCZC8H8Rs-gp5GplMpRpGcQqd24AEZ7e","תפילה ואמונה"],
+["צלצול- שיר האחדות","15PpZh8hPGh9D9uySQdnqSPWMAPDJaoja","שירי שמחה וזמר"],
+["צלצול- שישו את ירושלים","1touEhx7cub2sul-PCCjPVE7kl8f65sPP","ירושלים וארץ ישראל"],
+["צלצול- תמיד אליך1","1aJNLtW7YpIMOXtcvNhKOQeL4iHvoSLR-","תפילה ואמונה"],
+["צלצול- תמיד אליך 2","19-k7kdqjr30aZzHFxw2BO6GzppfgjPDY","תפילה ואמונה"],
+["צלצול- רבה אמונתך1","1MCgJv1GPtcPZY0nWAPX3NQDpUaSjiArj","תפילה ואמונה"],
+["צלצול-אני מאמין2","1reU9Ll7pJybxpjB2FXw35cpBbut8OnVv","תפילה ואמונה"],
+["צלצול-אם אשכחך ירושלים מידד טסה","19U_o64V8NHXo-KpbxSlUMC4HgxsugQWO","ירושלים וארץ ישראל"],
+["צלצול- סלם בתוך אור גדול","1G2gSJV6pybKot73TVfYXGkrJ_wobM_pv","תפילה ואמונה"],
+["צלצול- שישו את ירושלים 2","1XmXBZWMYW5R3dE5ryQFQTVjITkI8woE4","ירושלים וארץ ישראל"],
+["צלצול-בזכות אהבת חינם קאבר","1sBaqBwQhGbmr2ZWm4OnwmbcS0wCLMKXn","תפילה ואמונה"],
+["צלצול- רבה אמונתך2","117HbmCGC0sTW2Kn9yIz64oIH6EC8972Q","תפילה ואמונה"],
+["צלצול- תן לי אור","1c-qtIoUNpNrYWwRheBPGSsrXlwf4yABB","תפילה ואמונה"],
+["צלצול- שיר בעברית 20 ש","1NI5Lq0Sr-cnS71Ihw_aUkt8YfM5jIgA0","שבוע השפה העברית"],
+["צלצול- טוב לי תורת פיך","1dNyqVIHzHIgtbB5gONZHYWu7DJ94ymlz","תפילה ואמונה"],
+["צלצול- ירושלים עומר אדם","1fJ8UOgxF6Oa7taBDv3KZZJEdCQ96Ezvq","ירושלים וארץ ישראל"],
+["צלצול- כנפי רוח2","13WNw221k0Ynj_fYyIrPrdrbQJUPPn7Om","שירי שמחה וזמר"],
+["צלצול- לא תנצחו אותי","1-xCZzfaOE_sDEG7FcIgzwc0W3jVzhmmi","חיזוק ותפילה למלחמה"],
+["צלצול- חלקת אלוהים","1IHaQ4PDaW9V5f0jxgN7GkKHZrPPRo9Gk","ירושלים וארץ ישראל"],
+["צלצול- ובאו כולם בברית יחד","1wiRxywZv0sHcv_NB4R0MKuWE-8YgWlCN","תפילה ואמונה"],
+["צלצול- כי התורה כוללת","1DjlTem7_dCc-KlAnxiZuLnB36vA1k5t7","תפילה ואמונה"],
+["צלצול- ירושלים- שלומי שבת","1rK8nx0hJmjkhYxbK5b9veKO3gXnpV-KZ","ירושלים וארץ ישראל"],
+["צלצול- הנר הפנימי","1H5_F6TCDuXPi7Xm9B0w6JEG9FAdi2WTp","תפילה ואמונה"],
+["צלצול- יהודי זה הכי בני פרידמן","1A_vbwPo82Wr3MhK1vv4kCPCaCrd7h47a","שירי שמחה וזמר"],
+["צלצול- יפה ותמה","1wzOvdY5Fvq9V0F43dUXOwmewdhT6Y3lF","שירי שמחה וזמר"],
+["צלצול- מה אהבתי תורתך","1Eq6YvaQE9kru75Ceu2mLwIzc6HUFSWlS","תפילה ואמונה"],
+["צלצול- חנוכה נרקוד נשמח","1BMmk9yJF9QwTuViKhbu533_rCk3VqWfL","חגים - חנוכה"],
+["צלצול- ועל הכל","17u7tpcmrV0uQx3zSYNBOCL729EddnhzD","תפילה ואמונה"],
+["צלצול- ימים טובים3","1ITZYWiyKA-A17Votfa9NLMr6xoyX2lnp","שירי שמחה וזמר"],
+["צלצול- הנר הפנימי 2","17mnFzW8AI_kcdBF0pUsyTJoyVMYGyYmH","תפילה ואמונה"],
+["צלצול- בשעה אחת 1","1QIqWxj7Cd3cGr5GcPi9Zq5jyzLVz8nOv","שירי שמחה וזמר"],
+["צלצול- אחים","1r480cU04LkXeNsmNvdmQIKY4v6S2vcN3","שירי שמחה וזמר"],
+["צלצול- אורות גבוהים 1","1iLTJq-y1Id8a6SMfVvV_YXX2x3z-e89b","תפילה ואמונה"],
+["לארצי יש יום הולדת - פרחי ירושלים","16moUIda8pT1Dn4-qZwPG7MHwo3jf7euX","ירושלים וארץ ישראל"],
+["צלצול- הביאו שמש 2","1tIz2uW2n033D4azwvtB5ro3wjIpgTAnU","שירי שמחה וזמר"],
+["צלצול- בשעה אחת 2","1GE7M1IOO9o2yGpKoucw3b2lcR-QkCttv","שירי שמחה וזמר"],
+["צלצול לא נפסיק את השמחה","1exWHcTOIIAzfSo61ixjDEQvcwYmBkhjF","שירי שמחה וזמר"],
+["צלצול- דרך אמונה בחרתי קליין","1BsotuRQFgvNK0L5ma5LhdXZKMOvNpnMO","תפילה ואמונה"],
+["צלצול- הביאו שמש","1fN0BsCb525NZ4yIpz5sqQ4SMmDUBOXQI","שירי שמחה וזמר"],
+["צלצול- אני מאמין1","1zp76ycDidH5_XHR5ykjmaLJwT4i_vrw_","תפילה ואמונה"],
+["צוצול-כשהנשמה מאירה","16QNGLHA6N6aBgGxGC8g6Z1UxsAKczR8T","תפילה ואמונה"],
+["צלצול חדש- מחשבות טובות","103Dtbe3dS-LV3ae03KhYuUZI40omqGJD","תפילה ואמונה"],
+
+["בדיוק כמו שאני ככה זה טוב 31","1qnmxAeLVIHdagSS79y_Wr8rXT3janSqS","תפילה ואמונה"],
+
+["יד ביד - My Festigal","1Rg3DO4hq_79aP1AlhUApIBbVia6Mkfzb","שירי ילדים ובית ספר"],
+["אמני ישראל ותלמידי נתיב זבולון - קטן עלינו","1F_OxgIHhcddQKQYhnsvuoAPvTtp-rTp1","שירי ילדים ובית ספר"],
+["שיר בעברית - האקדמיה ללשון העברית","1L91xGEhjfmj9n1liHqPEVg3ADua017bp","שבוע השפה העברית"],
+["שלום כיתה א","1YjSD9u_l0SzkMR6xlhI-P3PFw-CUEWZw","שירי ילדים ובית ספר"],
+["צלצול- הילדים קופצים","1ZWKJVq9Vunq3-iMYi13jFM6QXabOMj3E","שירי ילדים ובית ספר"],
+["אבישי רוזן - אלפי ילדים","1ylJEqELTwXE3wXg_two6D53ZdyMFld5c","שירי ילדים ובית ספר"],
+["ישי ריבו - סיבת הסיבות (פייד אין)","1rQR_z4Rw13ir3ex6gR1HLLHUHB0gjBDn","תפילה ואמונה"],
+["התחדשות - עפרה חזה","1jt6f3hsEzz2qXG7K0iStzAQr4HmbtbTQ","שירי שמחה וזמר"],
+["צלצול- איזה יום נפלא","1BEKLu-w6TZmwTmv823wi0eQ8K85N9iKx","שירי ילדים ובית ספר"],
+["דף עליה משפחתי","1ZDHekdPaSiZ4UAOKgb2HO8GlqY2YRD6O","מסמכים","pdf"],
+
+["שמחה- מצווה גדולה","1JuyqT9BTKVDMPjoUIvXq5zrLwiMF0V_z","שירי שמחה וזמר"],
+["ירושלים שבלב -38","1r-j6fYtjFEQuem7-2s0qMNdTzGtBa5_Y","ירושלים וארץ ישראל"],
+["חודש שבט1- ברוש","1lx6fixD8MvUN6A1jzurzj0ZmieoXemVc","ראש חודש וחודשי השנה"],
+["חודש סיון- ה' מלך - 45","1mZvd84QATWpkacS0xWk2WfZHj2GWWijT","ראש חודש וחודשי השנה"],
+["חודש כסלו- צלצול חנוכה","1kW1Of-ZW2FbL-c3TEYTy_IHIoxiMsB5d","חגים - חנוכה"],
+["חודש אייר2-ירושלים את חלום","1Qv779G95RrkrpUzIEMYvQ_f058CcqXAg","ראש חודש וחודשי השנה"],
+["35 - החיים שלנו תותים","1OQt_Pf1r09Yha6B2TkOp59ELyh-0m4hm","שירי שמחה וזמר"],
+["חודש תשרי- שנה טובה שדרני קול חי","1s3LtxwBbFnfO9z3fvOP4Y8i3byjdKHYe","ראש חודש וחודשי השנה"],
+["חודש חשון/טבת- שיר השלוליות","17HBaHPvnj6mh9ktQY2UfHjgnKjmB9SnH","ראש חודש וחודשי השנה"],
+["ישי ריבו - לשוב הביתה - 38","1LmwfPWNOXqvwK2OK36tmLL3oZbg2oAQh","תפילה ואמונה"],
+["צלצול לראש חודש","1le5qpJzimZydS-ygdaIZRmZdOpOFJESY","ראש חודש וחודשי השנה"],
+["חודש שבט2-והיה כעץ שתול","1ypRfjQxSpfE_FAjtVfhLqMb5yKbASvn-","ראש חודש וחודשי השנה"],
+["חודש תשרי- שנה טובה","1i4uSWoM8s9stS6Z-mN15EYd38qFHksE4","ראש חודש וחודשי השנה"],
+["ותן טל ומטר א - 46","1yfUQqPsG5UQA4Tn0bLQ8bJefGsjEVntx","תפילה ואמונה"],
+["חג פורים ליהודים - 44","1OPqHW3Qfz8mkBbw3m5t2zp01zavzBecX","חגים - פורים ואדר"],
+["שמחה- בענין השמחה","14fyqL9Ta9MMcKP870EfSqw_E8xA7TKNz","שירי שמחה וזמר"],
+["שמחה- אילו יהודי","1UaSNfZnnpBV00_635aPO_H5duMxA6xu5","שירי שמחה וזמר"],
+["חודש תשרי- אחרי החגים","1xZ6rnrV13hx8uHQjr03wdQF9lU4spXGZ","ראש חודש וחודשי השנה"],
+["חודש כסלו-אור גדול","1DqjHTOvjJnCa0mCi4ilxUXgw8_DKQkt2","חגים - חנוכה"],
+["חודש אלול- חנן בן ארי & איזי - אדון הסליחות","13wmjaUSOmEUfbU9qS6NoSLzH3u8opWGd","חגים - אלול וימים נוראים"],
+["ותן טל ומטר - 28","1SFnuY2LZaRgPOZWKdsxtDOy1YvbyGFTz","תפילה ואמונה"],
+["חודש חשון- להקת הנחל - גשם בוא","1OUvWE_mpO2SHR09UdiDT5n5vYT01dLPO","ראש חודש וחודשי השנה"],
+
+["המנון הנני ווקאלי - מיזם תפילה באהבה","1L8XH_1fwKEKcCagqZ4vPHN4if1dFMC8A","הנני - תפילה באהבה"],
+["הנני וואקלי ג - פזמון - 29","15M5BD9i8st1ztnKBqZ_s5SAZWeM_JIYi","הנני - תפילה באהבה"],
+["הנני וואקלי ב - יוסף ומשה - 39","1Q28IBcImaT25zL8o92mmEAhhNu97pqLA","הנני - תפילה באהבה"],
+["הנני וואקלי א - אברהם ויעקב - 37","1aFuu2sz9Vl7uQZeqXql8rGqzKknznkOO","הנני - תפילה באהבה"],
+["הנני וואקלי ד- פזמון - 30","1gL87FDep3BRaioj2w4Nf6VJaUEnZ0xEH","הנני - תפילה באהבה"],
+["הנני המנון 14","1Suk3dATljXiXbBliBEwJlyKShkc4mKSr","הנני - תפילה באהבה"],
+
+["משנכנס אדר 2 - 26","1FuCVB5Hf6ytzFUHmDF3iVuQSDLMWH3v5","חגים - פורים ואדר"],
+["משנכנס אדר 1 - 26","1FwJdi6rv91RcHS4TrM4u97HYHkgevqhi","חגים - פורים ואדר"],
+["משנכנס אדר - אשל","11SLHRQKjDovGY_3AXb49SnPgB6OMONc3","חגים - פורים ואדר"],
+["ככה ייעשה - 27","1-SU_c3q7yBwRiwDQuoG-lMn54T3cLrMt","חגים - פורים ואדר"],
+["חייב איניש 1 - 26","1ZUBAyXU-NQKHvtDCkHrRaRtjHAcOS1t0","חגים - פורים ואדר"],
+["ויהי בימי.. - 21","1dOsWrLJmcZk7MFkExvqeMYss2R1UwObg","חגים - פורים ואדר"],
+["אילו יהודי היה יודע - 36","1ZU4ZLHTlOQfN3ViZu3mdQbpJFLNDi5Ga","חגים - פורים ואדר"],
+["מצוה גדולה להיות בשמחה תמיד 26","1kzSRnrrNzMmkn-gNDNsdBX49J2r30i8N","חגים - פורים ואדר"],
+["חייב איניש לבסומי ב - 23","1uCPosspSGXAtnDat7pfmsMoyweAU3jhA","חגים - פורים ואדר"],
+["שושנת יעקב - 23","1mJJ6HbE9p3oVUijuJAfepPJe-9t_R-4h","חגים - פורים ואדר"],
+["ניגון פורים - קרלין - 28","1OU1YXe0LVFZNAAUf4pZ3o7SFhQcv9kV_","חגים - פורים ואדר"],
+["השמחה - 36","1AuyDXOBoJ_1bZx5Kbc4QsIpCFV-Q-Eei","חגים - פורים ואדר"],
+["ליהודים א - 22","1_olQZdCetab7cMmWlXo7SDnWrALCFnsb","חגים - פורים ואדר"],
+["משנכנס אדר א - 23","1n9EXvcvXGJc99zD1ovZtmD2NmQbOd5Z8","חגים - פורים ואדר"],
+["משנכנס אדר ב - 23","1EAyJ94zPYcMGnHZnMeg9-AdlhCYNwNmH","חגים - פורים ואדר"],
+["ליהודים ב - 23","1sJgQJ4fH8bj5K1uVAWBPAZu5Qo_tF-Fl","חגים - פורים ואדר"],
+["ליהודים ג - 29","1-j7jLumtinXxaXWGxYa1UldPl3z20mMA","חגים - פורים ואדר"],
+["עבדו את ה' בשמחה- 16","1c2FhTZyAFf1OTql0iG6egUf0AKPEnceJ","חגים - פורים ואדר"],
+
+["ישי ריבו - סדר העבודה","14vxOMy88tmZ6nK7NfWjLayEBSQunO1lb","חגים - אלול וימים נוראים"],
+["יצחק מאיר אודי דוידי - אוחילה לאל ג 32","1iPXcAHgg570P6p8FyNvrBHYaGOiCiVdm","חגים - סוכות ותשרי"],
+["מכניסי רחמים ב 31","1bq4vLQ08PfARAVN1J8yrlwVhx3dhvkna","חגים - אלול וימים נוראים"],
+["סוכה ולוב א - 23","1KW6xXFArXPG4ukUacNMs5OU29ZSQ21zQ","חגים - סוכות ותשרי"],
+["לך אלי תשוקתי א - 36","1Q7isWf8yBWAw0HEMTng44BgW0gn6TjBz","חגים - אלול וימים נוראים"],
+["יה שמע אביונך ב 29","12R7M7L3FiQL9z6Fi1wFzaS8ZACc2vUA-","חגים - אלול וימים נוראים"],
+["יצחק מאיר אודי דוידי - אוחילה לאל ב 31","1RAJxVKWMjUvhGaRMV5TMev2Q-I0-88kz","חגים - סוכות ותשרי"],
+["לך אלי תשוקתי ב 35","1kQQ8jdG85a0ic0Ag9zrhpNeaswRBoldM","חגים - אלול וימים נוראים"],
+["מכניסי רחמים א 36","1YzRWpZPQR0StoPvkSEcz1DqoiS5DahgW","חגים - אלול וימים נוראים"],
+["יצחק מאיר אודי דוידי - אוחילה לאל א 24","1oGiqzRnrU4nmGe4moJZ0kALC1gqk7Fat","חגים - סוכות ותשרי"],
+["סוכה ולוב ב - 22","1AMLcqQ7K3MgLkvZBNEu7DcRgdd9fiwV2","חגים - סוכות ותשרי"],
+["יה שמע אביונך א 29","1iUeol0m3twliCKtsBo5lZ88z2-L1hdIl","חגים - אלול וימים נוראים"],
+["ופרוש עלינו סוכת - 39","1t2lQeGuHLdbHWNaWkDcJjSt3NkKJa_UT","חגים - סוכות ותשרי"],
+["02 ושמחת בחגך- ב 26","1pdM2Ygx-umrqt2GwyGszhIdbp8BVV9rz","חגים - סוכות ותשרי"],
+["ונתנה תוקף ב 32","1NlBjY_ZujIqZVVM3vLapZV2xh1FdH5TL","חגים - אלול וימים נוראים"],
+["אדון הסליחות ב 27","1vllvHthebhUQpukUippj6hy2rDmoGut9","חגים - אלול וימים נוראים"],
+["01 ושמחת בחגך- ב 22","1Sm7BtZnt5jsv8KhOm__qA5UHsDOv-K4-","חגים - סוכות ותשרי"],
+["ונתנה תוקף א 32","18v2hzv_7kPocPVWuOipOz3iMJ6o_H5ui","חגים - אלול וימים נוראים"],
+["01 ושמחת בחגך- א 22","1cM0xvgAvu30IoZJRHFEePjtZuLHlHbwj","חגים - סוכות ותשרי"],
+["02 ושמחת בחגך- א 26","1UVPYRpsTUs47q4ad1E271--zmZuhvvt5","חגים - סוכות ותשרי"],
+["אדון הסליחות א 27","129Q7hnE2SWsk7foeoz-FCqULbHVUrsmL","חגים - אלול וימים נוראים"],
+["הרחמן הוא יקים לנו - 26","1fjRNxtxbZ07PLnbwqgo_6KzVZaVXuQE7","תפילה ואמונה"],
+
+["תפילת הרב אליהו - רזאל ויוסף הרקדן","1u-ffpn9oGbYVpwGi7H-MHMHFLciA2EWY","תפילה ואמונה"],
+["חיים ישראל - תפילת הרב","1ueYMfnKVcOLs-EQydjyHT8P1qlfDcxJc","תפילה ואמונה"],
+["איציק ואבישי אשל - אביהם של ישראל","1Q3ZVJK8d5rxadRzztUaNHYltQLhVnaAu","תפילה ואמונה"],
+["תפילת הרב - רזאל ויוסף הרקדן ב 35","1R4NhggMrAkFrjZYwbLbniYEkdc17rc_V","תפילה ואמונה"],
+["תפילת הרב - רזאל ויוסף הרקדן א 28","1TasR8kVk5QF9pDHTrNg0wblM9M6eIxyb","תפילה ואמונה"],
+["חיים ישראל - תפילת הרב ב - 31","1kn68X_1dmhuUOuaalZX03sGCcnMOLvlC","תפילה ואמונה"],
+["חיים ישראל - תפילת הרב א - 37","1sLXou2vEFyxe0F7sqkZJH192lUcqQPrw","תפילה ואמונה"],
+["אביהם של ישראל א - 31","1eoBujSOnN9VqA3JW9jblNOjnW_GJ_m6D","תפילה ואמונה"],
+["אביהם של ישראל ב - 32","1tB1Rj8RFWwvb8_3ckkABu1Fshg_kLXxo","תפילה ואמונה"],
+["חיים ישראל - תפילת הרב ג - 31","1S8pWRblQTS-jqcYIMLbTWvtvBGun3KQh","תפילה ואמונה"],
+
+["ואמרתם כה לחי 25","1nTu0j69_zVk37hu6RRqI9jytS7-f6dV7","חיזוק ותפילה למלחמה"],
+["תפילה לשלום חיילי צה״ל ד - 30","1nuH0w1fuFCEIT-XBhtuA8DXgJ5OHGoCc","חיזוק ותפילה למלחמה"],
+["תפילה לשלום חיילי צה״ל א - 30","1X714tkFEGgyM_s_gWf8JwW7echXWdOqv","חיזוק ותפילה למלחמה"],
+["אמר רבי עקיבא 23","1PpY-oasdbqf0ntQvNZK_UMhEoFdJz9Wy","שירי שמחה וזמר"],
+["התפילה לשלום המדינה ב 32","1YIDvkGCJjn34_59689RFY44bfp7IhiOO","חיזוק ותפילה למלחמה"],
+["בר יוחאי 24","1FDCALTw75nVg8CbYVwLbEEUr7bsVUChu","תפילה ואמונה"],
+
+["עומר אדם - שיר למעלות א 37","1wVKTC-lIF-SHGhmRHN9VMegXmZRp7bXO","חיזוק ותפילה למלחמה"],
+["מאמינים בני מאמינים ב 25","1TSgj8cMVOAJ2275L0r1DUN5HxETI86Kn","חיזוק ותפילה למלחמה"],
+["עומר אדם - שיר למעלות ב 21","181plf34ETlWMMtgJMoXeKMZOtWYT7tRD","חיזוק ותפילה למלחמה"],
+["מאמינים בני מאמינים א 24","1dxyjZM3i6p3yYlepzw6VsUv49Io0PdqC","חיזוק ותפילה למלחמה"],
+["לא תירא מהם א 26","1tzmOD2gcd8pB7cwyDGlBCkQOC9PJABlI","חיזוק ותפילה למלחמה"],
+["לא תירא מהם ב 25","1dff4vasc6S1BfyKbNdMci-qUxBLZE3G6","חיזוק ותפילה למלחמה"],
+
+["ר״ח 4 - הללו את ה'","11sinb41pgy2sISPtdXkVbkd1iunw-ifT","ראש חודש וחודשי השנה"],
+["ר״ח 3 - מה אשיב לה'","1mja9fWNVIDaBE_zAaBHE07GxSXJOEaWM","ראש חודש וחודשי השנה"],
+["ר״ח 2 - יברך את בית ישראל","144ibJywUAv91PHzOxj2ZTsQ4dik33XBz","ראש חודש וחודשי השנה"],
+["ר״ח 1 - בצאת ישראל","1YbbO093oZmke6gNl3od5LYVT3eQr_EWH","ראש חודש וחודשי השנה"],
+["הלל לראש חודש ברצף","1hQUHXAHQy91pH6sS1qbehFTrBZlOLVda","ראש חודש וחודשי השנה"],
+["יברך את... - 24","1ebPwTe1K7gzyntIyqDbGRpo86IobaIJ4","ראש חודש וחודשי השנה"],
+
+["אביהו מדינה - מעוז צור ישועתי א 29","1j5dkCcu8uCTPG2uiIpCkPx4qNgexH9oj","חגים - חנוכה"],
+["באו זרים - מרגליות - 27","1WKt_VnSTHSwBjiEvoNbR_WBUPy3Vvy7G","חגים - חנוכה"],
+["על הניסים ב 24","1SoP2JaIj0bTHm6sO7lXIg9m-VTdjscVH","חגים - חנוכה"],
+["יוונים נקבצו עלי א 23","1U8XS9EqkkEk9weLpR82DHwyxlfsOLHcD","חגים - חנוכה"],
+["על הניסים א 23","1CoXTAEUNgcQnXqwnaQaBIXzwbzjrYZBA","חגים - חנוכה"],
+["מעוז צור קינדרלעך - 18","14XObQZtRtQ88-B6r9jnoOF1xJYzRaIkB","חגים - חנוכה"],
+["אביהו מדינה - הנרות הללו 38","1ojTIr89St_OcVCL_JUWC6l44G7_BzVSy","חגים - חנוכה"],
+
+["חי חי חי - א - 18","1gsEj5i5swHYtM-r3WUezlLlPqCsPEwCx","שבוע השפה העברית"],
+["חי - הרצליך","1gkeKt7pPYPAjN62wFqGP13CaRTtbLfry","שבוע השפה העברית"],
+["אליעזר בן יהודה פזמון 22","1aInvXd6564lxM9WcYH9WK_3qt3rX8DrM","שבוע השפה העברית"],
+["אליעזר בן יהודה א 31","1D693O1zFq98JP8xeo6loyfuJ-zhYtiz3","שבוע השפה העברית"],
+["אליעזר בן יהודה ג 44","1cGUAJnqaExFxH0zmDNjkidQ1y1NhgI6f","שבוע השפה העברית"],
+["אליעזר בן יהודה ב 16","1DUFb5BujH-F8Je5K1LQrr7mgK10-K7pk","שבוע השפה העברית"],
+
+["דע קרדונר ב 35","1d6g7oNPOiuo_DDSzX5WWMpU73gpuaGQh","עין טובה"],
+["דע - קרדונר א 21","1gMvlpSc1DuVi5rjNPC0tnljPjneDbKIy","עין טובה"],
+["אדרבה ג 35","1sey27sDDITuRZl6dFoNh5IF6-lp_L5w8","עין טובה"],
+["תשמח ב 34","13muZSnjUkOpiz6s5fMAnBtR-dQ74nKsr","עין טובה"],
+["אדרבה א 28","16KIDSsnL458iidM23LAM-5PEgd3qIoQQ","עין טובה"],
+["אדרבה ב 32","1TRRbQMuHFwnE4bo8dCnf7L8RINjwHMVW","עין טובה"],
+["תשמח א 25","1DttAI6S8R81OVwvXshaGzyhxlf5cPJGO","עין טובה"],
+
+["משחפסח ב 31","1448sY1WCHpzT6NUsHgKJZkVDa9bf6fJ1","חגים - ניסן ופסח"],
+["והיא שעמדה א 25","1KAfULwMYXoxVFSOzj2ZtEmm8VivATvRz","חגים - ניסן ופסח"],
+["אחד אלוקינו - 20","1pyTydZstsJwFSkMqg0hkV7RCokNuuUMs","חגים - ניסן ופסח"],
+["והיא שעמדה ג 25","1gcbGqDlxnbwgb8YDdQU7V8gRe2YO98UH","חגים - ניסן ופסח"],
+["והיא שעמדה ב 27","12iU9ah8qRwiYN_bVcyUOf7WyTUYhy4KB","חגים - ניסן ופסח"],
+["הגיע זמן הגאולה ב 22","1bb9DrN0QE7vuRGa-NQQ7VfCZMECv169a","חגים - ניסן ופסח"],
+["הגיע זמן הגאולה א 20","1-E7iV2hJWB9j5Lkr3kOnlt_sY3zoVumX","חגים - ניסן ופסח"],
+["משחפסח א 15","12ejEu4IrQaYQoZTQtVn2Lr_U7alF6pjY","חגים - ניסן ופסח"],
+["הגיע זמן הגאולה ג 22","1OnkaxdTh4tiMpMeodqbeOoBUGm0eJD_c","חגים - ניסן ופסח"],
+
+["רחל אימנו - חיים ישראל","144-qo4iY3ZnCR-RDj1vWRSXa3JLvbtxk","ירושלים וארץ ישראל"],
+["תיקון הגשם ב 24","1VYsGVWSKrqBn6IAYXjOyC24UG-MRqlbw","ראש חודש וחודשי השנה"],
+["שימי תבורי ברכנו א 25","1tI4sY_v_vpDMcItqxQJXYQIP2eeZho2O","ירושלים וארץ ישראל"],
+["תיקון הגשם א 23","1UMBkmqfS6uxCZUiuYp43W1tUJDly2pS1","ראש חודש וחודשי השנה"],
+["שימי תבורי ברכנו ג 20","1GLPzjdC365Ulb3hrekFok5LyAdU5WnL2","ירושלים וארץ ישראל"],
+["תיקון הגשם ג 22","1trUSpbrSk7hn_lo1jR4SkZ0YuKh1-jqi","ראש חודש וחודשי השנה"],
+["שימי תבורי ברכנו ב 20","1L68AZ5veGA5UpDa1AJ-S8TDuHU-JvPmi","ירושלים וארץ ישראל"],
+["קול פעמונים - ישי ריבו 1","111nH6XXuCPYUbcF_0bWT2AhoKR5cOOxt","ירושלים וארץ ישראל"],
+["קול פעמונים - ישי ריבו 2","1x6XsvRR5ACGpCSQGjSMJRspbMN8o9f2S","ירושלים וארץ ישראל"],
+["פרחי ירושלים - קול ברמה נשמע א - 37","1fSI_0yGR2XJV7GqsFyNBBgFziJOTxfNj","ירושלים וארץ ישראל"],
+["חברון מאז ולתמיד - 21","1iwghnjZ5oZmQTzu54GXEmgzisY64thGj","ירושלים וארץ ישראל"],
+["מנעי קולך - רייכל - 37","1XRvJJvhWxcjGZmkBSLByFMPkJVPr2DNc","ירושלים וארץ ישראל"],
+["שימי תבורי ברכנו - צלצול","1Z5F-55zh2w_KbnJfl3s2XXwhY75042zI","ירושלים וארץ ישראל"],
+["לך אתן - א 31","16gYuZDS8IBPUkD6piLy-R66B5ly0aH5J","ירושלים וארץ ישראל"],
+["לך אתן - ב 32","1CbQ_o99dQsGJu888ayvIa1ONjC_vIZES","ירושלים וארץ ישראל"],
+["חברון עיר האבות - גראוכר - 21","1wqSYmYNCEWRNgJrshIAsZm-jTdOmBM83","ירושלים וארץ ישראל"],
+["רחל אימנו - חיים ישראל - א 31","1ociZzv3L48cYi_6XRxFoSp9RTKnq82z6","ירושלים וארץ ישראל"],
+["רחל אמנו חיים ישראל - 32","1V2Lax3Ih2Zy5gml7kFkvj2Imqjg6ejxw","ירושלים וארץ ישראל"],
+["מנעי קולך אודי דוידי - 32","1Ej22Bom_HZyuYp-SowQNKdF1WrDGx8Ro","ירושלים וארץ ישראל"],
+["פרחי ירושלים - קול ברמה נשמע ב - 34","1ys5z4Jl_hE9-VUYQb4MG-7mA14jQOEip","ירושלים וארץ ישראל"],
+
+["יפה ותמה ב - 34","1ipqc-ApUKsM3AjH2rosunxbVI-5MWiRM","שירי שמחה וזמר"],
+["יפה ותמה א - 27","1_35UEToEYdBJYVJsJ4HJs-J0j0fIThik","שירי שמחה וזמר"],
+["דעתי עליה - רזאל","1dVkJtu1YCmcgkU0exCTjXBNM2EzgBQds","שבוע עליה"],
+["אשרי מי שגדול בתורה","1Dt9bttZkRT4OcD98xFLYdloIhKLugUNM","תפילה ואמונה"],
+["אשורר שירה","1-KiqXPnVSNCQZ-5gkRBxhZxosD6SFC2_","שירי שמחה וזמר"],
+["דעתי עליה - רזאל 25","1hjkfjTGPqZSqRCEGncKJj0We1DPK7ptS","שבוע עליה"],
+["אשורר שירה ב 26","1GJjAAS4P0OvB0UzvdD55wXDcg48Ilm0J","שירי שמחה וזמר"],
+["אשרי מי שגדול בתורה א 24","1UwShfydPrvi5X1qE4yApoVaK7Qi7qREf","תפילה ואמונה"],
+["אשרי מי שגדול בתורה ב 24","1p6d1OZ3gFZYSHOpaccUaHMeZxiz_UF90","תפילה ואמונה"],
+["אשורר שירה א 20","1kTgW1pzMycR_cAwam3-fwo00v1Cf43t9","שירי שמחה וזמר"],
+
+["שירת העשבים - ב 43","1l9EqYzuKI8_gRPrLdlpuZJTipj0pQlmQ","שירי שמחה וזמר"],
+["שירת העשבים - ג 41","1jnaNEOG-Qg7fLWjMhW5bcuJMTRNQLdAR","שירי שמחה וזמר"],
+["שירת העשבים - א 27","1d3h9I7-TKPD1suo37WxlRv7D2MrRdqv5","שירי שמחה וזמר"],
+
+["השיירה ב - 30","12boOoxGYnRjt0lxYJvbj3rBWYeiK8346","שבוע עליה"],
+["כמה טוב שנפגשנו - 32 (2)","1G8ke90idJV2IBicdDzwmY4ooJDgLMvaF","שירי שמחה וזמר"],
+["המסע - רזאל - 22","1GlE-nRpau7d-o8iuvgoRQGTGbGorKS__","שבוע עליה"],
+["המסע לארץ ישראל - מקהלת שבא - 30","142CrZ6cRtdAGf_Lu_FrJHJ1PudFmUO-G","שבוע עליה"],
+["השיירה א - 30","1pHzEwyquFJNxkF2wgi9Od9pRjQr6KAZx","שבוע עליה"],
+
+["לכה דודי - אומנים שונים","1kXOTpVLOkerFzBeFNG98Pp_SvnUDVc6l","שבת"],
+["יום שישי הגיע","1fscj8utpd8A8DhdgIPJUFfcn51bg5imc","שבת"],
+["יה אכסוף 5ד' 10ש'","1hjUsNGOijrwb5pacpQn_XOSXRG6sTcv2","שבת"],
+["כי אשמרה ב 29","1lv0uhZRLIWxDWfMhqyOCc7iqG_-iOkV5","שבת"],
+["כי אשמרה ג 29","19P9OU3sn1n8wwm8lSxCtLMZdJmCVfCIZ","שבת"],
+["כי אשמרה א 31","1FocOfmzlnE3jKCC5s66WUULAf-XjSCjH","שבת"]
+];
+
+const categories = [
+"תפילה ואמונה","שירי בוקר והשכמה","שירי שמחה וזמר","שירי ילדים ובית ספר",
+"חגים - חנוכה","חגים - פורים ואדר","חגים - סוכות ותשרי","חגים - אלול וימים נוראים",
+"חגים - ניסן ופסח","ירושלים וארץ ישראל","אזעקות ותרגולים","חיזוק ותפילה למלחמה",
+"שבוע השפה העברית","הנני - תפילה באהבה","ראש חודש וחודשי השנה","עין טובה",
+"שבוע עליה","שבת","מסמכים"
+];
+
+const container = document.getElementById('container');
+const totalLine = document.getElementById('totalLine');
+const countsEl = document.getElementById('counts');
+totalLine.textContent = `סה"כ ${files.length} פריטים ב-${categories.length} קטגוריות`;
+
+// group
+const groups = {};
+categories.forEach(c=>groups[c]=[]);
+files.forEach(f=>{
+  const cat = f[2];
+  if(!groups[cat]) groups[cat]=[];
+  groups[cat].push(f);
+});
+
+categories.forEach((cat,idx)=>{
+  const items = groups[cat];
+  if(!items || items.length===0) return;
+  const catDiv = document.createElement('div');
+  catDiv.className = 'category cat-'+(idx%20);
+  catDiv.dataset.cat = cat;
+
+  const header = document.createElement('div');
+  header.className='category-header';
+  header.innerHTML = `<span>${cat}</span><span class="cnt">${items.length} פריטים</span>`;
+  catDiv.appendChild(header);
+
+  const itemsDiv = document.createElement('div');
+  itemsDiv.className='category-items';
+
+  items.forEach(it=>{
+    const [title,id,,isPdf] = it;
+    const item = document.createElement('div');
+    item.className='item';
+    item.dataset.search = (title+' '+cat).toLowerCase();
+    const badge = isPdf ? '<span class="badge-doc">מסמך</span>' : '';
+    item.innerHTML = `<span class="title">${badge}${title}</span><a class="play" target="_blank" href="https://drive.google.com/file/d/${id}/view">${isPdf?'📄 פתח בדרייב':'▶ פתח בדרייב'}</a>`;
+    itemsDiv.appendChild(item);
+  });
+  catDiv.appendChild(itemsDiv);
+  container.appendChild(catDiv);
+});
+
+const searchInput = document.getElementById('search');
+function updateCounts(){
+  const visible = document.querySelectorAll('.item:not(.hidden)').length;
+  countsEl.textContent = `מציג ${visible} מתוך ${files.length} פריטים`;
+}
+searchInput.addEventListener('input', ()=>{
+  const q = searchInput.value.trim().toLowerCase();
+  document.querySelectorAll('.category').forEach(catDiv=>{
+    let anyVisible = false;
+    catDiv.querySelectorAll('.item').forEach(item=>{
+      const match = item.dataset.search.includes(q);
+      item.classList.toggle('hidden', !match);
+      if(match) anyVisible = true;
+    });
+    catDiv.classList.toggle('hidden', !anyVisible);
+  });
+  updateCounts();
+});
+updateCounts();
+</script>
+</body>
+</html>

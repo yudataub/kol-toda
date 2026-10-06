@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מַסָּע אֶל סוֹד הַמִּסְפָּר שְׁמוֹנֶה 🕎✨</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Assistant', sans-serif;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #333;
+            text-align: right;
+            line-height: 2;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        #gameContainer {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            max-width: 800px;
+            width: 100%;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-bottom: 0.5em;
+        }
+        h1 { font-size: 2.2em; }
+        h2 { font-size: 1.8em; }
+        h3 { font-size: 1.4em; }
+
+        p {
+            font-size: 1.1em;
+            color: #555;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .answer-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #bdc3c7;
+            border-radius: 10px;
+            background-color: #ecf0f1;
+            font-size: 1.1em;
+            font-family: 'Assistant', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: right;
+        }
+        .answer-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: #3498db;
+            background-color: #ffffff;
+        }
+        .answer-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .start-button {
+            margin-top: 20px;
+        }
+        .feedback {
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+        }
+        .feedback.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        #progressBarContainer {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        #progressBar {
+            width: 0%;
+            height: 20px;
+            background: linear-gradient(90deg, #4caf50, #81c784);
+            border-radius: 10px 0 0 10px;
+            transition: width 0.5s ease-in-out;
+        }
+        .certificate {
+            border: 5px solid #ffd700;
+            padding: 30px;
+            text-align: center;
+            background-color: #fffaf0;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+        input[type="text"] {
+            width: calc(100% - 24px);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1.2em;
+            text-align: right;
+            font-family: 'Assistant', sans-serif;
+        }
+        .questions-container {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 2px solid #eee;
+        }
+        .question:not(:last-child) {
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+        }
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8em; }
+            h2 { font-size: 1.5em; }
+            #gameContainer { padding: 15px; }
+            p { font-size: 1em; }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- Game content is rendered here by JavaScript -->
+    </div>
+
+    <script>
+        const gameContainer = document.getElementById('gameContainer');
+        let userName = "";
+        let currentLessonIndex = -1; // -1 for splash screen
+        let score = 0;
+        let lessonsData = [];
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!audioContext) return;
+            const gainNode = audioContext.createGain();
+            gainNode.connect(audioContext.destination);
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.01);
+
+            if (type === 'correct') {
+                const frequencies = [523.25, 659.25, 783.99]; // C-E-G chord
+                frequencies.forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+                    osc.type = 'sine';
+                    osc.connect(gainNode);
+                    osc.start(audioContext.currentTime + i * 0.05);
+                    osc.stop(audioContext.currentTime + 0.2);
+                });
+            } else if (type === 'wrong') {
+                const oscillator = audioContext.createOscillator();
+                oscillator.connect(gainNode);
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(150, audioContext.currentTime);
+                oscillator.frequency.linearRampToValueAtTime(100, audioContext.currentTime + 0.2);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.2);
+            }
+            
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.5);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function populateLessonsData() {
+            lessonsData = [
+                {
+                    title: `🌟 שִׁיעוּר 1: מַדּוּעַ חֲנֻכָּה הִיא שְׁמוֹנָה יָמִים?`,
+                    content: `
+                        <p>שָׁלוֹם לְךָ, ${userName} יָקָר! בְּרוּךְ הַבָּא לְמַסָּע מְרַתֵּק אֶל סוֹד הַמִּסְפָּר שְׁמוֹנֶה! 💖</p>
+                        <p>חַג הַחֲנֻכָּה נִקְבַּע לִהְיוֹת יְמֵי הַלֵּל וְהוֹדָיָה כִּי הַיְּוָנִים רָצוּ לִגְזֹר עַל הַדָּבָר הֲכִי יָקָר לָנוּ - עַל הַנְּשָׁמָה שֶׁלָּנוּ. לָכֵן, כְּשֶׁנִּצַּחְנוּ, הַקָּדוֹשׁ בָּרוּךְ הוּא נָתַן לָנוּ מַתָּנָה מְיֻחֶדֶת, תַּעֲנוּג אֲמִתִּי לַנְּשָׁמָה: לְהוֹדוֹת וּלְהַלֵּל אוֹתוֹ. ✨</p>
+                        <p class="highlight">הַמִּלָּה <strong>"שְׁמוֹנֶה"</strong> וְהַמִּלָּה <strong>"נְשָׁמָה"</strong> הֵן בְּדִיּוּק אוֹתָן אוֹתִיּוֹת! זֶהוּ רֶמֶז עָצוּם שֶׁהַנְּשָׁמָה שֶׁלָּנוּ שַׁיֶּכֶת לְעוֹלַם הַשְּׁמוֹנֶה, עוֹלָם שֶׁהוּא מֵעַל הַטֶּבַע.</p>
+                        <p><strong>שְׁאֵלַת הַשְׁרָאָה:</strong> אֵיךְ אֲנִי מַרְגִּישׁ אֶת אַהֲבַת הַשֵּׁם כָּאן? הַשֵּׁם נָתַן לָנוּ נְשָׁמָה טְהוֹרָה, וְהוּא שׂוֹמֵר עָלֶיהָ תָּמִיד.</p>
+                    `,
+                    loveOfGod: "בְּכָל פַּעַם שֶׁאָנוּ מוֹדִים לַה', הַנְּשָׁמָה שֶׁלָּנוּ מִתְמַלֵּאת בְּאוֹר וְשִׂמְחָה. הַקָּדוֹשׁ בָּרוּךְ הוּא רוֹצֶה בְּקִרְבָתֵנוּ וְשָׂמֵחַ בִּתְפִלָּתֵנוּ.",
+                    questions: [
+                        {
+                            question: "מַהוּ הַקֶּשֶׁר הַמְּיֻחָד בֵּין הַמִּלִּים 'שְׁמוֹנֶה' וְ'נְשָׁמָה'?",
+                            answers: [
+                                { text: "לִשְׁתֵּיהֶן יֵשׁ אוֹתָן אוֹתִיּוֹת בְּדִיּוּק, וְזֶה מְרַמֵּז עַל קֶשֶׁר עָמֹק.", isCorrect: true },
+                                { text: "לִשְׁתֵּיהֶן יֵשׁ אֶת אוֹתָהּ הַגִּימַטְרִיָּה, וְזֶה מְסַמֵּל חִבּוּר רוּחָנִי.", isCorrect: false },
+                                { text: "שְׁתֵּיהֶן מוֹפִיעוֹת בְּאוֹתוֹ פָּסוּק בַּתּוֹרָה בְּהֶקְשֵׁר שֶׁל חֲנֻכָּה.", isCorrect: false },
+                                { text: "שְׁתֵּיהֶן מַתְחִילוֹת בָּאוֹת שׁ', הַמְּסַמֶּלֶת שְׁלֵמוּת וְקִרְבַת אֱלֹהִים.", isCorrect: false }
+                            ],
+                            explanation: "הַמִּלִּים 'שְׁמוֹנֶה' וְ'נְשָׁמָה' מֻרְכָּבוֹת מֵאוֹתָן הָאוֹתִיּוֹת בְּדִיּוּק, מַה שֶּׁמְּלַמֵּד שֶׁהַנְּשָׁמָה שַׁיֶּכֶת לְ'עוֹלַם הַשְּׁמוֹנֶה' – הָעוֹלָם שֶׁמֵּעַל הַטֶּבַע.",
+                            encouragement: `יָפֶה מְאֹד, ${userName}! עַכְשָׁו אַתָּה מֵבִין אֶת לֵב הַנּוֹשֵׂא!`
+                        },
+                        {
+                            question: "מַדּוּעַ נִקְבְּעוּ יְמֵי חֲנֻכָּה כִּימֵי 'הַלֵּל וְהוֹדָיָה'?",
+                            answers: [
+                                { text: "כִּי הַיְּוָנִים נִסּוּ לִפְגֹּעַ בַּנְּשָׁמָה, וְהוֹדָיָה הִיא הַתַּעֲנוּג שֶׁל הַנְּשָׁמָה.", isCorrect: true },
+                                { text: "כִּי זֶה מְסַמֵּל אֶת נֵס פַּךְ הַשֶּׁמֶן שֶׁדָּלַק שְׁמוֹנָה יָמִים רְצוּפִים.", isCorrect: false },
+                                { text: "כִּי הַחַשְׁמוֹנָאִים הִתְפַּלְּלוּ וְשָׁרוּ הַלֵּל לִפְנֵי כָּל קְרָב שֶׁיָּצְאוּ אֵלָיו.", isCorrect: false },
+                                { text: "כִּי זֶה מִנְהָג קָדוּם שֶׁהִתְחִיל כְּבָר בִּזְמַן בֵּית הַמִּקְדָּשׁ הָרִאשׁוֹן.", isCorrect: false }
+                            ],
+                            explanation: "הַיְּוָנִים רָצוּ לִפְגֹּעַ בַּנְּשָׁמָה שֶׁל עַם יִשְׂרָאֵל. הַתַּעֲנוּג הָאֲמִתִּי שֶׁל הַנְּשָׁמָה הוּא לְהוֹדוֹת וּלְהַלֵּל אֶת ה', וְלָכֵן זוֹהִי מַהוּת הֶחָג.",
+                            encouragement: `כֹּחַ שֶׁלְּךָ, ${userName}! הַהֲבָנָה שֶׁלְּךָ מְעוֹרֶרֶת הַשְׁרָאָה.`
+                        },
+                        {
+                            question: "עוֹלַם הַשְּׁמוֹנֶה, שֶׁאֵלָיו שַׁיֶּכֶת הַנְּשָׁמָה, מְסַמֵּל:",
+                            answers: [
+                                { text: "מְצִיאוּת רוּחָנִית שֶׁנִּמְצֵאת מֵעַל חֻקֵּי הַטֶּבַע הָרְגִילִים.", isCorrect: true },
+                                { text: "אֶת שְׁמוֹנַת הַשְּׁעָרִים שֶׁהָיוּ בְּבֵית הַמִּקְדָּשׁ הַשֵּׁנִי.", isCorrect: false },
+                                { text: "אֶת שְׁמוֹנֶת סִפְרֵי הַיְסוֹד שֶׁל חָכְמַת יְוָן הָעַתִּיקָה.", isCorrect: false },
+                                { text: "אֶת שְׁמוֹנֶה הַשָּׁנִים שֶׁלָּקַח לִבְנוֹת מֵחָדָשׁ אֶת בֵּית הַמִּקְדָּשׁ.", isCorrect: false }
+                            ],
+                            explanation: "הַמִּסְפָּר שְׁמוֹנֶה מְיַצֵּג אֶת מַה שֶּׁנִּמְצָא מִחוּץ לַטֶּבַע וּמֵעָלָיו, בְּדִיּוּק כְּמוֹ הַנְּשָׁמָה שֶׁהִיא 'חֵלֶק אֱלוֹקָה מִמַּעַל'.",
+                            encouragement: `מְצֻיָּן, ${userName}! אַתָּה קוֹלֵט אֶת הָרַעְיוֹנוֹת הָעֲמֻקִּים בְּקַלּוּת!`
+                        }
+                    ]
+                },
+                {
+                    title: `🌍 שִׁיעוּר 2: הַסּוֹד שֶׁל הַמִּסְפָּרִים 6, 7 ו-8`,
+                    content: `
+                        <p>כָּל הַכָּבוֹד, ${userName}! הִתְקַדַּמְנוּ לַשָּׁלָב הַבָּא. כְּדֵי לְהָבִין אֶת הָעֹמֶק שֶׁל שְׁמוֹנֶה, נְגַלֶּה מָה מְסַמְּלִים הַמִּסְפָּרִים שֶׁלְּפָנָיו.</p>
+                        <p><strong>הַמִּסְפָּר 6️⃣</strong> – מְסַמֵּל אֶת הַטֶּבַע. לָמָּה? כִּי לָעוֹלָם הַגַּשְׁמִי יֵשׁ שִׁשָּׁה צְדָדִים: אַרְבַּע רוּחוֹת הַשָּׁמַיִם, לְמַעְלָה וּלְמַטָּה. הַיְּוָנִים הֶאֱמִינוּ רַק בַּטֶּבַע, וְלָכֵן <span class="highlight">הַמִּלָּה "יָוָן" בְּגִימַטְרִיָּה הִיא 66</span>.</p>
+                        <p><strong>הַמִּסְפָּר 7️⃣</strong> – מְסַמֵּל אֶת הָרוּחָנִיּוּת שֶׁבְּתוֹךְ הַטֶּבַע. זוֹהִי הַנְּקֻדָּה הַפְּנִימִית, הַקְּדוֹשָׁה, כְּמוֹ הַשַּׁבָּת (הַיּוֹם הַשְּׁבִיעִי). גַּם בְּמוּזִיקָה יֵשׁ רַק שִׁבְעָה תַּוִּים.</p>
+                        <p><strong>הַמִּסְפָּר 8️⃣</strong> – הוּא הַמִּסְפָּר שֶׁמִּחוּץ לַטֶּבַע, מֵעַל הַטֶּבַע! זֶהוּ עוֹלַם הַנְּשָׁמוֹת, עוֹלַם הַמָּשִׁיחַ. לָכֵן בִּימוֹת הַמָּשִׁיחַ, הַכִּנּוֹר יְנַגֵּן עִם שְׁמוֹנָה נִימִים, דָּבָר שֶׁהוּא בִּלְתִּי אֶפְשָׁרִי בַּטֶּבַע הַיּוֹם.</p>
+                        <p>דֻּגְמָה נוֹסֶפֶת: כַּיּוֹם יֵשׁ לָנוּ <span class="highlight">שִׁבְעָה רוֹעִים</span> (אַבְרָהָם, יִצְחָק, יַעֲקֹב, מֹשֶׁה, אַהֲרֹן, יוֹסֵף וְדָוִד), אַךְ הַמָּשִׁיחַ יִהְיֶה <strong>הָרוֹעֶה הַשְּׁמִינִי</strong> – שׁוּב מַשֶּׁהוּ שֶׁמֵּעַל הַטֶּבַע הַמֻּכָּר לָנוּ.</p>
+                        <p><strong>שְׁאֵלַת הַשְׁרָאָה:</strong> אֵיךְ אֲנִי מַרְגִּישׁ אֶת אַהֲבַת הַשֵּׁם כָּאן? הַשֵּׁם יָצַר עוֹלָם מוּרְכָּב וּמֻפְלָא, עִם רְבָדִים שֶׁל טֶבַע וְקֹדֶשׁ.</p>
+                    `,
+                    loveOfGod: "הַתּוֹרָה שֶׁקִּבַּלְנוּ, שֶׁהִיא מֵעַל הַטֶּבַע, מְלַמֶּדֶת אוֹתָנוּ שֶׁהַשֵּׁם אוֹהֵב אוֹתָנוּ אַהֲבָה שֶׁאֵינָהּ תְּלוּיָה בַּדָּבָר. זֶהוּ קֶשֶׁר נִצְחִי שֶׁל נְשָׁמוֹת.",
+                    questions: [
+                        {
+                            question: "לְפִי הַנִּלְמָד, מַה מְסַמֵּל הַמִּסְפָּר 6, וְכֵיצַד הוּא מִתְקַשֵּׁר לַיְּוָנִים?",
+                            answers: [
+                                { text: "הוּא מְסַמֵּל אֶת הַטֶּבַע, וְהַמִּלָּה 'יָוָן' בְּגִימַטְרִיָּה הִיא 66.", isCorrect: true },
+                                { text: "הוּא מְסַמֵּל אֶת שִׁשָּׁה סִדְרֵי מִשְׁנָה, שֶׁהַיְּוָנִים רָצוּ לְבַטֵּל.", isCorrect: false },
+                                { text: "הוּא מְסַמֵּל אֶת שֵׁשֶׁת הַיָּמִים שֶׁבָּהֶם נִצְּחוּ הַחַשְׁמוֹנָאִים.", isCorrect: false },
+                                { text: "הוּא מְסַמֵּל אֶת שֵׁשׁ הַמִּצְווֹת הָעִקָּרִיּוֹת שֶׁעֲלֵיהֶן נִלְחֲמוּ.", isCorrect: false }
+                            ],
+                            explanation: "הַמִּסְפָּר 6 מְיַצֵּג אֶת הָעוֹלָם הַגַּשְׁמִי (6 צְדָדִים), וְהַיְּוָנִים הֶאֱמִינוּ רַק בַּטֶּבַע. לָכֵן, בְּגִימַטְרִיָּה, הַמִּלָּה 'יָוָן' שָׁוָה 66.",
+                            encouragement: `אַתָּה חוֹשֵׁב בְּצוּרָה חַדָּה וּבְהִירָה, ${userName}!`
+                        },
+                        {
+                            question: "מָה הַהֶבְדֵּל הָעִקָּרִי בֵּין הַמַּשְׁמָעוּת שֶׁל 7 לְמַשְׁמָעוּת שֶׁל 8?",
+                            answers: [
+                                { text: "7 הוּא קְדֻשָּׁה שֶׁבְּתוֹךְ הַטֶּבַע, ו-8 הוּא קְדֻשָּׁה שֶׁמֵּעַל הַטֶּבַע.", isCorrect: true },
+                                { text: "7 מְסַמֵּל אֶת הַתּוֹרָה שֶׁבִּכְתָב, ו-8 אֶת הַתּוֹרָה שֶׁבְּעַל-פֶּה.", isCorrect: false },
+                                { text: "7 מְסַמֵּל אֶת בְּרִית הַמִּילָה, ו-8 אֶת בְּרִית הַשַּׁבָּת.", isCorrect: false },
+                                { text: "7 מְסַמֵּל אֶת עַם יִשְׂרָאֵל, ו-8 מְסַמֵּל אֶת אֻמּוֹת הָעוֹלָם.", isCorrect: false }
+                            ],
+                            explanation: "הַמִּסְפָּר 7, כְּמוֹ הַשַּׁבָּת, מְיַצֵּג אֶת הָרוּחָנִיּוּת שֶׁנִּמְצֵאת בְּתוֹךְ מִסְגֶּרֶת הַטֶּבַע. הַמִּסְפָּר 8, לְעֻמַּת זֹאת, פּוֹרֵץ אֶת גְּבוּלוֹת הַטֶּבַע.",
+                            encouragement: `נִפְלָא, ${userName}! הַהַבְחָנָה הַדַּקָּה שֶׁלְּךָ מַרְשִׁימָה.`
+                        },
+                        {
+                            question: "בִּימוֹת הַמָּשִׁיחַ, מַה יִּהְיֶה מְיֻחָד בַּכִּנּוֹר, וּמַה זֶה מְלַמֵּד אוֹתָנוּ?",
+                            answers: [
+                                { text: "יִהְיוּ לוֹ שְׁמוֹנָה נִימִים, מַה שֶּׁמְּלַמֵּד שֶׁנִּחְיֶה בִּמְצִיאוּת שֶׁמֵּעַל הַטֶּבַע.", isCorrect: true },
+                                { text: "הוּא יְנַגֵּן מֵעַצְמוֹ, מַה שֶּׁמְּלַמֵּד עַל הַשְׁגָּחָה פְּרָטִית גְּלוּיָה.", isCorrect: false },
+                                { text: "הוּא יִהְיֶה עָשׂוּי מִזָּהָב טָהוֹר, מַה שֶּׁמְּלַמֵּד עַל הַשֶּׁפַע הַגָּדוֹל שֶׁיִּהְיֶה.", isCorrect: false },
+                                { text: "יִהְיוּ לוֹ שִׁבְעָה נִימִים, מַה שֶּׁמְּלַמֵּד עַל שְׁלֵמוּת הַבְּרִיאָה.", isCorrect: false }
+                            ],
+                            explanation: "כַּיּוֹם, בְּחֻקֵּי הַטֶּבַע יֵשׁ רַק 7 תַּוִּים, וְלָכֵן הַכִּנּוֹר הוּא בַּעַל 7 נִימִים. הַכִּנּוֹר שֶׁל יְמוֹת הַמָּשִׁיחַ יִהְיֶה בַּעַל 8 נִימִים, לְהוֹרוֹת עַל הִתְעַלּוּת מֵעַל הַטֶּבַע.",
+                            encouragement: `אַתָּה רוֹאֶה אֶת הַתְּמוּנָה הַגְּדוֹלָה, ${userName}! כָּל הַכָּבוֹד!`
+                        }
+                    ]
+                },
+                {
+                    title: `🔑 שִׁיעוּר 3: רְמָזִים נוֹסָפִים לַמִּסְפָּר 8`,
+                    content: `
+                        <p>${userName} הַלַּמְדָן, הִנֵּה לְךָ עוֹד כַּמָּה סוֹדוֹת הַקְּשׁוּרִים לַמִּסְפָּר שְׁמוֹנֶה!</p>
+                        <p><strong>שֶׁמֶן 🕎:</strong> הַמִּלָּה "שֶׁמֶן", שֶׁבּוֹ הִדְלִיקוּ אֶת הַמְּנוֹרָה, מֻרְכֶּבֶת מֵאוֹתִיּוֹת כִּמְעַט זֵהוֹת לַמִּלָּה "שְׁמוֹנֶה". זֶהוּ רֶמֶז נוֹסָף לַקֶּשֶׁר הָעָמֹק.</p>
+                        <p><strong>חַשְׁמוֹנַאי ⚔️:</strong> שְׁמָם שֶׁל גִּבּוֹרֵי הַנֵּס, "חַשְׁמוֹנַאי", מֵכִיל בְּתוֹכוֹ אֶת הָאוֹת <strong>ח'</strong> (שֶׁבְּגִימַטְרִיָּה הִיא 8) וְגַם אֶת הַמִּלָּה <strong>שְׁמוֹנֶה</strong> (חַשְׁמוֹנַאי = ח' + שְׁמוֹנֶה).</p>
+                        <p><strong>חֲנֻכָּה (ח'+נ') 🕯️:</strong> הַמִּלָּה "חֲנֻכָּה" מַתְחִילָה בָּאוֹתִיּוֹת <strong>ח'</strong> (8) וְ-<strong>נ'</strong>. הָאוֹת נ' מְסַמֶּלֶת 50, שֶׁהוּא הַמִּסְפָּר הַשְּׁמִינִי שֶׁבָּא לְאַחַר סְפִירָה שֶׁל 7 שָׁבוּעוֹת (7x7=49), כְּמוֹ בְּמַתַּן תּוֹרָה. זֶהוּ עוֹד רֶמֶז לְ"עוֹלַם הַשְּׁמוֹנֶה".</p>
+                        <p class="highlight"><strong>תְּהִלִּים קי"ט 📖:</strong> כַּאֲשֶׁר הוֹלְכִים לְבֵית הַקְּבָרוֹת לְהִתְפַּלֵּל עַל הַנְּשָׁמָה, נוֹהֲגִים לוֹמַר אֶת פֶּרֶק קי"ט בִּתְהִלִּים. פֶּרֶק זֶה מְכֻנֶּה "תְּמַנְיָא אַפֵּי" (שְׁמוֹנָה פָּנִים), כִּי לְכָל אוֹת בָּאָלֶף-בֵּית יֵשׁ בּוֹ שְׁמוֹנָה פְּסוּקִים! שׁוּב אָנוּ רוֹאִים אֶת הַקֶּשֶׁר בֵּין נְשָׁמָה לִשְׁמוֹנֶה.</p>
+                        <p><strong>שְׁאֵלַת הַשְׁרָאָה:</strong> אֵיךְ אֲנִי מַרְגִּישׁ אֶת אַהֲבַת הַשֵּׁם כָּאן? הַקָּדוֹשׁ בָּרוּךְ הוּא הִטְמִיעַ רְמָזִים עֲמֻקִּים בְּכָל פִּנָּה בַּתּוֹרָה וּבַהִיסְטוֹרְיָה שֶׁלָּנוּ.</p>
+                    `,
+                    loveOfGod: "הַשֵּׁם אוֹהֵב אוֹתָנוּ כָּל כָּךְ, עַד שֶׁהוּא שָׁתַל לָנוּ סִימָנִים וּרְמָזִים שֶׁיַּזְכִּירוּ לָנוּ תָּמִיד אֶת הַקֶּשֶׁר הַנִּצְחִי שֶׁלּוֹ עִם הַנְּשָׁמָה שֶׁלָּנוּ.",
+                    questions: [
+                        {
+                            question: "כֵּיצַד שְׁמָם שֶׁל הַ'חַשְׁמוֹנָאִים' רוֹמֵז לַמִּסְפָּר שְׁמוֹנֶה?",
+                            answers: [
+                                { text: "הַשֵּׁם מֵכִיל אֶת הָאוֹת ח' (שֶׁשָּׁוָה 8) וְאֶת הַמִּלָּה 'שְׁמוֹנֶה'.", isCorrect: true },
+                                { text: "הָיוּ בַּמִּשְׁפָּחָה שְׁמוֹנָה בָּנִים שֶׁנִּלְחֲמוּ בַּקְּרָב הָרִאשׁוֹן.", isCorrect: false },
+                                { text: "הַגִּימַטְרִיָּה שֶׁל הַמִּלָּה 'חַשְׁמוֹנַאי' שָׁוָה לִשְׁמוֹנֶה כָּפוּל שְׁמוֹנֶה.", isCorrect: false },
+                                { text: "הֵם הִצְלִיחוּ לְשַׁחְרֵר אֶת בֵּית הַמִּקְדָּשׁ בְּתוֹךְ שְׁמוֹנָה יָמִים.", isCorrect: false }
+                            ],
+                            explanation: "הַשֵּׁם 'חַשְׁמוֹנַאי' מַרְאֶה לָנוּ שׁוּב אֶת הַהֶקְשֵׁר לְעוֹלַם הַשְּׁמוֹנֶה, עוֹלַם הַנְּשָׁמָה, שֶׁעָלָיו הֵם נִלְחֲמוּ.",
+                            encouragement: `יָפֶה מְאֹד, ${userName}! אַתָּה שָׂם לֵב לַפְּרָטִים הַקְּטַנִּים שֶׁמְּגַלִּים סוֹדוֹת גְּדוֹלִים.`
+                        },
+                        {
+                            question: "מַדּוּעַ נוֹהֲגִים לוֹמַר אֶת פֶּרֶק קי\"ט בִּתְהִלִּים כְּשֶׁמִּתְפַּלְּלִים עַל הַנְּשָׁמָה?",
+                            answers: [
+                                { text: "כִּי בְּפֶרֶק זֶה, לְכָל אוֹת יֵשׁ שְׁמוֹנָה פְּסוּקִים, וְזֶה מְחַבֵּר לְעוֹלַם הַשְּׁמוֹנֶה שֶׁל הַנְּשָׁמָה.", isCorrect: true },
+                                { text: "כִּי הַפֶּרֶק נִכְתַּב עַל יְדֵי דָּוִד הַמֶּלֶךְ בְּגִיל שְׁמוֹנִים וּשְׁמוֹנֶה.", isCorrect: false },
+                                { text: "כִּי הַפֶּרֶק מַזְכִיר אֶת הַמִּלָּה 'נְשָׁמָה' בְּדִיּוּק שְׁמוֹנֶה פְּעָמִים.", isCorrect: false },
+                                { text: "כִּי הַפֶּרֶק מְדַבֵּר עַל שְׁמוֹנֶה מַעֲלוֹת שֶׁעוֹבֶרֶת הַנְּשָׁמָה לְאַחַר הַמָּוֶת.", isCorrect: false }
+                            ],
+                            explanation: "הַמִּבְנֶה הַמְּיֻחָד שֶׁל הַפֶּרֶק, שֶׁבּוֹ לְכָל אוֹת יֵשׁ שְׁמוֹנָה פְּסוּקִים, קוֹשֵׁר אוֹתוֹ בְּאֹפֶן עָמֹק לְמַהוּת הַנְּשָׁמָה וּלְעוֹלַם הַשְּׁמוֹנֶה.",
+                            encouragement: `הַחִבּוּר שֶׁעָשִׂיתָ מֵעִיד עַל הֲבָנָה עֲמֻקָּה, ${userName}!`
+                        },
+                        {
+                            question: "אֵיזֶה רֶמֶז נוֹסָף לַמִּסְפָּר שְׁמוֹנֶה מָצָאנוּ בְּנֵס חֲנֻכָּה?",
+                            answers: [
+                                { text: "הַמִּלָּה 'שֶׁמֶן' דּוֹמָה בְּאוֹתִיּוֹתֶיהָ לַמִּלָּה 'שְׁמוֹנֶה'.", isCorrect: true },
+                                { text: "מִנְיַן הַחַיָּלִים הַיְּוָנִים בַּצָּבָא הָיָה חֵלֶק מִכְּפוּלוֹת שֶׁל שְׁמוֹנֶה.", isCorrect: false },
+                                { text: "פַּךְ הַשֶּׁמֶן נִמְצָא בַּחֶדֶר הַשְּׁמִינִי מִיָּמִין בְּבֵית הַמִּקְדָּשׁ.", isCorrect: false },
+                                { text: "הַחוֹתָם שֶׁל הַכֹּהֵן הַגָּדוֹל הָיָה בְּצוּרַת מְתֻמָּן (שְׁמוֹנֶה צְלָעוֹת).", isCorrect: false }
+                            ],
+                            explanation: "הַקֶּשֶׁר בֵּין הַמִּלִּים 'שֶׁמֶן' וְ'שְׁמוֹנֶה' מַדְגִּישׁ שׁוּב כֵּיצַד הַנֵּס הַגַּשְׁמִי (הַשֶּׁמֶן) רוֹמֵז לְמַשְׁמָעוּת רוּחָנִית עֲמֻקָּה יוֹתֵר (עוֹלַם הַשְּׁמוֹנֶה).",
+                            encouragement: `כָּל הַכָּבוֹד, ${userName}! אַתָּה מְחַבֵּר אֶת כָּל הַחֲלָקִים לִתְמוּנָה אַחַת שְׁלֵמָה.`
+                        }
+                    ]
+                },
+                {
+                    title: `🎶 שִׁיעוּר 4: שִׁבְחֵי הַבְּרִיאָה בִּקְבוּצוֹת שֶׁל 8!`,
+                    content: `
+                        <p>הִגַּעְנוּ לַשִּׁיעוּר הָאַחֲרוֹן, ${userName}! נְגַלֶּה יַחַד דֻּגְמָה מַדְהִימָה מִתְּהִלִּים.</p>
+                        <p>בְּפֶרֶק קמ"ח בִּתְהִלִּים, דָּוִד הַמֶּלֶךְ קוֹרֵא לְכָל הַבְּרִיאָה לְהַלֵּל אֶת ה'. הוּא מְחַלֵּק אֶת הַמְהַלְּלִים לְ-4 קְבוּצוֹת, וּבְכָל קְבוּצָה יֵשׁ בְּדִיּוּק... נִחַשְׁתָּ נָכוֹן, <span class="highlight">שְׁמוֹנָה</span> מְהַלְּלִים!</p>
+                        <ol>
+                            <li><strong>הַשָּׁמַיִם וְצִבְאוֹתָם:</strong> (1) שָׁמַיִם, (2) מְרוֹמִים, (3) כָּל-מַלְאָכָיו, (4) כָּל-צְבָאָיו, (5) שֶׁמֶשׁ וְיָרֵחַ, (6) כָּל-כּוֹכְבֵי אוֹר, (7) שְׁמֵי הַשָּׁמַיִם, (8) הַמַּיִם אֲשֶׁר מֵעַל הַשָּׁמָיִם.</li>
+                            <li><strong>הָאָרֶץ וְיֵסוֹדוֹתֶיהָ:</strong> (1) הָאָרֶץ, (2) תַּנִּינִים, (3) כָּל-תְּהֹמוֹת, (4) אֵשׁ, (5) בָּרָד, (6) שֶׁלֶג, (7) קִיטוֹר, (8) רוּחַ סְעָרָה.</li>
+                            <li><strong>דּוֹמֵם, צוֹמֵחַ וְחַי:</strong> (1) הֶהָרִים, (2) כָּל-גְּבָעוֹת, (3) עֵץ פְּרִי, (4) כָּל-אֲרָזִים, (5) הַחַיָּה, (6) כָּל-בְּהֵמָה, (7) רֶמֶשׂ, (8) צִפּוֹר כָּנָף.</li>
+                            <li><strong>הָאֱנוֹשׁוּת:</strong> (1) מַלְכֵי-אֶרֶץ, (2) כָּל-לְאֻמִּים, (3) שָׂרִים, (4) כָּל-שֹׁפְטֵי אָרֶץ, (5) בַּחוּרִים, (6) גַּם-בְּתוּלוֹת, (7) זְקֵנִים, (8) עִם-נְעָרִים.</li>
+                        </ol>
+                        <p><strong>שְׁאֵלַת הַשְׁרָאָה:</strong> אֵיךְ אֲנִי מַרְגִּישׁ אֶת אַהֲבַת הַשֵּׁם כָּאן? כָּל הַבְּרִיאָה כֻּלָּהּ, בְּכָל רְבָדֶיהָ, מְהַלֶּלֶת אֶת בּוֹרְאָהּ בְּהַרְמוֹנְיָה שֶׁל שְׁמוֹנֶה.</p>
+                    `,
+                    loveOfGod: "כְּשֵׁם שֶׁכָּל הַטֶּבַע מְהַלֵּל אֶת ה', כָּךְ גַּם הַנְּשָׁמָה שֶׁלָּנוּ (הַשְּׁמוֹנֶה) מִתְעוֹרֶרֶת לְהַלֵּל וּלְהוֹדוֹת. זוֹהִי הַשִּׂמְחָה הָאֲמִתִּית שֶׁלָּהּ.",
+                    questions: [
+                        {
+                            question: "כֵּיצַד מְחַלֵּק דָּוִד הַמֶּלֶךְ אֶת הַמְהַלְּלִים בְּפֶרֶק קמ\"ח בִּתְהִלִּים?",
+                            answers: [
+                                { text: "לְאַרְבַּע קְבוּצוֹת שׁוֹנוֹת, כַּאֲשֶׁר בְּכָל קְבוּצָה יֵשׁ שְׁמוֹנָה מְהַלְּלִים.", isCorrect: true },
+                                { text: "לִשְׁמוֹנֶה קְבוּצוֹת שׁוֹנוֹת, כַּאֲשֶׁר בְּכָל קְבוּצָה יֵשׁ שִׁבְעָה מְהַלְּלִים.", isCorrect: false },
+                                { text: "לִשְׁתֵּי קְבוּצוֹת, אַחַת בַּשָּׁמַיִם וְאַחַת בָּאָרֶץ, לְלֹא מִסְפָּר קָבוּעַ.", isCorrect: false },
+                                { text: "לְפִי סֵדֶר הָאָלֶף-בֵּית, כַּאֲשֶׁר לְכָל אוֹת יֵשׁ מְהַלֵּל אֶחָד.", isCorrect: false }
+                            ],
+                            explanation: "הַמִּבְנֶה הַמַּדְהִים שֶׁל הַפֶּרֶק מַרְאֶה סֵדֶר שֶׁל 4 קְבוּצוֹת, וּבְכָל אַחַת 8 מְהַלְּלִים. זֶה מַדְגִּישׁ אֶת הַמִּסְפָּר שְׁמוֹנֶה כְּמִסְפָּר שֶׁל הַלֵּל וְהוֹדָיָה.",
+                            encouragement: `אַתָּה רוֹאֶה אֶת הַסֵּדֶר הָאֱלֹהִי שֶׁבַּפְּרָטִים, ${userName}! יִשַּׁר כֹּחַ!`
+                        },
+                        {
+                            question: "מִי נִכְלָל בִּקְבוּצַת 'הָאֱנוֹשׁוּת' שֶׁמְּהַלֶּלֶת אֶת ה'?",
+                            answers: [
+                                { text: "מַלְכֵי-אֶרֶץ, כָּל-לְאֻמִּים, שָׂרִים, שׁוֹפְטִים, בַּחוּרִים, בְּתוּלוֹת, זְקֵנִים וּנְעָרִים.", isCorrect: true },
+                                { text: "כֹּהֲנִים, לְוִיִּים, יִשְׂרְאֵלִים, גֵּרִים, יְתוֹמִים וְאַלְמָנוֹת.", isCorrect: false },
+                                { text: "הֶהָרִים, הַגְּבָעוֹת, הָעֵצִים, הַחַיּוֹת וְהָעוֹפוֹת.", isCorrect: false },
+                                { text: "שֶׁמֶשׁ, יָרֵחַ, כּוֹכָבִים, מַלְאָכִים וּצְבָאוֹת הַשָּׁמַיִם.", isCorrect: false }
+                            ],
+                            explanation: "הַקְּבוּצָה הָרְבִיעִית בַּפֶּרֶק מוֹנָה שְׁמוֹנָה סוּגִים שׁוֹנִים שֶׁל בְּנֵי אָדָם, מִכָּל הַמַּעֲמָדוֹת וְהַגִּילָאִים, שֶׁכֻּלָּם מְהַלְּלִים אֶת ה'.",
+                            encouragement: `מְדֻיָּק לַהַפְלִיא, ${userName}! זִכָּרוֹן מְצֻיָּן.`
+                        },
+                        {
+                            question: "אֵילוּ מֵהַבָּאִים שַׁיָּכִים לִקְבוּצַת 'הַשָּׁמַיִם וְצִבְאוֹתָם'?",
+                            answers: [
+                                { text: "שֶׁמֶשׁ וְיָרֵחַ, כּוֹכְבֵי אוֹר וּמַלְאָכִים.", isCorrect: true },
+                                { text: "אֵשׁ וּבָרָד, שֶׁלֶג וְקִיטוֹר.", isCorrect: false },
+                                { text: "עֵץ פְּרִי וְכָל אֲרָזִים, חַיָּה וּבְהֵמָה.", isCorrect: false },
+                                { text: "מַלְכֵי אֶרֶץ וְכָל לְאֻמִּים, שָׂרִים וְשׁוֹפְטִים.", isCorrect: false }
+                            ],
+                            explanation: "הַקְּבוּצָה הָרִאשׁוֹנָה שֶׁדָּוִד הַמֶּלֶךְ מוֹנֶה הִיא הַקְּבוּצָה שֶׁל הַבְּרוּאִים הַשְּׁמֵימִיִּים, הַגַּשְׁמִיִּים וְהָרוּחָנִיִּים.",
+                            encouragement: `עֲבוֹדָה נֶהֱדֶרֶת, ${userName}! הִנֵּה אַתָּה מַגִּיעַ לַסִּיּוּם הַמַּרְגֵּשׁ!`
+                        }
+                    ]
+                }
+            ];
+        }
+
+        function startGame() {
+            currentLessonIndex = -1;
+            score = 0;
+            showSplashScreen();
+        }
+
+        function showSplashScreen() {
+            gameContainer.innerHTML = `
+                <h1>מַסָּע אֶל סוֹד הַמִּסְפָּר שְׁמוֹנֶה 🕎✨</h1>
+                <p>לִפְנֵי שֶׁנַּתְחִיל אֶת הַהַרְפַּתְקָה הַמֻּפְלָאָה שֶׁלָּנוּ, נִשְׂמַח לָדַעַת אֶת שִׁמְךָ.</p>
+                <label for="nameInput"><h3>אֵיזֶה שֵׁם נִרְשֹׁם לְךָ בִּתְעוּדָה? 💫</h3></label>
+                <input type="text" id="nameInput" placeholder="הַשֵּׁם שֶׁלִּי הוּא..." onkeydown="if(event.key==='Enter') submitName()">
+                <button class="start-button" onclick="submitName()">מַתְחִילִים!</button>
+            `;
+            document.getElementById('nameInput').focus();
+        }
+
+        function submitName() {
+            const nameInput = document.getElementById('nameInput');
+            userName = nameInput.value.trim();
+            if (userName) {
+                populateLessonsData();
+                currentLessonIndex = 0;
+                showLesson();
+            } else {
+                alert("כְּדַאי לִכְתֹּב שֵׁם כְּדֵי שֶׁהַחֲוָיָה תִּהְיֶה אִישִׁית! 😊");
+            }
+        }
+        
+        function showLesson() {
+            if (currentLessonIndex < 0 || currentLessonIndex >= lessonsData.length) return;
+
+            const lesson = lessonsData[currentLessonIndex];
+            let questionsHTML = lesson.questions.map((q, index) => {
+                let shuffledAnswers = shuffleArray([...q.answers]);
+                let answersHTML = shuffledAnswers.map(answer => 
+                    `<button class="answer-btn" onclick="handleAnswer(${index}, ${answer.isCorrect})">${answer.text}</button>`
+                ).join('');
+                return `
+                    <div class="question" id="question-${index}">
+                        <h3>שְׁאֵלָה ${index + 1}: ${q.question}</h3>
+                        <div class="answers">${answersHTML}</div>
+                        <div class="feedback" style="display:none"></div>
+                    </div>
+                `;
+            }).join('');
+
+            gameContainer.innerHTML = `
+                <div id="progressBarContainer"><div id="progressBar"></div></div>
+                <h2>${lesson.title}</h2>
+                <div>${lesson.content}</div>
+                <div class="questions-container">
+                    ${questionsHTML}
+                </div>
+                <p><em>${lesson.loveOfGod}</em></p>
+            `;
+            updateProgressBar();
+        }
+
+        function handleAnswer(questionIdx, isCorrect) {
+            const questionDiv = document.getElementById(`question-${questionIdx}`);
+            const feedbackDiv = questionDiv.querySelector('.feedback');
+            const questionData = lessonsData[currentLessonIndex].questions[questionIdx];
+            
+            const buttons = questionDiv.querySelectorAll('.answer-btn');
+            buttons.forEach(button => button.disabled = true);
+
+            let feedbackHTML;
+            if (isCorrect) {
+                score++;
+                playSound('correct');
+                feedbackHTML = `
+                    <div class="feedback correct">
+                        <p><strong>מְצֻיָּן, ${userName}! ⭐</strong></p>
+                        <p><strong>הֶסְבֵּר:</strong> ${questionData.explanation}</p>
+                        <p><strong>מֶסֶר מְחַזֵּק:</strong> ${questionData.encouragement.replace(/\$\{userName\}/g, userName)}</p>
+                        <p>הַשֵּׁם שָׂמֵחַ מִמְּךָ, ${userName}! 💖</p>
+                    </div>
+                `;
+            } else {
+                playSound('wrong');
+                const correctAnswer = questionData.answers.find(a => a.isCorrect).text;
+                feedbackHTML = `
+                    <div class="feedback incorrect">
+                        <p><strong>לֹא בְּדִיּוּק, ${userName}... 🤔</strong></p>
+                        <p><strong>הַתְּשׁוּבָה הַנְּכוֹנָה:</strong> ${correctAnswer}</p>
+                        <p><strong>הֶסְבֵּר:</strong> ${questionData.explanation}</p>
+                        <p>"גַּם כְּשֶׁטּוֹעִים לוֹמְדִים, ${userName}! הַשֵּׁם אוֹהֵב אוֹתְךָ תָּמִיד! 💡"</p>
+                    </div>
+                `;
+            }
+            
+            feedbackDiv.innerHTML = feedbackHTML;
+            feedbackDiv.style.display = 'block';
+            feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            checkIfLessonFinished();
+        }
+
+        function checkIfLessonFinished() {
+            const answeredQuestions = document.querySelectorAll('.feedback[style*="display: block"]').length;
+            if (answeredQuestions === lessonsData[currentLessonIndex].questions.length) {
+                setTimeout(() => {
+                    currentLessonIndex++;
+                    if (currentLessonIndex < lessonsData.length) {
+                        showLesson();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                        showEndScreen();
+                    }
+                }, 3000); // Wait 3 seconds
+            }
+        }
+
+        function updateProgressBar() {
+            const progress = (currentLessonIndex / lessonsData.length) * 100;
+            const bar = document.getElementById('progressBar');
+            if (bar) {
+                bar.style.width = `${progress}%`;
+            }
+        }
+
+        function showEndScreen() {
+            const totalQuestions = lessonsData.reduce((acc, l) => acc + l.questions.length, 0);
+            gameContainer.innerHTML = `
+                <div class="certificate">
+                    <h1>🏆 תְּעוּדַת הִצְטַיְּנוּת 🏆</h1>
+                    <p>מוּעֲנֶקֶת בְּגָאוֹן וּבְשִׂמְחָה לְ-</p>
+                    <h2 style="color: #c0392b;">${userName}</h2>
+                    <p>עַל סִיּוּם הַמַּסָּע הַמֻּפְלָא לְגִלּוּי "סוֹד הַמִּסְפָּר שְׁמוֹנֶה" בְּהַצְלָחָה!</p>
+                    <p><strong>הַנִּקּוּד שֶׁלְּךָ: ${score} מִתּוֹךְ ${totalQuestions}</strong></p>
+                    <p style="font-size: 1.2em; font-weight: bold;"><em>"כִּי נִשְׂגָּב שְׁמוֹ לְבַדּוֹ, הוֹדוֹ עַל-אֶרֶץ וְשָׁמָיִם"</em></p>
+                </div>
+                <div class="questions-container">
+                    <h3>שְׁאֵלוֹת לְמַחְשָׁבָה וְהִתְבּוֹנְנוּת: 🤔</h3>
+                    <ol style="padding-right: 20px;">
+                        <li>אֵיךְ אֲנִי יָכוֹל לְהוֹדוֹת לַה' יוֹתֵר בַּחַיִּים שֶׁלִּי, כְּמוֹ שֶׁהַנְּשָׁמָה אוֹהֶבֶת?</li>
+                        <li>הֵיכָן אֲנִי רוֹאֶה דְּבָרִים שֶׁהֵם "מֵעַל הַטֶּבַע" בָּעוֹלָם שֶׁסְּבִיבִי?</li>
+                        <li>מָה הַדָּבָר הָאֶחָד שֶׁלָּמַדְתִּי הַיּוֹם שֶׁיָּכוֹל לְחַזֵּק אוֹתִי?</li>
+                    </ol>
+                    <p>לְהִצְטָרְפוּת לְהַגְרָלָה עַל פְּרָסִים, לַחֲצוּ כָּאן: <a href="https://forms.gle/A66uubei4XSX6SG2A" target="_blank">קִישּׁוּר לְהַגְרָלָה</a></p>
+                    <p>לְכָל שְׁאֵלָה, אֶפְשָׁר לִפְנוֹת: <strong>הָרַב יְהוּדָה טָאוּב, 📞 052-7139520</strong></p>
+                </div>
+                <button class="start-button" onclick="startGame()">שׂחַק שׁוּב!</button>
+            `;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        startGame();
+    </script>
+</body>
+</html>

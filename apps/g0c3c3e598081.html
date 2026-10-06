@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>חותך שירים</title>
+<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0f0f1a;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .container {
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    border-radius: 16px;
+    padding: 36px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6rem;
+    color: #a78bfa;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 28px;
+  }
+
+  .upload-area {
+    border: 2px dashed #3a3a5c;
+    border-radius: 12px;
+    padding: 28px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 24px;
+    background: #12122a;
+  }
+
+  .upload-area:hover, .upload-area.active {
+    border-color: #7c3aed;
+    background: #1a1a3e;
+  }
+
+  .upload-area .icon { font-size: 2.4rem; margin-bottom: 8px; }
+  .upload-area p { color: #888; font-size: 0.9rem; }
+  .upload-area .file-name { color: #a78bfa; font-weight: bold; margin-top: 6px; word-break: break-all; }
+
+  input[type="file"] { display: none; }
+
+  .row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  label {
+    font-size: 0.85rem;
+    color: #a78bfa;
+    font-weight: 600;
+  }
+
+  input[type="text"] {
+    background: #12122a;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #e0e0e0;
+    font-size: 1.1rem;
+    text-align: center;
+    direction: ltr;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  input[type="text"]:focus {
+    outline: none;
+    border-color: #7c3aed;
+  }
+
+  .hint { font-size: 0.78rem; color: #555; text-align: center; }
+
+  .duration-bar {
+    background: #12122a;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #888;
+  }
+
+  .duration-bar span { color: #a78bfa; font-weight: bold; }
+
+  .progress-wrap {
+    margin-bottom: 20px;
+    display: none;
+  }
+
+  .progress-label {
+    font-size: 0.82rem;
+    color: #888;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  .progress-bar {
+    background: #12122a;
+    border-radius: 999px;
+    height: 8px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7c3aed, #a78bfa);
+    border-radius: 999px;
+    width: 0%;
+    transition: width 0.15s;
+  }
+
+  button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  #cutBtn {
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    color: white;
+    margin-bottom: 12px;
+  }
+
+  #cutBtn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124,58,237,0.4); }
+  #cutBtn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  #downloadBtn {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: white;
+    display: none;
+  }
+
+  #downloadBtn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(5,150,105,0.4); }
+
+  .error {
+    background: #2a1010;
+    border: 1px solid #7c2020;
+    color: #f87171;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    display: none;
+    text-align: center;
+  }
+
+  .waveform {
+    margin-bottom: 20px;
+    display: none;
+  }
+
+  canvas#wave {
+    width: 100%;
+    height: 60px;
+    border-radius: 8px;
+    background: #12122a;
+    cursor: pointer;
+    display: block;
+  }
+
+  .player {
+    display: none;
+    background: #12122a;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    border: 1px solid #2a2a4a;
+  }
+
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .play-btn {
+    width: 40px !important;
+    height: 40px;
+    min-width: 40px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #7c3aed, #5b21b6) !important;
+    color: white;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0 !important;
+  }
+
+  .play-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(124,58,237,0.5); }
+
+  .seek-wrap { flex: 1; }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: #7c3aed;
+    cursor: pointer;
+    height: 4px;
+  }
+
+  .time-display {
+    font-size: 0.82rem;
+    color: #a78bfa;
+    min-width: 80px;
+    text-align: center;
+    direction: ltr;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .marker-btns {
+    display: flex;
+    gap: 10px;
+  }
+
+  .marker-btn {
+    flex: 1;
+    padding: 8px 6px !important;
+    font-size: 0.8rem !important;
+    border-radius: 8px !important;
+    background: #1a1a3e !important;
+    color: #a78bfa !important;
+    border: 1px solid #3a3a5c !important;
+    margin-bottom: 0 !important;
+  }
+
+  .marker-btn:hover { background: #252550 !important; border-color: #7c3aed !important; transform: none !important; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>חותך שירים</h1>
+  <p class="subtitle">העלה קובץ, הגדר זמנים, הורד MP3</p>
+
+  <div class="upload-area" id="uploadArea">
+    <div class="icon">🎵</div>
+    <p>לחץ כדי לבחור קובץ שמע</p>
+    <p style="font-size:0.78rem; color:#444; margin-top:4px">MP3, WAV, OGG, M4A...</p>
+    <div class="file-name" id="fileName"></div>
+    <input type="file" id="fileInput" accept="audio/*">
+  </div>
+
+  <div class="duration-bar" id="durationBar">
+    <span>אורך הקובץ:</span>
+    <span id="totalDuration">—</span>
+  </div>
+
+  <canvas id="wave"></canvas>
+
+  <div class="player" id="player">
+    <div class="player-controls">
+      <button class="play-btn" id="playBtn">&#9654;</button>
+      <div class="seek-wrap">
+        <input type="range" id="seekBar" min="0" max="1000" value="0" step="1">
+      </div>
+      <span class="time-display" id="timeDisplay">0:00 / 0:00</span>
+    </div>
+    <div class="marker-btns">
+      <button class="marker-btn" id="setStartBtn">קבע כאן התחלה</button>
+      <button class="marker-btn" id="setEndBtn">קבע כאן סיום</button>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label>התחלה</label>
+      <input type="text" id="startTime" placeholder="0:00" value="0:00">
+      <span class="hint">דקות:שניות</span>
+    </div>
+    <div class="field">
+      <label>סיום</label>
+      <input type="text" id="endTime" placeholder="0:20" value="0:20">
+      <span class="hint">דקות:שניות</span>
+    </div>
+  </div>
+
+  <div class="error" id="errorBox"></div>
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-label" id="progressLabel">מעבד...</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <button id="cutBtn" disabled>חתוך והכן הורדה</button>
+  <button id="downloadBtn">הורד MP3</button>
+</div>
+
+<script>
+  const uploadArea = document.getElementById('uploadArea');
+  const fileInput = document.getElementById('fileInput');
+  const fileNameEl = document.getElementById('fileName');
+  const durationBar = document.getElementById('durationBar');
+  const totalDurationEl = document.getElementById('totalDuration');
+  const startTimeEl = document.getElementById('startTime');
+  const endTimeEl = document.getElementById('endTime');
+  const cutBtn = document.getElementById('cutBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const errorBox = document.getElementById('errorBox');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  const waveCanvas = document.getElementById('wave');
+
+  let audioBuffer = null;
+  let audioCtx = null;
+  let mp3BlobUrl = null;
+  let originalFileName = 'cut';
+
+  // Player
+  const player = document.getElementById('player');
+  const playBtn = document.getElementById('playBtn');
+  const seekBar = document.getElementById('seekBar');
+  const timeDisplay = document.getElementById('timeDisplay');
+  const setStartBtn = document.getElementById('setStartBtn');
+  const setEndBtn = document.getElementById('setEndBtn');
+  const audio = new Audio();
+  let rafId = null;
+
+  playBtn.addEventListener('click', () => {
+    if (audio.paused) { audio.play(); }
+    else { audio.pause(); }
+  });
+
+  audio.addEventListener('play', () => { playBtn.innerHTML = '&#9646;&#9646;'; scheduleRaf(); });
+  audio.addEventListener('pause', () => { playBtn.innerHTML = '&#9654;'; cancelAnimationFrame(rafId); });
+  audio.addEventListener('ended', () => { playBtn.innerHTML = '&#9654;'; cancelAnimationFrame(rafId); });
+
+  audio.addEventListener('loadedmetadata', () => {
+    seekBar.max = 1000;
+    updateTimeDisplay();
+  });
+
+  seekBar.addEventListener('input', () => {
+    if (!audio.duration) return;
+    audio.currentTime = (seekBar.value / 1000) * audio.duration;
+    updateTimeDisplay();
+    redrawPlayhead();
+  });
+
+  setStartBtn.addEventListener('click', () => {
+    startTimeEl.value = formatTime(audio.currentTime);
+  });
+
+  setEndBtn.addEventListener('click', () => {
+    endTimeEl.value = formatTime(audio.currentTime);
+  });
+
+  // Click on waveform to seek
+  waveCanvas.addEventListener('click', e => {
+    if (!audio.duration) return;
+    const rect = waveCanvas.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    audio.currentTime = ratio * audio.duration;
+    updateTimeDisplay();
+    seekBar.value = ratio * 1000;
+    redrawPlayhead();
+  });
+
+  function scheduleRaf() {
+    rafId = requestAnimationFrame(() => {
+      if (!audio.paused && audio.duration) {
+        seekBar.value = (audio.currentTime / audio.duration) * 1000;
+        updateTimeDisplay();
+        redrawPlayhead();
+        scheduleRaf();
+      }
+    });
+  }
+
+  function updateTimeDisplay() {
+    timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration || 0)}`;
+  }
+
+  let waveImageData = null;
+
+  function redrawPlayhead() {
+    if (!waveImageData || !audio.duration) return;
+    const canvas = waveCanvas;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.offsetWidth, H = 60;
+    ctx.putImageData(waveImageData, 0, 0);
+    const x = (audio.currentTime / audio.duration) * W * dpr;
+    ctx.save();
+    ctx.strokeStyle = '#fff';
+    ctx.globalAlpha = 0.85;
+    ctx.lineWidth = 2 * dpr;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, H * dpr);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  uploadArea.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', handleFile);
+
+  uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('active'); });
+  uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('active'));
+  uploadArea.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadArea.classList.remove('active');
+    if (e.dataTransfer.files[0]) { fileInput.files = e.dataTransfer.files; handleFile(); }
+  });
+
+  function parseTime(str) {
+    str = str.trim();
+    if (/^\d+$/.test(str)) return parseInt(str);
+    const parts = str.split(':');
+    if (parts.length === 2) return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
+    if (parts.length === 3) return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
+    return NaN;
+  }
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${String(s).padStart(2,'0')}`;
+  }
+
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.style.display = 'block';
+  }
+  function clearError() { errorBox.style.display = 'none'; }
+
+  function handleFile() {
+    const file = fileInput.files[0];
+    if (!file) return;
+    clearError();
+    downloadBtn.style.display = 'none';
+    mp3BlobUrl = null;
+    originalFileName = file.name.replace(/\.[^.]+$/, '');
+    fileNameEl.textContent = file.name;
+    cutBtn.disabled = true;
+    audio.pause();
+    playBtn.innerHTML = '&#9654;';
+
+    // Set up audio player
+    const objectUrl = URL.createObjectURL(file);
+    audio.src = objectUrl;
+    player.style.display = 'block';
+    seekBar.value = 0;
+    timeDisplay.textContent = '0:00 / 0:00';
+
+    const reader = new FileReader();
+    reader.onload = async e => {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioBuffer = await audioCtx.decodeAudioData(e.target.result);
+        const dur = audioBuffer.duration;
+        totalDurationEl.textContent = formatTime(dur);
+        durationBar.style.display = 'flex';
+        endTimeEl.value = formatTime(Math.min(20, dur));
+        cutBtn.disabled = false;
+        drawWaveform(audioBuffer);
+      } catch(err) {
+        showError('לא ניתן לפתוח את הקובץ. נסה פורמט אחר.');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function drawWaveform(buffer) {
+    const canvas = waveCanvas;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = canvas.offsetWidth * dpr;
+    canvas.height = 60 * dpr;
+    ctx.scale(dpr, dpr);
+    const W = canvas.offsetWidth, H = 60;
+    const data = buffer.getChannelData(0);
+    const step = Math.ceil(data.length / W);
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#12122a';
+    ctx.fillRect(0,0,W,H);
+    for (let i = 0; i < W; i++) {
+      let max = 0;
+      for (let j = 0; j < step; j++) {
+        const v = Math.abs(data[i * step + j] || 0);
+        if (v > max) max = v;
+      }
+      const h = max * H * 0.9;
+      const grad = ctx.createLinearGradient(0, H/2 - h/2, 0, H/2 + h/2);
+      grad.addColorStop(0, '#7c3aed');
+      grad.addColorStop(1, '#a78bfa');
+      ctx.fillStyle = grad;
+      ctx.fillRect(i, H/2 - h/2, 1, h);
+    }
+    // Save clean waveform for playhead overlay
+    waveImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  }
+
+  cutBtn.addEventListener('click', async () => {
+    clearError();
+    downloadBtn.style.display = 'none';
+
+    if (!audioBuffer) { showError('אנא העלה קובץ שמע תחילה'); return; }
+
+    const start = parseTime(startTimeEl.value);
+    const end = parseTime(endTimeEl.value);
+
+    if (isNaN(start) || isNaN(end)) { showError('פורמט זמן שגוי. השתמש ב-דקות:שניות (למשל 1:30)'); return; }
+    if (start < 0) { showError('זמן התחלה לא יכול להיות שלילי'); return; }
+    if (end <= start) { showError('זמן הסיום חייב להיות אחרי זמן ההתחלה'); return; }
+    if (start >= audioBuffer.duration) { showError('זמן ההתחלה חורג מאורך הקובץ'); return; }
+
+    const endClamped = Math.min(end, audioBuffer.duration);
+    const duration = endClamped - start;
+
+    cutBtn.disabled = true;
+    progressWrap.style.display = 'block';
+    setProgress(0, 'חותך את השמע...');
+
+    await new Promise(r => setTimeout(r, 20));
+
+    try {
+      // Slice audio buffer
+      const sampleRate = audioBuffer.sampleRate;
+      const channels = audioBuffer.numberOfChannels;
+      const startSample = Math.floor(start * sampleRate);
+      const endSample = Math.floor(endClamped * sampleRate);
+      const frameCount = endSample - startSample;
+
+      const sliced = audioCtx.createBuffer(channels, frameCount, sampleRate);
+      for (let c = 0; c < channels; c++) {
+        const src = audioBuffer.getChannelData(c);
+        const dst = sliced.getChannelData(c);
+        dst.set(src.subarray(startSample, endSample));
+      }
+
+      setProgress(30, 'מקודד ל-MP3...');
+      await new Promise(r => setTimeout(r, 20));
+
+      // Encode to MP3 using lamejs
+      const mp3Data = await encodeMp3(sliced, (p) => setProgress(30 + p * 0.65, 'מקודד ל-MP3...'));
+
+      setProgress(95, 'מכין הורדה...');
+      await new Promise(r => setTimeout(r, 20));
+
+      if (mp3BlobUrl) URL.revokeObjectURL(mp3BlobUrl);
+      const blob = new Blob(mp3Data, { type: 'audio/mp3' });
+      mp3BlobUrl = URL.createObjectURL(blob);
+
+      setProgress(100, 'מוכן!');
+      await new Promise(r => setTimeout(r, 400));
+
+      progressWrap.style.display = 'none';
+      downloadBtn.style.display = 'block';
+      downloadBtn.onclick = () => {
+        const a = document.createElement('a');
+        a.href = mp3BlobUrl;
+        a.download = `${originalFileName}_${formatTime(start)}-${formatTime(endClamped)}.mp3`.replace(/:/g,'-');
+        a.click();
+      };
+    } catch(err) {
+      showError('שגיאה בעיבוד: ' + err.message);
+      progressWrap.style.display = 'none';
+    }
+
+    cutBtn.disabled = false;
+  });
+
+  function setProgress(pct, label) {
+    progressFill.style.width = pct + '%';
+    progressLabel.textContent = label;
+  }
+
+  function encodeMp3(buffer, onProgress) {
+    return new Promise((resolve, reject) => {
+      try {
+        const sampleRate = buffer.sampleRate;
+        const channels = buffer.numberOfChannels;
+        const kbps = 128;
+
+        const mp3enc = new lamejs.Mp3Encoder(channels, sampleRate, kbps);
+        const mp3Data = [];
+        const blockSize = 1152;
+        const total = buffer.length;
+
+        const left = buffer.getChannelData(0);
+        const right = channels > 1 ? buffer.getChannelData(1) : left;
+
+        // Convert float32 to int16
+        function toInt16(float32arr) {
+          const int16 = new Int16Array(float32arr.length);
+          for (let i = 0; i < float32arr.length; i++) {
+            const s = Math.max(-1, Math.min(1, float32arr[i]));
+            int16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+          }
+          return int16;
+        }
+
+        let offset = 0;
+        function encodeChunk() {
+          const end = Math.min(offset + blockSize * 64, total);
+          const leftSlice = left.subarray(offset, end);
+          const rightSlice = right.subarray(offset, end);
+          const leftInt = toInt16(leftSlice);
+          const rightInt = toInt16(rightSlice);
+
+          let mp3buf;
+          if (channels === 1) {
+            mp3buf = mp3enc.encodeBuffer(leftInt);
+          } else {
+            mp3buf = mp3enc.encodeBuffer(leftInt, rightInt);
+          }
+          if (mp3buf.length > 0) mp3Data.push(new Uint8Array(mp3buf));
+
+          offset = end;
+          onProgress(offset / total);
+
+          if (offset < total) {
+            setTimeout(encodeChunk, 0);
+          } else {
+            const final = mp3enc.flush();
+            if (final.length > 0) mp3Data.push(new Uint8Array(final));
+            resolve(mp3Data);
+          }
+        }
+
+        encodeChunk();
+      } catch(e) {
+        reject(e);
+      }
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📘 ספר השיעור – השולחן ולחם הפנים</title>
+  <style>
+
+    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Heebo', 'Arial', sans-serif;
+      background: #020b14;
+      color: #cdf0ea;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 120% 40% at 50% 0%,   rgba(255,200,0,0.10) 0%, transparent 70%),
+        radial-gradient(ellipse 80%  30% at 20% 10%,  rgba(0,220,255,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 90%  35% at 80% 5%,   rgba(255,140,0,0.10) 0%, transparent 65%),
+        radial-gradient(ellipse 60%  20% at 50% 15%,  rgba(255,215,0,0.06) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+      animation: auroraShift 12s ease-in-out infinite alternate;
+    }
+
+    @keyframes auroraShift {
+      0%   { opacity: 1; transform: scaleY(1)   translateY(0); }
+      50%  { opacity: 0.8; transform: scaleY(1.1) translateY(-10px); }
+      100% { opacity: 1; transform: scaleY(1)   translateY(0); }
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10%  15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25%  8%,  rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 40%  20%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60%  5%,  rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 75%  12%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(2px 2px at 50%  3%,  rgba(255,230,100,0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 88%  18%, rgba(255,255,255,0.4) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px 20px 60px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 60px 30px 50px;
+      margin-bottom: 40px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(40,30,0,0.75), rgba(10,10,40,0.75));
+      border: 1px solid rgba(255,210,0,0.25);
+      backdrop-filter: blur(12px);
+      box-shadow:
+        0 0 60px rgba(255,200,0,0.08),
+        0 0 120px rgba(255,140,0,0.06),
+        inset 0 1px 0 rgba(255,215,0,0.15);
+    }
+
+    .hero-icon {
+      font-size: 4rem;
+      display: block;
+      margin-bottom: 16px;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-10px); }
+    }
+
+    .hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, #ffd700, #ffaa00, #ff6600);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.3;
+      margin-bottom: 14px;
+    }
+
+    .hero p {
+      color: rgba(255,240,180,0.75);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .badge {
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border: 1px solid;
+    }
+
+    .badge-gold   { background: rgba(255,215,0,0.10);  border-color: rgba(255,215,0,0.4);  color: #ffd700; }
+    .badge-amber  { background: rgba(255,165,0,0.10);  border-color: rgba(255,165,0,0.4);  color: #ffaa00; }
+    .badge-cyan   { background: rgba(0,224,255,0.10);  border-color: rgba(0,224,255,0.4);  color: #00e0ff; }
+
+    /* ── ACCORDION ── */
+    .accordion { display: flex; flex-direction: column; gap: 14px; }
+    .chapter { border-radius: 18px; overflow: hidden; }
+    .chapter input[type="checkbox"] { display: none; }
+
+    .chapter-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chapter-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .chapter-header:hover::before { opacity: 1; }
+
+    .ch1 .chapter-header { background: linear-gradient(135deg, rgba(60,45,0,0.85), rgba(30,20,0,0.85)); border: 1px solid rgba(255,215,0,0.25); }
+    .ch1 .chapter-header::before { background: linear-gradient(135deg, rgba(255,215,0,0.08), transparent); }
+    .ch1 .ch-num { background: linear-gradient(135deg,#ffd700,#c8960c); }
+
+    .ch2 .chapter-header { background: linear-gradient(135deg, rgba(40,30,0,0.85), rgba(20,20,40,0.85)); border: 1px solid rgba(255,165,0,0.25); }
+    .ch2 .chapter-header::before { background: linear-gradient(135deg, rgba(255,165,0,0.08), transparent); }
+    .ch2 .ch-num { background: linear-gradient(135deg,#ffaa00,#cc7700); }
+
+    .ch3 .chapter-header { background: linear-gradient(135deg, rgba(0,40,60,0.85), rgba(0,20,50,0.85)); border: 1px solid rgba(0,200,255,0.25); }
+    .ch3 .chapter-header::before { background: linear-gradient(135deg, rgba(0,200,255,0.08), transparent); }
+    .ch3 .ch-num { background: linear-gradient(135deg,#00e0ff,#0090c0); }
+
+    .ch4 .chapter-header { background: linear-gradient(135deg, rgba(50,30,0,0.85), rgba(30,15,0,0.85)); border: 1px solid rgba(255,120,0,0.25); }
+    .ch4 .chapter-header::before { background: linear-gradient(135deg, rgba(255,120,0,0.08), transparent); }
+    .ch4 .ch-num { background: linear-gradient(135deg,#ff7800,#cc4400); }
+
+    .ch5 .chapter-header { background: linear-gradient(135deg, rgba(30,40,0,0.85), rgba(15,30,0,0.85)); border: 1px solid rgba(160,220,0,0.25); }
+    .ch5 .chapter-header::before { background: linear-gradient(135deg, rgba(160,220,0,0.08), transparent); }
+    .ch5 .ch-num { background: linear-gradient(135deg,#a0dc00,#608800); }
+
+    .ch6 .chapter-header { background: linear-gradient(135deg, rgba(40,0,40,0.85), rgba(20,0,30,0.85)); border: 1px solid rgba(200,100,255,0.25); }
+    .ch6 .chapter-header::before { background: linear-gradient(135deg, rgba(200,100,255,0.08), transparent); }
+    .ch6 .ch-num { background: linear-gradient(135deg,#c864ff,#8800cc); }
+
+    .ch7 .chapter-header { background: linear-gradient(135deg, rgba(0,50,40,0.85), rgba(0,30,20,0.85)); border: 1px solid rgba(0,255,160,0.25); }
+    .ch7 .chapter-header::before { background: linear-gradient(135deg, rgba(0,255,160,0.08), transparent); }
+    .ch7 .ch-num { background: linear-gradient(135deg,#00ffa0,#00aa60); }
+
+    .ch-num {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 900;
+      color: #000;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    .ch-title { flex: 1; }
+    .ch-title h2 { font-size: 1.15rem; font-weight: 700; color: #fff8e0; margin-bottom: 4px; }
+    .ch-title span { font-size: 0.82rem; color: rgba(255,230,150,0.55); }
+
+    .ch-arrow {
+      font-size: 1.3rem;
+      color: rgba(255,220,100,0.5);
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      flex-shrink: 0;
+    }
+
+    .chapter input:checked ~ .chapter-header .ch-arrow {
+      transform: rotate(180deg);
+      color: #ffd700;
+    }
+
+    .chapter-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1);
+      background: rgba(2,10,20,0.92);
+      border-right: 3px solid;
+      border-left: 3px solid;
+      border-bottom: 3px solid;
+      border-radius: 0 0 18px 18px;
+    }
+
+    .ch1 .chapter-body { border-color: rgba(255,215,0,0.2); }
+    .ch2 .chapter-body { border-color: rgba(255,165,0,0.2); }
+    .ch3 .chapter-body { border-color: rgba(0,200,255,0.2); }
+    .ch4 .chapter-body { border-color: rgba(255,120,0,0.2); }
+    .ch5 .chapter-body { border-color: rgba(160,220,0,0.2); }
+    .ch6 .chapter-body { border-color: rgba(200,100,255,0.2); }
+    .ch7 .chapter-body { border-color: rgba(0,255,160,0.2); }
+
+    .chapter input:checked ~ .chapter-body { max-height: 3000px; }
+    .chapter-inner { padding: 28px 28px 32px; }
+
+    /* ── CONTENT ── */
+    h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #ffd700;
+      margin: 24px 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h3::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to left, transparent, rgba(255,215,0,0.2));
+    }
+
+    p { color: rgba(255,240,200,0.82); line-height: 1.85; margin-bottom: 12px; font-size: 0.97rem; }
+
+    ul, ol { padding-right: 22px; margin-bottom: 14px; }
+    li { color: rgba(255,235,180,0.78); line-height: 1.8; font-size: 0.95rem; margin-bottom: 5px; }
+    li::marker { color: #ffd700; }
+
+    .quote-box {
+      margin: 16px 0;
+      padding: 16px 20px;
+      border-right: 3px solid;
+      border-radius: 0 12px 12px 0;
+      font-style: italic;
+      font-size: 0.97rem;
+      line-height: 1.8;
+    }
+
+    .qb-gold   { background: rgba(255,215,0,0.07);  border-color: #ffd700;  color: #ffe87a; }
+    .qb-amber  { background: rgba(255,165,0,0.07);  border-color: #ffaa00;  color: #ffd080; }
+    .qb-cyan   { background: rgba(0,200,255,0.07);  border-color: #00e0ff;  color: #a0eeff; }
+    .qb-green  { background: rgba(0,255,160,0.06);  border-color: #00ffa0;  color: #a0ffe0; }
+
+    .info-card {
+      background: rgba(255,215,0,0.04);
+      border: 1px solid rgba(255,215,0,0.15);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin: 14px 0;
+    }
+
+    .info-card.amber  { background: rgba(255,165,0,0.05);  border-color: rgba(255,165,0,0.15); }
+    .info-card.cyan   { background: rgba(0,200,255,0.05);  border-color: rgba(0,200,255,0.15); }
+    .info-card.green  { background: rgba(0,255,160,0.04);  border-color: rgba(0,255,160,0.12); }
+    .info-card.orange { background: rgba(255,120,0,0.05);  border-color: rgba(255,120,0,0.15); }
+
+    table {
+      width: 100%; border-collapse: collapse;
+      margin: 16px 0; border-radius: 12px; overflow: hidden;
+    }
+
+    th {
+      background: rgba(255,215,0,0.1);
+      color: #ffd700; font-weight: 700;
+      padding: 12px 16px; font-size: 0.9rem;
+      text-align: right;
+    }
+
+    td {
+      padding: 11px 16px; font-size: 0.9rem;
+      color: rgba(255,240,180,0.8);
+      border-bottom: 1px solid rgba(255,215,0,0.07);
+      text-align: right;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: rgba(255,215,0,0.025); }
+
+    .step-list { list-style: none; padding-right: 0; counter-reset: steps; }
+    .step-list li {
+      counter-increment: steps;
+      padding: 10px 14px 10px 0;
+      border-bottom: 1px solid rgba(255,215,0,0.07);
+      position: relative;
+      padding-right: 48px;
+    }
+    .step-list li::before {
+      content: counter(steps);
+      position: absolute;
+      right: 0; top: 10px;
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg,#ffd700,#cc9900);
+      color: #000; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 0.8rem;
+    }
+    .step-list li:last-child { border-bottom: none; }
+
+    .checklist { list-style: none; padding-right: 0; }
+    .checklist li {
+      padding: 8px 36px 8px 0;
+      position: relative;
+      border-bottom: 1px solid rgba(255,215,0,0.06);
+      color: rgba(255,240,180,0.78);
+    }
+    .checklist li::before {
+      content: '✦';
+      position: absolute; right: 0; top: 8px;
+      color: #ffd700; font-size: 0.9rem;
+    }
+    .checklist li:last-child { border-bottom: none; }
+
+    /* ── VESSELS GRID ── */
+    .vessels-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .vessel-card {
+      background: rgba(255,215,0,0.05);
+      border: 1px solid rgba(255,215,0,0.15);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .vessel-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+    .vessel-name { font-size: 0.95rem; font-weight: 700; color: #ffd700; margin-bottom: 4px; }
+    .vessel-desc { font-size: 0.82rem; color: rgba(255,230,150,0.65); line-height: 1.5; }
+
+    /* ── HIGHLIGHT BOX ── */
+    .highlight-big {
+      background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,165,0,0.05));
+      border: 1px solid rgba(255,215,0,0.2);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin: 16px 0;
+      text-align: center;
+    }
+
+    .highlight-big .big-number {
+      font-size: 3rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #ffd700, #ffaa00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .highlight-big .big-label { color: rgba(255,240,180,0.7); font-size: 0.95rem; }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: rgba(255,215,0,0.4);
+      font-size: 0.9rem;
+    }
+
+    .footer strong { color: #ffd700; }
+
+    @media (max-width: 600px) {
+      .chapter-header { padding: 16px 18px; }
+      .chapter-inner  { padding: 20px 18px; }
+      .hero           { padding: 40px 20px; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <header class="hero">
+    <span class="hero-icon">🕍</span>
+    <h1>ספר השיעור — השולחן ולחם הפנים</h1>
+    <p>
+      שיעור מלא על כלי המשכן: השולחן המוזהב, לחם הפנים,<br/>
+      הדפנות, המקלות, ואיך הכינו את הלחם הקדוש בפועל.
+    </p>
+    <div class="hero-meta">
+      <span class="badge badge-gold">🏺 כלי המשכן</span>
+      <span class="badge badge-amber">7 פרקים</span>
+      <span class="badge badge-cyan">✨ Gold Aurora Edition</span>
+    </div>
+  </header>
+
+  <!-- ACCORDION -->
+  <div class="accordion">
+
+    <!-- ══════════════════════════════ פרק א ══════════════════════════════ -->
+    <div class="chapter ch1">
+      <input type="checkbox" id="ch1" checked/>
+      <label class="chapter-header" for="ch1">
+        <div class="ch-num">א</div>
+        <div class="ch-title">
+          <h2>🌱 מבוא — חזרה על השיעור הקודם ופתיחה</h2>
+          <span>המשכן, הכלים, ומה אנחנו לומדים היום</span>
+        </div>
+        <span class="ch-arrow">▾</span>
+      </label>
+      <div class="chapter-body">
+        <div class="chapter-inner">
+
+          <h3>📖 חזרה קצרה — שיעור קודם</h3>
+          <p>
+            בשיעור הקודם למדנו על <strong>המשכן</strong> ועל הכלים שבתוכו.
+            כיום אנחנו ממשיכים וצוללים לפרטי <strong>השולחן</strong> — אחד הכלים החשובים ביותר.
+          </p>
+
+          <div class="quote-box qb-gold">
+            💬 "היום אנחנו מתחילים ללמוד על השולחן — מה זה השולחן? מה יש עליו? בשביל מה צריך שולחן?"
+          </div>
+
+          <h3>🗺️ תוכנית השיעור</h3>
+          <ul class="checklist">
+            <li>מהו השולחן ומה הוא עשוי</li>
+            <li>מה היה מונח על השולחן — לחם הפנים</li>
+            <li>מידות השולחן ופרטיו</li>
+            <li>הכלים המלווים: קערות, כפות, קשותיו, מנקיותיו</li>
+            <li>איך בנו את לחם הפנים בפועל</li>
+            <li>הדפנות, המקלות, ושמירת הלחם</li>
+          </ul>
+
+          <div class="info-card">
+            <strong>🎯 מטרת השיעור:</strong><br/>
+            להבין לא רק את הפסוקים — אלא <em>בדיוק</em> איך נראה השולחן, איך עשו את הלחם,
+            ולמה כל פרט חשוב. "אנחנו הולכים לטייל בתוך המשכן."
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════ פרק ב ══════════════════════════════ -->
+    <div class="chapter ch2">
+      <input type="checkbox" id="ch2"/>
+      <label class="chapter-header" for="ch2">
+        <div class="ch-num">ב</div>
+        <div class="ch-title">
+          <h2>🏺 השולחן — חומרים, מידות ובנייה</h2>
+          <span>עצי שיטים, ציפוי זהב, זר ומסגרת</span>
+        </div>
+        <span class="ch-arrow">▾</span>
+      </label>
+      <div class="chapter-body">
+        <div class="chapter-inner">
+
+          <h3>📜 הפסוק הבסיסי</h3>
+          <div class="quote-box qb-gold">
+            📖 <strong>"וְעָשִׂיתָ שֻׁלְחָן עֲצֵי שִׁטִּים — אַמָּתַיִם אָרְכּוֹ וְאַמָּה רָחְבּוֹ וְאַמָּה וָחֵצִי קֹמָתוֹ"</strong>
+            <br/><br/>
+            (שמות כה, כג)
+          </div>
+
+          <h3>🌳 מהם עצי שיטים?</h3>
+          <p>
+            עץ השיטה הוא עץ <strong>חזק וקשה במיוחד</strong>.
+            זהו עץ עמיד מאוד — מתאים לבניית כלי הקודש שנדרשו לעמוד שנים רבות.
+          </p>
+
+          <div class="info-card amber">
+            <strong>🔍 קישור מיוחד:</strong><br/>
+            יעקב אבינו הביא זרעי שיטים למצרים כדי שבניו יוכלו לבנות ממנו את המשכן.
+            הוא ידע מראש שיצטרכו את העץ הזה!
+          </div>
+
+          <h3>📐 מידות השולחן</h3>
+          <table>
+            <thead>
+              <tr><th>מימד</th><th>מידה באמות</th><th>בסנטימטרים (בערך)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>אורך</td><td>2 אמות</td><td>~100 ס"מ</td></tr>
+              <tr><td>רוחב</td><td>1 אמה</td><td>~50 ס"מ</td></tr>
+              <tr><td>גובה</td><td>אמה וחצי</td><td>~75 ס"מ</td></tr>
+            </tbody>
+          </table>
+
+          <div class="quote-box qb-amber">
+            💬 "הגובה — אמה וחצי — זה כמעט כמו שולחן רגיל שלנו בבית היום!"
+          </div>
+
+          <h3>🌟 ציפוי הזהב</h3>
+          <p>
+            השולחן לא נשאר עץ — <strong>ציפו אותו בזהב טהור</strong>.
+            לא השאירו אותו כמות שהוא.
+          </p>
+
+          <ul>
+            <li>הזהב כיסה את כל השולחן — גם מבפנים וגם מבחוץ.</li>
+            <li>זהב טהור = זהב איכותי ביותר, ללא תוספות.</li>
+          </ul>
+
+          <h3>👑 הזר והמסגרת</h3>
+          <div class="vessels-grid">
+            <div class="vessel-card">
+              <span class="vessel-icon">👑</span>
+              <div class="vessel-name">זֵר זָהָב</div>
+              <div class="vessel-desc">כתר זהב שהיה מקיף את השולחן — כמו גבול מקושט מסביב לשפה.</div>
+            </div>
+            <div class="vessel-card">
+              <span class="vessel-icon">🖼️</span>
+              <div class="vessel-name">מִסְגֶּרֶת</div>
+              <div class="vessel-desc">מסגרת שמנעה מהלחם לפול מהשולחן — גבול מגן.</div>
+            </div>
+            <div class="vessel-card">
+              <span class="vessel-icon">💛</span>
+              <div class="vessel-name">זֵר לַמִּסְגֶּרֶת</div>
+              <div class="vessel-desc">זר זהב נוסף שהקיף גם את המסגרת — קישוט כפול.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════ פרק ג ══════════════════════════════ -->
+    <div class="chapter ch3">
+      <input type="checkbox" id="ch3"/>
+      <label class="chapter-header" for="ch3">
+        <div class="ch-num">ג</div>
+        <div class="ch-title">
+          <h2>🔩 טבעות, בדים ומקלות נשיאה</h2>
+          <span>למה השולחן היה ניתן לנשיאה ואיך עשו זאת</span>
+        </div>
+        <span class="ch-arrow">▾</span>
+      </label>
+      <div class="chapter-body">
+        <div class="chapter-inner">
+
+          <h3>🤔 למה צריך לשאת את השולחן?</h3>
+          <p>
+            המשכן היה <strong>נייד</strong> — בני ישראל עברו ממקום למקום במדבר.
+            פעם כאן, פעם שם. כל פעם שעברו — היו צריכים לפרק ולנשא את כל הכלים.
+          </p>
+
+          <div class="quote-box qb-cyan">
+            💬 "בני ישראל היו עוברים ממקום למקום. פעם פה, פעם שם, פעם שם. כל פעם עברו למקום אחר — צריכים מקלות לנשיאה!"
+          </div>
+
+          <h3>🔶 ארבע הטבעות</h3>
+          <p>
+            התורה מצווה לעשות <strong>ארבע טבעות זהב</strong> לשולחן.
+            הטבעות הוכנסו לפינות השולחן — ארבע פינות, ארבע טבעות.
+          </p>
+
+          <div class="highlight-big">
+            <span class="big-number">4</span>
+            <span class="big-label">טבעות זהב — אחת בכל פינה של השולחן</span>
+          </div>
+
+          <h3>🪵 הבדים</h3>
+          <ol class="step-list">
+            <li>עשו בדים (מוטות/מקלות ארוכים) מ<strong>עצי שיטים</strong>.</li>
+            <li>ציפו גם אותם ב<strong>זהב</strong>.</li>
+            <li>הכניסו את הבדים לתוך הטבעות.</li>
+            <li>כך לקחו את השולחן ונשאו אותו — ארבעה לויים מרימים.</li>
+          </ol>
+
+          <div class="info-card cyan">
+            <strong>⚠️ חשוב לדעת:</strong><br/>
+            הבדים <strong>לא הוצאו</strong> מהארון לעולם — הם נשארו בטבעות גם כשהמשכן היה עומד במקומו.
+            בארון הברית היה אסור להוציאם בכלל.
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════ פרק ד ══════════════════════════════ -->
+    <div class="chapter ch4">
+      <input type="checkbox" id="ch4"/>
+      <label class="chapter-header" for="ch4">
+        <div class="ch-num">ד</div>
+        <div class="ch-title">
+          <h2>🍞 לחם הפנים — 12 הלחמות הקדושות</h2>
+          <span>מה זה לחם הפנים, כמה היו, ואיך עמדו</span>
+        </div>
+        <span class="ch-arrow">▾</span>
+      </label>
+      <div class="chapter-body">
+        <div class="chapter-inner">
+
+          <h3>📜 ציווי התורה</h3>
+          <div class="quote-box qb-amber">
+            📖 <strong>"וְנָתַתָּ עַל הַשֻּׁלְחָן לֶחֶם פָּנִים לְפָנַי תָּמִיד"</strong>
+            <br/>
+            "ושמת על השולחן לחם פנים לפני תמיד."
+          </div>
+
+          <h3>🔢 כמה לחמות?</h3>
+          <div class="highlight-big">
+            <span class="big-number">12</span>
+            <span class="big-label">לחמות — כנגד 12 שבטי ישראל</span>
+          </div>
+
+          <h3>❓ למה "לחם פנים"?</h3>
+          <ul>
+            <li>
+              <strong>פירוש א׳:</strong> הלחם היה פנה לכל כיוון — "פנים" = פנים וגב כאחד.
+            </li>
+            <li>
+              <strong>פירוש ב׳:</strong> הלחם עמד לפני השם תמיד — "לפני" = בפניו.
+            </li>
+            <li>
+              <strong>הצורה:</strong> הלחם היה נראה כמו מגירה פתוחה — ארוך עם שני צדדים.
+            </li>
+          </ul>
+
+          <h3>🕍 הנס הגדול</h3>
+          <div class="info-card orange">
+            <strong>✨ נס שבועי:</strong><br/>
+            הלחם הוחלף כל שבת. כשהוציאו את הלחם הישן כדי לשים לחם חדש —
+            הלחם הישן היה <strong>חם כמו שיצא מהתנור</strong>, למרות שעמד שם שבוע שלם!
+            זה היה ניסיון מוחשי שהשכינה שרויה במשכן.
+          </div>
+
+          <h3>⏰ "תמיד" — לעולם לא ריק</h3>
+          <p>
+            הלחם הוחלף בשבת — <strong>קודם הניחו את החדש, ואחר כך הורידו את הישן</strong>.
+            כך השולחן לא היה ריק לרגע אחד.
+          </p>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════ פרק ה ══════════════════════════════ -->
+    <div class="chapter ch5">
+      <input type="checkbox" id="ch5"/>
+      <label class="chapter-header" for="ch5">
+        <div class="ch-num">ה</div>
+        <div class="ch-title">
+          <h2>📐 הדפנות והמקלות — המבנה המורכב</h2>
+          <span>ארבע דפנות, 36 מקלות, ואוורור הלחם</span>
+        </div>
+        <span class="ch-arrow">▾</span>
+      </label>
+      <div class="chapter-body">
+        <div class="chapter-inner">
+
+          <h3>🤔 הבעיה — איך שמים 12 לחמות?</h3>
+          <p>
+            אם שמים 12 לחמות אחד על השני — הלחם התחתון ייאפה מהמשקל,
+            יתעפש, ויהיה לא אכיל. צריך <strong>פתרון חכם</strong>.
+          </p>
+
+          <div class="quote-box qb-gold">
+            💬 "אם אתה תיקח את השולחן שלך ותשים עליו שלוש חלות — מה יקרה לחלה השלישית? תיפול! אז מה עשו במקדש?"
+          </div>
+
+          <h3>🗄️ הפתרון: דפנות ומקלות</h3>
+
+          <p>
+            הניחו על השולחן מבנה מיוחד: <strong>ארון עם מדפים</strong> — כמו ספרייה.
+          </p>
+
+          <ol class="step-list">
+            <li>
+              <strong>ארבע דפנות</strong> (לוחות) — שתיים בצד ימין, שתיים בצד שמאל.
+            </li>
+            <li>
+              בתוך הדפנות יש <strong>חריצים</strong> — כמו מדפים בארון.
+            </li>
+            <li>
+              בכל שכבה שמים <strong>מקלות</strong> — מוטות שמחזיקים את הלחם.
+            </li>
+            <li>
+              הלחם שוכב על המקלות — <strong>יש רווח אויר</strong> בין לחם ללחם.
+            </li>
+          </ol>
+
+          <div class="highlight-big">
+            <span class="big-number">4</span>
+            <span class="big-label">דפנות — שתיים מכל צד של השולחן</span>
+          </div>
+
+          <h3>📊 כמה מקלות?</h3>
+          <p>
+            הלחמות עמדו בשתי מערכות (שתי "ערמות") של 6 לחמות כל אחת.
+            בין כל לחם ללחם — מקלות לאוורור.
+          </p>
+
+          <table>
+            <thead>
+              <tr><th>מערכה</th><th>מספר לחמות</th><th>מקלות בין כל לחם</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>מערכה א׳</td><td>6 לחמות</td><td>3 מקלות בין כל שכבה</td></tr>
+              <tr><td>מערכה ב׳</td><td>6 לחמות</td><td>3 מקלות בין כל שכבה</td></tr>
+            </tbody>
+          </table>
+
+          <div class="info-card green">
+            <strong>🧮 חישוב: כמה מקלות סך הכל?</strong><br/>
+            בכל מערכה יש 6 לחמות → 5 רווחים בין לחם ללחם → 3 מקלות בכל רווח = 15 מקלות למערכה.
+            <br/>
+            שתי מערכות: <strong>15 × 2 = 30 מקלות</strong>.
+            <br/>
+            (מספרים שונים הוזכרו בשיעור — נדון בזה בשיעור הבא!)
+          </div>
+
+          <h3>💡 למה האוורור חשוב?</h3>
+          <ul>
+            <li>אם הלחם לא מאוורר — יתעפש תוך ימים.</li>
+            <li>המקלות יצרו רווח אויר בין לחם ללחם.</li>
+            <li>כך הלחם נשאר טרי שבוע שלם — <em>ועוד עם הנס שהיה חם!</em></li>
+          </ul>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════ פרק ו ══════════════════════════════ -->
+    <div class="chapter ch6">
+      <input type="checkbox" id="ch6"/>
+      <label class="chapter-header" for="ch6">
+        <div class="ch-num">ו</div>
+        <div class="ch-title">
+          <h2>🧁 הכנת לחם הפנים — הסוד המעשי</h2>
+          <span>צורת הלחם, תבנית האפייה, ואיך עמד ישר</span>
+        </div>
+        <span class="ch-arrow">▾</span>
+      </label>
+      <div class="chapter-body">
+        <div class="chapter-inner">
+
+          <h3>🔵 אתגר הצורה</h3>
+          <p>
+            לחם הפנים לא היה לחם עגול רגיל.
+            הוא היה ארוך, ולשני צדדיו היו <strong>שתי דפנות</strong> — כמו מגירה פתוחה.
+          </p>
+
+          <div class="quote-box qb-gold">
+            💬 "אם אני אקח בצק ארוך ואני ארים אותו בצדדים — מה יקרה? הוא ייפול.
+            הבצק לא יעמוד בעצמו. אז איך עשו אותו?"
+          </div>
+
+          <h3>🥧 הפתרון — תבנית האפייה</h3>
+          <ol class="step-list">
+            <li>לוקחים <strong>תבנית מתכת מרובעת מיוחדת</strong>.</li>
+            <li>שמים את הבצק בתוך התבנית — הבצק מקבל את הצורה של התבנית.</li>
+            <li>אופים עם התבנית — הלחם מתייצב בצורה הנכונה.</li>
+            <li>לאחר האפייה — מוציאים את הלחם מהתבנית.</li>
+          </ol>
+
+          <div class="info-card">
+            <strong>🔍 שתי שיטות אפשריות:</strong><br/>
+            <strong>א׳:</strong> שמים בצק בתוך תבנית — הצדדים עולים מעצמם.<br/>
+            <strong>ב׳:</strong> הופכים תבנית — שמים בצק על הצד החיצוני.
+            <br/><br/>
+            בשיעור הסתכלנו בסרטון ולמדנו: הם שמו את הבצק <em>בתוך</em> התבנית —
+            כך קיבלו לחם עם שני צדדים זקופים.
+          </div>
+
+          <h3>🌟 מה שמיוחד בלחם הפנים</h3>
+          <ul>
+            <li><strong>לא לחם רגיל</strong> — לחם מיוחד בצורת מגירה פתוחה.</li>
+            <li><strong>מצה</strong> — ללא שאור (עיסה בלי תפיחה).</li>
+            <li>12 לחמות — כנגד 12 שבטים.</li>
+            <li>הוחלף כל שבת — מדי שבת בשבתו.</li>
+          </ul>
+
+          <h3>🧑‍🍳 מי אפה?</h3>
+          <div class="info-card amber">
+            <strong>👨‍🍳 משפחת הכהנים — בית גרמו:</strong><br/>
+            הייתה משפחת כהנים מיוחדת שהתמחתה בהכנת לחם הפנים דווקא.
+            הם ידעו את הסוד של איך לעשות את הצורה המיוחדת.
+            לאחר הרס המקדש — הסוד אבד.
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════ פרק ז ══════════════════════════════ -->
+    <div class="chapter ch7">
+      <input type="checkbox" id="ch7"/>
+      <label class="chapter-header" for="ch7">
+        <div class="ch-num">ז</div>
+        <div class="ch-title">
+          <h2>🏺 כלי השולחן — קערות, כפות, קשותיו ומנקיותיו</h2>
+          <span>הפסוק המלא וסיכום השיעור</span>
+        </div>
+        <span class="ch-arrow">▾</span>
+      </label>
+      <div class="chapter-body">
+        <div class="chapter-inner">
+
+          <h3>📜 הפסוק המלא</h3>
+          <div class="quote-box qb-gold">
+            📖 <strong>"וְעָשִׂיתָ קְּעָרֹתָיו וְכַפֹּתָיו וּקְשֹׂתֹתָיו וּמְנַקִּיֹּתָיו
+            אֲשֶׁר יֻסַּךְ בָּהֵן — זָהָב טָהוֹר תַּעֲשֶׂה אֹתָם"</strong>
+          </div>
+
+          <h3>🥣 ארבעת הכלים</h3>
+          <div class="vessels-grid">
+            <div class="vessel-card">
+              <span class="vessel-icon">🥣</span>
+              <div class="vessel-name">קְעָרוֹת</div>
+              <div class="vessel-desc">קערות זהב — שהונחו על השולחן.</div>
+            </div>
+            <div class="vessel-card">
+              <span class="vessel-icon">🫙</span>
+              <div class="vessel-name">כַּפּוֹת</div>
+              <div class="vessel-desc">כפות זהב — כפות לבונה שהונחו על הלחמות.</div>
+            </div>
+            <div class="vessel-card">
+              <span class="vessel-icon">🫗</span>
+              <div class="vessel-name">קְשֹׂתוֹת</div>
+              <div class="vessel-desc">כלים לנסך יין — הנסכים שנעשו בקודש.</div>
+            </div>
+            <div class="vessel-card">
+              <span class="vessel-icon">🧹</span>
+              <div class="vessel-name">מְנַקִּיּוֹת</div>
+              <div class="vessel-desc">כלי ניקוי — לנקות את שולחן הלחם הפנים.</div>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <strong>💛 כולם זהב טהור!</strong><br/>
+            כמו כל כלי השולחן — גם ארבעה כלים אלה היו עשויים <strong>זהב טהור</strong>.
+            לא ברזל, לא כסף — רק זהב.
+          </div>
+
+          <h3>📌 סיכום השיעור — נקודות עיקריות</h3>
+          <ol class="step-list">
+            <li><strong>השולחן</strong> עשוי עצי שיטים ומצופה זהב טהור.</li>
+            <li><strong>מידות:</strong> 2×1 אמות, גובה אמה וחצי.</li>
+            <li><strong>זר זהב ומסגרת</strong> — קישוט ובטיחות.</li>
+            <li><strong>ארבע טבעות ובדים</strong> לנשיאה ממקום למקום.</li>
+            <li><strong>12 לחמות פנים</strong> — חם, טרי, תמיד על השולחן.</li>
+            <li><strong>שתי מערכות</strong> של 6 לחמות, עם דפנות ומקלות אוורור.</li>
+            <li><strong>הלחם נאפה בתבנית</strong> מיוחדת כדי לקבל את הצורה.</li>
+            <li><strong>ארבעה כלים נוספים</strong>: קערות, כפות, קשותיו, מנקיותיו — כולם זהב.</li>
+          </ol>
+
+          <div class="quote-box qb-green">
+            💬 "ארבעה פסוקים בלבד — וזה כל השולחן! כמה פרטים עמוקים מסתתרים בכל מילה."
+          </div>
+
+          <h3>🔭 שאלות לחשיבה לשיעור הבא</h3>
+          <ul>
+            <li>כמה מקלות היו בדיוק בשולחן לחם הפנים?</li>
+            <li>איך בדיוק עמד הלחם בין הדפנות?</li>
+            <li>מה עשו עם הלחמות הישנות שהוורדו כל שבת?</li>
+          </ul>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /accordion -->
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>🌟 <strong>ספר השיעור — Gold Aurora Edition</strong></p>
+    <p>שיעור על השולחן ולחם הפנים | כל הזכויות שמורות ✦</p>
+    <p style="margin-top:10px; font-size:0.8rem; color:rgba(255,215,0,0.25);">
+      ∿ made with golden aurora & love for Torah ∿
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מִשְׂחַק הַהוֹדָיָה וְהַבְּרָכָה</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&display=swap');
+
+        :root {
+            --correct-bg: #d4edda;
+            --correct-text: #155724;
+            --incorrect-bg: #f8d7da;
+            --incorrect-text: #721c24;
+            --primary-blue: #007bff;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Assistant', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #87CEEB 0%, #FFD700 100%);
+            color: #333;
+            text-align: right;
+            line-height: 2;
+            font-size: 1.2em;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+
+        .lesson {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .lesson.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 2.2em;
+            text-align: center;
+        }
+
+        h2 {
+            border-bottom: 2px solid var(--primary-blue);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .inspiration-question {
+            color: var(--primary-blue);
+            font-weight: bold;
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-right: 5px solid var(--primary-blue);
+        }
+        
+        .quiz-container {
+            margin-top: 30px;
+            border-top: 1px dashed #ccc;
+            padding-top: 20px;
+        }
+
+        .question {
+            margin-bottom: 25px;
+        }
+
+        .question p {
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+        
+        .answers {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .answer-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            background-color: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: right;
+            font-size: 1em;
+            font-family: 'Assistant', sans-serif;
+        }
+
+        .answer-btn:hover:not(:disabled) {
+            border-color: var(--primary-blue);
+            background-color: #f0f8ff;
+        }
+
+        .answer-btn:disabled {
+            cursor: not-allowed;
+        }
+        
+        .answer-btn.correct {
+            background-color: var(--correct-bg);
+            border-color: var(--correct-text);
+            color: var(--correct-text);
+            font-weight: bold;
+        }
+
+        .answer-btn.incorrect {
+            background-color: var(--incorrect-bg);
+            border-color: var(--incorrect-text);
+            color: var(--incorrect-text);
+        }
+        
+        .feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .feedback.correct {
+            background-color: var(--correct-bg);
+            color: var(--correct-text);
+            display: block;
+        }
+        
+        .feedback.incorrect {
+            background-color: var(--incorrect-bg);
+            color: var(--incorrect-text);
+            display: block;
+        }
+
+        .nav-btn {
+            display: block;
+            margin: 20px auto 0 auto;
+            padding: 12px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            transition: background-color 0.2s;
+        }
+
+        .nav-btn:hover {
+            background-color: #0056b3;
+        }
+        
+        #quiz-result {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        #certificate {
+            border: 10px solid;
+            border-image-slice: 1;
+            border-width: 10px;
+            border-image-source: linear-gradient(to left, #FFD700, #87CEEB);
+            padding: 30px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        #player-name-input {
+            border: none;
+            border-bottom: 2px solid #333;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            background: transparent;
+            width: 200px;
+        }
+        
+        .reinforcement-verse {
+            font-style: italic;
+            margin-top: 20px;
+            font-size: 1.3em;
+            color: #0056b3;
+        }
+        
+        .reflection-questions {
+            text-align: right;
+            margin-top: 30px;
+        }
+
+        .reflection-questions ol {
+            padding-right: 20px;
+        }
+        
+        .cta-link a, .contact-info {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .cta-link a {
+            font-weight: bold;
+            color: #d9534f;
+            text-decoration: none;
+        }
+
+        .cta-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                font-size: 1.1em;
+            }
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            h2 {
+                font-size: 1.5em;
+            }
+            .question p {
+                font-size: 1.2em;
+            }
+            .answer-btn, .nav-btn {
+                font-size: 1em;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🎮 מִשְׂחַק הַהוֹדָיָה וְהַבְּרָכָה: לִפְתֹּחַ אֶת אוֹצְרוֹת הַשָּׁמַיִם!</h1>
+
+        <!-- Intro Screen -->
+        <div id="lesson-0" class="lesson active">
+            <h2>בְּרוּכִים הַבָּאִים לְהַרְפַּתְקָה! 💖</h2>
+            <p>
+                שָׁלוֹם גִּבּוֹרִים וְגִבּוֹרוֹת! ✨ הַיְדַעְתֶּם שֶׁיֵּשׁ לָנוּ כֹּחַ-עַל מְיֻחָד?
+                כֹּחַ לֹא רַק לְהַגִּיד "תּוֹדָה" לְהַשֵּׁם עַל כָּל הַטּוֹב שֶׁהוּא נוֹתֵן לָנוּ.
+                יֵשׁ לָנוּ גַּם כֹּחַ מַדְהִים לְ"בָרֵךְ" אוֹתוֹ, וּבְכָךְ לְהוֹרִיד עוֹד שֶׁפַע וְאוֹר לָעוֹלָם! 🙏
+                בַּמִּשְׂחַק הַזֶּה נְגַלֶּה יַחַד סוֹד גָּדוֹל וּמָתוֹק. 🌟
+                הַסּוֹד שֶׁיַּעֲזֹר לָנוּ לִהְיוֹת הֲכִי קְרוֹבִים לְהַשֵּׁם, וּלְהַרְגִּישׁ אֶת הָאַהֲבָה הָאֵינְסוֹפִית שֶׁלּוֹ.
+                מוּכָנִים לְהַתְחִיל?
+            </p>
+            <button class="nav-btn" onclick="showLesson(1)">בּוֹאוּ נַתְחִיל!</button>
+        </div>
+
+        <!-- Lesson 1: Hodayah -->
+        <div id="lesson-1" class="lesson">
+            <h2>🎈 שִׁיעוּר 1: מָה זוֹ הוֹדָיָה?</h2>
+            <p>
+                הוֹדָיָה הִיא הַדֶּרֶךְ הַפְּשׁוּטָה וְהַיָּפָה שֶׁלָּנוּ לְהַגִּיד "תּוֹדָה!" לְהַשֵּׁם.
+                זֶה הַשָּׁלָב הָרִאשׁוֹן וְהַכִּי חָשׁוּב בַּקֶּשֶׁר שֶׁלָּנוּ אִתּוֹ. כְּמוֹ שֶׁכָּתוּב בַּפָּסוֹק הַמֻּכָּר: "יוֹדוּךָ ה' כָּל מַעֲשֶׂיךָ".
+                כְּשֶׁאַתָּה קָם בַּבֹּקֶר לְיוֹם חָדָשׁ ☀️, זֶה זְמַן לְהוֹדוֹת.
+                כְּשֶׁאִמָּא מְכִינָה לְךָ אֲרוּחָה טְעִימָה 🥪, זֶה זְמַן לְהוֹדוֹת.
+                וּכְשֶׁאַתָּה מְשַׂחֵק עִם חֲבֵרִים בַּחוּץ ⚽, גַּם זֶה זְמַן נִפְלָא לְהוֹדוֹת!
+                כְּשֶׁאֲנַחְנוּ אוֹמְרִים תּוֹדָה, הַלֵּב שֶׁלָּנוּ מִתְמַלֵּא בְּאַהֲבָה לְהַשֵּׁם.
+                הַשֵּׁם אוֹהֵב כָּל כָּךְ לִשְׁמֹעַ אֶת הַתּוֹדָה שֶׁלָּנוּ, כִּי הוּא אוֹהֵב אוֹתָנוּ מְאֹד! ❤️
+            </p>
+            <div class="inspiration-question">
+                עַל מָה אֲנִי רוֹצֶה לְהַגִּיד תּוֹדָה לְהַשֵּׁם הַיּוֹם?
+            </div>
+            
+            <div class="quiz-container" id="quiz-1">
+            </div>
+        </div>
+
+        <!-- Lesson 2: Brachah -->
+        <div id="lesson-2" class="lesson">
+            <h2>🔑 שִׁיעוּר 2: מָה זוֹ בְּרָכָה?</h2>
+            <p>
+                עַכְשָׁו, הִתְכּוֹנְנוּ לְסוֹד מַדְהִים! בְּרָכָה הִיא הַרְבֵּה יוֹתֵר מִסְּתָם "תּוֹדָה".
+                דַּמְיְנוּ שֶׁבְּרָכָה הִיא כְּמוֹ מַפְתֵּחַ קֶסֶם 🔑, אוֹ כַּרְטִיס כַּסְפּוֹמָט מְיֻחָד.
+                הַמַּפְתֵּחַ הַזֶּה פּוֹתֵחַ אֶת אוֹצְרוֹת הַטּוֹב הָאֵינְסוֹפִיִּים שֶׁל הַשֵּׁם וּמוֹרִיד אוֹתָם יָשָׁר אֵלֵינוּ, לָעוֹלָם!
+                לְהַשֵּׁם יֵשׁ "בַּנְק" שֶׁל בְּרָכוֹת שֶׁאַף פַּעַם לֹא נִגְמָר. כְּשֶׁאֲנַחְנוּ מְבָרְכִים, אֲנַחְנוּ בְּעֶצֶם "מוֹשְׁכִים" אֶת הַשֶּׁפַע הַזֶּה, וּמְמַלְּאִים אֶת הָעוֹלָם בְּטוֹב.
+                הַשֵּׁם אוֹהֵב אוֹתָנוּ כָּל כָּךְ, וְהַתַּאֲוָה הֲכִי גְּדוֹלָה שֶׁלּוֹ הִיא לָתֵת לָנוּ עוֹד וְעוֹד טוֹב!
+                הַבְּרָכָה שֶׁלָּנוּ נוֹתֶנֶת לוֹ אֶת הָאֶפְשָׁרוּת לְהַרְעִיף עָלֵינוּ אֶת כָּל אַהֲבָתוֹ.
+            </p>
+             <div class="inspiration-question">
+                אֵיךְ אֲנִי מַרְגִּישׁ אֶת אַהֲבַת הַשֵּׁם כְּשֶׁאֲנִי חוֹשֵׁב עַל כָּל הַשֶּׁפַע שֶׁהוּא רוֹצֶה לָתֵת לִי?
+            </div>
+
+            <div class="quiz-container" id="quiz-2">
+            </div>
+        </div>
+
+        <!-- Lesson 3: Chasid -->
+        <div id="lesson-3" class="lesson">
+            <h2>🍎 שִׁיעוּר 3: הַסּוֹד שֶׁל הֶחָסִיד</h2>
+            <p>
+                יֵשׁ אֲנָשִׁים מְיֻחָדִים בָּעוֹלָם, שֶׁקּוֹרְאִים לָהֶם "חֲסִידִים".
+                מָה זֶה חָסִיד? זֶה מִי שֶׁ"מִּתְחַסֵּד עִם קוֹנוֹ". זֹאת אוֹמֶרֶת, הוּא רוֹצֶה כָּל הַזְּמַן לַעֲשׂוֹת חֶסֶד עִם הַשֵּׁם, כְּאִלּוּ לָתֵת לוֹ מַתָּנָה בַּחֲזָרָה.
+                יֵשׁ סִפּוּר עַל אַדְמוֹ"ר חָשׁוּב. אָדָם רָגִיל שֶׁרוֹצֶה לֶאֱכֹל תַּפּוּחַ 🍎, מְבָרֵךְ עָלָיו, כִּי חַיָּבִים.
+                אֲבָל הֶחָסִיד? הוּא כָּל כָּךְ רוֹצֶה לְבָרֵךְ אֶת הַשֵּׁם וּלְשַׂמֵּחַ אוֹתוֹ, וְלָכֵן... הוּא אוֹכֵל תַּפּוּחַ כְּדֵי שֶׁתִּהְיֶה לוֹ סִבָּה טוֹבָה לְבָרֵךְ!
+                הֶחָסִיד אוֹהֵב אֶת הַשֵּׁם כָּל כָּךְ, שֶׁהוּא מְחַפֵּשׂ כָּל הַזְּמַן דְּרָכִים לְשַׂמֵּחַ אוֹתוֹ.
+                הַבְּרָכָה הִיא הַמַּתָּנָה הֲכִי יָפָה שֶׁהוּא יָכוֹל לָתֵת לוֹ.
+            </p>
+             <div class="inspiration-question">
+                אֵיךְ אֲנִי יָכוֹל לַחְשֹׁב יוֹתֵר עַל 'לָתֵת' לְהַשֵּׁם וְלֹא רַק עַל 'לְקַבֵּל' מִמֶּנּוּ?
+            </div>
+            
+            <div class="quiz-container" id="quiz-3">
+            </div>
+        </div>
+
+        <!-- Lesson 4: Practical -->
+        <div id="lesson-4" class="lesson">
+            <h2>💪 שִׁיעוּר 4: אֵיךְ גַּם אֲנִי יָכוֹל לְבָרֵךְ?</h2>
+            <p>
+                זֶה הַשָּׁלָב הֲכִי כֵּיף! עַכְשָׁו נִלְמַד אֵיךְ כָּל אֶחָד וְאַחַת מֵאִתָּנוּ יְכוֹלִים, כָּאן וְעַכְשָׁו, לִהְיוֹת אַלּוּפֵי הַבְּרָכָה.
+                הִנֵּה הַשְּׁלַבִּים הַפְּשׁוּטִים:
+                קָרָה לְךָ דָּבָר טוֹב? נִפְלָא!
+                <strong>צַעַד רִאשׁוֹן:</strong> תַּעֲצֹר לְרֶגַע וּבְשִׂמְחָה גְדוֹלָה תַּגִּיד: "תּוֹדָה הַשֵּׁם!".
+                <strong>צַעַד שֵׁנִי:</strong> עַכְשָׁו, חַפֵּשׂ הִזְדַּמְּנוּת קְרוֹבָה לְ"בָרֵךְ" אוֹתוֹ.
+                אֵיךְ? קַח פְּרִי טָעִים, שׁוֹקוֹלָד, אוֹ כּוֹס מַיִם. לִפְנֵי שֶׁאַתָּה נֶהֱנֶה, תְּבָרֵךְ בְּכַוָּנָה גְדוֹלָה וְתַחְשֹׁב שֶׁהַבְּרָכָה הַזֹּאת מַמָּשׁ עַכְשָׁו מוֹרִידָה עוֹד טוֹב וְאוֹר לָעוֹלָם כֻּלּוֹ.
+                כְּשֶׁאָנוּ מְבָרְכִים מִתּוֹךְ הַלֵּב, אָנוּ מַרְגִּישִׁים אֶת הָאַהֲבָה שֶׁל הַשֵּׁם עוֹטֶפֶת אוֹתָנוּ.
+                כָּל בְּרָכָה הִיא חִבּוּק קָטָן שֶׁאָנוּ שׁוֹלְחִים לְהַשֵּׁם, וְהוּא מַחְזִיר לָנוּ חִבּוּק עֲנָק!
+            </p>
+            <div class="inspiration-question">
+                אֵיזוֹ הִזְדַּמְּנוּת תִּהְיֶה לִי הַיּוֹם לֹא רַק לְהוֹדוֹת, אֶלָּא גַּם לְבָרֵךְ אֶת הַשֵּׁם?
+            </div>
+            
+            <div class="quiz-container" id="quiz-4">
+            </div>
+        </div>
+        
+        <!-- Final Screen -->
+        <div id="lesson-5" class="lesson">
+            <div id="certificate">
+                <h2>🏆 תְּעוּדַת הִצְטַיְּנוּת 🏆</h2>
+                <p>
+                    מוּעֲנֶקֶת בְּזֶה לְ
+                    <input type="text" id="player-name-input" placeholder="שֵׁם הָאַלּוּף/הַ">,
+                    <br>
+                    אַלּוּף/אַלּוּפַת הַהוֹדָיָה וְהַבְּרָכָה,
+                    <br>
+                    עַל שֶׁלָּמַד אֶת הַסּוֹד הַגָּדוֹל: אֵיךְ לִפְתֹּחַ אֶת אוֹצְרוֹת הַשֶּׁפַע שֶׁל הַשֵּׁם יִתְבָּרַךְ!
+                </p>
+            </div>
+            
+            <div class="reinforcement-verse">
+                <p><strong>"יוֹדוּךָ ה' כָּל-מַעֲשֶׂיךָ; וַחֲסִידֶיךָ, יְבָרְכוּכָה."</strong> (תְּהִלִּים קמ"ה, י')</p>
+            </div>
+            
+            <div class="reflection-questions">
+                <h3>שְׁאֵלוֹת לְמַחְשָׁבָה:</h3>
+                <ol>
+                    <li>אֵיךְ אֶזְכֹּר הַיּוֹם לֹא רַק לְהוֹדוֹת אֶלָּא גַּם לְבָרֵךְ?</li>
+                    <li>אֶת מִי אֲנִי יָכוֹל לְשַׁתֵּף בַּסּוֹד הַנִּפְלָא שֶׁלָּמַדְתִּי?</li>
+                    <li>כֵּיצַד הַהַרְגָּשָׁה שֶׁאֲנִי יָכוֹל "לָתֵת" לְהַשֵּׁם מְשַׁנָּה אֶת הַיּוֹם שֶׁלִּי?</li>
+                </ol>
+            </div>
+
+            <div class="cta-link">
+                <a href="https://forms.gle/A66uubei4XSX6SG2A" target="_blank">רוֹצִים לְהִכָּנֵס לְהַגְרָלָה עַל פְּרָסִים? לַחֲצוּ כָּאן!</a>
+            </div>
+            
+            <div class="contact-info">
+                <p>נוֹצַר בְּאַהֲבָה עַל יְדֵי הָרַב יְהוּדָה טָאוּב, קִרְיַת אַתָּא.<br>לִשְׁאֵלוֹת: 📞 0527139520</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Web Audio API setup for correct answer sound
+        let audioContext;
+        function playCorrectSound() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            // Simple C-E-G major chord
+            const frequencies = [261.63, 329.63, 392.00]; 
+            const now = audioContext.currentTime;
+
+            frequencies.forEach((freq, i) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(freq, now);
+                
+                gainNode.gain.setValueAtTime(0.3, now); // Start with some volume
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, now + 0.5); // Fade out
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.start(now);
+                oscillator.stop(now + 0.5);
+            });
+        }
+        
+        // Game state
+        let currentLesson = 0;
+        const lessonScores = {};
+
+        const quizzes = {
+            1: {
+                questions: [
+                    { q: "מָה הַדֶּרֶךְ הֲכִי פְּשׁוּטָה לְהַרְאוֹת לְהַשֵּׁם שֶׁאֲנַחְנוּ שְׂמֵחִים בַּמַּתָּנוֹת שֶׁלּוֹ?", a: ["לְהַגִּיד לוֹ \"תּוֹדָה רַבָּה!\" מִכָּל הַלֵּב עַל כָּל דָּבָר טוֹב.", "לְבַקֵּשׁ מִמֶּנּוּ עוֹד דְּבָרִים חֲדָשִׁים.", "לִשְׁמֹר אֶת הַשִּׂמְחָה רַק לְעַצְמֵנוּ.", "לְצַיֵּר לוֹ צִיּוּר יָפֶה שֶׁל פֶּרַח."] },
+                    { q: "הַפָּסוֹק \"יוֹדוּךָ ה' כָּל מַעֲשֶׂיךָ\" מְלַמֵּד אוֹתָנוּ שֶׁ...", a: ["כָּל הָאֲנָשִׁים וְכָל הַבְּרִיאָה יְכוֹלִים וּצְרִיכִים לְהוֹדוֹת לְהַשֵּׁם.", "רַק חֲסִידִים גְּדוֹלִים יְכוֹלִים לְהוֹדוֹת לוֹ.", "צָרִיךְ לְהוֹדוֹת רַק עַל נִסִּים גְּדוֹלִים.", "הַשֵּׁם עוֹשֶׂה הַכֹּל בְּעַצְמוֹ וְלֹא צָרִיךְ תּוֹדָה."] },
+                    { q: "אֵיזוֹ דֻּגְמָא מֵחַיֵּי הַיּוֹמְיוֹם הִיא דֻּגְמָא טוֹבָה לְהוֹדָיָה?", a: ["לְהַגִּיד \"מוֹדֶה אֲנִי\" בַּבֹּקֶר וּלְהִתְכַּוֵּן לְכָל מִלָּה בְּשִׂמְחָה.", "לִצְעֹק בְּשִׂמְחָה כְּשֶׁמְּקַבְּלִים מַתָּנָה חֲדָשָׁה.", "לַחְשֹׁב עַל דְּבָרִים שֶׁאֵין לָנוּ.", "לְהִתְפַּלֵּל מַהֵר מַהֵר כְּדֵי לִגְמֹר."] }
+                ]
+            },
+            2: {
+                questions: [
+                    { q: "מָה הַהֶבְדֵּל הָעִקָּרִי בֵּין לְהוֹדוֹת לְהַשֵּׁם וּבֵין לְבָרֵךְ אֶת הַשֵּׁם?", a: ["הוֹדָיָה הִיא לוֹמַר תּוֹדָה עַל הֶעָבָר, וּבְרָכָה מוֹרִידָה שֶׁפַע חָדָשׁ.", "אֵין שׁוּם הֶבְדֵּל, זֶה בְּדִיּוּק אוֹתוֹ הַדָּבָר.", "הוֹדָיָה זֶה בִּכְתָב וּבְרָכָה זֶה בְּעַל-פֶּה.", "בְּרָכָה אוֹמְרִים רַק בַּשַּׁבָּת."] },
+                    { q: "לְפִי מְשַׁל הַכַּסְפּוֹמָט, מָהוּ הַ\"כַּרְטִיס\" שֶׁלָּנוּ לִמְשֹׁךְ שֶׁפַע מֵהַשֵּׁם?", a: ["הַמִּלִּים שֶׁל הַבְּרָכָה שֶׁאָנוּ אוֹמְרִים בְּכַוָּנָה גְּדוֹלָה.", "הַכֶּסֶף שֶׁאָנוּ נוֹתְנִים לִצְדָקָה.", "הַצִּיּוּנִים הַטּוֹבִים שֶׁאָנוּ מְקַבְּלִים.", "הַתְּפִלָּה שֶׁאָנוּ קוֹרְאִים מְהַסִּדּוּר."] },
+                    { q: "כְּשֶׁאֱלִיעֶזֶר מָצָא אֶת רִבְקָה, הוּא אָמַר \"בָּרוּךְ הַשֵּׁם\". לָמָּה הוּא הִשְׁתַּמֵּשׁ בַּמִּלָּה \"בָּרוּךְ\"?", a: ["כִּי הוּא רָצָה גַּם לְהוֹדוֹת וְגַּם לִגְרֹם לְעוֹד בְּרָכָה לָרֶדֶת.", "כִּי הוּא שָׁכַח אֵיךְ אוֹמְרִים \"תּוֹדָה\".", "כִּי כָּךְ כָּתוּב בַּתּוֹרָה וְאֵין לָזֶה סִבָּה.", "כִּי הוּא רָצָה לְהִתְפַּאֵר בַּנֵּס שֶׁקָּרָה לוֹ."] }
+                ]
+            },
+            3: {
+                questions: [
+                    { q: "מָה הַמַּטָּרָה הָעִקָּרִית שֶׁל הֶחָסִיד כְּשֶׁהוּא אוֹכֵל תַּפּוּחַ, לְפִי הַסִּפּוּר?", a: ["לִהְיוֹת לוֹ הִזְדַּמְּנוּת לְבָרֵךְ אֶת הַשֵּׁם וְלָתֵת לוֹ נַחַת רוּחַ.", "לִהְיוֹת שָׂבֵעַ וּבָרִיא כְּדֵי לִלְמֹד תּוֹרָה.", "לְהַרְאוֹת לְכֻלָּם כַּמָּה הוּא קָדוֹשׁ.", "לֵהָנוֹת מֵהַטַּעַם הַמָּתוֹק שֶׁל הַתַּפּוּחַ."] },
+                    { q: "הַפָּסוֹק \"וַחֲסִידֶיךָ יְבָרְכוּכָה\" מַסְבִּיר שֶׁהַחֲסִידִים...", a: ["לֹא מִסְתַּפְּקִים בִּלְהוֹדוֹת, אֶלָּא מְבָרְכִים כְּדֵי לְהוֹרִיד שֶׁפַע.", "יוֹדְעִים אֶת כָּל הַבְּרָכוֹת בְּעַל-פֶּה.", "מְדַבְּרִים רַק עִם הַשֵּׁם כָּל הַיּוֹם.", "אוֹהֲבִים אֶת הַשֵּׁם יוֹתֵר מֵאֲחֵרִים."] },
+                    { q: "מָה פֵּרוּשׁ הַבִּטּוּי \"לְהִתְחַסֵּד עִם קוֹנוֹ\"?", a: ["לַעֲשׂוֹת חֶסֶד עִם הַבּוֹרֵא, לְחַפֵּשׂ אֵיךְ לָתֵת לוֹ.", "לַעֲשׂוֹת חֶסֶד רַק עִם אֲנָשִׁים אֲחֵרִים.", "לְהַחְבִּיא אֶת הַמַּעֲשִׂים הַטּוֹבִים שֶׁלְּךָ.", "לְהִתְפַּלֵּל בְּשֶׁקֶט בַּצַּד שֶׁל הַחֶדֶר."] }
+                ]
+            },
+            4: {
+                questions: [
+                    { q: "קִבַּלְתָּ צִיּוּן 100 בַּמִּבְחָן. מָה הַדָּבָר הַנָּכוֹן לַעֲשׂוֹת, לְפִי מָה שֶׁלָּמַדְנוּ?", a: ["קֹדֶם כֹּל לוֹמַר תּוֹדָה לְהַשֵּׁם, וְאַחַר כָּךְ לְבָרֵךְ עַל מַמְתָּק בְּכַוָּנָה.", "לָרוּץ וּלְסַפֵּר מִיָּד לְכָל הַחֲבֵרִים שֶׁלְּךָ.", "לְבַקֵּשׁ מֵהַהוֹרִים מַתָּנָה גְדוֹלָה.", "לִשְׁמֹר אֶת הַמִּבְחָן בַּתִּיק וְלִשְׁכֹּחַ מִמֶּנּוּ."] },
+                    { q: "לָמָּה חָשׁוּב לְהוֹסִיף \"בְּרָכָה\" אַחֲרֵי הַ\"הוֹדָיָה\"?", a: ["כִּי זֶה נוֹתֵן לְהַשֵּׁם אֶת הָאֶפְשָׁרוּת לָתֵת לָנוּ עוֹד שֶׁפַע וְטוֹב.", "כִּי אִם לֹא, הַשֵּׁם יִקַּח בַּחֲזָרָה אֶת הַדָּבָר הַטּוֹב.", "כִּי כָּךְ נוֹהֲגִים כָּל הַיְּלָדִים הַגְּדוֹלִים.", "כִּי זֶה מוֹסִיף לָנוּ נְקֻדּוֹת בַּמִּשְׂחָק."] },
+                    { q: "אֵיזוֹ בְּרָכָה, כְּשֶׁאוֹמְרִים אוֹתָהּ מֵהַלֵּב, יְכוֹלָה לִמְנֹעַ צָרוֹת מֵהָעוֹלָם?", a: ["כָּל בְּרָכָה שֶׁנַּעֲשֵׂית מִתּוֹךְ שִׂמְחָה וְהוֹדָיָה, כִּי הִיא מוֹרִידָה שֶׁפַע.", "רַק בִּרְכַּת הַמָּזוֹן שֶׁל יוֹם שִׁשִּׁי בָּעֶרֶב.", "רַק בְּרָכָה שֶׁרַב גָּדוֹל אוֹמֵר.", "רַק בְּרָכָה שֶׁכָּתוּב לְיָדָהּ \"סְגֻלָּה\"."] }
+                ]
+            }
+        };
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function buildQuiz(lessonNum) {
+            const quizData = quizzes[lessonNum];
+            const quizContainer = document.getElementById(`quiz-${lessonNum}`);
+            quizContainer.innerHTML = '';
+            lessonScores[lessonNum] = { score: 0, answered: 0 };
+            
+            quizData.questions.forEach((qData, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                
+                const questionText = document.createElement('p');
+                questionText.textContent = `${index + 1}. ${qData.q}`;
+                questionDiv.appendChild(questionText);
+                
+                const answersDiv = document.createElement('div');
+                answersDiv.className = 'answers';
+                
+                const correctAnswer = qData.a[0];
+                const shuffledAnswers = shuffle([...qData.a]);
+                
+                shuffledAnswers.forEach(answer => {
+                    const button = document.createElement('button');
+                    button.className = 'answer-btn';
+                    button.textContent = answer;
+                    button.onclick = () => checkAnswer(button, answer === correctAnswer, lessonNum);
+                    answersDiv.appendChild(button);
+                });
+                
+                questionDiv.appendChild(answersDiv);
+                
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.className = 'feedback';
+                questionDiv.appendChild(feedbackDiv);
+                
+                quizContainer.appendChild(questionDiv);
+            });
+            const resultDiv = document.createElement('div');
+            resultDiv.id = `quiz-result-${lessonNum}`;
+            quizContainer.appendChild(resultDiv);
+        }
+
+        function checkAnswer(button, isCorrect, lessonNum) {
+            const questionDiv = button.closest('.question');
+            const answers = questionDiv.querySelectorAll('.answer-btn');
+            const feedback = questionDiv.querySelector('.feedback');
+            
+            answers.forEach(btn => btn.disabled = true);
+            
+            if (isCorrect) {
+                button.classList.add('correct');
+                feedback.textContent = '👍 יֹפִי! תְּשׁוּבָה נְכוֹנָה!';
+                feedback.className = 'feedback correct';
+                lessonScores[lessonNum].score++;
+                playCorrectSound();
+            } else {
+                button.classList.add('incorrect');
+                feedback.textContent = '🤔 אُוּפְּס... נַסֵּה לַחְשֹׁב שׁוּב.';
+                feedback.className = 'feedback incorrect';
+                // Highlight the correct answer
+                answers.forEach(btn => {
+                    if (btn.textContent === quizzes[lessonNum].questions[lessonScores[lessonNum].answered].a[0]) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+            
+            lessonScores[lessonNum].answered++;
+            if (lessonScores[lessonNum].answered === quizzes[lessonNum].questions.length) {
+                showQuizResult(lessonNum);
+            }
+        }
+        
+        function showQuizResult(lessonNum) {
+            const resultDiv = document.getElementById(`quiz-result-${lessonNum}`);
+            const score = lessonScores[lessonNum].score;
+            const total = quizzes[lessonNum].questions.length;
+            
+            resultDiv.innerHTML = '';
+            
+            if (score >= 2) { // Pass condition (66%)
+                resultDiv.innerHTML = `<p style="color: green;">כָּל הַכָּבוֹד! עָנִיתָ נָכוֹן עַל ${score} מִתּוֹךְ ${total} שְׁאֵלוֹת!</p>`;
+                const nextButton = document.createElement('button');
+                nextButton.className = 'nav-btn';
+                if(lessonNum < 4){
+                     nextButton.textContent = `לַשִּׁיעוּר הַבָּא: "${document.querySelector('#lesson-' + (lessonNum+1) + ' h2').textContent.split(':')[1].trim()}"`;
+                } else {
+                     nextButton.textContent = 'וָואוּ! לְמָסַךְ הַסִּיּוּם!';
+                }
+                nextButton.onclick = () => showLesson(lessonNum + 1);
+                resultDiv.appendChild(nextButton);
+            } else {
+                resultDiv.innerHTML = `<p style="color: red;">חֲבָל... עָנִיתָ נָכוֹן רַק עַל ${score} מִתּוֹךְ ${total}. צָרִיךְ לְפָחוֹת 2 תְּשׁוּבוֹת נְכוֹנוֹת כְּדֵי לְהַמְשִׁיךְ.</p>`;
+                const retryButton = document.createElement('button');
+                retryButton.className = 'nav-btn';
+                retryButton.textContent = 'נַסֵּה שׁוּב אֶת הַבּוֹחַן';
+                retryButton.onclick = () => buildQuiz(lessonNum);
+                resultDiv.appendChild(retryButton);
+            }
+        }
+
+        function showLesson(lessonNum) {
+            currentLesson = lessonNum;
+            document.querySelectorAll('.lesson').forEach(l => l.classList.remove('active'));
+            const lessonDiv = document.getElementById(`lesson-${lessonNum}`);
+            lessonDiv.classList.add('active');
+
+            // Build quiz if it's a quiz lesson and hasn't been built yet
+            if (lessonNum >= 1 && lessonNum <= 4) {
+                const quizContainer = document.getElementById(`quiz-${lessonNum}`);
+                if (quizContainer.innerHTML.trim() === '') {  // תיקון: בדיקה מדויקת יותר לריקות
+                    buildQuiz(lessonNum);
+                }
+            }
+             window.scrollTo(0, 0);
+        }
+    </script>
+
+</body>
+</html>

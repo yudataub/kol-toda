@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>קטלוג דפי עבודה וסרטונים</title>
+<style>
+  :root {
+    --bg: #f5f3ff; --card: #ffffff; --ink: #1e1b2e; --muted: #6b6580;
+    --accent: #6d28d9; --accent2: #9333ea; --border: #e7e2f5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(180deg, #ede9fe 0%, #f5f3ff 350px, #f8fafc 100%);
+    color: var(--ink); min-height: 100vh;
+  }
+  header { padding: 30px 20px 18px; text-align: center; position: relative; }
+  .instructions-box {
+    position: absolute; top: 18px; right: 20px; max-width: 240px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 12px 14px; text-align: right; font-size: 0.76rem; line-height: 1.5;
+    color: var(--muted); box-shadow: 0 2px 8px rgba(109,40,217,0.07);
+  }
+  .instructions-box b { color: var(--accent); }
+  .instructions-box .reset-link {
+    display: inline-block; margin-top: 8px; color: #b91c1c; cursor: pointer;
+    text-decoration: underline; font-size: 0.74rem;
+  }
+  @media (max-width: 800px) {
+    .instructions-box { position: static; max-width: 420px; margin: 14px auto 0; }
+  }
+  header h1 {
+    margin: 0 0 6px; font-size: 1.8rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  header p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+  .search-wrap {
+    max-width: 700px; margin: 16px auto 0; padding: 0 20px;
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;
+  }
+  #search {
+    flex: 1; min-width: 220px; padding: 12px 16px; border-radius: 12px;
+    border: 1px solid var(--border); font-size: 1rem; background: var(--card);
+    box-shadow: 0 1px 4px rgba(109,40,217,0.06);
+  }
+  #search:focus { outline: 2px solid var(--accent2); }
+  .show-hidden-toggle {
+    display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--muted);
+    background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+    padding: 8px 14px; cursor: pointer; white-space: nowrap;
+  }
+  .tabs {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    padding: 18px 20px 10px; max-width: 1000px; margin: 0 auto;
+  }
+  .tab-btn {
+    flex-shrink: 0; display: flex; align-items: center; gap: 6px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+    padding: 9px 16px; cursor: pointer; font-size: 0.88rem; color: var(--ink);
+    white-space: nowrap; transition: all .15s;
+  }
+  .tab-btn:hover { border-color: var(--accent2); }
+  .tab-btn.active {
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    color: white; border-color: transparent;
+  }
+  .tab-count { background: rgba(0,0,0,0.08); border-radius: 999px; padding: 1px 8px; font-size: 0.75rem; }
+  .tab-btn.active .tab-count { background: rgba(255,255,255,0.25); }
+  main { max-width: 900px; margin: 0 auto; padding: 10px 20px 60px; }
+  .topic-heading { display: flex; align-items: baseline; gap: 10px; margin: 18px 0 12px; }
+  .topic-heading h2 { margin: 0; font-size: 1.4rem; }
+  .topic-heading span.count { color: var(--muted); font-size: 0.9rem; }
+  .category-group {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    margin-bottom: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(109,40,217,0.05);
+  }
+  .category-header {
+    padding: 13px 18px; display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; background: linear-gradient(90deg, #f3effc, #ffffff);
+  }
+  .category-title { font-weight: 600; font-size: 0.98rem; }
+  .category-count { font-size: 0.78rem; color: var(--muted); background: var(--bg); padding: 3px 10px; border-radius: 999px; }
+  .category-toggle { color: var(--accent); font-size: 0.9rem; margin-inline-start: 10px; }
+  .file-list { display: block; }
+  .file-list.collapsed { display: none; }
+  .file-row-wrap { display: flex; align-items: center; gap: 2px; border-top: 1px solid var(--border); transition: background .12s; }
+  .file-row-wrap:hover { background: #faf9ff; }
+  .file-row-wrap.is-hidden { opacity: 0.45; }
+  .icon-btn {
+    flex-shrink: 0; background: none; border: none; cursor: pointer; font-size: 1.02rem;
+    padding: 10px 5px; line-height: 1; color: #b6aed6; transition: transform .1s;
+  }
+  .icon-btn:hover { transform: scale(1.18); color: var(--accent); }
+  .star-btn { font-size: 1.15rem; color: #d1cbe8; }
+  .star-btn.starred { color: #f5b301; }
+  .file-row { display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 0; text-decoration: none; color: var(--ink); flex: 1; min-width: 0; }
+  .file-icon { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; flex-shrink: 0; }
+  .file-thumb-wrap { position: relative; width: 88px; height: 50px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: #000; }
+  .file-thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .file-thumb-wrap .play-badge {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1.3rem; text-shadow: 0 1px 4px rgba(0,0,0,0.6); pointer-events: none;
+  }
+  .file-name { flex: 1; font-size: 0.9rem; line-height: 1.35; }
+  .file-name.renamed::after { content: " (שם ערוך)"; font-size: 0.68rem; color: var(--accent2); font-weight: 400; }
+  .file-type-badge { font-size: 0.7rem; padding: 2px 9px; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
+  .hidden-badge { font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; background: #fee2e2; color: #b91c1c; flex-shrink: 0; }
+  .empty-state { text-align: center; color: var(--muted); padding: 60px 20px; display: none; }
+  footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 20px; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(30,27,46,0.45); display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--card); border-radius: 16px; padding: 22px; max-width: 360px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+  .modal-box h3 { margin: 0 0 14px; font-size: 1.05rem; }
+  .modal-box label { display: block; font-size: 0.82rem; color: var(--muted); margin: 12px 0 4px; }
+  .modal-box select { width: 100%; padding: 9px 10px; border-radius: 9px; border: 1px solid var(--border); font-size: 0.9rem; background: #fff; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 18px; justify-content: flex-end; }
+  .modal-btn { padding: 9px 18px; border-radius: 9px; border: none; cursor: pointer; font-size: 0.88rem; }
+  .modal-btn.save { background: var(--accent); color: white; }
+  .modal-btn.cancel { background: var(--bg); color: var(--ink); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="instructions-box">
+    <b>⭐ מועדפים</b><br>
+    לוחצים על הכוכב כדי לסמן קובץ כמועדף - הוא יעלה אוטומטית לראש הקטגוריה.<br><br>
+    <b>✏️ שינוי שם | 🙈 הסתרה | 📁 העברה</b><br>
+    אפשר לערוך שם תצוגה, להסתיר קובץ, או להעביר אותו לנושא/קטגוריה אחרים.<br><br>
+    <b>איפה זה נשמר?</b><br>
+    הכל נשמר מקומית בדפדפן הזה בלבד (ללא ייצוא/ענן) - יישאר גם בפעם הבאה שתפתחו את הדף באותו מחשב ואותו דפדפן.
+    <div class="reset-link" id="resetLink">איפוס כל השינויים שלי</div>
+  </div>
+  <h1>קטלוג דפי עבודה וסרטונים</h1>
+  <p id="fileCountLine">לכל דף עבודה מצורף גם הסרטון התואם לו - מיזם תפילה באהבה</p>
+</header>
+
+<div class="search-wrap">
+  <input id="search" type="text" placeholder="חיפוש בכל הנושאים לפי שם קובץ..." />
+  <label class="show-hidden-toggle">
+    <input type="checkbox" id="showHiddenChk" />
+    הצג קבצים מוסתרים
+  </label>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<main id="main"></main>
+<div class="empty-state" id="emptyState">לא נמצאו קבצים תואמים לחיפוש</div>
+
+<footer>
+  
+  <div>הקישורים פותחים ישירות ב-Google Drive וב-YouTube</div>
+</footer>
+
+<div class="modal-overlay" id="moveModal">
+  <div class="modal-box">
+    <h3>📁 העברת קובץ</h3>
+    <label>נושא יעד</label>
+    <select id="moveTopicSelect"></select>
+    <label>קטגוריה יעד</label>
+    <select id="moveCategorySelect"></select>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" id="moveCancelBtn">ביטול</button>
+      <button class="modal-btn save" id="moveSaveBtn">שמירה</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ORDER = ["גדולי ישראל מתפללים", "דמויות מהתנך", "מעגל השנה", "קריאת שמע", "שבוע השפה העברית", "תפילה"];
+const FLAT_ITEMS = [{"id": "1VehFnfZA_Qce5DubiFI1InfMX0SKLIHV", "name": "ריכוז וכוונה בתפילה של הרב צבי יהודה זצ\"ל, הרב משה ברכה", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "14k8ENsodeY2qvRI9AzNAx8zyKGVmBGD1", "name": "ריכוז וכוונה בתפילה של הרב צבי יהודה זצ\"ל, הרב משה ברכה", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "C4XHdkAsVko", "name": "ריכוז וכוונה בתפילה של הרב צבי יהודה זצ\"ל, הרב משה ברכה", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1aoSgUh_uiVWuo7znm2ve-ZsD_y-sejaS", "name": "היריה שלא פגעה ותפילה בכוונה של ר' דוד פיינשטיין, הרב דוד ברג", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1UVGmGzCZWGCczkg9nHQG7iKXeip-pafc", "name": "היריה שלא פגעה ותפילה בכוונה של ר' דוד פיינשטיין, הרב דוד ברג", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "VZlqYoowTqg", "name": "היריה שלא פגעה ותפילה בכוונה של ר' דוד פיינשטיין, הרב דוד ברג", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1yiHmG9GGHHuQ2Nlo7XjveoxzUPr7QfMe", "name": "תפילתו של הרב עובדיה יוסף, הרב הראל מקייס", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1xYSUmqOach7So_cGsc1uZYnPXcMVqq2v", "name": "תפילתו של הרב עובדיה יוסף, הרב הראל מקייס", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "FppnKbxmYwQ", "name": "תפילתו של הרב עובדיה יוסף, הרב הראל מקייס", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "191voKNXVR9eL0POQU-bXdyrX5qP5jalO", "name": "חוני המעגל, הרב צור חי אופנהיימר", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1Yw97kU8603MHGxLqebgXQ80gDlMxi02T", "name": "חוני המעגל, הרב צור חי אופנהיימר", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "cW7JAMUBego", "name": "חוני המעגל, הרב צור חי אופנהיימר", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1g7BuuUPuJuhaoJOK0GELT7XRS-zrh_HX", "name": "רבי אשר לעמיל לוי מתפלל על ירושלים, הרב עמירם אלבה", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1HsrnjieQnFyeXBm9ZF_mV0gQfBpJNnlU", "name": "רבי אשר לעמיל לוי מתפלל על ירושלים, הרב עמירם אלבה", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "W6koiaH0wSU", "name": "רבי אשר לעמיל לוי מתפלל על ירושלים, הרב עמירם אלבה", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "10KOwGzjDyNd5Jr06dYzBIH8x3-5tSy6m", "name": "הדבקות בתפילה של הרב חרל\"פ, הרב עמירם אלבה", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1S8aVLiGGAnG7Nt03k3nTNfc-BB8Fn1Hj", "name": "הדבקות בתפילה של הרב חרל\"פ, הרב עמירם אלבה", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "iYp0fQQf3LI", "name": "הדבקות בתפילה של הרב חרל\"פ, הרב עמירם אלבה", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1zUyDKCpJT8RI_1vSVvd_QBa9Topx3TT3", "name": "תפילותיו של הרב שלמה גורן זצ\"ל, הרב קובי דמבינסקי", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1agqFrTlzntIfoeo6Zg2msLJpF5jns4oX", "name": "תפילותיו של הרב שלמה גורן זצ\"ל, הרב קובי דמבינסקי", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "cpa5hG6O-zI", "name": "תפילותיו של הרב שלמה גורן זצ\"ל, הרב קובי דמבינסקי", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1HvIUAaQq51Kfmt4INrH1MjQcgSbqJmFp", "name": "תפילה במתינות - רבי שניאור זלמן מלאדי, הרב אוהד חזי", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1Gym4RuWVTCrwBgIEZHABKuJKzuNVKxUJ", "name": "תפילה במתינות - רבי שניאור זלמן מלאדי, הרב אוהד חזי", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "B3NXYp3cTQs", "name": "תפילה במתינות - רבי שניאור זלמן מלאדי, הרב אוהד חזי", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "16b9SDPL3_ri6LbwvXWt5s1dUgVLTmb2P", "name": "כ' טבת - יום פטירת הרמב\"ם, הרב עמיחי נחשוני", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1OTvB5iP1s1pwFDd61uRKUvOd0V2CSt3B", "name": "כ' טבת - יום פטירת הרמב\"ם, הרב עמיחי נחשוני", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "fzs2IQwsOk8", "name": "כ' טבת - יום פטירת הרמב\"ם, הרב עמיחי נחשוני", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "15GWU5-4BjQGkU7FQDwf_t1ZdNALe0GJ5", "name": "מדוע התעורר הבבא סאלי? הרבנית נירית רזיאל", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1782Ak0JOmX3EB10BR9TS6l0kbkevuqEs", "name": "מדוע התעורר הבבא סאלי? הרבנית נירית רזיאל", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "_HrNEgvi0AI", "name": "מדוע התעורר הבבא סאלי? הרבנית נירית רזיאל", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1buTw4lBpEeJGQC4PiAE7qLiRo6lbDKBO", "name": "תפילת הצדיק מיבניאל, הרב שמעון בן עזרי", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1C0ozvF-TbXfsN7p5Z5BC-foqjrK3AG9z", "name": "תפילת הצדיק מיבניאל, הרב שמעון בן עזרי", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "dpNtG81hDs0", "name": "תפילת הצדיק מיבניאל, הרב שמעון בן עזרי", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1rbl5bbLf4mbtaWOQjeW-CCON5dHrQj3O", "name": "תפילותיו של הרב איסר יהודה אונטרמן, הרב אליקים נויברגר", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1FmRi4az03R99RhJLRCrbjA-BPt_LH3DA", "name": "תפילותיו של הרב איסר יהודה אונטרמן, הרב אליקים נויברגר", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "wq1JUkKPaxw", "name": "תפילותיו של הרב איסר יהודה אונטרמן, הרב אליקים נויברגר", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1-DwKTTO0a2N65yl8YSkB14baoxX2eWh3", "name": "תפילתו של הרב קוק זצ\"ל, הרב יאיר הרשקוביץ", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1655Q1iVyqAlpaLQ9agAEwC9rlzTdPCPl", "name": "תפילתו של הרב קוק זצ\"ל, הרב יאיר הרשקוביץ", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "Yv7rm3GVHCM", "name": "תפילתו של הרב קוק זצ\"ל, הרב יאיר הרשקוביץ", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1wa1QpADSWkuVt42AGAEvoPhVQGjQrsK5", "name": "תפילתו של הרב יעקב מאיר בבוכרה, הרב הראל מייקס", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1J0gBVM5ITPQ4vCk67-l3S8qTI1p0ILb3", "name": "תפילתו של הרב יעקב מאיר בבוכרה, הרב הראל מייקס", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "b97T9OZ2gIk", "name": "תפילתו של הרב יעקב מאיר בבוכרה, הרב הראל מייקס", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1OiZCjRO-x4lT-Tjr2WoU6uUf5Yn7kzSe", "name": "תפילתו של הרב בקשי דורון זצ\"ל, הרבנית אביטל יומטוביאן", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1DLNKP1GjMfEnLQE8vio1fhNLO2MxmY79", "name": "תפילתו של הרב בקשי דורון זצ\"ל, הרבנית אביטל יומטוביאן", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "hYu6SB5Yygg", "name": "תפילתו של הרב בקשי דורון זצ\"ל, הרבנית אביטל יומטוביאן", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "14LTi_dOWy4uXPtSjVRl2qqxPRpfIgyJN", "name": "תפילה בכוונה של הרב אברהם אלקנה שפירא זצ\"ל, הרב מנחם מיכלין", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1HCwk2v9R3b2uv3PCnwTBafQEIh0p3orb", "name": "תפילה בכוונה של הרב אברהם אלקנה שפירא זצ\"ל, הרב מנחם מיכלין", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "R7EBsKE6k0Q", "name": "תפילה בכוונה של הרב אברהם אלקנה שפירא זצ\"ל, הרב מנחם מיכלין", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1GenH6vndYQeVnDZwg3YD9vGi7xOqaFy5", "name": "הרב יצחק ניסים ושמירתו על תפילה בכותל", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1yzvqqox0wxsIseL_FaycT85CQdVZ-jCO", "name": "הרב יצחק ניסים ושמירתו על תפילה בכותל", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "4odo4ZBVUk4", "name": "הרב יצחק ניסים ושמירתו על תפילה בכותל", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "139CZBrXxZGQfSET_u_g2eZ51tQ6TLtWI", "name": "תורתו ותפילתו של הרב שאול ישראלי, הרב מאיר הילביץ", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1gvNPk-KBFqDZDzPxvYWPJmV2KYBBDki7", "name": "תורתו ותפילתו של הרב שאול ישראלי, הרב מאיר הילביץ", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "AgCFfDze_ZE", "name": "תורתו ותפילתו של הרב שאול ישראלי, הרב מאיר הילביץ", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1ZoRnW2RASanF0Cx8GfuPcW7t7SuTV5Hq", "name": "תפילה בציבור על פי הרב אלישע וישליצקי זצ\"ל, הרב ליאור לביא", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1R9ARHhhQ6EHGpyHJ80ukssgUwY3sDLrM", "name": "תפילה בציבור על פי הרב אלישע וישליצקי זצ\"ל, הרב ליאור לביא", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "VQZc38CqcaA", "name": "תפילה בציבור על פי הרב אלישע וישליצקי זצ\"ל, הרב ליאור לביא", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1owrGk7SGX3b3EKt68_6CrwD3hQ5EI5EF", "name": "היכון לקראת אלקיך ישראל - רבי חיים דוד הלוי, הרב דוד אחיה", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1DqC8lk0x5kUuSosmoNYWQv1_5UjBgf5n", "name": "היכון לקראת אלקיך ישראל - רבי חיים דוד הלוי, הרב דוד אחיה", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "pD89eo0SN1Q", "name": "היכון לקראת אלקיך ישראל - רבי חיים דוד הלוי, הרב דוד אחיה", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1DBmo_KBflLWO1nO4Z3BVF7GJk5XfOV7A", "name": "החלום של רבי מאיר שפירא מלובלין, הרב אליקים נויברגר", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1e1Cu2lxWvPWB6gyGiC1-FvVKWUT5ozxK", "name": "החלום של רבי מאיר שפירא מלובלין, הרב אליקים נויברגר", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "0rLkQl1e8aQ", "name": "החלום של רבי מאיר שפירא מלובלין, הרב אליקים נויברגר", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1ibqesH04wqKYxyuNYYtP3SGEnBTdZxZt", "name": "תפילת רבי יהודה הנשיא, הרב אליקים נויברגר", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1fs1htGb3Kf_atrA1-4xluzD93oi7XlpE", "name": "תפילת רבי יהודה הנשיא, הרב אליקים נויברגר", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "yNj0EeyXrHw", "name": "תפילת רבי יהודה הנשיא, הרב אליקים נויברגר", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1UwLsOvykaHd6mn3dVBeVEYadYMBU5blz", "name": "אהבת לימוד התורה של הרב אהרון ליכטנשטיין, הרב שי בן חמו", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1U4kvlB8ww59pRCw8UMP8AxCoI7PRWBBA", "name": "אהבת לימוד התורה של הרב אהרון ליכטנשטיין, הרב שי בן חמו", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "JupF3DPBUsc", "name": "אהבת לימוד התורה של הרב אהרון ליכטנשטיין, הרב שי בן חמו", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1ZFZ1s3_ipsHuIwB09GjTtXrTMG8m_nYz", "name": "יתגבר כארי - על הרב יורם אברג'ל, הרב בועז הראל", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1e3_ITW6uKdVa0Jb1hxrmYRMg3Du86Jtf", "name": "יתגבר כארי - על הרב יורם אברג'ל, הרב בועז הראל", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "LGLe4ObNuj0", "name": "יתגבר כארי - על הרב יורם אברג'ל, הרב בועז הראל", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1vGjjT_d16SXfuUoejgerpwKZFQKKAWqF", "name": "ריכוז בתפילה בעקבות הרב מרדכי שטרנברג, הרב עמירם אלבה", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1AQC-RYOVDHzOoNhnPIOpJL1zqZ8f4bLU", "name": "ריכוז בתפילה בעקבות הרב מרדכי שטרנברג, הרב עמירם אלבה", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "03p4BtRM9kI", "name": "ריכוז בתפילה בעקבות הרב מרדכי שטרנברג, הרב עמירם אלבה", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "כללי"}, {"id": "1bwWuh7wv-meK01_JMG5xul2-tAPwiU5K", "name": "כיצד השכים הרב נריה זצ\"ל את תלמידיו לתפילה, הרב ירחמיאל ויס והרב חיים ענזי", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "הרב נריה"}, {"id": "109wlkt3T_Wu4D6G2DKZKqqSYrH9L_REU", "name": "כיצד השכים הרב נריה זצ\"ל את תלמידיו לתפילה, הרב ירחמיאל ויס והרב חיים ענזי", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "הרב נריה"}, {"id": "M9MfEGqhpNU", "name": "כיצד השכים הרב נריה זצ\"ל את תלמידיו לתפילה, הרב ירחמיאל ויס והרב חיים ענזי", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "הרב נריה"}, {"id": "1kcBAs4kf26YnU-6iTJHc27VwHO_0Tk5v", "name": "לתפילה יש ריח, הרב זאביק הראל", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "רבי אלימלך מליז'נסק"}, {"id": "1-OTWeySYd8XRlhM7pvPfe6lMl24vlO-Z", "name": "לתפילה יש ריח, הרב זאביק הראל", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "רבי אלימלך מליז'נסק"}, {"id": "NtI2oqF6Bbs", "name": "לתפילה יש ריח, הרב זאביק הראל", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "רבי אלימלך מליז'נסק"}, {"id": "10U6HQ4PBBZLlpVCrKZMx7KaLitWKOkbw", "name": "תפילת רבי אלימלך מליז'נסק, הרב עמיחי נחשוני", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "רבי אלימלך מליז'נסק"}, {"id": "1YHLOr_bKT7MPZcSGgrQiffC-C6pbUw0M", "name": "תפילת רבי אלימלך מליז'נסק, הרב עמיחי נחשוני", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "רבי אלימלך מליז'נסק"}, {"id": "FWPb_ceKHb0", "name": "תפילת רבי אלימלך מליז'נסק, הרב עמיחי נחשוני", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "רבי אלימלך מליז'נסק"}, {"id": "1Lt1xgfdbPRrC-9j7Xjx0rFW1ThMBQzDe", "name": "התבלין המיוחד של ר' אלימלך, הרב זאביק הראל", "type": "word", "topic": "גדולי ישראל מתפללים", "category": "רבי אלימלך מליז'נסק"}, {"id": "1LedDB06hT0BbT5O_fzEjtEuxC1czthag", "name": "התבלין המיוחד של ר' אלימלך, הרב זאביק הראל", "type": "pdf", "topic": "גדולי ישראל מתפללים", "category": "רבי אלימלך מליז'נסק"}, {"id": "QufSWbiPCPs", "name": "התבלין המיוחד של ר' אלימלך, הרב זאביק הראל", "type": "video", "topic": "גדולי ישראל מתפללים", "category": "רבי אלימלך מליז'נסק"}, {"id": "1V1-XwS9xLCIc16N9e46vONsZ1rYFK_Xt", "name": "תפילתה המיוחדת של חנה הנביאה, הרב לוי סודרי", "type": "word", "topic": "דמויות מהתנך", "category": "כללי"}, {"id": "1tDSF-YbLzhxZMLhnmMb1UtZ9pCdFfZaO", "name": "תפילתה המיוחדת של חנה הנביאה, הרב לוי סודרי", "type": "pdf", "topic": "דמויות מהתנך", "category": "כללי"}, {"id": "Qm6HBrVRw2Y", "name": "תפילתה המיוחדת של חנה הנביאה, הרב לוי סודרי", "type": "video", "topic": "דמויות מהתנך", "category": "כללי"}, {"id": "1646vIOCvMTZDYejdr5JHPAhK3pQjJVRO", "name": "צום גדליה - כוחה של תפילה, הרב אליקים לבנון", "type": "word", "topic": "מעגל השנה", "category": "כללי"}, {"id": "1DtCtJDXRx46Xmi-w44omnRxdkJOP_v9O", "name": "צום גדליה - כוחה של תפילה, הרב אליקים לבנון", "type": "pdf", "topic": "מעגל השנה", "category": "כללי"}, {"id": "jtLcO_pdztc", "name": "צום גדליה - כוחה של תפילה, הרב אליקים לבנון", "type": "video", "topic": "מעגל השנה", "category": "כללי"}, {"id": "1HzApJ-Dolj9EeQ952iMIiYeJ8ovKHMBx", "name": "התפילה והוויתור של רחל אמנו, הרבנית נגה אהרון", "type": "word", "topic": "מעגל השנה", "category": "כללי"}, {"id": "1SiamwhSV6TbBaCutDB6XdL0sxqjDoPER", "name": "התפילה והוויתור של רחל אמנו, הרבנית נגה אהרון", "type": "pdf", "topic": "מעגל השנה", "category": "כללי"}, {"id": "0nzpnxx1waQ", "name": "התפילה והוויתור של רחל אמנו, הרבנית נגה אהרון", "type": "video", "topic": "מעגל השנה", "category": "כללי"}, {"id": "18WFnFKgp2aaz-JNf8w6JOQOg4NThApY-", "name": "תפילת משה רבינו, הרב חגי קורץ", "type": "word", "topic": "מעגל השנה", "category": "כללי"}, {"id": "1i00anw_ZqPNLV9EG1ilVZ8_xhjADWeDv", "name": "תפילת משה רבינו, הרב חגי קורץ", "type": "pdf", "topic": "מעגל השנה", "category": "כללי"}, {"id": "yyv6ueqjE_c", "name": "תפילת משה רבינו, הרב חגי קורץ", "type": "video", "topic": "מעגל השנה", "category": "כללי"}, {"id": "1fuYT8917R6sVPMF_snl12va3l62YlULL", "name": "ברכה באהבה של הרב אליעזר ולדמן זצ\"ל, הרב אביעד מושקוביץ", "type": "word", "topic": "מעגל השנה", "category": "שבט - מבצע ברכות"}, {"id": "1h4hgRA6sbNmh4M0l3672Pv-WRyRzxI0g", "name": "ברכה באהבה של הרב אליעזר ולדמן זצ\"ל, הרב אביעד מושקוביץ", "type": "pdf", "topic": "מעגל השנה", "category": "שבט - מבצע ברכות"}, {"id": "tgKmA4XInGE", "name": "ברכה באהבה של הרב אליעזר ולדמן זצ\"ל, הרב אביעד מושקוביץ", "type": "video", "topic": "מעגל השנה", "category": "שבט - מבצע ברכות"}, {"id": "1n6uzy6rsG0TD_SrZ2K9dY98BGsKslu2T", "name": "תפילתה של אסתר המלכה, הרבנית רונית נחשוני", "type": "word", "topic": "מעגל השנה", "category": "תענית אסתר"}, {"id": "1hc7E600a8VO-MJxV_NTyf4Q_Yg2W-pcS", "name": "תפילתה של אסתר המלכה, הרבנית רונית נחשוני", "type": "pdf", "topic": "מעגל השנה", "category": "תענית אסתר"}, {"id": "uPot8tUpmXM", "name": "תפילתה של אסתר המלכה, הרבנית רונית נחשוני", "type": "video", "topic": "מעגל השנה", "category": "תענית אסתר"}, {"id": "1FATf0vi13QUDpnGAgPMRW1SzXE9PHQKL", "name": "למה מכסים את העיניים בקריאת שמע, הרב יהונתן חי", "type": "word", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1yAzsVs1oCMfTgWUZ_4zE3qHC0fgPr3Zm", "name": "למה מכסים את העיניים בקריאת שמע, הרב יהונתן חי", "type": "pdf", "topic": "קריאת שמע", "category": "כללי"}, {"id": "I40ogStt70w", "name": "למה מכסים את העיניים בקריאת שמע, הרב יהונתן חי", "type": "video", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1HdRDibxuC2uNMkwZ45pzGSvFWn8UzlHf", "name": "הרב הרצוג שהחזיר ילדים לחיק היהדות באמירת שמע ישראל, הרב מוטי סימפסון", "type": "word", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1FgjNnELHhfEuLXRsvoPSjV7C85PyPaur", "name": "הרב הרצוג שהחזיר ילדים לחיק היהדות באמירת שמע ישראל, הרב מוטי סימפסון", "type": "pdf", "topic": "קריאת שמע", "category": "כללי"}, {"id": "8ZRldysiRpw", "name": "הרב הרצוג שהחזיר ילדים לחיק היהדות באמירת שמע ישראל, הרב מוטי סימפסון", "type": "video", "topic": "קריאת שמע", "category": "כללי"}, {"id": "15B38FrXiHTnHTGhVeKggwyyclSt6-No0", "name": "שמע ישראל, הרב מאיר הילביץ", "type": "word", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1lps2ZVcYcyhI-kOYeCNoMcSsB9gBzOGW", "name": "שמע ישראל, הרב מאיר הילביץ", "type": "pdf", "topic": "קריאת שמע", "category": "כללי"}, {"id": "DQvvIF-Uwac", "name": "שמע ישראל, הרב מאיר הילביץ", "type": "video", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1a0WsKLY76MnC3q-pBED3iq6wjAvj5kgS", "name": "סמיכת גאולה לתפילה, הרב אילן אפשטיין", "type": "word", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1moKgw9qPSag-HqccT8OlOz3Hx71BudSx", "name": "סמיכת גאולה לתפילה, הרב אילן אפשטיין", "type": "pdf", "topic": "קריאת שמע", "category": "כללי"}, {"id": "UhM0zPyZvWA", "name": "סמיכת גאולה לתפילה, הרב אילן אפשטיין", "type": "video", "topic": "קריאת שמע", "category": "כללי"}, {"id": "11IZm4WtTtsLkcutxOEh7qDaLYaw5s3Vj", "name": "פרשת והיה אם שמע, הרב אהרון כהן", "type": "word", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1EnfLZVmHK5CabKL8CMi63Hyo28h276Eo", "name": "פרשת והיה אם שמע, הרב אהרון כהן", "type": "pdf", "topic": "קריאת שמע", "category": "כללי"}, {"id": "eoQFjvz4zpI", "name": "פרשת והיה אם שמע, הרב אהרון כהן", "type": "video", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1WcGYUetE0R95Gd09U_n_zi2lhHLC7p4d", "name": "ואהבת את ה' אלוקיך, הרב מאיר כרמלי", "type": "word", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1Ptv_oVqS02NY5z9xeASgb5NouzmiZyPB", "name": "ואהבת את ה' אלוקיך, הרב מאיר כרמלי", "type": "pdf", "topic": "קריאת שמע", "category": "כללי"}, {"id": "ePmG-kh0mjs", "name": "ואהבת את ה' אלוקיך, הרב מאיר כרמלי", "type": "video", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1GE6mbjWo6PFvkznVyYanPavEirbp433k", "name": "וכתבתם על מזוזות ביתך, הרבנית אביטל יומטוביאן", "type": "word", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1uPOEnS14n6vUoHQnrdlcW-8qbgKJgweN", "name": "וכתבתם על מזוזות ביתך, הרבנית אביטל יומטוביאן", "type": "pdf", "topic": "קריאת שמע", "category": "כללי"}, {"id": "mEVZPOHjyus", "name": "וכתבתם על מזוזות ביתך, הרבנית אביטל יומטוביאן", "type": "video", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1SI6zhp533VGJSgZZ2Kakpib5H0ulyKBu", "name": "הגאון מוילנא ואהבתו לציצית, הרב משה ברכה", "type": "word", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1xM_030RBUsEvCanTLXrk5bafxdQSiJoR", "name": "הגאון מוילנא ואהבתו לציצית, הרב משה ברכה", "type": "pdf", "topic": "קריאת שמע", "category": "כללי"}, {"id": "pt0x_TZYnvY", "name": "הגאון מוילנא ואהבתו לציצית, הרב משה ברכה", "type": "video", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1ijmKVzFsspCjVEp4kFtg9jnY3AlFBdaI", "name": "מעלת המזוזה, הרב אלעזר לוונטהל", "type": "word", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1oM6iucYRF1zDIwhrVyXMuASu4f8eFqDx", "name": "מעלת המזוזה, הרב אלעזר לוונטהל", "type": "pdf", "topic": "קריאת שמע", "category": "כללי"}, {"id": "HGaKDgrrhR8", "name": "מעלת המזוזה, הרב אלעזר לוונטהל", "type": "video", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1dvgZOzbBSEVw_bwmidd8urxP6kOjg-Tc", "name": "התכלת שבציצית, הרב מנחם בורשטיין", "type": "word", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1JBBSUycfSGXumj-JuVyCpZcuFrX-ujIU", "name": "התכלת שבציצית, הרב מנחם בורשטיין", "type": "pdf", "topic": "קריאת שמע", "category": "כללי"}, {"id": "97-OHITvNYs", "name": "התכלת שבציצית, הרב מנחם בורשטיין", "type": "video", "topic": "קריאת שמע", "category": "כללי"}, {"id": "1w9OA7nXPGRSL9fX_0_RBm0BQrx5I2waV", "name": "שא נס לקבץ גלויותינו, לשבוע השפה העברית, הרב עמירם אלבה", "type": "word", "topic": "שבוע השפה העברית", "category": "כללי"}, {"id": "1aJDI6OwcRYV7SV-9ytYjLgc1sC_65UnZ", "name": "שא נס לקבץ גלויותינו, לשבוע השפה העברית, הרב עמירם אלבה", "type": "pdf", "topic": "שבוע השפה העברית", "category": "כללי"}, {"id": "WWA5H-imhLc", "name": "שא נס לקבץ גלויותינו, לשבוע השפה העברית, הרב עמירם אלבה", "type": "video", "topic": "שבוע השפה העברית", "category": "כללי"}, {"id": "1wlUZLA293LBk7LPXbJOiSS6GnGvwGjEP", "name": "חשיבות הקריאה הנכונה בתפילה ובתורה, הרב יצחק שרביט", "type": "word", "topic": "שבוע השפה העברית", "category": "כללי"}, {"id": "1OiPhIy38A0wnwnegaWIRyiR_NOxU983f", "name": "חשיבות הקריאה הנכונה בתפילה ובתורה, הרב יצחק שרביט", "type": "pdf", "topic": "שבוע השפה העברית", "category": "כללי"}, {"id": "F_5gwuMBPTc", "name": "חשיבות הקריאה הנכונה בתפילה ובתורה, הרב יצחק שרביט", "type": "video", "topic": "שבוע השפה העברית", "category": "כללי"}, {"id": "1XWFagDqb-Rx2g_qpu1PNl1qDC-m5D5s9", "name": "נס תחיית השפה העברית - חלק א, הרב עמירם אלבה", "type": "word", "topic": "שבוע השפה העברית", "category": "נס תחיית השפה העברית"}, {"id": "1tLniLJVCIIN18u6ea5bSsB9jD9pr8HxD", "name": "נס תחיית השפה העברית - חלק א, הרב עמירם אלבה", "type": "pdf", "topic": "שבוע השפה העברית", "category": "נס תחיית השפה העברית"}, {"id": "b4Y9vEt0ZLg", "name": "נס תחיית השפה העברית - חלק א, הרב עמירם אלבה", "type": "video", "topic": "שבוע השפה העברית", "category": "נס תחיית השפה העברית"}, {"id": "1vqzFTmp7q0LcalR5adDhMkspBDa57raU", "name": "הזכות לדבר עם המלך, הרב עמירם אלבה", "type": "word", "topic": "תפילה", "category": "כללי"}, {"id": "1dD0vNz0lzHqa_MD212d-eJXR9ddx1UTu", "name": "הזכות לדבר עם המלך, הרב עמירם אלבה", "type": "pdf", "topic": "תפילה", "category": "כללי"}, {"id": "59cleoHY6Xw", "name": "הזכות לדבר עם המלך, הרב עמירם אלבה", "type": "video", "topic": "תפילה", "category": "כללי"}, {"id": "1kjuehftvGIs2Fmc_jSmSpIZal4Twdj89", "name": "מדוע מתפללים 3 תפילות ביום, הרב נועם הלוי", "type": "word", "topic": "תפילה", "category": "כללי"}, {"id": "1_GckP-XZ3P1lNbeOe-Icp24eR-2c75FQ", "name": "מדוע מתפללים 3 תפילות ביום, הרב נועם הלוי", "type": "pdf", "topic": "תפילה", "category": "כללי"}, {"id": "3cfERIyuALU", "name": "מדוע מתפללים 3 תפילות ביום, הרב נועם הלוי", "type": "video", "topic": "תפילה", "category": "כללי"}, {"id": "1pr_hDAMFRHL0oLlgDuxO7CTHeq1x9uzL", "name": "התפילה לכיוון ירושלים, הרב יהושע לוי", "type": "word", "topic": "תפילה", "category": "כללי"}, {"id": "1yHHYKynASp8f-avDWEVoisdlBRqwo8ww", "name": "התפילה לכיוון ירושלים, הרב יהושע לוי", "type": "pdf", "topic": "תפילה", "category": "כללי"}, {"id": "EInUJKJJGqY", "name": "התפילה לכיוון ירושלים, הרב יהושע לוי", "type": "video", "topic": "תפילה", "category": "כללי"}];
+const CATEGORY_ICONS = {"כללי": "🗂️", "הרב נריה": "🧓", "רבי אלימלך מליז'נסק": "✨", "שבט - מבצע ברכות": "🎉", "תענית אסתר": "📖", "נס תחיית השפה העברית": "🇮🇱"};
+const CATEGORY_ORDER = ["כללי", "הרב נריה", "רבי אלימלך מליז'נסק", "שבט - מבצע ברכות", "תענית אסתר", "נס תחיית השפה העברית"];
+const TOPIC_EMOJI = {"גדולי ישראל מתפללים": "🙏", "דמויות מהתנך": "📜", "מעגל השנה": "📅", "קריאת שמע": "👁️", "שבוע השפה העברית": "🗣️", "תפילה": "🕯️"};
+const TYPE_META = {"pdf": {"label": "PDF", "color": "#e11d48", "bg": "#fde8ec", "icon": "📕"}, "word": {"label": "Word", "color": "#2563eb", "bg": "#e8eefd", "icon": "📘"}, "ppt": {"label": "PowerPoint", "color": "#ea580c", "bg": "#fdece0", "icon": "📙"}, "excel": {"label": "Excel", "color": "#16a34a", "bg": "#e7f7ec", "icon": "📗"}, "image": {"label": "תמונה", "color": "#9333ea", "bg": "#f3e8fd", "icon": "🖼️"}, "video": {"label": "סרטון", "color": "#dc2626", "bg": "#fee2e2", "icon": "🎥"}, "other": {"label": "קובץ", "color": "#64748b", "bg": "#eef1f5", "icon": "📄"}};
+
+let currentTopic = ORDER[0];
+let currentQuery = '';
+let showHidden = false;
+let moveTargetId = null;
+
+const LS_PREFIX = 'dapei_video_v1_';
+const STAR_KEY = LS_PREFIX + 'starred';
+const RENAME_KEY = LS_PREFIX + 'renamed';
+const HIDDEN_KEY = LS_PREFIX + 'hidden';
+const MOVE_KEY = LS_PREFIX + 'moved';
+
+function loadSet(key) { try { return new Set(JSON.parse(localStorage.getItem(key) || '[]')); } catch (e) { return new Set(); } }
+function loadMap(key) { try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return {}; } }
+function saveSet(key, set) { try { localStorage.setItem(key, JSON.stringify([...set])); } catch (e) {} }
+function saveMap(key, map) { try { localStorage.setItem(key, JSON.stringify(map)); } catch (e) {} }
+
+let STARRED = loadSet(STAR_KEY);
+let HIDDEN = loadSet(HIDDEN_KEY);
+let RENAMED = loadMap(RENAME_KEY);
+let MOVED = loadMap(MOVE_KEY);
+
+function isStarred(id) { return STARRED.has(id); }
+function isHidden(id) { return HIDDEN.has(id); }
+function displayNameFor(item) { return RENAMED[item.id] || item.name; }
+function effectiveTopic(item) { return (MOVED[item.id] && MOVED[item.id].topic) || item.topic; }
+function effectiveCategory(item) { return (MOVED[item.id] && MOVED[item.id].category) || item.category; }
+
+function toggleStar(id) { if (STARRED.has(id)) STARRED.delete(id); else STARRED.add(id); saveSet(STAR_KEY, STARRED); render(); }
+function toggleHidden(id) { if (HIDDEN.has(id)) HIDDEN.delete(id); else HIDDEN.add(id); saveSet(HIDDEN_KEY, HIDDEN); render(); }
+
+function renameItem(id, currentName) {
+  const newName = prompt('שם חדש לתצוגה בקטלוג:', currentName);
+  if (newName === null) return;
+  const trimmed = newName.trim();
+  if (!trimmed) delete RENAMED[id]; else RENAMED[id] = trimmed;
+  saveMap(RENAME_KEY, RENAMED);
+  render();
+}
+
+function openMoveModal(id, curTopic, curCategory) {
+  moveTargetId = id;
+  const tSel = document.getElementById('moveTopicSelect');
+  const cSel = document.getElementById('moveCategorySelect');
+  tSel.innerHTML = ORDER.map(t => `<option value="${t}">${TOPIC_EMOJI[t] || ''} ${t}</option>`).join('');
+  tSel.value = curTopic;
+  cSel.innerHTML = CATEGORY_ORDER.map(c => `<option value="${c}">${CATEGORY_ICONS[c] || ''} ${c}</option>`).join('');
+  cSel.value = CATEGORY_ORDER.includes(curCategory) ? curCategory : CATEGORY_ORDER[0];
+  document.getElementById('moveModal').classList.add('open');
+}
+function closeMoveModal() { document.getElementById('moveModal').classList.remove('open'); moveTargetId = null; }
+
+document.getElementById('moveCancelBtn').addEventListener('click', closeMoveModal);
+document.getElementById('moveModal').addEventListener('click', (e) => { if (e.target.id === 'moveModal') closeMoveModal(); });
+document.getElementById('moveSaveBtn').addEventListener('click', () => {
+  if (!moveTargetId) return;
+  const topic = document.getElementById('moveTopicSelect').value;
+  const category = document.getElementById('moveCategorySelect').value;
+  MOVED[moveTargetId] = { topic, category };
+  saveMap(MOVE_KEY, MOVED);
+  closeMoveModal();
+  render();
+});
+
+document.getElementById('resetLink').addEventListener('click', () => {
+  if (!confirm('לאפס את כל הסימונים, השמות שהשתנו, ההסתרות וההעברות שביצעת בדפדפן זה?')) return;
+  localStorage.removeItem(STAR_KEY); localStorage.removeItem(RENAME_KEY);
+  localStorage.removeItem(HIDDEN_KEY); localStorage.removeItem(MOVE_KEY);
+  STARRED = new Set(); HIDDEN = new Set(); RENAMED = {}; MOVED = {};
+  render();
+});
+
+function sortWithStarredFirst(items) {
+  return items.slice().sort((a, b) => (isStarred(b.id) ? 1 : 0) - (isStarred(a.id) ? 1 : 0));
+}
+function buildItemUrl(item) {
+  if (item.type === 'video') return 'https://www.youtube.com/watch?v=' + item.id;
+  return 'https://drive.google.com/file/d/' + item.id + '/view';
+}
+
+function buildGroups() {
+  const groups = {};
+  ORDER.forEach(t => { groups[t] = {}; });
+  FLAT_ITEMS.forEach(item => {
+    if (isHidden(item.id) && !showHidden) return;
+    const t = effectiveTopic(item);
+    const c = effectiveCategory(item);
+    if (!groups[t]) groups[t] = {};
+    if (!groups[t][c]) groups[t][c] = [];
+    groups[t][c].push(item);
+  });
+  return groups;
+}
+
+function renderTabs(groups) {
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = ORDER.map(t => {
+    const cats = groups[t] || {};
+    const n = Object.values(cats).reduce((s, arr) => s + arr.length, 0);
+    const active = t === currentTopic ? ' active' : '';
+    return `<button class="tab-btn${active}" data-topic="${t}">
+      <span class="tab-emoji">${TOPIC_EMOJI[t] || '📄'}</span>
+      <span class="tab-label">${t}</span>
+      <span class="tab-count">${n}</span></button>`;
+  }).join('');
+}
+
+function render() {
+  const groups = buildGroups();
+  renderTabs(groups);
+
+  const main = document.getElementById('main');
+  const empty = document.getElementById('emptyState');
+  main.innerHTML = '';
+
+  const q = currentQuery.trim();
+  const topicsToShow = q ? ORDER : [currentTopic];
+  let anyResults = false;
+
+  topicsToShow.forEach(topic => {
+    const cats = groups[topic] || {};
+    const sortedCats = CATEGORY_ORDER.filter(c => cats[c] && cats[c].length);
+    Object.keys(cats).forEach(c => { if (!sortedCats.includes(c)) sortedCats.push(c); });
+
+    let topicHasResults = false;
+    let topicTotal = 0;
+    const catBlocks = [];
+
+    sortedCats.forEach(cat => {
+      const rawItems = (cats[cat] || []).filter(it => !q || displayNameFor(it).includes(q));
+      if (rawItems.length === 0) return;
+      const items = sortWithStarredFirst(rawItems);
+      topicHasResults = true;
+      topicTotal += items.length;
+
+      const group = document.createElement('div');
+      group.className = 'category-group';
+      const header = document.createElement('div');
+      header.className = 'category-header';
+      header.innerHTML = `<span class="category-title">${CATEGORY_ICONS[cat] || '📄'} ${cat}</span>
+        <span style="display:flex;align-items:center;">
+          <span class="category-count">${items.length}</span>
+          <span class="category-toggle">▾</span>
+        </span>`;
+      const list = document.createElement('div');
+      list.className = 'file-list';
+      items.forEach(item => {
+        const meta = TYPE_META[item.type] || TYPE_META.other;
+        const starred = isStarred(item.id);
+        const hidden = isHidden(item.id);
+        const renamed = !!RENAMED[item.id];
+        const name = displayNameFor(item);
+
+        const rowWrap = document.createElement('div');
+        rowWrap.className = 'file-row-wrap' + (hidden ? ' is-hidden' : '');
+
+        const starBtn = document.createElement('button');
+        starBtn.className = 'icon-btn star-btn' + (starred ? ' starred' : '');
+        starBtn.type = 'button';
+        starBtn.title = starred ? 'הסרה מהמועדפים' : 'הוספה למועדפים';
+        starBtn.textContent = starred ? '★' : '☆';
+        starBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleStar(item.id); });
+
+        const renameBtn = document.createElement('button');
+        renameBtn.className = 'icon-btn';
+        renameBtn.type = 'button';
+        renameBtn.title = 'שינוי שם תצוגה';
+        renameBtn.textContent = '✏️';
+        renameBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); renameItem(item.id, name); });
+
+        const moveBtn = document.createElement('button');
+        moveBtn.className = 'icon-btn';
+        moveBtn.type = 'button';
+        moveBtn.title = 'העברה לנושא/קטגוריה אחרים';
+        moveBtn.textContent = '📁';
+        moveBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openMoveModal(item.id, topic, cat); });
+
+        const hideBtn = document.createElement('button');
+        hideBtn.className = 'icon-btn';
+        hideBtn.type = 'button';
+        hideBtn.title = hidden ? 'שחזור הקובץ (הצגה מחדש)' : 'הסתרת הקובץ';
+        hideBtn.textContent = hidden ? '👁️' : '🙈';
+        hideBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleHidden(item.id); });
+
+        const iconHtml = item.type === 'video'
+          ? `<span class="file-thumb-wrap">
+               <img src="https://img.youtube.com/vi/${item.id}/mqdefault.jpg" loading="lazy" alt="">
+               <span class="play-badge">▶️</span>
+             </span>`
+          : `<span class="file-icon" style="background:${meta.bg}">${meta.icon}</span>`;
+
+        const row = document.createElement('a');
+        row.className = 'file-row';
+        row.href = buildItemUrl(item);
+        row.target = '_blank';
+        row.rel = 'noopener noreferrer';
+        row.innerHTML = `
+          ${iconHtml}
+          <span class="file-name${renamed ? ' renamed' : ''}">${name}</span>
+          ${hidden ? '<span class="hidden-badge">מוסתר</span>' : ''}
+          <span class="file-type-badge" style="background:${meta.bg};color:${meta.color}">${meta.label}</span>
+        `;
+
+        rowWrap.appendChild(starBtn);
+        rowWrap.appendChild(renameBtn);
+        rowWrap.appendChild(moveBtn);
+        rowWrap.appendChild(hideBtn);
+        rowWrap.appendChild(row);
+        list.appendChild(rowWrap);
+      });
+      header.addEventListener('click', () => {
+        list.classList.toggle('collapsed');
+        header.querySelector('.category-toggle').textContent = list.classList.contains('collapsed') ? '◂' : '▾';
+      });
+      group.appendChild(header);
+      group.appendChild(list);
+      catBlocks.push(group);
+    });
+
+    if (!topicHasResults) return;
+    anyResults = true;
+
+    if (q) {
+      const heading = document.createElement('div');
+      heading.className = 'topic-heading';
+      heading.innerHTML = `<h2>${TOPIC_EMOJI[topic] || '📄'} ${topic}</h2><span class="count">${topicTotal} תוצאות</span>`;
+      main.appendChild(heading);
+    }
+    catBlocks.forEach(b => main.appendChild(b));
+  });
+
+  empty.style.display = anyResults ? 'none' : 'block';
+}
+
+document.getElementById('search').addEventListener('input', (e) => { currentQuery = e.target.value; render(); });
+document.getElementById('showHiddenChk').addEventListener('change', (e) => { showHidden = e.target.checked; render(); });
+document.getElementById('tabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  currentTopic = btn.dataset.topic;
+  document.getElementById('search').value = '';
+  currentQuery = '';
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

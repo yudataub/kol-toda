@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>קטלוג משאבים - קבוצות תורה ומשנה</title>
+<style>
+  :root {
+    --primary: #2c3e50;
+    --accent: #2980b9;
+    --bg: #f4f5f7;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background:var(--bg); margin:0; padding:0; direction: rtl; color:#222; }
+  header { background: linear-gradient(135deg, #2c3e50, #34495e); color:#fff; padding:28px 20px; text-align:center; }
+  header h1 { margin:0 0 6px; font-size:28px; }
+  header p { margin:0; opacity:.85; font-size:15px; }
+  .search-wrap { padding:16px; background:#fff; position:sticky; top:0; box-shadow:0 2px 4px rgba(0,0,0,.1); z-index:50; }
+  #globalSearch { width:100%; box-sizing:border-box; padding:14px 18px; font-size:18px; border:2px solid #ddd; border-radius:10px; }
+  #globalSearch:focus { outline:none; border-color:var(--accent); }
+  nav.tabs { display:flex; gap:8px; padding:12px 16px; flex-wrap:wrap; background:#fff; border-bottom:1px solid #eee; position:sticky; top:73px; z-index:40; }
+  nav.tabs button { padding:10px 18px; border:none; border-radius:20px; background:#ecf0f1; cursor:pointer; font-size:15px; font-weight:600; color:#444; transition:.2s; }
+  nav.tabs button.active, nav.tabs button:hover { background:var(--accent); color:#fff; }
+  main { padding:16px; max-width:1100px; margin:0 auto; }
+  .tabpanel { display:none; }
+  .tabpanel.active { display:block; }
+  .stats { padding:6px 4px; color:#777; font-size:14px; margin-bottom:8px; }
+  .card-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:14px; }
+  .card { background:#fff; border-radius:10px; padding:16px; box-shadow:0 1px 4px rgba(0,0,0,.08); transition:.15s; }
+  .card:hover { box-shadow:0 4px 14px rgba(0,0,0,.12); transform:translateY(-2px); }
+  .card .icon { font-size:28px; }
+  .card a.title { display:block; font-weight:700; color:var(--primary); text-decoration:none; margin:8px 0 4px; font-size:16px; }
+  .card a.title:hover { color:var(--accent); text-decoration:underline; }
+  .card .meta { font-size:12px; color:#999; }
+  .card .desc { font-size:13px; color:#666; margin-top:6px; line-height:1.5; }
+  .list { background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .contact { padding:12px 16px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; }
+  .contact:last-child { border-bottom:none; }
+  .contact-name { font-weight:600; }
+  .contact-tels a { color:var(--accent); text-decoration:none; margin-inline-start:8px; direction:ltr; display:inline-block; }
+  .contact-tels a:hover { text-decoration:underline; }
+  details.category { background:#fff; border-radius:8px; margin-bottom:12px; box-shadow:0 1px 3px rgba(0,0,0,.08); overflow:hidden; }
+  details.category summary { padding:14px 18px; cursor:pointer; font-weight:700; font-size:16px; color:var(--primary); display:flex; justify-content:space-between; align-items:center; list-style:none; }
+  details.category summary::-webkit-details-marker { display:none; }
+  details.category summary .badge { background:var(--accent); color:#fff; border-radius:12px; padding:2px 10px; font-size:13px; font-weight:600; }
+  .cat-search { width:calc(100% - 36px); margin:0 18px 10px; padding:8px 12px; border:1px solid #ddd; border-radius:6px; font-size:14px; }
+  .cat-list { max-height:500px; overflow-y:auto; padding:0 18px 14px; }
+  .link-item { display:block; padding:10px 6px; border-bottom:1px solid #f5f5f5; }
+  .link-item:last-child { border-bottom: none; }
+  .link-item .link-desc { font-size:14px; color:#222; margin-bottom:3px; line-height:1.5; }
+  .link-item a { color:var(--accent); text-decoration:none; font-size:12px; word-break:break-all; direction:ltr; display:block; text-align:left; unicode-bidi: plaintext; }
+  .link-item a:hover { text-decoration:underline; }
+  .no-results { padding:20px; text-align:center; color:#999; }
+  mark { background:#ffe58a; }
+  footer { text-align:center; padding:24px; color:#999; font-size:13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>📚 קטלוג משאבים - קבוצות תורה ומשנה</h1>
+  <p>אוסף מרוכז של חומרי לימוד, קישורים מתוארים ואנשי קשר מתוך קבוצות הוואטסאפ של תורה ומשנה</p>
+</header>
+<div class="search-wrap">
+  <input type="text" id="globalSearch" placeholder="חיפוש כללי - שם, טלפון, תיאור, קטגוריה...">
+</div>
+<nav class="tabs">
+  <button data-tab="files" class="active">📁 קבצים וחומרי לימוד</button>
+  <button data-tab="contacts">📒 אנשי קשר</button>
+  <button data-tab="links">🔗 קישורים מתוארים</button>
+</nav>
+<main>
+  <section id="tab-files" class="tabpanel active">
+    <div class="stats" id="filesStats"></div>
+    <div class="card-grid" id="filesGrid"></div>
+  </section>
+
+  <section id="tab-contacts" class="tabpanel">
+    <div class="stats" id="contactsStats"></div>
+    <div class="list" id="contactsList"></div>
+  </section>
+
+  <section id="tab-links" class="tabpanel">
+    <div class="stats" id="linksStats"></div>
+    <div id="categories"></div>
+  </section>
+</main>
+<footer>נוצר אוטומטית מתוך תכתובות הוואטסאפ של קבוצות תורה ומשנה</footer>
+
+<script>
+const CONTACTS = [{"name": "ARAZI SHARONA מנהל תפעול חמד", "tels": ["+972 50-212-3444"]}, {"name": "אביאל אלימלך", "tels": ["+972 52-324-6692"]}, {"name": "אילנית", "tels": ["+972 54-646-0048"]}, {"name": "ביטחה מורה", "tels": ["+972 52-790-6854"]}, {"name": "ברוריה יפרח תחכמוני", "tels": ["+972 52-698-0333"]}, {"name": "הדס ביר מ'מ אביה", "tels": ["+972 52-423-3992"]}, {"name": "הרב יאיר ליברמן", "tels": ["+972 54-722-8856"]}, {"name": "טוהר פנחסי ממ״ד רעות", "tels": ["+972 53-425-5633"]}, {"name": "מיכאל אלמקייס", "tels": ["+972 55-661-5524"]}, {"name": "מעיין אליהו נחלת בנימין בנימין", "tels": ["+972 53-234-8819"]}, {"name": "נאוה גזבר", "tels": ["+972 52-347-9399"]}, {"name": "נחמניאל סבן", "tels": ["+972 54-848-4048"]}, {"name": "ספיר", "tels": ["+972 54-424-8728"]}, {"name": "שירה הרשקוביץ", "tels": ["+972 54-593-1189"]}, {"name": "שרה מחליפה חני ג3", "tels": ["+972 55-252-3822"]}, {"name": "שרה פלוט תפירת תחפושות גני תקווה", "tels": ["+972 50-573-5704"]}, {"name": "שרי שיפמן", "tels": ["+972 58-761-6191"]}, {"name": "שרי שיפמן", "tels": ["+972 54-849-1084"]}, {"name": "תהילה וקסלר מ'מ הדסה", "tels": ["+972 55-553-6883"]}, {"name": "תיאטרון רון יניב", "tels": ["+972 52-240-0391"]}];
+const FILES = [{"name": "רחלי אשכנזי- רב החמד- הרב משאש זצוקל.pdf", "path": "_צ'אט WhatsApp עם דמות החמ_ד תשפ_ו - הרב יוסף משאש/רחלי אשכנזי- רב החמד- הרב משאש זצוקל.pdf", "size": 293}, {"name": "מושגים והלכות ימים נוראים מעוצב התשפו.pdf", "path": "_צ'אט WhatsApp עם הלכה כתה ד' מפמ_ר בחמ_ד/מושגים והלכות ימים נוראים מעוצב התשפו.pdf", "size": 20982}, {"name": "חוברת לחומש שמות להדפסה תשעז סופי.pdf", "path": "_צ'אט WhatsApp עם שמות 2 ויהושע חמ_ד-עזרים/חוברת לחומש שמות להדפסה תשעז סופי.pdf", "size": 6470}, {"name": "דפי עבודה שמות.pdf", "path": "_צ'אט WhatsApp עם שמות 2 ויהושע חמ_ד-עזרים/דפי עבודה שמות.pdf", "size": 3207}, {"name": "ואלה שמות בני ישראל... (1).pdf", "path": "_צ'אט WhatsApp עם שמות 2 ויהושע חמ_ד-עזרים/ואלה שמות בני ישראל... (1).pdf", "size": 234}, {"name": "הקדמה לחומש שמות.pdf", "path": "_צ'אט WhatsApp עם שמות 2 ויהושע חמ_ד-עזרים/הקדמה לחומש שמות.pdf", "size": 90}, {"name": "מצגת פתיחה לחומש שמות.pdf", "path": "_צ'אט WhatsApp עם שמות 2 ויהושע חמ_ד-עזרים/מצגת פתיחה לחומש שמות.pdf", "size": 30191}, {"name": "משחקי למידה - למורים בחומש שמות.html", "path": "_צ'אט WhatsApp עם שמות 2 ויהושע חמ_ד-עזרים/משחקי למידה - למורים בחומש שמות.html", "size": 18}, {"name": "חֲזָרָה פָּרָשַׁת שְׁמוֹת.pdf", "path": "_צ'אט WhatsApp עם שמות 2 ויהושע חמ_ד-עזרים/חֲזָרָה פָּרָשַׁת שְׁמוֹת.pdf", "size": 78}, {"name": "מידות וערכים שנלמדים מפרשת שמות לפי הדמויות.pdf", "path": "_צ'אט WhatsApp עם שמות 2 ויהושע חמ_ד-עזרים/מידות וערכים שנלמדים מפרשת שמות לפי הדמויות.pdf", "size": 607}, {"name": "פרשת שמות אני לומדת_20251027_115336_0000.pdf", "path": "_צ'אט WhatsApp עם שמות 2 ויהושע חמ_ד-עזרים/פרשת שמות אני לומדת_20251027_115336_0000.pdf", "size": 16}];
+const CATEGORIES = {"סרטונים": [{"url": "https://youtu.be/MbX_5LeXpGg?si=6LhZQwey8sn_v40K", "desc": "פיוט יום העצמאות שכתב הרב משאש, בשירת נכדו"}, {"url": "https://youtu.be/CkZkZLIfXjQ", "desc": "סרטון על אהבת הארץ של רבני מרוקו ומשפחת רבי יוסף משאש"}, {"url": "https://youtu.be/gzN8Doq6ul4", "desc": "סרטון על עליית רבי יוסף משאש ארצה"}, {"url": "https://youtu.be/xoUGH-2wkO4", "desc": "סרטון על קיום מצוות באהבה - כולל קטע על הרב משאש"}, {"url": "https://youtu.be/l6Z1TZvQCZI", "desc": "סרטון הדרכה כיצד מכינים ציצית - מתאים לסדנת הכנת ציצית"}, {"url": "https://www.youtube.com/playlist?list=PLOr5C9Yi2Y628eqW3ZjN0OM7JewdXcUAD", "desc": "פלייליסט סרטונים על ברכת \"אשר יצר\""}, {"url": "https://www.youtube.com/playlist?list=PLOr5C9Yi2Y639vCtaJHkuQuj2kwibIKNP", "desc": "פלייליסט סרטונים על מצוות ציצית"}, {"url": "https://youtu.be/QPKGgLQES58", "desc": "סרטון להקרנה ביום פתקי תודה - כל תלמיד כותב על מה הוא אומר תודה"}, {"url": "https://youtu.be/s2WdEgO_-yI", "desc": "סרטון יומי במסגרת מבצע \"תפילה באהבה\""}, {"url": "https://youtu.be/cRsi0J5bRV8", "desc": "סרטון לצפייה לקראת פעילות פתקי בקשה"}, {"url": "https://youtu.be/4qpUU_JBMrM?feature=shared", "desc": "סרטון קצר על הרב משאש, מתאים לגיל יסודי"}, {"url": "https://youtu.be/SlOVDiY_PO0?si=Cft2duKsbSopQkEg", "desc": "שיעור לכבוד היום הראשון ללימודים, על תורת הרב משאש"}, {"url": "https://youtu.be/sA7LuxkXCaQ?si=r_n7viN5AAj9k3mM", "desc": "סרטון עם דוגמאות לאיורים של הרב משאש"}, {"url": "https://www.youtube.com/playlist?list=PLOr5C9Yi2Y62Cii4GCmZ_I3wgZiN247FP", "desc": "פלייליסט - 11 סרטונים על הרב משאש"}, {"url": "https://www.youtube.com/playlist?list=PLOr5C9Yi2Y63KjUMEgxgGz57HJehdbkyg", "desc": "פלייליסט - 8 סרטונים על קדושת השפה העברית"}, {"url": "https://www.youtube.com/playlist?list=PLOr5C9Yi2Y62f2mQRxwKDdHVq4aMkb6GI", "desc": "פלייליסט - 3 סרטונים על הרמב\"ם"}, {"url": "https://www.youtube.com/playlist?list=PLOr5C9Yi2Y61crgSCYvcWSttBuaZSdFPc", "desc": "פלייליסט - 38 סרטונים על ברכות, למבצעי ברכות בחודש שבט"}, {"url": "https://youtu.be/XhI3BZIkM1A?si=oy49bNMaMcnSYfcz", "desc": "סרטון נוסף הקשור לתורת הרב משאש"}, {"url": "https://www.facebook.com/share/v/17sFwkNdaG/", "desc": "סרטון מתוך ארכיון הסרטים הישראלי, הקשור לרב משאש"}, {"url": "https://youtu.be/DfwpkDmPyuA", "desc": "הדרכה לכיתה א' - תנ\"ך יסודי חמ\"ד תשפ\"ו"}, {"url": "https://youtu.be/oRLMKfYGtQk", "desc": "הדרכה לכיתה ב' - תנ\"ך יסודי חמ\"ד תשפ\"ו"}, {"url": "https://youtu.be/YY1IwhXjvkQ?si=QkrogOYYxiNNkrML", "desc": "הדרכה לכיתה ג' - תנ\"ך יסודי חמ\"ד תשפ\"ו (כולל הקלטת מפגש הכנה)"}, {"url": "https://youtu.be/v-tajmnvuv4", "desc": "הדרכה לכיתה ד' - תנ\"ך יסודי חמ\"ד תשפ\"ו"}, {"url": "https://youtu.be/FK2LZq3ZuTM", "desc": "הדרכה לכיתה ה' - תנ\"ך יסודי חמ\"ד תשפ\"ו"}, {"url": "https://youtu.be/nYtiLrSWroY", "desc": "הדרכה לכיתה ו' - תנ\"ך יסודי חמ\"ד תשפ\"ו"}, {"url": "https://youtube.com/playlist?list=PLOr5C9Yi2Y60rFUcDdi0OOV6Gsf_r8r28&si=zOVlbIK0E10mw5AS", "desc": "שיר הפרשיות בסיום כל סרטון - במנגינת הרב לוי סודרי"}, {"url": "https://youtube.com/playlist?list=PLOr5C9Yi2Y61iuvrB1b7iAsb5AweDBzpy&si=hJ6YkdCszELU2oPV", "desc": "שיר הפרשיות בסיום כל סרטון - במנגינת הרב יצחק שרביט"}, {"url": "https://youtu.be/IqKBISv6qUQ", "desc": "הקלטת מפגש הדרכה לפרשת וירא - מהבשורה לשרה ועד הולדת יצחק"}, {"url": "https://youtu.be/RHjXnta1U7o", "desc": "סרטון לפעילות כתיבת הספד לשרה אמנו - מה למדנו ממנה"}, {"url": "https://youtu.be/jnow19sbs7Q?si=0D6kwS0xHdTBpeH3", "desc": "ניגון לפעילות סיום פרשת וירא - מושר בעת לימוד פרשת העקידה"}, {"url": "https://youtu.be/_tuYQVYPcdQ?si=t4KCQ1bZTEh-b6Zl", "desc": "מדרש חשוב מפרשיית עקידת יצחק"}, {"url": "https://youtu.be/jxo3crAJ2rI?si=yl3Pdxk8qZnVfeWy", "desc": "שיעור הקלטה - בראשית פרקים ב'-ו', במסגרת השתלמות"}, {"url": "https://youtu.be/ZFsB-8dCSY4?si=alfG2PaGxQMFJ8JM", "desc": "שיר \"צחוק\" של הולדת יצחק"}, {"url": "https://youtu.be/oBlT6KGN_Ak", "desc": "מדריך ארצי תנ\"ך יסודי"}, {"url": "https://youtu.be/fXNeV0626Wk?si=_ytz0i6Ug1ksx7Te", "desc": "סרטון נלווה לפעילות סיום פרשת שמות"}, {"url": "https://www.youtube.com/shorts/VjGuQoQPIXw", "desc": "סרטון שיר קצר על פרשות חומש שמות"}, {"url": "https://www.youtube.com/watch?v=dRr7nhxWGVU&feature=shared", "desc": "סרטון נוסף עם שיר על פרשות/חומרים לחומש שמות"}], "מצגות וחומרים בקנבה (Canva)": [{"url": "https://chevrati-erci-chemed.my.canva.site/dagrehwq0na", "desc": "אתר עם חומרים על דמות הרב משאש - מטעם חינוך חברתי-ערכי"}, {"url": "https://www.canva.com/design/DAG2XEPLehM/j2u0qmOAT6AMryGUujsYNA/view", "desc": "תבנית לעריכה - חברותא לבנים על הרב משאש"}, {"url": "https://www.canva.com/design/DAG14WNhKas/tiOCq_cOCtqgJ6LjVL6EEg/view", "desc": "תבנית לעריכת חברותא לבנות על הרב משאש"}, {"url": "https://www.canva.com/design/DAG3zvZAs4g/AzB6D4eKXgdiufN1AxWaJw/view", "desc": "קישור לחומרים מקסימים של החמ\"ד על הרב משאש"}, {"url": "https://www.canva.com/design/DAG4mteS7Wc/tpH___cCcHbVsoEmYEDuFA/view", "desc": "תבנית לעריכת חברותא מס' 2 לבנים על הרב משאש"}, {"url": "https://www.canva.com/design/DAG4eADbMLI/o3cbACI8adN5mYqVf-HA4g/view", "desc": "תבנית לעריכת חברותא מס' 2 לבנות על הרב משאש"}, {"url": "https://www.canva.com/design/DAG2iU0fegM/fnaGBqglOHKrMl_HGBvznw/view", "desc": "סיפור על הרב משאש שעובד לשפה מותאמת לילדים בעזרת בינה מלאכותית"}, {"url": "https://www.canva.com/design/DAG8OgiF1rQ/KUXRS_qB0Q_Sp90V1T3xDw/view", "desc": "פתקים מעוצבים לעריכה - לפעילות פתקי תודה/בקשה"}, {"url": "https://www.canva.com/design/DAG8dVZ5-Hs/xjHWMizgCc1utqqrZFaq_w/view", "desc": "תבנית לעריכת חברותא מס' 3 לבנות על הרב משאש"}, {"url": "https://www.canva.com/design/DAG8jeS_PaQ/qvQ3NWWhtIMvbE9-fMJjhA/view", "desc": "תבנית לעריכת חברותא מס' 3 לבנים על הרב משאש"}, {"url": "https://www.canva.com/design/DAGseSibqRY/QMosWsuHjzqPBxyVi9enmQ/view", "desc": "מצגת עם הצעות למקורות, ציטוטים ומבחר מקורות וגם סיפור מותאם לילדים, על הרב משאש"}, {"url": "https://www.canva.com/design/DAG8UNGwbUM/zSyDm9vY70mBps4Q4h6Zog/edit", "desc": "תבנית לפתקי בקשה מעוצבים, להדפסה לאחר צפיה בסרטון"}, {"url": "https://www.canva.com/design/DAGxzBtHlvA/TWyD-EnAkNEkRCHSahRyxw/edit", "desc": "מצגת עם חידות על חומש בראשית, לקישור בין החומשים"}, {"url": "https://www.canva.com/design/DAG38pkk7mE/IgjHwA6iBgAu4T8NBk0BPw/edit", "desc": "עטיפה למחברת בעריכת קנבה - מומלץ ליצור עותק לפני שימוש"}, {"url": "https://www.canva.com/design/DAG3TT8NkzU/-OcbaKeEfSLPfQwh47q04Q/edit", "desc": "קובץ עריכה למבצע ציצית 10/15 נקודות - יש ליצור עותק לפני עריכה"}, {"url": "https://www.canva.com/design/DAG297fZCIk/ttwM9DugtVoOwATAjQMBUw/edit", "desc": "קובץ נוסף לעריכה במבצע ציצית - יש ליצור עותק לפני עריכה"}, {"url": "https://www.canva.com/design/DAFcCTu_-wc/5iFaomGsmbK5ZcyOaE2xeg/view", "desc": "חומר מעוצב ממדריכי תנ\"ך חמ\"ד"}], "אתרים ותכנים נוספים": [{"url": "https://hemed.education.gov.il/libat-hemed/leoram-nelech/mashash/", "desc": "דף ייעודי באתר החמ\"ד עם חומרים, מערכי שיעור, תמונות וכלי שיח על הרב יוסף משאש"}, {"url": "https://www.tsemed-hemed.com/", "desc": "אתר \"צמד חמ\"ד\" - תמונות מפעילויות ופרטי הזמנות לפעילויות על דמות החמ\"ד"}, {"url": "https://www.tsemed-hemed.com/odyosef", "desc": "דף הפעילות על הרב יוסף משאש באתר צמד חמ\"ד"}, {"url": "https://meyda.education.gov.il/files/hemed/Rabanim/mashash/mashash-hanuka-yesodi.pdf", "desc": "חוברת לימוד \"דרך אמונה - מאורו של הרב יוסף משאש\" לחנוכה, ליסודי"}, {"url": "https://meyda.education.gov.il/files/hemed/rabanim/mashash/mashash-hanuka-al-yesodi.pdf", "desc": "חוברת \"אור במבחן הזמן\" - מכתבי הרב יוסף משאש לחנוכה, לעל-יסודי"}, {"url": "https://pop.education.gov.il/tchumey_daat/bible-hemed/elementary/", "desc": "אתר תנ\"ך יסודי חמ\"ד - תכנון שנתי, תוכניות לימוד והצעות ללמידה"}, {"url": "https://pop.education.gov.il/tchumey_daat/bible-hemed/elementary/teaching-materials/shmot/", "desc": "חומרי הוראה לחומש שמות באתר תנ\"ך יסודי חמ\"ד"}, {"url": "https://www.abita.co.il/lessons/תנך-ממד-ג-שיעור-פתיחה", "desc": "מצגת שיעור פתיחה והתמצאות בחומש - אתר אביטה"}, {"url": "https://www.abita.co.il/lesson_category/%D7%99%D7%94%D7%95%D7%A9%D7%A2/", "desc": "מצגות ושיעורים לספר יהושע - אתר אביטה"}, {"url": "https://abita.co.il/lesson_category/אלול", "desc": "שיעורים והפעלות לחודש אלול - אתר אביטה"}, {"url": "https://abita.co.il/lesson_category/ראש-השנה/", "desc": "שיעורים והפעלות לראש השנה - אתר אביטה"}, {"url": "https://abita.co.il/lessons/צום-גדליה/", "desc": "שיעור והפעלה לצום גדליה - אתר אביטה"}, {"url": "https://abita.co.il/lesson_category/יום-הכיפורים/", "desc": "שיעורים והפעלות ליום הכיפורים - אתר אביטה"}, {"url": "https://abita.co.il/lesson_category/סוכות/", "desc": "שיעורים והפעלות לחג הסוכות - אתר אביטה"}, {"url": "https://www.sulamot.org/12452-2/", "desc": "מדריך למורה - הלכות בהירות לכיתה ד'"}, {"url": "https://pisga-zugot.ravpage.co.il/tanach", "desc": "אתר עם סיפורי תנ\"ך לשיתוף עם תלמידים (ניתן להעביר בחופשיות)"}, {"url": "https://pisga-zugot.ravpage.co.il/yosef", "desc": "אוסף סיפורי יוסף הצדיק"}, {"url": "https://www.yrg.org.il/lessons/%D7%9B%D7%90%D7%99%D7%A9-%D7%90%D7%A9%D7%A8-%D7%90%D7%9E%D7%95-%D7%AA%D7%A0%D7%97%D7%9E%D7%A0%D7%95-%D7%A4%D7%A8%D7%A9%D7%AA-%D7%97%D7%99%D7%99-%D7%A9%D7%A8%D7%94/", "desc": "שיעור על פרשת חיי שרה - איפה היה יצחק בעת מות אמו"}, {"url": "https://meyda.education.gov.il/files/Pop/0files/bible-Hamad/Elementary/shmot-15.pdf", "desc": "קובץ עם מסעות בני ישראל במדבר, להדפסה"}, {"url": "https://www.facebook.com/share/p/17BuAXXdiR/", "desc": "פוסט פייסבוק - איחולים לשנת לימודים פוריה עם דמות החמ\"ד"}, {"url": "https://www.dirshu.co.il/483776-2/?srsltid=AfmBOor060YOTp6XZ8Aqf-PExuh727i33i4p9sNgC50ppUk13rzsJYej", "desc": "סיפורים על מנהגי העיר סדום - מתאים לפרשת וירא בכיתה ב'"}], "קישורים מקוצרים (did.li / share.google)": [{"url": "https://tinyurl.com/haravmashash-gr", "desc": "קישור להורדת קובץ על הרב משאש - להעברה במקום הקובץ עצמו, שמירה על זכויות יוצרים"}, {"url": "https://did.li/Oxn6q", "desc": "פרטים על חבילת תרבות מומלצת - חידון חנוכה עם שירים, סרטונים ועזרים"}, {"url": "https://did.li/NdUCN", "desc": "הצטרפות לקבלת מידע ורעיונות על מבצעי \"תפילה באהבה\""}, {"url": "https://did.li/tfila-beahava-links", "desc": "הצטרפות לקבלת סרטון יומי במסגרת מבצע תפילה באהבה"}, {"url": "https://did.li/hamed-rabanim-israel", "desc": "תמונות לתלייה בכיתות - דמות החמ\"ד תשפ\"ו, הרבנים הראשיים, המנון ודגל המדינה"}, {"url": "https://did.li/mesas-meyda", "desc": "פלקט לתלייה במרחב/כיתה הכולל מידע על הרב משאש ע\"ה"}, {"url": "https://did.li/mydUY", "desc": "חוברת \"דרך אמונה - מאורו של הרב יוסף משאש\" לחנוכה - לתלמידי היסודי ובני משפחותיהם"}, {"url": "https://did.li/kydUY", "desc": "חוברת \"אור במבחן הזמן\" - מכתבי הרב יוסף משאש זצ\"ל"}, {"url": "https://did.li/q7Laa", "desc": "מעקב אחרי הסרטונים השבועיים של מיזם תפילה באהבה"}, {"url": "https://did.li/Mitchzlim86", "desc": "פרטים על מבצעי \"מתחזקים\""}, {"url": "https://did.li/TWIaa", "desc": "סרטון יומי לתפילה - כיתה א'"}, {"url": "https://did.li/UWIaa", "desc": "סרטון יומי לתפילה - כיתה ב'"}, {"url": "https://did.li/PdUCN", "desc": "סרטון יומי לתפילה - כיתה ג'"}, {"url": "https://did.li/tjDrl", "desc": "סרטון יומי לתפילה - כיתה ד'"}, {"url": "https://did.li/z3rZH", "desc": "סרטון יומי לתפילה - כיתה ה'"}, {"url": "https://did.li/FLgx5", "desc": "סרטון יומי לתפילה - כיתה ו'"}, {"url": "https://did.li/kvotzot", "desc": "הצטרפות לקבוצות ווטסאפ תנ\"ך יסודי חמ\"ד תשפ\"ו - עדכוני תכניות וחומרים"}, {"url": "https://did.li/H3LgT", "desc": "קישור לרישום במצפן (מספר פתרון 209110) - השתלמות תנ\"ך"}, {"url": "https://did.li/epGx5", "desc": "קישור לרישום (מספר פתרון 209098) - השתלמות נוספת"}, {"url": "https://did.li/LyiDN", "desc": "חומר נוסף שצורף בקבוצת תנ\"ך יסודי"}, {"url": "https://share.google/9hY9Ksl3YUg9uOy2d", "desc": "חומש שמות לחינוך המיוחד - תנ\"ך חמ\"ד ליסודי, מרחב פדגוגי משרד החינוך"}, {"url": "https://share.google/8PieR3yt3JaMVjGtF", "desc": "תוכנית הלימודים - הלכה כיתה ד', תלמוד ותושב\"ע חמ\"ד ליסודי"}], "קבצים ב-Google Drive / OneDrive": [{"url": "https://drive.google.com/file/d/1Z5vjSWiSbmH6ALbwKYQbFgWpGrYWtYe0/view?usp=sharing", "desc": "קובץ פעילות/מוצר - לפרטים והזמנות (מקושר לפרסום על דמות החמ\"ד)"}, {"url": "https://drive.google.com/file/d/1KmoJ0ZLYBJxDaY70BZG8k1_ijh8KiHuQ/view?usp=drive_link", "desc": "דף לימוד לצעירים (כיתות ב-ג) - האתרוג ועם ישראל"}, {"url": "https://drive.google.com/file/d/18LyW1CZ-BxxlSgHnW85H0HT_KMmnEX32/view?usp=drive_link", "desc": "דף לימוד לבוגרים (כיתות ג-ו) - האתרוג ועם ישראל"}, {"url": "https://docs.google.com/presentation/d/1H0FFunkncR2zdAfuqGNhHL0a0EXuPW9H/edit?usp=sharing", "desc": "מצגת קצרה על היחס המיוחד בין הרב משאש לרב קוק - ליום הרב קוק"}, {"url": "https://docs.google.com/document/d/1100pIQVwnRIUXL0rwARvKLdUnVzRaYrQ/edit?usp=drive_link", "desc": "דפי קשר להורים לפרשות השבוע - עם שאלות ותשובות לחזרה"}, {"url": "https://1drv.ms/p/c/524F901BD8454F59/IQCv_0xmEpg4QZKbDtt6rnZyAXMZZaU7Kw896bUAlcFswDE", "desc": "מצגת/חוברת על תולדות וקורות חייו של הרב יוסף משאש זצ\"ל"}, {"url": "https://drive.google.com/drive/folders/1V_VsPsq3GHjep8IGFl4lkEXEU1QqDBmT", "desc": "תיקיית דרייב עם חומרים משותפים לקבוצות הלכה"}, {"url": "https://drive.google.com/drive/folders/1VBU9aDDSXGpHOqId3h5Ei_wVbcgPoKFL", "desc": "תיקיית דרייב עם רעיונות ומשימות מעניינות להלכה"}, {"url": "https://drive.google.com/drive/folders/13cgKfL8yni2le9Qnlebc91EeDAaTlBuh", "desc": "תיקיית דרייב - מצגות ומבחן בנושא תפילה"}, {"url": "https://drive.google.com/drive/folders/18hW759QLl92UBL8U-l2XwhoYY8geHTRg", "desc": "תיקיית דרייב - חומרים ברמת כיתה ד' להלכה"}, {"url": "https://drive.google.com/drive/folders/1QZ7KGBFgVME0E67qPkJdu3qFHweQcZll", "desc": "תיקיית דרייב - חומרים נוספים להלכה כיתה ג'"}, {"url": "https://drive.google.com/folderview?id=0BwpslM9oBm3pdzVNT2RGbkRka00", "desc": "תיקיית דרייב - כריכות ועטיפות למחברות"}, {"url": "https://drive.google.com/drive/folders/0BwpslM9oBm3pdzVNT2RGbkRka00?resourcekey=0-CQwfYxdggHy-dqsV1Vq-lw", "desc": "תיקיית דרייב - דפי עבודה להתמצאות בחומש"}, {"url": "https://drive.google.com/drive/folders/0BwpslM9oBm3pbFl0V2JlMVZIcmM?resourcekey=0-8RxaRAzK3ZVCyloahcw3CQ", "desc": "תיקיית דרייב - חומרים על הרב עובדיה יוסף לכיתה ב'"}, {"url": "https://drive.google.com/drive/folders/1iAOq7epWpoK1llSRgGH5-xyatpgfdfUF", "desc": "תיקיית דרייב - עטיפות למחברות ומצגת פתיחה ליהושע"}, {"url": "https://1drv.ms/f/c/80c2dbd02819b45c/ElMHw4iVO7xKvs8J3SjK28wByux5ZoDpooZXm_AJZTCgtQ?e=rag1MS", "desc": "תיקיית OneDrive עם חומרים (מומלץ להיכנס מהמחשב)"}, {"url": "https://docs.google.com/presentation/d/1jqslDCOMW9Couea9W-RmrwwwZL6H8aSk/edit?usp=sharing", "desc": "מצגת התמצאות בספר התנ\"ך / מצגת פתיחה לספר יהושע"}, {"url": "https://docs.google.com/forms/d/1ccysH76Yey-TSQWr7PwZwvp3E2_ujRV6qqQDJY_ed4Y/edit", "desc": "טופס גוגל הקשור לחומרי דמות החמ\"ד"}, {"url": "https://docs.google.com/spreadsheets/d/12qpGwSURzWR_LLLpB7h1j2XJNvebsFeXLX1dCh_h6iM/edit?usp=drivesdk", "desc": "גיליון אלקטרוני שהועלה בקבוצת וירא-ויחי"}, {"url": "https://drive.google.com/drive/folders/1bNlW4EwQLVSeQMRJwHlGaEXUa2ovWN9p", "desc": "תיקיית דרייב - מצגות מהממות לחומש שמות"}, {"url": "https://gamma.app/docs/eardefuz5y9kmpx", "desc": "מצגת על ספר שמות (1 מתוך סדרת מצגות) - כולל שירים ועבודות לתלמידים"}, {"url": "https://gamma.app/docs/b7wgydksom626w9", "desc": "מצגת נוספת על ספר שמות (2 מתוך הסדרה) - כולל שירים ועבודות לתלמידים"}, {"url": "https://gamma.app/docs/j8t4adwz223b6e3", "desc": "מצגת נוספת על ספר שמות (3 מתוך הסדרה) - כולל שירים ועבודות לתלמידים"}, {"url": "https://gamma.app/docs/956tvadibwulw62", "desc": "מצגת נוספת על ספר שמות (4 מתוך הסדרה) - כולל שירים ועבודות לתלמידים"}, {"url": "https://gamma.app/docs/-v23hn3ku5roqtsn", "desc": "מצגת על שמות פרק ג'"}], "קבוצות וואטסאפ": [{"url": "https://chat.whatsapp.com/Fe4Z1AfNRcn0IppFOUADhS", "desc": "קבוצת שיתוף חומרים על דמות החמ\"ד - הרב יוסף משאש"}, {"url": "https://chat.whatsapp.com/DCTtyrKQ2bp62RjHM3geQx?mode=ac_t", "desc": "קבוצה למסר יומי \"יום ליו\"ם\" מתורת הרב משאש, בהפקת הרב אבינדב אבוקרט"}, {"url": "https://chat.whatsapp.com/CLpKLbNYfav9quLq9IqVFR?mode=ems_wa_t", "desc": "קבוצה שקטה של \"חיוך לערכים\" - עדכונים על מוצרים ומבצעים"}, {"url": "https://chat.whatsapp.com/Gi8fPclwO7n6Yxfk1OKFqU", "desc": "קבוצה שקטה של אביטה - תוכן ועזרי הוראה"}, {"url": "https://chat.whatsapp.com/DU2IwynuqcyL4wd8FdxV5E?mode=ems_wa_t", "desc": "קבוצת ווטסאפ נוספת בנושא הלכה"}, {"url": "https://chat.whatsapp.com/CwouWZYCqknEc4FDosdv25", "desc": "קבוצה עם סיפורי \"גאונים בתנ\"ך\" בכל יום"}, {"url": "https://chat.whatsapp.com/Hs7YeXILxNc96yLfuwGWhl?mode=wwt", "desc": "קבוצת ווטסאפ של ההשתלמות (רישום במצפן והרצוג)"}, {"url": "https://chat.whatsapp.com/GJamz3FVHE82WbV4I0fQDl", "desc": "קבוצת סיוע - הצטרפות"}, {"url": "https://chat.whatsapp.com/KAf7TAnXMjX1oz0LTWjhkF", "desc": "קבוצת פרשת שבוע 1 (קבוצה שקטה)"}, {"url": "https://chat.whatsapp.com/KLK2586KSNY3nvGgQeRs4F", "desc": "קבוצת פרשת שבוע 2"}, {"url": "https://chat.whatsapp.com/B8w8bN7uL19J3OXozBSRC9?mode=ac_t", "desc": "קבוצת פרשת שבוע 3 (קבוצה שקטה)"}], "טפסים, הרשמות והשתלמויות": [{"url": "https://forms.gle/YccaUWTs9DY4cvUW7", "desc": "טופס - שני חלקי חידון בהלכות חנוכה (מבית ספר עוזיאל קרית שמונה)"}, {"url": "https://forms.gle/WYkqUgXZpZwzNhbD6", "desc": "טופס נוכחות לאחר הקשבה למפגש השתלמות - כיתה א'"}, {"url": "https://forms.gle/t9kAj3oFC6kLNrTH6", "desc": "טופס נוכחות לאחר הקשבה למפגש השתלמות - כיתה ב'"}, {"url": "https://forms.gle/X7Jhztho2F3HsAcQ8", "desc": "טופס תובנות מהשיעור על פרשת וירא, לשימוש במטלת הסיום"}, {"url": "https://poh.education.gov.il/PituachMiktzoi/Pages/compass.aspx", "desc": "הרשמה להשתלמות דרך מערכת \"מצפן\" של משרד החינוך (מספר פתרון מצורף בהודעה)"}, {"url": "https://rashim3.herzog.ac.il/Portals/ex/registration/bereshitpv", "desc": "הרשמה להשתלמות בראשית - מכללת הרצוג"}, {"url": "https://rashim3.herzog.ac.il/Portals/ex/registration/bamidbarpv", "desc": "הרשמה להשתלמות במדבר - מכללת הרצוג"}, {"url": "https://rashim3.herzog.ac.il/Portals/ex/registration/shmotpv", "desc": "הרשמה להשתלמות שמות - מכללת הרצוג"}, {"url": "https://mpm.education.gov.il/rishum/pitronLemidaMurchav/2026/203519/0/7/true", "desc": "קישור ישיר להרשמה במצפן - קוד פתרון 203519"}, {"url": "https://edu-il.zoom.us/j/88593580730", "desc": "קישור לזום למפגש הכנה (מורי חומשים תשפ\"ו)"}]};
+const FILE_DESC = {"רחלי אשכנזי- רב החמד- הרב משאש זצוקל.pdf": "חומר על דמות החמ\"ד לשנת תשפ\"ו - הרב יוסף משאש זצוק\"ל", "מושגים והלכות ימים נוראים מעוצב התשפו.pdf": "חוברת מושגים והלכות לימים נוראים, מעוצבת, תשפ\"ו", "חוברת לחומש שמות להדפסה תשעז סופי.pdf": "חוברת מלאה לחומש שמות, מוכנה להדפסה", "דפי עבודה שמות.pdf": "דפי עבודה לחומש שמות", "ואלה שמות בני ישראל... (1).pdf": "חומר פתיחה לחומש שמות - ואלה שמות בני ישראל", "הקדמה לחומש שמות.pdf": "שיעור הקדמה/פתיחה לחומש שמות", "מצגת פתיחה לחומש שמות.pdf": "מצגת פתיחה ללימוד חומש שמות", "משחקי למידה - למורים בחומש שמות.html": "אתר אינטראקטיבי עם משחקי למידה למורים בחומש שמות", "חֲזָרָה פָּרָשַׁת שְׁמוֹת.pdf": "דף חזרה והערכה חלופית לפרשת שמות (מאתר החמ\"ד)", "מידות וערכים שנלמדים מפרשת שמות לפי הדמויות.pdf": "מידות וערכים הנלמדים מפרשת שמות, לפי הדמויות - הוכן לסיום הפרשה", "פרשת שמות אני לומדת_20251027_115336_0000.pdf": "דף סיכום \"אני לומדת\" לסיום פרשת שמות, על בסיס חוברת מורשה"};
+const FILE_ICONS = { pdf:'📕', docx:'📝', doc:'📝', html:'🌐', pptx:'📊', xlsx:'📈' };
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+const filesGrid = document.getElementById('filesGrid');
+const filesStats = document.getElementById('filesStats');
+function renderFiles(filter) {
+  filesGrid.innerHTML = '';
+  const f = (filter || '').toLowerCase();
+  let shown = 0;
+  for (const file of FILES) {
+    const desc = FILE_DESC[file.name] || '';
+    if (f && !file.name.toLowerCase().includes(f) && !desc.toLowerCase().includes(f)) continue;
+    shown++;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const icon = FILE_ICONS[ext] || '📄';
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = '<div class="icon">' + icon + '</div>' +
+      '<a class="title" href="' + encodeURI(file.path) + '" target="_blank">' + escapeHtml(file.name) + '</a>' +
+      '<div class="meta">' + file.size.toLocaleString('he-IL') + ' KB</div>' +
+      (desc ? '<div class="desc">' + escapeHtml(desc) + '</div>' : '');
+    filesGrid.appendChild(card);
+  }
+  filesStats.textContent = shown + ' קבצים';
+}
+
+const contactsList = document.getElementById('contactsList');
+const contactsStats = document.getElementById('contactsStats');
+function normalizePhone(s) { return s.replace(/[^0-9]/g, ''); }
+function renderContacts(filter) {
+  const q = (filter || '').trim();
+  const qPhone = normalizePhone(q);
+  contactsList.innerHTML = '';
+  let matches = CONTACTS;
+  if (q) {
+    matches = CONTACTS.filter(c => {
+      if (c.name.toLowerCase().includes(q.toLowerCase())) return true;
+      if (qPhone && c.tels.some(t => normalizePhone(t).includes(qPhone))) return true;
+      return false;
+    });
+  }
+  if (matches.length === 0) {
+    contactsList.innerHTML = '<div class="no-results">לא נמצאו תוצאות</div>';
+  } else {
+    for (const c of matches) {
+      const row = document.createElement('div');
+      row.className = 'contact';
+      const telsHtml = c.tels.map(t => '<a href="tel:' + t.replace(/\s+/g,'') + '">' + escapeHtml(t) + '</a>').join('');
+      row.innerHTML = '<span class="contact-name">' + escapeHtml(c.name) + '</span><span class="contact-tels">' + telsHtml + '</span>';
+      contactsList.appendChild(row);
+    }
+  }
+  contactsStats.textContent = q ? ('נמצאו ' + matches.length + ' מתוך ' + CONTACTS.length) : ('סה"כ ' + CONTACTS.length + ' אנשי קשר');
+}
+
+const categoriesEl = document.getElementById('categories');
+const linksStats = document.getElementById('linksStats');
+let totalLinks = 0;
+for (const cat in CATEGORIES) totalLinks += CATEGORIES[cat].length;
+linksStats.textContent = 'סה"כ ' + totalLinks + ' קישורים מתוארים ב-' + Object.keys(CATEGORIES).length + ' קטגוריות';
+
+const sortedCats = Object.entries(CATEGORIES).sort((a,b) => b[1].length - a[1].length);
+for (const [cat, items] of sortedCats) {
+  const det = document.createElement('details');
+  det.className = 'category';
+  const summary = document.createElement('summary');
+  summary.innerHTML = '<span>' + escapeHtml(cat) + '</span><span class="badge">' + items.length + '</span>';
+  det.appendChild(summary);
+
+  const search = document.createElement('input');
+  search.className = 'cat-search';
+  search.placeholder = 'סינון בתוך קטגוריה זו...';
+
+  const list = document.createElement('div');
+  list.className = 'cat-list';
+
+  function renderList(filter) {
+    const f = (filter || '').toLowerCase();
+    list.innerHTML = '';
+    for (const item of items) {
+      if (f && !item.desc.toLowerCase().includes(f) && !item.url.toLowerCase().includes(f)) continue;
+      const wrap = document.createElement('div');
+      wrap.className = 'link-item';
+      const a = document.createElement('a');
+      a.href = item.url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = item.url;
+      const d = document.createElement('div');
+      d.className = 'link-desc';
+      d.textContent = item.desc;
+      wrap.appendChild(d);
+      wrap.appendChild(a);
+      list.appendChild(wrap);
+    }
+  }
+  search.addEventListener('input', () => renderList(search.value));
+  renderList('');
+
+  det.appendChild(search);
+  det.appendChild(list);
+  categoriesEl.appendChild(det);
+}
+
+document.querySelectorAll('nav.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tabpanel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+document.getElementById('globalSearch').addEventListener('input', (e) => {
+  const v = e.target.value;
+  renderFiles(v);
+  renderContacts(v);
+  if (v.trim()) {
+    document.querySelectorAll('details.category').forEach(d => d.open = true);
+    document.querySelectorAll('.cat-search').forEach(s => { s.value = v; s.dispatchEvent(new Event('input')); });
+  } else {
+    document.querySelectorAll('details.category').forEach(d => d.open = false);
+    document.querySelectorAll('.cat-search').forEach(s => { s.value = ''; s.dispatchEvent(new Event('input')); });
+  }
+});
+
+renderFiles('');
+renderContacts('');
+</script>
+</body>
+</html>

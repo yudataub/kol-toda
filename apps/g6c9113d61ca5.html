@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>קטלוג מאוחד</title>
+<style>
+  :root{
+    --bg1:#f7fbff; --bg2:#eef6ff; --card:#ffffff; --ink:#172033; --muted:#667085;
+    --blue:#2563eb; --blue2:#38bdf8; --purple:#7c3aed; --line:#d8e6f7; --soft:#f8fbff;
+    --shadow:0 22px 70px rgba(24,50,88,.12);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    font-family:"Assistant","Segoe UI",sans-serif;
+    direction:rtl; min-height:100vh; color:var(--ink); padding:36px 16px;
+    background:
+      radial-gradient(circle at 12% 12%, rgba(56,189,248,.18), transparent 24%),
+      radial-gradient(circle at 88% 8%, rgba(124,58,237,.12), transparent 22%),
+      radial-gradient(circle at 50% 92%, rgba(22,163,74,.10), transparent 26%),
+      linear-gradient(180deg,var(--bg1),var(--bg2));
+  }
+  .page{ max-width:1200px; margin:0 auto; }
+  .catalog{
+    background:rgba(255,255,255,.92); border:1px solid rgba(216,230,247,.9);
+    border-radius:30px; overflow:hidden; box-shadow:var(--shadow);
+  }
+  .hero{
+    position:relative; padding:46px 28px 34px; text-align:center; color:#fff;
+    background:linear-gradient(135deg, rgba(37,99,235,.96), rgba(124,58,237,.94)),
+      radial-gradient(circle at 50% 20%, rgba(255,255,255,.25), transparent 30%);
+  }
+  .hero h1{ font-size:2.6rem; font-weight:900; margin-bottom:10px; }
+  .hero p{ max-width:760px; margin:0 auto; color:#edf4ff; font-size:1.05rem; line-height:1.7; }
+  .stats{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:18px; }
+  .stat{ background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.24); border-radius:16px; padding:10px 18px; }
+  .stat strong{ display:block; font-size:1.2rem; }
+  .search-wrap{ padding:22px 26px; background:#fff; border-bottom:1px solid var(--line); position:sticky; top:0; z-index:10; }
+  #search{
+    width:100%; padding:14px 20px; font-size:1.05rem; border-radius:16px;
+    border:2px solid var(--line); outline:none; font-family:inherit; direction:rtl;
+    transition:border-color .2s;
+  }
+  #search:focus{ border-color:var(--blue); }
+  #search-info{ margin-top:10px; color:var(--muted); font-size:.92rem; }
+  .toc{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;
+    padding:18px 26px; background:var(--soft); border-bottom:1px solid var(--line);
+  }
+  .toc a{
+    text-decoration:none; color:var(--blue); background:#fff; border:1px solid var(--line);
+    border-radius:14px; padding:11px 14px; text-align:center; font-weight:700; transition:.2s;
+  }
+  .toc a:hover{ transform:translateY(-2px); box-shadow:0 10px 22px rgba(37,99,235,.14); }
+  .content{ padding:28px; }
+  .group{ margin-bottom:36px; }
+  .group:last-child{ margin-bottom:0; }
+  .group-title{
+    display:flex; align-items:center; gap:10px; font-size:1.7rem; font-weight:900;
+    color:#111827; margin-bottom:18px; padding-bottom:10px; border-bottom:2px solid var(--line);
+  }
+  .group-title .count{ font-size:.9rem; font-weight:700; color:var(--muted); background:var(--soft); border:1px solid var(--line); border-radius:999px; padding:4px 12px; margin-inline-start:auto; }
+  .subsection{ margin-bottom:22px; }
+  .subsection-title{ font-size:1.15rem; font-weight:800; color:var(--purple); margin-bottom:12px; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; }
+  .card{
+    display:flex; flex-direction:column; text-decoration:none; color:var(--ink);
+    background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 18px;
+    transition:.2s ease; min-height:70px;
+  }
+  .card:hover{ transform:translateY(-3px); box-shadow:0 14px 32px rgba(37,99,235,.14); border-color:#bcd4ff; }
+  .card h4{ font-size:1.02rem; font-weight:800; margin-bottom:6px; line-height:1.4; }
+  .card p{ color:var(--muted); font-size:.9rem; line-height:1.5; margin-bottom:10px; }
+  .badge-ext{ font-size:.72rem; font-weight:700; color:#7c3aed; background:#f3e8ff; border-radius:999px; padding:2px 8px; margin-inline-start:6px; vertical-align:middle; }
+  .open{ margin-top:auto; font-size:.85rem; font-weight:800; color:#1d4ed8; }
+  .card.hidden{ display:none; }
+  .subsection.hidden, .group.hidden{ display:none; }
+  .footer{ padding:22px 28px 30px; text-align:center; color:var(--muted); font-size:.9rem; }
+  @media(max-width:680px){
+    .hero h1{ font-size:1.9rem; }
+    .content{ padding:18px; }
+    .search-wrap{ padding:16px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <main class="catalog">
+    <header class="hero">
+      <h1>📁 קטלוג מאוחד</h1>
+      <p>כל הקטלוגים במקום אחד — חיפוש מהיר בכל הקישורים, מסודר לפי אתר ולפי נושא.</p>
+      <div class="stats">
+        <div class="stat"><strong>4</strong>קטלוגים</div>
+        <div class="stat"><strong>20</strong>קטגוריות</div>
+        <div class="stat"><strong>126</strong>קישורים</div>
+      </div>
+    </header>
+
+    <div class="search-wrap">
+      <input type="text" id="search" placeholder="🔎 חפש קישור, נושא או מילת מפתח..." />
+      <div id="search-info"></div>
+    </div>
+
+    <nav class="toc" aria-label="ניווט מהיר">
+      <a href="#cat0">📗 קטלוג משחקי למידה – פרשת שמות</a><a href="#cat1">📜 קטלוג פרשת וארא</a><a href="#cat2">📚 גדולי ישראל – סיפורים</a><a href="#cat3">😊 קטלוג חומרים – החיוך, שמחה, משחקים וספרים</a>
+    </nav>
+
+    <div class="content">
+      
+    <section class="group" id="cat0">
+      <h2 class="group-title">📗 קטלוג משחקי למידה – פרשת שמות <span class="count">9 קישורים</span></h2>
+      
+        <div class="subsection">
+          <h3 class="subsection-title">🏠 פתיחה וכללי</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/yudataub-smot2/בית" target="_blank" rel="noopener noreferrer" data-search="בית דף הבית של האתר – כניסה ראשית לכל משחקי הלמידה על פרשת שמות. קטלוג משחקי למידה – פרשת שמות 🏠 פתיחה וכללי">
+              <h4>בית </h4>
+              <p>דף הבית של האתר – כניסה ראשית לכל משחקי הלמידה על פרשת שמות.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub-smot2/הודעה-על-המבחן" target="_blank" rel="noopener noreferrer" data-search="הודעה על המבחן מידע חשוב לתלמידים על המבחן, החזרה וההכנה. קטלוג משחקי למידה – פרשת שמות 🏠 פתיחה וכללי">
+              <h4>הודעה על המבחן </h4>
+              <p>מידע חשוב לתלמידים על המבחן, החזרה וההכנה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">📖 שמות פרק א׳</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/yudataub-smot2/שמות-פרק-א" target="_blank" rel="noopener noreferrer" data-search="שמות פרק א תחילת ספר שמות: בני ישראל במצרים, השעבוד וגזירות פרעה. קטלוג משחקי למידה – פרשת שמות 📖 שמות פרק א׳">
+              <h4>שמות פרק א </h4>
+              <p>תחילת ספר שמות: בני ישראל במצרים, השעבוד וגזירות פרעה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">🧺 שמות פרק ב׳</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/yudataub-smot2/שמות-פרק-ב-א" target="_blank" rel="noopener noreferrer" data-search="שמות פרק ב - א הולדת משה רבנו, התיבה ביאור, ובת פרעה שמוצאת את משה. קטלוג משחקי למידה – פרשת שמות 🧺 שמות פרק ב׳">
+              <h4>שמות פרק ב - א </h4>
+              <p>הולדת משה רבנו, התיבה ביאור, ובת פרעה שמוצאת את משה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub-smot2/שמות-פרק-ב-ב" target="_blank" rel="noopener noreferrer" data-search="שמות פרק ב - ב המשך קורות משה: גדילתו, יציאתו אל אחיו והמפגש עם מצוקת ישראל. קטלוג משחקי למידה – פרשת שמות 🧺 שמות פרק ב׳">
+              <h4>שמות פרק ב - ב </h4>
+              <p>המשך קורות משה: גדילתו, יציאתו אל אחיו והמפגש עם מצוקת ישראל.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub-smot2/שמות-פרק-ב-ג" target="_blank" rel="noopener noreferrer" data-search="שמות פרק ב - ג בריחת משה למדין, בית יתרו, וצעקת בני ישראל מן העבודה. קטלוג משחקי למידה – פרשת שמות 🧺 שמות פרק ב׳">
+              <h4>שמות פרק ב - ג </h4>
+              <p>בריחת משה למדין, בית יתרו, וצעקת בני ישראל מן העבודה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">🔥 שמות פרק ג׳</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/yudataub-smot2/שמות-פרק-ג-1" target="_blank" rel="noopener noreferrer" data-search="שמות פרק ג - 1 משה מול הסנה הבוער: ההתגלות הראשונה והשליחות לגאולת ישראל. קטלוג משחקי למידה – פרשת שמות 🔥 שמות פרק ג׳">
+              <h4>שמות פרק ג - 1 </h4>
+              <p>משה מול הסנה הבוער: ההתגלות הראשונה והשליחות לגאולת ישראל.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub-smot2/שמות-פרק-ג-2" target="_blank" rel="noopener noreferrer" data-search="שמות פרק ג - 2 המשך שליחות משה, שאלותיו, ותשובת ה׳ על הגאולה הקרובה. קטלוג משחקי למידה – פרשת שמות 🔥 שמות פרק ג׳">
+              <h4>שמות פרק ג - 2 </h4>
+              <p>המשך שליחות משה, שאלותיו, ותשובת ה׳ על הגאולה הקרובה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">🪄 שמות פרק ד׳</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/yudataub-smot2/שמות-פרק-ד" target="_blank" rel="noopener noreferrer" data-search="שמות פרק ד האותות למשה, ההכנה לשליחות, וחזרת משה למצרים לקראת הגאולה. קטלוג משחקי למידה – פרשת שמות 🪄 שמות פרק ד׳">
+              <h4>שמות פרק ד </h4>
+              <p>האותות למשה, ההכנה לשליחות, וחזרת משה למצרים לקראת הגאולה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+    </section>
+    <section class="group" id="cat1">
+      <h2 class="group-title">📜 קטלוג פרשת וארא <span class="count">25 קישורים</span></h2>
+      
+        <div class="subsection">
+          <h3 class="subsection-title">🏠 בית</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/בית?authuser=0" target="_blank" rel="noopener noreferrer" data-search="בית  קטלוג פרשת וארא 🏠 בית">
+              <h4>בית </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/בית/מבוא-למקרא-א?authuser=0" target="_blank" rel="noopener noreferrer" data-search="מבוא למקרא - א  קטלוג פרשת וארא 🏠 בית">
+              <h4>מבוא למקרא - א </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/בית/אליהו-הנביא?authuser=0" target="_blank" rel="noopener noreferrer" data-search="אליהו הנביא  קטלוג פרשת וארא 🏠 בית">
+              <h4>אליהו הנביא </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">⚖️ משפטים</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/משפטים/דיני-גנב-וגזלן?authuser=0" target="_blank" rel="noopener noreferrer" data-search="דיני גנב וגזלן  קטלוג פרשת וארא ⚖️ משפטים">
+              <h4>דיני גנב וגזלן </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/משפטים/סיום-פרשת-יתרו?authuser=0" target="_blank" rel="noopener noreferrer" data-search="סיום פרשת יתרו  קטלוג פרשת וארא ⚖️ משפטים">
+              <h4>סיום פרשת יתרו </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/משפטים/מעמד-הר-סיני?authuser=0" target="_blank" rel="noopener noreferrer" data-search="מעמד הר סיני  קטלוג פרשת וארא ⚖️ משפטים">
+              <h4>מעמד הר סיני </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/משפטים/מתן-התורה-של-דורנו?authuser=0" target="_blank" rel="noopener noreferrer" data-search="מתן התורה של דורנו  קטלוג פרשת וארא ⚖️ משפטים">
+              <h4>מתן התורה של דורנו </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">📖 פרשת בא</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/פרשת-בא/מכת-בכורות?authuser=0" target="_blank" rel="noopener noreferrer" data-search="מכת בכורות  קטלוג פרשת וארא 📖 פרשת בא">
+              <h4>מכת בכורות </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/פרשת-בא/untitled-page?authuser=0" target="_blank" rel="noopener noreferrer" data-search="untitled page  קטלוג פרשת וארא 📖 פרשת בא">
+              <h4>Untitled page </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/פרשת-בא/פרעה-בפיגמה-הסיפור-מאחורי-השיר?authuser=0" target="_blank" rel="noopener noreferrer" data-search="פרעה בפיג&#x27;מה - הסיפור מאחורי השיר  קטלוג פרשת וארא 📖 פרשת בא">
+              <h4>פרעה בפיג&#x27;מה - הסיפור מאחורי השיר </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">🔗 קישורים לאתרי למידה</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/קישורים-לאתרי-למידה?authuser=0" target="_blank" rel="noopener noreferrer" data-search="קישורים לאתרי למידה  קטלוג פרשת וארא 🔗 קישורים לאתרי למידה">
+              <h4>קישורים לאתרי למידה </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub-smot2/בית?authuser=0" target="_blank" rel="noopener noreferrer" data-search="משחקים על פרשת שמות חיצוני  קטלוג פרשת וארא 🔗 קישורים לאתרי למידה">
+              <h4>משחקים על פרשת שמות חיצוני </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="../catalog.html?q=%D7%91%D7%99%D7%AA" target="_blank" rel="noopener noreferrer" data-search="משחקים על פרשת השבוע חיצוני  קטלוג פרשת וארא 🔗 קישורים לאתרי למידה">
+              <h4>משחקים על פרשת השבוע חיצוני </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">📜 שמות פרק ו</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/שמות-פרק-ו?authuser=0" target="_blank" rel="noopener noreferrer" data-search="שמות פרק ו  קטלוג פרשת וארא 📜 שמות פרק ו">
+              <h4>שמות פרק ו </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/שמות-פרק-ו/משחק-ארבע-לשונות-גאולה?authuser=0" target="_blank" rel="noopener noreferrer" data-search="🎮 משחק - ארבע לשונות גאולה  קטלוג פרשת וארא 📜 שמות פרק ו">
+              <h4>🎮 משחק - ארבע לשונות גאולה </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/שמות-פרק-ו/ארבע-לשונות-הגאלה?authuser=0" target="_blank" rel="noopener noreferrer" data-search="אַרְבַּע לְשׁוֹנוֹת הַגְּאֻלָּה 💖  קטלוג פרשת וארא 📜 שמות פרק ו">
+              <h4>אַרְבַּע לְשׁוֹנוֹת הַגְּאֻלָּה 💖 </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/שמות-פרק-ו/מצגות?authuser=0" target="_blank" rel="noopener noreferrer" data-search="מצגות  קטלוג פרשת וארא 📜 שמות פרק ו">
+              <h4>מצגות </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/שמות-פרק-ו/מצגת-נפתחת?authuser=0" target="_blank" rel="noopener noreferrer" data-search="מצגת נפתחת  קטלוג פרשת וארא 📜 שמות פרק ו">
+              <h4>מצגת נפתחת </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://rktzqrkr.gensparkspace.com/" target="_blank" rel="noopener noreferrer" data-search="מצגת על שבט לוי - סדר הדורות חיצוני  קטלוג פרשת וארא 📜 שמות פרק ו">
+              <h4>מצגת על שבט לוי - סדר הדורות חיצוני <span class="badge-ext">חיצוני</span></h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/שמות-פרק-ו/עץ-המשפחה/עץ-המשפחה-של-משה?authuser=0" target="_blank" rel="noopener noreferrer" data-search="עץ המשפחה של משה  קטלוג פרשת וארא 📜 שמות פרק ו">
+              <h4>עץ המשפחה של משה </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/שמות-פרק-ו/עץ-המשפחה/עץ-המשפחה-המלא-של-שבט-לוי?authuser=0" target="_blank" rel="noopener noreferrer" data-search="🌳 עץ המשפחה המלא של שבט לוי 🌳  קטלוג פרשת וארא 📜 שמות פרק ו">
+              <h4>🌳 עץ המשפחה המלא של שבט לוי 🌳 </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/שמות-פרק-ו/עץ-המשפחה/מבחן-אמריקאי-יחוס-השבטים-שמות-פרק-ו?authuser=0" target="_blank" rel="noopener noreferrer" data-search="🎯 מבחן אמריקאי — יחוס השבטים - שמות פרק ו  קטלוג פרשת וארא 📜 שמות פרק ו">
+              <h4>🎯 מבחן אמריקאי — יחוס השבטים - שמות פרק ו </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://claude.ai/public/artifacts/d5c7b9dd-b668-4bd7-aeb5-43eb5626e9db" target="_blank" rel="noopener noreferrer" data-search="🎯 מבחן אמריקאי 🎯 חיצוני  קטלוג פרשת וארא 📜 שמות פרק ו">
+              <h4>🎯 מבחן אמריקאי 🎯 חיצוני <span class="badge-ext">חיצוני</span></h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/parashat-vaera/שמות-פרק-ו/שיר-רך-כקנה?authuser=0" target="_blank" rel="noopener noreferrer" data-search="🎵 שיר &quot;רַךְ כַּקָּנֶה&quot; 🌾  קטלוג פרשת וארא 📜 שמות פרק ו">
+              <h4>🎵 שיר &quot;רַךְ כַּקָּנֶה&quot; 🌾 </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://suno.com/s/KFGuBOZ0NTthR6lJ" target="_blank" rel="noopener noreferrer" data-search="שיר רך כקנה 🎵 חיצוני  קטלוג פרשת וארא 📜 שמות פרק ו">
+              <h4>שיר רך כקנה 🎵 חיצוני <span class="badge-ext">חיצוני</span></h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+    </section>
+    <section class="group" id="cat2">
+      <h2 class="group-title">📚 גדולי ישראל – סיפורים <span class="count">44 קישורים</span></h2>
+      
+        <div class="subsection">
+          <h3 class="subsection-title">שירים ומצגות</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/שירים-מצגות/יהודים-הם-בני-מלכים" target="_blank" rel="noopener noreferrer" data-search="👑 יהודים הם בני מלכים שיר ←  גדולי ישראל – סיפורים שירים ומצגות">
+              <h4>👑 יהודים הם בני מלכים שיר ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/שירים-מצגות/אודה-לך-ה" target="_blank" rel="noopener noreferrer" data-search="🙏 אוֹדֶה לְךָ ה&#x27; שיר ←  גדולי ישראל – סיפורים שירים ומצגות">
+              <h4>🙏 אוֹדֶה לְךָ ה&#x27; שיר ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/שירים-מצגות/אודה-לך-ה-מצגת-עם-תמונות" target="_blank" rel="noopener noreferrer" data-search="🖼️ אוֹדֶה לְךָ ה&#x27; – מצגת עם תמונות מצגת ←  גדולי ישראל – סיפורים שירים ומצגות">
+              <h4>🖼️ אוֹדֶה לְךָ ה&#x27; – מצגת עם תמונות מצגת ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/שירים-מצגות/הולך-בדרכו-עקיבא" target="_blank" rel="noopener noreferrer" data-search="🚶 הוֹלֵךְ בְּדַרְכּוֹ עֲקִיבָא שיר ←  גדולי ישראל – סיפורים שירים ומצגות">
+              <h4>🚶 הוֹלֵךְ בְּדַרְכּוֹ עֲקִיבָא שיר ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/שירים-מצגות/הולך-בדרכו-עקיבא-מצגת-עם-תמונות" target="_blank" rel="noopener noreferrer" data-search="🖼️ הולך בדרכו עקיבא – מצגת עם תמונות מצגת ←  גדולי ישראל – סיפורים שירים ומצגות">
+              <h4>🖼️ הולך בדרכו עקיבא – מצגת עם תמונות מצגת ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/שירים-מצגות/מפתח-שירים-הכל-לטובה-והמזוזה" target="_blank" rel="noopener noreferrer" data-search="🗝️ מפתח שירים – הכל לטובה והמזוזה מפתח ←  גדולי ישראל – סיפורים שירים ומצגות">
+              <h4>🗝️ מפתח שירים – הכל לטובה והמזוזה מפתח ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/שירים-מצגות/שיר-המזוזה-עם-תמונות" target="_blank" rel="noopener noreferrer" data-search="🚪 שיר המזוזה עם תמונות שיר + מצגת ←  גדולי ישראל – סיפורים שירים ומצגות">
+              <h4>🚪 שיר המזוזה עם תמונות שיר + מצגת ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/שירים-מצגות/הכל-לטובה" target="_blank" rel="noopener noreferrer" data-search="⭐ הכל לטובה שיר ←  גדולי ישראל – סיפורים שירים ומצגות">
+              <h4>⭐ הכל לטובה שיר ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/שירים-מצגות/שיר-הכל-לטובה" target="_blank" rel="noopener noreferrer" data-search="🎶 שיר הכל לטובה שיר ←  גדולי ישראל – סיפורים שירים ומצגות">
+              <h4>🎶 שיר הכל לטובה שיר ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">סיפורי התנאים</h3>
+          <div class="grid">
+            <a class="card" href="https://drive.google.com/drive/u/0/folders/1M1mG7-pWl51y-vbBKQAw6EaXq00F2i02" target="_blank" rel="noopener noreferrer" data-search="🏠 מצגת על הסיפור עם הארובה מצגת google drive ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🏠 מצגת על הסיפור עם הארובה מצגת Google Drive ← <span class="badge-ext">חיצוני</span></h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://gamma.app/docs/t026qwj4ym5ddxc" target="_blank" rel="noopener noreferrer" data-search="😤 הסיפור על הכעס מצגת gamma ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>😤 הסיפור על הכעס מצגת Gamma ← <span class="badge-ext">חיצוני</span></h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/מרדכי-הצדיק/ארבע-גואלים-וארבע-מצוות" target="_blank" rel="noopener noreferrer" data-search="🌟 ארבע גואלים וארבע מצוות סיפור ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🌟 ארבע גואלים וארבע מצוות סיפור ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/רבי-עקיבא/מפתח-הסיפורים" target="_blank" rel="noopener noreferrer" data-search="🗝️ מפתח הסיפורים ניווט ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🗝️ מפתח הסיפורים ניווט ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/רבי-עקיבא/רבי-עקיבא" target="_blank" rel="noopener noreferrer" data-search="👤 רבי עקיבא דף כללי ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>👤 רבי עקיבא דף כללי ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/רבי-עקיבא/קורות-חייו-בקצרה" target="_blank" rel="noopener noreferrer" data-search="📋 קורות חייו בקצרה ביוגרפיה ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>📋 קורות חייו בקצרה ביוגרפיה ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/רבי-עקיבא/סוד-התפילה-של-רבי-עקיבא" target="_blank" rel="noopener noreferrer" data-search="🙏 סוד התפילה של רבי עקיבא סיפור ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🙏 סוד התפילה של רבי עקיבא סיפור ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/רבי-עקיבא/רבי-עקיבא-מול-השליט-הרומאי" target="_blank" rel="noopener noreferrer" data-search="⚔️ רבי עקיבא מול השליט הרומאי סיפור ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>⚔️ רבי עקיבא מול השליט הרומאי סיפור ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://gamma.app/docs/-x4abppd1n19lzn9?mode=doc" target="_blank" rel="noopener noreferrer" data-search="🪨 &quot;רבי עקיבא והאבן הקשה&quot; – מצגת לכיתות א&#x27;–ב&#x27; מצגת gamma ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🪨 &quot;רבי עקיבא והאבן הקשה&quot; – מצגת לכיתות א&#x27;–ב&#x27; מצגת Gamma ← <span class="badge-ext">חיצוני</span></h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://gamma.app/docs/-j4oqjizxgj64ik6?mode=doc" target="_blank" rel="noopener noreferrer" data-search="💪 רבי עקיבא וכוח הלימוד מצגת gamma ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>💪 רבי עקיבא וכוח הלימוד מצגת Gamma ← <span class="badge-ext">חיצוני</span></h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://claude.ai/public/artifacts/2ec8dbbf-60ba-4cbd-a23a-a1f042d0d672" target="_blank" rel="noopener noreferrer" data-search="🎵 הוֹלֵךְ בְּדַרְכּוֹ עֲקִיבָא – שיר שיר claude ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🎵 הוֹלֵךְ בְּדַרְכּוֹ עֲקִיבָא – שיר שיר Claude ← <span class="badge-ext">חיצוני</span></h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/רבי-עקיבא/סיפורי-רבי-עקיבא" target="_blank" rel="noopener noreferrer" data-search="📚 סיפורי רבי עקיבא אוסף סיפורים ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>📚 סיפורי רבי עקיבא אוסף סיפורים ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/רבי-עקיבא/שיר-הכל-לטובה" target="_blank" rel="noopener noreferrer" data-search="🎶 שיר הכל לטובה שיר ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🎶 שיר הכל לטובה שיר ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://gamma.app/docs/10--tfa78fdg9f1nbp6?mode=doc" target="_blank" rel="noopener noreferrer" data-search="✏️ מצגת עבודה לכיתה א – הכל לטובה מצגת gamma ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>✏️ מצגת עבודה לכיתה א – הכל לטובה מצגת Gamma ← <span class="badge-ext">חיצוני</span></h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/יהושע-בן-חנניה/מצגת-על-חייו" target="_blank" rel="noopener noreferrer" data-search="🖼️ מצגת על חייו מצגת ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🖼️ מצגת על חייו מצגת ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/יהושע-בן-חנניה/החכמה-שנשמרת-בכד-חרס" target="_blank" rel="noopener noreferrer" data-search="🏺 החכמה שנשמרת בכד חרס סיפור ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🏺 החכמה שנשמרת בכד חרס סיפור ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/יהושע-בן-חנניה/שרצו-לבנות-מקדש" target="_blank" rel="noopener noreferrer" data-search="🕌 שרצו לבנות מקדש סיפור ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🕌 שרצו לבנות מקדש סיפור ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/יהושע-בן-חנניה/תנורו-של-עכנאי" target="_blank" rel="noopener noreferrer" data-search="🔥 תנורו של עכנאי סיפור ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🔥 תנורו של עכנאי סיפור ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/יהושע-בן-חנניה/סוד-כלי-החרס-והדרך-הקצרה" target="_blank" rel="noopener noreferrer" data-search="🛤️ סוד כלי החרס והדרך הקצרה סיפור ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🛤️ סוד כלי החרס והדרך הקצרה סיפור ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/יהושע-בן-חנניה/השיעור-בכיתה" target="_blank" rel="noopener noreferrer" data-search="🏫 השיעור בכיתה פעילות ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🏫 השיעור בכיתה פעילות ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/יהושע-בן-חנניה/דף-עבודה-פפוס-ולוליאנוס-וחכמת-רבי-יהושע" target="_blank" rel="noopener noreferrer" data-search="📝 דף עבודה – פפוס ולוליאנוס דף עבודה ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>📝 דף עבודה – פפוס ולוליאנוס דף עבודה ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/יהושע-בן-חנניה/מדריך-למורה-להוראה" target="_blank" rel="noopener noreferrer" data-search="👩‍🏫 מדריך למורה להוראה מדריך מורה ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>👩‍🏫 מדריך למורה להוראה מדריך מורה ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/יהושע-בן-חנניה/סיכום-שיעור-שלי" target="_blank" rel="noopener noreferrer" data-search="📄 סיכום שיעור שלי סיכום ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>📄 סיכום שיעור שלי סיכום ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/יהושע-בן-חנניה/העונש-על-תנורו-של-עכנאי" target="_blank" rel="noopener noreferrer" data-search="⚖️ העונש על תנורו של עכנאי סיפור ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>⚖️ העונש על תנורו של עכנאי סיפור ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/יהושע-בן-חנניה/שיעור-על-הסיפור-של-בנית-המקדש-ומשל-האריה" target="_blank" rel="noopener noreferrer" data-search="🦁 שיעור – בנית המקדש ומשל האריה שיעור ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🦁 שיעור – בנית המקדש ומשל האריה שיעור ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/תנורו-של-עכנאי/תנורו-של-עכנאי" target="_blank" rel="noopener noreferrer" data-search="🔥 תנורו של עכנאי סיפור ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🔥 תנורו של עכנאי סיפור ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/תנורו-של-עכנאי/דף-עבודה" target="_blank" rel="noopener noreferrer" data-search="📝 דף עבודה דף עבודה ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>📝 דף עבודה דף עבודה ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/תנורו-של-עכנאי/שיעור-על-תנורו-של-עכנאי" target="_blank" rel="noopener noreferrer" data-search="🏫 שיעור על תנורו של עכנאי שיעור ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🏫 שיעור על תנורו של עכנאי שיעור ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/אליעזר-בן-הורקנוס/סיכום-שיעור-שלי" target="_blank" rel="noopener noreferrer" data-search="📄 סיכום שיעור שלי סיכום ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>📄 סיכום שיעור שלי סיכום ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/אליעזר-בן-הורקנוס/שלושת-ההוכחות-והמסר-שבזה" target="_blank" rel="noopener noreferrer" data-search="🔍 שלושת ההוכחות והמסר שבזה סיפור ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>🔍 שלושת ההוכחות והמסר שבזה סיפור ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/אליעזר-בן-הורקנוס/דף-עבודה" target="_blank" rel="noopener noreferrer" data-search="📝 דף עבודה דף עבודה ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>📝 דף עבודה דף עבודה ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/קטלוג-ספרית-גדולי-ישראל" target="_blank" rel="noopener noreferrer" data-search="📚 קטלוג ספריית גדולי ישראל קטלוג ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>📚 קטלוג ספריית גדולי ישראל קטלוג ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/סיפורי-התנאים/דברים-מהסבא-של-גפן-אדרי" target="_blank" rel="noopener noreferrer" data-search="👴 דברים מהסבא של גפן אדרי תוכן מיוחד ←  גדולי ישראל – סיפורים סיפורי התנאים">
+              <h4>👴 דברים מהסבא של גפן אדרי תוכן מיוחד ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">מדריך לסיפורים</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/מדריך-לסיפורים/איך-לספר-על-שמאי" target="_blank" rel="noopener noreferrer" data-search="🎤 איך לספר על שמאי? מדריך ←  גדולי ישראל – סיפורים מדריך לסיפורים">
+              <h4>🎤 איך לספר על שמאי? מדריך ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/gedolei-yisrael/מדריך-לסיפורים/אמנות-הסיפור-על-גדולי-ישראל-לילדים-צעירים" target="_blank" rel="noopener noreferrer" data-search="🌟 אמנות הסיפור על גדולי ישראל לילדים צעירים מדריך ←  גדולי ישראל – סיפורים מדריך לסיפורים">
+              <h4>🌟 אמנות הסיפור על גדולי ישראל לילדים צעירים מדריך ← </h4>
+              
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+    </section>
+    <section class="group" id="cat3">
+      <h2 class="group-title">😊 קטלוג חומרים – החיוך, שמחה, משחקים וספרים <span class="count">48 קישורים</span></h2>
+      
+        <div class="subsection">
+          <h3 class="subsection-title">🏠 דף הבית / כותרת ראשית</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/yudataub1/החיוך-כוח-מעלה-והשפעה" target="_blank" rel="noopener noreferrer" data-search="חידונים ומשחקים שער ראשי לחומרים בנושא החיוך: כוח, מעלה והשפעה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🏠 דף הבית / כותרת ראשית">
+              <h4>חידונים ומשחקים </h4>
+              <p>שער ראשי לחומרים בנושא החיוך: כוח, מעלה והשפעה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">😊 החיוך: כוח, מעלה והשפעה</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/yudataub1/החיוך-כוח-מעלה-והשפעה/החיוך-מדע-רוח-ומה-שביניהם" target="_blank" rel="noopener noreferrer" data-search="החיוך: מדע, רוח ומה שביניהם חיבור בין עולם המדע, הרוח וההשפעה הפנימית של החיוך. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 😊 החיוך: כוח, מעלה והשפעה">
+              <h4>החיוך: מדע, רוח ומה שביניהם </h4>
+              <p>חיבור בין עולם המדע, הרוח וההשפעה הפנימית של החיוך.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/החיוך-כוח-מעלה-והשפעה/משחקים-על-חיוך/משחקים-על-חיוך" target="_blank" rel="noopener noreferrer" data-search="משחקים על חיוך ענף משחקים ייעודי בנושא חיוך ושמחה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 😊 החיוך: כוח, מעלה והשפעה">
+              <h4>משחקים על חיוך </h4>
+              <p>ענף משחקים ייעודי בנושא חיוך ושמחה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/החיוך-כוח-מעלה-והשפעה/משחקים-על-חיוך/3-משחקים-נפלאים-על-החיוך" target="_blank" rel="noopener noreferrer" data-search="3 משחקים נפלאים על החיוך שלושה משחקים חווייתיים להפנמת כוחו של החיוך. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 😊 החיוך: כוח, מעלה והשפעה">
+              <h4>3 משחקים נפלאים על החיוך </h4>
+              <p>שלושה משחקים חווייתיים להפנמת כוחו של החיוך.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/החיוך-כוח-מעלה-והשפעה/חידונים-ומשחקים-על-חיוך" target="_blank" rel="noopener noreferrer" data-search="חידונים ומשחקים על חיוך מרכז חידונים ומשחקים ללימוד נושא החיוך בצורה פעילה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 😊 החיוך: כוח, מעלה והשפעה">
+              <h4>חידונים ומשחקים על חיוך </h4>
+              <p>מרכז חידונים ומשחקים ללימוד נושא החיוך בצורה פעילה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">📚 קטלוג עצום בחסדי שמים</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/yudataub1/קטלוג-עצום-בחסדי-שמים" target="_blank" rel="noopener noreferrer" data-search="קטלוג עצום בחסדי שמים מאגר גדול ומרכזי של חומרים, קישורים וכלים לימודיים. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📚 קטלוג עצום בחסדי שמים">
+              <h4>קטלוג עצום בחסדי שמים </h4>
+              <p>מאגר גדול ומרכזי של חומרים, קישורים וכלים לימודיים.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">📖 ספר החיוך</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/מפתח-הענינים" target="_blank" rel="noopener noreferrer" data-search="מפתח הענינים שער ניווט מסודר לכל פרקי ספר החיוך. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>מפתח הענינים </h4>
+              <p>שער ניווט מסודר לכל פרקי ספר החיוך.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-א-גדול-המלבין-שיניים-הכוח-להחיות" target="_blank" rel="noopener noreferrer" data-search="פרק א: גדול המלבין שיניים הכוח להחיות אדם דרך חיוך והארת פנים. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>פרק א: גדול המלבין שיניים </h4>
+              <p>הכוח להחיות אדם דרך חיוך והארת פנים.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/תפילות-על-פרק-א" target="_blank" rel="noopener noreferrer" data-search="תפילות על פרק א תפילות להפנמת המסרים של פרק א. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>תפילות על פרק א </h4>
+              <p>תפילות להפנמת המסרים של פרק א.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-ב-המדע-מאחורי-המאור" target="_blank" rel="noopener noreferrer" data-search="פרק ב: המדע מאחורי המאור 🧠 מבט מדעי ורוחני על השפעת החיוך. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>פרק ב: המדע מאחורי המאור 🧠 </h4>
+              <p>מבט מדעי ורוחני על השפעת החיוך.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-ג-השיניים-שהפכו-לקודש" target="_blank" rel="noopener noreferrer" data-search="★ פרק ג ★ השיניים שהפכו לקודש 🦷✨ הפיכת פעולה פשוטה למעשה של קדושה וחסד. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>★ פרק ג ★ השיניים שהפכו לקודש 🦷✨ </h4>
+              <p>הפיכת פעולה פשוטה למעשה של קדושה וחסד.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/תפילה-על-פרק-3" target="_blank" rel="noopener noreferrer" data-search="תפילה על פרק 3 תפילה ייעודית לפרק ג של ספר החיוך. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>תפילה על פרק 3 </h4>
+              <p>תפילה ייעודית לפרק ג של ספר החיוך.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-ד-חלק-א-היהלום-בעל-עשר-הפאות" target="_blank" rel="noopener noreferrer" data-search="פרק ד חלק א: היהלום בעל עשר הפאות חלק ראשון בביאור עוצמת החיוך מכמה צדדים. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>פרק ד חלק א: היהלום בעל עשר הפאות </h4>
+              <p>חלק ראשון בביאור עוצמת החיוך מכמה צדדים.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-ד-חלק-ב-היהלום-בעל-עשר-הפאות" target="_blank" rel="noopener noreferrer" data-search="פרק ד חלק ב: היהלום בעל עשר הפאות המשך הפרק על היהלום בעל עשר הפאות. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>פרק ד חלק ב: היהלום בעל עשר הפאות </h4>
+              <p>המשך הפרק על היהלום בעל עשר הפאות.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-ה-האנטי-רצח-המצווה-הגדולה-בתורה" target="_blank" rel="noopener noreferrer" data-search="פרק ה: האנטי-רצח המצווה הגדולה בתורה – כוח ההחייאה של החיוך. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>פרק ה: האנטי-רצח </h4>
+              <p>המצווה הגדולה בתורה – כוח ההחייאה של החיוך.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/תפילת-המחייה-על-פרקים-4-5" target="_blank" rel="noopener noreferrer" data-search="תפילת המחייה - על פרקים 4-5 תפילה על החייאת הזולת והארת פנים. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>תפילת המחייה - על פרקים 4-5 </h4>
+              <p>תפילה על החייאת הזולת והארת פנים.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-6-החיוך-המלאכותי-מהמסכה-ללב" target="_blank" rel="noopener noreferrer" data-search="פרק 6: החיוך המלאכותי מהמסכה ללב – איך פעולה חיצונית משפיעה פנימה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>פרק 6: החיוך המלאכותי </h4>
+              <p>מהמסכה ללב – איך פעולה חיצונית משפיעה פנימה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-7-כשהעיניים-צוחקות" target="_blank" rel="noopener noreferrer" data-search="פרק 7: כשהעיניים צוחקות חיוך אמיתי שמאיר דרך העיניים והלב. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>פרק 7: כשהעיניים צוחקות </h4>
+              <p>חיוך אמיתי שמאיר דרך העיניים והלב.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-8-החיוך-במשפחה-הבית-כמבצר-של-אהבה" target="_blank" rel="noopener noreferrer" data-search="פרק 8: החיוך במשפחה הבית כמבצר של אהבה דרך חיוך והארת פנים. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>פרק 8: החיוך במשפחה </h4>
+              <p>הבית כמבצר של אהבה דרך חיוך והארת פנים.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-9-קידוש-השם-ברחובה-של-עיר" target="_blank" rel="noopener noreferrer" data-search="פרק 9: קידוש השם ברחובה של עיר החיוך כשליחות של קידוש השם במרחב הציבורי. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>פרק 9: קידוש השם ברחובה של עיר </h4>
+              <p>החיוך כשליחות של קידוש השם במרחב הציבורי.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-10-המטבע-החזק-בעולם" target="_blank" rel="noopener noreferrer" data-search="פרק 10: המטבע החזק בעולם החיוך כמטבע אוניברסלי חזק ומשפיע. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>פרק 10: המטבע החזק בעולם </h4>
+              <p>החיוך כמטבע אוניברסלי חזק ומשפיע.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-11-הכימותרפיה-של-הנשמה" target="_blank" rel="noopener noreferrer" data-search="פרק 11: הכימותרפיה של הנשמה החיוך כרפואה עמוקה לנפש ולסביבה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>פרק 11: הכימותרפיה של הנשמה </h4>
+              <p>החיוך כרפואה עמוקה לנפש ולסביבה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-12-ה-צלך-הסגולה-הגדולה-מכולן" target="_blank" rel="noopener noreferrer" data-search="פרק 12: ה׳ צִלְּךָ הסגולה הגדולה מכולן – הנהגת שמים כנגד הנהגת האדם. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>פרק 12: ה׳ צִלְּךָ </h4>
+              <p>הסגולה הגדולה מכולן – הנהגת שמים כנגד הנהגת האדם.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-13-סדנת-החיוך-איך-קונים-את-המידה" target="_blank" rel="noopener noreferrer" data-search="פרק 13: סדנת החיוך איך קונים את המידה בפועל ובתרגול יומיומי. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>פרק 13: סדנת החיוך </h4>
+              <p>איך קונים את המידה בפועל ובתרגול יומיומי.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-החיוך/פרק-14-חדר-הכושר-של-הפנים" target="_blank" rel="noopener noreferrer" data-search="פרק 14: חדר הכושר של הפנים אימון מעשי לחיוך, פנים מאירות והרגלים טובים. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📖 ספר החיוך">
+              <h4>פרק 14: חדר הכושר של הפנים </h4>
+              <p>אימון מעשי לחיוך, פנים מאירות והרגלים טובים.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">🇮🇱 ספר התקומה - ניסי השם</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-התקומה-ניסי-השם/ספר-התקומה" target="_blank" rel="noopener noreferrer" data-search="ספר התקומה שער לספר התקומה וניסי השם. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🇮🇱 ספר התקומה - ניסי השם">
+              <h4>ספר התקומה </h4>
+              <p>שער לספר התקומה וניסי השם.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-התקומה-ניסי-השם/ביחד-נצחנו-מבט-אמוני-מלחמת-התקומה" target="_blank" rel="noopener noreferrer" data-search="ביחד ניצחנו! מבט אמוני על מלחמת התקומה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🇮🇱 ספר התקומה - ניסי השם">
+              <h4>ביחד ניצחנו! </h4>
+              <p>מבט אמוני על מלחמת התקומה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://drive.google.com/file/d/1-eqIgSlczuHdO_P4qGgZfTu1nFY1VOq0/view" target="_blank" rel="noopener noreferrer" data-search="הפאזל האלוקי קובץ google drive בנושא פאזל הגאולה וההשגחה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🇮🇱 ספר התקומה - ניסי השם">
+              <h4>הפאזל האלוקי <span class="badge-ext">חיצוני</span></h4>
+              <p>קובץ Google Drive בנושא פאזל הגאולה וההשגחה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://drive.google.com/file/d/1smD0vh7a5tJ4S0gxFk3V1_VsgmonLX6T/view" target="_blank" rel="noopener noreferrer" data-search="מגילת הניצחון לימי החנוכה מגילה/קובץ לחנוכה סביב ניסי הניצחון. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🇮🇱 ספר התקומה - ניסי השם">
+              <h4>מגילת הניצחון לימי החנוכה <span class="badge-ext">חיצוני</span></h4>
+              <p>מגילה/קובץ לחנוכה סביב ניסי הניצחון.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://drive.google.com/file/d/1MhcSEe61pTZKFivFYVvAoTupgwzLl-s_/view" target="_blank" rel="noopener noreferrer" data-search="מגילת התקומה - חנוכה תשפ״ו קובץ מיוחד לחנוכה תשפ״ו. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🇮🇱 ספר התקומה - ניסי השם">
+              <h4>מגילת התקומה - חנוכה תשפ״ו <span class="badge-ext">חיצוני</span></h4>
+              <p>קובץ מיוחד לחנוכה תשפ״ו.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://drive.google.com/file/d/12OhWecI0Jl0S9bkKsHPTmKyctKjTNNtW/view" target="_blank" rel="noopener noreferrer" data-search="סרטון הניסים סרטון לצפייה על ניסי השם והתקומה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🇮🇱 ספר התקומה - ניסי השם">
+              <h4>סרטון הניסים <span class="badge-ext">חיצוני</span></h4>
+              <p>סרטון לצפייה על ניסי השם והתקומה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://gamma.app/docs/gx75oae034o9dwf" target="_blank" rel="noopener noreferrer" data-search="מצגת נפלאה - ניסי התקומה לחנוכה מצגת gamma בנושא ניסי התקומה לחנוכה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🇮🇱 ספר התקומה - ניסי השם">
+              <h4>מצגת נפלאה - ניסי התקומה לחנוכה <span class="badge-ext">חיצוני</span></h4>
+              <p>מצגת Gamma בנושא ניסי התקומה לחנוכה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-התקומה-ניסי-השם/מגילת-התקומה-פאזל-הגאולה" target="_blank" rel="noopener noreferrer" data-search="מגילת התקומה - פאזל הגאולה חומר פנימי באתר על פאזל הגאולה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🇮🇱 ספר התקומה - ניסי השם">
+              <h4>מגילת התקומה - פאזל הגאולה </h4>
+              <p>חומר פנימי באתר על פאזל הגאולה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://drive.google.com/file/d/1C5Ssu4yCGqdEVK2i9qo67ekSaPBIRsq7/view" target="_blank" rel="noopener noreferrer" data-search="🎵 שיר פלא הגאולה שיר להאזנה/שימוש בנושא פלא הגאולה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🇮🇱 ספר התקומה - ניסי השם">
+              <h4>🎵 שיר פלא הגאולה <span class="badge-ext">חיצוני</span></h4>
+              <p>שיר להאזנה/שימוש בנושא פלא הגאולה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">🏡 בית</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/yudataub1/בית/מי-נהנה-גוף-או-נשמה" target="_blank" rel="noopener noreferrer" data-search="מי נהנה גוף או נשמה? חומר מחשבתי וחווייתי על גוף, נשמה והנאה אמיתית. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🏡 בית">
+              <h4>מי נהנה גוף או נשמה? </h4>
+              <p>חומר מחשבתי וחווייתי על גוף, נשמה והנאה אמיתית.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/בית/יומן-השמחות-שלי" target="_blank" rel="noopener noreferrer" data-search="יומן השמחות שלי כלי אישי לאיסוף שמחות והכרת הטוב. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🏡 בית">
+              <h4>יומן השמחות שלי </h4>
+              <p>כלי אישי לאיסוף שמחות והכרת הטוב.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/בית/למי-יש-כלב-חתול-ואדם" target="_blank" rel="noopener noreferrer" data-search="למי יש? כלב, חתול ואדם פעילות/חומר לימודי בנושא אדם ובעלי חיים. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🏡 בית">
+              <h4>למי יש? כלב, חתול ואדם </h4>
+              <p>פעילות/חומר לימודי בנושא אדם ובעלי חיים.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/בית/חגי-תשרי" target="_blank" rel="noopener noreferrer" data-search="חגי תשרי חומרים ופעילויות סביב חגי תשרי. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🏡 בית">
+              <h4>חגי תשרי </h4>
+              <p>חומרים ופעילויות סביב חגי תשרי.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/בית/חג-סוכות" target="_blank" rel="noopener noreferrer" data-search="חג סוכות חומרי לימוד ומשחקים לחג הסוכות. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🏡 בית">
+              <h4>חג סוכות </h4>
+              <p>חומרי לימוד ומשחקים לחג הסוכות.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/בית/שעשעון-אהבת-ה-מתוך-שמחה" target="_blank" rel="noopener noreferrer" data-search="שעשעון אהבת ה׳ מתוך שמחה שעשועון חווייתי בנושא אהבת ה׳ ושמחה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🏡 בית">
+              <h4>שעשעון אהבת ה׳ מתוך שמחה </h4>
+              <p>שעשועון חווייתי בנושא אהבת ה׳ ושמחה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/בית/משחק-הכרת-החומש" target="_blank" rel="noopener noreferrer" data-search="משחק הכרת החומש משחק ללימוד והיכרות עם חמשת חומשי תורה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🏡 בית">
+              <h4>משחק הכרת החומש </h4>
+              <p>משחק ללימוד והיכרות עם חמשת חומשי תורה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/בית/עשה-רצונו-כרצונך" target="_blank" rel="noopener noreferrer" data-search="עשה רצונו כרצונך פעילות או חומר לימודי על המשנה מפרקי אבות. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🏡 בית">
+              <h4>עשה רצונו כרצונך </h4>
+              <p>פעילות או חומר לימודי על המשנה מפרקי אבות.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/בית/עשה-רצונו-כרצונך_1" target="_blank" rel="noopener noreferrer" data-search="עשה רצונו כרצונך - גרסה 2 גרסה נוספת לחומר או לפעילות על המשנה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 🏡 בית">
+              <h4>עשה רצונו כרצונך - גרסה 2 </h4>
+              <p>גרסה נוספת לחומר או לפעילות על המשנה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+        <div class="subsection">
+          <h3 class="subsection-title">📄 עמודים עצמאיים</h3>
+          <div class="grid">
+            <a class="card" href="https://sites.google.com/view/yudataub1/לט-מלאכות-שבת" target="_blank" rel="noopener noreferrer" data-search="ל״ט מלאכות שבת חומר לימודי על ל״ט מלאכות שבת. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📄 עמודים עצמאיים">
+              <h4>ל״ט מלאכות שבת </h4>
+              <p>חומר לימודי על ל״ט מלאכות שבת.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://gemini.google.com/share/3c6ed88bc493" target="_blank" rel="noopener noreferrer" data-search="ל״ט מלאכות שבת לפי סוגים וצבעים 🎨 חלוקה צבעונית ומסודרת של מלאכות שבת. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📄 עמודים עצמאיים">
+              <h4>ל״ט מלאכות שבת לפי סוגים וצבעים 🎨 <span class="badge-ext">חיצוני</span></h4>
+              <p>חלוקה צבעונית ומסודרת של מלאכות שבת.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/שמות-פרק-ד-מצגות-ומשחקים" target="_blank" rel="noopener noreferrer" data-search="שמות פרק ד - מצגות ומשחקים חומרי לימוד, מצגות ומשחקים על שמות פרק ד. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📄 עמודים עצמאיים">
+              <h4>שמות פרק ד - מצגות ומשחקים </h4>
+              <p>חומרי לימוד, מצגות ומשחקים על שמות פרק ד.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/ספר-שמות-פרק-ד-פסוקים-יח-כג-מסע-משה-רבינו-לגאולת-ישראל" target="_blank" rel="noopener noreferrer" data-search="ספר שמות פרק ד, פסוקים יח-כג מסע משה רבינו לגאולת ישראל. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📄 עמודים עצמאיים">
+              <h4>ספר שמות פרק ד, פסוקים יח-כג </h4>
+              <p>מסע משה רבינו לגאולת ישראל.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a>
+            <a class="card" href="https://sites.google.com/view/yudataub1/פעילות-למשנה-עשה-רצונו-כרצונך" target="_blank" rel="noopener noreferrer" data-search="פעילות למשנה “עשה רצונו כרצונך” פעילות ייעודית ללימוד המשנה והפנמתה. קטלוג חומרים – החיוך, שמחה, משחקים וספרים 📄 עמודים עצמאיים">
+              <h4>פעילות למשנה “עשה רצונו כרצונך” </h4>
+              <p>פעילות ייעודית ללימוד המשנה והפנמתה.</p>
+              <span class="open">פתח קישור ↗</span>
+            </a></div>
+        </div>
+    </section>
+    </div>
+
+    <footer class="footer">
+      קטלוג מאוחד שנוצר מ-4 קטלוגים נפרדים · סה"כ 126 קישורים
+    </footer>
+  </main>
+</div>
+
+<script>
+const searchInput = document.getElementById('search');
+const info = document.getElementById('search-info');
+const cards = Array.from(document.querySelectorAll('.card'));
+
+function normalize(s) {
+  return s.toLowerCase();
+}
+
+searchInput.addEventListener('input', () => {
+  const q = normalize(searchInput.value.trim());
+  let visibleCount = 0;
+
+  cards.forEach(card => {
+    const match = !q || card.dataset.search.includes(q);
+    card.classList.toggle('hidden', !match);
+    if (match) visibleCount++;
+  });
+
+  document.querySelectorAll('.subsection').forEach(sub => {
+    const anyVisible = sub.querySelectorAll('.card:not(.hidden)').length > 0;
+    sub.classList.toggle('hidden', !anyVisible);
+  });
+
+  document.querySelectorAll('.group').forEach(grp => {
+    const anyVisible = grp.querySelectorAll('.card:not(.hidden)').length > 0;
+    grp.classList.toggle('hidden', !anyVisible);
+  });
+
+  info.textContent = q ? `נמצאו ${visibleCount} תוצאות` : '';
+});
+</script>
+</body>
+</html>

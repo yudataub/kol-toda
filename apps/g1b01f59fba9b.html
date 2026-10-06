@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>מנהל פרומפטים</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Rubik:wght@400;500;600;700&display=swap');
+  html, body, #root { height: 100%; }
+  body { font-family: 'Rubik', sans-serif; margin: 0; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes scaleIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-type="module" data-presets="react">
+import React, { useState, useEffect, useMemo } from 'https://esm.sh/react@18';
+import { createRoot } from 'https://esm.sh/react-dom@18/client';
+
+/* ------------------------------------------------------------------ */
+/*  Local persistence (localStorage)                                   */
+/* ------------------------------------------------------------------ */
+
+const STORAGE_KEY = 'prompt-manager-data-v1';
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.error('Failed to load data', e);
+  }
+  return { categories: [], prompts: [] };
+}
+
+function saveData(data) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.error('Failed to save data', e);
+  }
+}
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+/* ------------------------------------------------------------------ */
+/*  Inline icon set (lucide-style SVGs, no extra dependency)           */
+/* ------------------------------------------------------------------ */
+
+function Icon({ size = 18, className = '', strokeWidth = 2, children }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      {children}
+    </svg>
+  );
+}
+
+const Plus = (p) => <Icon {...p}><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></Icon>;
+const X = (p) => <Icon {...p}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></Icon>;
+const Trash2 = (p) => (
+  <Icon {...p}>
+    <path d="M3 6h18" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" />
+  </Icon>
+);
+const Copy = (p) => (
+  <Icon {...p}>
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  </Icon>
+);
+const Edit3 = (p) => <Icon {...p}><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" /></Icon>;
+const FolderPlus = (p) => (
+  <Icon {...p}>
+    <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+    <line x1="12" y1="11" x2="12" y2="17" /><line x1="9" y1="14" x2="15" y2="14" />
+  </Icon>
+);
+const Search = (p) => <Icon {...p}><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></Icon>;
+const CheckCircle2 = (p) => <Icon {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></Icon>;
+const Star = (p) => <Icon {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></Icon>;
+const Info = (p) => <Icon {...p}><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></Icon>;
+const ChevronUp = (p) => <Icon {...p}><polyline points="18 15 12 9 6 15" /></Icon>;
+const ChevronDown = (p) => <Icon {...p}><polyline points="6 9 12 15 18 9" /></Icon>;
+const Sparkles = (p) => (
+  <Icon {...p}>
+    <path d="M12 3v4M3 12h4M12 17v4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8" />
+  </Icon>
+);
+const Notebook = (p) => (
+  <Icon {...p}>
+    <path d="M2 6h4" /><path d="M2 10h4" /><path d="M2 14h4" /><path d="M2 18h4" />
+    <rect x="4" y="2" width="16" height="20" rx="2" /><path d="M16 2v20" />
+  </Icon>
+);
+const Layout = (p) => <Icon {...p}><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" /></Icon>;
+const BookOpen = (p) => (
+  <Icon {...p}>
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+  </Icon>
+);
+const Folder = (p) => <Icon {...p}><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" /></Icon>;
+const PenLine = (p) => (
+  <Icon {...p}>
+    <path d="M12 20h9" />
+    <path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z" />
+  </Icon>
+);
+
+const CATEGORY_ICONS = [Notebook, Layout, BookOpen, Folder, PenLine];
+
+/* ------------------------------------------------------------------ */
+/*  Star Rating                                                          */
+/* ------------------------------------------------------------------ */
+
+function StarRating({ value = 0, onChange, size = 18 }) {
+  const [hover, setHover] = useState(0);
+  const interactive = typeof onChange === 'function';
+
+  return (
+    <div className="flex items-center gap-0.5" dir="ltr">
+      {[1, 2, 3, 4, 5].map((star) => {
+        const filled = (hover || value) >= star;
+        return (
+          <button
+            key={star}
+            type="button"
+            disabled={!interactive}
+            onClick={(e) => {
+              e.stopPropagation();
+              onChange && onChange(star === value ? 0 : star);
+            }}
+            onMouseEnter={() => interactive && setHover(star)}
+            onMouseLeave={() => interactive && setHover(0)}
+            className={`transition-all duration-150 ${interactive ? 'cursor-pointer hover:scale-125' : 'cursor-default'}`}
+          >
+            <Star
+              size={size}
+              className={`transition-colors duration-150 ${filled ? 'fill-amber-400 text-amber-400' : 'fill-transparent text-slate-300'}`}
+              strokeWidth={1.5}
+            />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Confirm dialog                                                       */
+/* ------------------------------------------------------------------ */
+
+function ConfirmDialog({ open, title, message, onConfirm, onCancel }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4" style={{ animation: 'fadeIn 0.15s ease-out' }}>
+      <div className="bg-white rounded-3xl shadow-2xl shadow-slate-900/20 max-w-sm w-full p-6 border border-slate-100" style={{ animation: 'scaleIn 0.18s ease-out' }}>
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0">
+            <Trash2 size={20} className="text-rose-500" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-800" style={{ fontFamily: "'Frank Ruhl Libre', serif" }}>{title}</h3>
+        </div>
+        <p className="text-slate-500 text-sm leading-relaxed mb-6">{message}</p>
+        <div className="flex gap-2">
+          <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors">ביטול</button>
+          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl bg-rose-500 text-white font-medium hover:bg-rose-600 transition-colors shadow-md shadow-rose-200">מחיקה</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Prompt Modal (Add / Edit)                                            */
+/* ------------------------------------------------------------------ */
+
+function PromptModal({ open, initial, onSave, onClose, categoryName }) {
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [explanation, setExplanation] = useState('');
+  const [rating, setRating] = useState(0);
+
+  useEffect(() => {
+    if (open) {
+      setTitle(initial?.title || '');
+      setContent(initial?.content || '');
+      setExplanation(initial?.explanation || '');
+      setRating(initial?.rating || 0);
+    }
+  }, [open, initial]);
+
+  if (!open) return null;
+  const canSave = title.trim().length > 0 && content.trim().length > 0;
+
+  return (
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4" style={{ animation: 'fadeIn 0.15s ease-out' }}>
+      <div className="bg-white rounded-3xl shadow-2xl shadow-slate-900/30 max-w-2xl w-full max-h-[88vh] overflow-y-auto border border-slate-100" style={{ animation: 'scaleIn 0.18s ease-out' }}>
+        <div className="sticky top-0 bg-white/90 backdrop-blur-md border-b border-slate-100 px-6 py-4 flex items-center justify-between rounded-t-3xl z-10">
+          <div>
+            <h2 className="text-xl font-bold text-slate-800" style={{ fontFamily: "'Frank Ruhl Libre', serif" }}>
+              {initial ? 'עריכת פרומפט' : 'פרומפט חדש'}
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">מאגר: {categoryName}</p>
+          </div>
+          <button onClick={onClose} className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">כותרת הפרומפט</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="לדוגמה: יצירת תקציר מאמר מדעי"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 outline-none transition-all text-slate-800 placeholder:text-slate-300"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">תוכן הפרומפט</label>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="הטקסט שיישלח ל-AI..."
+              rows={6}
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 outline-none transition-all text-slate-800 placeholder:text-slate-300 resize-none font-mono text-sm leading-relaxed"
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-1.5">
+              <Info size={15} className="text-indigo-400" />
+              הסבר / דגשים לשימוש
+            </label>
+            <textarea
+              value={explanation}
+              onChange={(e) => setExplanation(e.target.value)}
+              placeholder="הערות, הנחיות שימוש או טיפים (לא יועתקו עם הפרומפט)"
+              rows={3}
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-indigo-50/30 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 outline-none transition-all text-slate-700 placeholder:text-slate-300 resize-none text-sm leading-relaxed"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">דירוג</label>
+            <StarRating value={rating} onChange={setRating} size={26} />
+          </div>
+        </div>
+
+        <div className="sticky bottom-0 bg-white/90 backdrop-blur-md border-t border-slate-100 px-6 py-4 flex gap-2 rounded-b-3xl">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors">ביטול</button>
+          <button
+            disabled={!canSave}
+            onClick={() => onSave({ title: title.trim(), content: content.trim(), explanation: explanation.trim(), rating })}
+            className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors shadow-md shadow-indigo-200 disabled:shadow-none"
+          >
+            שמירה
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Prompt Card                                                          */
+/* ------------------------------------------------------------------ */
+
+function PromptCard({ prompt, isFirst, isLast, onCopy, copied, onEdit, onDelete, onMove, onRate }) {
+  const [showExplanation, setShowExplanation] = useState(false);
+
+  return (
+    <div className="group relative bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-lg hover:shadow-indigo-100/60 transition-all duration-300 flex overflow-hidden" style={{ animation: 'fadeUp 0.35s ease-out' }}>
+      <div className="flex flex-col items-center justify-center gap-1 px-2 py-4 bg-slate-50/70 border-l border-slate-100 shrink-0">
+        <button
+          onClick={() => onMove('up')}
+          disabled={isFirst}
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 disabled:opacity-25 disabled:hover:bg-transparent disabled:hover:text-slate-400 transition-colors"
+          title="הזז למעלה"
+        >
+          <ChevronUp size={16} />
+        </button>
+        <span className="w-1 h-1 rounded-full bg-slate-300" />
+        <button
+          onClick={() => onMove('down')}
+          disabled={isLast}
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 disabled:opacity-25 disabled:hover:bg-transparent disabled:hover:text-slate-400 transition-colors"
+          title="הזז למטה"
+        >
+          <ChevronDown size={16} />
+        </button>
+      </div>
+
+      <div className="flex-1 p-5 min-w-0">
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <h3 className="text-lg font-bold text-slate-800 leading-snug" style={{ fontFamily: "'Frank Ruhl Libre', serif" }}>{prompt.title}</h3>
+          <div className="flex items-center gap-1 shrink-0">
+            <button onClick={() => onEdit(prompt)} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="עריכה">
+              <Edit3 size={15} />
+            </button>
+            <button onClick={() => onDelete(prompt)} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors" title="מחיקה">
+              <Trash2 size={15} />
+            </button>
+          </div>
+        </div>
+
+        <StarRating value={prompt.rating || 0} onChange={(v) => onRate(prompt, v)} size={15} />
+
+        <div className="mt-3 bg-slate-50 rounded-2xl p-3 border border-slate-100">
+          <pre className="text-sm text-slate-600 whitespace-pre-wrap break-words font-mono leading-relaxed max-h-32 overflow-y-auto">{prompt.content}</pre>
+        </div>
+
+        {prompt.explanation && (
+          <div className="mt-2">
+            <button onClick={() => setShowExplanation((s) => !s)} className="flex items-center gap-1.5 text-xs font-medium text-indigo-500 hover:text-indigo-700 transition-colors">
+              <Info size={13} />
+              {showExplanation ? 'הסתר הסבר' : 'הצג הסבר ודגשים'}
+            </button>
+            {showExplanation && (
+              <p className="mt-2 text-sm text-slate-500 leading-relaxed bg-amber-50/60 border border-amber-100 rounded-2xl p-3 whitespace-pre-wrap">{prompt.explanation}</p>
+            )}
+          </div>
+        )}
+
+        <button
+          onClick={() => onCopy(prompt)}
+          className={`mt-4 w-full py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200 ${
+            copied ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200'
+          }`}
+        >
+          {copied ? (<><CheckCircle2 size={16} />הועתק!</>) : (<><Copy size={16} />העתק פרומפט</>)}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Main App                                                             */
+/* ------------------------------------------------------------------ */
+
+function App() {
+  const initial = loadData();
+  const [categories, setCategories] = useState(initial.categories);
+  const [prompts, setPrompts] = useState(initial.prompts);
+
+  const [selectedCategoryId, setSelectedCategoryId] = useState(initial.categories[0]?.id || null);
+  const [search, setSearch] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  const [modalState, setModalState] = useState({ open: false, prompt: null });
+  const [confirmState, setConfirmState] = useState({ open: false, type: null, target: null });
+  const [copiedId, setCopiedId] = useState(null);
+
+  useEffect(() => {
+    saveData({ categories, prompts });
+  }, [categories, prompts]);
+
+  const currentPrompts = useMemo(() => {
+    let list = prompts.filter((p) => p.categoryId === selectedCategoryId);
+    list.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      list = list.filter(
+        (p) =>
+          p.title?.toLowerCase().includes(q) ||
+          p.content?.toLowerCase().includes(q) ||
+          p.explanation?.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [prompts, selectedCategoryId, search]);
+
+  const selectedCategory = categories.find((c) => c.id === selectedCategoryId);
+
+  /* -------------------- Category actions -------------------- */
+  const addCategory = () => {
+    const name = newCategoryName.trim();
+    if (!name) return;
+    const newCat = { id: uid(), name, createdAt: Date.now() };
+    setCategories((prev) => [...prev, newCat]);
+    setSelectedCategoryId(newCat.id);
+    setNewCategoryName('');
+  };
+
+  const deleteCategory = (category) => {
+    setPrompts((prev) => prev.filter((p) => p.categoryId !== category.id));
+    setCategories((prev) => {
+      const remaining = prev.filter((c) => c.id !== category.id);
+      if (selectedCategoryId === category.id) {
+        setSelectedCategoryId(remaining[0]?.id || null);
+      }
+      return remaining;
+    });
+  };
+
+  /* -------------------- Prompt actions -------------------- */
+  const savePrompt = (data) => {
+    if (!selectedCategoryId) return;
+    if (modalState.prompt) {
+      setPrompts((prev) => prev.map((p) => (p.id === modalState.prompt.id ? { ...p, ...data } : p)));
+    } else {
+      const maxOrder = prompts
+        .filter((p) => p.categoryId === selectedCategoryId)
+        .reduce((max, p) => Math.max(max, p.orderIndex || 0), -1);
+      const newPrompt = { id: uid(), categoryId: selectedCategoryId, orderIndex: maxOrder + 1, createdAt: Date.now(), ...data };
+      setPrompts((prev) => [...prev, newPrompt]);
+    }
+    setModalState({ open: false, prompt: null });
+  };
+
+  const deletePrompt = (prompt) => {
+    setPrompts((prev) => prev.filter((p) => p.id !== prompt.id));
+  };
+
+  const ratePrompt = (prompt, rating) => {
+    setPrompts((prev) => prev.map((p) => (p.id === prompt.id ? { ...p, rating } : p)));
+  };
+
+  const movePrompt = (prompt, direction) => {
+    const list = currentPrompts;
+    const idx = list.findIndex((p) => p.id === prompt.id);
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= list.length) return;
+    const other = list[swapIdx];
+
+    setPrompts((prev) =>
+      prev.map((p) => {
+        if (p.id === prompt.id) return { ...p, orderIndex: other.orderIndex ?? swapIdx };
+        if (p.id === other.id) return { ...p, orderIndex: prompt.orderIndex ?? idx };
+        return p;
+      })
+    );
+  };
+
+  const copyPrompt = (prompt) => {
+    navigator.clipboard.writeText(prompt.content).then(() => {
+      setCopiedId(prompt.id);
+      setTimeout(() => setCopiedId(null), 1800);
+    });
+  };
+
+  /* -------------------- Confirm dialog handlers -------------------- */
+  const handleConfirm = () => {
+    const { type, target } = confirmState;
+    if (type === 'category') deleteCategory(target);
+    if (type === 'prompt') deletePrompt(target);
+    setConfirmState({ open: false, type: null, target: null });
+  };
+
+  /* -------------------- Render -------------------- */
+  return (
+    <div dir="rtl" className="min-h-screen bg-slate-50 text-slate-800 flex" style={{ fontFamily: "'Rubik', sans-serif" }}>
+      {/* ---------------- Sidebar ---------------- */}
+      <aside className="w-72 shrink-0 bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 text-white flex flex-col relative overflow-hidden">
+        <div className="absolute -top-24 -right-24 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-56 h-56 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative p-6 border-b border-white/10">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-400 to-blue-500 flex items-center justify-center shadow-lg shadow-indigo-900/50">
+              <Sparkles size={20} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold leading-tight" style={{ fontFamily: "'Frank Ruhl Libre', serif" }}>מנהל פרומפטים</h1>
+              <p className="text-xs text-indigo-200/60">המאגרים שלי</p>
+            </div>
+          </div>
+        </div>
+
+        <nav className="relative flex-1 overflow-y-auto px-3 py-4 space-y-1.5">
+          {categories.length === 0 && (
+            <p className="text-center text-indigo-200/40 text-sm mt-8 px-4 leading-relaxed">
+              אין עדיין מאגרים. הוסף מאגר ראשון כדי להתחיל.
+            </p>
+          )}
+          {categories.map((cat, i) => {
+            const CatIcon = CATEGORY_ICONS[i % CATEGORY_ICONS.length];
+            const active = cat.id === selectedCategoryId;
+            const count = prompts.filter((p) => p.categoryId === cat.id).length;
+            return (
+              <div
+                key={cat.id}
+                onClick={() => setSelectedCategoryId(cat.id)}
+                className={`group flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl cursor-pointer transition-all duration-200 ${
+                  active ? 'bg-white/10 shadow-inner shadow-white/5 ring-1 ring-white/10' : 'hover:bg-white/5'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${active ? 'bg-indigo-500 text-white' : 'bg-white/5 text-indigo-200'}`}>
+                  <CatIcon size={15} />
+                </div>
+                <span className={`flex-1 text-sm font-medium truncate ${active ? 'text-white' : 'text-indigo-100/80'}`}>{cat.name}</span>
+                <span className="text-xs text-indigo-200/40 ml-1">{count}</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setConfirmState({ open: true, type: 'category', target: cat });
+                  }}
+                  className="opacity-0 group-hover:opacity-100 w-6 h-6 rounded-lg flex items-center justify-center text-indigo-200/50 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            );
+          })}
+        </nav>
+
+        <div className="relative p-3 border-t border-white/10">
+          <div className="flex items-center gap-2 bg-white/5 rounded-2xl p-1.5 ring-1 ring-white/10 focus-within:ring-indigo-400/50 transition-all">
+            <FolderPlus size={16} className="text-indigo-300 mr-1 shrink-0" />
+            <input
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addCategory()}
+              placeholder="מאגר חדש..."
+              className="flex-1 bg-transparent text-sm text-white placeholder:text-indigo-200/30 outline-none min-w-0"
+            />
+            <button
+              onClick={addCategory}
+              disabled={!newCategoryName.trim()}
+              className="w-8 h-8 rounded-xl bg-indigo-500 hover:bg-indigo-400 disabled:bg-white/5 disabled:text-indigo-200/30 flex items-center justify-center text-white transition-colors shrink-0"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* ---------------- Main area ---------------- */}
+      <main className="flex-1 flex flex-col min-w-0 relative">
+        <div
+          className="absolute inset-0 opacity-[0.4] pointer-events-none"
+          style={{ backgroundImage: 'radial-gradient(circle at 15% 10%, rgba(99,102,241,0.07), transparent 40%), radial-gradient(circle at 85% 30%, rgba(59,130,246,0.06), transparent 40%)' }}
+        />
+
+        {!selectedCategory ? (
+          <div className="flex-1 flex items-center justify-center relative z-10">
+            <div className="text-center text-slate-400 max-w-sm px-6">
+              <div className="w-16 h-16 rounded-3xl bg-indigo-50 flex items-center justify-center mx-auto mb-4">
+                <Layout size={28} className="text-indigo-300" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-600 mb-1" style={{ fontFamily: "'Frank Ruhl Libre', serif" }}>ברוכים הבאים</h2>
+              <p className="text-sm leading-relaxed">צרו מאגר חדש בתפריט הצד כדי להתחיל לאסוף ולנהל את הפרומפטים שלכם.</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <header className="relative z-10 px-8 pt-8 pb-4 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-medium text-indigo-400 mb-1">מאגר נוכחי</p>
+                <h2 className="text-3xl font-bold text-slate-800" style={{ fontFamily: "'Frank Ruhl Libre', serif" }}>{selectedCategory.name}</h2>
+              </div>
+              <button
+                onClick={() => setModalState({ open: true, prompt: null })}
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-3 rounded-2xl shadow-lg shadow-indigo-200 transition-all hover:-translate-y-0.5"
+              >
+                <Plus size={18} />
+                פרומפט חדש
+              </button>
+            </header>
+
+            <div className="relative z-10 px-8 pb-2">
+              <div className="relative max-w-md">
+                <Search size={17} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="חיפוש לפי כותרת, תוכן או הסבר..."
+                  className="w-full bg-white border border-slate-200 rounded-2xl pl-4 pr-11 py-2.5 text-sm outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-slate-300 shadow-sm"
+                />
+              </div>
+            </div>
+
+            <div className="relative z-10 flex-1 overflow-y-auto px-8 pb-8 pt-4">
+              {currentPrompts.length === 0 ? (
+                <div className="text-center text-slate-400 mt-16">
+                  <p className="text-sm">{search ? 'לא נמצאו פרומפטים תואמים לחיפוש.' : 'אין עדיין פרומפטים במאגר זה. הוסיפו את הראשון!'}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {currentPrompts.map((p, i) => (
+                    <PromptCard
+                      key={p.id}
+                      prompt={p}
+                      isFirst={i === 0}
+                      isLast={i === currentPrompts.length - 1}
+                      copied={copiedId === p.id}
+                      onCopy={copyPrompt}
+                      onEdit={(prompt) => setModalState({ open: true, prompt })}
+                      onDelete={(prompt) => setConfirmState({ open: true, type: 'prompt', target: prompt })}
+                      onMove={(dir) => movePrompt(p, dir)}
+                      onRate={ratePrompt}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </main>
+
+      <PromptModal
+        open={modalState.open}
+        initial={modalState.prompt}
+        categoryName={selectedCategory?.name || ''}
+        onClose={() => setModalState({ open: false, prompt: null })}
+        onSave={savePrompt}
+      />
+
+      <ConfirmDialog
+        open={confirmState.open}
+        title={confirmState.type === 'category' ? 'מחיקת מאגר' : 'מחיקת פרומפט'}
+        message={
+          confirmState.type === 'category'
+            ? `פעולה זו תמחק את המאגר "${confirmState.target?.name}" וכל הפרומפטים שבתוכו לצמיתות. לא ניתן לשחזר פעולה זו.`
+            : `פעולה זו תמחק את הפרומפט "${confirmState.target?.title}" לצמיתות. לא ניתן לשחזר פעולה זו.`
+        }
+        onConfirm={handleConfirm}
+        onCancel={() => setConfirmState({ open: false, type: null, target: null })}
+      />
+    </div>
+  );
+}
+
+createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

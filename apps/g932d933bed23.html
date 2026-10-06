@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מִשְׂחַק חֲנֻכָּה: הַבַּיִת שֶׁלָּנוּ – בֵּית מִקְדָּשׁ קָטָן</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&display=swap');
+
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --text-color: #333;
+            --correct-bg: #d4edda;
+            --correct-text: #28a745;
+            --incorrect-bg: #f8d7da;
+            --incorrect-text: #dc3545;
+            --light-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Assistant', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-size: 1.2em;
+            line-height: 2;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--light-bg);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        h1, h2 {
+            color: var(--secondary-color);
+            font-weight: 700;
+        }
+
+        p {
+            margin-bottom: 20px;
+        }
+
+        .inspiration-question {
+            color: #007bff;
+            font-style: italic;
+            font-weight: 600;
+            margin: 25px 0;
+            padding: 15px;
+            border: 1px dashed #007bff;
+            border-radius: 10px;
+        }
+
+        .quiz-question {
+            margin-bottom: 30px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .answer-btn {
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1.1em;
+            font-family: 'Assistant', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .answer-btn:hover:not(:disabled) {
+            background-color: #e9ecef;
+            border-color: var(--primary-color);
+        }
+
+        .answer-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .feedback {
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .feedback.correct {
+            background-color: var(--correct-bg);
+            color: var(--correct-text);
+            border: 1px solid var(--correct-text);
+        }
+
+        .feedback.incorrect {
+            background-color: var(--incorrect-bg);
+            color: var(--incorrect-text);
+            border: 1px solid var(--incorrect-text);
+        }
+
+        .feedback p {
+            margin: 5px 0 0;
+            font-weight: 400;
+            font-size: 0.9em;
+        }
+
+        .main-btn {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.4em;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        
+        .main-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .certificate {
+            border: 10px solid;
+            border-image-slice: 1;
+            border-image-source: linear-gradient(to left, var(--primary-color), var(--secondary-color));
+            padding: 40px;
+            margin-top: 20px;
+        }
+
+        .certificate h2 {
+            font-size: 2em;
+            margin: 0;
+        }
+
+        .certificate-to {
+            font-size: 1.5em;
+            margin: 20px 0;
+        }
+
+        .certificate-reason {
+            font-size: 1.1em;
+        }
+
+        .final-verse {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin: 30px 0;
+        }
+
+        .reflection-questions {
+            text-align: right;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .reflection-questions ul {
+            list-style-type: none;
+            padding-right: 0;
+        }
+        
+        .reflection-questions li {
+            margin-bottom: 10px;
+        }
+
+        .raffle-box {
+            background-color: #fff3cd;
+            border: 2px dashed #ffeeba;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .raffle-box a {
+            background-color: #ffc107;
+            color: black;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            display: inline-block;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .raffle-box a:hover {
+            transform: scale(1.05);
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                font-size: 1em;
+            }
+            .game-container {
+                padding: 15px;
+            }
+            .answers-grid {
+                grid-template-columns: 1fr;
+            }
+            .certificate {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+
+        <!-- Screen: Welcome -->
+        <div id="welcome-screen" class="screen active">
+            <h1>🎮 מִשְׂחַק חֲנֻכָּה: הַבַּיִת שֶׁלָּנוּ – בֵּית מִקְדָּשׁ קָטָן</h1>
+            <p>
+                בָּרוּךְ הַבָּא, חָבֵר יָקָר! 💖✨🕎
+                בַּמִּשְׂחָק הַזֶּה נְגַלֶּה יַחַד סוֹד גָּדוֹל וּמְיֻחָד עַל נֵרוֹת הַחֲנֻכָּה.
+                נִלְמַד אֵיךְ הָאוֹר הַקָּטָן שֶׁל הַנֵּרוֹת יָכוֹל לְהָפוֹךְ אֶת הַבַּיִת הָאִישִׁי שֶׁלְּךָ
+                לְמָקוֹם קָסוּם, מָלֵא אוֹר וְאַהֲבָה, מַמָּשׁ כְּמוֹ בֵּית הַמִּקְדָּשׁ!
+                מוּכָן לְהַרְפַּתְקָה שֶׁתָּאִיר לְךָ אֶת הַלֵּב?
+            </p>
+            <button id="start-btn" class="main-btn">בּוֹאוּ נַתְחִיל! 🕯️</button>
+        </div>
+
+        <!-- Screen: Lesson 1 -->
+        <div id="lesson-1" class="screen lesson-container">
+            <h2>💖 מַדּוּעַ נֵר חֲנֻכָּה כָּל כָּךְ מְיֻחָד?</h2>
+            <p>
+                בַּשִּׁיעוּר הָרִאשׁוֹן נָבִין לָמָּה מִצְוַת נֵר חֲנֻכָּה הִיא מִצְוָה כָּל כָּךְ מְיֻחֶדֶת וַאֲהוּבָה, יוֹתֵר מֵהַרְבֵּה מִצְוֹת אֲחֵרוֹת שֶׁאָנוּ מַכִּירִים. הָרַמְבַּ"ם, שֶׁהָיָה חָכָם גָּדוֹל מְאֹד, כָּתַב עַל נֵר חֲנֻכָּה מִשְׁפָּט מְיֻחָד שֶׁלֹּא כָּתַב עַל אַף מִצְוָה אַחֶרֶת: "מִצְוָה חֲבִיבָה הִיא עַד לִמְאֹד". זֶה מַרְאֶה כַּמָּה הִיא יְקָרָה וּמְיֻחֶדֶת בְּעֵינֵי הַשֵּׁם!
+            </p>
+            <p>
+                הַמִּצְוָה כָּל כָּךְ חֲשׁוּבָה, שֶׁאֲפִלּוּ אָדָם שֶׁאֵין לוֹ כֶּסֶף, צָרִיךְ לְהִשְׁתַּדֵּל מְאֹד וַאֲפִלּוּ לְבַקֵּשׁ עֶזְרָה מֵאֲחֵרִים, כְּדֵי שֶׁיּוּכַל לִקְנוֹת נֵרוֹת וּלְקַיֵּם אוֹתָהּ. זֶה מַרְאֶה לָנוּ כַּמָּה הַשֵּׁם רוֹצֶה שֶׁנַּרְגִּישׁ אֶת הָאוֹר וְאֶת הָאַהֲבָה שֶׁלּוֹ בַּלֵּב שֶׁלָּנוּ, וְלָכֵן הוּא נָתַן לָנוּ אֶת הַמַּתָּנָה הַמְּיֻחֶדֶת הַזֹּאת, אֶת הַ"מִּצְוָה הַחֲבִיבָה עַד מְאֹד", כְּדֵי שֶׁנַּעֲשֶׂה אוֹתָהּ בְּשִׂמְחָה גְּדוֹלָה! כְּשֶׁאֲנַחְנוּ מַדְלִיקִים נֵר, זֶה כְּמוֹ לוֹמַר תּוֹדָה גְּדוֹלָה לַה' עַל כָּל הַטּוֹב.
+            </p>
+            <div class="inspiration-question">
+                אֵיךְ הָאוֹר הַקָּטָן שֶׁל הַנֵּר גּוֹרֵם לִי לְהַרְגִּישׁ שִׂמְחָה גְּדוֹלָה בַּלֵּב?
+            </div>
+            <div class="quiz-container" data-lesson-num="1">
+                <!-- Questions will be injected by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Screen: Lesson 2 -->
+        <div id="lesson-2" class="screen lesson-container">
+            <h2>🕎 הַחֲנֻכִּיָּה שֶׁלִּי – הֶמְשֵׁךְ שֶׁל בֵּית הַמִּקְדָּשׁ!</h2>
+            <p>
+                זֶה הָיָה מַדְהִים! עַכְשָׁו אֲנַחְנוּ יוֹדְעִים כַּמָּה יְקָרָה הַמִּצְוָה הַזֹּאת. אֲבָל... הַאִם אַתָּה מוּכָן לְסוֹד מַטְרִיף? אֲנַחְנוּ עוֹמְדִים לְגַלּוֹת קֶשֶׁר קָסוּם בֵּין הַחֲנֻכִּיָּה הַקְּטַנָּה שֶׁלָּנוּ בַּבַּיִת לְבֵין מְנוֹרַת הַזָּהָב הָעֲנָקִית מִבֵּית הַמִּקְדָּשׁ! בְּבֵית הַמִּקְדָּשׁ הָיְתָה מְנוֹרַת זָהָב גְּדוֹלָה וִיפֵהפִיָּה. פַּעַם, אַהֲרֹן הַכֹּהֵן הָיָה עָצוּב, וְהַשֵּׁם הִבְטִיחַ לוֹ הַבְטָחָה נִפְלָאָה: שֶׁהַדְלָקַת הַנֵּרוֹת שֶׁלּוֹ תִּמָּשֵׁךְ לְעוֹלָם. אֲבָל אֵיךְ זֶה יָכוֹל לִהְיוֹת, אִם בֵּית הַמִּקְדָּשׁ נֶחֱרַב?
+            </p>
+            <p>
+                כָּאן מַגִּיעָה הַתְּשׁוּבָה הַמַּדְהִימָה: הַחֲנֻכִּיָּה שֶׁאֲנַחְנוּ מַדְלִיקִים הַיּוֹם בַּבַּיִת הִיא הַהֶמְשֵׁךְ שֶׁל אוֹתָהּ מְנוֹרָה קְדוֹשָׁה! כָּל שְׁאָר הַכֵּלִים הַקְּדוֹשִׁים שֶׁל בֵּית הַמִּקְדָּשׁ אָבְדוּ כְּשֶׁהוּא נֶחֱרַב, אֲבָל הַשֵּׁם הִבְטִיחַ לְאַהֲרֹן שֶׁהָאוֹר שֶׁל הַמְּנוֹרָה יָאִיר לָנֶצַח – דֶּרֶךְ הַחֲנֻכִּיָּה שֶׁאַתָּה מַדְלִיק בַּבַּיִת שֶׁלְּךָ! <b>הַקָּדוֹשׁ-בָּרוּךְ-הוּא נָתַן לָנוּ מַתָּנָה נִפְלָאָה: לְהַרְגִּישׁ קְרוֹבִים לִקְדֻשַּׁת בֵּית הַמִּקְדָּשׁ מַמָּשׁ בַּסָּלוֹן שֶׁלָּנוּ.</b> כְּשֶׁאַבָּא אוֹ אִמָּא מַדְלִיקִים נֵרוֹת, הֵם כְּמוֹ אַהֲרֹן הַכֹּהֵן הַגָּדוֹל. ה' אוֹהֵב כָּל יֶלֶד וְיַלְדָּה, וְרוֹצֶה שֶׁנַּדְליק אֶת הָאוֹר הַזֶּה כְּדֵי לְהָאִיר אֶת הָעוֹלָם.
+            </p>
+            <div class="inspiration-question">
+                כְּשֶׁאֲנִי מִסְתַּכֵּל עַל הַנֵּרוֹת, אֵיךְ אֲנִי יָכוֹל לְדַמְיֵן אֶת הַמְּנוֹרָה הַגְּדוֹלָה מִבֵּית הַמִּקְדָּשׁ?
+            </div>
+            <div class="quiz-container" data-lesson-num="2">
+                <!-- Questions will be injected by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Screen: Lesson 3 -->
+        <div id="lesson-3" class="screen lesson-container">
+            <h2>🏠 בַּחֲנֻכָּה, הַבַּיִת שֶׁלִּי הוֹפֵךְ לְבֵית מִקְדָּשׁ!</h2>
+            <p>
+                בַּשִּׁיעוּר הַזֶּה נְגַלֶּה אֶת הַסּוֹד הֲכִי גָּדוֹל שֶׁל חֲנֻכָּה! זוֹכֵר אֶת הַחִידוֹת שֶׁהָיוּ לָנוּ? לָמָּה מַדְלִיקִים נֵרוֹת *רַק* בַּבַּיִת? וְאֵיךְ אָדָם אֶחָד יָכוֹל לְהַדְלִיק בִּשְׁבִיל כָּל הַמִּשְׁפָּחָה? הִתְכּוֹנֵן, כִּי הַתְּשׁוּבָה גְּדוֹלָה וְנִפְלָאָה יוֹתֵר מִמָּה שֶׁאַתָּה מְדַמְיֵן! הַסִּבָּה הִיא, כִּי בַּחֲנֻכָּה, הַבַּיִת הַיְּהוּדִי עַצְמוֹ הוֹפֵךְ לִהְיוֹת כְּמוֹ בֵּית הַמִּקְדָּשׁ!
+            </p>
+            <p>
+                הַקָּדוֹשׁ בָּרוּךְ הוּא אָמַר: "וְשָׁכַנְתִּי בְּתוֹכָם", וְהַכַּוָּנָה הִיא שֶׁהַשְּׁכִינָה, הַקְּדֻשָּׁה שֶׁל ה', שׁוֹרָה בְּתוֹךְ הַבַּיִת שֶׁל הַמִּשְׁפָּחָה. מִכֵּיוָן שֶׁהַבַּיִת הוּא "מִקְדָּשׁ" אֶחָד שֶׁל כָּל הַמִּשְׁפָּחָה, מַסְפִּיק שֶׁהוֹרֶה אֶחָד מַדְלִיק בִּשְׁבִיל כֻּלָּם. מַמָּשׁ כְּמוֹ בְּבֵית הַמִּקְדָּשׁ הָאֲמִתִּי, כְּשֶׁהַכֹּהֵן הַגָּדוֹל הִדְלִיק אֶת הַמְּנוֹרָה הָאַחַת, הָאוֹר שֶׁלָּהּ הָיָה בִּשְׁבִיל *כָּל* עַם יִשְׂרָאֵל. בְּאוֹתָהּ הַדֶּרֶךְ, כְּשֶׁמַּדְלִיקִים אֶת הַמְּנוֹרָה בְּבֵית הַמִּקְדָּשׁ הַמְּיֻחָד שֶׁל הַמִּשְׁפָּחָה, הָאוֹר שֶׁלָּהּ הוּא בִּשְׁבִיל *כָּל* מִי שֶׁשַּׁיָּךְ אֵלָיו! זֶה מַסְבִּיר גַּם אֵיךְ יֶלֶד שֶׁלּוֹמֵד בִּישִׁיבָה לֹא צָרִיךְ לְהַדְלִיק בְּעַצְמוֹ – כִּי כְּשֶׁהַהוֹרִים שֶׁלּוֹ מַדְלִיקִים בַּ"מִּקְדָּשׁ" הַבַּיְתִי, הָאוֹר מוֹעִיל גַּם לוֹ!
+            </p>
+            <p>
+                אָז אַתָּה רוֹאֶה? הָרַעְיוֹן הַמַּדְהִים הַזֶּה – שֶׁהַבַּיִת שֶׁלָּנוּ הוֹפֵךְ לְבֵית מִקְדָּשׁ – פּוֹתֵר אֶת כָּל הַחִידוֹת שֶׁלָּנוּ! אֲנַחְנוּ מַדְלִיקִים בַּפֶּתַח, כִּי זֹאת הַכְּנִיסָה לַ"מִּקְדָּשׁ" שֶׁלָּנוּ. וּכְשֶׁאַבָּא אוֹ אִמָּא מַדְלִיקִים אֶת הַמְּנוֹרָה בַּ"מִּקְדָּשׁ" הַמִּשְׁפַּחְתִּי, זֶה מוֹעִיל לְכָל אֶחָד בַּמִּשְׁפָּחָה, כִּי הָאוֹר הַקָּדוֹשׁ מֵאִיר עַכְשָׁו בִּשְׁבִיל כֻּלָּנוּ יַחַד! <b>ה' כָּל כָּךְ אוֹהֵב אוֹתָנוּ, שֶׁהוּא בָּא לָגוּר אִתָּנוּ מַמָּשׁ בַּבַּיִת, וְהוֹפֵךְ אוֹתוֹ לְאַרְמוֹן שֶׁל קְדֻשָּׁה.</b>
+            </p>
+            <div class="inspiration-question">
+                אֵילוּ דְּבָרִים אֲנִי יָכוֹל לַעֲשׂוֹת כְּדֵי לְהַרְגִּישׁ שֶׁהַבַּיִת שֶׁלִּי הוּא מָקוֹם מְיֻחָד וְקָדוֹשׁ בַּחֲנֻכָּה?
+            </div>
+            <div class="quiz-container" data-lesson-num="3">
+                <!-- Questions will be injected by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Screen: Lesson 4 -->
+        <div id="lesson-4" class="screen lesson-container">
+            <h2>🎶 לָשִׁיר תּוֹדָה לַה' מִכָּל הַלֵּב!</h2>
+            <p>
+                אָז אִם הַבַּיִת שֶׁלָּנוּ הוּא בֵּית מִקְדָּשׁ, מָה הַדָּבָר הֲכִי חָשׁוּב שֶׁאֲנַחְנוּ צְרִיכִים לַעֲשׂוֹת בּוֹ? בְּבֵית הַמִּקְדָּשׁ, הַלְוִיִּים הָיוּ שָׁרִים וּמְנַגְּנִים כְּדֵי לְהוֹדוֹת לַה'. כְּמוֹ הַלְוִיִּים, גַּם אֲנַחְנוּ, אַחֲרֵי שֶׁהִדְלַקְנוּ נֵרוֹת בַּ"מִּקְדָּשׁ" שֶׁלָּנוּ, צְרִיכִים לָשִׁיר יַחַד כָּל הַמִּשְׁפָּחָה וּלְהוֹדוֹת לַה'. הַמִּלִּים "לְהוֹדוֹת וּלְהַלֵּל" הֵן הָעִקָּר שֶׁל חֲנֻכָּה!
+            </p>
+            <p>
+                יֵשׁ מִצְוֹת שֶׁכָּתוּב עֲלֵיהֶן "לְהִזָּהֵר בָּהֶן מְאֹד", וְזֶה קוֹרֶה רַק 3 פְּעָמִים! בְּנֵר חֲנֻכָּה, בְּבִרְכַּת הַתּוֹרָה וּבְכִבּוּד הוֹרִים. וּמָה מְּשֻׁתָּף לְכֻלָּם? <b>הַכָּרַת הַטּוֹב</b> – הַיְּכֹלֶת לוֹמַר תּוֹדָה מִכָּל הַלֵּב. הַיְּוָנִים נִסּוּ לָקַחַת מֵאִתָּנוּ אֶת כָּל הַקְּדֻשָּׁה שֶׁלָּנוּ וּלְטַמֵּא הַכֹּל. אֲבָל תִּרְאוּ אֵיזוֹ מַתָּנָה מַדְהִימָה הַשֵּׁם נָתַן לָנוּ כְּנֶגֶד זֶה! הוּא הֵצִיף אֶת הַבָּתִּים שֶׁלָּנוּ בִּקְדֻשָּׁה עוֹד יוֹתֵר גְּדוֹלָה וַחֲזָקָה, וְהָפַךְ אוֹתָם לְבֵית מִקְדָּשׁ. וְעַל זֶה, אֲנַחְנוּ שָׁרִים וּמוֹדִים. <b>כְּשֶׁאַתָּה שָׁר שִׁירֵי חֲנֻכָּה, הַשֵּׁם שָׂמֵחַ בַּשָּׁמַיִם וְשׁוֹמֵעַ אֶת הַתּוֹדָה הַמְּיֻחֶדֶת שֶׁבָּאָה מֵהַלֵּב שֶׁלְּךָ.</b>
+            </p>
+            <div class="inspiration-question">
+                אֵיזֶה שִׁיר חֲנֻכָּה אֲנִי הֲכִי אוֹהֵב לָשִׁיר, וְאֵיךְ הוּא גּוֹרֵם לִי לְהַרְגִּישׁ שִׂמְחָה וְתוֹדָה?
+            </div>
+            <div class="quiz-container" data-lesson-num="4">
+                <!-- Questions will be injected by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Screen: Certificate -->
+        <div id="certificate-screen" class="screen">
+            <h1>🏆 כָּל הַכָּבוֹד! סִיַּמְתָּ בְּהַצְלָחָה! 🏆</h1>
+            <p>לָמַדְתָּ הַכֹּל וְעָנִיתָ עַל הַשְּׁאֵלוֹת כְּמוֹ אַלּוּף אֲמִתִּי! קַבֵּל בְּגָאוֹן אֶת תְּעוּדַת הַהִצְטַיְּנוּת שֶׁלְּךָ:</p>
+            <div class="certificate">
+                <h2>תְּעוּדַת הִצְטַיְּנוּת</h2>
+                <p class="certificate-to">מוּעֲנֶקֶת בְּגָאוֹן לְ:<br><strong>[אַלּוּף/אַלּוּפַת הָאוֹר שֶׁל חֲנֻכָּה]</strong></p>
+                <p class="certificate-reason">
+                    עַל שֶׁלָּמַדְתָּ בְּשִׂמְחָה אֶת סוֹדָהּ הַגָּדוֹל שֶׁל מִצְוַת נֵר חֲנֻכָּה,<br>
+                    וְגִלִּיתָ אֵיךְ הַבַּיִת שֶׁלְּךָ הוֹפֵךְ לְבֵית מִקְדָּשׁ מָלֵא אוֹר וְאַהֲבַת ה'.
+                </p>
+                <p style="font-size: 1.5em; font-weight: bold;">יְשַׁר כּוֹחַ! 💖</p>
+            </div>
+            <p class="final-verse">"כִּי נֵר מִצְוָה וְתוֹרָה אוֹר" <br>(מִשְׁלֵי ו', כ"ג)</p>
+
+            <div class="reflection-questions">
+                <h3>שְׁאֵלוֹת לְמַחְשָׁבָה לְהֶמְשֵׁךְ הַחַג:</h3>
+                <ul>
+                    <li>א. אֵיךְ אֲנִי יָכוֹל לְהוֹסִיף עוֹד אוֹר וְשִׂמְחָה בַּבַּיִת שֶׁלִּי בַּחֲנֻכָּה הַזֶּה?</li>
+                    <li>ב. אֶת מִי אֲנִי רוֹצֶה לְשַׁתֵּף בַּסּוֹד הַיָּפֶה שֶׁלָּמַדְתִּי עַל נֵרוֹת חֲנֻכָּה?</li>
+                    <li>ג. עַל אֵילוּ דְּבָרִים מְיֻחָדִים אֲנִי רוֹצֶה לוֹמַר תּוֹדָה לַה' בַּחֲנֻכָּה הַזֶּה?</li>
+                </ul>
+            </div>
+            
+            <div class="raffle-box">
+                <p><strong>רוֹצִים לְהִכָּנֵס לְהַגְרָלָה עַל פְּרָסִים שָׁוִים? לַחֲצוּ כָּאן:</strong></p>
+                <a href="https://forms.gle/A66uubei4XSX6SG2A" target="_blank" rel="noopener noreferrer">כֵּן, אֲנִי רוֹצֶה לִזְכּוֹת! 🎁</a>
+            </div>
+
+            <div class="footer">
+                <p style="margin-top: 20px;">נוֹצַר בְּאַהֲבָה עַל יְדֵי <strong>הָרַב יְהוּדָה טָאוּב</strong>, קִרְיַת אַתָּא, 📞 0527139520</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const quizzes = {
+            1: [
+                {
+                    question: 'מִי אָמַר עַל נֵר חֲנֻכָּה שֶׁזּוֹ "מִצְוָה חֲבִיבָה עַד לִמְאֹד"?',
+                    answers: ['הָרַמְבַּ"ם', 'אַהֲרֹן הַכֹּהֵן', 'מֹשֶׁה רַבֵּנוּ', 'דָּוִד הַמֶּלֶךְ'],
+                    correct: 'הָרַמְבַּ"ם',
+                    explanation: 'הָרַמְבַּ"ם הוּא זֶה שֶׁכָּתַב אֶת הַמִּשְׁפָּט הַמְּיֻחָד הַזֶּה, שֶׁמַּרְאֶה כַּמָּה הַמִּצְוָה יְקָרָה.'
+                },
+                {
+                    question: 'מָה צָרִיךְ לַעֲשׂוֹת אָדָם שֶׁאֵין לוֹ כֶּסֶף לִקְנוֹת נֵרוֹת חֲנֻכָּה?',
+                    answers: ['לְבַקֵּשׁ עֶזְרָה מֵאֲחֵרִים', 'לְוַתֵּר עַל הַמִּצְוָה', 'לְהַדְלִיק רַק נֵר אֶחָד', 'לְהִתְפַּלֵּל בְּלִי לְהַדְלִיק'],
+                    correct: 'לְבַקֵּשׁ עֶזְרָה מֵאֲחֵרִים',
+                    explanation: 'הַמִּצְוָה כָּל כָּךְ חֲשׁוּבָה, שֶׁצָּרִיךְ לְהִשְׁתַּדֵּל וַאֲפִלּוּ לְבַקֵּשׁ עֶזְרָה כְּדֵי לְקַיֵּם אוֹתָהּ.'
+                },
+                {
+                    question: 'לָמָּה חָשׁוּב כָּל כָּךְ לְהַדְלִיק נֵרוֹת חֲנֻכָּה, לְפִי הַשִּׁיעוּר?',
+                    answers: ['כִּי זֶה מַרְאֶה כַּמָּה ה\' רוֹצֶה שֶׁנַּעֲשֶׂה אֶת הַמִּצְוָה בְּשִׂמְחָה', 'כְּדֵי שֶׁיִּהְיֶה אוֹר בַּבַּיִת', 'כְּדֵי לְהַרְאוֹת לַשְּׁכֵנִים', 'כִּי זֶה מִנְהָג יָשָׁן'],
+                    correct: 'כִּי זֶה מַרְאֶה כַּמָּה ה\' רוֹצֶה שֶׁנַּעֲשֶׂה אֶת הַמִּצְוָה בְּשִׂמְחָה',
+                    explanation: 'הַהִשְׁתַּדְּלוּת הַגְּדוֹלָה לְקַיֵּם אֶת הַמִּצְוָה מַרְאָה אֶת חֲבִיבוּתָהּ וְאֶת הָרָצוֹן שֶׁל ה\' שֶׁנַּעֲשֶׂה אוֹתָהּ בְּשִׂמְחָה.'
+                }
+            ],
+            2: [
+                {
+                    question: 'לְפִי הָרַמְבַּ"ן, מָה הַחֲנֻכִּיָּה שֶׁלָּנוּ מַמְשִׁיכָה?',
+                    answers: ['אֶת הַמְּנוֹרָה שֶׁהָיְתָה בְּבֵית הַמִּקְדָּשׁ', 'אֶת הַכֹּהֲנִים', 'אֶת הַקָּרְבָּנוֹת', 'אֶת הַלְוִיִּים'],
+                    correct: 'אֶת הַמְּנוֹרָה שֶׁהָיְתָה בְּבֵית הַמִּקְדָּשׁ',
+                    explanation: 'הַחֲנֻכִּיָּה שֶׁלָּנוּ הִיא הַהֶמְשֵׁךְ הַיָּשִׁיר שֶׁל מְנוֹרַת הַזָּהָב הַקְּדוֹשָׁה!'
+                },
+                {
+                    question: 'מָה הַקָּדוֹשׁ בָּרוּךְ הוּא הִבְטִיחַ לְאַהֲרֹן הַכֹּהֵן?',
+                    answers: ['שֶׁהַדְלָקַת הַנֵּרוֹת שֶׁלּוֹ תִּמָּשֵׁךְ לְעוֹלָם', 'שֶׁהוּא יִהְיֶה הַכֹּהֵן הַגָּדוֹל הָרִאשׁוֹן', 'שֶׁבָּנָיו יִהְיוּ כֹּהֲנִים', 'שֶׁהוּא יִזְכֶּה לִרְאוֹת אֶת בֵּית הַמִּקְדָּשׁ'],
+                    correct: 'שֶׁהַדְלָקַת הַנֵּרוֹת שֶׁלּוֹ תִּמָּשֵׁךְ לְעוֹלָם',
+                    explanation: 'זוֹ הָיְתָה הַנֶּחָמָה הַגְּדוֹלָה שֶׁל אַהֲרֹן: הָאוֹר שֶׁלּוֹ יָאִיר לָנֶצַח, דֶּרֶךְ נֵרוֹת הַחֲנֻכָּה שֶׁלָּנוּ.'
+                },
+                {
+                    question: 'כְּשֶׁאָדָם מַדְלִיק נֵרוֹת חֲנֻכָּה, לְמִי הוּא נִהְיֶה דּוֹמֶה?',
+                    answers: ['לְאַהֲרֹן הַכֹּהֵן הַגָּדוֹל', 'לַמַּכַּבִּים הַגִּבּוֹרִים', 'לְמַתִּתְיָהוּ', 'לִשְׁלֹמֹה הַמֶּלֶךְ'],
+                    correct: 'לְאַהֲרֹן הַכֹּהֵן הַגָּדוֹל',
+                    explanation: 'בְּהַדְלָקַת הַנֵּרוֹת, אֲנַחְנוּ נַעֲשִׂים כְּמוֹ כֹּהֲנִים גְּדוֹלִים, וּמַמְשִׁיכִים אֶת הָעֲבוֹדָה הַקְּדוֹשָׁה שֶׁל אַהֲרֹן.'
+                }
+            ],
+            3: [
+                {
+                    question: 'הֵיכָן צָרִיךְ לְהַדְלִיק אֶת נֵרוֹת הַחֲנֻכָּה?',
+                    answers: ['בְּפֶתַח הַבַּיִת שֶׁלָּנוּ', 'בְּבֵית הַכְּנֶסֶת', 'עַל הַגַּג', 'בְּכָל מָקוֹם שֶׁרוֹצִים'],
+                    correct: 'בְּפֶתַח הַבַּיִת שֶׁלָּנוּ',
+                    explanation: 'מַדְלִיקִים דַּוְקָא בְּפֶתַח הַבַּיִת, כִּי בַּחֲנֻכָּה הַבַּיִת עַצְמוֹ הוֹפֵךְ לִמְקוֹם הַקָּדוֹשׁ.'
+                },
+                {
+                    question: 'לְמָה הַבַּיִת הַיְּהוּדִי הוֹפֵךְ בִּימֵי הַחֲנֻכָּה?',
+                    answers: ['לְמָקוֹם קָדוֹשׁ כְּמוֹ בֵּית הַמִּקְדָּשׁ', 'לְמָקוֹם שֶׁל מְסִבּוֹת', 'לְבֵית סֵפֶר', 'לְמוּזֵאוֹן'],
+                    correct: 'לְמָקוֹם קָדוֹשׁ כְּמוֹ בֵּית הַמִּקְדָּשׁ',
+                    explanation: 'זוֹ הַמַּתָּנָה הַגְּדוֹלָה שֶׁל חֲנֻכָּה: הַבַּיִת שֶׁלָּנוּ נִהְיֶה בֵּית מִקְדָּשׁ קָטָן.'
+                },
+                {
+                    question: 'מַדּוּעַ כְּשֶׁאִמָּא מַדְלִיקָה, גַּם אַבָּא וְהַיְּלָדִים יוֹצְאִים יְדֵי חוֹבָה?',
+                    answers: ['כִּי הַבַּיִת הוּא "מִקְדָּשׁ" אֶחָד לְכָל הַמִּשְׁפָּחָה', 'כִּי אִמָּא הִיא הָעִקָּר בַּבַּיִת', 'כִּי הֵם עֲסוּקִים', 'כִּי הַיְּלָדִים עֲדַיִן קְטַנִּים'],
+                    correct: 'כִּי הַבַּיִת הוּא "מִקְדָּשׁ" אֶחָד לְכָל הַמִּשְׁפָּחָה',
+                    explanation: 'כְּמוֹ שֶׁבְּבֵית הַמִּקְדָּשׁ הַדְלָקָה אַחַת הָיְתָה לְכָל עַם יִשְׂרָאֵל, כָּךְ הַדְלָקָה אַחַת בַּבַּיִת הִיא לְכָל בְּנֵי הַבַּיִת.'
+                }
+            ],
+            4: [
+                {
+                    question: 'מָה הַדָּבָר הַמְּשֻׁתָּף לְנֵר חֲנֻכָּה, בִּרְכַּת הַתּוֹרָה וְכִבּוּד הוֹרִים?',
+                    answers: ['הַכָּרַת הַטּוֹב – לוֹמַר תּוֹדָה', 'שְׁלָשְׁתָּם מִצְוֹת חֲשׁוּבוֹת', 'שֶׁצָּרִיךְ לַעֲמֹד כְּשֶׁעוֹשִׂים אוֹתָם', 'שֶׁהֵם קְשׁוּרִים לְאוֹר'],
+                    correct: 'הַכָּרַת הַטּוֹב – לוֹמַר תּוֹדָה',
+                    explanation: 'בִּשְׁלֹשֶׁת הַמִּצְוֹת הָאֵלּוּ, הַיְּסוֹד הַמֶּרְכָּזִי הוּא לוֹמַר תּוֹדָה לַה\' וְלַהוֹרִים עַל כָּל הַטּוֹב.'
+                },
+                {
+                    question: 'מָה הָיוּ עוֹשִׂים הַלְוִיִּים בְּבֵית הַמִּקְדָּשׁ, וּמָה אֲנַחְנוּ צְרִיכִים לַעֲשׂוֹת בַּבַּיִת?',
+                    answers: ['לָשִׁיר יַחַד וּלְהוֹדוֹת לַה\'', 'לְנַגֵּן בְּכֵלִים', 'לִלְבֹּשׁ בְּגָדִים מְיֻחָדִים', 'לְהַקְרִיב קָרְבָּנוֹת'],
+                    correct: 'לָשִׁיר יַחַד וּלְהוֹדוֹת לַה\'',
+                    explanation: 'כְּמוֹ הַלְוִיִּים שֶׁשָּׁרוּ בַּמִּקְדָּשׁ, גַּם אֲנַחְנוּ, בַּ"מִּקְדָּשׁ" שֶׁלָּנוּ בַּבַּיִת, צְרִיכִים לָשִׁיר וּלְהוֹדוֹת.'
+                },
+                {
+                    question: 'מָה הַיְּוָנִים רָצוּ לַעֲשׂוֹת, וְאֵיזוֹ מַתָּנָה גְּדוֹלָה הַשֵּׁם נָתַן לָנוּ בִּמְקוֹם?',
+                    answers: ['הֵם רָצוּ לְקַחַת אֶת הַקְּדֻשָּׁה, וְה\' נָתַן לָנוּ קְדֻשָּׁה בַּבַּיִת', 'הֵם רָצוּ אֶת הַכֶּסֶף, וְה\' עָזַר לָנוּ לִמְצֹא שֶׁמֶן', 'הֵם רָצוּ לְהַחְרִיב אֶת יְרוּשָׁלַיִם, וְה\' הִצִּיל אוֹתָהּ', 'הֵם רָצוּ שֶׁנִּלְמַד יְוָנִית, וְה\' נָתַן לָנוּ אֶת הַתּוֹרָה'],
+                    correct: 'הֵם רָצוּ לְקַחַת אֶת הַקְּדֻשָּׁה, וְה\' נָתַן לָנוּ קְדֻשָּׁה בַּבַּיִת',
+                    explanation: 'כְּנֶגֶד הָרָצוֹן שֶׁלָּהֶם לְטַמֵּא אוֹתָנוּ, קִבַּלְנוּ מַתָּנָה עֲצוּמָה שֶׁל קְדֻשָּׁה שֶׁשּׁוֹרָה בְּתוֹךְ הַבָּתִּים שֶׁלָּנוּ.'
+                }
+            ]
+        };
+
+        let currentLesson = 0;
+        let lessonScores = {};
+        let audioCtx;
+
+        const screens = document.querySelectorAll('.screen');
+        const startBtn = document.getElementById('start-btn');
+        
+        const correctFeedbackPhrases = ['בִּינְגוֹ! ⭐', 'קָלַעְתָּ בּוּל! 🎯', 'אַתָּה זוֹרֵחַ! ✨', 'מְצֻיָּן! 👍'];
+
+        function showScreen(screenId) {
+            screens.forEach(screen => screen.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function playSuccessSound() {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
+            oscillator.frequency.setValueAtTime(261.63, audioCtx.currentTime); // C4
+            oscillator.frequency.setValueAtTime(329.63, audioCtx.currentTime + 0.1); // E4
+            oscillator.frequency.setValueAtTime(392.00, audioCtx.currentTime + 0.2); // G4
+            oscillator.start(audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+            oscillator.stop(audioCtx.currentTime + 0.5);
+        }
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function loadQuiz(lessonNum) {
+            const quizContainer = document.querySelector(`#lesson-${lessonNum} .quiz-container`);
+            quizContainer.innerHTML = '';
+            lessonScores[lessonNum] = { correct: 0, answered: 0 };
+            const lessonQuiz = quizzes[lessonNum];
+
+            lessonQuiz.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.classList.add('quiz-question-container');
+                
+                const questionText = document.createElement('p');
+                questionText.classList.add('quiz-question');
+                questionText.textContent = `${index + 1}. ${q.question}`;
+                
+                const answersDiv = document.createElement('div');
+                answersDiv.classList.add('answers-grid');
+
+                const shuffledAnswers = shuffle([...q.answers]);
+
+                shuffledAnswers.forEach(answer => {
+                    const button = document.createElement('button');
+                    button.classList.add('answer-btn');
+                    button.textContent = answer;
+                    button.onclick = () => checkAnswer(lessonNum, index, answer, q.correct, q.explanation, button);
+                    answersDiv.appendChild(button);
+                });
+
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.id = `feedback-${lessonNum}-${index}`;
+                feedbackDiv.classList.add('feedback');
+                feedbackDiv.style.display = 'none';
+                
+                questionDiv.appendChild(questionText);
+                questionDiv.appendChild(answersDiv);
+                questionDiv.appendChild(feedbackDiv);
+                quizContainer.appendChild(questionDiv);
+            });
+        }
+
+        function checkAnswer(lessonNum, questionIndex, selectedAnswer, correctAnswer, explanation, btn) {
+            const feedbackDiv = document.getElementById(`feedback-${lessonNum}-${questionIndex}`);
+            const questionContainer = btn.closest('.answers-grid');
+            
+            Array.from(questionContainer.children).forEach(button => button.disabled = true);
+            
+            let feedbackHTML;
+            if (selectedAnswer === correctAnswer) {
+                lessonScores[lessonNum].correct++;
+                const randomPraise = correctFeedbackPhrases[Math.floor(Math.random() * correctFeedbackPhrases.length)];
+                btn.style.backgroundColor = 'var(--correct-bg)';
+                btn.style.borderColor = 'var(--correct-text)';
+                feedbackDiv.classList.add('correct');
+                feedbackHTML = `<strong>${randomPraise}</strong><p>${explanation}</p><p>הַשֵּׁם שָׂמֵחַ בַּלְּמִידָה שֶׁלְּךָ! 💖</p>`;
+                playSuccessSound();
+            } else {
+                btn.style.backgroundColor = 'var(--incorrect-bg)';
+                btn.style.borderColor = 'var(--incorrect-text)';
+                feedbackDiv.classList.add('incorrect');
+                feedbackHTML = `<strong>לֹא בְּדִיּוּק... 🤔</strong><p>הַתְּשׁוּבָה הַנְּכוֹנָה הִיא: "${correctAnswer}".<br>${explanation}</p><p>גַּם כְּשֶׁטּוֹעִים - לוֹמְדִים! הַשֵּׁם אוֹהֵב אוֹתְךָ תָּמִיד! 💡</p>`;
+            }
+            
+            feedbackDiv.innerHTML = feedbackHTML;
+            feedbackDiv.style.display = 'block';
+
+            lessonScores[lessonNum].answered++;
+            if (lessonScores[lessonNum].answered === quizzes[lessonNum].length) {
+                showLessonResult(lessonNum);
+            }
+        }
+
+        function showLessonResult(lessonNum) {
+            const quizContainer = document.querySelector(`#lesson-${lessonNum} .quiz-container`);
+            const resultDiv = document.createElement('div');
+            resultDiv.style.marginTop = '30px';
+
+            if (lessonScores[lessonNum].correct >= 2) { // Pass if 2 out of 3 are correct (66%)
+                const nextLessonNum = lessonNum + 1;
+                let buttonText, transitionText;
+                
+                if (nextLessonNum <= 4) {
+                    transitionText = {
+                        1: "נִפְלָא! עַכְשָׁו כְּשֶׁהֵבַנּוּ כַּמָּה הַמִּצְוָה חֲבִיבָה, מוּכָנִים לְגַלּוֹת סוֹד מַטְרִיף עַל הַחֲנֻכִּיָּה?",
+                        2: "יֵשׁ לְךָ אֶת זֶה! אִם הַחֲנֻכִּיָּה הִיא כְּמוֹ הַמְּנוֹרָה, אָז אֵיפֹה בֵּית הַמִּקְדָּשׁ שֶׁלָּנוּ הַיּוֹם? בּוֹאוּ נְגַלֶּה!",
+                        3: "אַתָּה אַלּוּף! אִם הַבַּיִת שֶׁלָּנוּ הוּא בֵּית מִקְדָּשׁ, מָה הַדָּבָר הֲכִי חָשׁוּב לַעֲשׂוֹת בּוֹ? קָדִימָה לַשִּׁיעוּר הָאַחֲרוֹן!",
+                    }[lessonNum];
+                    buttonText = 'לַשִּׁיעוּר הַבָּא! 🚀';
+                } else {
+                    transitionText = "כָּל הַכָּבוֹד! סִיַּמְתָּ אֶת כָּל הַשִּׁיעוּרִים! עַכְשָׁו אַתָּה מוּכָן לְקַבֵּל אֶת תְּעוּדַת הַהִצְטַיְּנוּת שֶׁלְּךָ!";
+                    buttonText = 'לְקַבָּלַת הַתְּעוּדָה! 🏆';
+                }
+
+                resultDiv.innerHTML = `<p>${transitionText}</p>`;
+                const nextBtn = document.createElement('button');
+                nextBtn.textContent = buttonText;
+                nextBtn.classList.add('main-btn', 'next-btn');
+                nextBtn.onclick = () => {
+                    if (nextLessonNum <= 4) {
+                        currentLesson = nextLessonNum;
+                        loadQuiz(currentLesson);
+                        showScreen(`lesson-${currentLesson}`);
+                    } else {
+                        showScreen('certificate-screen');
+                    }
+                };
+                resultDiv.appendChild(nextBtn);
+            } else {
+                resultDiv.innerHTML = `<p><strong>בּוֹא נְנַסֶּה שׁוּב! אֲנִי בָּטוּחַ שֶׁהַפַּעַם תַּצְלִיחַ! 💪</strong></p>`;
+                const retryBtn = document.createElement('button');
+                retryBtn.textContent = 'לְנַסּוֹת שׁוּב';
+                retryBtn.classList.add('main-btn');
+                retryBtn.onclick = () => {
+                    loadQuiz(lessonNum); // Reload the same quiz
+                };
+                resultDiv.appendChild(retryBtn);
+            }
+            quizContainer.appendChild(resultDiv);
+        }
+
+        startBtn.addEventListener('click', () => {
+            // Initialize AudioContext on user interaction
+            if (!audioCtx) {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                } catch(e) {
+                    console.error("Web Audio API is not supported in this browser");
+                }
+            }
+            currentLesson = 1;
+            loadQuiz(currentLesson);
+            showScreen(`lesson-${currentLesson}`);
+        });
+
+    </script>
+
+</body>
+</html>

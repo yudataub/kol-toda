@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>קטלוג חנוכה בהלכה ובאגדה 🕎</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Arial', 'David', sans-serif;
+            background: linear-gradient(160deg, #1a0a00 0%, #2d1000 40%, #1a0505 100%);
+            min-height: 100vh;
+            color: #f0e6c8;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2.2rem 2rem;
+            background: linear-gradient(135deg, #7a3800, #c06000, #7a3800);
+            border-radius: 18px;
+            color: #fff8e0;
+            box-shadow: 0 4px 30px rgba(200,120,0,0.4), inset 0 1px 0 rgba(255,220,100,0.3);
+            border: 1px solid rgba(255,180,50,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        header::before {
+            content: "🕎";
+            position: absolute;
+            font-size: 8rem;
+            opacity: 0.07;
+            top: -1rem;
+            left: 1rem;
+        }
+        header::after {
+            content: "🕎";
+            position: absolute;
+            font-size: 8rem;
+            opacity: 0.07;
+            top: -1rem;
+            right: 1rem;
+        }
+        header h1 { font-size: 2.2rem; margin-bottom: 0.3rem; text-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+        header .subtitle { font-size: 1rem; opacity: 0.85; }
+        header .stats { margin-top: 0.6rem; font-size: 0.85rem; opacity: 0.7; }
+
+        /* SEARCH */
+        .search-wrap {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .search-wrap input {
+            width: 100%;
+            padding: 0.85rem 1.2rem 0.85rem 3rem;
+            font-size: 1rem;
+            border: 2px solid rgba(255,180,50,0.3);
+            border-radius: 12px;
+            outline: none;
+            font-family: inherit;
+            background: rgba(255,255,255,0.07);
+            color: #f0e6c8;
+            direction: rtl;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-wrap input::placeholder { color: rgba(240,230,200,0.45); }
+        .search-wrap input:focus {
+            border-color: rgba(255,180,50,0.7);
+            box-shadow: 0 0 0 3px rgba(200,120,0,0.2);
+            background: rgba(255,255,255,0.1);
+        }
+        .search-icon {
+            position: absolute; left: 1rem; top: 50%;
+            transform: translateY(-50%); font-size: 1.1rem; opacity: 0.5; pointer-events: none;
+        }
+        .search-count { text-align: center; font-size: 0.82rem; color: rgba(240,230,200,0.55); margin-top: 0.4rem; min-height: 1.2em; }
+        .highlight { background: rgba(255,220,50,0.35); border-radius: 3px; padding: 0 2px; }
+        .card.hidden { display: none !important; }
+        .category.all-hidden { display: none !important; }
+        .no-results { text-align: center; padding: 3rem; color: rgba(240,230,200,0.5); font-size: 1.1rem; display: none; }
+
+        /* TOC */
+        .toc {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,180,50,0.2);
+            border-radius: 14px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .toc-title { font-size: 0.95rem; color: rgba(240,230,200,0.7); margin-bottom: 0.8rem; }
+        .toc-grid { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+        .toc-btn {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.42rem 1rem;
+            border-radius: 20px;
+            border: 2px solid var(--c);
+            color: var(--c);
+            background: transparent;
+            font-family: inherit; font-size: 0.88rem; font-weight: bold;
+            cursor: pointer; text-decoration: none;
+            transition: background 0.15s, color 0.15s, transform 0.1s;
+        }
+        .toc-btn:hover { background: var(--c); color: #1a0a00; transform: translateY(-2px); }
+        .toc-btn .badge {
+            background: var(--c); color: #1a0a00;
+            border-radius: 10px; font-size: 0.7rem; padding: 1px 6px;
+            transition: background 0.15s;
+        }
+        .toc-btn:hover .badge { background: rgba(0,0,0,0.2); color: inherit; }
+
+        /* CATEGORIES */
+        .category { margin-bottom: 2.5rem; }
+        .category-title {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-size: 1.3rem; font-weight: bold; color: #fff8e0;
+            background: var(--cat-color);
+            padding: 0.65rem 1.3rem; border-radius: 10px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+        .category-title .icon { font-size: 1.5rem; }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 0.9rem;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,180,50,0.15);
+            border-radius: 12px;
+            padding: 1.1rem 1.3rem;
+            border-right: 5px solid var(--cat-color);
+            display: flex; flex-direction: column;
+            justify-content: space-between; gap: 0.75rem;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+        }
+        .card h3 { font-size: 0.97rem; line-height: 1.5; color: #fff8e0; }
+        .card .desc { font-size: 0.82rem; color: rgba(240,230,200,0.6); line-height: 1.4; }
+        .card a {
+            display: inline-block; padding: 0.4rem 1rem;
+            background: var(--cat-color); color: #fff8e0;
+            border-radius: 7px; text-decoration: none;
+            font-size: 0.83rem; font-weight: bold; text-align: center;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .card a:hover { opacity: 0.85; transform: scale(1.03); }
+
+        /* color vars */
+        .cat-main    { --cat-color: #c06000; }
+        .cat-shiurim { --cat-color: #7a3800; }
+        .cat-advanced{ --cat-color: #8b0000; }
+        .cat-quiz    { --cat-color: #5a4000; }
+
+        .summary {
+            text-align: center; margin-top: 1.5rem;
+            color: rgba(240,230,200,0.45); font-size: 0.85rem;
+            border-top: 1px solid rgba(255,180,50,0.15); padding-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🕎 חנוכה בהלכה ובאגדה</h1>
+    <div class="subtitle">שיעורים, חידונים ומשחקים לחג האורים</div>
+    <div class="stats">21 פריטים &bull; 3 קטגוריות</div>
+</header>
+
+<!-- מפתח נושאים -->
+<nav class="toc">
+    <div class="toc-title">📚 מפתח נושאים — קפוץ ישירות לקטגוריה:</div>
+    <div class="toc-grid">
+        <a href="#cat-shiurim"  class="toc-btn" style="--c:#e08030">📖 שיעורים <span class="badge" id="badge-shiurim"></span></a>
+        <a href="#cat-advanced" class="toc-btn" style="--c:#e04040">🌟 ברמה גבוהה + משחקים <span class="badge" id="badge-advanced"></span></a>
+        <a href="#cat-quiz"     class="toc-btn" style="--c:#d4a020">🕎 חידונים <span class="badge" id="badge-quiz"></span></a>
+    </div>
+</nav>
+
+<!-- חיפוש -->
+<div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="חפש שיעור, נושא או מושג..." autocomplete="off">
+</div>
+<div class="search-count" id="searchCount"></div>
+<div class="no-results" id="noResults">😕 לא נמצאו פריטים התואמים את החיפוש</div>
+
+<!-- קטגוריה 1: שיעורים -->
+<section id="cat-shiurim" class="category cat-shiurim">
+    <div class="category-title">
+        <span class="icon">📖</span>
+        <span>שיעורים</span>
+    </div>
+    <div class="cards-grid">
+
+        <div class="card">
+            <h3>הוֹדָיָה — שַׁעַר הַכְּנִיסָה אֶל ה' 💖</h3>
+            <p class="desc">כיצד הודיה היא הכניסה האמיתית לקרבת ה' — שיעור לחנוכה</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעורים/הודיה-שער-הכניסה-אל-ה" target="_blank">פתח שיעור</a>
+        </div>
+
+        <div class="card">
+            <h3>ברית חנוכה והמספר שמונה</h3>
+            <p class="desc">הקשר העמוק בין ברית המילה, חנוכה, ומשמעות המספר שמונה</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעורים/ברית-חנוכה-והמספר-שמונה" target="_blank">פתח שיעור</a>
+        </div>
+
+        <div class="card">
+            <h3>ההודיה מביאה שמחה</h3>
+            <p class="desc">שיעור על הקשר בין הודיה לשמחה אמיתית בחנוכה</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעורים/ההודיה-מביאה-שמחה" target="_blank">פתח שיעור</a>
+        </div>
+
+        <div class="card">
+            <h3>דוד המלך, החנוכה וסוד ההודיה במספר 4</h3>
+            <p class="desc">גילוי הסוד שבין דוד המלך, חנוכה, וסוד המספר 4 בהודיה</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעורים/דוד-המלך-החנוכה-וסוד-ההודיה-במספר-4" target="_blank">פתח שיעור</a>
+        </div>
+
+        <div class="card">
+            <h3>חפצא וגברא: שורש המחלוקת בהדלקת נרות חנוכה 🕯️</h3>
+            <p class="desc">ניתוח עמוק של מחלוקת בית שמאי ובית הלל — חפצא או גברא?</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעורים/חפצא-וגברא-שורש-המחלוקת-בהדלקת-נרות-חנוכה" target="_blank">פתח שיעור</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- קטגוריה 2: שיעור ומשחק ברמה גבוהה -->
+<section id="cat-advanced" class="category cat-advanced">
+    <div class="category-title">
+        <span class="icon">🌟</span>
+        <span>שיעור ומשחק ברמה גבוהה</span>
+    </div>
+    <div class="cards-grid">
+
+        <div class="card">
+            <h3>🕎 חֲנֻכָּה: מְהַדְּרִין מִן הַמְהַדְּרִין! 💫</h3>
+            <p class="desc">שיעור ומשחק על הידור מצווה בחנוכה — מהדרין מן המהדרין</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעור-ומשחק-ברמה-גבוהה/חנכה-מהדרין-מן-המהדרין" target="_blank">פתח</a>
+        </div>
+
+        <div class="card">
+            <h3>🕎 מַחֲלֹקֶת הָרַמַ״א וְהַמַּהֲרַשַּׁ״ל 💫</h3>
+            <p class="desc">ניתוח הלכתי מעמיק של מחלוקת הרמ"א והמהרש"ל בדיני חנוכה</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעור-ומשחק-ברמה-גבוהה/מחלקת-הרמא-והמהרשל" target="_blank">פתח</a>
+        </div>
+
+        <div class="card">
+            <h3>🕎 מַאי חֲנֻכָּה? — מַסָּע לְעֹמֶק הַחַג ✨</h3>
+            <p class="desc">מסע אינטראקטיבי לעומק שאלת "מאי חנוכה" ומשמעות החג</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעור-ומשחק-ברמה-גבוהה/מאי-חנכה-מסע-לעמק-החג" target="_blank">פתח</a>
+        </div>
+
+        <div class="card">
+            <h3>🕎 סוֹדוֹת הַהִידּוּר בְּנֵר חֲנֻכָּה ✨</h3>
+            <p class="desc">גילוי סודות ההידור בהדלקת נרות חנוכה — שיעור ברמה גבוהה</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעור-ומשחק-ברמה-גבוהה/סודות-ההידור-בנר-חנכה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card">
+            <h3>🌟 הַמַּקְרֶה הַנִּדּוֹן: שְׁאֵלַת רַבִּי עֲקִיבָא אִיגֶר</h3>
+            <p class="desc">ניתוח שאלת רבי עקיבא איגר בדיני חנוכה — שיעור הלכה מתקדם</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעור-ומשחק-ברמה-גבוהה/המקרה-הנדון-שאלת-רבי-עקיבא-איגר" target="_blank">פתח</a>
+        </div>
+
+        <div class="card">
+            <h3>🕎 זְכִירָה וְהוֹדָאָה בְּנֵר חֲנֻכָּה 💖</h3>
+            <p class="desc">שיעור על עניין הזכירה וההודאה בהדלקת נרות חנוכה</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעור-ומשחק-ברמה-גבוהה/זכירה-והודאה-בנר-חנכה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card">
+            <h3>💝 הוֹדָאָה אִישִׁית מֵהַלֵּב</h3>
+            <p class="desc">שיעור על הודאה אישית ואמיתית מעומק הלב — חנוכה כהזדמנות</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעור-ומשחק-ברמה-גבוהה/הודאה-אישית-מהלב" target="_blank">פתח</a>
+        </div>
+
+        <div class="card">
+            <h3>אוֹר הַהוֹדָיָה — מַעֲשֵׂה הַהַדְלָקָה 💖</h3>
+            <p class="desc">הקשר בין אור ההודיה למעשה הדלקת הנרות — שיעור ומחשבה</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעור-ומשחק-ברמה-גבוהה/אור-ההודיה-מעשה-ההדלקה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card">
+            <h3>🕎 מָדוּעַ שָׁרִים אַחֲרֵי הַדְלָקַת נֵרוֹת חֲנֻכָּה? 🎵✨</h3>
+            <p class="desc">שיעור על מנהג השירה אחרי הדלקת הנרות ומשמעותו הרוחנית</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעור-ומשחק-ברמה-גבוהה/מדוע-שרים-אחרי-הדלקת-נרות-חנכה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card">
+            <h3>🎮 הוֹדָיָה — שַׁעַר הַכְּנִיסָה אֶל ה' 💖</h3>
+            <p class="desc">משחק אינטראקטיבי על הודיה כשער לקרבת ה' — ברמה גבוהה</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעור-ומשחק-ברמה-גבוהה/הודיה-שער-הכניסה-אל-ה" target="_blank">פתח משחק</a>
+        </div>
+
+        <div class="card">
+            <h3>כָּל נֵר — נְשָׁמָה 💫🕯️</h3>
+            <p class="desc">שיעור מרגש: כל נר חנוכה כנשמה — אור, קשר, ועומק רוחני</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעור-ומשחק-ברמה-גבוהה/כל-נר-נשמה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card">
+            <h3>🌟 משחק חנוכה מלא אור והידור! 🕎</h3>
+            <p class="desc">משחק חנוכה אינטראקטיבי ברמה גבוהה — מלא אור, ידע והידור</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/שיעור-ומשחק-ברמה-גבוהה/משחק-חנוכה-מלא-אור-והידור" target="_blank">פתח משחק</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- קטגוריה 3: חידונים -->
+<section id="cat-quiz" class="category cat-quiz">
+    <div class="category-title">
+        <span class="icon">🕎</span>
+        <span>חידונים</span>
+    </div>
+    <div class="cards-grid">
+
+        <div class="card">
+            <h3>🕎 חידון הודיה לחנוכה</h3>
+            <p class="desc">חידון ידע על נושא ההודיה בחנוכה — מושגים, הלכות ואגדות</p>
+            <a href="https://sites.google.com/view/yuda-taub-hanukkah/חידונים/חידון-הודיה-לחנוכה" target="_blank">פתח חידון</a>
+        </div>
+
+    </div>
+</section>
+
+<div class="no-results" id="noResults2"></div>
+
+<div class="summary">
+    סה"כ 18 פריטים &bull; 3 קטגוריות &bull; חנוכה בהלכה ובאגדה
+</div>
+
+<script>
+(function() {
+    // badge counts
+    const catMap = {
+        'cat-shiurim':  'badge-shiurim',
+        'cat-advanced': 'badge-advanced',
+        'cat-quiz':     'badge-quiz'
+    };
+    Object.entries(catMap).forEach(([secId, badgeId]) => {
+        const sec = document.getElementById(secId);
+        if (!sec) return;
+        const badge = document.getElementById(badgeId);
+        if (badge) badge.textContent = sec.querySelectorAll('.card').length;
+    });
+
+    // search
+    const input     = document.getElementById('searchInput');
+    const countEl   = document.getElementById('searchCount');
+    const noResults = document.getElementById('noResults');
+    const allCards  = Array.from(document.querySelectorAll('.card'));
+    const allSecs   = Array.from(document.querySelectorAll('.category'));
+
+    function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+    function hi(text, q) {
+        if (!q) return text;
+        return text.replace(new RegExp('(' + esc(q) + ')', 'gi'), '<mark class="highlight">$1</mark>');
+    }
+
+    input.addEventListener('input', function() {
+        const q = this.value.trim();
+        let vis = 0;
+        allCards.forEach(card => {
+            const h3   = card.querySelector('h3');
+            const desc = card.querySelector('.desc');
+            if (h3   && !h3.getAttribute('data-orig'))   h3.setAttribute('data-orig', h3.textContent);
+            if (desc && !desc.getAttribute('data-orig')) desc.setAttribute('data-orig', desc.textContent);
+            const hay = ((h3 ? h3.getAttribute('data-orig') : '') + ' ' + (desc ? desc.getAttribute('data-orig') : '')).toLowerCase();
+            if (!q || hay.includes(q.toLowerCase())) {
+                card.classList.remove('hidden');
+                vis++;
+                if (h3)   h3.innerHTML   = hi(h3.getAttribute('data-orig'), q);
+                if (desc) desc.innerHTML = hi(desc.getAttribute('data-orig'), q);
+            } else {
+                card.classList.add('hidden');
+                if (h3)   h3.innerHTML   = h3.getAttribute('data-orig');
+                if (desc) desc.innerHTML = desc.getAttribute('data-orig');
+            }
+        });
+        allSecs.forEach(sec => {
+            sec.classList.toggle('all-hidden', sec.querySelectorAll('.card:not(.hidden)').length === 0);
+        });
+        countEl.textContent = q ? vis + ' פריטים נמצאו' : '';
+        noResults.style.display = (q && vis === 0) ? 'block' : 'none';
+    });
+})();
+</script>
+</body>
+</html>

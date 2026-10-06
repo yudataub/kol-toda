@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+    direction: rtl;
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #4a1d6e 0%, #7b2ff7 50%, #f7b733 150%);
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 650px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  }
+  h1 {
+    text-align: center;
+    color: #4a1d6e;
+    font-size: 26px;
+    margin-bottom: 5px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #7b2ff7;
+    font-size: 16px;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  .progress-bar {
+    height: 14px;
+    background: #eee;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 25px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f7b733, #fc4a1a);
+    transition: width 0.4s ease;
+    border-radius: 10px;
+  }
+  .score-box {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #4a1d6e;
+    margin-bottom: 15px;
+  }
+  .card {
+    background: #fdf6ff;
+    border: 3px solid #7b2ff7;
+    border-radius: 18px;
+    padding: 25px;
+    text-align: center;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 25px;
+    line-height: 1.6;
+  }
+  .emoji-big {
+    font-size: 40px;
+    display: block;
+    margin-bottom: 10px;
+  }
+  .buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .choice-btn {
+    flex: 1;
+    min-width: 140px;
+    padding: 20px 15px;
+    border: none;
+    border-radius: 16px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    color: white;
+  }
+  .choice-btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  }
+  .choice-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .btn-king {
+    background: linear-gradient(135deg, #f7b733, #fc4a1a);
+  }
+  .btn-ruler {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+  }
+  .feedback {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 14px;
+    font-size: 17px;
+    line-height: 1.7;
+    display: none;
+    text-align: center;
+  }
+  .feedback.correct {
+    background: #e6f9ea;
+    border: 2px solid #34c759;
+    color: #1a6b2f;
+  }
+  .feedback.incorrect {
+    background: #fdeaea;
+    border: 2px solid #ff3b30;
+    color: #8b1a12;
+  }
+  .next-btn {
+    display: block;
+    margin: 20px auto 0;
+    padding: 14px 40px;
+    background: linear-gradient(135deg, #4a1d6e, #7b2ff7);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    display: none;
+  }
+  .final-screen {
+    text-align: center;
+    display: none;
+  }
+  .final-screen .crown-emoji {
+    font-size: 70px;
+    margin-bottom: 10px;
+  }
+  .final-screen h2 {
+    color: #4a1d6e;
+    font-size: 24px;
+  }
+  .final-message {
+    background: #fff8e6;
+    border: 2px solid #f7b733;
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 20px;
+    font-size: 17px;
+    line-height: 1.7;
+    color: #6b4a00;
+  }
+  .restart-btn {
+    margin-top: 20px;
+    padding: 14px 40px;
+    background: linear-gradient(135deg, #34c759, #248a3d);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>👑 מלך או מושל? 👑</h1>
+  <div class="subtitle">האם הילד/ה בסיפור ממליכ/ה את ה' באהבה, או שה' אצלה כמו מושל?</div>
+
+  <div id="gameScreen">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="score-box">ניקוד: <span id="score">0</span> / <span id="total">0</span></div>
+
+    <div class="card" id="scenarioCard"></div>
+
+    <div class="buttons" id="buttonsRow">
+      <button class="choice-btn btn-king" id="kingBtn">👑 מלך<br><span style="font-size:13px;font-weight:normal">עושה מרצון ואהבה</span></button>
+      <button class="choice-btn btn-ruler" id="rulerBtn">😐 מושל<br><span style="font-size:13px;font-weight:normal">עושה בכפייה או פחד</span></button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="nextBtn">לשאלה הבאה ←</button>
+  </div>
+
+  <div class="final-screen" id="finalScreen">
+    <div class="crown-emoji">👑</div>
+    <h2>סיימתם את המשחק!</h2>
+    <div class="score-box">הניקוד הסופי שלכם: <span id="finalScore"></span></div>
+    <div class="final-message" id="finalMessage"></div>
+    <button class="restart-btn" id="restartBtn">שחקו שוב מההתחלה</button>
+  </div>
+</div>
+
+<script>
+const scenarios = [
+  {
+    emoji: "🎵",
+    text: "רותי שרה זמירות שבת בקול רם, עם חיוך גדול, כי היא אוהבת לשיר לה'.",
+    answer: "king",
+    explanation: "רותי שרה מתוך אהבה ושמחה - זה סימן שהיא ממליכה את ה' מרצון!"
+  },
+  {
+    emoji: "😤",
+    text: "יוסי עושה קידוש במלמול מהיר, כי הוא רק רוצה לגמור ולעבור לאכול.",
+    answer: "ruler",
+    explanation: "כשעושים מצווה 'כדי לגמור מהר', בלי חשק ובלי שמחה - זה כמו לציית למושל, לא להמליך מלך."
+  },
+  {
+    emoji: "🙋‍♀️",
+    text: "כשאמא ביקשה עזרה בבית, מאיה ענתה בחיוך: \"בשמחה אמא!\" ורצה לעזור.",
+    answer: "king",
+    explanation: "מאיה עושה את המצווה (כיבוד הורים) בשמחה אמיתית - זו המלכה!"
+  },
+  {
+    emoji: "😒",
+    text: "דוד מתלונן: \"למה אני חייב ללכת לבית כנסת? זה כל כך משעמם...\"",
+    answer: "ruler",
+    explanation: "כשמרגישים שזו חובה כפויה ולא רצון פנימי, ה' נתפס כמושל ולא כמלך."
+  },
+  {
+    emoji: "🙏",
+    text: "נועה מודה לה' כל בוקר על היום החדש, ומרגישה שמחה אמיתית בלב.",
+    answer: "king",
+    explanation: "תודה מהלב, מתוך אהבה - זה בדיוק מה שאומר שאנחנו רוצים בה' כמלך שלנו."
+  },
+  {
+    emoji: "😨",
+    text: "איתי נותן צדקה רק כי הוא מפחד שיקרה לו משהו רע אם לא ייתן.",
+    answer: "ruler",
+    explanation: "פעולה מתוך פחד בלבד (ולא מאהבה) מבטאת יחס של מושל, לא של מלך נבחר באהבה."
+  },
+  {
+    emoji: "🎉",
+    text: "שירה אומרת לחברותיה: \"איזה כיף שיש לנו מצוות! אני כל כך שמחה להיות יהודייה!\"",
+    answer: "king",
+    explanation: "השמחה הפנימית על עצם קיום המצוות מראה שה' הוא מלך אהוב, לא רק כוח שולט."
+  },
+  {
+    emoji: "🥱",
+    text: "אבי מברך ברכת המזון מהר מאוד ובלי כוונה, רק כי 'חייבים לברך'.",
+    answer: "ruler",
+    explanation: "ברכה ללא כוונה ושמחה, רק מתוך תחושת חובה - זה יחס של מושל."
+  },
+  {
+    emoji: "💃",
+    text: "בחג, המשפחה של תמר רוקדת ושרה לכבוד ה', עם המון שמחה.",
+    answer: "king",
+    explanation: "ריקוד ושירה מתוך שמחה אמיתית לכבוד ה' - זו בדיוק המלכה מתוך אהבה!"
+  },
+  {
+    emoji: "😐",
+    text: "עומר מתפלל כל יום, אבל אומר: \"אני רק עושה את זה כי חייבים, אין לי חשק.\"",
+    answer: "ruler",
+    explanation: "קיום מצווה ללא רצון וללא שמחה פנימית מבטא יחס של מושל ולא של מלך."
+  }
+];
+
+let currentIndex = 0;
+let score = 0;
+let answered = false;
+
+document.getElementById('total').textContent = scenarios.length;
+
+function loadScenario() {
+  answered = false;
+  const s = scenarios[currentIndex];
+  document.getElementById('scenarioCard').innerHTML =
+    '<div><span class="emoji-big">' + s.emoji + '</span>' + s.text + '</div>';
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('nextBtn').style.display = 'none';
+  document.getElementById('kingBtn').disabled = false;
+  document.getElementById('rulerBtn').disabled = false;
+  document.getElementById('progressFill').style.width =
+    (currentIndex / scenarios.length * 100) + '%';
+}
+
+function handleAnswer(choice) {
+  if (answered) return;
+  answered = true;
+  const s = scenarios[currentIndex];
+  const correct = (choice === s.answer);
+  if (correct) score++;
+
+  document.getElementById('score').textContent = score;
+  document.getElementById('kingBtn').disabled = true;
+  document.getElementById('rulerBtn').disabled = true;
+
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+  fb.className = 'feedback ' + (correct ? 'correct' : 'incorrect');
+  const correctLabel = s.answer === 'king' ? '👑 מלך' : '😐 מושל';
+  fb.innerHTML = (correct ? '✅ נכון מאוד! ' : '❌ לא בדיוק - התשובה הנכונה היא ' + correctLabel + '. ') +
+    '<br>' + s.explanation;
+
+  document.getElementById('nextBtn').style.display = 'block';
+}
+
+document.getElementById('kingBtn').addEventListener('click', () => handleAnswer('king'));
+document.getElementById('rulerBtn').addEventListener('click', () => handleAnswer('ruler'));
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  currentIndex++;
+  if (currentIndex < scenarios.length) {
+    loadScenario();
+  } else {
+    showFinal();
+  }
+});
+
+function showFinal() {
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('gameScreen').style.display = 'none';
+  document.getElementById('finalScreen').style.display = 'block';
+  document.getElementById('finalScore').textContent = score + ' / ' + scenarios.length;
+
+  let msg;
+  if (score >= 8) {
+    msg = "כל הכבוד! אתם ממש מבינים איך ממליכים את ה' באהבה! עכשיו תפקידכם להפוך את זה למעשה - לעשות מצוות בשמחה, לשיר לה' ולהודות לו מהלב!";
+  } else if (score >= 5) {
+    msg = "יופי! למדתם הרבה על ההבדל בין מלך למושל. כדאי לחשוב עוד קצת - איך אתם עצמכם עושים מצוות: מתוך שמחה או מתוך הרגשת חובה?";
+  } else {
+    msg = "שווה לחזור על הנקודות המרכזיות: מלך זה מי שממליכים אותו מרצון ואהבה, ומושל זה מי שמצייתים לו מפחד או חובה. איך אתם רוצים להמליך את ה'?";
+  }
+  document.getElementById('finalMessage').textContent = msg;
+}
+
+document.getElementById('restartBtn').addEventListener('click', () => {
+  currentIndex = 0;
+  score = 0;
+  document.getElementById('score').textContent = 0;
+  document.getElementById('gameScreen').style.display = 'block';
+  document.getElementById('finalScreen').style.display = 'none';
+  loadScenario();
+});
+
+loadScenario();
+</script>
+</body>
+</html>

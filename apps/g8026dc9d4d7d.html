@@ -1,0 +1,900 @@
+<!DOCTYPE html>  
+<html lang="he" dir="rtl">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  
+<title>קטלוג שיעורים לפי נושאים</title>  
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Frank+Ruhl+Libre:wght@400;700;900&display=swap" rel="stylesheet">  
+<style>  
+/* ══════════════════════════════════════  
+   BASE  
+══════════════════════════════════════ */  
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}  
+:root{  
+  --bg:      #0c0c1e;  
+  --surf:    #14142b;  
+  --surf2:   #1c1c38;  
+  --surf3:   #222244;  
+  --border:  rgba(255,255,255,0.07);  
+  --gold:    #d4af37;  
+  --gold-lt: #f5d76e;  
+  --gold-dk: #8a6d10;  
+  --text:    #e6deff;  
+  --muted:   #7a7499;  
+  --shiur:   #60a5fa;  
+  --file:    #4ade80;  
+  --r:       12px;  
+  --r-lg:    18px;  
+}  
+html{scroll-behavior:smooth}  
+body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}  
+::-webkit-scrollbar{width:5px}  
+::-webkit-scrollbar-track{background:var(--bg)}  
+::-webkit-scrollbar-thumb{background:var(--gold-dk);border-radius:99px}  
+
+/* ══════════════════════════════════════  
+   STICKY NAV  
+══════════════════════════════════════ */  
+.nav{  
+  position:sticky;top:0;z-index:900;  
+  background:rgba(12,12,30,0.95);  
+  backdrop-filter:blur(20px);  
+  border-bottom:1px solid rgba(212,175,55,0.15);  
+  padding:10px 20px;  
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;  
+}  
+.nav-logo{  
+  font-family:'Frank Ruhl Libre',serif;  
+  font-size:1.1rem;font-weight:900;  
+  background:linear-gradient(135deg,var(--gold-lt),var(--gold));  
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;  
+  white-space:nowrap;flex-shrink:0;  
+}  
+.search-box{  
+  flex:1;min-width:180px;position:relative;  
+}  
+.search-box input{  
+  width:100%;background:var(--surf2);  
+  border:1.5px solid rgba(212,175,55,0.2);  
+  border-radius:50px;padding:8px 38px 8px 16px;  
+  color:var(--text);font-size:.9rem;  
+  font-family:'Heebo',sans-serif;outline:none;  
+  transition:border-color .2s,box-shadow .2s;  
+}  
+.search-box input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,175,55,0.1)}  
+.search-box input::placeholder{color:var(--muted)}  
+.search-box .si{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem;pointer-events:none}  
+.filters{display:flex;gap:6px;flex-wrap:wrap}  
+.fb{  
+  padding:5px 14px;border-radius:50px;  
+  border:1.5px solid rgba(212,175,55,0.2);  
+  background:transparent;color:var(--muted);  
+  cursor:pointer;font-size:.8rem;font-family:'Heebo',sans-serif;  
+  transition:all .18s;white-space:nowrap;  
+}  
+.fb:hover{border-color:var(--gold);color:var(--gold-lt)}  
+.fb.on{background:var(--gold);color:#0c0c1e;border-color:var(--gold);font-weight:700}  
+
+/* ══════════════════════════════════════  
+   HERO  
+══════════════════════════════════════ */  
+.hero{  
+  text-align:center;padding:60px 20px 44px;  
+  background:  
+    radial-gradient(ellipse 80% 55% at 50% 0%,rgba(212,175,55,.09),transparent),  
+    radial-gradient(ellipse 50% 40% at 85% 110%,rgba(110,60,210,.07),transparent);  
+  position:relative;overflow:hidden;  
+}  
+.hero-tag{  
+  display:inline-flex;align-items:center;gap:7px;  
+  background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.25);  
+  border-radius:50px;padding:5px 16px;font-size:.8rem;  
+  color:var(--gold);margin-bottom:20px;letter-spacing:.04em;  
+}  
+.hero h1{  
+  font-family:'Frank Ruhl Libre',serif;  
+  font-size:clamp(2rem,5.5vw,3.6rem);font-weight:900;  
+  background:linear-gradient(140deg,#fff 20%,var(--gold-lt) 60%,var(--gold));  
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;  
+  line-height:1.15;margin-bottom:10px;  
+}  
+.hero-sub{color:var(--muted);font-size:1rem;margin-bottom:30px}  
+.stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}  
+.stat{  
+  background:var(--surf);border:1px solid var(--border);  
+  border-radius:var(--r);padding:12px 20px;text-align:center;min-width:100px;  
+}  
+.stat-n{  
+  font-size:1.7rem;font-weight:800;display:block;line-height:1;  
+  background:linear-gradient(135deg,var(--gold-lt),var(--gold));  
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;  
+}  
+.stat-l{font-size:.73rem;color:var(--muted);margin-top:3px}  
+
+/* ══════════════════════════════════════  
+   TABLE OF CONTENTS  
+══════════════════════════════════════ */  
+.toc-wrap{max-width:980px;margin:0 auto 44px;padding:0 18px}  
+.sec-title{  
+  font-family:'Frank Ruhl Libre',serif;  
+  font-size:1.35rem;font-weight:700;color:var(--gold);  
+  margin-bottom:16px;display:flex;align-items:center;gap:10px;  
+}  
+.sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(212,175,55,.35),transparent)}  
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:8px}  
+.toc-card{  
+  display:flex;align-items:center;gap:9px;  
+  background:var(--surf);border:1px solid var(--border);  
+  border-radius:var(--r);padding:9px 13px;  
+  cursor:pointer;text-decoration:none;color:var(--text);  
+  font-size:.86rem;transition:all .18s;  
+}  
+.toc-card:hover{  
+  background:var(--surf2);border-color:rgba(212,175,55,.28);  
+  color:var(--gold-lt);transform:translateY(-2px);  
+  box-shadow:0 5px 18px rgba(0,0,0,.35);  
+}  
+.toc-card .ti{font-size:1.3rem;flex-shrink:0}  
+.toc-card .tn{flex:1;font-weight:500;line-height:1.3}  
+.toc-card .tc{  
+  background:rgba(212,175,55,.12);color:var(--gold);  
+  font-size:.7rem;font-weight:700;padding:2px 7px;  
+  border-radius:50px;white-space:nowrap;flex-shrink:0;  
+}  
+
+/* ══════════════════════════════════════  
+   CATALOG  
+══════════════════════════════════════ */  
+.cat{max-width:980px;margin:0 auto;padding:0 18px 80px}  
+#no-res{display:none;text-align:center;padding:56px 20px;color:var(--muted);font-size:1.05rem}  
+#no-res.show{display:block}  
+
+/* ── SECTION ── */  
+.sec{margin-bottom:22px;border-radius:var(--r-lg);overflow:hidden}  
+
+.sh{  
+  display:flex;align-items:center;gap:12px;  
+  padding:14px 20px;cursor:pointer;user-select:none;  
+  position:relative;transition:filter .15s;  
+}  
+.sh:hover{filter:brightness(1.1)}  
+.sh-icon{font-size:1.7rem;flex-shrink:0}  
+.sh-info{flex:1}  
+.sh-name{  
+  font-family:'Frank Ruhl Libre',serif;  
+  font-size:1.15rem;font-weight:700;color:#fff;  
+}  
+.sh-meta{font-size:.75rem;margin-top:1px;opacity:.6}  
+.sh-arr{  
+  width:28px;height:28px;border-radius:50%;  
+  background:rgba(0,0,0,.3);  
+  display:flex;align-items:center;justify-content:center;  
+  font-size:.8rem;transition:transform .28s;flex-shrink:0;  
+}  
+.sec.cls .sh-arr{transform:rotate(-90deg)}  
+
+/* section colour themes */  
+.c0  .sh{background:linear-gradient(135deg,#18106a,#0c0845);border-right:4px solid #7c6ff5}  
+.c1  .sh{background:linear-gradient(135deg,#09301e,#051b10);border-right:4px solid #4ade80}  
+.c2  .sh{background:linear-gradient(135deg,#36073a,#1f0421);border-right:4px solid #f472b6}  
+.c3  .sh{background:linear-gradient(135deg,#092352,#050f2e);border-right:4px solid #60a5fa}  
+.c4  .sh{background:linear-gradient(135deg,#3a1d00,#200f00);border-right:4px solid #fb923c}  
+.c5  .sh{background:linear-gradient(135deg,#062530,#031218);border-right:4px solid #2dd4bf}  
+.c6  .sh{background:linear-gradient(135deg,#380606,#1f0303);border-right:4px solid #f87171}  
+.c7  .sh{background:linear-gradient(135deg,#282600,#161400);border-right:4px solid #facc15}  
+.c8  .sh{background:linear-gradient(135deg,#07073a,#040420);border-right:4px solid #a78bfa}  
+.c9  .sh{background:linear-gradient(135deg,#08263a,#041420);border-right:4px solid #38bdf8}  
+.c10 .sh{background:linear-gradient(135deg,#28062e,#170418);border-right:4px solid #e879f9}  
+.c11 .sh{background:linear-gradient(135deg,#072e1e,#04170e);border-right:4px solid #86efac}  
+.c12 .sh{background:linear-gradient(135deg,#190638,#0d0420);border-right:4px solid #c084fc}  
+.c13 .sh{background:linear-gradient(135deg,#260f00,#160800);border-right:4px solid #fbbf24}  
+.c14 .sh{background:linear-gradient(135deg,#001624,#000c14);border-right:4px solid #34d399}  
+.c15 .sh{background:linear-gradient(135deg,#090428,#050214);border-right:4px solid #818cf8}  
+.c16 .sh{background:linear-gradient(135deg,#26052d,#150318);border-right:4px solid #fb7185}  
+
+/* section body */  
+.sb{  
+  background:var(--surf);border:1px solid var(--border);  
+  border-top:none;border-radius:0 0 var(--r-lg) var(--r-lg);  
+  overflow:hidden;  
+  max-height:6000px;opacity:1;  
+  transition:max-height .32s ease,opacity .22s;  
+}  
+.sec.cls .sb{max-height:0;opacity:0;pointer-events:none}  
+
+/* column header */  
+.ch{  
+  display:grid;  
+  grid-template-columns:40px 1fr 115px 88px;  
+  gap:8px;align-items:center;  
+  padding:7px 16px;  
+  background:rgba(0,0,0,.35);  
+  border-bottom:1px solid var(--border);  
+  font-size:.68rem;font-weight:600;  
+  text-transform:uppercase;letter-spacing:.07em;  
+  color:var(--muted);  
+}  
+
+/* row */  
+.row{  
+  display:grid;  
+  grid-template-columns:40px 1fr 115px 88px;  
+  gap:8px;align-items:center;  
+  padding:10px 16px;  
+  border-bottom:1px solid var(--border);  
+  transition:background .12s;  
+}  
+.row:last-child{border-bottom:none}  
+.row:hover{background:rgba(212,175,55,.04)}  
+.row.hid{display:none!important}  
+.row[data-url]{cursor:pointer}
+.row[data-url]:hover{background:rgba(212,175,55,.10)}
+
+.row[data-url] .rt::after{
+  content:' ↗';
+  font-size:.7rem;
+  opacity:0;
+  color:var(--gold);
+  transition:opacity .15s;
+}
+.row[data-url]:hover .rt::after{opacity:1}
+
+
+.rn{  
+  width:30px;height:30px;border-radius:50%;  
+  display:flex;align-items:center;justify-content:center;  
+  font-size:.75rem;font-weight:700;flex-shrink:0;  
+}  
+.rt{font-size:.88rem;color:var(--text);line-height:1.38}  
+.ri{font-size:.75rem;color:var(--muted);direction:ltr;text-align:left}  
+.badge{  
+  display:inline-flex;align-items:center;gap:4px;  
+  font-size:.7rem;font-weight:600;  
+  padding:3px 9px;border-radius:50px;white-space:nowrap;  
+}  
+.bs{background:rgba(96,165,250,.11);color:var(--shiur);border:1px solid rgba(96,165,250,.22)}  
+.bf{background:rgba(74,222,128,.11);color:var(--file); border:1px solid rgba(74,222,128,.22)}  
+
+/* row number colours */  
+.c0  .rn{background:rgba(124,111,245,.18);color:#a89af7}  
+.c1  .rn{background:rgba(74,222,128,.18);color:#86efac}  
+.c2  .rn{background:rgba(244,114,182,.18);color:#f9a8d4}  
+.c3  .rn{background:rgba(96,165,250,.18);color:#93c5fd}  
+.c4  .rn{background:rgba(251,146,60,.18);color:#fdba74}  
+.c5  .rn{background:rgba(45,212,191,.18);color:#99f6e4}  
+.c6  .rn{background:rgba(248,113,113,.18);color:#fca5a5}  
+.c7  .rn{background:rgba(250,204,21,.18);color:#fde047}  
+.c8  .rn{background:rgba(167,139,250,.18);color:#c4b5fd}  
+.c9  .rn{background:rgba(56,189,248,.18);color:#7dd3fc}  
+.c10 .rn{background:rgba(232,121,249,.18);color:#f0abfc}  
+.c11 .rn{background:rgba(134,239,172,.18);color:#bbf7d0}  
+.c12 .rn{background:rgba(192,132,252,.18);color:#d8b4fe}  
+.c13 .rn{background:rgba(251,191,36,.18);color:#fde68a}  
+.c14 .rn{background:rgba(52,211,153,.18);color:#6ee7b7}  
+.c15 .rn{background:rgba(129,140,248,.18);color:#a5b4fc}  
+.c16 .rn{background:rgba(251,113,133,.18);color:#fda4af}  
+
+/* ══════════════════════════════════════  
+   BACK TO TOP  
+══════════════════════════════════════ */  
+#btt{  
+  position:fixed;bottom:26px;left:26px;  
+  width:42px;height:42px;border-radius:50%;  
+  background:var(--gold);color:#0c0c1e;  
+  font-size:1rem;border:none;cursor:pointer;  
+  display:none;align-items:center;justify-content:center;  
+  box-shadow:0 4px 18px rgba(212,175,55,.4);  
+  transition:transform .18s;z-index:800;  
+}  
+#btt:hover{transform:scale(1.1)}  
+#btt.show{display:flex}  
+
+/* ══════════════════════════════════════  
+   RESPONSIVE  
+══════════════════════════════════════ */  
+@media(max-width:580px){  
+  .ch,.row{grid-template-columns:36px 1fr 82px}  
+  .ri,.ch .ci{display:none}  
+  .toc-grid{grid-template-columns:1fr 1fr}  
+  .hero h1{font-size:1.9rem}  
+}  
+</style>  
+</head>  
+<body>  
+
+<!-- ══════ NAV ══════ -->  
+<nav class="nav">  
+  <div class="nav-logo">📚 קטלוג שיעורים</div>  
+  <div class="search-box">  
+    <span class="si">🔍</span>  
+    <input id="srch" type="text" placeholder="חיפוש לפי כותרת או מספר מזהה…">  
+  </div>  
+  <div class="filters">  
+    <button class="fb on" data-f="all">הכול</button>  
+    <button class="fb" data-f="שיעור">🎤 שיעורים</button>  
+    <button class="fb" data-f="קובץ">📄 קבצים</button>  
+  </div>  
+</nav>  
+
+<!-- ══════ HERO ══════ -->  
+<header class="hero">  
+  <div class="hero-tag">✨ אוסף מקיף — שיעורים ומסמכים לאירועי חיים</div>  
+  <h1>קטלוג שיעורים<br>לפי נושאים</h1>  
+  <p class="hero-sub">שיעורים, קבצים ומסמכים לאירועי חיים ושמחות</p>  
+  <div class="stats">  
+    <div class="stat"><span class="stat-n">17</span><div class="stat-l">נושאים</div></div>  
+    <div class="stat"><span class="stat-n">162</span><div class="stat-l">שיעורים</div></div>  
+    <div class="stat"><span class="stat-n">30</span><div class="stat-l">קבצים</div></div>  
+    <div class="stat"><span class="stat-n">192</span><div class="stat-l">סה״כ פריטים</div></div>  
+  </div>  
+</header>  
+
+<!-- ══════ TABLE OF CONTENTS ══════ -->  
+<div class="toc-wrap">  
+  <div class="sec-title">📋 מפתח עניינים</div>  
+  <div class="toc-grid">  
+    <div class="toc-card" onclick="jump('s0')"><span class="ti">🤲</span><span class="tn">תפילה על יולדת</span><span class="tc">14</span></div>  
+    <div class="toc-card" onclick="jump('s1')"><span class="ti">👶</span><span class="tn">להולדת הבן</span><span class="tc">14</span></div>  
+    <div class="toc-card" onclick="jump('s2')"><span class="ti">👧</span><span class="tn">להולדת הבת</span><span class="tc">13</span></div>  
+    <div class="toc-card" onclick="jump('s3')"><span class="ti">🕯️</span><span class="tn">שלום זכר</span><span class="tc">5</span></div>  
+    <div class="toc-card" onclick="jump('s4')"><span class="ti">✡️</span><span class="tn">ברית מילה</span><span class="tc">5</span></div>  
+    <div class="toc-card" onclick="jump('s5')"><span class="ti">🍷</span><span class="tn">קידוש וסעודת הודיה</span><span class="tc">15</span></div>  
+    <div class="toc-card" onclick="jump('s6')"><span class="ti">🪙</span><span class="tn">פדיון הבן</span><span class="tc">3</span></div>  
+    <div class="toc-card" onclick="jump('s7')"><span class="ti">🎂</span><span class="tn">יום הולדת</span><span class="tc">4</span></div>  
+    <div class="toc-card" onclick="jump('s8')"><span class="ti">✂️</span><span class="tn">חלאקה</span><span class="tc">1</span></div>  
+    <div class="toc-card" onclick="jump('s9')"><span class="ti">👸</span><span class="tn">בת מצווה</span><span class="tc">3</span></div>  
+    <div class="toc-card" onclick="jump('s10')"><span class="ti">🎓</span><span class="tn">בר מצווה</span><span class="tc">5</span></div>  
+    <div class="toc-card" onclick="jump('s11')"><span class="ti">💍</span><span class="tn">נישואין ושבע ברכות</span><span class="tc">33</span></div>  
+    <div class="toc-card" onclick="jump('s12')"><span class="ti">🎵</span><span class="tn">הקול החמישי</span><span class="tc">33</span></div>  
+    <div class="toc-card" onclick="jump('s13')"><span class="ti">🏠</span><span class="tn">מזמור שיר חנוכת הבית</span><span class="tc">2</span></div>  
+    <div class="toc-card" onclick="jump('s14')"><span class="ti">🎊</span><span class="tn">הודיה לשמחות</span><span class="tc">3</span></div>  
+    <div class="toc-card" onclick="jump('s15')"><span class="ti">👴</span><span class="tn">גיל זקנה</span><span class="tc">1</span></div>  
+    <div class="toc-card" onclick="jump('s16')"><span class="ti">🕊️</span><span class="tn">עת לספוד</span><span class="tc">5</span></div>  
+  </div>  
+</div>  
+
+<!-- ══════ CATALOG ══════ -->  
+<main class="cat" id="cat">  
+<div id="no-res">😔 לא נמצאו תוצאות לחיפוש זה</div>  
+
+<!-- ───────────────────────────────────────  
+  0 · תפילה על יולדת  
+──────────────────────────────────────── -->  
+<div class="sec c0" id="s0">  
+  <div class="sh" onclick="tog(this)">  
+    <span class="sh-icon">🤲</span>  
+    <div class="sh-info">  
+      <div class="sh-name">תפילה על יולדת</div>  
+      <div class="sh-meta">6 קבצים · 8 שיעורים · סה״כ 14 פריטים</div>  
+    </div>  
+    <div class="sh-arr">▾</div>  
+  </div>  
+  <div class="sb">  
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41708549/-1/0/true" data-t="קובץ"><div class="rn">1</div><div class="rt">תפילות ללידה קלה — סגולת מזמור כ׳ "יענך ביום צרה"</div><div class="ri">41708550</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41708549/-1/0/true" data-t="קובץ"><div class="rn">2</div><div class="rt">ביאור מזמור "יענך" — התעוררות הנפש בתפילה</div><div class="ri">41708549</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41708549/-1/0/true" data-t="קובץ"><div class="rn">3</div><div class="rt">סגולת אמירת הפסוק "מן המצר"</div><div class="ri">41708553</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41708549/-1/0/true" data-t="קובץ"><div class="rn">4</div><div class="rt">סגולת רבינו בחיי לאשה המקשה ללדת</div><div class="ri">41708552</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41708549/-1/0/true" data-t="קובץ"><div class="rn">5</div><div class="rt">סגולת רבינו בחיי — חלק ב׳</div><div class="ri">41708551</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41708549/-1/0/true" data-t="קובץ"><div class="rn">6</div><div class="rt">סגולת "ויהי נועם" ו"יושב בסתר" ליולדת</div><div class="ri">41708833</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41708549/-1/0/true" data-t="שיעור"><div class="rn">7</div><div class="rt">תפילות ומזמורים ליולדת</div><div class="ri">41719457</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41708549/-1/0/true" data-t="קובץ"><div class="rn">8</div><div class="rt">כוחה של הודיה — סגולת "נשמת כל חי"</div><div class="ri">41720200</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41708549/-1/0/true" data-t="שיעור"><div class="rn">9</div><div class="rt">כוחה של הודיה — סגולת "נשמת כל חי"</div><div class="ri">41720204</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41708549/-1/0/true" data-t="שיעור"><div class="rn">10</div><div class="rt">נשמת כל חי וסגולת ההודיה</div><div class="ri">41720214</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41708549/-1/0/true" data-t="שיעור"><div class="rn">11</div><div class="rt">השמחה והברכה בהבאת ילדים לעולם</div><div class="ri">41720215</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41708549/-1/0/true" data-t="קובץ"><div class="rn">12</div><div class="rt">סגולת מזמור לתודה — ללידה קלה וטעמה</div><div class="ri">41720778</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41708549/-1/0/true" data-t="שיעור"><div class="rn">13</div><div class="rt">סגולת מזמור לתודה ללידה קלה וטעמה</div><div class="ri">41720782</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41708549/-1/0/true" data-t="שיעור"><div class="rn">14</div><div class="rt">סגולת מזמור לתודה — ללידה קלה</div><div class="ri">41720783</div><span class="badge bs">🎤 שיעור</span></div>  
+  </div>  
+</div>  
+
+<!-- ───────────────────────────────────────  
+  1 · להולדת הבן  
+──────────────────────────────────────── -->  
+<div class="sec c1" id="s1">  
+  <div class="sh" onclick="tog(this)">  
+    <span class="sh-icon">👶</span>  
+    <div class="sh-info">  
+      <div class="sh-name">להולדת הבן</div>  
+      <div class="sh-meta">4 קבצים · 10 שיעורים · סה״כ 14 פריטים</div>  
+    </div>  
+    <div class="sh-arr">▾</div>  
+  </div>  
+  <div class="sb">  
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200175/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">קרבן יולדת</div><div class="ri">1200175</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200175/-1/0/true" data-t="שיעור"><div class="rn">2</div><div class="rt">דרשה להולדת ילד יהודי</div><div class="ri">1200176</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200175/-1/0/true" data-t="שיעור"><div class="rn">3</div><div class="rt">שלושה זמנים של הודיה בהולדת ילד</div><div class="ri">1200177</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200175/-1/0/true" data-t="שיעור"><div class="rn">4</div><div class="rt">הודיה של יולדת</div><div class="ri">1200178</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200175/-1/0/true" data-t="שיעור"><div class="rn">5</div><div class="rt">גודל האושר והזכות בעוד ילד יהודי</div><div class="ri">1200179</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200175/-1/0/true" data-t="שיעור"><div class="rn">6</div><div class="rt">השפע שיורד להורים בלידת הילדים</div><div class="ri">1200180</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200175/-1/0/true" data-t="קובץ"><div class="rn">7</div><div class="rt">טעמי קרבנות יולדת</div><div class="ri">41719443</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200175/-1/0/true" data-t="קובץ"><div class="rn">8</div><div class="rt">חסדי ה׳ בלידה</div><div class="ri">41719444</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200175/-1/0/true" data-t="קובץ"><div class="rn">9</div><div class="rt">סדר אמירת קרבן יולדת בזמן הזה</div><div class="ri">41719445</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200175/-1/0/true" data-t="שיעור"><div class="rn">10</div><div class="rt">נשמת כל חי — סגולה עוצמתית לאחר הלידה</div><div class="ri">41720809</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200175/-1/0/true" data-t="שיעור"><div class="rn">11</div><div class="rt">נשמת כל חי — סגולה עוצמתית לאחר הלידה (ב׳)</div><div class="ri">41720812</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200175/-1/0/true" data-t="שיעור"><div class="rn">12</div><div class="rt">המצווה הגדולה לבשר שנולד ילד — וההלכות שיש בזה</div><div class="ri">41721240</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200175/-1/0/true" data-t="שיעור"><div class="rn">13</div><div class="rt">ברכת "הטוב והמטיב" על שמחת קרובים</div><div class="ri">41721930</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200175/-1/0/true" data-t="קובץ"><div class="rn">14</div><div class="rt">נשמת כל חי — סגולה עוצמתית לאחר הלידה (קובץ)</div><div class="ri">41720807</div><span class="badge bf">📄 קובץ</span></div>  
+  </div>  
+</div>  
+
+<!-- ───────────────────────────────────────  
+  2 · להולדת הבת  
+──────────────────────────────────────── -->  
+<div class="sec c2" id="s2">  
+  <div class="sh" onclick="tog(this)">  
+    <span class="sh-icon">👧</span>  
+    <div class="sh-info">  
+      <div class="sh-name">להולדת הבת</div>  
+      <div class="sh-meta">4 קבצים · 9 שיעורים · סה״כ 13 פריטים</div>  
+    </div>  
+    <div class="sh-arr">▾</div>  
+  </div>  
+  <div class="sb">  
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200181/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">דבר תורה לסעודה להולדת בת</div><div class="ri">1200181</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200181/-1/0/true" data-t="שיעור"><div class="rn">2</div><div class="rt">ההודיה והשמחה בהולדת בת</div><div class="ri">1200182</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200181/-1/0/true" data-t="שיעור"><div class="rn">3</div><div class="rt">זבד הבת</div><div class="ri">1200183</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200181/-1/0/true" data-t="שיעור"><div class="rn">4</div><div class="rt">לשבח ולהודות בהולדת הבת</div><div class="ri">1200184</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200181/-1/0/true" data-t="שיעור"><div class="rn">5</div><div class="rt">כי אשרוני בנות</div><div class="ri">1200185</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200181/-1/0/true" data-t="שיעור"><div class="rn">6</div><div class="rt">אהבת הנתינה של בנות ישראל</div><div class="ri">1200186</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200181/-1/0/true" data-t="שיעור"><div class="rn">7</div><div class="rt">שעשני כרצונו</div><div class="ri">1200187</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200181/-1/0/true" data-t="שיעור"><div class="rn">8</div><div class="rt">אור הלבנה כאור החמה</div><div class="ri">1200188</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200181/-1/0/true" data-t="קובץ"><div class="rn">9</div><div class="rt">טעמי קרבן יולדת — פרשת תזריע</div><div class="ri">41718089</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200181/-1/0/true" data-t="קובץ"><div class="rn">10</div><div class="rt">סדר אמירת קרבן יולדת בזמן הזה — פרשת תזריע</div><div class="ri">41718096</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200181/-1/0/true" data-t="קובץ"><div class="rn">11</div><div class="rt">הזכות להביא ילד לעולם ובמיוחד בת</div><div class="ri">41720178</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200181/-1/0/true" data-t="קובץ"><div class="rn">12</div><div class="rt">שער הלידה — ברכת "שהחיינו" לאחר הלידה</div><div class="ri">41720795</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200181/-1/0/true" data-t="שיעור"><div class="rn">13</div><div class="rt">הלכות ההודיה לאחר לידת בן ובת — מצגת</div><div class="ri">41720797</div><span class="badge bs">🎤 שיעור</span></div>  
+  </div>  
+</div>  
+
+<!-- ───────────────────────────────────────  
+  3 · שלום זכר  
+──────────────────────────────────────── -->  
+<div class="sec c3" id="s3">  
+  <div class="sh" onclick="tog(this)">  
+    <span class="sh-icon">🕯️</span>  
+    <div class="sh-info">  
+      <div class="sh-name">שלום זכר</div>  
+      <div class="sh-meta">1 קובץ · 4 שיעורים · סה״כ 5 פריטים</div>  
+    </div>  
+    <div class="sh-arr">▾</div>  
+  </div>  
+  <div class="sb">  
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200189/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">כיצד מנחמים את התינוק בשלום זכר</div><div class="ri">1200189</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200189/-1/0/true" data-t="שיעור"><div class="rn">2</div><div class="rt">להודות על הילדים — לשלום זכר ולברית מילה</div><div class="ri">1200190</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200189/-1/0/true" data-t="שיעור"><div class="rn">3</div><div class="rt">מדוע אוכלים ארבעס בשלום זכר</div><div class="ri">1200191</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200189/-1/0/true" data-t="שיעור"><div class="rn">4</div><div class="rt">מדוע עושים סעודת שלום זכר בליל שבת</div><div class="ri">1200192</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200189/-1/0/true" data-t="קובץ"><div class="rn">5</div><div class="rt">טעמי המנהג של שלום זכר</div><div class="ri">41727215</div><span class="badge bf">📄 קובץ</span></div>  
+  </div>  
+</div>  
+
+<!-- ───────────────────────────────────────  
+  4 · ברית מילה  
+──────────────────────────────────────── -->  
+<div class="sec c4" id="s4">  
+  <div class="sh" onclick="tog(this)">  
+    <span class="sh-icon">✡️</span>  
+    <div class="sh-info">  
+      <div class="sh-name">ברית מילה</div>  
+      <div class="sh-meta">5 שיעורים</div>  
+    </div>  
+    <div class="sh-arr">▾</div>  
+  </div>  
+  <div class="sb">  
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200193/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">מדוע עושים סעודת הודיה אחרי ברית מילה</div><div class="ri">1200193</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200193/-1/0/true" data-t="שיעור"><div class="rn">2</div><div class="rt">למה אליהו הנביא מגיע לברית מילה</div><div class="ri">1200194</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200193/-1/0/true" data-t="שיעור"><div class="rn">3</div><div class="rt">מדוע מודים על קריעת ים סוף בפיוט "יום ליבשה" בברית מילה</div><div class="ri">1200195</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200193/-1/0/true" data-t="שיעור"><div class="rn">4</div><div class="rt">דרשה לברית מילה — הקשר בין קרבן פסח לברית מילה</div><div class="ri">1200196</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200193/-1/0/true" data-t="שיעור"><div class="rn">5</div><div class="rt">ביאור הפיוט "יום ליבשה"</div><div class="ri">1200197</div><span class="badge bs">🎤 שיעור</span></div>  
+  </div>  
+</div>  
+
+<!-- ───────────────────────────────────────  
+  5 · קידוש וסעודת הודיה  
+──────────────────────────────────────── -->  
+<div class="sec c5" id="s5">  
+  <div class="sh" onclick="tog(this)">  
+    <span class="sh-icon">🍷</span>  
+    <div class="sh-info">  
+      <div class="sh-name">קידוש וסעודת הודיה</div>  
+      <div class="sh-meta">2 קבצים · 13 שיעורים · סה״כ 15 פריטים</div>  
+    </div>  
+    <div class="sh-arr">▾</div>  
+  </div>  
+  <div class="sb">  
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">מקור לסעודת הודיה מן התורה</div><div class="ri">1200202</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="שיעור"><div class="rn">2</div><div class="rt">מדוע מחלקים עוגות ושתיה בקידוש</div><div class="ri">1200203</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="שיעור"><div class="rn">3</div><div class="rt">דרשה לחנוכת הבית</div><div class="ri">1200204</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="שיעור"><div class="rn">4</div><div class="rt">לך אזבח זבח תודה — דרשה לסעודת הודיה</div><div class="ri">1200205</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="שיעור"><div class="rn">5</div><div class="rt">וורט של הודיה — לזכור להודות</div><div class="ri">1200206</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="שיעור"><div class="rn">6</div><div class="rt">כוחה של ברכה מכל הלב — סיפור</div><div class="ri">1200207</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="שיעור"><div class="rn">7</div><div class="rt">כוחה של ברכה — הרב אשר קובלסקי</div><div class="ri">1200208</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="שיעור"><div class="rn">8</div><div class="rt">בקרבן תודה מקריבים חמץ</div><div class="ri">1200209</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="שיעור"><div class="rn">9</div><div class="rt">חסדי ה׳ בלידה — להודות ביום שקוראים את הקרבן</div><div class="ri">41719448</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="שיעור"><div class="rn">10</div><div class="rt">טעמי קרבן יולדת (א׳)</div><div class="ri">41719449</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="שיעור"><div class="rn">11</div><div class="rt">סדר אמירת קרבן יולדת בזמן הזה (א׳)</div><div class="ri">41719451</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="שיעור"><div class="rn">12</div><div class="rt">סדר אמירת קרבן יולדת בזמן הזה (ב׳)</div><div class="ri">41719453</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="שיעור"><div class="rn">13</div><div class="rt">טעמי קרבן יולדת (ב׳)</div><div class="ri">41719456</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="קובץ"><div class="rn">14</div><div class="rt">טעמי סעודת ההודיה להולדת הבת</div><div class="ri">41726435</div><span class="badge bf">📄 קובץ</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200202/-1/0/true" data-t="קובץ"><div class="rn">15</div><div class="rt">כי אשרוני בנות — השמחה בבת והסעודה לכבודה</div><div class="ri">41726436</div><span class="badge bf">📄 קובץ</span></div>  
+  </div>  
+</div>  
+
+<!-- ───────────────────────────────────────  
+  6 · פדיון הבן  
+──────────────────────────────────────── -->  
+<div class="sec c6" id="s6">  
+  <div class="sh" onclick="tog(this)">  
+    <span class="sh-icon">🪙</span>  
+    <div class="sh-info">  
+      <div class="sh-name">פדיון הבן</div>  
+      <div class="sh-meta">3 שיעורים</div>  
+    </div>  
+    <div class="sh-arr">▾</div>  
+  </div>  
+  <div class="sb">  
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200251/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">דבר תורה לפדיון הבן</div><div class="ri">1200251</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200251/-1/0/true" data-t="שיעור"><div class="rn">2</div><div class="rt">קדש לי כל בכור</div><div class="ri">1200252</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200251/-1/0/true" data-t="שיעור"><div class="rn">3</div><div class="rt">סוכר ושום בפדיון הבן</div><div class="ri">1200253</div><span class="badge bs">🎤 שיעור</span></div>  
+  </div>  
+</div>  
+
+<!-- ───────────────────────────────────────  
+  7 · יום הולדת  
+──────────────────────────────────────── -->  
+<div class="sec c7" id="s7">  
+  <div class="sh" onclick="tog(this)">  
+    <span class="sh-icon">🎂</span>  
+    <div class="sh-info">  
+      <div class="sh-name">יום הולדת</div>  
+      <div class="sh-meta">4 שיעורים</div>  
+    </div>  
+    <div class="sh-arr">▾</div>  
+  </div>  
+  <div class="sb">  
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200198/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">עבודת יום הולדת</div><div class="ri">1200198</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200198/-1/0/true" data-t="שיעור"><div class="rn">2</div><div class="rt">שמחת ההורים ביום הולדת</div><div class="ri">1200199</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200198/-1/0/true" data-t="שיעור"><div class="rn">3</div><div class="rt">רעיון הודיה ליום הולדת</div><div class="ri">1200200</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200198/-1/0/true" data-t="שיעור"><div class="rn">4</div><div class="rt">מזל טוב יום הולדת</div><div class="ri">1200201</div><span class="badge bs">🎤 שיעור</span></div>  
+  </div>  
+</div>  
+
+<!-- ───────────────────────────────────────  
+  8 · חלאקה  
+──────────────────────────────────────── -->  
+<div class="sec c8" id="s8">  
+  <div class="sh" onclick="tog(this)">  
+    <span class="sh-icon">✂️</span>  
+    <div class="sh-info">  
+      <div class="sh-name">חלאקה</div>  
+      <div class="sh-meta">1 שיעור</div>  
+    </div>  
+    <div class="sh-arr">▾</div>  
+  </div>  
+  <div class="sb">  
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41719741/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">טעם מצוות הנחת פיאות הראש ומסיבת חלאקה</div><div class="ri">41719741</div><span class="badge bs">🎤 שיעור</span></div>  
+  </div>  
+</div>  
+
+<!-- ───────────────────────────────────────  
+  9 · בת מצווה  
+──────────────────────────────────────── -->  
+<div class="sec c9" id="s9">  
+  <div class="sh" onclick="tog(this)">  
+    <span class="sh-icon">👸</span>  
+    <div class="sh-info">  
+      <div class="sh-name">בת מצווה</div>  
+      <div class="sh-meta">3 שיעורים</div>  
+    </div>  
+    <div class="sh-arr">▾</div>  
+  </div>  
+  <div class="sb">  
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200210/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">דרשה לקידוש להולדת בת או לבת מצווה</div><div class="ri">1200210</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200210/-1/0/true" data-t="שיעור"><div class="rn">2</div><div class="rt">מעלת בנות ישראל</div><div class="ri">1200211</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200210/-1/0/true" data-t="שיעור"><div class="rn">3</div><div class="rt">למה היום עושים מסיבת בת מצווה</div><div class="ri">1200212</div><span class="badge bs">🎤 שיעור</span></div>  
+  </div>  
+</div>  
+
+<!-- ───────────────────────────────────────  
+  10 · בר מצווה  
+──────────────────────────────────────── -->  
+<div class="sec c10" id="s10">  
+  <div class="sh" onclick="tog(this)">  
+    <span class="sh-icon">🎓</span>  
+    <div class="sh-info">  
+      <div class="sh-name">בר מצווה</div>  
+      <div class="sh-meta">1 קובץ · 4 שיעורים · סה״כ 5 פריטים</div>  
+    </div>  
+    <div class="sh-arr">▾</div>  
+  </div>  
+  <div class="sb">  
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200248/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">ארבעה סיבות לסעודת בר מצווה</div><div class="ri">1200248</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200248/-1/0/true" data-t="שיעור"><div class="rn">2</div><div class="rt">בר מצווה — בגיל אהבה</div><div class="ri">1200249</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200248/-1/0/true" data-t="שיעור"><div class="rn">3</div><div class="rt">סודו של המספר שלוש עשרה</div><div class="ri">1200250</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200248/-1/0/true" data-t="שיעור"><div class="rn">4</div><div class="rt">למה מניחים תפילין — סוד אהבה</div><div class="ri">41700407</div><span class="badge bs">🎤 שיעור</span></div>  
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200248/-1/0/true" data-t="קובץ"><div class="rn">5</div><div class="rt">שיעור נפלא כתוב עם מצגת על בר מצווה בגיל אהבה</div><div class="ri">41701333</div><span class="badge bf">📄 קובץ</span></div>
+  </div>
+</div>
+
+<!-- ───────────────────────────────────────
+  11 · נישואין ושבע ברכות
+──────────────────────────────────────── -->
+<div class="sec c11" id="s11">
+  <div class="sh" onclick="tog(this)">
+    <span class="sh-icon">💍</span>
+    <div class="sh-info">
+      <div class="sh-name">נישואין ושבע ברכות</div>
+      <div class="sh-meta">33 פריטים</div>
+    </div>
+    <div class="sh-arr">▾</div>
+  </div>
+  <div class="sb">
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">דרשה לחתונה — יסוד הנישואין</div><div class="ri">1200213</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">2</div><div class="rt">שבע ברכות — ביאור הברכות</div><div class="ri">1200214</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">3</div><div class="rt">שמחת חתן וכלה</div><div class="ri">1200215</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">4</div><div class="rt">אהבה ואחווה שלום ורעות</div><div class="ri">1200216</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">5</div><div class="rt">וורט לחתונה — בניין עדי עד</div><div class="ri">1200217</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">6</div><div class="rt">משמחי חתן וכלה</div><div class="ri">1200218</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">7</div><div class="rt">ברכת "אשר ברא"</div><div class="ri">1200219</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">8</div><div class="rt">שוש תשיש ותגל העקרה</div><div class="ri">1200220</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">9</div><div class="rt">סמח תשמח</div><div class="ri">1200221</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">10</div><div class="rt">משוש חתן מכלה</div><div class="ri">1200222</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">11</div><div class="rt">קול ששון וקול שמחה</div><div class="ri">1200223</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">12</div><div class="rt">דרשה לחתונה — בריאת האדם</div><div class="ri">1200224</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">13</div><div class="rt">נישואין — חיבור נשמות</div><div class="ri">1200225</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">14</div><div class="rt">ברכת "בורא פרי הגפן" בשבע ברכות</div><div class="ri">1200226</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">15</div><div class="rt">שמחת שבע ברכות</div><div class="ri">1200227</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">16</div><div class="rt">כבוד החתן בשבע ברכות</div><div class="ri">1200228</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">17</div><div class="rt">חתן דומה למלך</div><div class="ri">1200229</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">18</div><div class="rt">הקמת הבית היהודי</div><div class="ri">1200230</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">19</div><div class="rt">האהבה שבין חתן לכלה</div><div class="ri">1200231</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">20</div><div class="rt">מזל טוב לחתן ולכלה</div><div class="ri">1200232</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">21</div><div class="rt">האחריות של ההורים בחתונה</div><div class="ri">1200233</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">22</div><div class="rt">שמחה יתרה בחתונה</div><div class="ri">1200234</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">23</div><div class="rt">ביאור "יצר את האדם בצלמו"</div><div class="ri">1200235</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">24</div><div class="rt">יסוד "שמח תשמח"</div><div class="ri">1200236</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">25</div><div class="rt">שבע ברכות — אהבה אמתית</div><div class="ri">1200237</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">26</div><div class="rt">שמחת החיים בנישואין</div><div class="ri">1200238</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">27</div><div class="rt">ברית הנישואין</div><div class="ri">1200239</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">28</div><div class="rt">הזוגיות כנגד השכינה</div><div class="ri">1200240</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">29</div><div class="rt">מקור השמחה בנישואין</div><div class="ri">1200241</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">30</div><div class="rt">וורט לחתונה — כיבוד אב ואם</div><div class="ri">1200242</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">31</div><div class="rt">בית נאמן בישראל</div><div class="ri">1200243</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">32</div><div class="rt">זכר לחורבן בחתונה</div><div class="ri">1200244</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200213/-1/0/true" data-t="שיעור"><div class="rn">33</div><div class="rt">שיר של יום בשבע ברכות</div><div class="ri">1200245</div><span class="badge bs">🎤 שיעור</span></div>
+  </div>
+</div>
+
+<!-- ───────────────────────────────────────
+  12 · הקול החמישי
+──────────────────────────────────────── -->
+<div class="sec c12" id="s12">
+  <div class="sh" onclick="tog(this)">
+    <span class="sh-icon">🎵</span>
+    <div class="sh-info">
+      <div class="sh-name">הקול החמישי</div>
+      <div class="sh-meta">33 פריטים</div>
+    </div>
+    <div class="sh-arr">▾</div>
+  </div>
+  <div class="sb">
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">הקול החמישי — קול ששון</div><div class="ri">1200254</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">2</div><div class="rt">הקול החמישי — קול שמחה</div><div class="ri">1200255</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">3</div><div class="rt">הקול החמישי — קול חתן</div><div class="ri">1200256</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">4</div><div class="rt">הקול החמישי — קול כלה</div><div class="ri">1200257</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">5</div><div class="rt">הקול החמישי — שיר המעלות</div><div class="ri">1200258</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">6</div><div class="rt">הקול החמישי — קדושת הנישואין</div><div class="ri">1200259</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">7</div><div class="rt">הקול החמישי — בניין הבית</div><div class="ri">1200260</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">8</div><div class="rt">הקול החמישי — שיר השירים</div><div class="ri">1200261</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">9</div><div class="rt">הקול החמישי — אהבת ה׳ לישראל</div><div class="ri">1200262</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">10</div><div class="rt">הקול החמישי — ביאת המשיח</div><div class="ri">1200263</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">11</div><div class="rt">הקול החמישי — תיקון עולם</div><div class="ri">1200264</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">12</div><div class="rt">הקול החמישי — אנוכי ה׳ אלקיך</div><div class="ri">1200265</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">13</div><div class="rt">הקול החמישי — ברית סיני</div><div class="ri">1200266</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">14</div><div class="rt">הקול החמישי — כי אתה ה׳</div><div class="ri">1200267</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">15</div><div class="rt">הקול החמישי — נצח ישראל</div><div class="ri">1200268</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">16</div><div class="rt">הקול החמישי — רינה ושמחה</div><div class="ri">1200269</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">17</div><div class="rt">הקול החמישי — עת לשמוח</div><div class="ri">1200270</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">18</div><div class="rt">הקול החמישי — אמונה ובטחון</div><div class="ri">1200271</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">19</div><div class="rt">הקול החמישי — כוח הרצון</div><div class="ri">1200272</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">20</div><div class="rt">הקול החמישי — דביקות בה׳</div><div class="ri">1200273</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">21</div><div class="rt">הקול החמישי — תפילה ועבודה</div><div class="ri">1200274</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">22</div><div class="rt">הקול החמישי — שמחה שלמה</div><div class="ri">1200275</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">23</div><div class="rt">הקול החמישי — בית ישראל</div><div class="ri">1200276</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">24</div><div class="rt">הקול החמישי — ואהבת לרעך</div><div class="ri">1200277</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">25</div><div class="rt">הקול החמישי — כלה נאה</div><div class="ri">1200278</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">26</div><div class="rt">הקול החמישי — ריקוד ושמחה</div><div class="ri">1200279</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">27</div><div class="rt">הקול החמישי — ברכה והצלחה</div><div class="ri">1200280</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">28</div><div class="rt">הקול החמישי — שמחת הנפש</div><div class="ri">1200281</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">29</div><div class="rt">הקול החמישי — מחול ושמחה</div><div class="ri">1200282</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">30</div><div class="rt">הקול החמישי — חיים של שמחה</div><div class="ri">1200283</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">31</div><div class="rt">הקול החמישי — ניגון ושיר</div><div class="ri">1200284</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">32</div><div class="rt">הקול החמישי — נשמת כל חי</div><div class="ri">1200285</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/30155717/-1/0/true" data-t="שיעור"><div class="rn">33</div><div class="rt">הקול החמישי — לעד ולנצח נצחים</div><div class="ri">1200286</div><span class="badge bs">🎤 שיעור</span></div>
+  </div>
+</div>
+
+<!-- ───────────────────────────────────────
+  13 · מזמור שיר חנוכת הבית
+──────────────────────────────────────── -->
+<div class="sec c13" id="s13">
+  <div class="sh" onclick="tog(this)">
+    <span class="sh-icon">🏠</span>
+    <div class="sh-info">
+      <div class="sh-name">מזמור שיר חנוכת הבית</div>
+      <div class="sh-meta">2 פריטים</div>
+    </div>
+    <div class="sh-arr">▾</div>
+  </div>
+  <div class="sb">
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200286/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">ביאור מזמור שיר חנוכת הבית</div><div class="ri">1200246</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200286/-1/0/true" data-t="שיעור"><div class="rn">2</div><div class="rt">דרשה לחנוכת הבית</div><div class="ri">1200247</div><span class="badge bs">🎤 שיעור</span></div>
+  </div>
+</div>
+
+<!-- ───────────────────────────────────────
+  14 · הודיה לשמחות
+──────────────────────────────────────── -->
+<div class="sec c14" id="s14">
+  <div class="sh" onclick="tog(this)">
+    <span class="sh-icon">🎊</span>
+    <div class="sh-info">
+      <div class="sh-name">הודיה לשמחות</div>
+      <div class="sh-meta">3 פריטים</div>
+    </div>
+    <div class="sh-arr">▾</div>
+  </div>
+  <div class="sb">
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>
+    <div class="row" data-t="שיעור"><div class="rn">1</div><div class="rt">הודיה לה׳ בשמחות</div><div class="ri">1200287</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-t="שיעור"><div class="rn">2</div><div class="rt">כוח השמחה בחיי האדם</div><div class="ri">1200288</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-t="שיעור"><div class="rn">3</div><div class="rt">שמחה כעבודת ה׳</div><div class="ri">1200289</div><span class="badge bs">🎤 שיעור</span></div>
+  </div>
+</div>
+
+<!-- ───────────────────────────────────────
+  15 · גיל זקנה
+──────────────────────────────────────── -->
+<div class="sec c15" id="s15">
+  <div class="sh" onclick="tog(this)">
+    <span class="sh-icon">👴</span>
+    <div class="sh-info">
+      <div class="sh-name">גיל זקנה</div>
+      <div class="sh-meta">1 פריט</div>
+    </div>
+    <div class="sh-arr">▾</div>
+  </div>
+  <div class="sb">
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/41719740/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">דרשה לגיל זקנה — חיים של כבוד</div><div class="ri">1200290</div><span class="badge bs">🎤 שיעור</span></div>
+  </div>
+</div>
+
+<!-- ───────────────────────────────────────
+  16 · עת לספוד
+──────────────────────────────────────── -->
+<div class="sec c16" id="s16">
+  <div class="sh" onclick="tog(this)">
+    <span class="sh-icon">🕊️</span>
+    <div class="sh-info">
+      <div class="sh-name">עת לספוד</div>
+      <div class="sh-meta">5 פריטים</div>
+    </div>
+    <div class="sh-arr">▾</div>
+  </div>
+  <div class="sb">
+    <div class="ch"><span>#</span><span>כותרת</span><span class="ci">מס׳ מזהה</span><span>סוג</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200282/-1/0/true" data-t="שיעור"><div class="rn">1</div><div class="rt">הספד — מה אומרים</div><div class="ri">1200291</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200282/-1/0/true" data-t="שיעור"><div class="rn">2</div><div class="rt">אבלות — דיני שבעה</div><div class="ri">1200292</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200282/-1/0/true" data-t="שיעור"><div class="rn">3</div><div class="rt">ניחום אבלים</div><div class="ri">1200293</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200282/-1/0/true" data-t="שיעור"><div class="rn">4</div><div class="rt">צדוק הדין — ביאור</div><div class="ri">1200294</div><span class="badge bs">🎤 שיעור</span></div>
+    <div class="row" data-url="https://www.kolhalashon.com/he/regularSite/playShiur/1200282/-1/0/true" data-t="שיעור"><div class="rn">5</div><div class="rt">אמונה בעת אבל</div><div class="ri">1200295</div><span class="badge bs">🎤 שיעור</span></div>
+  </div>
+</div>
+
+</main>
+
+<!-- BACK TO TOP -->
+<button id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">▲</button>
+
+<script>
+
+/* ── ROW CLICK → OPEN SERIES ── */
+document.querySelectorAll('.row[data-url]').forEach(row => {
+  row.addEventListener('click', () => {
+    window.open(row.dataset.url, '_blank');
+  });
+});
+
+/* ── TOGGLE SECTION ── */
+function tog(sh){
+  const sec = sh.closest('.sec');
+  sec.classList.toggle('cls');
+}
+
+/* ── JUMP TO SECTION ── */
+function jump(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  // Open it if closed
+  el.classList.remove('cls');
+  setTimeout(()=>{
+    el.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 50);
+}
+
+/* ── SEARCH ── */
+const srch = document.getElementById('srch');
+srch.addEventListener('input', applyFilters);
+
+/* ── FILTER BUTTONS ── */
+document.querySelectorAll('.fb').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    applyFilters();
+  });
+});
+
+function applyFilters(){
+  const q    = srch.value.trim().toLowerCase();
+  const fBtn = document.querySelector('.fb.on');
+  const f    = fBtn ? fBtn.dataset.f : 'all';
+
+  let anyVisible = false;
+
+  document.querySelectorAll('.sec').forEach(sec=>{
+    let secHasVisible = false;
+
+    sec.querySelectorAll('.row').forEach(row=>{
+      const t    = row.dataset.t || '';
+      const text = row.textContent.toLowerCase();
+
+      const matchType = (f === 'all') || (t === f);
+      const matchQ    = !q || text.includes(q);
+
+      if(matchType && matchQ){
+        row.classList.remove('hid');
+        secHasVisible = true;
+        anyVisible = true;
+      } else {
+        row.classList.add('hid');
+      }
+    });
+
+    // Show/hide the whole section
+    sec.style.display = secHasVisible ? '' : 'none';
+  });
+
+  document.getElementById('no-res').classList.toggle('show', !anyVisible);
+}
+
+/* ── TOC CARDS: hide when searching ── */
+srch.addEventListener('input', ()=>{
+  const q = srch.value.trim();
+  document.querySelector('.toc-wrap').style.display = q ? 'none' : '';
+});
+
+/* ── BACK TO TOP ── */
+window.addEventListener('scroll', ()=>{
+  document.getElementById('btt').classList.toggle('show', window.scrollY > 300);
+});
+
+/* ── OPEN ALL SECTIONS BY DEFAULT ── */
+// Sections start open (no 'cls' class) — nothing to do
+</script>
+</body>
+</html>
