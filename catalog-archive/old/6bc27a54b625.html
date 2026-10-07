@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>קטלוג חומרים לפי פרשות - חומש דברים</title>
+<style>
+  :root {
+    --bg: #f5f3ff;
+    --card: #ffffff;
+    --ink: #1e1b2e;
+    --muted: #6b6580;
+    --accent: #6d28d9;
+    --accent2: #9333ea;
+    --border: #e7e2f5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(180deg, #ede9fe 0%, #f5f3ff 350px, #f8fafc 100%);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  header {
+    padding: 30px 20px 18px;
+    text-align: center;
+    position: relative;
+  }
+  .instructions-box {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    max-width: 230px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    text-align: right;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--muted);
+    box-shadow: 0 2px 8px rgba(109,40,217,0.07);
+  }
+  .instructions-box b { color: var(--accent); }
+  @media (max-width: 800px) {
+    .instructions-box {
+      position: static;
+      max-width: 400px;
+      margin: 14px auto 0;
+    }
+  }
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 1.8rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .search-wrap {
+    max-width: 700px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+  }
+  #search {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    font-size: 1rem;
+    background: var(--card);
+    box-shadow: 0 1px 4px rgba(109,40,217,0.06);
+  }
+  #search:focus { outline: 2px solid var(--accent2); }
+
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    padding: 18px 20px 10px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .tab-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 9px 16px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: var(--ink);
+    white-space: nowrap;
+    transition: all .15s;
+  }
+  .tab-btn:hover { border-color: var(--accent2); }
+  .tab-btn.active {
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    color: white;
+    border-color: transparent;
+  }
+  .tab-count {
+    background: rgba(0,0,0,0.08);
+    border-radius: 999px;
+    padding: 1px 8px;
+    font-size: 0.75rem;
+  }
+  .tab-btn.active .tab-count { background: rgba(255,255,255,0.25); }
+
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px 20px 60px;
+  }
+  .parasha-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 18px 0 12px;
+  }
+  .parasha-heading h2 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+  .parasha-heading span.count {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .category-group {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(109,40,217,0.05);
+  }
+  .category-header {
+    padding: 13px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background: linear-gradient(90deg, #f3effc, #ffffff);
+  }
+  .category-title {
+    font-weight: 600;
+    font-size: 0.98rem;
+  }
+  .category-count {
+    font-size: 0.78rem;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .category-toggle {
+    color: var(--accent);
+    font-size: 0.9rem;
+    margin-inline-start: 10px;
+  }
+  .file-list { display: block; }
+  .file-list.collapsed { display: none; }
+  .file-row-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-top: 1px solid var(--border);
+    transition: background .12s;
+  }
+  .file-row-wrap:hover { background: #faf9ff; }
+  .star-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.15rem;
+    padding: 10px 6px 10px 4px;
+    line-height: 1;
+    color: #d1cbe8;
+    transition: transform .1s;
+  }
+  .star-btn:hover { transform: scale(1.2); }
+  .star-btn.starred { color: #f5b301; }
+  .file-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px 10px 0;
+    text-decoration: none;
+    color: var(--ink);
+    flex: 1;
+    min-width: 0;
+  }
+  .file-icon {
+    width: 32px; height: 32px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.05rem; flex-shrink: 0;
+  }
+  .file-name { flex: 1; font-size: 0.9rem; line-height: 1.35; }
+  .file-type-badge {
+    font-size: 0.7rem; padding: 2px 9px; border-radius: 999px;
+    flex-shrink: 0; white-space: nowrap;
+  }
+  .empty-state {
+    text-align: center; color: var(--muted); padding: 60px 20px; display: none;
+  }
+  footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 20px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="instructions-box">
+    <b>⭐ איך לסמן מועדפים?</b><br>
+    לוחצים על הכוכב ליד כל קובץ כדי לסמן אותו כמועדף.
+    קבצים מסומנים יעלו אוטומטית לראש הרשימה בקטגוריה שלהם.<br><br>
+    <b>איפה זה נשמר?</b><br>
+    השמירה היא מקומית, בדפדפן שלכם בלבד (לא בענן) - כך שהסימונים שלכם יישארו גם בפעם הבאה שתפתחו את הדף באותו מחשב/דפדפן.
+  </div>
+  <h1>📚 קטלוג חומרים לפי פרשות – חומש דברים</h1>
+  <p>592 קבצים, מאורגנים לפי פרשת השבוע ולפי קטגוריה בתוך כל פרשה</p>
+</header>
+
+<div class="search-wrap">
+  <input id="search" type="text" placeholder="חיפוש בכל הפרשות לפי שם קובץ..." />
+</div>
+
+<div class="tabs" id="tabs">
+<button class="tab-btn active" data-parasha="כללי - כל הספר / לא משויך לפרשה"><span class="tab-emoji">📚</span><span class="tab-label">כללי - כל החומש</span><span class="tab-count">41</span></button>
+<button class="tab-btn" data-parasha="דברים"><span class="tab-emoji">📜</span><span class="tab-label">דברים</span><span class="tab-count">121</span></button>
+<button class="tab-btn" data-parasha="ואתחנן"><span class="tab-emoji">🙏</span><span class="tab-label">ואתחנן</span><span class="tab-count">69</span></button>
+<button class="tab-btn" data-parasha="עקב"><span class="tab-emoji">🌾</span><span class="tab-label">עקב</span><span class="tab-count">75</span></button>
+<button class="tab-btn" data-parasha="ראה"><span class="tab-emoji">👁️</span><span class="tab-label">ראה</span><span class="tab-count">57</span></button>
+<button class="tab-btn" data-parasha="שופטים"><span class="tab-emoji">⚖️</span><span class="tab-label">שופטים</span><span class="tab-count">62</span></button>
+<button class="tab-btn" data-parasha="כי תצא"><span class="tab-emoji">⚔️</span><span class="tab-label">כי תצא</span><span class="tab-count">41</span></button>
+<button class="tab-btn" data-parasha="כי תבוא"><span class="tab-emoji">🧺</span><span class="tab-label">כי תבוא</span><span class="tab-count">28</span></button>
+<button class="tab-btn" data-parasha="נצבים"><span class="tab-emoji">🤝</span><span class="tab-label">נצבים</span><span class="tab-count">15</span></button>
+<button class="tab-btn" data-parasha="וילך"><span class="tab-emoji">🚶</span><span class="tab-label">וילך</span><span class="tab-count">10</span></button>
+<button class="tab-btn" data-parasha="נצבים-וילך"><span class="tab-emoji">🤝</span><span class="tab-label">נצבים-וילך</span><span class="tab-count">9</span></button>
+<button class="tab-btn" data-parasha="האזינו"><span class="tab-emoji">🎵</span><span class="tab-label">האזינו</span><span class="tab-count">16</span></button>
+<button class="tab-btn" data-parasha="וזאת הברכה"><span class="tab-emoji">✨</span><span class="tab-label">וזאת הברכה</span><span class="tab-count">6</span></button>
+<button class="tab-btn" data-parasha="שונות"><span class="tab-emoji">🗃️</span><span class="tab-label">שונות</span><span class="tab-count">42</span></button>
+</div>
+
+<main id="main"></main>
+<div class="empty-state" id="emptyState">לא נמצאו קבצים תואמים לחיפוש</div>
+
+<footer>
+  <div style="font-weight:600; color:var(--accent); margin-bottom:4px;">נעשה על ידי הרב יהודה טאוב</div>
+  <div>הקישורים פותחים ישירות ב-Google Drive · חלוקה לפי טבלת הפרקים-לפרשות שסופקה</div>
+  <div style="margin-top:8px;">
+    <a href="https://sites.google.com/view/yuda-taub-parashat-hashavua/%D7%90%D7%AA%D7%A8%D7%99%D7%9D-%D7%A0%D7%95%D7%A1%D7%A4%D7%99%D7%9D-%D7%9C%D7%9E%D7%A9%D7%97%D7%A7%D7%99%D7%9D" target="_blank" rel="noopener noreferrer" style="color:var(--accent2); font-weight:600; text-decoration:none;">
+      🎮 לעוד המון קטלוגים ומשחקי פרשת השבוע ←
+    </a>
+  </div>
+</footer>
+
+<script>
+const PAYLOAD = {"order": ["כללי - כל הספר / לא משויך לפרשה", "דברים", "ואתחנן", "עקב", "ראה", "שופטים", "כי תצא", "כי תבוא", "נצבים", "וילך", "נצבים-וילך", "האזינו", "וזאת הברכה", "שונות"], "data": {"דברים": {"דפי עבודה ומשימות": [{"name": "משימת 5 דקות – דברים א ט-יג.pdf", "id": "1gAHO7OltQdreCewnjq-N2mjZV5jlUrLD", "type": "pdf"}, {"name": "משימת 5 דקות – דברים א לד-מו.pdf", "id": "19Ph4wDB-VDYbaffgRsKtb8tJEUoIAIIp", "type": "pdf"}, {"name": "משימת 5 דקות – דברים ג.pdf", "id": "1fP5cNEPsYopUuBiniZNq-ueDcwTTXN9W", "type": "pdf"}, {"name": "משימת 5 דקות – דברים א מיקום בני ישראל בתחילת חומש דברים.pdf", "id": "1TmC_cwetIHbbw1ul8lWJ0Y6yN63pwW3a", "type": "pdf"}, {"name": "משימת 5 דקות – דברים א כ-כה.pdf", "id": "1cbBSB3b7SZGlgwRxRifayghvRs5p7ZIZ", "type": "pdf"}, {"name": "משימת 5 דקות – דברים ב- פתיחה.pdf", "id": "1NQJJ7IjuwpuMFZYtnFkHa7HWy4vE1ZZx", "type": "pdf"}, {"name": "משימת 5 דקות - דברים א טז-יז.pdf", "id": "1o1xUtzs2jLxDUgNuZwfngQrGO_AAfhRZ", "type": "pdf"}, {"name": "משימת 5 דקות – דברים א ה-ח.pdf", "id": "1R0lF4Go4Ce6Ph4ovkux6bPH3oLnsa3xw", "type": "pdf"}, {"name": "משימת 5 דקות – דברים ג.pdf", "id": "1MBbT-_Nbv6ribtR_N145mYFMrttM4d6t", "type": "pdf"}, {"name": "פרשת ואתנן דפי עבוד (8).docx", "id": "1DkZ4dnVZFBNBhAsT0UQFuLiEdTJGYgs-", "type": "word"}, {"name": "שאלות מסע עבר הירדן פרקים ב-ג.docx", "id": "1lonYPC4dRtQOsx5J3NMT7hTMM4SzGif0", "type": "word"}, {"name": "עבודה עם טקסט פרק ב פסוקים א-ח.pdf", "id": "1zF8_czonaXMQPpepFkBXXx-551S60OSD", "type": "pdf"}, {"name": "עבודה עם טקסט פרק ב פסוקים א-ח.docx", "id": "1rhHIJNcKIqlzUofB4KWA4UYv6gaVwZ_1", "type": "word"}, {"name": "שאלות לפסוקים א-ח.docx", "id": "17Dpoz4gv9w26Wcq99TkxvvCQx563k9_H", "type": "word"}, {"name": "פרשת דברים.doc", "id": "1AhYY5SSJYkL1ZsEFKzKJQXvet3du2Cit", "type": "word"}, {"name": "משימת 5 דקות – דברים ב- פתיחה.pdf", "id": "1zK27LAuTGOH6zlidRKhdd8ORpZjcIiwk", "type": "pdf"}, {"name": "משימת 5 דקות – דברים א לד-מו.pdf", "id": "1NPaSFa0FJq8LtEgAbU5aIMiyE_OpkyEN", "type": "pdf"}, {"name": "משימת 5 דקות – דברים א ה-ח.pdf", "id": "1MP3fZa5fpaAc5kSo1EMxgNRF6cP7zdDW", "type": "pdf"}, {"name": "משימת 5 דקות – דברים א מיקום בני ישראל בתחילת חומש דברים.pdf", "id": "1XweO4X5ciDMiyeahOy9tdCw8gmxVg6M3", "type": "pdf"}, {"name": "משימת 5 דקות - דברים א טז-יז.pdf", "id": "1IXsqtII6e-JQAZwze2cTlnqK31PNLaU1", "type": "pdf"}, {"name": "משימת 5 דקות – דברים א ט-יג.pdf", "id": "1wqJjY-fsEeL4N6hecURhSCd38m5tjBft", "type": "pdf"}, {"name": "משימת 5 דקות – דברים א כ-כה.pdf", "id": "1c1qRtUtUOLW6GI8zBqlwiRxWV9FLlGHN", "type": "pdf"}, {"name": "עבודה עם טקסט פרק א פסוקים א-ה.pdf", "id": "1-vS0knITeqJBh3m4YuB3VGi3UdPjtfDp", "type": "pdf"}, {"name": "פרשת דברים (2).doc", "id": "1SGpbCYjrmiDzeOfout9AFLsG27RiBPuG", "type": "word"}, {"name": "דפי עבודה רצים דברים.docx", "id": "1avWR8TjndLgpzfLJGsUZzCV7v4xb3Vpc", "type": "word"}, {"name": "פרשת דברים.docx", "id": "1SzanTRs5eW1__PmkUh7PrxjOpnrKPhYY", "type": "word"}, {"name": "דפי עבודה פרשת דברים (5) (3).docx", "id": "1NM6sGFE3WKFsQTXLy8Jcha6wbCO0SbyQ", "type": "word"}, {"name": "הקדמת הרמב\"ן.docx", "id": "1h2tkNZ0MHINH5UO0hhZRrA5457wS_dJx", "type": "word"}, {"name": "הקדמת הרמב\"ן עם תשובות.docx", "id": "1li73r8TzYHiu7ZhJJ2cvkhIIIr6izrny", "type": "word"}, {"name": "דפי עבודה דברים-ואתחנן.pdf", "id": "1Dw5vdpMS6-_KL1vjNRYcJfRqNcnUP9u9", "type": "pdf"}, {"name": "דברים פרק א - דף עבודה מעוצב.pdf", "id": "173UHSsxqXdgkAljbimN4NvkSnwM7KQWa", "type": "pdf"}, {"name": "דפי עבודה פרשת דברים (5).docx", "id": "1t4PA_bodiPiueg34aqq1i7QXJom97SD5", "type": "word"}, {"name": "דפי עבודה תורה חומש דברים מבוא ופרק א.pdf", "id": "1R_7o-_wjc4Xqf3Pu2q6vLcy-p5OTDBxP", "type": "pdf"}, {"name": "פרק ב פסוקים א ח מעקף ארץ אדום.docx", "id": "1TVFboJl40xOLruoUVode9YOA5d-KOjmM", "type": "word"}], "חומרי לימוד (PDF)": [{"name": "באורי מילים פרשת דברים.pdf", "id": "1lMXMq4od3G7lSIGr8eb_EuvjdI8q6YNC", "type": "pdf"}, {"name": "המעבר בעבר הירדן המזרחי.pdf", "id": "1XSoY_j8N7KdysZN4Yy5wVZClNOSoUkKm", "type": "pdf"}, {"name": "השוואה חטא המרגלים (1).pdf", "id": "17h5CIv4gSfVlR2mMwb8ddu4YLgn1L2NX", "type": "pdf"}, {"name": "דברים בהבנה.pdf", "id": "1SIBI6DNW2tSok1_cjFtxi7jk0wuASSaz", "type": "pdf"}, {"name": "כרטיסיות הקדמה דברים.pdf", "id": "1-7E9hllb0tB2tyzFB_CrGIOc7PLEudSF", "type": "pdf"}, {"name": "מהלך הוראה דברים פרק א פס א-ה.pdf", "id": "1lb94X_gXvLrpIKU7qwQqkQEWc63Odx5b", "type": "pdf"}, {"name": "דברים א יט-לג מעשה המרגלים.pdf", "id": "1KXz0iZoJm6wL0Hfd9_fPCY2R5PxZn08u", "type": "pdf"}, {"name": "הקדמת הרמב\"ן.pdf", "id": "18OSvPFgLjaXniQ7CnXHLKtI_u9vSFIQC", "type": "pdf"}, {"name": "מתווה מפורט דברים א-כ.pdf", "id": "1H6TFiD2S1LSKf2jvu9UgUQYNpU8cjuuU", "type": "pdf"}, {"name": "השוואה חטא המרגלים (1).pdf", "id": "19DsWLhoLxaeY9ab9G72qL9i7KYm0_CQD", "type": "pdf"}, {"name": "הצעה לשיעור פתיחה - הרב ליברמן.pdf", "id": "14t8dPH7e_Z_7_2MxIfthwvTC0LVsv5F2", "type": "pdf"}, {"name": "הקדמת הרמבן-1.pdf", "id": "1SWNXHkGOFQWIuAR5lj83gfLJA-VEhLtx", "type": "pdf"}, {"name": "דברים פרק א' רש''י - מקומות ואירועים.pdf", "id": "1RRaMBETiWhixQUVWqcII3Tma9FtosjwC", "type": "pdf"}, {"name": "פרק ג', א- יא, המלחמה נגד עוג מלך הבשן.pdf", "id": "1THTlR-L1nh_lYnu6ENANvbSFmVbe4LY7", "type": "pdf"}, {"name": "Maislish cards dvarim.pdf", "id": "1MxCy4_SOdCuDSt9Mbt0a2VAzxrOHHbcl", "type": "pdf"}, {"name": "פרשת דברים.pdf", "id": "1NcnO5o_pSKlpJndyxZunmT_zeiOCqgKN", "type": "pdf"}, {"name": "תפזורות לְפָרָשַׁת דְּבָרִים.pdf", "id": "1N_9pXCkHhLJZHK6O3jkG3kV0c2S0hmJd", "type": "pdf"}, {"name": "רעיון לפרשת דְּבָרִים.pdf", "id": "1NYPvli8LK7k9g5Zt9sy4rX6weIm-C0tg", "type": "pdf"}, {"name": "פרשת דברים חידות מצוירות.pdf", "id": "1Fk_56hE_sZBBJzIbhBcIv8Ocndd2b51C", "type": "pdf"}, {"name": "חומש בהבנה על פרשת דברים.pdf", "id": "1EE5R5YnxNNHmn52SbgoSpDc-juSkzXGe", "type": "pdf"}, {"name": "57799-devarim-devarim-b.pdf", "id": "1BswbDEdOCgyKtv_TZgHWQwpuHJGa1xwN", "type": "pdf"}, {"name": "57799-devarim-devarim-horim-a.pdf", "id": "1BjMKVay-FN36jRwc9b23r4Yi7_14xpEO", "type": "pdf"}, {"name": "57799-devarim-devarim-a.pdf", "id": "1Bv6LEq3RDUhbJ_YVGwfY_YVY8wWZ3Wsk", "type": "pdf"}, {"name": "57799-devarim-devarim-c.pdf", "id": "1CWhuTRyQLUPmUZ-RxzyPCgdklc5YlvX0", "type": "pdf"}], "מבחנים והערכה": [{"name": "מבחן פרשת דברים.pdf", "id": "1neSzYvfj25ohUsvx45rMaGB5XG-hT9rw", "type": "pdf"}, {"name": "מבחן בתורה פרקים א-ד.pdf", "id": "15TyVU3FJxY9hgD8BSXiZ5YYCfefO7rUz", "type": "pdf"}, {"name": "מבחן פרשת דברים - הערכה חלופית.pdf", "id": "1Ko3DVFsaVSiVhHIIppSs5WJtAG_XpAum", "type": "pdf"}, {"name": "מבחן פרשת דברים.pdf", "id": "1eAtLrlMqWkQ1c1j25mhjucN1XlCdNxQh", "type": "pdf"}, {"name": "מבחן פרשת דברים.docx", "id": "1jVkgRHg-ORRAypQFdzfrdwJ2nhLYxs4W", "type": "word"}, {"name": "משימת הערכה דברים- ואתחנן.pdf", "id": "1Km8Is6aPRCBPypiKms4_aBD88yPvtX-O", "type": "pdf"}, {"name": "משימת הערכה 1 דברים - מחוון.pdf", "id": "1_bWgnQenb-K6JduJPtvUXfD4HFCe-YU4", "type": "pdf"}, {"name": "מבחן פרשת דברים.docx", "id": "1SeImqXoaekGYGhwIUwN_EohgTmb_8CJn", "type": "word"}, {"name": "מבחן פרשת דברים - הערכה חלופית.pdf", "id": "1SRrIs2kuW51Hb2IjN2LD63mnSVpTUj7Y", "type": "pdf"}, {"name": "חומש דברים משימת הערכה בתורה.pdf", "id": "1R_Q4rAtBB0Ge8FjBqK6_pgA2J20NsOEy", "type": "pdf"}, {"name": "מבחן פרשת דברים 1.docx", "id": "1SY9kvHli-mxMJc-0SpUYYRfqGmg05mA1", "type": "word"}, {"name": "דף חזרה למבחן פרשת דברים.docx", "id": "1RrkJlQXHa-VTCyTOh9zNzrGLHr6V27gw", "type": "word"}, {"name": "מבחן פרשת דברים (1).docx", "id": "1ReBqad27zwO050Droeqn0hMHt809Z3xW", "type": "word"}, {"name": "מבחן בתורה פרקים א-ד נאום הלקח ההיסטורי.doc", "id": "1SDorBy9wtelUk2mvLybMgsCGx38V1X7e", "type": "word"}, {"name": "מבחן פרשת דברים תשע''ט.doc", "id": "1SdoOn71COzQaSSE8T5aaD_ya1QdL4Smm", "type": "word"}, {"name": "מבחן פרשת דברים תשעח.doc", "id": "1Sx7RhyM36UF1Ap8c_02EMf9i_lLmtFpC", "type": "word"}], "מצגות": [{"name": "דברים פרק ג פסוקים א-יא.pptx", "id": "1BJTkOQeTIPQwgdrPQSzPVM8G98YVpj7p", "type": "ppt"}, {"name": "דברים פרק ב פסוקים כד- לז.pptx", "id": "136gwhYmm632pDB9cdVgbJO0tjCLIS1ei", "type": "ppt"}, {"name": "מבוא לספר דברים במצגת מסודרת.pptx", "id": "1dZOnvZa23LIN-k8BUhWn136M9ReVmIus", "type": "ppt"}, {"name": "הקדמה חומש דברים פרשת דברים פרק א פסוקים א-ח.pptx", "id": "1i764LdZ07o6GyUH84It7OMpQwRrzt03s", "type": "ppt"}, {"name": "דברים פרק א פסוקים מא-מו.pptx", "id": "1TX8Et40pjubruJh_Pkewx4jrOw0akuSB", "type": "ppt"}, {"name": "מצגת פרק א פסוקים יט-ל.pptx", "id": "1fWLpjjAErS28gbV4pNqOuHmM-0a4TtNg", "type": "ppt"}, {"name": "פרשת דברים פרק א פסוקים ט- יט.pptx", "id": "1uM73pyrgtNofBu99vmblIB_EesT0cS3f", "type": "ppt"}, {"name": "דברים פרק א פסוקים לא-מ.pptx", "id": "1oVwCgfjpmy1dX5hxbe-zvniuRD59Psaa", "type": "ppt"}, {"name": "דברים פרק ב פסוקים כד- לז.pptx", "id": "1M_UuNnxR3n6oP8ZT5wSIQPb1A4fKBnBy", "type": "ppt"}, {"name": "דברים פרק ב פסוקים יג-כד.pptx", "id": "1Uyo4pun2sZIQoNXFjE9UOgrQfn8GuIN0", "type": "ppt"}, {"name": "פרשת דברים פרק ג פסוקים יב- כב (סוף).pptx", "id": "1tA0dEnxHMrvsZxznXDcj2_7cI8ENE_e8", "type": "ppt"}, {"name": "דברים פרק ג פסוקים א-יא.pptx", "id": "1hSoEQFOoIT4tflgpQDVYskBViIITvEPl", "type": "ppt"}, {"name": "דברים פרק ב פסוקים א-יב.pptx", "id": "1qu9cMG7RM37F3yxuub8OxW-aVXImGWOF", "type": "ppt"}, {"name": "דברים פרק א פסוקים מא-מו.pptx", "id": "1ocGBtsIl9SV8ELL7OpJZvH9s6NSC_rT-", "type": "ppt"}, {"name": "פרשת דברים פרק א פסוקים ט- יט.pptx", "id": "1m-fS48tOc-L6D7RQJwTSqkyvZwiEcBRv", "type": "ppt"}, {"name": "דברים פרק א פסוקים לא-מ.pptx", "id": "1ZOjCF4t2ogB0Flj5nSc9-4QSX7X1aCBp", "type": "ppt"}, {"name": "מצגת פרק א פסוקים יט-ל.pptx", "id": "1ZVKrKN9WLlqqBvU8hFZs3sSkkswpoacw", "type": "ppt"}, {"name": "הקדמה חומש דברים פרשת דברים פרק א פסוקים א-ח.pptx", "id": "1VMFkP9AG1r-_WXvANx-KHjzOVVdZ6WKo", "type": "ppt"}, {"name": "מצגות דברים פרק א.pptx", "id": "1T3NZ3xFYlBgJ13jrdzz5aCIE2ighItEa", "type": "ppt"}, {"name": "מצגות דברים פרק ב-ג.pptx", "id": "1TVB-NrXz6thCYhJKp0NkYLA_oVE8ATFz", "type": "ppt"}, {"name": "מצגת פרשת דברים.ppsx", "id": "1Nk6wWtLRG2metuRXQjRSzXkTelrrK1yK", "type": "ppt"}, {"name": "הקדמה חומש - פרשת דברים פרק א פסוקים א-ח.pptx", "id": "1J3Iu44b-bYQ53h3gol1nmcPkT2mErsR1", "type": "ppt"}, {"name": "פרשת דברים פרק ג פסוקים יב- כב (סוף).pptx", "id": "1J4y4njMl5khCbjDu3baX4tZ-KfFaHbam", "type": "ppt"}, {"name": "דברים פרק ב פסוקים כד- לז.pptx", "id": "1If9nm7nTar8-ZU8wcTN-PHiRCWbCmaDh", "type": "ppt"}, {"name": "דברים פרק ב פסוקים א-יב.pptx", "id": "1IeEqHhVAyT_BKgrtZDlMz7Z9_GnPShGG", "type": "ppt"}, {"name": "מצגת פרק א פסוקים יט-ל.pptx", "id": "1IlsYfjgCxEVs3Nsf9yqIV7kmzUCSdacC", "type": "ppt"}, {"name": "דברים פרק א פסוקים מא-מו.pptx", "id": "1IRQmtzGU4ra8J8L2qu7f6PgUCCc5YuZq", "type": "ppt"}, {"name": "דברים פרק ב פסוקים יג-כד.pptx", "id": "1IatdZVq2hrygsrcPL3EupUJtL3F3t8Jv", "type": "ppt"}, {"name": "פרשת דברים פרק א פסוקים ט- יט.pptx", "id": "1J0rFHoyqPRX_vQyrmHbHdII-PFgbJWIT", "type": "ppt"}, {"name": "דברים פרק ג פסוקים א-יא.pptx", "id": "1J8IzNj5YQbpSLxr8MzUiP1jvOVAcH7Vv", "type": "ppt"}, {"name": "דברים פרק א פסוקים לא-מ.pptx", "id": "1ITS5H41C1TQGhc5WTf0EW7_xyHiNrVi-", "type": "ppt"}], "דפי חזרה וסיכום": [{"name": "שאלות חזרה פרק א-ב- איליה גדייב.pdf", "id": "1jvBdL20CuAzVgNjds9X-Z-DiMfP6Pv_Z", "type": "pdf"}, {"name": "עבודת סיכום חטא המעפילים פסוקים מא- סוף הפרק.docx", "id": "1vataZqlxDXx5l8rTEE2DG6h1G4Oe_D9i", "type": "word"}, {"name": "שאלות חזרה דברים פרק א.docx", "id": "1NT-6XHRjgjPC4v-1vyqf2fISQb9yDAYJ", "type": "word"}, {"name": "דפי חזרה תורה דברים.docx", "id": "1MWjFmlK3Zgzm2BBMgfPzpYm8xaRY_ez9", "type": "word"}, {"name": "עבודת סיכום מעשה המרגלים פסוקים יט-מ'.docx", "id": "1SXOx7JSFDNeiT9Te5IPIkWQG848j-HXo", "type": "word"}, {"name": "עבודת סיכום - פרשת דברים.docx", "id": "1T3p8tk96nD64Wsjz070SPxIoS-EoJgYT", "type": "word"}, {"name": "פרשת דברים - דפי חזרה - קיץ.docx", "id": "1TBB-rJ45oa3p0jVLSinzv-aru1xumjTM", "type": "word"}, {"name": "מצגת חזרה פרשת דברים באדיבות אנונימית.pptx", "id": "1TCHXgtgk7htFtAvFiyoRynp_Gu3G6kOO", "type": "ppt"}, {"name": "דברים ב'-ג' - שאלות סיכום.doc", "id": "1R6ynUtQIZTv0ICBTeIaiS0pUY9I292-Y", "type": "word"}, {"name": "דברים ב'-ג' - שאלות סיכום.pdf", "id": "1RWCsFEeny8cHKf0FdC2teuQxsDCGazzG", "type": "pdf"}, {"name": "פרשת דברים - חזרה קלה.doc", "id": "1TDZW4GbBuw-5DsJ5FIANZHnKU3UTj3NN", "type": "word"}], "כרזות, ציורים ועיצוב": [{"name": "פרשת דברים נושאים בציורים.pdf", "id": "1aVKcHZLOJuooOGjs3Ihs28tiI7f6labM", "type": "pdf"}, {"name": "ציור פרשת דברים", "id": "1aAI-HkCvBYAHVQlpwVn48Zu3E9PzI6kx", "type": "image"}, {"name": "צביעה פרשת דברים", "id": "1aHw-Yrc8P6I9CSMzsreljWmLSzUQMWa5", "type": "image"}], "חידות ומשחקים": [{"name": "חידון פרשת דברים.docx", "id": "1RZnC8tZh7C6LVUoPe94IQUOLs6jEBEnJ", "type": "word"}, {"name": "חידון פרשת דברים.pptx", "id": "1RnBcFiUM1UZRvnJNoPjfNkDf7zN6nhAe", "type": "ppt"}]}, "ואתחנן": {"דפי עבודה ומשימות": [{"name": "משימת 5 דקות – דברים ז סיום ואתחנן.pdf", "id": "1T22ThCVDaJHFc05jZMSF1wpD1Rk1L9p9", "type": "pdf"}, {"name": "משימת 5 דקות – דברים ה- יט-כז.pdf", "id": "1lGv6AqmWcS9xx-dr-wUxxgEJQHC92VLz", "type": "pdf"}, {"name": "משימת 5 דקות – דברים ה- עשרת הדברות.pdf", "id": "18Q3NVgsCq8kAVKeRWvvOxvoSIFlr8GI_", "type": "pdf"}, {"name": "משימת 5 דקות – דברים ז סיום ואתחנן.pdf", "id": "1hkLbG4jU_jfxsJIIV0Hee_rPtcDVk8Rx", "type": "pdf"}, {"name": "משימת 5 דקות – דברים ז סיום ואתחנן (2).pdf", "id": "1Qp83xxCF7U5JomteAtyL9gx2O9gJl-MG", "type": "pdf"}, {"name": "עשרת הדיברות.docx", "id": "1Eld8uU82gbZu4pAys5lqxnPwoix8PJWW", "type": "word"}, {"name": "משימת עימוד ועיצוב.pdf", "id": "1KkEPLXuMuZK19qzQOzT26YOzAEq9VhYF", "type": "pdf"}, {"name": "סופי באמת עשרת הדיברות עבודה בקבוצות.pdf", "id": "1UJHpz4P-dsx2hj9slCQM07rOk5BCN8pT", "type": "pdf"}, {"name": "משימת 5 דקות – דברים ה- עשרת הדברות.pdf", "id": "17QKPxRqzXwSQRvx0PZER7ARkFQdCrZng", "type": "pdf"}, {"name": "משימת 5 דקות – דברים ה- יט-כז.pdf", "id": "1HuVNt0CCLmz9OqhcKBc30qEPMSl1XT93", "type": "pdf"}, {"name": "פרשת ואתחנן.docx", "id": "1k3OO5Lq5Sk_-g71Uc6TGqLQ-Tc-Z6yJ1", "type": "word"}, {"name": "דף עבודה מעוצב פרק ו' ז'.pdf", "id": "1tgO4bM8pEQq1o0IUPLj7eBMBC55xKikD", "type": "pdf"}, {"name": "מבדק פרשת ואתחנן.docx", "id": "1Ui9iff7GWmhMt6nBIfCy3yZxM41i5O7a", "type": "word"}, {"name": "דברים פרק ה.docx", "id": "1Uh-Qn_mag2Q93p9Ue2ckD9bG462ABtIU", "type": "word"}, {"name": "דברים פרק ה - הדיבר השלישי.docx", "id": "1TjxWXgt_ifCJEorAijMd-7QxSIAK8DEP", "type": "word"}, {"name": "עשרת הדיברות - משימה - השוואה לשמות ומיון.pdf", "id": "1UVevZlJzIgr24xalVW2j3pn4u-qlJNMw", "type": "pdf"}, {"name": "עשרת הדיברות - השוואה - מחשבה דיבור ומעשה.docx", "id": "1XDzWaF6V9M1ltYap4fGbEvFYxoIAQg3W", "type": "word"}], "חומרי לימוד (PDF)": [{"name": "פרק ו' ז'.pdf", "id": "12w9d9gooe-f4NkiNcz6xn0vNVJzUNoAG", "type": "pdf"}, {"name": "עשרת הדיברות.pdf", "id": "1O_xHhLTkC3NaNT2XF7AloPzyqnko6bGn", "type": "pdf"}, {"name": "עשרת הדברות השוואה.pdf", "id": "1KlzULP64-wISmOIe1czDwuhCEOScuXiV", "type": "pdf"}, {"name": "עשרת הדיברות טבלת השוואה.pdf", "id": "1aUwTPgLWsixDrkx-_prC-k-msUNjLarw", "type": "pdf"}, {"name": "פרשת ואתחנן רביעיות.pdf", "id": "1O71F-NBeTxCntXOHkFFCxvKMfXG7jSfJ", "type": "pdf"}, {"name": "פרשת ואתחנן דף.pdf", "id": "1Nv2Sfm1kCvIAinwTczTg5_FJum3UN8n_", "type": "pdf"}, {"name": "פרשת ואתחנן - שמע ישראל.pdf", "id": "1O8N2T2I4UlO3WMCGHkkHZ1RuPZ9IqZsu", "type": "pdf"}, {"name": "פרשת ואתחנן חידות מצוירות.pdf", "id": "1FVppqjvw1vd6XKy8_14sN4pN7J6thgnC", "type": "pdf"}, {"name": "חומש בהבנה על פרשת ואתחנן.pdf", "id": "1E-OdfyYWt-MkeYC_2t5zZfWo9JiT0fhm", "type": "pdf"}, {"name": "57799-devarim-vaethanan-c.pdf", "id": "1DPj064LLi1hcadD30NwUTu0WQNuRrxNw", "type": "pdf"}, {"name": "57799-devarim-vaethanan-horim-a.pdf", "id": "1DlAURSJSTYjo4feBK8B6fXOysvZAR1Zr", "type": "pdf"}, {"name": "57799-devarim-vaethanan-b.pdf", "id": "1C_e_F0zvpumhFQk2BkXiAk3qGel5KZGL", "type": "pdf"}, {"name": "57799-devarim-vaethanan-a.pdf", "id": "1CX1QQ4RWqqLHJOeo8E9xgy61lhwdW0dS", "type": "pdf"}, {"name": "עשרת הדיברות - השוואה לשמות ופרשנות.pdf", "id": "1_PHLlztadIcx7sPztAqEJh8OoDB0Ghaa", "type": "pdf"}], "מצגות": [{"name": "פרשת ואתחנן פרק ו פסוקים א-ט.pptx", "id": "1PB4gDPIZGbh-mm8NCNaHKc7MP_j1be3E", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ו פסוקים י-יט.pptx", "id": "1fp52-6MqaDJ3riHcwYa9x7RDvnW0uUTL", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ו פסוק כ- פרק ז' פסוק יא.pptx", "id": "1JnBpVJPm5HwVdWXJcq3yJK0OtLyzGutP", "type": "ppt"}, {"name": "פרשת ואתחנן השוואה עשרת הדברות.pptx", "id": "1z0bSEOto0uvot-4mOK63qGYEWPWOLXqn", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ה פסוקים א-יח.pptx", "id": "1jfScsEeo3DqEDRHTXVZ9fNaecwVqmwK1", "type": "ppt"}, {"name": "פרשת ואתחנן מצגות.pptx", "id": "1OoKlUk6LAfMkMUO1JBtbrosKbLzRy27L", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ד פסוקים מא- סוף הפרק.pptx", "id": "1jdXfP2DULNvmPbyPI1NcZuuuBjoyXqOk", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ד פסוקים ט-כ'.pptx", "id": "1raoZqtJ77pCiaLzTOKGulGbGjztTTrcf", "type": "ppt"}, {"name": "ואתחנן פרק ד פסוקים כא-לא.pptx", "id": "181OrOZEf9H7hQBMKUugREQ6U26ILDgR-", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ד פסוקים לא-מ.pptx", "id": "1zRBOYBneD75CJrXfd4_2mEmY0hDBt09n", "type": "ppt"}, {"name": "מצגת פרשת ואתחנן.ppsx", "id": "1Mqjj0q4F_UDNBmQrc0Xu4MuQChZGRa5L", "type": "ppt"}, {"name": "ואתחנן פרק ד פסוקים כא-לא.pptx", "id": "1K1qRvveDa-li3hkNyk0mT8FeEUjoUvbc", "type": "ppt"}, {"name": "מצגת סכום פרשת ואתחנן.pptx", "id": "1KBNbG750b0eZQGErLS628eO4RdgZ5M6g", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ג פסוקים כג-כט.pptx", "id": "1JzfuVpjehxCwz_ZOOuLprsIdJT59VKVa", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ה פסוקים יח- סוף הפרק.pptx", "id": "1KYfhST5q36O9I3jpZfuL-Js_Ca6111tb", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ד פסוקים ט-כ'.pptx", "id": "1K1266BZ0u3ks21-s_yi3la8V6rkMsBtW", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ו פסוק כ- פרק ז' פסוק יא.pptx", "id": "1JzRcrTtWB6KIjf25grkNkcJM3uuNdc8x", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ה פסוקים א-יח.pptx", "id": "1KEIQZXeIA5TqZvn52Cp3r0yd02TEuZQo", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ד פסוקים לא-מ.pptx", "id": "1KOh4FPSd8jLzJam5DQvRStZBa1bgPWNi", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ו פסוקים א-ט.pptx", "id": "1Jg5BPGaMN9_1SXJADVBDTUHylui9nGVS", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ד פסוקים מא- סוף הפרק.pptx", "id": "1KDn5SWEUU7dUAN0Rlc-rwx0l517K_5xY", "type": "ppt"}, {"name": "פרשת ואתחנן פרק ו פסוקים י-יט.pptx", "id": "1JlfpfxNBHw1cKcT_zRpTmmMGam_qa2Cy", "type": "ppt"}, {"name": "פרשת ואתחנן השוואה עשרת הדברות.pptx", "id": "1Jgyi4zR54SvURWgc9J_iDGC118QxkLql", "type": "ppt"}, {"name": "חכמתכם ובינתכם - עיבור החודש.pptx", "id": "1Uii9Erxyxo5j9zHbn_YEwb_2OqtFBK1N", "type": "ppt"}, {"name": "פרשת ואתחנן מצגות.pptx", "id": "1V5ueCXFKGqGt6IRErHi55BA4J3DFQeaL", "type": "ppt"}, {"name": "פרשת ואתחנן השוואה עשרת הדברות.pptx", "id": "1q5D5g2IPO5dHl-AJ-rwjbUmlT05kyTuR", "type": "ppt"}, {"name": "9 - דברים פרק ה - עשרת הדיברות (2 חלקים).pptx", "id": "1UDMLl0Bk4fwHWNIfY7SyZtpFs8y5DZUv", "type": "ppt"}], "דפי חזרה וסיכום": [{"name": "פרשת ואתחנן חזרה.docx", "id": "1jp_MosMJhI9bXDa-17TUWKQ64HBFFEsO", "type": "word"}, {"name": "דפי חזרה - ואתחנן.doc", "id": "1Trkf7qyOKCu65cdmioiT2H665BOAA4F7", "type": "word"}, {"name": "פרשת ואתחנן - שאלות חזרה.doc", "id": "1UdFgOdeNWqrkw31XtHixJBG08bbc0GXO", "type": "word"}], "כרזות, ציורים ועיצוב": [{"name": "פרשת ואתחנן דף צביעה", "id": "1aTeh-RyquWOCTJrCPSUIWBb7TfioPHht", "type": "image"}], "מבחנים והערכה": [{"name": "משימת הערכה - שמע ישראל - למורה.pdf", "id": "1dpksMRTpSZ--rV_sfssUkrvwRuHlvscs", "type": "pdf"}, {"name": "משימת הערכה - שמע ישראל - לתלמיד.pdf", "id": "18Ht08tj9o6gmSiq9VsIzKkHuOBPZ3lBu", "type": "pdf"}, {"name": "ואתחנן - מבחן.docx", "id": "1TXb1CaBptyBoyQQ5j5t4eQW5xM9vF53c", "type": "word"}, {"name": "מבחן פרשת ואתחנן - אמריקאי.docx", "id": "1TZ7aC0d-fQKdgAam7hHY_nI_iwK8uMPV", "type": "word"}, {"name": "מבחן פרשת ואתחנן - תשעח.doc", "id": "1VQpmFSYhCehgbb8zQ8q3nufC-rXC3xuj", "type": "word"}, {"name": "מבחן פרשת ואתחנן - תשעו.doc", "id": "1UkxK2G89tN0Pxs5ORGiecMGtySyBfhIm", "type": "word"}, {"name": "מבחן פרשת ואתחנן תשעד.doc", "id": "1UcfQRGuJGSNQNGJGkAl589xXLPb0fFCi", "type": "word"}]}, "עקב": {"מצגות": [{"name": "פרשת עקב פרק יא פסוקים יב-כה.pptx", "id": "1BdFQgy0IPVM8GOwiViV6gU6IS8MUteFc", "type": "ppt"}, {"name": "פרשת עקב פרק יא פסוקים א-יב.pptx", "id": "1nr58DNaCTQN3gLISlFWmIMUjxXWSEjlq", "type": "ppt"}, {"name": "פרשת עקב פרק י' פסוקים יב-כב.pptx", "id": "1ZkC7QmXVLr8u_PezItAtoPxd_jiOTtTU", "type": "ppt"}, {"name": "פרשת עקב פרק י פסוקים א-יא.pptx", "id": "1vrkmHkyuuT8NhjNvXudsPGrWPWVZYaRD", "type": "ppt"}, {"name": "פרשת עקב פרק ט פסוקים כב-כט.pptx", "id": "1EZ_xj0niE-U1WjuInAPGKqJXmsCp1NUB", "type": "ppt"}, {"name": "פרשת עקב פרק ט פסוקים יב-כא.pptx", "id": "1ujCNhTelDEFozCH5n2lik1-w-6o_6xJm", "type": "ppt"}, {"name": "פרשת עקב פרק ט פסוקים א-י.pptx", "id": "1I2HGohI-3LWCTD-ySgaelNdmZIU9Pzxg", "type": "ppt"}, {"name": "פרשת עקב פרק ח פסוקים יא-כ'.pptx", "id": "1FskYgelV7uLsardBPRZRn6MrWUXEUAqR", "type": "ppt"}, {"name": "פרשת עקב פרק ח פסוקים א-ט.pptx", "id": "10wJVI-qHo0jwYVHy7jyn_0gUUG0TvD7y", "type": "ppt"}, {"name": "פרשת עקב פרק ז פסוקים יז-כו.pptx", "id": "16Bzfekvnw1CLDCQnaNXVvG4sTsPUegvN", "type": "ppt"}, {"name": "פרשת עקב פרק ז' פסוקים יב-טז.pptx", "id": "1HFYKalie_cYCFtu_00kbekNSaFCrocdk", "type": "ppt"}, {"name": "פרשת עקב פרק ח פסוקים א-ט.pptx", "id": "1VAOiT3AgO9W-NePzDjK8LcmL8v4ervDl", "type": "ppt"}, {"name": "פרשת עקב פרק ז' פסוקים יב-טז-1.pptx", "id": "1lI9BOIssnKZz23sKI4ouo4t-HKb3Kpas", "type": "ppt"}, {"name": "פרשת עקב פרק ז פסוקים יז-כו-1.pptx", "id": "1IPpzsa0kF4-9IEHiwfHsynsTsMF6BuBY", "type": "ppt"}, {"name": "מצגות פרשת עקב.pptx", "id": "1KGftmeunHg7wgVVuUSl54bOKdVwagh90", "type": "ppt"}, {"name": "פרשת עקב פרק י.pptx", "id": "1KwiEcAe7WKSf34KoY6D--9GrolGXJUHg", "type": "ppt"}, {"name": "פרשת עקב פרק ז' פסוקים יב-כו.pptx", "id": "1KfYr7JH-_Nf9BmvjIKGmWH0WrNCJFb1C", "type": "ppt"}, {"name": "פרשת עקב פרק ח.pptx", "id": "1KZK_uA3xkWj2ux89cUbLKEDqTRCbKChW", "type": "ppt"}, {"name": "פרשת עקב פרק יא.pptx", "id": "1KzIR7_MQfCkqrqIyH-JBlvTDR7zGIs69", "type": "ppt"}, {"name": "פרשת עקב פרק ט.pptx", "id": "1KmsIrJPx7dGJ6fNj2q3d8Ivr7NFj12X4", "type": "ppt"}], "דפי חזרה וסיכום": [{"name": "פרשת עקב חזרה.pdf", "id": "19XhR08rGmIlWOl_PF9O5Pgk7zx54Ckg5", "type": "pdf"}, {"name": "פרשת עקב חזרה.pdf", "id": "1jN1oN-RG91RvL3CWqf_mORGM5o7NM-8y", "type": "pdf"}, {"name": "פרשת עקב חזרה (2).pdf", "id": "1pjtD5GgkJxoJ5IRUHOV_b5xRnwajEVmA", "type": "pdf"}, {"name": "דפי חזרה - פרשת עקב.pdf", "id": "1OY8yfYhRhL3nOI-caJ5n_sgYc7LLMJWf", "type": "pdf"}, {"name": "דפי חזרה - פרשת עקב.docx", "id": "1mQQXZibJTKhWs4E0A3tLCzdBiLc76njq", "type": "word"}, {"name": "עבודה לסיכום פרשת עקב.docx", "id": "1Xvr55rxqAeOzWPNovXiZkCv3uZcmbbzv", "type": "word"}, {"name": "עקב - דפי חזרה.doc", "id": "1XtmtKR1OzpJDKUQKr1YceWrBbl22QDup", "type": "word"}, {"name": "דפי חזרה - פרשת עקב (3).doc", "id": "1Xd8IeXpZcacOBkPEelQbHvbUbVCvBpkx", "type": "word"}], "דפי עבודה ומשימות": [{"name": "דברים פרק ח.docx", "id": "1DW2RCXcD5Sfz5UAOjVl2ij4q0ohOsCKN", "type": "word"}, {"name": "עבודה על פרשות עקב וראה.pdf", "id": "1dXSJKm6b5wXd1_A2IWt0RbY0dBUXbfmc", "type": "pdf"}, {"name": "עבודה חוויתית בקבוצות פרק ח' מעלות הארץ הטובה.pdf", "id": "19pel87fGs5RWEduQnG4RDh4fSm4a0F-Z", "type": "pdf"}, {"name": "פרשת עקב.docx", "id": "1joKIWB3j4ej5EyWv_DmJ2tKKaf7XidBb", "type": "word"}, {"name": "דפי עבודה פרשת עקב (10).docx", "id": "1BQxlifsNrwbdmuzGrPhw281oI_Zu4QyJ", "type": "word"}, {"name": "פרק יא' י-יב השוואה ארץ ישראל מול ארץ מצרים.docx", "id": "13O9kCDDuhAJPZI0D9oqhTXONXTNY_B82", "type": "word"}, {"name": "עבודה על פרשות עקב וראה (1).docx", "id": "1plcdLLDXeLNC_1ZRALak3S4HdlYjpIxO", "type": "word"}, {"name": "פרק יא סיום פרשה.docx", "id": "1nwzLJXG1hYpwLC4PfRAjpUE_Fx76-lgW", "type": "word"}, {"name": "יא ללוח.docx", "id": "1yoUoXGSAzUopW1ov8aO7PsXDvsLcLXZR", "type": "word"}, {"name": "פרק י י עד יב.docx", "id": "1nkT5a225BziNJSm6CfrWMOXUlBo6k74u", "type": "word"}, {"name": "פרק י ללוח.docx", "id": "1Idzx-ecYrAEjTLXTHmxCUfPi7hTt5olQ", "type": "word"}, {"name": "פרק י דף עבודה.docx", "id": "1-zEM9FK7JivGspPSLBEj5q9_uxcEf6C2", "type": "word"}, {"name": "פרק י דף עבודה.pdf", "id": "1909-FSlCaCpAZbB3bAY8JzD8DvY-Rb9Z", "type": "pdf"}, {"name": "פרק ט.docx", "id": "16SARKJLw1RLYHOdrpejPx9Gfpo4Sy033", "type": "word"}, {"name": "פרק ח.docx", "id": "1QlZQrz8FrG5ygnVGPe51zOY3nFJh0vjH", "type": "word"}, {"name": "יב וְהָיָה עֵקֶב תִּשְׁמְעוּן.docx", "id": "1P6hLS64LaE7CHb0t_JBteB8nA7BKrNhS", "type": "word"}, {"name": "פרק ז דף עבודה.docx", "id": "1CNiMnTswMel-iHPxFw9fGGNeONkAtTGo", "type": "word"}, {"name": "פרק ז דף עבודה.pdf", "id": "1mIkJyjk7-vaaKEdJAlnfBvhTICvvJE9o", "type": "pdf"}], "חומרי לימוד (PDF)": [{"name": "דברים פרק ח תחנות.pdf", "id": "1CY7XxDjK_M2VrVAebKPsSgTBJxjQtYx3", "type": "pdf"}, {"name": "dvarim-8-10-20.pdf", "id": "1YD_FwJTusyPzb05En0BgQyGdlawdg9OG", "type": "pdf"}, {"name": "פרשת עקב.pdf", "id": "1cGYCTZ8Jvfl5k8HOu1dPoqKefcsre4Bm", "type": "pdf"}, {"name": "מי הם שבעת עמי כנען.pdf", "id": "1L0AT0XfJes2wSv4qXcArt9Q1xiP32DFj", "type": "pdf"}, {"name": "פרק יא סיום פרשה.pdf", "id": "1oWAqW9oevuP9LYIwe1tKZPP6a-QJsZn6", "type": "pdf"}, {"name": "פרק י י עד יב.pdf", "id": "1z0IfcJe-1sjEtf08l6MRd62pIqDioZ-s", "type": "pdf"}, {"name": "פרק יא פסוקים יג עד הסוף.pdf", "id": "1ibcodK0sqcsIBr3FISnLwm7EJQSmEGMO", "type": "pdf"}, {"name": "פרק ח.pdf", "id": "1rmYRDMaOcj323Ylgz_nJFOBae7_q47Oy", "type": "pdf"}, {"name": "דברים ט-י עליות משה להר סיני - סקירה", "id": "1wxzZ9hGWEN5GTJ22g6a86qIbPAn1NWPl", "type": "pdf"}, {"name": "המשך פרק ח.pdf", "id": "1RiZUF2hslKeDQMBehJIy0_1EdJxhAOSl", "type": "pdf"}, {"name": "פרק ח פס א.pdf", "id": "1rVyg4U_ShGtdTxRMeH6ICINJXsT5btzp", "type": "pdf"}, {"name": "פרשת עקב - והיה אם שמוע.pdf", "id": "1PR6Ei97nHbknEFyLZOc4wjts08AzDcEy", "type": "pdf"}, {"name": "פרשת עקב חידות מצוירות.pdf", "id": "1GAXPFlhxQ3YbVNjFKvkhOslbRsKbuX9H", "type": "pdf"}, {"name": "חומש בהבנה על פרשת עקב.pdf", "id": "1EebDySOa9kJt4q6kd4evWJ6G-L9yvvpb", "type": "pdf"}, {"name": "57799-devarim-ekev-horim-a.pdf", "id": "1BrOQv1DG6vnoO6b6ISeCni5muwts1JCb", "type": "pdf"}, {"name": "57799-devarim-ekev-c.pdf", "id": "1BdBwCTqACQWitnhNvg0AOy31Y2dO7c-J", "type": "pdf"}, {"name": "57799-devarim-ekev-b.pdf", "id": "1BqrqQ5AoHPUvJ2FyPuF9aiN0dvyh6b8c", "type": "pdf"}, {"name": "57799-devarim-ekev-a.pdf", "id": "1B_KISryztnZk_g2LTcV9qxDpcSDdepTH", "type": "pdf"}], "מבחנים והערכה": [{"name": "מבחן ראה.docx", "id": "1aMD6_sFG3xDr83Io9XF1S2myhm7cZRWE", "type": "word"}, {"name": "עבודה עקב- ראה לפי המבחן הארצי.docx", "id": "1ATmMnZvrDl1gdR5onV5CONepbzXakfRE", "type": "word"}, {"name": "מבחן עקב.pdf", "id": "1bCuj-ElD_4bnMs6uxGaSXXuqExuvkxmc", "type": "pdf"}, {"name": "מבחן - פרשת עקב.docx", "id": "1XJseW4LBlvBkpWPrNd5eaXU8-rtGwPz5", "type": "word"}, {"name": "עקב מבחן תשעח.doc", "id": "1XrvbfvZ54wrnW4QpDTh_9s4XGcMLZ_EE", "type": "word"}, {"name": "מבחן פרשת עקב תשעז.doc", "id": "1XeMicfsAxwXUE5DO6044PueAtQUy8iSe", "type": "word"}, {"name": "מבחן פרשת עקב תשעו.doc", "id": "1XIZGcHyRU7XtqQqhWhpqVb2PTfXzn0OR", "type": "word"}, {"name": "מבחן פרשת עקב תשעד.doc", "id": "1XL-QidqIvuO3O-a8xGWd7sPxrxv6TeG5", "type": "word"}, {"name": "מבחן פרשת עקב תשסז.doc", "id": "1Y-7hOl7n11HHs_Gc36Ovh2xvwWL3Bl35", "type": "word"}, {"name": "מבחן פרשת עקב.doc", "id": "1Xi9MTUhfbEPP99iKgeYaWZZ_tlA6-mO0", "type": "word"}], "חידות ומשחקים": [{"name": "משחק שאלות פרשת עקב.pdf", "id": "1PRn3Nf2n6qlcckvX38CCQS6CL4YvHVuu", "type": "pdf"}]}, "ראה": {"חומרי לימוד (PDF)": [{"name": "פרק י\"ב פס' כ\"ג.pdf", "id": "1bA2jRgjX1mqwxD7fayBId6E2m31sLSe-", "type": "pdf"}, {"name": "פרק יג - נביא שקר, מסית ומדיח ועיר הנידחת.pdf", "id": "1DaQ9_XoskY8KjlLKVlphdW9kRDcGUWcb", "type": "pdf"}, {"name": "פרק יג נביא שקר מסית ועיר הנידחת.pdf", "id": "1VnRlOiBB9-nGKnemMrZM7WrTUtTNF-UX", "type": "pdf"}, {"name": "עם קדוש בגוף קדוש לא תתגודדו.pdf", "id": "18u8G5L4uc98Filq5Tnd8w4Csmg_CMlU6", "type": "pdf"}, {"name": "דברים י''ב א-י''ב המקום אשר יבחר ה' - מערך.pdf", "id": "1vgTk_p88Q5RkxBsz8Y2KXOtoxsQW4UzV", "type": "pdf"}, {"name": "מעשרות כללי - פרק י''ד.pdf", "id": "1YI-ww9EdhyNW476aWpRAYQgFFGJb2wsi", "type": "pdf"}, {"name": "פרשת ראה חידות מצוירות.pdf", "id": "1Fsr4lpXMMhNDHmjK6_AqVQvLyvyisbww", "type": "pdf"}, {"name": "חומש בהבנה על פרשת ראה.pdf", "id": "1EZjIullNrKecYEXo4wrxy108upJp1o7M", "type": "pdf"}, {"name": "57799-devarim-rehe-c.pdf", "id": "1CjdlxHlSskDZbsT0VGHBKHo19pKpMiiN", "type": "pdf"}, {"name": "57799-devarim-rehe-atpash.pdf", "id": "1Csy3wmX5rjEjdfGmmGvqu5Lt6fSRFgq3", "type": "pdf"}, {"name": "57799-devarim-rehe-a.pdf", "id": "1DEJMgHcRErvyeuT1K_-cTk7qW7wc8lC4", "type": "pdf"}, {"name": "57799-devarim-rehe-b.pdf", "id": "1D4X5cfoFI34dBm1Y6tT1fOLAPQ_Yidv3", "type": "pdf"}, {"name": "57799-devarim-rehe-horim-a.pdf", "id": "1CwwzFvrdZC0aZpyybOYCC9Rr9ZBcAl9G", "type": "pdf"}], "דפי חזרה וסיכום": [{"name": "משימת סיכום פרשת ראה.pdf", "id": "1ZwIuU4bDl_3-iZms2JBV-xDq5UOXkCzl", "type": "pdf"}, {"name": "דפי חזרה - פרשת ראה.doc", "id": "1Y1sl4Cdz5QW-ce69vh0uHNVSnfMhdNje", "type": "word"}, {"name": "פרשת ראה- שאלות חזרה בקצרה.docx", "id": "1YctY36JgmcrZFQFSxNF09dg0K9-HmOBh", "type": "word"}], "מצגות": [{"name": "פרשת ראה פרק טו פסוקים יב-כג'.pptx", "id": "1qAlrQFKwycWO2JaeiNqBtpmRcceBXkxh", "type": "ppt"}, {"name": "פרשת ראה פרק טו פסוקים א-יא.pptx", "id": "1zPsIJV6dKZPe2gpAIt2v-cIcclpWC43C", "type": "ppt"}, {"name": "פרשת ראה פרק טז פסוקים א-יז.pptx", "id": "1Vn4srGDTQQs0uPXzRmRC-6le4HbZD76o", "type": "ppt"}, {"name": "פרשת ראה פרק יד פסוקים א'-כא.pptx", "id": "1933GmBC1KVkZupsXR2e_0BJDLHaeQ6M6", "type": "ppt"}, {"name": "פרשת ראה פרק טו פסוקים יב-כג'.pptx", "id": "1OE16mJ5pUU0IKoRtgvZ-t8VgxqXXQ2Oc", "type": "ppt"}, {"name": "פרשת ראה פרק טו פסוקים א-יא.pptx", "id": "19G7VGuBBNfFHHxDgss__uGs6hEpr2fB7", "type": "ppt"}, {"name": "פרשת ראה פרק יד פסוקים כב-כט.pptx", "id": "1l5NsR-dKCMWpliXSwFN44POS6fFjVley", "type": "ppt"}, {"name": "פרשת ראה פרק יג פסוקים ז-יט.pptx", "id": "1Scdd7BOP84oiUwSYSqWUP7Ovu7flyGfr", "type": "ppt"}, {"name": "פרק יב פסוק כט- פרק יג פסוק ו'.pptx", "id": "1Yf9cuJ-jXMSZUM-6wZIYbU4pkmWNxFCE", "type": "ppt"}, {"name": "פרשת ראה פרק יב פסוקים יא-כח.pptx", "id": "1PWhVP1avjy2Dihl4K5IDT7FQAIdoDhYD", "type": "ppt"}, {"name": "פרק יב' פסוקים א-י'.pptx", "id": "14bUU6wNjmEdDyGVjzRF086wMCg9mJ2JA", "type": "ppt"}, {"name": "פרשת ראה פרק יא פסוקים כו-לב.pptx", "id": "1UHh_qwaI0yTUdx_5Fn7R5FTS2ry9w-KS", "type": "ppt"}, {"name": "ראה פרק י''ד.pptx", "id": "1R6710KmYnosKjx3KWKeBx-wby_PvSvCs", "type": "ppt"}, {"name": "מצגות ראה.pptx", "id": "1YRdiaeoVOUSJT_k89fTI4aMhKfwtuCrI", "type": "ppt"}, {"name": "תרומות מעשרות.ppt", "id": "1YY9YOC4k2MT5ys9dLrfc63WgZ_7eY1sS", "type": "ppt"}, {"name": "תרומות מעשרות.ppt", "id": "1ZFynS9331CL9nMmCzEF88_su6YyUB49J", "type": "ppt"}, {"name": "פרשת ראה פרק טו פסוקים א-יא.pptx", "id": "1LboMCY-iIMiHLDDQl4NWOjANVdiXLMvP", "type": "ppt"}, {"name": "פרשת ראה פרק טז פסוקים א-יז.pptx", "id": "1Lm3odbiUY7q3sos3r-iscOimUacTrZOG", "type": "ppt"}, {"name": "פרשת ראה פרק יב פסוקים יא-כח.pptx", "id": "1LedBIyuwTN5cTdWXLAnpsUe7bj4CJs0c", "type": "ppt"}, {"name": "פרשת ראה פרק יד פסוקים א'-כא.pptx", "id": "1M3qKVzNoxmtJZ8RRXRt9AujoACTHSkNE", "type": "ppt"}, {"name": "פרשת ראה פרק טו פסוקים יב-כג'.pptx", "id": "1LpJcMexqllWPfASkMI6PowDVFOpXim_k", "type": "ppt"}, {"name": "פרשת ראה פרק יא פסוקים כו-לב.pptx", "id": "1L_kieRAUeQ7Yr3Gs6maFG5uABjNqSryZ", "type": "ppt"}, {"name": "פרשת ראה פרק יד פסוקים כב-כט.pptx", "id": "1M-7yKiwv2MtfpNxy4fpCvMY7BgKzgg0W", "type": "ppt"}, {"name": "פרק יב' פסוקים א-י'.pptx", "id": "1LcbkM1Utm9gfW8qy-n34ePHDKBI0HnSf", "type": "ppt"}, {"name": "פרק יב פסוק כט- פרק יג פסוק ו'.pptx", "id": "1LhMj66BXrXFqXHDcmG_CI27Lsv6hP4On", "type": "ppt"}, {"name": "פרשת ראה פרק יג פסוקים ז-יט.pptx", "id": "1LXnTv_cYPmIB9qMa45L7HwoNW_n_FkgU", "type": "ppt"}], "מבחנים והערכה": [{"name": "הערכה חלופית פרשת ראה מצוות צדקה (1).docx", "id": "13q-kTYe5AEK16PVuCxYLDzwwxvRqzZwc", "type": "word"}, {"name": "מבחן - פרשת ראה - גירסא ב'.docx", "id": "1DWvTFHdg28Hq3kTUIucLGLcRZOlL9OiU", "type": "word"}, {"name": "מבחן - פרשת ראה.docx", "id": "1YCf7Et_OTQQIZhH73s84xJJLe6F_WUM2", "type": "word"}, {"name": "מבחן פרשת ראה- על שאלות חזרה בקצרה.docx", "id": "1YG3DU2jg8fpuilhwkXyxAtgwAThmn7R2", "type": "word"}, {"name": "מבחן ראה.docx", "id": "1YJg9h4ndOuKoUK0-hFXAgFCiJZjKrphw", "type": "word"}, {"name": "פרשת ראה מבחן.doc", "id": "1YaGX4hzXTKnTvZfzE9-g3WMRZn-J1U7l", "type": "word"}, {"name": "מבחן פרשת ראה תשעו.doc", "id": "1YRb14TD6uqaIj05GzSBq3aCUV0fDgY8l", "type": "word"}], "דפי עבודה ומשימות": [{"name": "פרשת ראה.docx", "id": "14kfmm0RE3RbX_wltBL60JIKpyuyZXQR1", "type": "word"}, {"name": "דפי עבודה פרשת ראה (4).docx", "id": "18JPHre6_kLdvJSW52O5dbySfzsXJhSz1", "type": "word"}, {"name": "דפי עבודה פרשת ראה (1).docx", "id": "17BeapmDKxNQWHymuGCxNaVnWPvW6gz6D", "type": "word"}, {"name": "תרומ''ע - טבלה למלא - מצגת.docx", "id": "1ZC-vWlKtorROjHzISNhB4lS0aK2lkkQp", "type": "word"}, {"name": "עמוד ראשון.doc", "id": "1PTqPdVMGHc0SX7atJCIXFr1a1EG0020U", "type": "word"}, {"name": "עמוד שני.docx", "id": "1PbBdlaS_mJtfnC8x2x-7d7DiTaneGqiw", "type": "word"}], "כרזות, ציורים ועיצוב": [{"name": "פרשת ראה - דף צביעה", "id": "1aRVNaWIU9zeQ_wPRdz0zd4TdBvq0WqwY", "type": "image"}, {"name": "ברכת כהנים בכותל.jpg", "id": "1wmxrOtQUa9WXcoLf8DKhiOQWoA6u24l1", "type": "image"}]}, "שופטים": {"דפי עבודה ומשימות": [{"name": "פרשת שופטים.docx", "id": "1fCRVQg_1PS6PE8Vo66MTgyZAfnNjUDMi", "type": "word"}, {"name": "ועשית ככל אשר יורוך- הקשבה לשופטים ולחכמים דף לעבודה בקבוצות.pdf", "id": "1PDF0Re4e8wiE8E9bO0iGtnETbZbX8qpW", "type": "pdf"}, {"name": "פרשת שופטים דפים (2).docx", "id": "1h2TdZ2yhpqwjc01zfqFfscB1v8Lrs5n4", "type": "word"}, {"name": "פרשת שופטים.docx", "id": "1s70AYDIZujZ5s-d3RThlahbflTwMBtqm", "type": "word"}, {"name": "דפי עבודה פרשת שופטים (1).docx", "id": "10PqOiuXMkrxI4bB0gn04M5r-h0ADcY_B", "type": "word"}, {"name": "עבודת חקר סוגי ההנהגה בישראל.pdf", "id": "1vWNTq79GrxQjQYtALYHIiKuRN-fZXYel", "type": "pdf"}, {"name": "משימת פרשת שופטים מדריך למורה.pdf", "id": "1Zdbst_rjWIj3JM3e8OFooOSCnSdGblCV", "type": "pdf"}, {"name": "משימה פרשת שופטים לתלמיד.pdf", "id": "1ZYK8GZiMPdM_7Oxi3eG04kkbrdnhdG9Q", "type": "pdf"}, {"name": "עבודה על פרשת שופטים.docx", "id": "1Z_xQZK-GFLlXy8Qh7bEK1MVxgHKzwMeh", "type": "word"}, {"name": "דבר תורה פרשת שופטים.docx", "id": "1Q00xqZmWvAp3ldD8thB8eHzvGFhvId3n", "type": "word"}, {"name": "עמוד ראשון.doc", "id": "1PpzYdLrlRwpFoGfW4JTG7ybwlK0FH0bZ", "type": "word"}, {"name": "עמוד שני.doc", "id": "1Q5ujEx904UT-FahqnDudv3uDqUdNMV74", "type": "word"}, {"name": "עמוד ראשון.doc", "id": "1PhrZKFa_ltW-r8-cxcycnnAqaVEXy20V", "type": "word"}, {"name": "סכום לשיעור בפרשת שופטים.docx", "id": "1PbsnA2hpu3rZ4_ss92M9MvBnrlfD5fcF", "type": "word"}, {"name": "עמוד שני.doc", "id": "1PpCRr8tclaww-pOhBkzhBw8s0oc8gT5i", "type": "word"}], "מצגות": [{"name": "פרשת שופטים פרק יט.pptx", "id": "1xF5fUuSSWlW2nK24yFqlhyNkzF9smBoD", "type": "ppt"}, {"name": "פרשת שופטים פרק יח פסוקים א'-כב'.pptx", "id": "1BzR2lJG_cRpvmZ6jykecJ8wJzm9XHIuL", "type": "ppt"}, {"name": "פרשת שופטים פרק כ.pptx", "id": "12dfuEbFBhEJrm9pbCMV7pdGhDSZXQwq7", "type": "ppt"}, {"name": "פרשץ שופטים פרק יז'.pptx", "id": "1XfmAP8jwuKmdWZmPXb_oH3-NPNfUR42E", "type": "ppt"}, {"name": "פרשת שופטים פרק טז פסוקים יח-כב.pptx", "id": "1CU2xJ_OESjct3niYfzFoliMgp8JsR7Db", "type": "ppt"}, {"name": "מצגת דברים פרקים יט-כ.pptx", "id": "1_k2SvIYL-OoNtpksySDYjLA33Tistfj0", "type": "ppt"}, {"name": "פרק יז בית הדין הגדול.pptx", "id": "1cci-PV2wkx2_vPkfJ8iv9LnrA021bOhl", "type": "ppt"}, {"name": "פרק יח איסורי קסם.pptx", "id": "1QknEVOadS4wMtUCzSm8qhBY5paNCI-QM", "type": "ppt"}, {"name": "מצגת דברים פרקים יט-כ.pptx", "id": "1ZUB43XbaCQB3ctXDEi2oB9IPL6qQ7ntv", "type": "ppt"}, {"name": "מצגות הדרכה פרשת שופטים.pptx", "id": "1qwo_Y5EXqHPl8U637LezUATcCp1-Xejj", "type": "ppt"}, {"name": "מצגת פרק כא עגלה ערופה.pptx", "id": "1_4V1Amey4jW0pkRprVSiM7ZAqsC1g9_7", "type": "ppt"}, {"name": "מצגות הדרכה פרשת שופטים.pptx", "id": "1ZSXv-7jFyiARymIyRcKia_w0bTz_j6wk", "type": "ppt"}, {"name": "פרק יח איסורי קסם.pptx", "id": "1_vAjrpBwY4XZQ3AYorAQoDEIiZkV2zZs", "type": "ppt"}, {"name": "פרק יז בית הדין הגדול.pptx", "id": "1ZyagqJtmFrFd50FU6kfa3Qf7sm82iQqK", "type": "ppt"}, {"name": "פרק טז משפט צדק.pptx", "id": "1ZvtVO16m3N3yWJDGsYInZ8AbpFKmWiax", "type": "ppt"}, {"name": "פרשת שופטים פרק יח פסוקים א'-כב'.pptx", "id": "1LKcRBrDyEOw0cuAUI7bhGjUyMQk2fhrj", "type": "ppt"}, {"name": "פרשת שופטים.pptx", "id": "1MBOCTzMpMPbQ42ee2FPAcjqP0T2DUuuG", "type": "ppt"}, {"name": "פרשת שופטים פרק כ.pptx", "id": "1LGlnf3alSc75RxYBUy_u0iVtQiSoQUhL", "type": "ppt"}, {"name": "פרשת שופטים פרק כא פסוקים א-ט.pptx", "id": "1M4-lqLamwO2YZrPNZQHApDG9w22T34LQ", "type": "ppt"}, {"name": "פרשת שופטים פרק יט (1).pptx", "id": "1LGdh3YdcQlai3w8lHBfmyCzojSLSteTv", "type": "ppt"}, {"name": "פרשת שופטים פרק טז פסוקים יח-כב.pptx", "id": "1LQxHUAGvpdMaUsJSexqwqrwTYWhp95RP", "type": "ppt"}, {"name": "פרשת שופטים פרק יז פסוקים ח-כ'.pptx", "id": "1LJXlYw43xdSA7AYWVtepFR5JNlKaBtnF", "type": "ppt"}, {"name": "פרשת שופטים פרק יז פסוקים א-ז.pptx", "id": "1LL6QtiMZioGSYL_dMZYfhjeKJFOIjS16", "type": "ppt"}], "חומרי לימוד (PDF)": [{"name": "מינוי מלך.pdf", "id": "1VH_UaECMMDazhDCmPZFrzoLweKpECsX2", "type": "pdf"}, {"name": "פרשת שופטים חידות מצוירות.pdf", "id": "1GBX4tn9uwC_EefKoHcEflOjgyw8wDYJD", "type": "pdf"}, {"name": "חומש בהבנה על פרשת שופטים.pdf", "id": "1EHxcbFMgsnIa4VvzRIHPDJ5ui9bkrt4Y", "type": "pdf"}, {"name": "57799-devarim-Shoftim-horim-a.pdf", "id": "1DVxBZtIjArS1gsqBnUXLxfqjK6b0f8Xt", "type": "pdf"}, {"name": "57799-devarim-Shoftim-c.pdf", "id": "1DRzRsKJ81o43AIjK0AHt-SaO3nwHL5VF", "type": "pdf"}, {"name": "57799-devarim-Shoftim-b.pdf", "id": "1DTcBVk1bItupJo3XJsDmqIfPD9BKy0Jn", "type": "pdf"}, {"name": "57799-devarim-Shoftim-a.pdf", "id": "1D0RSHXAjmwx1p5yM1PE8k000E_4eJ3D3", "type": "pdf"}], "דפי חזרה וסיכום": [{"name": "עבודת סיכום מתוך המיצב.pdf", "id": "1gzsCyqEF1jSlKuoGDMfsOBeAhYe8ivgL", "type": "pdf"}, {"name": "משימה לסיכום פרשת שופטים - לתלמיד.docx", "id": "1vnf6J7-gM3w200Es5GjjhqNQ_pxeHW46", "type": "word"}, {"name": "משימה לסיכום פרשת שופטים.docx", "id": "1qNfN9ebyIoPaGJ9kFIE36KAmApyRgg01", "type": "word"}, {"name": "פרשת שופטים - דפי חזרה.pdf", "id": "1_FSmjLkg45ttfQU-SIfk4PHfF9Bzx-a7", "type": "pdf"}, {"name": "פרשת שופטים - דפי חזרה.doc", "id": "1_d3AdDf53lx_aqyvi31nmQxabAlxBL0h", "type": "word"}, {"name": "פרשת שופטים -משימת סיכום.docx", "id": "1_7WHtLtuKZcYRpurrgWSssVsxud5c6Eb", "type": "word"}, {"name": "פרשת שופטים - דפי חזרה קלים -ברקאי.doc", "id": "1_8K5EwVSe_MSwftVC5TvFb_palEprd8-", "type": "word"}, {"name": "דפי חזרה - פרשת שופטים ב.doc", "id": "1Z3S77_gyVFTqZmIHl_ssHZ5DJ4IlHeZO", "type": "word"}], "כרזות, ציורים ועיצוב": [{"name": "פרשת שופטים נושאים לפרשה בציורים.pdf", "id": "1aOxkjQqI7Fw_X7Lq4FxbCh7CQZr6hJ_9", "type": "pdf"}, {"name": "פרשת שופטים - דף צביעה", "id": "1aMBQFfmN4375_-M407elyHSmNtcnq7kd", "type": "image"}], "מבחנים והערכה": [{"name": "עותק של שופטים - מבחן תשעח.doc", "id": "1ZawJoiVdqmjjq6sv6VGKuUB1859BoKwW", "type": "word"}, {"name": "שופטים - מבחן תשעח.doc", "id": "1_KqhDUmbakd8n6kScD8ZFkscwaqjSglI", "type": "word"}, {"name": "הכנה למבחן - פרשת שופטים.doc", "id": "1YrXWBX9IUgV9M3S0097ME6SJTvjHJJZR", "type": "word"}, {"name": "מבחן פרשת שופטים - תשעז.doc", "id": "1ZPfAh7qD3uo3g9qpSo_IwNoF0fRqcIq9", "type": "word"}, {"name": "מבחן פרשת שופטים - תשעו.doc", "id": "1YeiJLdj1bIutBDknPvJLiyyREfSGw5u7", "type": "word"}, {"name": "מבחן פרשת שופטים ב.doc", "id": "1YyUAYJIfu4-voguztUiCIMEPw7d7eT5A", "type": "word"}, {"name": "מבחן פרשת שופטים.doc", "id": "1_3aH3Ecy7yUPKiO-MXMR16IkWjziLd45", "type": "word"}]}, "כי תצא": {"דפי עבודה ומשימות": [{"name": "פרשת כי תצא (1).docx", "id": "18gHfHj4ppzvuz2Q07iAV-beIteqwdPbn", "type": "word"}, {"name": "פרשת כי תצא דפי עבודה (3).docx", "id": "1Ep3pUN1_1diYc9zU5aJ-vhJOTgNExQeU", "type": "word"}, {"name": "פרשת כי תצא דפי עבודה (6).docx", "id": "15jWwJoDRxXnE9SJQ0VlnR8GgRCu9m7VM", "type": "word"}, {"name": "כי תצא - פירוט המצוות פ''ו.docx", "id": "14ZSoss9Ik9JIERsvymTKIqwxIHzrUahj", "type": "word"}, {"name": "כי תצא - פירוט המצוות.docx", "id": "1X3UPYfFx1p67DONg1V2Z6eV61ojcR3YK", "type": "word"}, {"name": "פרשת כי תצא עמוד 1.doc", "id": "1PSweZF-HEYbjJvx30cx8cUzt0phYx1zm", "type": "word"}, {"name": "עמוד 2 פרשת כי תצא.doc", "id": "1PTT6T416_57CZiXDIfR-d8PhFgRftLLr", "type": "word"}, {"name": "עמוד 2.doc", "id": "1P9C2zuXCogvcE1d0O6KQcLQD50mJTZf3", "type": "word"}, {"name": "פרשת כי תצא עמוד 1.doc", "id": "1P4NF_x5q2H6LL8xLyd9s2ti7Rfbp7fWV", "type": "word"}], "מצגות": [{"name": "פרשת כי תצא פרק כב.pptx", "id": "1rdyqLxaBdLneYHZf4TScLIYLS4GRlQf2", "type": "ppt"}, {"name": "פרשת כי תצא פרק כא פסוקים י-כג.pptx", "id": "1BULu8hVqfd3u2im5D-kdakAoLShpkPZ1", "type": "ppt"}, {"name": "פרשת כי תצא פרק כד (1).pptx", "id": "1mF5LU13t92wuuMHy0IYS3P_72jPnktsV", "type": "ppt"}, {"name": "פרשת כי תצא פרק כה (1).pptx", "id": "1XVVteTxGLL36GRELrHQEMJoNa06hXSv8", "type": "ppt"}, {"name": "פרק כג.pptx", "id": "1ViEmqHEvbBxwTS_3PTh-ZmDTPXp30kb5", "type": "ppt"}, {"name": "38 - דברים פרק כא - אשת יפת תאר.pptx", "id": "1gZNnplkBASXmcQ5KK8bjECgbfiDccT1l", "type": "ppt"}, {"name": "פרשת כי תצא פרק כב.pptx", "id": "1JOMmRPThJZU3rf9jhgYtcEPzVjXwVqRO", "type": "ppt"}, {"name": "פרשת כי תצא פרק כה.pptx", "id": "1JbP2bzYQZwn9QaY4FefHDCIDs7wxGG1t", "type": "ppt"}, {"name": "פרשת כי תצא פרק כד.pptx", "id": "1JbVFPtZuMeLDSYNh4LR72yTVRkuzyhbJ", "type": "ppt"}, {"name": "פרשת כי תצא פרק כא פסוקים י-כג.pptx", "id": "1JZG19M9xHOAqJUzOLHs-d4x_ZAWLOIBC", "type": "ppt"}, {"name": "פרק כג.pptx", "id": "1J_MDDWZMftRcqM19bMispcVnLY-GRHyA", "type": "ppt"}], "חומרי לימוד (PDF)": [{"name": "פרשת כי תצא.pdf", "id": "1nR5gMy56KnOlnwqihAQPlWjSY-xGJID_", "type": "pdf"}, {"name": "כי תצא - פירוט המצוות פ''ו.pdf", "id": "1mEJVOW27EVxQQW1-X_dTgS_5UbGHWLuL", "type": "pdf"}, {"name": "כי תצא - פירוט המצוות.pdf", "id": "1WkXKm_WCcE_3pN3cUEbjN9hcmCuI1Agf", "type": "pdf"}, {"name": "פרשת כי תצא חידות מצוירות.pdf", "id": "1G2snm_a_ojgIJJLrxnZfrN6J-S2dknds", "type": "pdf"}, {"name": "חומש בהבנה על פרשת כי תצא.pdf", "id": "1Efswe_lUvNAwMJEEh64tH0dmmUaQrl6K", "type": "pdf"}, {"name": "57799-devarim-kiteze-horim-a.pdf", "id": "1CHlMbBczA6XEdCUednq-jybaqyc73qG0", "type": "pdf"}, {"name": "57799-devarim-kiteze-c.pdf", "id": "1C0j7f40ik3t2-u4dS0LGW_ZzfbbGmzlJ", "type": "pdf"}, {"name": "57799-devarim-kiteze-b.pdf", "id": "1CJzUdU16c2vhxXpHcMVJMn8NO1ftqo5T", "type": "pdf"}, {"name": "57799-devarim-kiteze-a.pdf", "id": "1CNHu3qL_JcbwIWFOtdiung9ElQ6Aab1t", "type": "pdf"}], "מבחנים והערכה": [{"name": "פרשת כי תצא - בוחן.docx", "id": "1ZCS-LrcWnSZZoWHVlnEEmFsH5PIbqRqv", "type": "word"}, {"name": "פרשת כי תצא - מבחן.docx", "id": "1XBFnjNI8454qa4T_ZEyJzN4Xu6jKgI2N", "type": "word"}, {"name": "כי תצא - מבחן ע''ט.doc", "id": "1X89k1iITTSKN5POp6jkgYlnCNm7yWjBm", "type": "word"}, {"name": "מבחן פרשת כי תצא - תשעז-ח.doc", "id": "1WoZZ0AvFfWFdkXtqoXNLWfgtml-gSMd_", "type": "word"}, {"name": "מבחן פרשת כי תצא - תשעו.doc", "id": "1XD4_s1hh2znEvozDjESe4aY4KEujUDjV", "type": "word"}, {"name": "מבחן פרשת כי תצא.doc", "id": "1X4arBxlGp7HmgJHNtMPvidtajYfCS0QL", "type": "word"}], "דפי חזרה וסיכום": [{"name": "דפי חזרה - פרשת כי תצא - בדילוג.pdf", "id": "1W-JztnH3JcwL3eiEa0iMGVUuxYJkNR7A", "type": "pdf"}, {"name": "דפי חזרה - פרשת כי תצא - מצונזר.doc", "id": "1W95tbtsCsNdgLifqbVR75lFpD5HH8RpH", "type": "word"}, {"name": "דפי חזרה קצר - כי תצא.doc", "id": "1Vt122mtxQyqv5sbeKbnEgdcVp0oaAa6I", "type": "word"}, {"name": "דפי חזרה - פרשת כי-תצא - מקוצר.doc", "id": "1W3ov4jc7WPtTYVB96g-vVsuRK89I141b", "type": "word"}, {"name": "דפי חזרה - פרשת כי תצא.doc", "id": "1VxuAoA6Oj_S4fORh0mg2MMHCBEgXwVcW", "type": "word"}], "חידות ומשחקים": [{"name": "שעשועונים.pdf", "id": "1PAZh0Z9IfALWnWEotHqLttqbrMtzFE7h", "type": "pdf"}]}, "כי תבוא": {"דפי עבודה ומשימות": [{"name": "מעבר ירדן משימה לתלמיד - סופי.pdf", "id": "1CVOTWeu4zz6QP2gL70MIOx5VaBrpOQE1", "type": "pdf"}, {"name": "כי תבוא - פרק כ''ח - ברכות וקללות.doc", "id": "1WMtmZB8w-vA2QFjuaZ_8D4GF4Y-lda0E", "type": "word"}, {"name": "עמוד ראשון אביר יעקב.doc", "id": "1Q6RWvYexeKDYkM974mySx9VmSnOsGGbW", "type": "word"}, {"name": "עמוד שני.doc", "id": "1Qf1gNq4HVK9R5vy_skdAGfgc0k-D2cfy", "type": "word"}, {"name": "עוד חידושים לפרשה.doc", "id": "1Q8F6dYxlRxgDm9XaLIpBi5V-lvbSnPoW", "type": "word"}, {"name": "עמוד ראשון.doc", "id": "1QT0BFtILBT0FoC5_l5lzOxZbBs3AFz2q", "type": "word"}], "מבחנים והערכה": [{"name": "משימת הערכה - מעבר הירדן - למורה.pdf", "id": "1bweoy_mWD1nFxmJaHnsTsA7PoFzVHbSm", "type": "pdf"}, {"name": "מבחן פרשת כי תבוא.docx", "id": "1VogJsAgQkfaMWeky2kaWm6Jel9-PgJPZ", "type": "word"}], "דפי חזרה וסיכום": [{"name": "כי תבוא - שאלות חזרה - מקוצר.doc", "id": "1WFOHCfxDTYB4QbNO70amaw6rkgYfuIN7", "type": "word"}, {"name": "דפי חזרה - פרשת כי-תבוא.doc", "id": "1VoTKBma4FJxSxfNgb0gY6t3TPXA8eOA9", "type": "word"}, {"name": "דפי חזרה - כי תבוא -ניצבים - וילך.docx", "id": "1WTchSP0ycoZVhU2OLY1Vqcw9qvcGqmR2", "type": "word"}, {"name": "כי תבוא פרקים כו כז כט - שאלות חזרה - מקוצר.doc", "id": "1WRSMGGr0WpEdac3MskTnG2kTYbXbrRuN", "type": "word"}, {"name": "תקציר פרשת כי תבוא.pdf", "id": "1QlhCY6kACgEHiOLEd1-vDFZt5mgU60Zx", "type": "pdf"}, {"name": "כי תבוא - סיכום.pdf", "id": "1QA1DNnNC2q_jBzBjnAN2e11oHk7_-ft7", "type": "pdf"}], "מצגות": [{"name": "מצוות ביכורים.pptx", "id": "1Ve_sVq6U8q-07zpxhSnJuBfi-8KBoyEq", "type": "ppt"}, {"name": "כי תבוא.pptx", "id": "1QFpOc3Xx5c5FWHXuGCislOcYaHQIy1EU", "type": "ppt"}, {"name": "פרשת כי תבוא פרק כו.pptx", "id": "1JEgTOJi3MT26MaBJEXlnD6jElx-2EPHh", "type": "ppt"}, {"name": "פרשת כי תבוא פרק כז.pptx", "id": "1JMoRty3Hv2jcuhoG0Bhzo9QOZTc7Ca9u", "type": "ppt"}], "חידות ומשחקים": [{"name": "שעשועונים-1.pdf", "id": "1QfqK9pMi48usbMhHgCM5SXn5kqmzDaCr", "type": "pdf"}], "כרזות, ציורים ועיצוב": [{"name": "+ציורים חסידי כי תבוא.pdf", "id": "1QIbvRq9177TZpXhMPEh6pHoaDCuRrxaZ", "type": "pdf"}], "חומרי לימוד (PDF)": [{"name": "דפי פרשה לילדי כיתה א-ב.pdf", "id": "1QEPcm_7Mi-aNOpniCmcwkh3NzOb4nPJd", "type": "pdf"}, {"name": "כי תבוא.pdf", "id": "1QQcjEz-dOUUp5gnzP8INtIiUF-DFLVss", "type": "pdf"}, {"name": "פרשת כי תבוא חידות מצוירות.pdf", "id": "1Fr_Ol5_jYKFovLNMgkXWuoWXdCUtQpJ1", "type": "pdf"}, {"name": "חומש בהבנה על פרשת כי תבוא.pdf", "id": "1E0vozr0ea2iKXEe0ccSZxqFOLfvn9tyw", "type": "pdf"}, {"name": "57799-devarim-kitavo-a.pdf", "id": "1Bo__aF860AB7aH9q9cQ73lUPGAEuQxIW", "type": "pdf"}, {"name": "57799-devarim-kitavo-c.pdf", "id": "1CHOEcGQS-Kd80OWQk_kqW0pMt5lT5S0t", "type": "pdf"}, {"name": "57799-devarim-kitavo-horim-a.pdf", "id": "1Bxr03TU7ur2ysk83hoqLQXIGHXXNkMHU", "type": "pdf"}, {"name": "57799-devarim-kitavo-b.pdf", "id": "1BygzatKtP9M3U1EUQhqgVAoj585fumJ2", "type": "pdf"}]}, "נצבים": {"דפי עבודה ומשימות": [{"name": "דפי עבודה פרשת ניצבים.docx", "id": "1f_shxHRCFZo-t-OBnJKN9yzSK35XejT1", "type": "word"}, {"name": "דפי עבודה פרשת ניצבים (2).docx", "id": "1N3xNpc-T0SqSfX9pQFfv8X8AonAg-yeB", "type": "word"}, {"name": "פרשת ניצבים.doc", "id": "1P3KTLaC5lKmbRmh5tHguhhf-0UOItn0O", "type": "word"}, {"name": "דף מספר 2.docx", "id": "1P37aphmGYIs86uBQ0Izn2lh02JO67dNi", "type": "word"}, {"name": "פרשת ניצבים.doc", "id": "1NqVaNIn4JxlZtqzZVfKbKXRmCbr-NOTo", "type": "word"}, {"name": "עמוד ראשון.doc", "id": "1NTRMODFG7T_Im6hhBAysAXVdMcO7av7z", "type": "word"}], "חומרי לימוד (PDF)": [{"name": "ניצבים.pdf", "id": "1MybX_KUlvEpVekmmc6LKENEiKJppUkk4", "type": "pdf"}, {"name": "פרשת השבוע מספרת לי.pdf", "id": "1Nny6YhVrOXjEmlBiWrRXF19ULnYPTpoF", "type": "pdf"}, {"name": "פרשת השבוע מספרת לי1.pdf", "id": "1Nnw8gzWt67qTwoGqC-lz41tqUO5cYdXh", "type": "pdf"}, {"name": "פָּרָשַׁת נִצָּבִים - סִכּוּם הַפָּרָשָׁה מְנֻקָּד+תִּפְזֹרֶת.pdf", "id": "1NY-lfbXZFtOyapxQq3reFOMrAbMT2U2b", "type": "pdf"}, {"name": "מצגת פרשת נצבים.pdf", "id": "1NAbPFsABdgY2X4nL5ZOW8-GvZv5vDwbz", "type": "pdf"}, {"name": "תפזורות לְפָרָשַׁת נִצָּבִים וַיֵּלֶךְ.pdf", "id": "1NkfHa8uwCNj7NWVt-I_VJBzfB3D3f1nq", "type": "pdf"}, {"name": "מה מסופר בפרשה - עם שאלות.pdf", "id": "1NGLkoWeV0joR53U-9g45aUhNkJQV1HFT", "type": "pdf"}, {"name": "פרשת נצבים - הכח שבאחדות.pdf", "id": "1MtwIPMKq8GznKjQzRyW46E4JksE56lkZ", "type": "pdf"}, {"name": "פרשת ניצבים חידות מצוירות.pdf", "id": "1G4wAqzHCiCLDeyrO0OUWSYMJdA6El4NM", "type": "pdf"}]}, "וילך": {"חומרי לימוד (PDF)": [{"name": "וילך א-ת- ועשרת ימי תשובה-תשפ''ב.pdf", "id": "1OpdfkvatjL5MCBnaB8dWAoT0-nrjdthi", "type": "pdf"}, {"name": "פָּרָשַׁת וַיֵּלֶךְ - סִכּוּם הַפָּרָשָׁה מְנֻקָּד+תִּפְזֹרֶת.pdf", "id": "1OpHKzoQLpht71cqySA1xNVartS-S2W8k", "type": "pdf"}, {"name": "וילך 2.pdf", "id": "1OrOTHjLe-egMKi5R9kG7szb1kEOr0RU9", "type": "pdf"}, {"name": "פרשת וילך - יהודי דבק באמונתו.pdf", "id": "1P0iXgVd9nodIVs02YNOsSdZtsGX70mXW", "type": "pdf"}, {"name": "פרשת וילך חידות מצוירות.pdf", "id": "1FbJl1_KZZ-Lez0AvbuGS-nLwtBuetFP-", "type": "pdf"}, {"name": "חומש בהבנה על פרשות נצבים - וילך.pdf", "id": "1E9OsMlidIaDzSqozYXGEr9Lbqh3c47Fz", "type": "pdf"}], "חידות ומשחקים": [{"name": "פרשת וילך +חידון א ב.pdf", "id": "1Ohd7TSqkPCNB7xWieDA8IgFu5S0ph273", "type": "pdf"}, {"name": "חידון א ב - פרשת וילך.pdf", "id": "1OtErtejYKkgln9-464MhYQSRQ86CfnuO", "type": "pdf"}], "דפי עבודה ומשימות": [{"name": "פרשת וילך.doc", "id": "1OhsKzZr7ZeTPDbcMhdXUtHFUJClJB0WV", "type": "word"}, {"name": "וילך.doc", "id": "1OvoNGes7j4vwOPKHM2wTkn8a9rHtPul5", "type": "word"}]}, "האזינו": {"מצגות": [{"name": "פרשת האזינו.pptx", "id": "1l00XBWBf_RmxTUpDlJvXacQzxZ3bK_R4", "type": "ppt"}, {"name": "האזינו - מצגת.pptx", "id": "1U0U3w7B2dFK9TbKLgWN1nSpfgqp1_fQL", "type": "ppt"}], "דפי חזרה וסיכום": [{"name": "האזינו - שאלות חזרה.doc", "id": "1TvVdsNDS_AvnOSMYo9c8f1kQkmPVDXV6", "type": "word"}, {"name": "דפי חזרה - פרשת האזינו.doc", "id": "1UBXqGjTvvXwtE_5dXrxShArUMrK3FUtg", "type": "word"}], "חומרי לימוד (PDF)": [{"name": "חִידוֹן א' ב' – לְפָרָשַׁת הַאֲזִינוּ - תשובות.pdf", "id": "1MYpficShOaEGgH320DF21XkdFX2zq-Ya", "type": "pdf"}, {"name": "א-ת- האזינו וזאת הברכה- וסוכות תש''פ.pdf", "id": "1M_QjqtM-jmA8JZQR9bEYHnYeiXvkovj6", "type": "pdf"}, {"name": "פרשת האזינו חידות מצוירות.pdf", "id": "1FWiqNCc65XxukE8LtsQgtzyTsXMHsS_7", "type": "pdf"}, {"name": "חומש בהבנה על פרשת האזינו.pdf", "id": "1E2XZZrpwQTMI_Q20uaekgxRw1eYYi50b", "type": "pdf"}, {"name": "5781-haazinu-horim-a.pdf", "id": "1DPh_zciPygJgei2cqPVLfXQjrZ6Ns1Sn", "type": "pdf"}, {"name": "5781-haazinu-c.pdf", "id": "1DoxsSLAlSl7JUFaIbLte8irwwv3cMs41", "type": "pdf"}, {"name": "5781-haazinu-b.pdf", "id": "1DI0tPIMIGFKYgUgO7Ebivm3g_mLdT7id", "type": "pdf"}, {"name": "5781-haazinu-a.pdf", "id": "1DNbS0vrWe3FcUAc6hmQZNX1O160ddrlF", "type": "pdf"}], "חידות ומשחקים": [{"name": "פרשת האזינו - סיכום+חידון א ב +תפזורת.pdf", "id": "1MVm6KqiUHooEUXM6YsXKc4s8likQU_pd", "type": "pdf"}], "דפי עבודה ומשימות": [{"name": "פרשת האזינו וסוכות.doc", "id": "1Mnr5ji0oViAg57Q7vzwS6u8R9f4sE_an", "type": "word"}, {"name": "האזינו.doc", "id": "1MPIGg9sQQ3tGbAtZk3mNevDyRHJ5jhhC", "type": "word"}, {"name": "פרשת האזינו וראש השנה.docx", "id": "1MMP-haIEjEJzbypLyJWJMCPubOI7-twj", "type": "word"}]}, "וזאת הברכה": {"מבחנים והערכה": [{"name": "משימת הערכה - משה רבינו - לתלמיד.pdf", "id": "1dDYI2PA982agen5iZVBn5kB4bZAsJ-wa", "type": "pdf"}, {"name": "משימת הערכה - משה רבינו - למורה.pdf", "id": "1wrT-T2s9d_l8TUX3Vo9-_OxYkRMWu9TK", "type": "pdf"}], "דפי עבודה ומשימות": [{"name": "וזאת הברכה - משימה -ברכות השבטים.pdf", "id": "1VGP_EZPfq3RNxDvGETDOkgiuFW8074sm", "type": "pdf"}], "מצגות": [{"name": "מצגת וזאת הברכה.pptx", "id": "1VNNQoxh_J6I0BSQWCEwOhPoPPyrjxGRt", "type": "ppt"}], "דפי חזרה וסיכום": [{"name": "דפי חזרה - פרשת וזאת הברכה.doc", "id": "1VH3XiyHeZ4rG10IbJmPc9JaRxn8pbr2X", "type": "word"}], "חומרי לימוד (PDF)": [{"name": "חומש בהבנה על פרשת וזאת הברכה.pdf", "id": "1Eg_zFOiM021szJk6EihGVqv-eQI5MFR8", "type": "pdf"}]}, "נצבים-וילך": {"דפי חזרה וסיכום": [{"name": "דפי חזרה - ניצבים-וילך.doc", "id": "1R0yBY8I9s1GsDIfGVzoPyNPEx-tZIL-K", "type": "word"}, {"name": "דפי חזרה - פרשת וילך.doc", "id": "1Qsy_Exire3SV3d112hU41kcZ9dMNcXGC", "type": "word"}, {"name": "דפי חזרה - פרשת ניצבים.doc", "id": "1QuLSiUQGzjNa-Qvht7ujXbKzOA6AFe_T", "type": "word"}], "מצגות": [{"name": "נצבים וילך.pptx", "id": "1R3byzVcNHqoTXQY04dVbkKp9mPr6AydC", "type": "ppt"}], "דפי עבודה ומשימות": [{"name": "דברים ל - פסוקי התשובה.docx", "id": "1QzeVVBMm-LFro1vYntgbrrpZQFh8wv6g", "type": "word"}, {"name": "פרשת ניצבים וילך.docx", "id": "1MD3pF4UoC7RXuH7IxbVeVd8NW65xmjXY", "type": "word"}], "חומרי לימוד (PDF)": [{"name": "5781-nizavimvayeleh-horim-a.pdf", "id": "1D_xNFQ_R_H_47GOb-crFPdRQAd24qfIu", "type": "pdf"}, {"name": "5781-nizavimvayeleh-b.pdf", "id": "1DMKWUVu5zUu9JHOnCtIgQtIqAc0lQnOc", "type": "pdf"}, {"name": "5781-nizavimvayeleh-a.pdf", "id": "1DlqBdmQkSglazsm6MFE2wKQ_ZwIHw6yw", "type": "pdf"}]}, "כללי - כל הספר / לא משויך לפרשה": {"חומרי לימוד (PDF)": [{"name": "תורה דברים וויז.pdf", "id": "1CVYD9dvoxgPs73BhXk50exeQ3rzM_wcN", "type": "pdf"}, {"name": "דברים חוברת.pdf", "id": "1r0yuaEap7hHsAAaB5qnXcfl3OjOe382W", "type": "pdf"}, {"name": "רשי ממוקד לספר דברים.pdf", "id": "1c_xP2I4nxPGDVw3HAdXc8o-7EwM_q7gd", "type": "pdf"}, {"name": "חומש דברים - נושאי פרשיות (לא מנוקד).pdf", "id": "1BMRmuewAS4NgPc8R4wlzvyNP_A56Y2KN", "type": "pdf"}, {"name": "פרשות דברים.pdf", "id": "100jwBeul_vSG8RRQ40SbfuG0sfHAMHG8", "type": "pdf"}, {"name": "דברים ושמואל ב מצגות וסרטונים.pdf", "id": "1i7tvyJk62lUA6tZuPxsIOQBPhdMOjodq", "type": "pdf"}, {"name": "חדר תנך - כלים.pdf", "id": "1BQzh6S688Y_K5b6cYPOcfVUS6KYkrPrC", "type": "pdf"}, {"name": "פסוקים לשינון בע''פ.pdf", "id": "1TNxUmrPAimX6ikUwfs7uIDX47zmSv2Ap", "type": "pdf"}, {"name": "תכנית לימודים כללית.pdf", "id": "1HM8ZvC3tV__NI52LpcKeNRzwn2B05tGA", "type": "pdf"}, {"name": "דברים חלוקה ומסרים.pdf", "id": "1HfH9XrJ1-lgRxRx5wRQiqal0fGQRfcld", "type": "pdf"}, {"name": "מבנה חומש דברים סימניה וקיר תוכן.pdf", "id": "1I4FEHYtqx7KTp_3JPXzTK_lnO7niebpv", "type": "pdf"}, {"name": "חומש דברים - פסוקים לשינון בע''פ.pdf", "id": "1Twwn0kBX5htX7MNKnr73kUz2CYqCHAsh", "type": "pdf"}, {"name": "דברים ושמואל ב מצגות וסרטונים.pdf", "id": "1Gqc8b9Hcy3O8Cddyp5qRi9nqyKbg5KWw", "type": "pdf"}, {"name": "דברים פתיחה - עולים קומה - תוכן החומשים.pdf", "id": "1GPFWVtB6BBP2TgdyIjWij3gjcTyWtlUy", "type": "pdf"}, {"name": "שער לתיקיית חומש.pdf", "id": "1DrtYKn-FgwWy84UaF3xFk1_laWMi-KvU", "type": "pdf"}], "דפי עבודה ומשימות": [{"name": "דברים התמצאות מותאם.docx", "id": "1HYY-uM4jju-KaPL3ZNOzpYbYz3ZQwTWI", "type": "word"}, {"name": "דברים התמצאות.docx", "id": "1TcHykDeY7gM_S-lmx2XfU4L6YKz8DiyW", "type": "word"}, {"name": "חומש דברים - פתיחה ומשימת בית - אוריינות.pdf", "id": "1BKQM0VK4281jkkHm_KrJCOCElCiiEELw", "type": "pdf"}, {"name": "פתיחת חומש דברים - עולים קומה.docx", "id": "1BEHzuoNfuJvJaRxPECSpnUWToRcBS38A", "type": "word"}, {"name": "חוברת עבודה כתב רשי.pdf", "id": "1BBwfzqsWu2URl58WGdJfS0PeCRDFB8-d", "type": "pdf"}, {"name": "דברים התמצאות מותאם.docx", "id": "18rnLhfWEBveVlqjYld3y4wBSlJVEX0_N", "type": "word"}, {"name": "צירי אורך בחומש דברים.docx", "id": "1HRU4_mRu79TUF0fMZ824sCtW5VLWtYyT", "type": "word"}], "כללי": [{"name": "מצגות וסרטונים חומש דברים.xlsx", "id": "1nLNExIOgnJm_8nuDV9o-W26eq-k1meOz", "type": "excel"}, {"name": "דברים ושמואל ב מצגות וסרטונים.xlsx", "id": "1uyXBKr0WUh0xQhF7v-Lmr1XDHYx_1WY0", "type": "excel"}, {"name": "דברים ושמואל ב מצגות וסרטונים.xlsx", "id": "1GLQUcq3_2cNAUk2lK37O6DPgriKKWuZd", "type": "excel"}], "דפי חזרה וסיכום": [{"name": "סיכום כל ספר דברים.doc", "id": "1F8XTHBAxp7_53Va-jeujzyh2c0IrqV9I", "type": "word"}, {"name": "משימת סיכום ספר דברים (3).pdf", "id": "1EquzQfueGBjv8H9PVapftPpENOCyL1UX", "type": "pdf"}], "חידות ומשחקים": [{"name": "תפזורת דברים.pdf", "id": "1FONGVLtnmkwojeYDW6yjbKYnV-ip98W0", "type": "pdf"}, {"name": "בינגו חומש דברים.pdf", "id": "1EzP1EuPd698FDVOkIn1vvLLnftoEnxbn", "type": "pdf"}, {"name": "זהה את הדמות - משחק.pdf", "id": "1Eh-mbU1HFdl5qpyUbqBBky70ocxM6P9Q", "type": "pdf"}], "כרזות, ציורים ועיצוב": [{"name": "כותרת חומש דברים משנה תורה.pdf", "id": "1mXgONAgtarp5EfY0fdws82Dv9tgLBrmY", "type": "pdf"}, {"name": "עטיפה למחברת דברים 2.pdf", "id": "1sYLcyJArDIoax1uuJVVCt7eumfuBCVDL", "type": "pdf"}, {"name": "דברים עטיפה מתוקן.docx", "id": "1HbUWRw2xQ-VuHYjs8263_VRj-qCUnJno", "type": "word"}, {"name": "דברים עטיפה מתוקן.pdf", "id": "1CASJomwK7L3TpMo_0nZkGhWFBjYSDKyr", "type": "pdf"}, {"name": "דברים תוכן והפרשות קישוט.pdf", "id": "1Hbp9Iv1ZX-Dpted9NE0U3OeiGGjr11OU", "type": "pdf"}, {"name": "חלוקת החומש - תוכן קיר.pdf", "id": "1HgJpsMwXiXlcEF1mNkHTW4WkHFSRr4i4", "type": "pdf"}, {"name": "תוכן קיר לחומש דברים וויז.pdf", "id": "1HgtLk2ZLkMOUIeS7dkdzI42lliBfelJy", "type": "pdf"}, {"name": "עטיפה דברים רוחב.pdf", "id": "1I1_wuHvoRPur9yDLD9Yn9K9WHZTaXYPX", "type": "pdf"}, {"name": "חומש דברים - שמות הפרשות - כרזת קיר.pdf", "id": "1HbLxme_9V-B7Pq2czF8tTZ2F93lMq_va", "type": "pdf"}, {"name": "כותרת חומש דברים משנה תורה (2).pdf", "id": "1I6D8BC8DA23uOsmszIpXAIr7-QFWaxmn", "type": "pdf"}, {"name": "סרגל לחומש דברים.pdf", "id": "1I5ENpdLgKiBbeEIDJ-VtsJ8k5imUXRs6", "type": "pdf"}]}, "שונות": {"חומרי לימוד (PDF)": [{"name": "מצוות חומש דברים.pdf", "id": "1qQGkJrB-F8ZCN6lPGTNbLXzFbWfp1QE9", "type": "pdf"}, {"name": "דברים בלי קריאת שמע.pdf", "id": "1PPqqj9xIKfo3GhVImiaUm4PFF32bajjE", "type": "pdf"}, {"name": "4 נאומים בספר דברים.pdf", "id": "1QXDpkNuHxHVlQ0HKS4n_sOBF1aKmtO63", "type": "pdf"}, {"name": "נאומים בחומש דברים.pdf", "id": "1-c5r4tTKIMl753hTaG0ysZAGryt9iNlk", "type": "pdf"}, {"name": "דברים - נאום הסטורי.pdf", "id": "1tqW3qMWFRZfQ71bYWP2TnKPaFAuCqqzP", "type": "pdf"}, {"name": "ללא שם (18 × 45 סמ) (5).pdf", "id": "1ekDlJ1w10whv1j4z7sqE7AEU9Nxl0MD9", "type": "pdf"}, {"name": "4 נאומים דברים.pdf", "id": "1KXFpSRb_NREC6ho2dfxxZIwl7V65Slxa", "type": "pdf"}, {"name": "תכנון שנתי דברים שמואל ב תשפו.pdf", "id": "10DsOXCyqX8VwKXzpDr33d2ao_gZvsa4i", "type": "pdf"}, {"name": "דברים מתווה כ''ו-ל''ד.pdf", "id": "1Gss3-TRBWj_nDf6WtbueJs98aDVkHzCF", "type": "pdf"}, {"name": "דברים מתווה כ''א-כ''ה.pdf", "id": "1HI_E7S6rAvOHpHV3yqh8ZrGFt2pqS5Zk", "type": "pdf"}, {"name": "פרשיות דברים מעוצבות פרחים.pdf", "id": "1mEy7KL-sDoKG8ew0neU-LTG1N0EkRfPv", "type": "pdf"}, {"name": "פרשיות חומש דברים (1).pdf", "id": "1HkjsFMzW8Hh04MUdjsHmZFxOe_SC7lCd", "type": "pdf"}, {"name": "דברים - חוברת למורה - הרצוג.pdf", "id": "1GVTtps19CU-k5e0rikkPp3CAGDx8Kngq", "type": "pdf"}, {"name": "דברים - הקדמת הרמבן.pdf", "id": "1GWEDKyiGjms7JzO5cfvnJ9fdPKkRrixz", "type": "pdf"}, {"name": "שיעור פעיל קנין תורה, הזנקה לקראת שבועות.pdf", "id": "1FTYg8gEXynUuHUEC-P27vJD7EGXreu5P", "type": "pdf"}], "דפי עבודה ומשימות": [{"name": "עבודה על פרשות עקב וראה (1).docx", "id": "18ln_dIublxTb3YZbARWS9RBGXPDGIxE0", "type": "word"}, {"name": "תוכנית_עבודה_דברים.pdf", "id": "1gy15AoQmufhwMcW1zEoIKLP3Wrc8GMex", "type": "pdf"}, {"name": "דף עבודה לימוד פסוקים בעפ.docx", "id": "1eICsMtwBlbH80_dSxhO8t0j3V2DoEfIu", "type": "word"}, {"name": "ד''ה ברש''י דברים - ציטוטים.doc", "id": "1GcbOztSgXbkSMs_m_O30JJLV6z2xw_Ed", "type": "word"}, {"name": "דברים - חוברת עבודה - ברקאי.docx", "id": "1Ge4ggOqBuw_-2rpDnX7EzEtEWxUU1iCc", "type": "word"}, {"name": "חומש דברים שלם - פסוקים.doc", "id": "1HPI5deTqpn_EJ7_kOGEU6E6Cm02k4VwQ", "type": "word"}, {"name": "דברים - חוברת עבודה לקיץ.doc", "id": "1HMmi-30mXfUdWjoyQ4QBJu1O4bBE0NxD", "type": "word"}], "מצגות": [{"name": "מצגת פרק כא עגלה ערופה.pptx", "id": "1qyBui43dvjdn5_YItG6AvdyP8NDEkLcj", "type": "ppt"}, {"name": "פרק טז משפט צדק.pptx", "id": "1EgQoJMvNu4guhqYKIxBaIh8AsmjmKhHa", "type": "ppt"}, {"name": "דברים - מבוא לספר למורה - טרופר.pptx", "id": "1HEL5dHmtNLdQToNO5aymPrvKfsl-MxgT", "type": "ppt"}, {"name": "סיום חומש דברים.pptx", "id": "1F1TsoKhdGAbgA_mpzzeOq1AbY-T266Ky", "type": "ppt"}], "חידות ומשחקים": [{"name": "ריכוז משחקים - קודש - חומש דברים.pdf", "id": "1BJk76D_gRI8G4TtOWTbeOGR-uNwEfEGg", "type": "pdf"}], "מבחנים והערכה": [{"name": "מבחן ארצי שאלות פרק' טו- כו.docx", "id": "1zPkbcbuiW5e7f2imxWFGhYxL1a4WviP_", "type": "word"}, {"name": "מבחן ארצי דברים פ''ו - לתלמיד.pdf", "id": "1pzZgcqY45Hbaa7Ju4iiQkic1ThIi7Jue", "type": "pdf"}, {"name": "מבחן ארצי פ''ב - חלק ב-ג.pdf", "id": "1d3vtiSOv2TRjKT4kb-vlmcxrA0uzHywv", "type": "pdf"}, {"name": "מבחן ארצי פ''ב - חלק א.pdf", "id": "1I8wG0cEXM0hl7JiZSWCI36gC5QYG8YOO", "type": "pdf"}, {"name": "מבחן ארצי פ''ו - מחוון.pdf", "id": "1wNXyLCgGGXgh8TNvlTBne1jcSo89NkFk", "type": "pdf"}, {"name": "מבחן ארצי - הנחיות לתלמידים.docx", "id": "1PB0Mer0R6Qkfun3mAd9tW4gyHXBR0kzk", "type": "word"}, {"name": "מבחן ארצי דברים פ''ו - חלק ב' - עם חומש.pdf", "id": "1GCYNUt6B_uILyfWXi-ksJRNp_RUmk4N_", "type": "pdf"}, {"name": "מבחן ארצי דברים פ''ו - חלק א' - ללא חומש.pdf", "id": "13l_Mz8wa6yjgWlnmaFqddqQsI4o2eZ4M", "type": "pdf"}, {"name": "פסוקי רש''י למבחן ארצי.pdf", "id": "1zHkYsz5YLmMDbq4ZusaksKbtsz2Bf2Bs", "type": "pdf"}, {"name": "מבחן ארצי דברים פ''ה - חלק א' - ללא חומש.pdf", "id": "1Lv75Td0hIf9O9fuLoh-mj8IACMNHDhQY", "type": "pdf"}, {"name": "מבחן ארצי דברים פ''ה - חלק ב' - עם חומש.pdf", "id": "1A_lBly5dyTDXHNP3DEwAeEeDiykRHfw9", "type": "pdf"}, {"name": "מבחן ארצי דברים תשפו עדכון שאגת הארי.pdf", "id": "1-07wnJ-19jX7B0ybO13X-xsyMH6WTOE1", "type": "pdf"}, {"name": "דברים - רש''י חשוב למבחן בוגר.pdf", "id": "173aQ4-2AOpD54k-LzoNDr3QoZ846oofJ", "type": "pdf"}, {"name": "משימת הערכה בתורה ונביא.docx", "id": "1GKnEc89Uz3pPwfPRClvjdJa-ts1bdwZK", "type": "word"}, {"name": "פסוקי רשי למבחן הארצי.pdf", "id": "1HGQGWuitxP4Tnti-ILXWIE3Wg9z9PgVJ", "type": "pdf"}]}}};
+const CATEGORY_ICONS = {"מצגות": "🖥️", "מבחנים והערכה": "📝", "דפי עבודה ומשימות": "✏️", "דפי חזרה וסיכום": "📋", "חידות ומשחקים": "🧩", "כרזות, ציורים ועיצוב": "🎨", "חומרי לימוד (PDF)": "📖", "כללי": "🗂️"};
+const CATEGORY_ORDER = ["מצגות", "דפי עבודה ומשימות", "מבחנים והערכה", "דפי חזרה וסיכום", "חידות ומשחקים", "כרזות, ציורים ועיצוב", "חומרי לימוד (PDF)", "כללי"];
+const PARASHA_EMOJI = {"דברים": "📜", "ואתחנן": "🙏", "עקב": "🌾", "ראה": "👁️", "שופטים": "⚖️", "כי תצא": "⚔️", "כי תבוא": "🧺", "נצבים": "🤝", "וילך": "🚶", "נצבים-וילך": "🤝", "האזינו": "🎵", "וזאת הברכה": "✨", "כללי - כל הספר / לא משויך לפרשה": "📚", "שונות": "🗃️"};
+const TYPE_META = {"pdf": {"label": "PDF", "color": "#e11d48", "bg": "#fde8ec", "icon": "📕"}, "word": {"label": "Word", "color": "#2563eb", "bg": "#e8eefd", "icon": "📘"}, "ppt": {"label": "PowerPoint", "color": "#ea580c", "bg": "#fdece0", "icon": "📙"}, "excel": {"label": "Excel", "color": "#16a34a", "bg": "#e7f7ec", "icon": "📗"}, "image": {"label": "תמונה", "color": "#9333ea", "bg": "#f3e8fd", "icon": "🖼️"}, "other": {"label": "קובץ", "color": "#64748b", "bg": "#eef1f5", "icon": "📄"}};
+
+let currentParasha = PAYLOAD.order[0];
+let currentQuery = '';
+
+const STAR_KEY = 'dvarim_catalog_starred_v1';
+let STARRED = new Set();
+try {
+  STARRED = new Set(JSON.parse(localStorage.getItem(STAR_KEY) || '[]'));
+} catch (e) { STARRED = new Set(); }
+
+function isStarred(id) { return STARRED.has(id); }
+
+function toggleStar(id) {
+  if (STARRED.has(id)) STARRED.delete(id); else STARRED.add(id);
+  try { localStorage.setItem(STAR_KEY, JSON.stringify([...STARRED])); } catch (e) {}
+  render();
+}
+
+function sortWithStarredFirst(items) {
+  return items.slice().sort((a, b) => (isStarred(b.id) ? 1 : 0) - (isStarred(a.id) ? 1 : 0));
+}
+
+function buildDriveUrl(id) {
+  return 'https://drive.google.com/file/d/' + id + '/view';
+}
+
+function displayName(p) {
+  if (p === 'כללי - כל הספר / לא משויך לפרשה') return 'כללי - כל החומש';
+  return p;
+}
+
+function render() {
+  const main = document.getElementById('main');
+  const empty = document.getElementById('emptyState');
+  main.innerHTML = '';
+
+  const q = currentQuery.trim();
+  const parashiotToShow = q ? PAYLOAD.order : [currentParasha];
+
+  let anyResults = false;
+
+  parashiotToShow.forEach(parasha => {
+    const cats = PAYLOAD.data[parasha] || {};
+    const sortedCats = CATEGORY_ORDER.filter(c => cats[c] && cats[c].length);
+    Object.keys(cats).forEach(c => { if (!sortedCats.includes(c)) sortedCats.push(c); });
+
+    let parashaHasResults = false;
+    let parashaTotal = 0;
+    const catBlocks = [];
+
+    sortedCats.forEach(cat => {
+      const rawItems = (cats[cat] || []).filter(it => !q || it.name.includes(q));
+      if (rawItems.length === 0) return;
+      const items = sortWithStarredFirst(rawItems);
+      parashaHasResults = true;
+      parashaTotal += items.length;
+
+      const group = document.createElement('div');
+      group.className = 'category-group';
+      const header = document.createElement('div');
+      header.className = 'category-header';
+      header.innerHTML = `<span class="category-title">${CATEGORY_ICONS[cat] || '📄'} ${cat}</span>
+        <span style="display:flex;align-items:center;">
+          <span class="category-count">${items.length}</span>
+          <span class="category-toggle">▾</span>
+        </span>`;
+      const list = document.createElement('div');
+      list.className = 'file-list';
+      items.forEach(item => {
+        const meta = TYPE_META[item.type] || TYPE_META.other;
+        const starred = isStarred(item.id);
+
+        const rowWrap = document.createElement('div');
+        rowWrap.className = 'file-row-wrap';
+
+        const starBtn = document.createElement('button');
+        starBtn.className = 'star-btn' + (starred ? ' starred' : '');
+        starBtn.type = 'button';
+        starBtn.title = starred ? 'הסרה מהמועדפים' : 'הוספה למועדפים';
+        starBtn.textContent = starred ? '★' : '☆';
+        starBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleStar(item.id);
+        });
+
+        const row = document.createElement('a');
+        row.className = 'file-row';
+        row.href = buildDriveUrl(item.id);
+        row.target = '_blank';
+        row.rel = 'noopener noreferrer';
+        row.innerHTML = `
+          <span class="file-icon" style="background:${meta.bg}">${meta.icon}</span>
+          <span class="file-name">${item.name}</span>
+          <span class="file-type-badge" style="background:${meta.bg};color:${meta.color}">${meta.label}</span>
+        `;
+
+        rowWrap.appendChild(starBtn);
+        rowWrap.appendChild(row);
+        list.appendChild(rowWrap);
+      });
+      header.addEventListener('click', () => {
+        list.classList.toggle('collapsed');
+        header.querySelector('.category-toggle').textContent = list.classList.contains('collapsed') ? '◂' : '▾';
+      });
+      group.appendChild(header);
+      group.appendChild(list);
+      catBlocks.push(group);
+    });
+
+    if (!parashaHasResults) return;
+    anyResults = true;
+
+    if (q) {
+      const heading = document.createElement('div');
+      heading.className = 'parasha-heading';
+      heading.innerHTML = `<h2>${PARASHA_EMOJI[parasha] || '📄'} ${displayName(parasha)}</h2><span class="count">${parashaTotal} תוצאות</span>`;
+      main.appendChild(heading);
+    }
+    catBlocks.forEach(b => main.appendChild(b));
+  });
+
+  empty.style.display = anyResults ? 'none' : 'block';
+}
+
+document.getElementById('search').addEventListener('input', (e) => {
+  currentQuery = e.target.value;
+  render();
+});
+
+document.getElementById('tabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentParasha = btn.dataset.parasha;
+  document.getElementById('search').value = '';
+  currentQuery = '';
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

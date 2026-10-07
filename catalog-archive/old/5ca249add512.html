@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>אוסף עצום בחסדי שמים – קטלוג חומרים</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f4f8;
+      color: #1a1a2e;
+      direction: rtl;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, #1a237e 0%, #283593 60%, #3949ab 100%);
+      color: #fff;
+      padding: 36px 20px 28px;
+      text-align: center;
+    }
+    header h1 { font-size: 2rem; letter-spacing: .5px; margin-bottom: 6px; }
+    header p  { font-size: 1rem; opacity: .82; margin-bottom: 24px; }
+
+    /* ── SEARCH BAR ── */
+    .search-wrap {
+      position: relative;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .search-wrap input {
+      width: 100%;
+      padding: 14px 50px 14px 18px;
+      font-size: 1.05rem;
+      border: none;
+      border-radius: 40px;
+      outline: none;
+      direction: rtl;
+      box-shadow: 0 4px 18px rgba(0,0,0,.3);
+    }
+    .search-wrap .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      pointer-events: none;
+    }
+    .search-clear {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      cursor: pointer;
+      opacity: .5;
+      display: none;
+      background: none;
+      border: none;
+      color: #555;
+    }
+    .search-count {
+      text-align: center;
+      margin-top: 10px;
+      font-size: .85rem;
+      color: rgba(255,255,255,.75);
+      min-height: 20px;
+    }
+
+    /* ── MAIN ── */
+    main { max-width: 960px; margin: 0 auto; padding: 28px 16px 60px; }
+
+    /* ── NO RESULTS ── */
+    #no-results {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+      color: #888;
+      font-size: 1.1rem;
+    }
+
+    /* ── SEARCH RESULTS LIST ── */
+    #search-results {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+    #search-results .result-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      background: #fff;
+      border-radius: 10px;
+      text-decoration: none;
+      color: #1a1a2e;
+      border: 1.5px solid #e0e0e0;
+      transition: background .15s, box-shadow .15s, transform .12s;
+      font-size: .97rem;
+    }
+    #search-results .result-item:hover {
+      background: #e8f0fe;
+      border-color: #3949ab;
+      box-shadow: 0 3px 10px rgba(57,73,171,.15);
+      transform: translateX(-2px);
+    }
+    .result-cat-badge {
+      font-size: .72rem;
+      padding: 2px 9px;
+      border-radius: 12px;
+      color: #fff;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .result-name { flex: 1; font-weight: 600; }
+    .result-arrow { opacity: .4; font-size: .85rem; }
+
+    /* ── CATEGORY SECTIONS ── */
+    .section { margin-bottom: 28px; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 10px 10px 0 0;
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      background: #fff;
+      padding: 14px;
+      border-radius: 0 0 10px 10px;
+      border: 1px solid #dde3ea;
+      border-top: none;
+    }
+
+    .card {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: .9rem;
+      font-weight: 600;
+      transition: transform .13s, box-shadow .13s, background .12s;
+      border: 1.5px solid transparent;
+      word-break: break-word;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 14px rgba(0,0,0,.13);
+    }
+    .card .icon { font-size: 1.15rem; flex-shrink: 0; }
+
+    /* hidden by search */
+    .card.hidden  { display: none !important; }
+    .section.all-hidden { display: none; }
+
+    /* ── COLORS ── */
+    .c-torah   { background:#fff7e6; color:#7d4f00; border-color:#f5c542; }
+    .c-subject { background:#e8f4fd; color:#154360; border-color:#3498db; }
+    .c-class   { background:#eafaf1; color:#145a32; border-color:#27ae60; }
+    .c-events  { background:#fdf2f8; color:#6c3483; border-color:#9b59b6; }
+    .c-edu     { background:#fef9e7; color:#7d6608; border-color:#e8c400; }
+    .c-design  { background:#fdf2f0; color:#7b241c; border-color:#e74c3c; }
+    .c-misc    { background:#f4f6f7; color:#212f3c; border-color:#95a5a6; }
+
+    .bg-torah   { background: #f5a623; }
+    .bg-subject { background: #2980b9; }
+    .bg-class   { background: #27ae60; }
+    .bg-events  { background: #8e44ad; }
+    .bg-edu     { background: #d4ac0d; }
+    .bg-design  { background: #c0392b; }
+    .bg-misc    { background: #7f8c8d; }
+
+    .badge-torah   { background:#f5a623; }
+    .badge-subject { background:#2980b9; }
+    .badge-class   { background:#27ae60; }
+    .badge-events  { background:#8e44ad; }
+    .badge-edu     { background:#d4ac0d; }
+    .badge-design  { background:#c0392b; }
+    .badge-misc    { background:#7f8c8d; }
+
+    /* ── MAIN LINK BUTTON ── */
+    .main-link-wrap {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .main-link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      background: #3949ab;
+      color: #fff;
+      border-radius: 30px;
+      text-decoration: none;
+      font-size: .95rem;
+      font-weight: 600;
+      transition: background .15s, box-shadow .15s;
+      box-shadow: 0 2px 8px rgba(57,73,171,.3);
+    }
+    .main-link-btn:hover { background: #283593; box-shadow: 0 4px 14px rgba(57,73,171,.4); }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #aaa;
+      font-size: .8rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📚 אוסף עצום בחסדי שמים</h1>
+  <p>קטלוג חומרים לחינוך – לחצו על תיקייה לפתיחה ב-Google Drive</p>
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="🔍  חפש חומרים..." autocomplete="off" />
+    <span class="search-icon">🔍</span>
+    <button class="search-clear" id="clearBtn" title="נקה חיפוש">✕</button>
+  </div>
+  <div class="search-count" id="searchCount"></div>
+</header>
+
+<main>
+
+  <div class="main-link-wrap">
+    <a class="main-link-btn" href="https://drive.google.com/drive/folders/1X9Lz1tB79pE1J_sIp1T83p9mP_Q9nQJB" target="_blank">
+      📁 פתיחת כל האוסף ב-Google Drive
+    </a>
+  </div>
+
+  <!-- Search results (shown only during search) -->
+  <div id="search-results"></div>
+  <div id="no-results">😕 לא נמצאו תוצאות לחיפוש</div>
+
+  <!-- ── תנ"ך ולימודי קודש ── -->
+  <div class="section" data-section="torah">
+    <div class="section-header bg-torah">📖 תנ"ך ולימודי קודש</div>
+    <div class="cards-grid">
+      <a class="card c-torah" href="https://drive.google.com/drive/folders/1peZRSFZzzhpFNGKjr0bwUfazHNy7HgSR" target="_blank" data-name="תורה" data-cat="torah"><span class="icon">📂</span>תורה</a>
+      <a class="card c-torah" href="https://drive.google.com/drive/folders/1RPI1SOQjKo_jpsEdGHefJMf3MPV4FqXp" target="_blank" data-name="תנך בראשית אלפי קבצים" data-cat="torah"><span class="icon">📂</span>תנ"ך בראשית – אלפי קבצים</a>
+      <a class="card c-torah" href="https://drive.google.com/drive/folders/1Kl-fpKiI-vlLD-7_P2hzNymh5j_pj1Bu" target="_blank" data-name="מלכים" data-cat="torah"><span class="icon">📂</span>מלכים</a>
+      <a class="card c-torah" href="https://drive.google.com/drive/folders/1FwdCPDIBq03BRWG03Hg9-iwr7NcM0Hc8" target="_blank" data-name="דניאל" data-cat="torah"><span class="icon">📂</span>דניאל</a>
+      <a class="card c-torah" href="https://drive.google.com/drive/folders/1kxHs5nnlC2A5WYhydiF7eYMipZXX1mz_" target="_blank" data-name="גמרא" data-cat="torah"><span class="icon">📂</span>גמרא</a>
+    </div>
+  </div>
+
+  <!-- ── מקצועות לימוד ── -->
+  <div class="section" data-section="subject">
+    <div class="section-header bg-subject">🎓 מקצועות לימוד</div>
+    <div class="cards-grid">
+      <a class="card c-subject" href="https://drive.google.com/drive/folders/1zq8o9Msc1DWohhbXBeBvlHLOo2qV1Hnf" target="_blank" data-name="חשבון" data-cat="subject"><span class="icon">📂</span>חשבון</a>
+      <a class="card c-subject" href="https://drive.google.com/drive/folders/1AaPLz6DaDtGo3BOdYBUeSXOeJpRWyarK" target="_blank" data-name="חשבון לכל הכיתות" data-cat="subject"><span class="icon">📂</span>חשבון לכל הכיתות</a>
+      <a class="card c-subject" href="https://drive.google.com/drive/folders/1fTbmAyx8kck2fz4rfkJzjiWz0LCVBHJC" target="_blank" data-name="אנגלית" data-cat="subject"><span class="icon">📂</span>אנגלית</a>
+      <a class="card c-subject" href="https://drive.google.com/drive/folders/1my-id5WbYqYjZ2yCpXXPM38uasp-Emxk" target="_blank" data-name="מקצוע ערבית" data-cat="subject"><span class="icon">📂</span>ערבית</a>
+      <a class="card c-subject" href="https://drive.google.com/drive/folders/1wO_BP0_SdA5xA5QASk6wRdveorPWCxKG" target="_blank" data-name="מקצוע תקשוב ולוחות חכמים" data-cat="subject"><span class="icon">📂</span>תקשוב ולוחות חכמים</a>
+      <a class="card c-subject" href="https://drive.google.com/drive/folders/1cg5I3uT63dHdwaWuhg3Y92M9gQD2kPdW" target="_blank" data-name="מקצוע צרכנות" data-cat="subject"><span class="icon">📂</span>צרכנות</a>
+      <a class="card c-subject" href="https://drive.google.com/drive/folders/1ZsZD7Vzr3tgg4JY8tLHyy-Kq4jYBL091" target="_blank" data-name="מקצוע כישורי חיים" data-cat="subject"><span class="icon">📂</span>כישורי חיים</a>
+      <a class="card c-subject" href="https://drive.google.com/drive/folders/1u7-USueXpF_ZdUs05MWh8IPW28nLcz_B" target="_blank" data-name="מקצוע חינוך גופני" data-cat="subject"><span class="icon">📂</span>חינוך גופני</a>
+      <a class="card c-subject" href="https://drive.google.com/drive/folders/1SqiSs5P5_aPViFj8vJ8LqSuakS9HnC8t" target="_blank" data-name="מקצוע היסטוריה אזרחות" data-cat="subject"><span class="icon">📂</span>היסטוריה–אזרחות</a>
+      <a class="card c-subject" href="https://drive.google.com/drive/folders/1QhuDCMDVxfPmyC2MaICBxpKLo5ecgrLW" target="_blank" data-name="מקצוע גיאוגרפה" data-cat="subject"><span class="icon">📂</span>גיאוגרפיה</a>
+      <a class="card c-subject" href="https://drive.google.com/drive/folders/18EYWNPHIFxxeohkhKhk5KrXN3I5_eyRa" target="_blank" data-name="מקצוע אמנות" data-cat="subject"><span class="icon">📂</span>אמנות</a>
+      <a class="card c-subject" href="https://drive.google.com/drive/folders/1nilmD3wfWpgIt0YGXd4tKv2myiluukyn" target="_blank" data-name="חושים" data-cat="subject"><span class="icon">📂</span>חושים</a>
+    </div>
+  </div>
+
+  <!-- ── ניהול כיתה ── -->
+  <div class="section" data-section="class">
+    <div class="section-header bg-class">🏫 ניהול כיתה</div>
+    <div class="cards-grid">
+      <a class="card c-class" href="https://drive.google.com/drive/folders/1VJQR-rNawCs2IXnF58bH_kdbju832oZO" target="_blank" data-name="ניהול כיתה" data-cat="class"><span class="icon">📂</span>ניהול כיתה</a>
+      <a class="card c-class" href="https://drive.google.com/drive/folders/131iHCOwarKlRNMMRvJ3iUfrwNjky52NT" target="_blank" data-name="תקנון וכללי התנהגות בכיתה" data-cat="class"><span class="icon">📂</span>תקנון וכללי התנהגות</a>
+      <a class="card c-class" href="https://drive.google.com/drive/folders/1j9m4-BOXLWvBb3Xvp2WSSYReyyf_BIw_" target="_blank" data-name="שיחות מורה תלמיד" data-cat="class"><span class="icon">📂</span>שיחות מורה–תלמיד</a>
+      <a class="card c-class" href="https://drive.google.com/drive/folders/16vUTDdvALOjrAm24BqKPNezb1eGsNwnj" target="_blank" data-name="מועצת תלמידים בכיתה" data-cat="class"><span class="icon">📂</span>מועצת תלמידים</a>
+      <a class="card c-class" href="https://drive.google.com/drive/folders/1K00mGnKYh2BXg0R9cSE3qakKBcm1P0b8" target="_blank" data-name="משחקיה בכיתה" data-cat="class"><span class="icon">📂</span>משחקיה בכיתה</a>
+      <a class="card c-class" href="https://drive.google.com/drive/folders/1cYItKiwYjKEsiDc8u0jY6RfjzQzyZv7P" target="_blank" data-name="תעודות הערכה לתלמידים" data-cat="class"><span class="icon">📂</span>תעודות הערכה</a>
+      <a class="card c-class" href="https://drive.google.com/drive/folders/1ioTMikEHsJflknt9kBL4RVuaU3sgBFPO" target="_blank" data-name="הארות ממני אליך לתעודה" data-cat="class"><span class="icon">📂</span>הארות ממני אליך לתעודה</a>
+      <a class="card c-class" href="https://drive.google.com/drive/folders/17QlRnNgcvnbUZxz8B6aJubZNoRFTyaFe" target="_blank" data-name="תלמיד חולה חומרים" data-cat="class"><span class="icon">📂</span>תלמיד חולה – חומרים</a>
+      <a class="card c-class" href="https://drive.google.com/drive/folders/1XPbWFoChkXCOYLinJ2sC8XhfNSmN42pF" target="_blank" data-name="מבדקים יש פתרון" data-cat="class"><span class="icon">📂</span>מבדקים – יש פתרון</a>
+      <a class="card c-class" href="https://drive.google.com/drive/folders/18fglrDVObz9KUlfDNDeQ-lOlCw_IiaxG" target="_blank" data-name="כיתה א" data-cat="class"><span class="icon">📂</span>כיתה א</a>
+      <a class="card c-class" href="https://drive.google.com/drive/folders/18mxr2N_jEEb6RCE5pcgSEbaCWGZ6b3ln" target="_blank" data-name="אספת הורים ראשונה" data-cat="class"><span class="icon">📂</span>אספת הורים ראשונה</a>
+      <a class="card c-class" href="https://drive.google.com/drive/folders/1hLcnqeZwjTMfaqHczCsVFAW7X7COuSmE" target="_blank" data-name="צו גיוס" data-cat="class"><span class="icon">📂</span>צו גיוס</a>
+    </div>
+  </div>
+
+  <!-- ── אירועים וחגים ── -->
+  <div class="section" data-section="events">
+    <div class="section-header bg-events">🎉 אירועים, חגים ומועדים</div>
+    <div class="cards-grid">
+      <a class="card c-events" href="https://drive.google.com/drive/folders/13g7yRKAOuG0RDR7uUHAXUNgcsgT4z0wr" target="_blank" data-name="יום הזכרון ויום העצמאות" data-cat="events"><span class="icon">📂</span>יום הזכרון ויום העצמאות</a>
+      <a class="card c-events" href="https://drive.google.com/drive/folders/1FG7coQjHs1_f1SoZ1Nw3gMTyv_zcSVW2" target="_blank" data-name="יום ה100 מאה" data-cat="events"><span class="icon">📂</span>יום ה-100</a>
+      <a class="card c-events" href="https://drive.google.com/drive/folders/1TcGM1HfHkzYXmK2zyhOl8cXixB3zXVVn" target="_blank" data-name="יום המורה" data-cat="events"><span class="icon">📂</span>יום המורה</a>
+      <a class="card c-events" href="https://drive.google.com/drive/folders/124S3iTWQ9M4qoui757FcdEe3iLWKeXr9" target="_blank" data-name="יום ההורים במהלך השנה" data-cat="events"><span class="icon">📂</span>יום ההורים</a>
+      <a class="card c-events" href="https://drive.google.com/drive/folders/1eDLf59-vcobphM4ewnZCew4wd_A-qIBP" target="_blank" data-name="יום ההולדת" data-cat="events"><span class="icon">📂</span>יום ההולדת</a>
+      <a class="card c-events" href="https://drive.google.com/drive/folders/1oCvzhLM-3tWXXh-gyxMSXf7K5vBgxotz" target="_blank" data-name="טקסים מסיבות והזמנות" data-cat="events"><span class="icon">📂</span>טקסים, מסיבות והזמנות</a>
+      <a class="card c-events" href="https://drive.google.com/drive/folders/1VDBcucSt1UH0ACrm7GHXZz8RA7bd7y2b" target="_blank" data-name="ברכות לכל האירועים במהלך השנה" data-cat="events"><span class="icon">📂</span>ברכות לכל האירועים</a>
+      <a class="card c-events" href="https://drive.google.com/drive/folders/16E70Ad6aAsJbMhqbLWyIFXhyXGwd2vMH" target="_blank" data-name="חודשי השנה" data-cat="events"><span class="icon">📂</span>חודשי השנה</a>
+      <a class="card c-events" href="https://drive.google.com/drive/folders/1NjDERL0a5K_08wYP_5CH9x61jHTWjDOY" target="_blank" data-name="חומרים לעונות השנה קיץ חורף אביב סתיו" data-cat="events"><span class="icon">📂</span>חומרים לעונות השנה</a>
+      <a class="card c-events" href="https://drive.google.com/drive/folders/1gqRATCjo_pE1iyFgaKdplSj_AD2J89I_" target="_blank" data-name="בר מצווה" data-cat="events"><span class="icon">📂</span>בר מצווה</a>
+      <a class="card c-events" href="https://drive.google.com/drive/folders/1z63tcxOYkAmHE-GApgFyL__xMwjDeG62" target="_blank" data-name="בית הספר של החופש הגדול" data-cat="events"><span class="icon">📂</span>בית הספר של החופש הגדול</a>
+    </div>
+  </div>
+
+  <!-- ── ספריה והעשרה ── -->
+  <div class="section" data-section="edu">
+    <div class="section-header bg-edu">📚 ספריה והעשרה</div>
+    <div class="cards-grid">
+      <a class="card c-edu" href="https://drive.google.com/drive/folders/1VlSqMZZgA8_H_dWEpqZqHjtHq-en342v" target="_blank" data-name="ספריה" data-cat="edu"><span class="icon">📂</span>ספריה</a>
+      <a class="card c-edu" href="https://drive.google.com/drive/folders/10kQIWrSv8FyBgUj1zeag4LKIh07GSfz0" target="_blank" data-name="סופרים חשובים ומשוררים" data-cat="edu"><span class="icon">📂</span>סופרים ומשוררים</a>
+      <a class="card c-edu" href="https://drive.google.com/drive/folders/1yDtyXhJM39HMJN7bCevQl9-Xnb6kNsma" target="_blank" data-name="פתגמים ביטויים אימרות" data-cat="edu"><span class="icon">📂</span>פתגמים, ביטויים ואימרות</a>
+      <a class="card c-edu" href="https://drive.google.com/drive/folders/1eqmGzbvbU_DqBmG15U3B6nYKn_O5kqGS" target="_blank" data-name="מנהיגים ומנהיגות" data-cat="edu"><span class="icon">📂</span>מנהיגים ומנהיגות</a>
+      <a class="card c-edu" href="https://drive.google.com/drive/folders/1mOJ5bA6q9Ifx0f4HtW3NjDbRqikywJL1" target="_blank" data-name="חוברות תלתן" data-cat="edu"><span class="icon">📂</span>חוברות תלתן</a>
+    </div>
+  </div>
+
+  <!-- ── עיצוב וחומרי עזר ── -->
+  <div class="section" data-section="design">
+    <div class="section-header bg-design">🎨 עיצוב וחומרי עזר</div>
+    <div class="cards-grid">
+      <a class="card c-design" href="https://drive.google.com/drive/folders/1l4he7mxzjX6-CvRPLJkw7_eN_uUE3gZJ" target="_blank" data-name="מאות עטיפות למחברות שערים חוצצים" data-cat="design"><span class="icon">📂</span>עטיפות, שערים וחוצצים</a>
+      <a class="card c-design" href="https://drive.google.com/drive/folders/1zipsQBBfSTsmsgyq0smRYsVNA61MgwIN" target="_blank" data-name="המון לוחות וכותרות" data-cat="design"><span class="icon">📂</span>לוחות וכותרות</a>
+      <a class="card c-design" href="https://drive.google.com/drive/folders/1f1zjCZPW7kjioAeAyZJdPx--naqax5Ud" target="_blank" data-name="תמונות מחיי הרב דרוקמן" data-cat="design"><span class="icon">📂</span>תמונות הרב דרוקמן</a>
+    </div>
+  </div>
+
+  <!-- ── שונות ── -->
+  <div class="section" data-section="misc">
+    <div class="section-header bg-misc">🗂️ שונות</div>
+    <div class="cards-grid">
+      <a class="card c-misc" href="https://drive.google.com/drive/folders/1ZPMJIHLNosz3oD64alLIicqVviL-0UBi" target="_blank" data-name="סיגלית" data-cat="misc"><span class="icon">📂</span>סיגלית</a>
+      <a class="card c-misc" href="https://drive.google.com/drive/folders/1jD85LcwNBTIh0PaEm2_V-yplnUhDuZCt" target="_blank" data-name="winrar לפתוח קבצים" data-cat="misc"><span class="icon">📂</span>WinRAR לפתיחת קבצים</a>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  אוסף עצום בחסדי שמים &nbsp;|&nbsp; 50 תיקיות
+</footer>
+
+<script>
+  const LABELS = {
+    torah:   '📖 תנ"ך',
+    subject: '🎓 מקצועות',
+    class:   '🏫 כיתה',
+    events:  '🎉 אירועים',
+    edu:     '📚 ספריה',
+    design:  '🎨 עיצוב',
+    misc:    '🗂️ שונות'
+  };
+
+  const input     = document.getElementById('searchInput');
+  const clearBtn  = document.getElementById('clearBtn');
+  const countEl   = document.getElementById('searchCount');
+  const resultsEl = document.getElementById('search-results');
+  const noResults = document.getElementById('no-results');
+  const allCards  = Array.from(document.querySelectorAll('.card'));
+  const sections  = Array.from(document.querySelectorAll('.section'));
+
+  function normalize(s) {
+    return s.replace(/["״'׳]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+
+  function doSearch(q) {
+    const norm = normalize(q);
+
+    if (!norm) {
+      // reset
+      resultsEl.style.display = 'none';
+      noResults.style.display = 'none';
+      clearBtn.style.display  = 'none';
+      countEl.textContent     = '';
+      allCards.forEach(c => c.classList.remove('hidden'));
+      sections.forEach(s => s.classList.remove('all-hidden'));
+      return;
+    }
+
+    clearBtn.style.display = 'block';
+
+    // filter cards
+    const matched = allCards.filter(c => normalize(c.dataset.name).includes(norm));
+
+    // show/hide sections based on matches
+    sections.forEach(sec => {
+      const secCards = sec.querySelectorAll('.card');
+      const anyMatch = Array.from(secCards).some(c => normalize(c.dataset.name).includes(norm));
+      sec.classList.toggle('all-hidden', !anyMatch);
+    });
+
+    // update count
+    countEl.textContent = matched.length
+      ? `נמצאו ${matched.length} תוצאות`
+      : '';
+
+    // build results list
+    resultsEl.innerHTML = '';
+    if (matched.length) {
+      matched.forEach(card => {
+        const a = document.createElement('a');
+        a.className  = 'result-item';
+        a.href       = card.href;
+        a.target     = '_blank';
+        const cat    = card.dataset.cat;
+        a.innerHTML  = `
+          <span class="result-cat-badge badge-${cat}">${LABELS[cat] || ''}</span>
+          <span class="result-name">${card.dataset.name}</span>
+          <span class="result-arrow">← פתיחה</span>`;
+        resultsEl.appendChild(a);
+      });
+      resultsEl.style.display = 'flex';
+      noResults.style.display = 'none';
+    } else {
+      resultsEl.style.display = 'none';
+      noResults.style.display = 'block';
+    }
+  }
+
+  input.addEventListener('input', () => doSearch(input.value));
+
+  clearBtn.addEventListener('click', () => {
+    input.value = '';
+    doSearch('');
+    input.focus();
+  });
+
+  // keyboard shortcut: / focuses search
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && document.activeElement !== input) {
+      e.preventDefault();
+      input.focus();
+    }
+    if (e.key === 'Escape') {
+      input.value = '';
+      doSearch('');
+    }
+  });
+</script>
+</body>
+</html>
