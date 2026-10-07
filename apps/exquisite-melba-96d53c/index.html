@@ -392,6 +392,13 @@ body{font-family:'Heebo',sans-serif;background:var(--cream);color:var(--text);di
   word-break:break-word;
 }
 .link-title:hover{color:var(--gold)}
+.link-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.link-line .link-title{flex:1 1 220px}
+.file-acts{display:inline-flex;gap:6px;flex:none}
+.file-act{font-size:12px;font-weight:600;text-decoration:none;color:var(--navy);background:#eef2f8;
+  border:1px solid rgba(0,0,0,0.08);border-radius:7px;padding:3px 9px;white-space:nowrap;transition:background .15s}
+.file-act:hover{background:#fdf3dc;color:var(--gold)}
+.file-act.dl{color:#555;background:#f4f4f4}
 .link-sub-url {
   font-size:11px;
   color:var(--text3);
@@ -971,6 +978,15 @@ function escHtml(s) {
 }
 function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 
+/* ─── OPEN WITHOUT DOWNLOADING ─── */
+// Word/PowerPoint/Excel open in Microsoft's online viewer (as in the navi catalogs); PDF opens in the browser itself.
+const OFFICE_TYPES = new Set(['Word', 'PowerPoint', 'Excel']);
+function openHref(lk) {
+  return OFFICE_TYPES.has(lk.type) && /^https:/.test(lk.url)
+    ? 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(lk.url)
+    : lk.url;
+}
+
 /* ─── BUILD LINK ROWS ─── */
 function buildRows(links, q, filter) {
   return links.map(lk => {
@@ -992,7 +1008,13 @@ function buildRows(links, q, filter) {
     return `<tr class="${show?'':'hidden-row'}">
       <td style="width:92px;vertical-align:middle">${typeBadge(lk.type)}</td>
       <td>
-        <a class="link-title" href="${escHtml(lk.url)}" target="_blank" rel="noopener">${nameHtml}</a>
+        <div class="link-line">
+          <a class="link-title" href="${escHtml(openHref(lk))}" target="_blank" rel="noopener">${nameHtml}</a>
+          ${OFFICE_TYPES.has(lk.type) || lk.type === 'PDF' ? `<span class="file-acts">
+            <a class="file-act" href="${escHtml(openHref(lk))}" target="_blank" rel="noopener" title="פתיחה לצפייה בלי להוריד">👁 פתיחה</a>
+            <a class="file-act dl" href="${escHtml(lk.url)}" target="_blank" rel="noopener" download title="הורדת הקובץ">⬇ הורדה</a>
+          </span>` : ''}
+        </div>
         <div class="link-sub-url">${escHtml(shortUrl)}</div>
       </td>
     </tr>`;
