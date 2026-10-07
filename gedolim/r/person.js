@@ -22,6 +22,7 @@ function viewHref(f) {
   return ["word", "ppt", "excel"].includes(f.f) && f.b && f.b <= lim ? "https://view.officeapps.live.com/op/view.aspx?src=" + encodeURIComponent(f.u) : f.u;
 }
 function thumbOf(it) {
+  if (it.im) return {src: /^https?:/.test(it.im) ? it.im : "../" + it.im, wide: /\/gamma\//.test(it.im), u: viewHref(it.files[0])};
   for (const f of it.files) {
     const y = f.u.match(/(?:youtu\.be\/|[?&]v=|\/shorts\/|\/embed\/)([\w-]{11})/);
     if (y) return {src: `https://i.ytimg.com/vi/${y[1]}/hqdefault.jpg`, wide: true, u: f.u};
