@@ -30,6 +30,7 @@ h1{margin:0;font-size:1.6rem;font-weight:800}
 .ctx .cn{font-size:.95rem;font-weight:500;color:var(--muted)}
 .tabsep{width:1px;align-self:stretch;background:#cfd3e3;margin:2px 4px}
 .tab.aux{border-style:dashed;background:#fbfbfe}
+.pglink{font-size:.9rem;font-weight:700;text-decoration:none;color:#fff;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:999px;padding:4px 14px;box-shadow:0 3px 10px rgba(79,70,229,.3)}
 .tab.grp{font-weight:700}.tab.grp.in{border-color:var(--accent);color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent)}
 .tabs.sub{padding-top:0;margin-top:-4px}.tabs.sub:empty{display:none}
 .tabs.sub .tab{font-size:.88rem;padding:5px 9px 5px 10px;background:#fbfbff}.tabs.sub .tab.on{background:var(--accent)}
@@ -302,7 +303,10 @@ function renderCtx(n) {
   else if (state.q.trim()) head = `חיפוש: „${state.q.trim()}”`;
   else head = tabLabel(state.tab);
   const all = state.q.trim() || state.fmt === "fav" ? n : D.items.filter(inTab).length;
-  document.getElementById("ctx").innerHTML = `<span>${esc(head)}</span><span class="cn">${n === all ? `${n} חומרים` : `נמצאו ${n} מתוך ${all} חומרים`}</span>`;
+  // D.pages: a page of its own for each tab of a group (e.g. "r/" -> r/<tab>.html)
+  const pg = D.pages && !state.q.trim() && state.fmt !== "fav" && D.tabs.some(t => t.k === state.tab && t.g && !t.k.startsWith("gen-"))
+    ? `<a class="pglink" href="${esc(D.pages + state.tab)}.html">📄 הדף של ${esc(head.split(":")[0])}</a>` : "";
+  document.getElementById("ctx").innerHTML = `<span>${esc(head)}</span><span class="cn">${n === all ? `${n} חומרים` : `נמצאו ${n} מתוך ${all} חומרים`}</span>${pg}`;
 }
 function render() {
   renderTabs(); renderActive();
