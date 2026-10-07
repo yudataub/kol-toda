@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>קטלוג גדולי ישראל</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', 'Arial Hebrew', Arial, sans-serif;
+    background: linear-gradient(135deg, #1a3a2a 0%, #2d5a3d 50%, #1a3a2a 100%);
+    min-height: 100vh;
+    padding: 20px;
+    direction: rtl;
+  }
+  .header {
+    text-align: center;
+    color: #f5e6b2;
+    margin-bottom: 20px;
+    padding: 25px 20px 10px;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+  }
+  .header h1 { font-size: 2.6em; margin-bottom: 8px; letter-spacing: 1px; }
+  .header p { font-size: 1.1em; opacity: 0.85; color: #d4c47a; }
+  .header-line {
+    width: 120px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #c8a84b, transparent);
+    margin: 12px auto;
+  }
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    background: rgba(200,168,75,0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    padding: 12px 26px;
+    color: #f5e6b2;
+    text-align: center;
+    border: 1px solid rgba(200,168,75,0.35);
+  }
+  .stat-num { font-size: 1.9em; font-weight: bold; color: #c8a84b; }
+  .stat-label { font-size: 0.82em; opacity: 0.85; margin-top: 2px; }
+
+  /* ── Search Bar ── */
+  .search-wrap {
+    max-width: 600px;
+    margin: 0 auto 26px;
+    position: relative;
+  }
+  .search-wrap input {
+    width: 100%;
+    padding: 13px 48px 13px 18px;
+    border-radius: 30px;
+    border: 2px solid rgba(200,168,75,0.45);
+    background: rgba(255,255,255,0.92);
+    font-size: 1.05em;
+    font-family: 'Segoe UI', 'Arial Hebrew', Arial, sans-serif;
+    direction: rtl;
+    color: #2d2d2d;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search-wrap input:focus {
+    border-color: #c8a84b;
+    box-shadow: 0 0 0 3px rgba(200,168,75,0.2);
+  }
+  .search-wrap .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2em;
+    pointer-events: none;
+  }
+  .no-results {
+    display: none;
+    text-align: center;
+    color: rgba(200,168,75,0.6);
+    font-size: 1.1em;
+    padding: 30px;
+    grid-column: 1 / -1;
+  }
+
+  /* ── Grid & Cards ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 18px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .card {
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 5px;
+    height: 100%;
+    background: currentColor;
+    opacity: 0.2;
+    border-radius: 0 16px 16px 0;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+  }
+  .card.hidden { display: none; }
+  .card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .emoji { font-size: 2em; margin-left: 12px; flex-shrink: 0; }
+  .card-title { font-size: 1.08em; font-weight: bold; line-height: 1.35; }
+  .period-label {
+    display: inline-block;
+    font-size: 0.72em;
+    padding: 2px 9px;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .subs-list { list-style: none; margin-top: 8px; }
+  .subs-list li {
+    display: flex;
+    align-items: center;
+    padding: 5px 8px;
+    border-radius: 7px;
+    margin-bottom: 4px;
+    font-size: 0.87em;
+    background: rgba(0,0,0,0.06);
+  }
+  .subs-list li a {
+    text-decoration: none;
+    color: inherit;
+    flex: 1;
+    transition: opacity 0.15s;
+  }
+  .subs-list li a:hover { opacity: 0.7; text-decoration: underline; }
+  .item-icon { margin-left: 6px; font-size: 0.9em; opacity: 0.55; }
+  .open-btn {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 7px 18px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.84em;
+    font-weight: bold;
+    background: rgba(0,0,0,0.1);
+    color: inherit;
+    transition: background 0.2s;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .open-btn:hover { background: rgba(0,0,0,0.2); }
+  .footer {
+    text-align: center;
+    color: rgba(200,168,75,0.55);
+    margin-top: 35px;
+    font-size: 0.83em;
+    padding-bottom: 20px;
+  }
+</style>
+<meta property="og:title" content="קטלוג גדולי ישראל">
+<meta property="og:description" content="קטלוג גדולי ישראל">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-catalog-archive-old-907fc5304919.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/catalog-archive/old/907fc5304919.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="header">
+  <div class="header-line"></div>
+  <h1>📜 גדולי ישראל</h1>
+  <p>ספריית חומרי לימוד — חכמי ישראל לדורותיהם</p>
+  <div class="header-line"></div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num">28</div><div class="stat-label">קטגוריות</div></div>
+  <div class="stat"><div class="stat-num">עדכון 25.02.2026</div><div class="stat-label">תאריך עדכון</div></div>
+</div>
+
+<!-- Search Bar -->
+<div class="search-wrap">
+  <input type="text" id="searchInput" placeholder="חפש חכם, תקופה, תת-תיקייה..." oninput="filterCards()">
+  <span class="search-icon">🔍</span>
+</div>
+
+<div class="grid" id="cardsGrid">
+
+<!-- א. שמעון הצדיק -->
+<div class="card" style="background:#fdf6e3; color:#5d4037;" data-search="שמעון הצדיק תנאים קדומים">
+  <div class="period-label">תנאים קדומים</div>
+  <div class="card-header">
+    <span class="emoji">👑</span>
+    <div class="card-title">א. שמעון הצדיק</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1dmRNnFKcsL-j2DvarYIcyN6QsSGZv8In" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- א. שמעון בן שטח -->
+<div class="card" style="background:#fff8e1; color:#6d4c41;" data-search="שמעון בן שטח תנאים קדומים">
+  <div class="period-label">תנאים קדומים</div>
+  <div class="card-header">
+    <span class="emoji">⚖️</span>
+    <div class="card-title">א. שמעון בן שטח</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1CQupTzdSTLNe2MtN4qxp2W26EJQ-cm0k" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- ב. חוני המעגל -->
+<div class="card" style="background:#e3f2fd; color:#1565c0;" data-search="חוני המעגל תנאים קדומים">
+  <div class="period-label">תנאים קדומים</div>
+  <div class="card-header">
+    <span class="emoji">🌧️</span>
+    <div class="card-title">ב. חוני המעגל</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1wPqyN4UpeVXhLAXlhpILajv6njic_2Ww" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- ג. אבא חלקיה -->
+<div class="card" style="background:#e8f5e9; color:#2e7d32;" data-search="אבא חלקיה תנאים קדומים">
+  <div class="period-label">תנאים קדומים</div>
+  <div class="card-header">
+    <span class="emoji">🌦️</span>
+    <div class="card-title">ג. אבא חלקיה</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1iZrP_5mzbj3HTBPy3LHhqxDqTvgXfvTc" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- ד. חנן הנחבא -->
+<div class="card" style="background:#f3e5f5; color:#6a1b9a;" data-search="חנן הנחבא תנאים קדומים">
+  <div class="period-label">תנאים קדומים</div>
+  <div class="card-header">
+    <span class="emoji">🙏</span>
+    <div class="card-title">ד. חנן הנחבא</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1rkEFMS0Nld8feYlvh35fjACxWhO_izu3" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- ה. הלל הזקן -->
+<div class="card" style="background:#e8eaf6; color:#283593;" data-search="הלל הזקן זוגות">
+  <div class="period-label">זוגות — הלל ושמאי</div>
+  <div class="card-header">
+    <span class="emoji">✡️</span>
+    <div class="card-title">ה. הלל הזקן</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1K7Qj2wkTep5DSo1wu4s1FieEml1KlzTA" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- ו. שמאי הזקן -->
+<div class="card" style="background:#fff3e0; color:#bf360c;" data-search="שמאי הזקן זוגות">
+  <div class="period-label">זוגות — הלל ושמאי</div>
+  <div class="card-header">
+    <span class="emoji">📏</span>
+    <div class="card-title">ו. שמאי הזקן</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1US-8LosoB-oxJ0kJiEECzxrV5YrmqTrN" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- ז. בית שמאי ובית הלל -->
+<div class="card" style="background:#fce4ec; color:#880e4f;" data-search="בית שמאי בית הלל זוגות">
+  <div class="period-label">זוגות — הלל ושמאי</div>
+  <div class="card-header">
+    <span class="emoji">🏛️</span>
+    <div class="card-title">ז. בית שמאי ובית הלל</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/18o2hpzWtZpIAMzymrfE-t2B5I7A1_7ER" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- ח. רבן גמליאל הזקן -->
+<div class="card" style="background:#e0f7fa; color:#006064;" data-search="רבן גמליאל הזקן דור החורבן">
+  <div class="period-label">דור החורבן</div>
+  <div class="card-header">
+    <span class="emoji">🕍</span>
+    <div class="card-title">ח. רבן גמליאל הזקן</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/12bJgVghsuzxPZfA0ce9_s1oalMp7-Qgx" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- ט. שמואל הקטן -->
+<div class="card" style="background:#f1f8e9; color:#33691e;" data-search="שמואל הקטן דור החורבן">
+  <div class="period-label">דור החורבן</div>
+  <div class="card-header">
+    <span class="emoji">📜</span>
+    <div class="card-title">ט. שמואל הקטן</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1zIra96oZ7AE6B2AtGTFHY2BMpSXKE4yt" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- י. רבי צדוק -->
+<div class="card" style="background:#ede7f6; color:#4527a0;" data-search="רבי צדוק דור החורבן">
+  <div class="period-label">דור החורבן</div>
+  <div class="card-header">
+    <span class="emoji">🕊️</span>
+    <div class="card-title">י. רבי צדוק</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1Dpuuta-PScXHveHn9DB7MJLFBv0C8MJs" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- יא. רבי אלעזר ברבי צדוק -->
+<div class="card" style="background:#fafafa; color:#424242;" data-search="רבי אלעזר ברבי צדוק דור החורבן">
+  <div class="period-label">דור החורבן</div>
+  <div class="card-header">
+    <span class="emoji">📚</span>
+    <div class="card-title">יא. רבי אלעזר ברבי צדוק</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1zQUqCodVhcUglvSjBNBgf1j-YLrwb_aG" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- יב. יונתן בן עוזיאל -->
+<div class="card" style="background:#fff9c4; color:#f57f17;" data-search="יונתן בן עוזיאל דור החורבן">
+  <div class="period-label">דור החורבן</div>
+  <div class="card-header">
+    <span class="emoji">✨</span>
+    <div class="card-title">יב. יונתן בן עוזיאל</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1uvTMbaSTf42gIwPQ3MeC_BMHRSePMqmh" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- יג. רבן יוחנן בן זכאי -->
+<div class="card" style="background:#e3f2fd; color:#0d47a1;" data-search="רבן יוחנן בן זכאי מייסדי יבנה">
+  <div class="period-label">מייסדי יבנה</div>
+  <div class="card-header">
+    <span class="emoji">🏫</span>
+    <div class="card-title">יג. רבן יוחנן בן זכאי</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1ezurG-ILy-nWLYYMcLErShLDu4K5Ixpa" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- יד. רבי חנינא בן דוסא -->
+<div class="card" style="background:#fce4ec; color:#b71c1c;" data-search="רבי חנינא בן דוסא מייסדי יבנה">
+  <div class="period-label">מייסדי יבנה</div>
+  <div class="card-header">
+    <span class="emoji">🙏</span>
+    <div class="card-title">יד. רבי חנינא בן דוסא</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1EnLA4bhVJCz4LtuJdpxVQxbiuiEjoY3D" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- יה. רבן גמליאל דיבנה -->
+<div class="card" style="background:#e0f2f1; color:#004d40;" data-search="רבן גמליאל דיבנה מייסדי יבנה">
+  <div class="period-label">מייסדי יבנה</div>
+  <div class="card-header">
+    <span class="emoji">🕍</span>
+    <div class="card-title">יה. רבן גמליאל דיבנה</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/188kGRfzAa2TFX5-MOqPiLhzFZxI1iJbn" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- יו. רבי יהושע בן חנניה -->
+<div class="card" style="background:#fff8e1; color:#e65100;" data-search="רבי יהושע בן חנניה מייסדי יבנה">
+  <div class="period-label">מייסדי יבנה</div>
+  <div class="card-header">
+    <span class="emoji">🦁</span>
+    <div class="card-title">יו. רבי יהושע בן חנניה</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1P3n_Z5oEs912HQwXqXDhr20euAAiFQ94" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- יז. רבי אליעזר בן הורקנוס -->
+<div class="card" style="background:#f3e5f5; color:#4a148c;" data-search="רבי אליעזר בן הורקנוס מייסדי יבנה">
+  <div class="period-label">מייסדי יבנה</div>
+  <div class="card-header">
+    <span class="emoji">📖</span>
+    <div class="card-title">יז. רבי אליעזר בן הורקנוס</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1NZ_S2MLyM-V57bZFpZ9QhkmGvP-foUiN" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- יח. רבי אלעזר בן ערך -->
+<div class="card" style="background:#e8f5e9; color:#1b5e20;" data-search="רבי אלעזר בן ערך מייסדי יבנה">
+  <div class="period-label">מייסדי יבנה</div>
+  <div class="card-header">
+    <span class="emoji">💧</span>
+    <div class="card-title">יח. רבי אלעזר בן ערך</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1CcuD2iTaLjXHyrHIZKhoULLj_9r1VZSy" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- יט. נחום איש גמזו -->
+<div class="card" style="background:#fdf6e3; color:#4e342e;" data-search="נחום איש גמזו תנאים">
+  <div class="period-label">תנאים — דור שלישי</div>
+  <div class="card-header">
+    <span class="emoji">🌟</span>
+    <div class="card-title">יט. נחום איש גמזו</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1g7Up435X2-XvIb-JZkxE9qGptUWI2qao" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- כ. רבי טרפון -->
+<div class="card" style="background:#e8eaf6; color:#1a237e;" data-search="רבי טרפון תנאים">
+  <div class="period-label">תנאים — דור שלישי</div>
+  <div class="card-header">
+    <span class="emoji">⚖️</span>
+    <div class="card-title">כ. רבי טרפון</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1RCS5XvCk_u4eSSU51H_ERiTbykmK4q87" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- כא. רבי עקיבא -->
+<div class="card" style="background:#fff3e0; color:#e65100;" data-search="רבי עקיבא תנאים">
+  <div class="period-label">תנאים — דור שלישי</div>
+  <div class="card-header">
+    <span class="emoji">💪</span>
+    <div class="card-title">כא. רבי עקיבא</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/13aq9SyGZ1h94qc3GlB_y13wCIQS1dxti" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- כב. רבי ישמעאל בן אלישע -->
+<div class="card" style="background:#e0f7fa; color:#006064;" data-search="רבי ישמעאל בן אלישע תנאים">
+  <div class="period-label">תנאים — דור שלישי</div>
+  <div class="card-header">
+    <span class="emoji">📜</span>
+    <div class="card-title">כב. רבי ישמעאל בן אלישע</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1ZPw2UYw8Jo7vxvqLZ2UwCvQjAUiauhLD" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- כג. רבי אלעזר איש ברתותא -->
+<div class="card" style="background:#fce4ec; color:#880e4f;" data-search="רבי אלעזר איש ברתותא תנאים">
+  <div class="period-label">תנאים — דור שלישי</div>
+  <div class="card-header">
+    <span class="emoji">💰</span>
+    <div class="card-title">כג. רבי אלעזר איש ברתותא</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1tUOBDVpBKIEhomlNvhskGvMavgF8zR1V" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- כד. חמשת תלמידי רבי עקיבא -->
+<div class="card" style="background:#f1f8e9; color:#1b5e20;" data-search="חמשת תלמידי רבי עקיבא תנאים דור רביעי">
+  <div class="period-label">תנאים — דור רביעי</div>
+  <div class="card-header">
+    <span class="emoji">👨‍🎓</span>
+    <div class="card-title">כד. חמשת תלמידי רבי עקיבא</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1Dcr8H1foNyHwXLBhas5Y-uRQjPrZrKxJ" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- כה. על רשב"י -->
+<div class="card" style="background:#fff9c4; color:#827717;" data-search="רשבי רבי שמעון בר יוחאי תנאים דור רביעי">
+  <div class="period-label">תנאים — דור רביעי</div>
+  <div class="card-header">
+    <span class="emoji">🔥</span>
+    <div class="card-title">כה. על רשב"י</div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1DIlWQXcik6q9WKbEJC0dcUWthR8qib8e" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- כו. ראשונים ואחרונים — with full sub-list -->
+<div class="card" style="background:#efebe9; color:#3e2723;" data-search="ראשונים אחרונים תנאים אמוראים גאונים המאה גדולי הדור">
+  <div class="period-label">ראשונים ואחרונים</div>
+  <div class="card-header">
+    <span class="emoji">🏺</span>
+    <div class="card-title">כו. ראשונים ואחרונים</div>
+  </div>
+  <ul class="subs-list">
+    <li><a href="https://drive.google.com/drive/folders/1a0pj8vOYBXUHWsdwsa4PFcFkqr9pmk7a" target="_blank"><span class="item-icon">📁</span>01 - תנאים (עד שנת 220)</a></li>
+    <li><a href="https://drive.google.com/drive/folders/18FouK--9fri8ez-QpWE34R64tkEVY8-q" target="_blank"><span class="item-icon">📁</span>02 - אמוראים (220–500)</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1sTwkgi3wsBw3cIoHaem95--FGLYnsyIO" target="_blank"><span class="item-icon">📁</span>03 - ראשונים (1050–1500)</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1bCc1oYahC0fWj1G1iIqPiSQjBP0vPFna" target="_blank"><span class="item-icon">📁</span>04 - אחרונים א - קדמונים (1500–1800)</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1FQ30q2U2mCXqh8oIr8uopTXJeI_NaNTJ" target="_blank"><span class="item-icon">📁</span>05 - אחרונים ב - המאה ה-19 (1800–1900)</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1txmLiuhRg3M22-4CGcooj8thifJRgpej" target="_blank"><span class="item-icon">📁</span>06 - גדולי הדור - המאה ה-20</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1g0GYnPNihIqRXWDFctQ-Djo0D_SDpdBb" target="_blank"><span class="item-icon">📁</span>07 - חומרי הוראה ועזר</a></li>
+  </ul>
+  <a href="https://drive.google.com/drive/folders/1dQgIcgnFhtnDNjQt54My4n98G3Tac_-n" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<!-- רבני זמננו — with full sub-list -->
+<div class="card" style="background:#e8eaf6; color:#1a237e;" data-search="רבני זמננו הראיה הרמבם אור החיים בבא סאלי הרב קוק גורן הרצוג עובדיה יוסף מרדכי אליהו ישראל סלנטר יהודה הנשיא">
+  <div class="period-label">רבני זמננו</div>
+  <div class="card-header">
+    <span class="emoji">🕍</span>
+    <div class="card-title">רבני זמננו</div>
+  </div>
+  <ul class="subs-list">
+    <li><a href="https://drive.google.com/drive/folders/1GUfkCfvvyiivIcVxN0eXrTpdcTUyRSUi" target="_blank"><span class="item-icon">📁</span>רבי יהודה הנשיא</a></li>
+    <li><a href="https://drive.google.com/drive/folders/13uJWD-OETQjJw6H-dCnZcExVYufcKiT-" target="_blank"><span class="item-icon">📁</span>תנאים נוספים ואמוראים</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1EO2nf6adb215Wv2ATVPfslazT0MarRay" target="_blank"><span class="item-icon">📁</span>הרמב"ם</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1eu3PXfjYhYaEHGWEQmyi2jK9L_jRCGnI" target="_blank"><span class="item-icon">📁</span>אור החיים הקדוש</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1Lj-_oqWzmxupv6swiZpsi4vp2FbytNho" target="_blank"><span class="item-icon">📁</span>רבי ישראל סלנטר</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1gF3PhhwIsiz_mjbLJSZ49b4OQx4gQWqA" target="_blank"><span class="item-icon">📁</span>הראי"ה (הרב קוק)</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1HxXBNFnl4INBRFRCImd2IELjrhi7NgBv" target="_blank"><span class="item-icon">📁</span>הבבא סאלי</a></li>
+    <li><a href="https://drive.google.com/drive/folders/10DjNKfrC7MoxDG6UjotgmwPHtXJG10-F" target="_blank"><span class="item-icon">📁</span>הרב הרצוג</a></li>
+    <li><a href="https://drive.google.com/drive/folders/12dGQdmzVZYiMB7FGYCa3MA9jse5XrFoF" target="_blank"><span class="item-icon">📁</span>הרב גורן</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1jrKKH_IyvwZWMGOlR9Fs7E-Xs9TD00Xj" target="_blank"><span class="item-icon">📁</span>הרב עובדיה יוסף</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1bK1vtL6e3UJGAgXaLYchxIdpt7xHx30s" target="_blank"><span class="item-icon">📁</span>הרב מרדכי אליהו</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1CEtjEvsf_5IjgroCoqDBAWDQEGNeBi9-" target="_blank"><span class="item-icon">📁</span>הרב חיים דוד הלוי</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1cCavnbzAIFxeEmYZQXhrbSL5_LkEZqX6" target="_blank"><span class="item-icon">📁</span>הרב שאול ישראלי</a></li>
+    <li><a href="https://drive.google.com/drive/folders/16IRO8MK7pDLqFerxO1Jgj6x22kqz41RC" target="_blank"><span class="item-icon">📁</span>הרב והרבנית קאפח</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1UqG_CiFqIWYVWSVsV91v2Gd9WMcrnVyU" target="_blank"><span class="item-icon">📁</span>הרב משה צבי נריה</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1GESlofIeLieoe23_CzupXcOML91CboAO" target="_blank"><span class="item-icon">📁</span>הרב יצחק נסים זצ"ל</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1k7-Iu_A-uu2cxtibC18-mlvY63sU2CmQ" target="_blank"><span class="item-icon">📁</span>הרב מאיר יהודה גץ</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1zE0Z-byCJ-2Sbp3HfoMp46G1K1rMw_M4" target="_blank"><span class="item-icon">📁</span>הרצי"ה</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1ewKR8e42A7K1YwwaFr5cdNpYBgL6Of4o" target="_blank"><span class="item-icon">📁</span>צוואת הרב עוזיאל</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1f_CcS75WHMQHc41LR3G02BrzSOANIMa7" target="_blank"><span class="item-icon">📁</span>הרב אברהם צוקרמן - לוח קיר</a></li>
+    <li><a href="https://drive.google.com/drive/folders/18bcfKZEXYiRP4RUl8k_H5NHD7ONuvXcs" target="_blank"><span class="item-icon">📁</span>תערוכה ב' ה'תשע"ז - צדיקים בירושלים</a></li>
+    <li><a href="https://drive.google.com/drive/folders/16hpmh-wjXpMVigXU7r33uBzAwAvA_IJp" target="_blank"><span class="item-icon">📁</span>סיפורי אהבת תורה</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1jqMr4xcdhWAw1yY3dpP58xkyYRnjmt2P" target="_blank"><span class="item-icon">📁</span>ציורי גדולי ישראל</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1J6Kx3hEuahYuKBM62FDE9Ol5MoBDaPi-" target="_blank"><span class="item-icon">📁</span>ראשונים - מת"ת יסדת עז</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1za_N7XSzAcTsfU8kp-j5K_w3ehEZsyzw" target="_blank"><span class="item-icon">📁</span>ת. גדולי ישראל - הרב עמירם אלבה</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1AgjXmFdmpz8lUDF40LRByKZLBe5gjUi5" target="_blank"><span class="item-icon">📁</span>ת. טבלאות - הרב עמירם אלבה</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1mXQZd8BHRVLFk9gY_q07Qr4EfIU1FNnT" target="_blank"><span class="item-icon">📁</span>ת. חודש גדולי ישראל - ת"ת יסדת עוז</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1MIlITteoTNkFBw022mht2Y8DAoGi2ysl" target="_blank"><span class="item-icon">📁</span>ת. גדולי ישראל נוספים - אהרן קדוש</a></li>
+    <li><a href="https://drive.google.com/drive/folders/1dOSyKzUfgrkSRZxo0OmD7e34u3TG_-64" target="_blank"><span class="item-icon">📁</span>ת. עוד גדולי ישראל - לוח קיר</a></li>
+    <li><a href="https://drive.google.com/drive/folders/11-StDxhdM4-9M6okg7tpTF8Mak_wMzAJ" target="_blank"><span class="item-icon">📁</span>אוסף רבנים</a></li>
+  </ul>
+  <a href="https://drive.google.com/drive/folders/1OBWDSkDvgGMyS7Q1lsb4eS5MIUQCk2Ap" target="_blank" class="open-btn">📂 פתח תיקייה</a>
+</div>
+
+<div class="no-results" id="noResults">לא נמצאו תוצאות 🔍</div>
+
+</div><!-- end grid -->
+
+<div class="footer">
+  <p>📜 נוצר אוטומטית על ידי Claude · ספריית גדולי ישראל · כל הקישורים מובילים ישירות ל-Google Drive</p>
+  <p style="margin-top:6px;"><a href="https://drive.google.com/drive/folders/1ox7QsqbCBrVMJb7c6MeUiDRu_EIXZtX-" target="_blank" style="color:rgba(200,168,75,0.6);">🔗 פתח את הספריה הראשית</a></p>
+</div>
+
+<script>
+function filterCards() {
+  const query = document.getElementById('searchInput').value.trim().toLowerCase();
+  const cards = document.querySelectorAll('.card');
+  let visible = 0;
+
+  cards.forEach(card => {
+    // search in title, period label, data-search attr, and sub-list text
+    const text = (
+      (card.getAttribute('data-search') || '') + ' ' +
+      (card.querySelector('.card-title')?.textContent || '') + ' ' +
+      (card.querySelector('.period-label')?.textContent || '') + ' ' +
+      (card.querySelector('.subs-list')?.textContent || '')
+    ).toLowerCase();
+
+    if (!query || text.includes(query)) {
+      card.classList.remove('hidden');
+      visible++;
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+
+  document.getElementById('noResults').style.display = (visible === 0) ? 'block' : 'none';
+}
+</script>
+
+</body>
+</html>
