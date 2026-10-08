@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>חיפוש בכל הקטלוגים – הקול החמישי</title>
+<meta name="description" content="חיפוש מהיר אחד בכל הקטלוגים של אתר הקול החמישי: נושאים, תתי-נושאים, תיקיות בכל עומק וכל החומרים – חומשים, נביאים, משנה, גמרא, הלכה, חגים, ימים מיוחדים, גדולי ישראל, האוסף העצום ודפי האתר.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="preload" href="nodes.json" as="fetch" crossorigin>
+<link rel="preload" href="items.json" as="fetch" crossorigin>
+<link rel="preload" href="deep.json" as="fetch" crossorigin>
+<style>
+:root{--bg:#f6f5fb;--card:#fff;--ink:#1f2340;--mute:#666a86;--line:#e4e2f0;--acc:#4f46e5;--soft:#eef0ff;--mark:#fde68a;--shadow:0 2px 10px rgba(40,30,120,.07)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14152a;--card:#1d1f3a;--ink:#ecebff;--mute:#a6a8c8;--line:#2e3156;--acc:#8b85ff;--soft:#262a52;--mark:#7c5a0b;--shadow:0 2px 10px rgba(0,0,0,.35)}}
+:root[data-theme="dark"]{--bg:#14152a;--card:#1d1f3a;--ink:#ecebff;--mute:#a6a8c8;--line:#2e3156;--acc:#8b85ff;--soft:#262a52;--mark:#7c5a0b;--shadow:0 2px 10px rgba(0,0,0,.35)}
+*{box-sizing:border-box}
+body{margin:0;font-family:Heebo,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+a{color:inherit}
+mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header{background:linear-gradient(120deg,#1e3a8a,#4f46e5 50%,#9333ea);color:#fff}
+header .wrap{padding:18px 16px 30px}
+.top{display:flex;gap:14px;flex-wrap:wrap;font-size:14px}
+.top a{color:#e5e7ff;text-decoration:none}
+h1{margin:6px 0 2px;font-size:clamp(25px,5vw,38px);font-weight:800}
+.sub{opacity:.92;font-size:15.5px}
+.searchbar{position:sticky;top:0;z-index:5;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:16px;padding:10px;margin:-22px 0 10px;display:flex;flex-wrap:wrap;gap:8px}
+.searchbar input{flex:1 1 280px;min-width:0;font:inherit;font-size:18px;padding:11px 14px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);outline:none}
+.searchbar input:focus{border-color:var(--acc)}
+.searchbar select{flex:0 1 240px;min-width:0;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink)}
+.status{color:var(--mute);font-size:14px;margin:4px 2px 8px;min-height:21px}
+.status b{color:var(--ink)}
+h2{font-size:19px;margin:18px 0 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h2 small{font-size:13px;color:var(--mute);font-weight:500}
+/* the five kinds of result – each its own look */
+.pill{display:inline-block;font-size:11.5px;font-weight:800;border-radius:999px;padding:1px 9px;white-space:nowrap;vertical-align:middle}
+.lv0 .pill,.pill.lv0{background:var(--sc);color:#fff}
+.lv1 .pill,.pill.lv1{background:color-mix(in srgb,var(--sc) 22%,var(--card));color:color-mix(in srgb,var(--sc) 80%,var(--ink))}
+.lv2 .pill,.pill.lv2{background:var(--card);color:color-mix(in srgb,var(--sc) 80%,var(--ink));box-shadow:inset 0 0 0 1.5px var(--sc)}
+.lv3 .pill,.pill.lv3{background:#fef3c7;color:#92400e}
+.pill.mat{background:var(--soft);color:var(--acc)}
+.nodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.node{display:flex;flex-direction:column;gap:3px;text-decoration:none;border-radius:14px;padding:10px 12px;border:1px solid var(--line);background:var(--card);border-right:6px solid var(--sc);min-width:0}
+.node:hover{box-shadow:0 0 0 2px var(--sc)}
+.node .nm{font-weight:800;font-size:16.5px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.node .pa{color:var(--mute);font-size:12.5px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.node .hd{display:flex;justify-content:space-between;gap:6px;align-items:center;font-size:12.5px;color:var(--mute)}
+.node.lv0{background:linear-gradient(135deg,var(--sc),color-mix(in srgb,var(--sc) 65%,#000));color:#fff;border-right-color:transparent}
+.node.lv0 .pa,.node.lv0 .hd{color:#ffffffd0}
+.node.lv0 .pill{background:#fff;color:var(--sc)}
+.node.lv1{background:color-mix(in srgb,var(--sc) 11%,var(--card))}
+.node.lv2{border-right-width:3px;border-style:solid dashed solid solid;border-right-style:solid}
+.node.lv3{border-right-color:#f59e0b;background:color-mix(in srgb,#f59e0b 6%,var(--card))}
+.node.lv3 .nm{font-weight:700;font-size:15px}
+.morebtn{grid-column:1/-1;justify-self:center;font:inherit;background:var(--card);color:var(--acc);border:1px solid var(--line);border-radius:999px;padding:6px 16px;cursor:pointer}
+.facets{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.facet{font:inherit;font-size:13.5px;display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:3px 11px;cursor:pointer}
+.facet i{width:10px;height:10px;border-radius:50%;background:var(--fc);display:inline-block}
+.facet b{color:var(--mute);font-weight:500}
+.facet.on{background:var(--fc);border-color:var(--fc);color:#fff}
+.facet.on b{color:#ffffffcc}
+.facet.on i{background:#fff}
+.items{display:flex;flex-direction:column;gap:6px;margin-bottom:22px}
+.it{display:flex;gap:11px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:7px;border-right:4px solid var(--sc);min-width:0}
+.it:hover{border-color:var(--acc);border-right-color:var(--sc)}
+.th{position:relative;width:78px;height:54px;flex:0 0 78px;border-radius:9px;background:color-mix(in srgb,var(--fc) 15%,var(--card));display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden;text-decoration:none}
+.th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.th .fb{position:absolute;bottom:3px;left:3px;background:var(--fc);color:#fff;font-size:10px;font-weight:800;border-radius:5px;padding:0 5px;line-height:15px;z-index:1}
+.it .tx{min-width:0;flex:1}
+.it .t{font-weight:700;font-size:15.5px;text-decoration:none;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.it .t:hover{text-decoration:underline}
+.crumbs{font-size:12.8px;color:var(--mute);margin-top:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.crumbs a{text-decoration:none}
+.crumbs a:hover{text-decoration:underline;color:var(--ink)}
+.crumbs .cb{background:var(--sc);color:#fff;border-radius:999px;padding:0 8px;font-weight:700;font-size:12px}
+.crumbs .cb:hover{color:#fff}
+.crumbs .k{color:var(--ink);font-weight:600}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:18px;text-align:center;color:var(--mute)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13.5px;color:var(--mute);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.cat{display:flex;gap:10px;align-items:center;text-decoration:none;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 11px;border-right:6px solid var(--sc);cursor:pointer;font:inherit;color:inherit;text-align:right}
+.cat:hover{box-shadow:0 0 0 2px var(--sc)}
+.cat .e{font-size:24px}
+.cat b{display:block;font-size:15px}
+.cat small{color:var(--mute)}
+.hint{color:var(--mute);font-size:13.5px;margin:6px 2px 0}
+kbd{font:inherit;font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--card)}
+footer{color:var(--mute);font-size:13px;text-align:center;padding:24px 16px 40px}
+@media (max-width:560px){.th{width:60px;flex-basis:60px;height:48px}.nodes{grid-template-columns:1fr}.searchbar select{flex-basis:100%}}
+</style>
+<meta property="og:title" content="חיפוש בכל הקטלוגים – הקול החמישי">
+<meta property="og:description" content="חיפוש מהיר אחד בכל הקטלוגים של אתר הקול החמישי: נושאים, תתי-נושאים, תיקיות בכל עומק וכל החומרים – חומשים, נביאים, משנה, גמרא, הלכה, חגים, ימים מיוחדים, גדולי ישראל, האוסף העצום ודפי האתר.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-search-index.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/search/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<header><div class="wrap">
+<div class="top"><a href="https://www.kol-toda.co.il/">→ לאתר הקול החמישי</a><a href="https://www.kol-toda.co.il/catalogs/">🗂️ מפתח הקטלוגים</a></div>
+<h1>🔎 חיפוש בכל הקטלוגים</h1>
+<div class="sub">166,856 חומרים · 777 נושאים ותתי-נושאים · 6,888 תיקיות · 19 קטלוגים – הכול בחיפוש אחד</div>
+</div></header>
+<div class="wrap">
+<div class="searchbar">
+  <input id="q" type="search" placeholder="מה מחפשים? למשל: רחל אמנו, נח מבחן, ט״ו בשבט, הרמב״ם…" autocomplete="off" autofocus>
+  <select id="scope" aria-label="חיפוש בקטלוג"></select>
+</div>
+<div class="status" id="status"></div>
+<div id="out"></div>
+</div>
+<footer>האינדקס נבנה מכל הקטלוגים של האתר ומאינדקס הדרייב, ומתעדכן בכל בנייה. לא מצאתם? נסו מילה אחת פחות, או את <a href="https://www.kol-toda.co.il/catalogs/">מפתח הקטלוגים</a>.</footer>
+<script>
+const REG = {"cats":[{"k":"bereshit","n":"חומש בראשית","u":"https://yudataub.github.io/chumash-bereshit/","g":"torah","e":"🌅"},{"k":"shemot","n":"חומש שמות","u":"https://yudataub.github.io/chumash-shemot/","g":"torah","e":"🌊"},{"k":"vayikra","n":"חומש ויקרא","u":"https://yudataub.github.io/chumash-vayikra/","g":"torah","e":"🔥"},{"k":"bamidbar","n":"חומש במדבר","u":"https://yudataub.github.io/chumash-bamidbar/","g":"torah","e":"⛺"},{"k":"devarim","n":"חומש דברים","u":"https://yudataub.github.io/chumash-devarim/","g":"torah","e":"📜"},{"k":"yehoshua","n":"ספר יהושע","u":"https://yudataub.github.io/navi-yehoshua/","g":"navi","e":"🎺"},{"k":"shoftim","n":"ספר שופטים","u":"https://yudataub.github.io/navi-shoftim/","g":"navi","e":"⚔️"},{"k":"shmuel-a","n":"שמואל א","u":"https://yudataub.github.io/navi-shmuel-a/","g":"navi","e":"👑"},{"k":"shmuel-b","n":"שמואל ב","u":"https://yudataub.github.io/navi-shmuel-b/","g":"navi","e":"🎶"},{"k":"melachim","n":"ספר מלכים","u":"https://yudataub.github.io/navi-melachim/","g":"navi","e":"🏛️"},{"k":"mishna","n":"משנה","u":"https://www.kol-toda.co.il/mishna/","g":"oral","e":"📘"},{"k":"gemara","n":"גמרא","u":"https://www.kol-toda.co.il/gemara/","g":"oral","e":"📗"},{"k":"halacha","n":"הלכה","u":"https://www.kol-toda.co.il/halacha/","g":"oral","e":"⚖️"},{"k":"chagim","n":"חגי ישראל ומועדי השנה","u":"https://www.kol-toda.co.il/chagim/","g":"zman","e":"🕎"},{"k":"yamim","n":"ימים מיוחדים בלוח השנה","u":"https://yudataub.github.io/yamim/","g":"zman","e":"📅"},{"k":"gedolim","n":"גדולי ישראל","u":"https://www.kol-toda.co.il/gedolim/","g":"people","e":"🧔"},{"k":"osef","n":"אוסף עצום בחסדי שמים","u":"https://drive.google.com/drive/folders/1X9Lz1tB79pE1J_sIp1T83p9mP_Q9nQJB","g":"coll","e":"🗃️"},{"k":"resources","n":"משאבי לימוד יהודי","u":"https://www.kol-toda.co.il/catalog-archive/old/cfcbba2d6adb.html","g":"coll","e":"🧭"},{"k":"site","n":"דפי האתר","u":"https://www.kol-toda.co.il/","g":"more","e":"🏠"}],"groups":[["torah","חמשה חומשי תורה"],["navi","נביאים"],["oral","משנה, גמרא והלכה"],["zman","חגים ומועדים"],["people","גדולי ישראל"],["coll","אוספים"],["more","עוד באתר"]],"kinds":["","דפי עבודה","להעברת השיעור","עוד חומרים","מבחנים ושאלות חזרה","ציור, יצירה וקישוט כיתה","משחקים וחידונים","מצגות וסרטונים","סיפורים ודפי קריאה","סיכומים","יצירה","עוד","סיפורים","מערכי שיעור","משחקים","מבחנים","יצירה וקישוט"]};
+const CATS = REG.cats, KINDS = REG.kinds, SITE = "https://www.kol-toda.co.il/";
+const SEC = {torah: "#2563eb", navi: "#0d9488", oral: "#16a34a", zman: "#d97706", people: "#7c3aed", coll: "#db2777", more: "#475569"};
+const GNAME = Object.fromEntries(REG.groups);
+const LEVEL = ["קטלוג", "נושא", "תת-נושא", "תיקייה"];
+const FMT = {pdf: ["📕", "PDF", "#dc2626"], word: ["📘", "Word", "#2563eb"], ppt: ["📙", "מצגת", "#ea580c"], excel: ["📗", "Excel", "#16a34a"],
+  video: ["🎬", "סרטון", "#db2777"], audio: ["🎧", "שמע", "#7c3aed"], game: ["🎮", "משחק", "#65a30d"], gamma: ["✨", "Gamma", "#c026d3"],
+  image: ["🖼️", "תמונה", "#0891b2"], web: ["🔗", "קישור", "#64748b"], page: ["📄", "דף באתר", "#0f766e"]};
+const fmtOf = f => FMT[f] || FMT.web;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const norm = s => String(s || "").replace(/[֑-ׇ]/g, "").replace(/[״"׳'`]/g, "").replace(/[_\-–—.,:;()\[\]|/\\]/g, " ").toLowerCase().replace(/\s+/g, " ").trim();
+const num = n => n.toLocaleString("he-IL");
+const secColor = c => SEC[CATS[c].g] || SEC.more;
+
+// ---------- data: nodes first (small – topics are found at once), then the catalogs' materials, then what is
+// inside the Drive folders (the biggest part) – each one searched as soon as it is here
+let N = null, NN = [], NP = [], I = null, IT = [], KN = KINDS.map(norm), deepIn = false, pend = null;
+const nodesP = fetch("nodes.json").then(r => r.json()).then(d => {
+  N = d;
+  for (let i = 0; i < N.length; i++) { NN[i] = norm(N[i][0]); NP[i] = N[i][3] >= 0 ? NP[N[i][3]] + " " + NN[i] : NN[i]; }
+  if ($("q").value) run(); else home();
+});
+function add(d) {
+  const from = I ? I.length : 0;
+  I = I ? I.concat(d) : d;
+  for (let i = from; i < I.length; i++) IT[i] = norm(I[i][0]);
+}
+const itemsP = Promise.all([fetch("items.json").then(r => r.json()), nodesP]).then(([d]) => {
+  if (pend) { add(d); add(pend); deepIn = true; } else add(d);
+  if ($("q").value) run();
+});
+const deepP = Promise.all([fetch("deep.json").then(r => r.json()), nodesP]).then(([d]) => {
+  if (!I) { pend = d; return; }
+  add(d); deepIn = true;
+  if ($("q").value) run();
+});
+Promise.all([itemsP, deepP]).catch(() => $("status").textContent = "הטעינה נכשלה – נסו לרענן את הדף.");
+
+// ---------- urls and pictures
+const abs = (c, u) => !u ? "" : u[0] === "~" ? "https://drive.google.com/open?id=" + u.slice(1) : /^https?:/.test(u) ? u : new URL(u, CATS[c].u).href;
+const THUMB = {pdf: 1, word: 1, ppt: 1, excel: 1, image: 1, video: 1};
+function pic(r, c) {
+  const im = r[4] || (r[3][0] === "~" && THUMB[r[1]] ? 1 : ""); if (!im) return "";
+  if (im === 1) { const m = r[3][0] === "~" ? r[3].slice(1) : (r[3].match(/[?&]id=([\w-]{20,})|\/d\/([\w-]{20,})/) || []).slice(1).find(Boolean); return m ? `https://drive.google.com/thumbnail?id=${m}&sz=w160` : ""; }
+  if (im[0] === "y" && im.length === 12) return `https://i.ytimg.com/vi/${im.slice(1)}/mqdefault.jpg`;
+  if (im[0] === "d" && im.length > 20 && !im.includes("/")) return `https://drive.google.com/thumbnail?id=${im.slice(1)}&sz=w160`;
+  return abs(c, im);
+}
+
+// ---------- matching: every word in the title or in its path (catalog › topic › …), at least one in the title
+let words = [], wordRes = [];
+// כתיב מלא / חסר: when the exact spelling finds little, a second pass without ו and י inside words
+// ("אמנו" finds "אימנו", "שבת" finds "שבות" too – so only as a fallback)
+const loose = s => s.replace(/(\S)[וי]+/g, "$1").replace(/(\S)[וי]+/g, "$1");
+let LN = null, LP = null, LI = null, LIn = 0;
+function looseArrays() {
+  if (!LN) { LN = NN.map(loose); LP = NP.map(loose); }
+  if (!LI || LIn !== IT.length) { LI = IT.map(loose); LIn = IT.length; }
+}
+function match(t, path) {
+  let inT = 0, start = 0;
+  for (const w of words) {
+    const p = t.indexOf(w);
+    if (p >= 0) { inT++; if (p === 0 || t[p - 1] === " ") start++; }
+    else if (!path.includes(w)) return -1;
+  }
+  return inT ? inT * 10 + start * 6 : -1;
+}
+function hl(s) {
+  let h = esc(s);
+  for (const re of wordRes) h = h.replace(re, "<mark>$&</mark>");
+  return h;
+}
+function mkRes(ws) {
+  const gap = "[\\u0591-\\u05C7״\"׳'`]*";
+  return ws.filter(w => w.length > 1).sort((a, b) => b.length - a.length).map(w =>
+    new RegExp([...w].map(ch => ch === " " ? "\\s+" : ch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join(gap), "gi"));
+}
+
+// ---------- state
+const S = {scope: "", sec: "", fmt: "", nShow: 12, iShow: 50, last: ""};
+let nodeHits = [], itemHits = [], t0 = 0;
+function crumbs(n, withCat) {
+  const out = []; let p = n;
+  while (p >= 0 && N[p][1] > 0) { out.unshift(p); p = N[p][3]; }
+  const c = N[n][2];
+  const cb = withCat ? `<a class="cb" href="${esc(CATS[c].u)}" target="_blank" rel="noopener">${CATS[c].e} ${esc(CATS[c].n)}</a>` : "";
+  return cb + out.map(i => ` › <a href="${esc(abs(c, N[i][4]))}" target="_blank" rel="noopener">${esc(N[i][0])}</a>`).join("");
+}
+function nodeHtml(i) {
+  const [name, lv, c, par, u, e, cnt] = N[i];
+  const path = []; let p = par; while (p >= 0 && N[p][1] > 0) { path.unshift(N[p][0]); p = N[p][3]; }
+  const icon = lv === 3 ? "📁" : e || (lv === 0 ? CATS[c].e : lv === 1 ? "📂" : "🔖");
+  return `<a class="node lv${lv}" style="--sc:${secColor(c)}" href="${esc(abs(c, u))}" target="_blank" rel="noopener">
+    <span class="hd"><span class="pill">${LEVEL[lv]}</span><span>${cnt ? num(cnt) + " חומרים" : ""}</span></span>
+    <span class="nm">${icon} ${hl(name)}</span>
+    <span class="pa">${lv ? esc([CATS[c].n, ...path].join(" › ")) : esc(GNAME[CATS[c].g] || "")}</span></a>`;
+}
+function itemHtml(i) {
+  const r = I[i], n = r[2], c = N[n][2], [ic, fl, fc] = fmtOf(r[1]);
+  const u = abs(c, r[3]), im = pic(r, c);
+  const img = im ? `<img src="${esc(im)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : "";
+  const kind = KINDS[r[5]] ? ` · <span class="k">${esc(KINDS[r[5]])}</span>` : "";
+  return `<div class="it" style="--sc:${secColor(c)};--fc:${fc}"><a class="th" href="${esc(u)}" target="_blank" rel="noopener">${ic}${img}<span class="fb">${fl}</span></a>
+    <div class="tx"><a class="t" href="${esc(u)}" target="_blank" rel="noopener">${hl(r[0])}</a>
+    <div class="crumbs">${crumbs(n, true)}${kind}</div></div></div>`;
+}
+function facetBtn(kind, key, label, color, n) {
+  return `<button class="facet${S[kind] === key ? " on" : ""}" style="--fc:${color}" data-f="${kind}" data-k="${esc(key)}"><i></i>${esc(label)} <b>${num(n)}</b></button>`;
+}
+
+function draw() {
+  const o = [];
+  if (nodeHits.length) {
+    o.push(`<h2>🧭 נושאים, תתי-נושאים ותיקיות <small>${num(nodeHits.length)} – לחיצה פותחת את הנושא בקטלוג</small></h2><div class="nodes">`);
+    o.push(nodeHits.slice(0, S.nShow).map(nodeHtml).join(""));
+    if (nodeHits.length > S.nShow) o.push(`<button class="morebtn" id="moreN">עוד ${num(Math.min(24, nodeHits.length - S.nShow))} נושאים</button>`);
+    o.push("</div>");
+  }
+  if (!I) o.push(`<div class="empty">⏳ טוען את החומרים… (הנושאים כבר כאן)</div>`);
+  else if (!deepIn) o.push(`<p class="hint">⏳ עוד רגע מצטרפים גם הקבצים שבתוך תיקיות הדרייב…</p>`);
+  else {
+    // the facets count the hits of the other filter, so a click never leads to an empty list
+    const bySec = {}, byFmt = {};
+    for (const i of itemHits) {
+      const c = N[I[i][2]][2], g = CATS[c].g, f = I[i][1];
+      if (!S.fmt || f === S.fmt) bySec[g] = (bySec[g] || 0) + 1;
+      if (!S.sec || g === S.sec) byFmt[f] = (byFmt[f] || 0) + 1;
+    }
+    const shown = itemHits.filter(i => (!S.sec || CATS[N[I[i][2]][2]].g === S.sec) && (!S.fmt || I[i][1] === S.fmt));
+    o.push(`<h2>📚 חומרים <small>${num(shown.length)}${shown.length !== itemHits.length ? " מתוך " + num(itemHits.length) : ""}</small></h2>`);
+    if (itemHits.length) {
+      o.push(`<div class="facets">${REG.groups.filter(([g]) => bySec[g] || S.sec === g).map(([g, l]) => facetBtn("sec", g, l, SEC[g], bySec[g] || 0)).join("")}</div>`);
+      o.push(`<div class="facets">${Object.entries(byFmt).sort((a, b) => b[1] - a[1]).map(([f, n]) => facetBtn("fmt", f, fmtOf(f)[0] + " " + fmtOf(f)[1], fmtOf(f)[2], n)).join("")}</div>`);
+    }
+    o.push(`<div class="items">${shown.slice(0, S.iShow).map(itemHtml).join("")}`);
+    if (shown.length > S.iShow) o.push(`<button class="morebtn" id="moreI">עוד ${num(Math.min(50, shown.length - S.iShow))} חומרים</button>`);
+    if (!S.scope || CATS[S.scope].k === "site") o.push(`<p class="hint">📄 מחפשים מילה מתוך הטקסט של מאמר או דף באתר? <a href="${SITE}catalog.html?q=${encodeURIComponent($("q").value)}">חיפוש בתוך הטקסט של דפי האתר ←</a></p>`);
+    if (!shown.length && !nodeHits.length) o.push(`<div class="empty">לא נמצא כלום. נסו מילה אחת פחות, כתיב אחר (מלא / חסר), או "בכל הקטלוגים".</div>`);
+    o.push("</div>");
+  }
+  $("out").innerHTML = o.join("");
+  const mn = $("moreN"); if (mn) mn.onclick = () => { S.nShow += 24; draw(); };
+  const mi = $("moreI"); if (mi) mi.onclick = () => { S.iShow += 50; draw(); };
+  const ms = Math.round(performance.now() - t0);
+  $("status").innerHTML = (S.loose ? "🔤 לא נמצא בכתיב הזה – מוצגות תוצאות בכתיב מלא/חסר · " : "") + `<b>${num(nodeHits.length)}</b> נושאים ותיקיות · <b>${I ? num(itemHits.length) : "…"}</b> חומרים${S.scope ? " ב" + esc(CATS[S.scope].n) : ""} · ${ms} אלפיות שנייה`;
+}
+$("out").addEventListener("click", e => {
+  const b = e.target.closest(".facet"); if (b) { S[b.dataset.f] = S[b.dataset.f] === b.dataset.k ? "" : b.dataset.k; S.iShow = 50; draw(); return; }
+  const c = e.target.closest(".cat[data-c]"); if (c) { $("scope").value = c.dataset.c; S.scope = c.dataset.c; $("q").focus(); home(); }
+});
+
+function run() {
+  if (!N) return;
+  if (!search(false)) return;
+  if (I && itemHits.length + nodeHits.length < 8 && words.some(w => /[וי]/.test(w.slice(1)))) {
+    const strict = [nodeHits, itemHits];
+    search(true);
+    if (itemHits.length + nodeHits.length <= strict[0].length + strict[1].length) [nodeHits, itemHits] = strict;
+    else S.loose = true;
+  }
+  draw();
+}
+function search(isLoose) {
+  S.loose = false;
+  const raw = $("q").value;
+  let q = norm(raw);
+  S.scope = $("scope").value;
+  if (!isLoose && raw + "|" + S.scope !== S.last) { S.sec = S.fmt = ""; S.last = raw + "|" + S.scope; }   // a new search: no old filter
+  if (!isLoose) t0 = performance.now(), history.replaceState(null, "", raw || S.scope ? "#" + new URLSearchParams({q: raw, c: S.scope ? CATS[S.scope].k : ""}) : location.pathname);
+  if (q.length < 2) { home(); return false; }
+  words = q.split(" ").filter(Boolean); wordRes = mkRes(words);
+  if (isLoose) { looseArrays(); words = words.map(loose); q = loose(q); }
+  const nn = isLoose ? LN : NN, np = isLoose ? LP : NP, it = isLoose ? LI : IT;
+  const sc = S.scope === "" ? -1 : +S.scope;
+  // topics: the catalog, a topic, a sub-topic first; a whole-name match before a part of one
+  const nh = [];
+  for (let i = 0; i < N.length; i++) {
+    if (sc >= 0 && N[i][2] !== sc) continue;
+    const m = match(nn[i], np[i]); if (m < 0) continue;
+    const lv = N[i][1], t = nn[i];
+    nh.push([i, m + (t === q ? 60 : t.startsWith(q) ? 25 : t.includes(q) ? 10 : 0) + [30, 24, 16, 4][lv] + Math.min(12, Math.log2(1 + N[i][6]) * 1.5)]);
+  }
+  nh.sort((a, b) => b[1] - a[1] || a[0] - b[0]);
+  nodeHits = nh.map(x => x[0]);
+  itemHits = [];
+  if (I) {
+    const ih = [];
+    for (let i = 0; i < I.length; i++) {
+      const n = I[i][2];
+      if (sc >= 0 && N[n][2] !== sc) continue;
+      const k = I[i][5], m = match(it[i], k ? np[n] + " " + KN[k] : np[n]); if (m < 0) continue;
+      const t = it[i];
+      ih.push(i, m + (t === q ? 40 : t.startsWith(q) ? 18 : t.includes(q) ? 8 : 0));
+    }
+    const idx = []; for (let j = 0; j < ih.length; j += 2) idx.push(j);
+    idx.sort((a, b) => ih[b + 1] - ih[a + 1] || ih[a] - ih[b]);
+    itemHits = idx.map(j => ih[j]);
+  }
+  S.nShow = 12; S.iShow = 50;
+  return true;
+}
+
+// ---------- the empty page: the catalogs, and what the colours mean
+function home() {
+  const sc = $("scope").value;
+  const cnt = c => N ? N.find(n => n[1] === 0 && n[2] === c)[6] : 0;
+  $("status").textContent = sc ? `חיפוש ב${CATS[sc].n} – הקלידו לפחות 2 אותיות` : "";
+  const leg = `<div class="legend"><b style="color:var(--ink)">מה רואים בתוצאות:</b>
+    ${[0, 1, 2, 3].map(l => `<span><span class="pill lv${l}" style="--sc:#4f46e5">${LEVEL[l]}</span></span>`).join("")}
+    <span><span class="pill mat">חומר</span></span> · הצבע בצד = המדור:
+    ${REG.groups.map(([g, l]) => `<span><i style="width:10px;height:10px;border-radius:50%;background:${SEC[g]};display:inline-block"></i>${esc(l)}</span>`).join("")}</div>`;
+  const cats = REG.groups.map(([g, l]) => {
+    const cs = CATS.map((c, i) => [c, i]).filter(([c]) => c.g === g);
+    return cs.length ? `<h2>${esc(l)}</h2><div class="cats">${cs.map(([c, i]) => `<button class="cat" style="--sc:${SEC[g]}" data-c="${i}"><span class="e">${c.e}</span><span><b>${esc(c.n)}</b><small>${N ? num(cnt(i)) + " חומרים · חיפוש כאן" : "חיפוש כאן"}</small></span></button>`).join("")}</div>` : "";
+  }).join("");
+  $("out").innerHTML = leg + `<p class="hint">כמה מילים = כולן צריכות להופיע (בשם או בנושא שמעליו): <b>נח מבחן</b>, <b>חנוכה מצגת</b>, <b>הרמב"ם סיפור</b>. <kbd>/</kbd> קופץ לתיבת החיפוש.</p>` + cats;
+}
+
+// ---------- scope select, typing, the address
+$("scope").innerHTML = `<option value="">🔎 בכל הקטלוגים</option>` + REG.groups.map(([g, l]) => {
+  const cs = CATS.map((c, i) => [c, i]).filter(([c]) => c.g === g);
+  return cs.length ? `<optgroup label="${esc(l)}">${cs.map(([c, i]) => `<option value="${i}">${c.e} ${esc(c.n)}</option>`).join("")}</optgroup>` : "";
+}).join("");
+let timer;
+$("q").addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(run, I && I.length > 60000 ? 90 : 40); });
+$("q").addEventListener("keydown", e => { if (e.key === "Enter") { clearTimeout(timer); run(); } });
+$("scope").addEventListener("change", run);
+document.addEventListener("keydown", e => { if (e.key === "/" && document.activeElement !== $("q")) { e.preventDefault(); $("q").focus(); } });
+const prm = new URLSearchParams(location.hash.slice(1) || location.search.slice(1));
+const ck = prm.get("c");
+if (ck) { const i = /^\d+$/.test(ck) ? +ck : CATS.findIndex(c => c.k === ck); if (CATS[i]) $("scope").value = String(i); }
+if (prm.get("q")) $("q").value = prm.get("q");
+</script>
+</body>
+</html>
