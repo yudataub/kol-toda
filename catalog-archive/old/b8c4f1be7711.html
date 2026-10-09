@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>קטלוג תוכן — קול תודה</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Arial', 'David', sans-serif;
+            background: #f0f4f8;
+            color: #2c2c2c;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        /* ── HEADER ── */
+        header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #1a5276, #2e86c1);
+            border-radius: 16px;
+            color: white;
+            box-shadow: 0 4px 20px rgba(26,82,118,0.35);
+        }
+        header h1 { font-size: 2.2rem; margin-bottom: 0.3rem; }
+        header p  { font-size: 1rem; opacity: 0.85; }
+        header .site { font-size: 0.9rem; opacity: 0.7; margin-top: 0.3rem; }
+
+        /* ── SEARCH ── */
+        .search-wrap {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+        }
+        .search-wrap input {
+            flex: 1;
+            padding: 0.75rem 1.2rem;
+            font-size: 1rem;
+            border: 2px solid #c8d8e8;
+            border-radius: 12px;
+            outline: none;
+            direction: rtl;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+        .search-wrap input:focus { border-color: #2e86c1; }
+        .search-wrap .clear-btn {
+            padding: 0.75rem 1.1rem;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-family: inherit;
+            display: none;
+        }
+        .search-wrap .clear-btn.visible { display: block; }
+        .search-count {
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #555;
+            font-size: 0.95rem;
+            min-height: 1.4rem;
+        }
+
+        /* ── INDEX / TABLE OF CONTENTS ── */
+        .toc {
+            background: white;
+            border-radius: 14px;
+            padding: 1.4rem 1.8rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .toc h2 {
+            font-size: 1.15rem;
+            margin-bottom: 1rem;
+            color: #1a5276;
+            border-bottom: 2px solid #d4e6f1;
+            padding-bottom: 0.5rem;
+        }
+        .toc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.55rem;
+        }
+        .toc-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.45rem 0.9rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.2s, transform 0.15s;
+            cursor: pointer;
+        }
+        .toc-item:hover { opacity: 0.85; transform: translateY(-1px); }
+        .toc-item .cnt {
+            margin-right: auto;
+            background: rgba(255,255,255,0.25);
+            border-radius: 20px;
+            padding: 0 0.45rem;
+            font-size: 0.78rem;
+            font-weight: normal;
+        }
+
+        /* ── CATEGORIES ── */
+        .category { margin-bottom: 2.5rem; }
+        .category.hidden { display: none; }
+
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: white;
+            background: var(--cat-color);
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .category-title .icon { font-size: 1.5rem; }
+        .category-title .cat-count {
+            margin-right: auto;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 0.15rem 0.7rem;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.2rem 1.4rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border-right: 5px solid var(--cat-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 0.8rem;
+        }
+        .card.hidden { display: none; }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.13);
+        }
+        .card h3 { font-size: 1rem; line-height: 1.5; color: #1a1a1a; }
+        .card .desc { font-size: 0.85rem; color: #666; line-height: 1.4; }
+        .card .tag {
+            font-size: 0.72rem;
+            background: #f0f4f8;
+            color: #555;
+            padding: 0.15rem 0.5rem;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 0.2rem;
+        }
+        .card a {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: var(--cat-color);
+            color: white;
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-align: center;
+            transition: opacity 0.2s;
+        }
+        .card a:hover { opacity: 0.85; }
+
+        /* ── HIGHLIGHT ── */
+        mark { background: #fff176; border-radius: 3px; padding: 0 1px; }
+
+        /* ── NO RESULTS ── */
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+            font-size: 1.1rem;
+            display: none;
+        }
+        .no-results.visible { display: block; }
+
+        /* ── SUMMARY ── */
+        .summary {
+            text-align: center;
+            margin-top: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #ddd;
+            padding-top: 1rem;
+        }
+
+        /* ── COLORS ── */
+        .cat-games    { --cat-color: #e74c3c; }
+        .cat-ahavah   { --cat-color: #8e44ad; }
+        .cat-simcha   { --cat-color: #d35400; }
+        .cat-mizmor   { --cat-color: #2980b9; }
+        .cat-articles { --cat-color: #27ae60; }
+        .cat-halacha  { --cat-color: #1a8a5e; }
+        .cat-lifecycle{ --cat-color: #d68910; }
+        .cat-moadim   { --cat-color: #b7770d; }
+        .cat-eretz    { --cat-color: #16a085; }
+        .cat-asher    { --cat-color: #1a5276; }
+        .cat-torah    { --cat-color: #c0392b; }
+        .cat-products { --cat-color: #626567; }
+
+        .toc-games    { background: #e74c3c; }
+        .toc-ahavah   { background: #8e44ad; }
+        .toc-simcha   { background: #d35400; }
+        .toc-mizmor   { background: #2980b9; }
+        .toc-articles { background: #27ae60; }
+        .toc-halacha  { background: #1a8a5e; }
+        .toc-lifecycle{ background: #d68910; }
+        .toc-moadim   { background: #b7770d; }
+        .toc-eretz    { background: #16a085; }
+        .toc-asher    { background: #1a5276; }
+        .toc-torah    { background: #c0392b; }
+        .toc-products { background: #626567; }
+    </style>
+<meta property="og:title" content="קטלוג תוכן — קול תודה">
+<meta property="og:description" content="קטלוג תוכן — קול תודה">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-catalog-archive-old-b8c4f1be7711.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/catalog-archive/old/b8c4f1be7711.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<header>
+    <h1>📚 קטלוג תוכן — קול תודה</h1>
+    <p>כל החומרים התורניים מסודרים לפי נושא</p>
+    <div class="site">www.kol-toda.co.il</div>
+</header>
+
+<!-- SEARCH -->
+<div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="🔍  חפש לפי שם, נושא, מילת מפתח..." oninput="doSearch(this.value)">
+    <button class="clear-btn" id="clearBtn" onclick="clearSearch()">✕ נקה</button>
+</div>
+<div class="search-count" id="searchCount"></div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc" id="tocBox">
+    <h2>📋 מפתח נושאים — לחץ לקפוץ לנושא</h2>
+    <div class="toc-grid">
+        <a class="toc-item toc-games"    href="#games">    🎮 משחקי לימוד          <span class="cnt" id="cnt-games"></span></a>
+        <a class="toc-item toc-ahavah"   href="#ahavah">   ❤️ אהבת ה'              <span class="cnt" id="cnt-ahavah"></span></a>
+        <a class="toc-item toc-simcha"   href="#simcha">   😊 שמחה והודיה          <span class="cnt" id="cnt-simcha"></span></a>
+        <a class="toc-item toc-mizmor"   href="#mizmor">   📖 מזמור לתודה          <span class="cnt" id="cnt-mizmor"></span></a>
+        <a class="toc-item toc-articles" href="#articles"> 📝 מאמרים תורניים       <span class="cnt" id="cnt-articles"></span></a>
+        <a class="toc-item toc-halacha"  href="#halacha">  ⚖️ הלכה                 <span class="cnt" id="cnt-halacha"></span></a>
+        <a class="toc-item toc-lifecycle"href="#lifecycle">🎊 מעגל החיים           <span class="cnt" id="cnt-lifecycle"></span></a>
+        <a class="toc-item toc-moadim"   href="#moadim">   🕍 חגים ומועדים         <span class="cnt" id="cnt-moadim"></span></a>
+        <a class="toc-item toc-eretz"    href="#eretz">    🌿 ארץ ישראל            <span class="cnt" id="cnt-eretz"></span></a>
+        <a class="toc-item toc-asher"    href="#asher">    🙏 אשר יצר              <span class="cnt" id="cnt-asher"></span></a>
+        <a class="toc-item toc-torah"    href="#torah">    📚 תורה ומשנה           <span class="cnt" id="cnt-torah"></span></a>
+        <a class="toc-item toc-products" href="#products"> 🎁 מוצרים תורניים       <span class="cnt" id="cnt-products"></span></a>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 1: משחקי לימוד -->
+<!-- ══════════════════════════════════════════ -->
+<section class="category cat-games" id="games">
+    <div class="category-title">
+        <span class="icon">🎮</span>
+        <span>משחקי לימוד</span>
+        <span class="cat-count" id="vis-games"></span>
+    </div>
+    <div class="cards-grid">
+
+        <div class="card" data-tags="משחקים אמונה הודיה אהבת השם">
+            <h3>משחקים שונים</h3>
+            <span class="tag">מגוון נושאים</span>
+            <p class="desc">אוסף משחקים לימודיים מגוונים בנושאי אמונה, הודיה ואהבת השם</p>
+            <a href="https://www.kol-toda.co.il/משחקים-שונים" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="אהבת השם משחקים לימודיים">
+            <h3>משחקים לימודיים על אהבת השם</h3>
+            <span class="tag">אהבת ה'</span>
+            <p class="desc">אוסף מלא של משחקים לחיזוק אהבת השם</p>
+            <a href="https://www.kol-toda.co.il/משחקים-לימודיים-על-אהבת-השם-1-1" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="חידונים שמחה חיוך הודיה">
+            <h3>חידונים ולמידה — השמחה והחיוך</h3>
+            <span class="tag">שמחה וחיוך</span>
+            <p class="desc">חידונים ומשחקים על נושא השמחה, החיוך וההודיה</p>
+            <a href="https://www.kol-toda.co.il/חידונים-ולמידה-השמחה-והחיוך-1-1" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="תורה משנה היכרות">
+            <h3>משחקי היכרות לתורה ולמשנה</h3>
+            <span class="tag">תורה ומשנה</span>
+            <p class="desc">למדו בכיף! משחקי היכרות עם עולם התורה והמשנה</p>
+            <a href="https://www.kol-toda.co.il/משחקי-היכרות-לתורה-ולמשנה-למדו-בכיף" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="אהבת השם יומיום אינטראקטיבי">
+            <h3>אהבת השם בחיי היומיום — 8 משחקים</h3>
+            <span class="tag">אהבת ה'</span>
+            <p class="desc">8 משחקים אינטראקטיביים: מהרפתקאות ועד חידונים מתקדמים</p>
+            <a href="https://www.kol-toda.co.il/אהבת-השם-בחיי-היומיום-8-משחקים-אינטראקטיביייםמהרפתקאות-ועד-חידונים-מתקדמים" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="אהבת ה' בורא רפלקציה">
+            <h3>משחקי לימוד על אהבת ה'</h3>
+            <span class="tag">אהבת ה'</span>
+            <p class="desc">מסע משחקי מרתק לחיזוק הקשר עם הבורא דרך חוויות אינטראקטיביות</p>
+            <a href="https://www.kol-toda.co.il/משחקי-לימוד-על-אהבת-ה-מסע-משחקי-מרתק-לחיזוק-הקשר-עם-הבורא-דרך-חוויות-אינטראקטיביות-רפלקציה-אישי" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="שמחה אושר מפתחות">
+            <h3>מסע אל אוצר השמחה</h3>
+            <span class="tag">שמחה</span>
+            <p class="desc">ארבעת המפתחות לאושר האמיתי — מסע לימודי</p>
+            <a href="https://www.kol-toda.co.il/מסע-אל-אוצר-השמחה-ארבעת-המפתחות-לאושר-האמיתי" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="עבודה קללה משמעות">
+            <h3>האם עבודה היא קללה?</h3>
+            <span class="tag">מחשבה יהודית</span>
+            <p class="desc">מסע למידה מרתק בשלושה משחקים על משמעות העבודה</p>
+            <a href="https://www.kol-toda.co.il/האם-עבודה-היא-קללה-מסע-למידה-מרתק-בשלושה-משחקים" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="ארבעת המינים סוכות הלכות">
+            <h3>הלכות ארבעת המינים ועולם החיוך</h3>
+            <span class="tag">סוכות</span>
+            <p class="desc">3 פעילויות לחג הסוכות: הלכות, משחקים ושמחה</p>
+            <a href="https://www.kol-toda.co.il/הלכות-ארבעת-המינים-ועולם-החיוך-3-פעילויות-לחגהסוכותהלכות-משחקים-ושמחה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="סוכות ילדים חג שמחה">
+            <h3>משחקי חג הסוכות — מרכז השמחה לילדים</h3>
+            <span class="tag">סוכות</span>
+            <p class="desc">5 משחקים מרתקים לחג הסוכות: שמחה, למידה והנאה</p>
+            <a href="https://www.kol-toda.co.il/משחקי-חג-הסוכות-מרכז-השמחה-לילדים-5-משחקים-מרתקיםשמחה-למידה-והנאה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="שמות חומש תנ״ך פרשה">
+            <h3>משחקים לחומש שמות</h3>
+            <span class="tag">תנ"ך</span>
+            <p class="desc">משחקי לימוד לפרשיות ספר שמות</p>
+            <a href="https://www.kol-toda.co.il/משחקים-לחומש-שמות" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="מזמור לתודה הודיה אינטראקטיבי">
+            <h3>משחקי לימוד — מזמור לתודה</h3>
+            <span class="tag">מזמור לתודה</span>
+            <p class="desc">משחקים אינטראקטיביים על מזמור לתודה ומשמעות ההודיה</p>
+            <a href="https://www.kol-toda.co.il/משחקי-לימוד-2" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="אהבת ה' כבוד אישה">
+            <h3>משחק על אהבת ה' — כבוד האישה</h3>
+            <span class="tag">אהבת ה'</span>
+            <p class="desc">מסע לימודי אינטראקטיבי על כבוד האישה ואהבת השם</p>
+            <a href="https://www.kol-toda.co.il/משחקים-שונים/משחק-על-אהבת-ה-כבוד-האישה-מסע-לימודי-אינטראקטיבי" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="6 שערי אהבה שערים">
+            <h3>6 שערי האהבה</h3>
+            <span class="tag">אהבת ה'</span>
+            <p class="desc">מסע אינטראקטיבי דרך שישה שערים לחיזוק אהבת ה'</p>
+            <a href="https://www.kol-toda.co.il/משחקים-שונים/6-שערי-האהבה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="שמחת תורה שמחה חג">
+            <h3>שמחת תורה — השמחה שלא נגמרת</h3>
+            <span class="tag">שמחת תורה</span>
+            <p class="desc">משחק לימוד על שמחת התורה ומשמעותה</p>
+            <a href="https://www.kol-toda.co.il/משחקים-שונים/שמחת-תורה-השמחה-שלא-נגמרת" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="הכרת הטוב דילמות הודיה">
+            <h3>דילמות בהכרת הטוב</h3>
+            <span class="tag">הכרת הטוב</span>
+            <p class="desc">האם צריך להודות על חצי טוב? משחק דילמות</p>
+            <a href="https://www.kol-toda.co.il/משחקים-שונים/דילמות-בהכרת-הטוב-האם-צריך-להודות-על-חצי-טוב" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="ציצית הלכות ילדים">
+            <h3>הלכות ציצית לילדים</h3>
+            <span class="tag">הלכה</span>
+            <p class="desc">משחק לימוד הלכות ציצית לילדים בצורה מהנה</p>
+            <a href="https://www.kol-toda.co.il/משחקים-שונים/הלכות-ציצית-לילדים" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="חטופים ברכות מלחמה הלכה">
+            <h3>מה מברכים על החטופים?</h3>
+            <span class="tag">הלכה עכשווית</span>
+            <p class="desc">תוכן לימודי הלכתי על ברכות בזמן המלחמה</p>
+            <a href="https://claude.ai/public/artifacts/1cae1aa1-bd04-44d0-88b2-bb940e678e50" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="אבות פרק א משנה">
+            <h3>משחק פרק אבות א׳</h3>
+            <span class="tag">מסכת אבות</span>
+            <p class="desc">משחק לימוד על פרק א' של מסכת אבות</p>
+            <a href="https://claude.ai/public/artifacts/ef090ec4-887a-4254-89c9-e28589516d07" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="אבות פרק ב משנה א">
+            <h3>משחק משנה אבות — פרק ב' משנה א'</h3>
+            <span class="tag">מסכת אבות</span>
+            <p class="desc">משחק לימוד על משנה א' פרק ב' של מסכת אבות</p>
+            <a href="https://www.kol-toda.co.il/פנקס-ההודיה/משחק-על-משנה-אבות-פרק-ב-משנה-א" target="_blank">פתח</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 2: אהבת ה' -->
+<!-- ══════════════════════════════════════════ -->
+<section class="category cat-ahavah" id="ahavah">
+    <div class="category-title">
+        <span class="icon">❤️</span>
+        <span>אהבת ה'</span>
+        <span class="cat-count" id="vis-ahavah"></span>
+    </div>
+    <div class="cards-grid">
+
+        <div class="card" data-tags="שיעורים אהבת השם מסע רוחני עונות">
+            <h3>שיעורי אהבת השם — מסע רוחני</h3>
+            <span class="tag">שיעורים מקיפים</span>
+            <p class="desc">מסע רוחני מלא בשש עונות | 30 שיעורים מעמיקים להתקרבות אמיתית</p>
+            <a href="https://www.kol-toda.co.il/שיעורי-אהבת-השם-מסע-רוחני-מלא-בשש-עונות-30-שיעורים-מעמיקים-להתקרבות-אמיתית" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="תכנית שנתית אהבת השם לימוד">
+            <h3>תכנית שנתית ללמוד אהבת השם</h3>
+            <span class="tag">תכנית לימודים</span>
+            <p class="desc">תוכנית לימודים שנתית שיטתית לחיזוק אהבת השם</p>
+            <a href="https://www.kol-toda.co.il/תכנית-שנתית-ללמוד-אהבת-השם" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="כבוד אישה יהדות">
+            <h3>כבוד האישה ביהדות</h3>
+            <span class="tag">ערכים</span>
+            <p class="desc">תוכן על כבוד האישה ומעמדה ביהדות</p>
+            <a href="https://www.kol-toda.co.il/כבוד-האישה-ביהדות" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="אהבת חסד טוב התבוננות">
+            <h3>אהבת חסדו וטובו יתברך</h3>
+            <span class="tag">מחשבה יהודית</span>
+            <p class="desc">התבוננות חיצונית — על אהבת חסד ה' ותפיסתה</p>
+            <a href="https://www.kol-toda.co.il/משחקים-שונים/אהבת-חסדו-וטובו-יתברך-והתבוננות-חיצונית" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="אהבת ה' שמחה הודיה ביטחון אמונה">
+            <h3>אהבת ה' — שמחה והודיה או ביטחון ואמונה?</h3>
+            <span class="tag">עיון</span>
+            <p class="desc">האם בונים אהבת ה' באמצעות שמחה והודיה, או שהיא צומחת מביטחון?</p>
+            <a href="https://www.kol-toda.co.il/מאמרים-תורניים-חדשים/אהבת-ה-האם-בונים-אותה-באמצעות-שמחה-והודיה-או-שהיא-צומחת-מביטחון-ואמונה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="חוברות אהבה הודיה">
+            <h3>חוברות אהבה והודיה</h3>
+            <span class="tag">חומרי לימוד</span>
+            <p class="desc">חוברות לימוד על אהבה והודיה לה'</p>
+            <a href="https://www.kol-toda.co.il/הודיה-לה-כללי" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="מתחברים הודיה קשר">
+            <h3>מתחברים להודיה</h3>
+            <span class="tag">הודיה</span>
+            <p class="desc">תוכן ולמידה על הקשר העמוק עם ההודיה</p>
+            <a href="https://www.kol-toda.co.il/מתחברים-להודיה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="נשמה כימותרפיה טיהור עבודה">
+            <h3>הכימותרפיה של הנשמה</h3>
+            <span class="tag">עבודת ה'</span>
+            <p class="desc">שיעור מעמיק על טיהור הנשמה ועבודת ה'</p>
+            <a href="https://www.kol-toda.co.il/הכימותרפיה-של-הנשמה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="חידושים תורה מחשבה">
+            <h3>חידושים שונים</h3>
+            <span class="tag">חידושי תורה</span>
+            <p class="desc">חידושי תורה ומחשבה מגוונים</p>
+            <a href="https://www.kol-toda.co.il/חידושים-שונים" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="שיעורים מרתקים אמונה">
+            <h3>שיעורים מרתקים</h3>
+            <span class="tag">שיעורים</span>
+            <p class="desc">אוסף שיעורים מרתקים בנושאי אמונה ושמחה</p>
+            <a href="https://www.kol-toda.co.il/שיעורים-מרתקים" target="_blank">פתח</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 3: שמחה והודיה -->
+<!-- ══════════════════════════════════════════ -->
+<section class="category cat-simcha" id="simcha">
+    <div class="category-title">
+        <span class="icon">😊</span>
+        <span>שמחה והודיה</span>
+        <span class="cat-count" id="vis-simcha"></span>
+    </div>
+    <div class="cards-grid">
+
+        <div class="card" data-tags="שמחה עבדו עבודה תכנית לימודים">
+            <h3>תכנית לימודים: "עבדו את ה' בשמחה"</h3>
+            <span class="tag">תכנית שנתית</span>
+            <p class="desc">תכנית לימודים שנתית לבית ספר על שמחה בעבודת ה'</p>
+            <a href="https://www.kol-toda.co.il/תכנית-לימודים-שנתית-עבדו-את-ה-בשמחה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="מסע שמחה מצווה מדריך">
+            <h3>מדריך מסע השמחה</h3>
+            <span class="tag">מדריך</span>
+            <p class="desc">שמחה במצווה — יסוד העבודה. מדריך מקיף לחיי שמחה</p>
+            <a href="https://www.kol-toda.co.il/מדריך-מסע-השמחה-שמחה-במצווה-יסוד-העבודה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="ששון שמחה בית יהודי">
+            <h3>ששון ושמחה בבית היהודי</h3>
+            <span class="tag">בית יהודי</span>
+            <p class="desc">תכנים על השמחה וההודיה בבית היהודי</p>
+            <a href="https://www.kol-toda.co.il/ששון-ושמחה-בבית-היהודי" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="שמחה מצוות סוד אושר">
+            <h3>סוד השמחה במצוות</h3>
+            <span class="tag">מחשבה יהודית</span>
+            <p class="desc">האושר הכול תלוי בראש — המפתח לשמחה אמיתית</p>
+            <a href="https://www.kol-toda.co.il/מאמרים-תורניים-חדשים/סוד-השמחה-במצוות" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="מוזיקה שירי הודיה נגן">
+            <h3>נגן מוזיקה — שירי הודיה</h3>
+            <span class="tag">מוזיקה</span>
+            <p class="desc">שירי הודיה ושמחה לאזנייך</p>
+            <a href="https://www.kol-toda.co.il/נגן-מוזיקה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="חיוך שווה אוכל מימרא">
+            <h3>"למה חיוך שווה יותר מאוכל?"</h3>
+            <span class="tag">חיוך</span>
+            <p class="desc">המימרא שתשנה את החיים — על כוח החיוך ביהדות</p>
+            <a href="https://www.kol-toda.co.il/מאמרים-תורניים-חדשים/למה-חיוך-שווה-יותר-מאוכל-המימרא-שתשנה-לכם-את-החיים" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="60 שניות בוקר יום טיפים">
+            <h3>"איך 60 שניות בבוקר קובעות את כל היום"</h3>
+            <span class="tag">פרקטי</span>
+            <p class="desc">טיפים מעשיים לתחילת יום מוצלחת מתוך ראיה תורנית</p>
+            <a href="https://www.kol-toda.co.il/מאמרים-תורניים-חדשים/איך-60-שניות-בבוקר-קובעות-את-כל-היום-טיפים-מעשיים" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="מצוות אושר עולם הזה">
+            <h3>מצוות והאושר בעולם הזה</h3>
+            <span class="tag">עיון</span>
+            <p class="desc">האם קיום מצוות מביא אושר בעולם הזה? עיון תורני</p>
+            <a href="https://www.kol-toda.co.il/מאמרים-תורניים-חדשים/מצוות-והאושר-בעולם-הזה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="רגשות טבלה קטגוריות פדגוגי">
+            <h3>🗂 טבלת רגשות — לפי קטגוריות ועוצמות</h3>
+            <span class="tag">כלי עזר פדגוגי</span>
+            <p class="desc">כלי עזר פדגוגי: טבלת רגשות מסודרת לפי קטגוריות ועוצמות</p>
+            <a href="https://www.kol-toda.co.il/מאמרים-תורניים-חדשים/טבלת-רגשות-מסודרת-לפי-קטגוריות-ועוצמות" target="_blank">פתח</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 4: מזמור לתודה -->
+<!-- ══════════════════════════════════════════ -->
+<section class="category cat-mizmor" id="mizmor">
+    <div class="category-title">
+        <span class="icon">📖</span>
+        <span>מזמור לתודה</span>
+        <span class="cat-count" id="vis-mizmor"></span>
+    </div>
+    <div class="cards-grid">
+
+        <div class="card" data-tags="מזמור לתודה תהלים ק">
+            <h3>מזמור לתודה — דף ראשי</h3>
+            <span class="tag">דף ראשי</span>
+            <p class="desc">כל התוכן על מזמור לתודה (תהלים ק) במקום אחד</p>
+            <a href="https://www.kol-toda.co.il/מזמור-לתודה-1" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="קרבן תודה פסוקים עומק">
+            <h3>קרבן תודה — עומק הפסוקים</h3>
+            <span class="tag">עיון</span>
+            <p class="desc">לימוד מעמיק של קרבן התודה ומשמעותו</p>
+            <a href="https://www.kol-toda.co.il/קרבן-תודה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="שירי מזמור לתודה מוזיקה">
+            <h3>שירי מזמור לתודה</h3>
+            <span class="tag">מוזיקה</span>
+            <p class="desc">אוסף שירים על מזמור לתודה להאזנה ולשירה</p>
+            <a href="https://www.kol-toda.co.il/שירי-מזמור-לתודה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="שירים צפיה סרטונים">
+            <h3>שירי מזמור לתודה לצפיה</h3>
+            <span class="tag">וידאו</span>
+            <p class="desc">סרטוני שירה של מזמור לתודה לצפיה</p>
+            <a href="https://www.kol-toda.co.il/שירי-מזמור-לתודה-לצפיה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="עלונים שבועיים מזמור">
+            <h3>עלוני קול תודה על מזמור לתודה</h3>
+            <span class="tag">עלונים</span>
+            <p class="desc">עלונים שבועיים בנושא מזמור לתודה</p>
+            <a href="https://www.kol-toda.co.il/עלוני-קול-תודה-על-מזמור-לתודה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="סיפורים נפלאות הודיה מאמרים הרצאות">
+            <h3>סיפורי מזמור לתודה — מאמרים והרצאות</h3>
+            <span class="tag">סיפורים</span>
+            <p class="desc">נפלאות הודיה: סיפורים, מאמרים והרצאות על מזמור לתודה</p>
+            <a href="https://www.kol-toda.co.il/נפלאות-הודיה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="אותיות משמעות עיון">
+            <h3>משמעות האותיות</h3>
+            <span class="tag">עיון</span>
+            <p class="desc">עיון במשמעות אותיות מזמור לתודה</p>
+            <a href="https://www.kol-toda.co.il/משמעות-האותיות" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="תפילת תודה הודיה">
+            <h3>תפילת תודה</h3>
+            <span class="tag">תפילה</span>
+            <p class="desc">תפילות הודיה לה' על כל הטוב</p>
+            <a href="https://www.kol-toda.co.il/תפילת-תודה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="שיעורים הודיה צפיה קול לשון">
+            <h3>שיעורי הודיה לצפיה — קול לשון</h3>
+            <span class="tag">וידאו שיעורים</span>
+            <p class="desc">שיעורים בנושא ההודיה לצפיה באתר קול לשון</p>
+            <a href="https://www.kolhalashon.com/New/Ravs.aspx?Lang=Hebrew&RavID=-1&ROrder=-1&FID=87562&HideMenus=False" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="קול תודה גברים קול לשון שיעורים">
+            <h3>שיעורי קול תודה לגברים — קול לשון</h3>
+            <span class="tag">שיעורים לגברים</span>
+            <p class="desc">שיעורי קול תודה לגברים באתר קול לשון</p>
+            <a href="https://www.kolhalashon.com/New/Ravs.aspx?Lang=Hebrew&FID=82914" target="_blank">פתח</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 5: מאמרים תורניים -->
+<!-- ══════════════════════════════════════════ -->
+<section class="category cat-articles" id="articles">
+    <div class="category-title">
+        <span class="icon">📝</span>
+        <span>מאמרים תורניים</span>
+        <span class="cat-count" id="vis-articles"></span>
+    </div>
+    <div class="cards-grid">
+
+        <div class="card" data-tags="מאמרים תורניים חדשים קול חמישי">
+            <h3>מאמרים תורניים חדשים — דף ראשי</h3>
+            <span class="tag">דף ראשי</span>
+            <p class="desc">כל המאמרים התורניים החדשים של הקול החמישי</p>
+            <a href="https://www.kol-toda.co.il/מאמרים-תורניים-חדשים" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="קישורים אתרי משחקי למידה">
+            <h3>קישורים לאתרי משחקי למידה</h3>
+            <span class="tag">משחקים</span>
+            <p class="desc">מדריך לכל אתרי משחקי הלמידה של הקול החמישי</p>
+            <a href="https://www.kol-toda.co.il/מאמרים-תורניים-חדשים/קישורים-לאתרי-משחקי-למידה-שלי" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="מחקר קול מורה אמונה נשימה השפעה">
+            <h3>מחקר קול המורה: אמונה, נשימה, השפעה</h3>
+            <span class="tag">מחקר חינוכי</span>
+            <p class="desc">מחקר מרתק על השפעת קול המורה על אמונת הילדים</p>
+            <a href="https://www.kol-toda.co.il/מאמרים-תורניים-חדשים/מחקר-קול-המורה-אמונה-נשימה-השפעה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="גשמים שאלה חשון תפילה">
+            <h3>שאלת גשמים בז' בחשון</h3>
+            <span class="tag">הלכה</span>
+            <p class="desc">מאמר הלכתי על שאלת הגשמים בתפילה</p>
+            <a href="https://www.kol-toda.co.il/מאמרים-תורניים-חדשים/שאלת-גשמים-בז-בחשון" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="רב עובדיה יוסף סיפורים גדולה">
+            <h3>סיפורים על הרב עובדיה יוסף זצ"ל</h3>
+            <span class="tag">גדולי ישראל</span>
+            <p class="desc">סיפורים מרגשים על גדולתו של מרן הרב עובדיה יוסף זצ"ל</p>
+            <a href="https://www.kol-toda.co.il/מאמרים-תורניים-חדשים/סיפורים-על-הרב-עובדיה-יוסף" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="רשי ראשון תורה ארץ ישראל בראשית">
+            <h3>הרש"י הראשון — מדוע התורה מתחילה עם ארץ ישראל</h3>
+            <span class="tag">תנ"ך / רש"י</span>
+            <p class="desc">עיון בפירוש רש"י הראשון ומשמעות פתיחת התורה</p>
+            <a href="https://www.kol-toda.co.il/מאמרים-תורניים-חדשים/הרש-י-הראשון-מדוע-התורה-מתחילה-עם-ארץ-ישראל" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="אלול בית ספר לימוד תשובה">
+            <h3>מה ללמוד בחודש אלול בבית ספר?</h3>
+            <span class="tag">אלול</span>
+            <p class="desc">מדריך מעשי לתכנון לימודי חודש אלול בבית ספר</p>
+            <a href="https://www.kol-toda.co.il/מאמרים-תורניים-חדשים/מה-ללמוד-בחודש-אלול-בבית-ספר" target="_blank">פתח</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 6: הלכה -->
+<!-- ══════════════════════════════════════════ -->
+<section class="category cat-halacha" id="halacha">
+    <div class="category-title">
+        <span class="icon">⚖️</span>
+        <span>הלכה</span>
+        <span class="cat-count" id="vis-halacha"></span>
+    </div>
+    <div class="cards-grid">
+
+        <div class="card" data-tags="אשר יצר ברכה הלכה">
+            <h3>אשר יצר — דף ראשי</h3>
+            <span class="tag">אשר יצר</span>
+            <p class="desc">כל התוכן על ברכת אשר יצר ומשמעותה העמוקה</p>
+            <a href="https://www.kol-toda.co.il/אשר-יצר" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="ברכון אשר יצר כוונה קניה">
+            <h3>ברכון אשר יצר לקניה</h3>
+            <span class="tag">אשר יצר</span>
+            <p class="desc">ברכון מיוחד לאמירת ברכת אשר יצר בכוונה</p>
+            <a href="https://www.kol-toda.co.il/אשר-יצר/ברכון-אשר-יצר-לקניה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="שיעורים אשר יצר אודיו">
+            <h3>שיעורים על אשר יצר — לשמיעה</h3>
+            <span class="tag">אשר יצר</span>
+            <p class="desc">שיעורי אודיו מעמיקים על ברכת אשר יצר</p>
+            <a href="https://www.kol-toda.co.il/אשר-יצר/שיעורים-לשמיעה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="שיעורים אשר יצר צפיה וידאו">
+            <h3>שיעורים על אשר יצר — לצפיה</h3>
+            <span class="tag">אשר יצר</span>
+            <p class="desc">סרטוני שיעור על ברכת אשר יצר לצפיה</p>
+            <a href="https://www.kol-toda.co.il/אשר-יצר/שיעורים-לצפיה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="סיפורים אשר יצר כוח ברכה">
+            <h3>סיפורים — אשר יצר</h3>
+            <span class="tag">אשר יצר</span>
+            <p class="desc">סיפורים מרגשים על כוח ברכת אשר יצר</p>
+            <a href="https://www.kol-toda.co.il/אשר-יצר/סיפורים" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="הלכות דיבת ארץ ישראל מצוות">
+            <h3>הלכות דיבת הארץ</h3>
+            <span class="tag">ארץ ישראל</span>
+            <p class="desc">הלכות איסור דיבת הארץ ומצוות אהבתה</p>
+            <a href="https://www.kol-toda.co.il/הלכות-חיבת-הארץ-1-1" target="_blank">פתח</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 7: הודיה במעגל החיים -->
+<!-- ══════════════════════════════════════════ -->
+<section class="category cat-lifecycle" id="lifecycle">
+    <div class="category-title">
+        <span class="icon">🎊</span>
+        <span>הודיה במעגל החיים</span>
+        <span class="cat-count" id="vis-lifecycle"></span>
+    </div>
+    <div class="cards-grid">
+
+        <div class="card" data-tags="קול חמישי חתונה הודיה">
+            <h3>הקול החמישי בחתונה</h3>
+            <span class="tag">חתונה</span>
+            <p class="desc">כיצד להכניס את הקול החמישי — ההודיה — לחתונה</p>
+            <a href="https://www.kol-toda.co.il/הקול-החמישי-בחתונה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="ברכונים חתונה שבע ברכות כלה חתן">
+            <h3>ברכונים לחתונה ולשבע ברכות</h3>
+            <span class="tag">חתונה</span>
+            <p class="desc">ברכוני הודיה מיוחדים לשמחת חתן וכלה ולשבע ברכות</p>
+            <a href="https://www.kol-toda.co.il/ההודיה-במעגל-החיים/הקול-החמישי-לשמחת-חתן-וכלה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="בת מצווה הכנה הודיה אוצר">
+            <h3>הכנה לבת המצווה</h3>
+            <span class="tag">בת מצווה</span>
+            <p class="desc">אוצר ההודיה לבת המצווה — הכנה משמעותית ומרגשת</p>
+            <a href="https://www.kol-toda.co.il/ההודיה-במעגל-החיים/אוצר-ההודיה-לבת-המצווה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="לידה הכנה אמונה אהבה מפתח חיים">
+            <h3>הכנה ללידה מתוך אהבה</h3>
+            <span class="tag">לידה</span>
+            <p class="desc">מפתח החיים — הכנה ללידה מתוך אמונה ואהבה</p>
+            <a href="https://www.kol-toda.co.il/ההודיה-במעגל-החיים/מפתח-החיים-הכנה-ללידה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="שיעורים הודיה חתונה קול לשון אודיו">
+            <h3>שיעורים בנושא ההודיה בחתונה — קול לשון</h3>
+            <span class="tag">חתונה</span>
+            <p class="desc">שיעורי אודיו על ההודיה לה' בשמחת החתונה</p>
+            <a href="https://www.kolhalashon.com/New/Shiurim.aspx?Lang=Hebrew&RavID=-1&ROrder=-1&FID=87580&HideMenus=False&Order=2" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="חתונה מלאה שמחה אמונה">
+            <h3>חתונה מלאה שמחה</h3>
+            <span class="tag">חתונה</span>
+            <p class="desc">כיצד לערוך חתונה מלאה שמחה ואמונה</p>
+            <a href="https://www.kol-toda.co.il/חתונה-מלאה-שמחה" target="_blank">פתח</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 8: חגים ומועדים -->
+<!-- ══════════════════════════════════════════ -->
+<section class="category cat-moadim" id="moadim">
+    <div class="category-title">
+        <span class="icon">🕍</span>
+        <span>חגים ומועדים</span>
+        <span class="cat-count" id="vis-moadim"></span>
+    </div>
+    <div class="cards-grid">
+
+        <div class="card" data-tags="הודיה מעגל שנה יהודית">
+            <h3>ההודיה במעגל השנה</h3>
+            <span class="tag">מעגל השנה</span>
+            <p class="desc">הודיה לה' לאורך מעגל השנה היהודית</p>
+            <a href="https://www.kol-toda.co.il/ההודיה-במעגל-השנה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="אדר שמחה חודש פורים הודיה">
+            <h3>אדר — הודיה ושמחה</h3>
+            <span class="tag">אדר / פורים</span>
+            <p class="desc">תכנים מיוחדים לחודש אדר על שמחה והודיה</p>
+            <a href="https://www.kol-toda.co.il/אדר" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="מרים הנביאה פסח תוף שירה">
+            <h3>קורות חייה של מרים הנביאה</h3>
+            <span class="tag">פסח</span>
+            <p class="desc">תוף מרים — לפסח ולכל השנה: על מרים הנביאה והשירה</p>
+            <a href="https://www.kol-toda.co.il/ההודיה-במעגל-השנה/תוף-מרים-לפסח-ולכל-השנה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="טו בשבט פירות ילולים חסדי ה' צומח">
+            <h3>פירות הילולים — חסדי ה' בפירות</h3>
+            <span class="tag">ט"ו בשבט</span>
+            <p class="desc">ט"ו בשבט — פירות הילולים וחסדי ה' בעולם הצומח</p>
+            <a href="https://www.kol-toda.co.il/ההודיה-במעגל-השנה/פירות-הילולים-ט-ו-בשבט" target="_blank">פתח</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 9: ארץ ישראל -->
+<!-- ══════════════════════════════════════════ -->
+<section class="category cat-eretz" id="eretz">
+    <div class="category-title">
+        <span class="icon">🌿</span>
+        <span>ארץ ישראל</span>
+        <span class="cat-count" id="vis-eretz"></span>
+    </div>
+    <div class="cards-grid">
+
+        <div class="card" data-tags="בית ארץ ישראל מצווה בניה">
+            <h3>בית בארץ ישראל — דף ראשי</h3>
+            <span class="tag">דף ראשי</span>
+            <p class="desc">כל התוכן על מצוות בניית בית בארץ ישראל</p>
+            <a href="https://www.kol-toda.co.il/בית-בארץ-ישראל-1" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="מדריך מקיף בניית קניית בית ארץ ישראל">
+            <h3>המדריך המקיף — בניית בית בארץ ישראל</h3>
+            <span class="tag">מדריך</span>
+            <p class="desc">מדריך מקיף לנושא בניית וקניית בית בארץ ישראל</p>
+            <a href="https://www.kol-toda.co.il/בית-בארץ-ישראל-1/המדריך-המקיף-בנושא-בניית-בית-בארץ-ישראל-ואופן-קנייתו" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="הסכמות גדולי ישראל חיבת הארץ">
+            <h3>הסכמות גדולי ישראל</h3>
+            <span class="tag">גדולי ישראל</span>
+            <p class="desc">הסכמות גדולי ישראל על ספרי חיבת הארץ</p>
+            <a href="https://www.kol-toda.co.il/בית-בארץ-ישראל-1/הסכמות-גדולי-ישראל" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="חיבת הארץ אהבה לארץ ישראל עיון">
+            <h3>חיבת הארץ</h3>
+            <span class="tag">חיבת הארץ</span>
+            <p class="desc">עיון ולמידה בנושא חיבת ארץ ישראל</p>
+            <a href="https://www.kol-toda.co.il/חיבת-הארץ" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="נטיעת אילנות ונטעתם ארץ ישראל ספר">
+            <h3>נטיעת אילנות בארץ ישראל</h3>
+            <span class="tag">נטיעה</span>
+            <p class="desc">ספר "ונטעתם" — מצוות נטיעת אילנות בארץ ישראל</p>
+            <a href="https://www.kol-toda.co.il/נטיעת-אילנות" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="ונטעתם נטיעת אילנות ארץ הקודש">
+            <h3>ונטעתם — מצוות נטיעת אילנות</h3>
+            <span class="tag">נטיעה</span>
+            <p class="desc">פרק מקיף על מצוות נטיעת אילנות בארץ הקודש</p>
+            <a href="https://www.kol-toda.co.il/נטיעת-אילנות/ונטעתם-מצוות-נטיעת-אילנות-בארץ-ישראל" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="ספרים לכו נרננה ארץ ישראל אמונה">
+            <h3>ספרים נוספים — לכו נרננה</h3>
+            <span class="tag">ספרים</span>
+            <p class="desc">ספרים נוספים בנושאי ארץ ישראל ואמונה</p>
+            <a href="https://www.kol-toda.co.il/ספרים-נוספים-1/לכו-נרננה" target="_blank">פתח</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 10: תורה ומשנה -->
+<!-- ══════════════════════════════════════════ -->
+<section class="category cat-torah" id="torah">
+    <div class="category-title">
+        <span class="icon">📚</span>
+        <span>תורה ומשנה</span>
+        <span class="cat-count" id="vis-torah"></span>
+    </div>
+    <div class="cards-grid">
+
+        <div class="card" data-tags="מסכת אבות חכמת חזל יומיום">
+            <h3>מסכת אבות</h3>
+            <span class="tag">מסכת אבות</span>
+            <p class="desc">לימוד מסכת אבות — חכמת חז"ל לחיי היומיום</p>
+            <a href="https://www.kol-toda.co.il/מסכת-אבות" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="מצגת פרקי אבות פרק א">
+            <h3>מצגת על פרקי אבות — פרק א'</h3>
+            <span class="tag">מצגת</span>
+            <p class="desc">מצגת מקיפה על פרק א' של פרקי אבות</p>
+            <a href="https://www.kol-toda.co.il/פנקס-ההודיה/מצגת-על-פרקי-אבות-פרק-א" target="_blank">פתח</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 11: מוצרים תורניים -->
+<!-- ══════════════════════════════════════════ -->
+<section class="category cat-products" id="products">
+    <div class="category-title">
+        <span class="icon">🎁</span>
+        <span>מוצרים תורניים</span>
+        <span class="cat-count" id="vis-products"></span>
+    </div>
+    <div class="cards-grid">
+
+        <div class="card" data-tags="פנקס הודיה יומי כלי">
+            <h3>פנקס ההודיה</h3>
+            <span class="tag">כלי מעשי</span>
+            <p class="desc">פנקס לרישום הודיות יומי — כלי מעשי לחיזוק ההודיה</p>
+            <a href="https://www.kol-toda.co.il/פנקס-ההודיה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="מגנטים מזמור לתודה מקרר">
+            <h3>מגנטים — מזמור לתודה</h3>
+            <span class="tag">מגנטים</span>
+            <p class="desc">מגנטים עם פסוקי מזמור לתודה למקרר ולמשרד</p>
+            <a href="https://www.kol-toda.co.il/מגנטים-מזמור-לתודה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="דיסק שירי מזמור לתודה מוזיקה">
+            <h3>דיסק — שירי מזמור לתודה</h3>
+            <span class="tag">דיסק</span>
+            <p class="desc">דיסק מוזיקלי עם שירי מזמור לתודה</p>
+            <a href="https://www.kol-toda.co.il/דיסקים/דיסק-שירי-מזמור-לתודה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="דיסק קול תודה שירים הודיה">
+            <h3>דיסק — קול תודה</h3>
+            <span class="tag">דיסק</span>
+            <p class="desc">דיסק שירים בנושא ההודיה לה'</p>
+            <a href="https://www.kol-toda.co.il/דיסקים/דיסק-קול-תודה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="דיסק הכל לטובה שירים אמונה">
+            <h3>דיסק — הכל לטובה</h3>
+            <span class="tag">דיסק</span>
+            <p class="desc">דיסק שירים בנושא "הכל לטובה" ואמונה</p>
+            <a href="https://www.kol-toda.co.il/דיסקים/דיסק-הכל-לטובה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="עלון חודשי קול תודה הודיה">
+            <h3>עלון חודשי — קול תודה</h3>
+            <span class="tag">עלון</span>
+            <p class="desc">עלון חודשי בנושאי הודיה ואמונה</p>
+            <a href="https://www.kol-toda.co.il/עלוני-קול-תודה/עלון-חודשי-קול-תודה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="מקבץ עלונים ארכיון קול תודה">
+            <h3>מקבץ עלוני קול תודה</h3>
+            <span class="tag">ארכיון</span>
+            <p class="desc">ארכיון מלא של עלוני קול תודה</p>
+            <a href="https://www.kol-toda.co.il/עלוני-קול-תודה/מקבץ-עלוני-קול-תודה" target="_blank">פתח</a>
+        </div>
+
+        <div class="card" data-tags="ברכוני קול חמישי חתונה שבע ברכות">
+            <h3>ברכוני הקול החמישי לחתונה</h3>
+            <span class="tag">חתונה</span>
+            <p class="desc">ברכונים מיוחדים לשמחת חתן וכלה ולשבע ברכות</p>
+            <a href="https://www.kol-toda.co.il/ההודיה-במעגל-החיים/הקול-החמישי-לשמחת-חתן-וכלה" target="_blank">פתח</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- NO RESULTS -->
+<div class="no-results" id="noResults">
+    😔 לא נמצאו תוצאות עבור "<span id="noResultsQuery"></span>"<br>
+    <small>נסה מילה אחרת</small>
+</div>
+
+<div class="summary" id="summaryBar">
+    סה"כ 86 פריטי תוכן &bull; 12 קטגוריות &bull; www.kol-toda.co.il &bull; הקול החמישי
+</div>
+
+<script>
+// ── Map categories ──
+const CATS = [
+    { id: 'games',    sectionId: 'games'    },
+    { id: 'ahavah',   sectionId: 'ahavah'   },
+    { id: 'simcha',   sectionId: 'simcha'   },
+    { id: 'mizmor',   sectionId: 'mizmor'   },
+    { id: 'articles', sectionId: 'articles' },
+    { id: 'halacha',  sectionId: 'halacha'  },
+    { id: 'lifecycle',sectionId: 'lifecycle'},
+    { id: 'moadim',   sectionId: 'moadim'   },
+    { id: 'eretz',    sectionId: 'eretz'    },
+    { id: 'torah',    sectionId: 'torah'    },
+    { id: 'products', sectionId: 'products' },
+];
+
+// Init counts in TOC
+function initCounts() {
+    CATS.forEach(c => {
+        const sec = document.getElementById(c.sectionId);
+        if (!sec) return;
+        const n = sec.querySelectorAll('.card').length;
+        const el = document.getElementById('cnt-' + c.id);
+        if (el) el.textContent = n;
+        const vis = document.getElementById('vis-' + c.id);
+        if (vis) vis.textContent = n + ' פריטים';
+    });
+}
+
+function highlight(text, q) {
+    if (!q) return text;
+    const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    return text.replace(re, '<mark>$1</mark>');
+}
+
+function doSearch(q) {
+    q = q.trim();
+    const clearBtn = document.getElementById('clearBtn');
+    const countEl  = document.getElementById('searchCount');
+    const noRes    = document.getElementById('noResults');
+    const noResQ   = document.getElementById('noResultsQuery');
+
+    clearBtn.classList.toggle('visible', q.length > 0);
+
+    // Remove old highlights
+    document.querySelectorAll('.card h3, .card .desc').forEach(el => {
+        el.innerHTML = el.dataset.orig || el.innerHTML;
+    });
+
+    if (!q) {
+        // Show all
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('hidden'));
+        document.querySelectorAll('.category').forEach(s => s.classList.remove('hidden'));
+        noRes.classList.remove('visible');
+        countEl.textContent = '';
+        updateVisibleCounts(null);
+        return;
+    }
+
+    const ql = q.toLowerCase();
+    let total = 0;
+
+    document.querySelectorAll('.card').forEach(card => {
+        const title  = card.querySelector('h3');
+        const desc   = card.querySelector('.desc');
+        const tags   = card.dataset.tags || '';
+        const text   = ((title ? title.textContent : '') + ' ' + (desc ? desc.textContent : '') + ' ' + tags).toLowerCase();
+
+        if (text.includes(ql)) {
+            card.classList.remove('hidden');
+            total++;
+            // Highlight
+            if (title) {
+                if (!title.dataset.orig) title.dataset.orig = title.innerHTML;
+                title.innerHTML = highlight(title.dataset.orig, q);
+            }
+            if (desc) {
+                if (!desc.dataset.orig) desc.dataset.orig = desc.innerHTML;
+                desc.innerHTML = highlight(desc.dataset.orig, q);
+            }
+        } else {
+            card.classList.add('hidden');
+        }
+    });
+
+    // Show/hide sections
+    document.querySelectorAll('.category').forEach(sec => {
+        const vis = sec.querySelectorAll('.card:not(.hidden)').length;
+        sec.classList.toggle('hidden', vis === 0);
+    });
+
+    countEl.textContent = total > 0 ? `נמצאו ${total} תוצאות` : '';
+    noResQ.textContent = q;
+    noRes.classList.toggle('visible', total === 0);
+
+    updateVisibleCounts(ql);
+}
+
+function updateVisibleCounts(q) {
+    CATS.forEach(c => {
+        const sec = document.getElementById(c.sectionId);
+        if (!sec) return;
+        const n = sec.querySelectorAll('.card:not(.hidden)').length;
+        const vis = document.getElementById('vis-' + c.id);
+        if (vis) vis.textContent = n + ' פריטים';
+        const cnt = document.getElementById('cnt-' + c.id);
+        if (cnt) {
+            // total always stays
+            if (!q) {
+                cnt.textContent = sec.querySelectorAll('.card').length;
+            } else {
+                cnt.textContent = n + '/' + sec.querySelectorAll('.card').length;
+            }
+        }
+    });
+}
+
+function clearSearch() {
+    const inp = document.getElementById('searchInput');
+    inp.value = '';
+    doSearch('');
+    inp.focus();
+}
+
+// Enter key: smooth scroll to first result
+document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+        const first = document.querySelector('.card:not(.hidden)');
+        if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+});
+
+initCounts();
+</script>
+</body>
+</html>
