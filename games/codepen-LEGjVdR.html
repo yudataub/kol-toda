@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+  
+  <meta charset="UTF-8">
+  
+
+    <title>משחק מפתחות אהבה</title>
+
+    <script>
+  window.console = window.console || function(t) {};
+</script>
+
+  
+  
+<meta property="og:title" content="משחק מפתחות אהבה">
+<meta property="og:description" content="משחק מפתחות אהבה">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-codepen-LEGjVdR.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/codepen-LEGjVdR.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body translate="no">
+  <!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>שומרי הדבקות – משחק חידות</title>
+  <style>
+    :root{
+      --bg:#0f172a;          /* slate-900 */
+      --card:#111827cc;      /* gray-900/80 */
+      --ink:#e5e7eb;         /* gray-200 */
+      --muted:#9ca3af;       /* gray-400 */
+      --accent:#22d3ee;      /* cyan-400 */
+      --good:#22c55e;        /* green-500 */
+      --bad:#ef4444;         /* red-500 */
+      --warn:#f59e0b;        /* amber-500 */
+      --brand:#a78bfa;       /* violet-400 */
+      --pass:#16a34a;        /* green-600 */
+      --fail:#dc2626;        /* red-600 */
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background: radial-gradient(1200px 600px at 70% -10%, #1e293b, #0b1222 60%, #070b16 100%);
+      color:var(--ink); font-family: "Heebo", system-ui, Arial, sans-serif; min-height:100dvh;
+      display:flex; align-items:center; justify-content:center; padding:18px;
+    }
+    .app{width:min(980px,100%);} 
+    header{ display:grid; gap:10px; grid-template-columns:1fr auto; align-items:center; margin-bottom:12px; }
+    .title{ font-size:clamp(22px, 3vw, 36px); font-weight:800; letter-spacing:0.5px; display:flex; gap:10px; align-items:center; }
+    .ribbon{ background:linear-gradient(135deg, var(--brand), var(--accent)); padding:6px 12px; border-radius:12px; font-weight:700; box-shadow:0 6px 20px #0008; }
+    .progress{ width:100%; height:12px; background:#0b1222; border-radius:999px; overflow:hidden; box-shadow:inset 0 0 0 1px #ffffff22; }
+    .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--accent), var(--brand)); transition:width .35s ease;}
+
+    .hud{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin:10px 0 18px; }
+    .pill{ background:#0b1222; border:1px solid #ffffff24; padding:6px 10px; border-radius:999px; display:flex; align-items:center; gap:8px; }
+
+    .grid{display:grid; gap:16px;}
+    .card{ background:linear-gradient(180deg, #111827ee, #0b1222ee 60%); border:1px solid #ffffff1e; border-radius:20px; padding:16px; box-shadow:0 10px 30px #0007; }
+    .q-no{font-weight:800; color:var(--accent);} 
+    .q-text{font-size:clamp(18px, 2.2vw, 22px); line-height:1.5; margin:6px 0 10px;}
+
+    .choices{display:grid; gap:10px;}
+    .btn{ width:100%; border:1px solid #ffffff24; background:#0b1222; color:var(--ink); padding:12px 14px; border-radius:14px; text-align:right; cursor:pointer; font-weight:650; transition:.2s transform, .2s background, .2s border-color; }
+    .btn:hover{transform:translateY(-1px); border-color:#ffffff44}
+    .btn.correct{background:linear-gradient(90deg, #064e3b, #065f46); border-color:#10b981;}
+    .btn.wrong{background:linear-gradient(90deg, #5b1111, #7f1d1d); border-color:#ef4444;}
+    .btn[disabled]{opacity:.6; cursor:not-allowed}
+
+    .row{display:flex; gap:10px; flex-wrap:wrap; justify-content:space-between; align-items:center; margin-top:10px}
+    .hint{font-size:14px; color:var(--muted)}
+
+    .letter-reveal{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+    .tile{ width:42px; height:42px; display:grid; place-items:center; border-radius:12px; border:1px dashed #ffffff38; background:#0b1222; font-size:22px; font-weight:800; color:#ffffffa8; }
+    .tile.filled{background:linear-gradient(135deg, #065f46, #16a34a); border-color:#22c55e; color:white; box-shadow:0 8px 20px #16a34a55}
+
+    .explain{margin-top:10px; font-size:15px; color:#d1d5db}
+    .reward{margin-top:6px; font-size:14px; color:#93c5fd}
+
+    .footer{margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between}
+    .ghost{opacity:.7}
+
+    .final{ text-align:center; padding:26px; border-radius:22px; border:1px solid #ffffff22; background:linear-gradient(180deg, #0b1222ee, #111827ee); }
+    .final h2{font-size:clamp(26px,4.2vw,48px); margin:0 0 12px}
+    .final p{color:#d1fae5; font-size:clamp(16px,2vw,20px)}
+
+    .actions{display:flex; gap:10px; justify-content:center; margin-top:14px; flex-wrap:wrap}
+    .action{cursor:pointer; padding:10px 14px; border-radius:12px; border:1px solid #ffffff2a; background:#0b1222; font-weight:700}
+    .action:hover{border-color:#ffffff55}
+
+    /* Confetti canvas */
+    #confetti{position:fixed; inset:0; pointer-events:none}
+
+    /* Self-test badge */
+    .tests{display:flex; gap:8px; align-items:center}
+    .badge{padding:4px 8px; border-radius:999px; font-weight:800}
+    .ok{background:color-mix(in oklab, var(--pass) 20%, transparent); border:1px solid var(--pass);} 
+    .bad{background:color-mix(in oklab, var(--fail) 20%, transparent); border:1px solid var(--fail);} 
+
+    /* Toast */
+    .toast{position:fixed; top:14px; left:50%; transform:translateX(-50%); background:#111827; color:#fff; border:1px solid #ffffff2a; padding:10px 14px; border-radius:12px; box-shadow:0 10px 30px #0008; z-index:50}
+
+    @media (min-width:820px){ .grid{grid-template-columns:1fr 1fr} }
+  </style>
+</head>
+<body>
+  <canvas id="confetti"></canvas>
+  <div class="app" id="app">
+    <header>
+      <div class="title">
+        <span class="ribbon">🎯 חידות תוכן</span>
+        <span>שומרי הדבקות – משחק אינטראקטיבי</span>
+      </div>
+      <div style="min-width:180px">
+        <div class="progress" aria-label="התקדמות"><div class="bar" id="bar"></div></div>
+      </div>
+    </header>
+
+    <div class="hud">
+      <div class="pill" title="מילה נבנית עם כל תשובה נכונה">🔡 אותיות שנחשפו: <b id="lettersCount">0</b>/12</div>
+      <div class="pill" title="תשובות נכונות">✅ נכונות: <b id="right">0</b></div>
+      <div class="pill" title="תשובות שגויות">❌ שגויות: <b id="wrong">0</b></div>
+      <div class="pill tests" title="בדיקות פנימיות">
+        🔧 בדיקות:
+        <span id="testsBadge" class="badge ok">רצות…</span>
+      </div>
+      <div class="pill" title="מצב צליל" id="soundToggle" style="cursor:pointer">🔊 צלילים: <b id="soundState">מופעל</b></div>
+    </div>
+
+    <div class="card">
+      <div class="letter-reveal" id="word" aria-live="polite"></div>
+      <div class="hint ghost" style="margin-top:6px">כל תשובה נכונה חושפת אות חדשה, כדי להשלים את הביטוי: <b>שומרי הדבקות</b></div>
+    </div>
+
+    <div class="grid" id="quiz" aria-live="polite"></div>
+
+    <div class="footer">
+      <div class="pill">📈 התקדמות: <b id="progressText">0 / 10</b></div>
+      <div class="pill">🏆 יעד: חשפו את כל האותיות והשלימו – <b>שומרי הדבקות</b></div>
+    </div>
+  </div>
+
+  <template id="questionTemplate">
+    <div class="card q">
+      <div class="q-no">שאלה <span class="idx"></span></div>
+      <div class="q-text"></div>
+      <div class="choices"></div>
+      <div class="row">
+        <button class="action" data-act="hint" aria-label="הצג רמז">💡 רמז</button>
+        <div class="hint"></div>
+      </div>
+      <div class="explain" hidden></div>
+      <div class="reward" hidden></div>
+    </div>
+  </template>
+
+  <template id="finalTemplate">
+    <div class="final">
+      <h2>✨ ברכות! השלמתם: <span class="phrase"></span> ✨</h2>
+      <p>זכיתם בכתר <b>שומרי הדבקות</b>. כעת אתם יודעים שהדרך לאהבת ה' עוברת דרך דעת, התמדה, מעשה ושמחה.</p>
+      <div class="actions">
+        <button class="action" data-act="restart">🔁 שחקו שוב</button>
+        <button class="action" data-act="explanations">📚 הציגו את כל ההסברים</button>
+      </div>
+    </div>
+  </template>
+
+  <script>
+  // ==========================
+  // נתוני החידות (חלק א' + ב')
+  // ==========================
+  const QUESTIONS = [
+    {
+      idx:1,
+      text:`איזו מצווה רוחנית נחשבת ל"תכלית התכליות" ולסוף המעלות של כל עבודת האדם, כאשר כל שאר המצוות (כולל תורה) הן רק אמצעי כדי להגיע אליה?`,
+      choices:[`א. מצוות לימוד התורה.`,`ב. מצוות שמחת הלב.`,`ג. מצוות אהבת ה' והדבקות בו.`,`ד. מצוות יראת ה' והכנעה.`],
+      answer:2,
+      hint:`זו הדרך העליונה. אבן עזרא קבע שזהו שורש כל המצוות.`,
+      letter:`ש`,
+      explain:`אהבת ה' היא תכלית התכליות, וכל חובות הלבבות והמעלות האחרות (כמו לימוד תורה) הן רק אמצעי להגיע אל העניין העליון הזה.`,
+      reward:`מצאתם את המפתח הנסתר של שליחותכם: השלימות. הרמז הראשון הופיע במפה הסודית.`
+    },
+    { idx:2, text:`איך מתייחסים המקורות לאהבה אמיתית, ככזו המושגת רק בדרך של יצירה והתמדה?`,
+      choices:[`א. הנאה הבאה מחמת השגה שכלית.`,`ב. הבזק פתאומי או סערת רגשות.`,`ג. מיומנות נרכשת הדורשת השקעה מתמדת, מדי יום ומדי שעה.`,`ד. אמונה בלבד הנכנסת ללב בבת אחת.`],
+      answer:2, hint:`זו לא דרמה של 90 דקות.`, letter:`ו`, explain:`אהבת אמת היא עבודה ומיומנות נרכשת הדורשת השקעה מתמדת.`, reward:`זכיתם ב'כוח ההתמדה'!` },
+    { idx:3, text:`איזה סוג של אהבה נשארת יציבה ואינה נעלמת לעולם, משום שהיא תלויה ב"דעת" ולא ברווח או בגורם חיצוני חולף?`,
+      choices:[`א. אהבת החשק.`,`ב. אהבה שאינה תלויה בדבר (אהבת הטוב).`,`ג. אהבה מותנית.`,`ד. אהבת הערב (אהבת דגים).`],
+      answer:1, hint:`אהבה זו דומה לדבר רוחני שאינו בטל.`, letter:`מ`, explain:`אהבה שאינה תלויה בדבר נובעת מדעת ומציאות, ולכן אינה בטלה.`, reward:`קיבלתם את 'משקפי המציאות'!` },
+    { idx:4, text:`לפי שיטת הרמב"ם (בכל לבבך), מהי הדרך הישירה והמחוייבת שמביאה לאהבת ה' לאחר השגה שכלית?`,
+      choices:[`א. הרחבת הדמיון והדמיון החיובי.`,`ב. הנאה בתכלית העונג מההשגה.`,`ג. לימוד תורה ללא הפסקה (עשר שעות ביום).`,`ד. פיוס ובקשת מחילה על חטאים.`],
+      answer:1, hint:`"ההשגה ותגיע ה___ ותבא האהבה בהכרח".`, letter:`ר`, explain:`הרמב"ם: ההתבוננות מביאה להשגה, ההשגה מולידה הנאה בעונג – ומתוך כך באה האהבה בהכרח.`, reward:`נפתחה דלת 'חדר הרצון'.` },
+    { idx:5, text:`בסוכות, התורה משתמשת בביטוי 'למען ידעו דורותיכם' במקום 'למען תזכרו'. מה מיוחד במילה 'ידעו' בהקשר זה?`,
+      choices:[`א. הרגשה מוחשית של הדבר בלב, ולא רק הכרה שכלית.`,`ב. חובת הזיכרון ההיסטורי של נסי מצרים.`,`ג. הצורך לקיים את המצווה מתוך יראה.`,`ד. הדיבור על הלב (נחמה) כנגד השכחה.`],
+      answer:0, hint:`'הדעת היא בלב'.`, letter:`י`, explain:`'ידעו' מציין ידיעה בלב – חוויה מוחשית ולא רק זיכרון שכלי.`, reward:`חוש הידיעה התחדד – אתם 'רואים בלב'.` },
+    // --- חלק ב' ---
+    { idx:6, text:`מהו הכוח המרכזי בנפש המונע מאיתנו לחוות רגשות אמיתיים הנובעים ממציאות, והוא המקור לכל רגש שטחי?`,
+      choices:[`א. הרוח (הרצון הגופני).`,`ב. המידות הטובות.`,`ג. הדמיון.`,`ד. החוש הפיזי (הראייה).`],
+      answer:2, hint:`המלאך הממונה על גיהינום קרוי על שמו.`, letter:`ה`, explain:`הדמיון מייצר רגשות שאינם נסמכים על מציאות, ומערפל את האהבה האמיתית.`, reward:`קיבלתם 'מגן המציאות'!` },
+    { idx:7, text:`מהו המוסד הלימודי המעשי המכשיר את האדם להגיע לדבקות מושלמת בבורא עולם?`,
+      choices:[`א. בית המדרש של שם ועבר.`,`ב. תלמוד תורה (לימוד מתוך תענוג).`,`ג. בית הספר לאהבת השם (הבית היהודי).`,`ד. מוסד 'שומרי ה__'.`],
+      answer:2, hint:`מטרת חייו של האיש והאישה.`, letter:`ד`, explain:`הבית היהודי – כבוד, אהבה ודבקות – הוא בית הספר המעשי לקנייני האהבה.`, reward:`מצאתם את 'שורש הדבקות'.` },
+    { idx:8, text:`מהו תפקיד ה'פעולות' בעבודת אהבת ה' ("בכל נפשך") בהשוואה למחשבה?`,
+      choices:[`א. הפעולות מחזקות לבבות ומטמיעות רצונות (המסמר) שכבר קיימים בשכל.`,`ב. הפעולות יוצרות רגשות בלב ללא צורך בהתבוננות.`,`ג. הפעולות מעבירות את האהבה מיראה לאמונה.`,`ד. המעשים מסייעים להחזיר רכוש שנגנב מן היצר.`],
+      answer:0, hint:`הפעולה היא כמו פטיש.`, letter:`ב`, explain:`פעולות לא יוצרים לבבות – הן מחזקות ומטמיעות את הרצון שכבר נוצר בדעת.`, reward:`זכיתם ב'פטיש ההתגברות'!` },
+    { idx:9, text:`מדוע נקבע חג הסוכות כחג עצמאי לזכירת ענני הכבוד, ולא נעשה כן לזכר המן והבאר?`,
+      choices:[`א. זהו המשך ישיר לחטא העגל.`,`ב. כי ענני כבוד היו 'חיבה יתירה' ואינם הכרח לקיום, המבטאים את אהבת הנותן.`,`ג. זכר המן והבאר נכלל בפסח.`,`ד. משום שסוכה היא צורת חביקה של אדם המחבק את חבירו.`],
+      answer:1, hint:`יש להבין את הקשר בינם לבין פירות הקיץ.`, letter:`ק`, explain:`המן והבאר היו הכרחיים; ענני הכבוד – מותרות של חיבה יתירה, כמותרות האסיף.`, reward:`סוד 'קדושה שבמותרות' התגלה.` },
+    { idx:10, text:`מהי השלמות האמיתית שנועדה להיות 'תכלית כל המצוות', ועל ידי מה היא מושגת (ע"פ המסילת ישרים)?`,
+      choices:[`א. השגת יראת הרוממות שמעוררת גבורה.`,`ב. דבקות בה' (התאחדות) – ע"י התענגות מזיו שכינתו.`,`ג. לקיים מצוות 'בטוב נפש' למרות הקושי.`,`ד. ביטול מוחלט של אהבה מותנית.`],
+      answer:1, hint:`המטרה היא העידון הגדול מכל העידונים.`, letter:`ות`, // שתי אותיות ברצף
+      explain:`האדם נברא להתענג על ה' ולשמוח מזיו שכינתו; השלמות – הדבקות.`, reward:`כתר 'שומרי הדבקות' הונח על ראשכם.` },
+  ];
+
+  // המילה היעדית והחלוקה לאריחים (12 תווים: ש ו מ ר י  ה ד ב ק ו ת)
+  const TARGET = ["ש","ו","מ","ר","י"," ","ה","ד","ב","ק","ו","ת"]; // כולל רווח בין 'שומרי' ל'הדבקות'
+
+  // מצב משחק
+  const state = {
+    correct:0,
+    wrong:0,
+    revealed: Array(TARGET.length).fill(null),
+    sound:true,
+    answered:new Set(),
+    tries:{} // מספר ניסיונות לכל שאלה
+  };
+
+  // יצירת אריחי המילה
+  const wordEl = document.getElementById('word');
+  function renderWord(){
+    wordEl.innerHTML = '';
+    TARGET.forEach((ch,i)=>{
+      const t = document.createElement('div');
+      t.className = 'tile' + (state.revealed[i] ? ' filled' : '');
+      t.textContent = ch === ' ' ? ' ' : (state.revealed[i] || '');
+      if(ch===' '){ t.style.visibility='hidden'; t.style.width='18px'; t.style.border='none'; }
+      wordEl.appendChild(t);
+    });
+  }
+
+  // מיפוי האות לכל מיקום/ים במילה
+  const letterPositions = (()=>{
+    const map = {};
+    TARGET.forEach((ch,i)=>{ if(ch.trim()){ map[ch] = map[ch]||[]; map[ch].push(i);} })
+    return map;
+  })();
+
+  // חשיפת אות/אותיות לפי האות מן השאלה (תומך גם ב"ות")
+  function revealLetter(letter){
+    const letters = [...letter];
+    let any=false;
+    letters.forEach(l=>{
+      const pos = letterPositions[l];
+      if(pos){
+        for(const p of pos){ if(!state.revealed[p]){ state.revealed[p]=l; any=true; break; } }
+      }
+    });
+    if(any){
+      bumpCounter('#lettersCount');
+      renderWord();
+      confettiBurst();
+      playTone(880, 0.07); playTone(1320, 0.08, 0.05);
+    }
+    updateHUD();
+    if(state.revealed.filter(Boolean).length === TARGET.filter(c=>c.trim()).length){
+      showFinal();
+    }
+  }
+
+  // ציור החידות למסך
+  const quizEl = document.getElementById('quiz');
+  function renderQuiz(){
+    quizEl.innerHTML='';
+    QUESTIONS.forEach((q,qi)=>{
+      state.tries[qi]=0; // אפס ניסיונות לכל שאלה
+      const tpl = document.getElementById('questionTemplate');
+      const node = tpl.content.firstElementChild.cloneNode(true);
+      node.querySelector('.idx').textContent = qi+1;
+      node.querySelector('.q-text').textContent = q.text;
+      const choices = node.querySelector('.choices');
+      q.choices.forEach((choice,ci)=>{
+        const b = document.createElement('button');
+        b.className='btn';
+        b.innerText = choice;
+        b.addEventListener('click',()=>answer(qi,ci,b,node));
+        choices.appendChild(b);
+      })
+      node.querySelector('[data-act="hint"]').addEventListener('click',()=>{
+        node.querySelector('.hint').textContent = 'רמז: '+q.hint;
+      });
+      quizEl.appendChild(node);
+    })
+    renderWord();
+    updateHUD();
+  }
+
+  function softToast(msg){
+    const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t);
+    setTimeout(()=>{ t.remove(); }, 1800);
+  }
+
+  function lockQuestion(node){
+    [...node.querySelectorAll('.btn')].forEach(b=>b.disabled=true);
+  }
+
+  function answer(qi,ci,btn,node){
+    // אם כבר הושלמה (תשובה נכונה ניתנה) – נצא
+    if(state.answered.has(qi)) return;
+
+    const q = QUESTIONS[qi];
+    const allBtns = [...node.querySelectorAll('.btn')];
+
+    // ניסיון שני? (מצב לפני הלחיצה הנוכחית)
+    const prevTries = state.tries[qi]||0;
+
+    if(ci === q.answer){
+      // תשובה נכונה
+      btn.classList.add('correct');
+      state.correct++; playSuccess();
+      revealLetter(q.letter);
+      node.querySelector('.explain').textContent = 'הסבר: '+q.explain; node.querySelector('.explain').hidden=false;
+      node.querySelector('.reward').textContent  = '🎁 תגמול: '+q.reward; node.querySelector('.reward').hidden=false;
+      lockQuestion(node);
+      state.answered.add(qi);
+    } else {
+      // תשובה שגויה
+      btn.classList.add('wrong');
+      btn.disabled=true; // חוסמים רק את הבחירה הזו
+      state.wrong++; playFail();
+      state.tries[qi] = prevTries + 1;
+
+      if(state.tries[qi] === 1){
+        // ניסיון ראשון נכשל – מציגים אזהרה ומאפשרים עוד ניסיון
+        node.querySelector('.hint').textContent = 'ניסיון אחרון! בחרו שוב בתבונה ✨';
+        softToast('ניסיון אחרון לשאלה זו');
+      } else {
+        // ניסיון שני נכשל – מאפסים את המשחק כולו
+        softToast('שתי טעויות רצופות – מתחילים מחדש');
+        setTimeout(()=>{ resetGame(); }, 500);
+        return;
+      }
+    }
+
+    // הדגשת התשובה הנכונה רק כאשר השאלה נסגרה בהצלחה (כדי לא להסגיר לפני ניסיון שני)
+    if(state.answered.has(qi)){
+      allBtns[q.answer].classList.add('correct');
+    }
+
+    updateHUD();
+  }
+
+  // HUD & Progress
+  const rightEl = document.getElementById('right');
+  const wrongEl = document.getElementById('wrong');
+  const progressEl = document.getElementById('progressText');
+  const barEl = document.getElementById('bar');
+  const lettersCountEl = document.getElementById('lettersCount');
+  function updateHUD(){
+    rightEl.textContent = state.correct;
+    wrongEl.textContent = state.wrong;
+    const done = state.answered.size;
+    progressEl.textContent = `${done} / ${QUESTIONS.length}`;
+    barEl.style.width = `${Math.round((done/QUESTIONS.length)*100)}%`;
+    lettersCountEl.textContent = state.revealed.filter(Boolean).length;
+  }
+  function bumpCounter(sel){
+    const el = document.querySelector(sel); if(!el) return;
+    el.animate([{transform:'scale(1)'},{transform:'scale(1.2)'},{transform:'scale(1)'}],{duration:260});
+  }
+
+  // מסך סיום
+  function showFinal(){
+    const tpl = document.getElementById('finalTemplate');
+    const node = tpl.content.firstElementChild.cloneNode(true);
+    node.querySelector('.phrase').textContent = TARGET.join('');
+    quizEl.innerHTML='';
+    quizEl.appendChild(node);
+    confettiFireworks();
+    playWinJingle();
+    node.querySelector('[data-act="restart"]').addEventListener('click', resetGame);
+    node.querySelector('[data-act="explanations"]').addEventListener('click', ()=>{
+      // הצגת כל ההסברים מתחת
+      quizEl.innerHTML='';
+      QUESTIONS.forEach((q,i)=>{
+        const card = document.createElement('div');
+        card.className='card';
+        card.innerHTML = `<div class="q-no">שאלה ${i+1}</div>
+          <div class="q-text">${q.text}</div>
+          <div class="explain">הסבר: ${q.explain}</div>
+          <div class="reward">🎁 תגמול: ${q.reward}</div>`;
+        quizEl.appendChild(card);
+      })
+    });
+  }
+
+  // איפוס
+  function resetGame(){
+    state.correct=0; state.wrong=0; state.answered.clear(); state.revealed=Array(TARGET.length).fill(null); state.tries={};
+    renderQuiz();
+  }
+
+  // ==========================
+  // SFX – צלילים ללא קבצים (WebAudio)
+  // ==========================
+  const AC = new (window.AudioContext||window.webkitAudioContext)();
+  function playTone(freq=440, dur=0.08, delay=0){ if(!state.sound) return; const t=AC.currentTime+delay; const o=AC.createOscillator(); const g=AC.createGain(); o.frequency.value=freq; o.type='sine'; g.gain.value=0.0001; o.connect(g).connect(AC.destination); o.start(t); g.gain.exponentialRampToValueAtTime(0.16,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.stop(t+dur+0.02); }
+  function playSuccess(){ playTone(740,0.07); playTone(980,0.07,0.06); }
+  function playFail(){ playTone(200,0.12); }
+  function playWinJingle(){ [660,880,990,1320].forEach((f,i)=>playTone(f,0.08,i*0.09)); }
+
+  document.getElementById('soundToggle').addEventListener('click',()=>{
+    state.sound=!state.sound; document.getElementById('soundState').textContent = state.sound? 'מופעל':'כבוי';
+  })
+
+  // ==========================
+  // קונפטי פשוט
+  // ==========================
+  const confettiCanvas = document.getElementById('confetti');
+  const ctx = confettiCanvas.getContext('2d');
+  let pieces = [];
+  function resize(){ confettiCanvas.width=innerWidth; confettiCanvas.height=innerHeight; }
+  addEventListener('resize', resize); resize();
+  function confettiBurst(x=innerWidth/2, y=innerHeight*0.3, count=36){
+    for(let i=0;i<count;i++){
+      pieces.push({x,y, vx:(Math.random()-0.5)*6, vy:(Math.random()-1.5)*6-2, s:4+Math.random()*4, a:1, r:Math.random()*Math.PI, vr:(Math.random()-0.5)*0.2, hue: ~~(200+Math.random()*120)});
+    }
+  }
+  function confettiFireworks(){
+    for(let k=0;k<4;k++) setTimeout(()=>confettiBurst(innerWidth*(0.2+0.6*Math.random()), innerHeight*(0.2+0.5*Math.random()), 60), k*250);
+  }
+  function tick(){
+    ctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+    for(const p of pieces){
+      p.vy+=0.05; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; p.a-=0.008;
+      ctx.save(); ctx.globalAlpha=Math.max(p.a,0);
+      ctx.translate(p.x,p.y); ctx.rotate(p.r);
+      ctx.fillStyle = `hsl(${p.hue} 80% 60%)`;
+      ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s);
+      ctx.restore();
+    }
+    pieces = pieces.filter(p=>p.a>0 && p.y<innerHeight+20);
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  // ==========================
+  // בדיקות יחידה קלות (אוטו-טסטים)
+  // ==========================
+  function runSelfTests(){
+    const tests = [];
+    // 1) אורך ודיוק הביטוי
+    tests.push({name:'TARGET אורך ותוכן', pass: TARGET.join('') === 'שומרי הדבקות' && TARGET.length===12});
+    // 2) ספירת שאלות
+    tests.push({name:'מספר שאלות', pass: Array.isArray(QUESTIONS) && QUESTIONS.length===10});
+    // 3) כל התווים מהשאלות קיימים בביטוי
+    const allLetters = QUESTIONS.map(q=>q.letter).join('');
+    const allInTarget = [...new Set([...allLetters])].every(l=> l.split('').every(ch=>TARGET.includes(ch)) );
+    tests.push({name:'אותיות קיימות ב-TARGET', pass: allInTarget});
+    // 4) תשובות בטווח
+    tests.push({name:'טווח תשובות', pass: QUESTIONS.every(q=> Number.isInteger(q.answer) && q.answer>=0 && q.answer<q.choices.length )});
+    // 5) טקסטים כמחרוזות
+    tests.push({name:'טקסטים מסוג מחרוזת', pass: QUESTIONS.every(q=> typeof q.text==='string' && q.choices.every(c=>typeof c==='string'))});
+    // 6) נסיונות – מאופסים לשאלות
+    tests.push({name:'ניסיונות לשאלה = 0 בתחילה', pass: Object.keys(state.tries).length===QUESTIONS.length && Object.values(state.tries).every(v=>v===0)});
+    // 7) פונקציות קיימות
+    tests.push({name:'resetGame & answer קיימות', pass: typeof resetGame==='function' && typeof answer==='function'});
+
+    const badge = document.getElementById('testsBadge');
+    const allPass = tests.every(t=>t.pass);
+    badge.className = 'badge ' + (allPass ? 'ok':'bad');
+    badge.textContent = allPass ? `עברו ${tests.filter(t=>t.pass).length}/${tests.length}` : `נכשלו ${tests.filter(t=>!t.pass).length}/${tests.length}`;
+
+    if(!allPass){
+      const panel = document.createElement('div');
+      panel.className = 'card';
+      panel.innerHTML = `<div class="q-no">דוח בדיקות</div>` +
+        tests.map(t=>`<div class="q-text">${t.pass ? '✅' : '❌'} ${t.name}</div>`).join('');
+      document.getElementById('quiz').prepend(panel);
+    }
+  }
+
+  // אתחול
+  renderQuiz();
+  runSelfTests();
+  </script>
+</body>
+</html>
+  
+  
+  
+</body>
+
+</html>
