@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<title>חידון גנב וגזלן – הקול החמישי</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="חידון אינטראקטיבי בשש שאלות על דיני גנב וגזלן.">
+<script src="lib/tailwind.js"></script>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, sans-serif; }
+  .option-btn:hover { transform: scale(1.03); transition: 0.2s; }
+</style>
+<meta property="og:title" content="חידון גנב וגזלן – הקול החמישי">
+<meta property="og:description" content="חידון אינטראקטיבי בשש שאלות על דיני גנב וגזלן.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-dapim-sd000981.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/dapim/sd000981.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body class="bg-yellow-50 min-h-screen flex items-center justify-center p-4">
+
+<div id="app" class="w-full max-w-2xl"></div>
+
+<script>
+const questions = [
+  {
+    story: "🌙 בלילה גנב ראובן שור של שמעון מהאורווה. למחרת בבוקר שחט ראובן את השור ומכר את הבשר בשוק. שמעון גילה מה קרה ותבע אותו לדין תורה.",
+    question: "כמה משלם ראובן?",
+    options: ["פי אחד", "פי שתיים", "פי ארבעה", "פי חמישה"],
+    correct: 3,
+    explanation: "גנב שור וטבח או מכר – משלם פי חמישה! כמו שכתוב בתורה: ׳חמישה בקר ישלם תחת השור׳"
+  },
+  {
+    story: "🌙 בלילה גנב לוי שה של יהודה. הוא לקח את השה הביתה, אבל בבוקר נבהל וחזר בתשובה. לא הספיק לשחוט ולא מכר. שכנים הודיעו ליהודה והוא מצא את השה חי אצל לוי.",
+    question: "כמה משלם לוי?",
+    options: ["פי אחד", "פי שתיים", "פי ארבעה", "פי חמישה"],
+    correct: 1,
+    explanation: "גנב שה אבל לא טבח ולא מכר – משלם רק פי שתיים. השה נמצא חי, אין טביחה ואין מכירה!"
+  },
+  {
+    story: "☀️ ביום אור גדול, בשוק הומה אדם, משה פשוט לקח שה של נחום לנגד עיני כולם בלי לשאול. לא ברח, לא התחבא. כולם ראו. שחט את השה ואכל.",
+    question: "כמה משלם משה?",
+    options: ["פי אחד", "פי שתיים", "פי ארבעה", "פי חמישה"],
+    correct: 0,
+    explanation: "זה גזלן! לקח בגלוי לעיני כולם. גזלן משלם פי אחד בלבד – מחזיר מה שלקח."
+  },
+  {
+    story: "🌙 בלילה גנבה רחל שה של דינה. רצתה לשחוט, אבל הרחישה רחמים על השה ומכרה אותו לחקלאי בכפר הסמוך. דינה גילתה ותבעה לדין.",
+    question: "כמה משלמת רחל?",
+    options: ["פי אחד", "פי שתיים", "פי ארבעה", "פי חמישה"],
+    correct: 2,
+    explanation: "גנבה שה ומכרה אותו (אפילו בלי לשחוט) – משלמת פי ארבעה! כתוב בתורה: ׳וארבע צאן תחת השה׳. מכירה חשובה כמו טביחה."
+  },
+  {
+    story: "🌙 בלילה גנב דן שור של גד. הסתיר אותו ביער שלושה ימים. בסוף נתפס עם השור חי ושלם, לא שחט ולא מכר לאף אחד.",
+    question: "כמה משלם דן?",
+    options: ["פי אחד", "פי שתיים", "פי ארבעה", "פי חמישה"],
+    correct: 1,
+    explanation: "גנב שור אבל לא טבח ולא מכר – משלם פי שתיים בלבד. הכלל: פי חמישה רק אם טבח או מכר!"
+  },
+  {
+    story: "☀️ בצהריים, לעיני כל השכנים, אריאל נכנס לחצר שכנו ולקח את השור בכוח. כולם ראו, אריאל לא הסתיר כלום. אחר כך שחט את השור ואכל.",
+    question: "כמה משלם אריאל?",
+    options: ["פי אחד", "פי שתיים", "פי ארבעה", "פי חמישה"],
+    correct: 0,
+    explanation: "לקח בגלוי – זה גזלן, לא גנב! גזלן משלם פי אחד. אין עונש כפל כי הוא לא פחד מאף אחד ולא התחבא."
+  }
+];
+
+let current = 0;
+let score = 0;
+let phase = 'question'; // 'question' or 'answer'
+let selected = null;
+
+function render() {
+  const app = document.getElementById('app');
+  if (current >= questions.length) {
+    app.innerHTML = `
+      <div class="bg-white rounded-3xl shadow-xl p-8 text-center">
+        <div class="text-6xl mb-4">🏆</div>
+        <h1 class="text-3xl font-bold text-yellow-600 mb-4">סיום החידון!</h1>
+        <p class="text-2xl mb-2">ענית נכון על <span class="font-bold text-green-600">${score}</span> מתוך <span class="font-bold">${questions.length}</span> שאלות</p>
+        <p class="text-xl text-gray-600 mt-4">${score === questions.length ? '🌟 מושלם! אתם יודעים הכל!' : score >= 4 ? '👏 כל הכבוד! עבודה נהדרת!' : '💪 כדאי לחזור על החומר!'}</p>
+        <div class="mt-6 bg-blue-50 rounded-2xl p-4 text-right">
+          <p class="font-bold text-blue-800 mb-2">זכרו את הכלל:</p>
+          <p class="text-blue-700">🐂 גנב שור וטבח/מכר → פי <strong>חמישה</strong></p>
+          <p class="text-blue-700">🐑 גנב שה וטבח/מכר → פי <strong>ארבעה</strong></p>
+          <p class="text-blue-700">🔒 גנב ולא טבח/מכר → פי <strong>שתיים</strong></p>
+          <p class="text-blue-700">💪 גזלן (לקח בגלוי) → פי <strong>אחד</strong></p>
+        </div>
+        <button onclick="restart()" class="mt-6 bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-3 px-8 rounded-full text-xl">שחק שוב!</button>
+      </div>`;
+    return;
+  }
+
+  const q = questions[current];
+
+  if (phase === 'question') {
+    app.innerHTML = `
+      <div class="bg-white rounded-3xl shadow-xl p-6">
+        <div class="flex justify-between items-center mb-4">
+          <span class="bg-yellow-400 text-white font-bold px-4 py-1 rounded-full">שאלה ${current+1} מתוך ${questions.length}</span>
+          <span class="text-gray-500">ניקוד: ${score}</span>
+        </div>
+        <div class="bg-orange-50 rounded-2xl p-4 mb-6">
+          <p class="text-lg leading-relaxed">${q.story}</p>
+        </div>
+        <h2 class="text-2xl font-bold text-center mb-5 text-purple-700">${q.question}</h2>
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          ${q.options.map((opt, i) => `
+            <button onclick="selectAnswer(${i})" 
+              class="option-btn p-4 rounded-2xl border-2 text-xl font-bold cursor-pointer
+              ${selected === i ? 'border-blue-500 bg-blue-100' : 'border-gray-200 bg-gray-50 hover:bg-yellow-50'}"
+            >${opt}</button>
+          `).join('')}
+        </div>
+        <button onclick="reveal()" 
+          class="w-full py-4 rounded-2xl text-white text-2xl font-bold ${selected !== null ? 'bg-green-500 hover:bg-green-600 cursor-pointer' : 'bg-gray-300 cursor-not-allowed'}"
+          ${selected === null ? 'disabled' : ''}>
+          גלה תשובה! 🎯
+        </button>
+      </div>`;
+  } else {
+    const correct = selected === q.correct;
+    app.innerHTML = `
+      <div class="bg-white rounded-3xl shadow-xl p-6">
+        <div class="text-center mb-6">
+          <div class="text-6xl mb-2">${correct ? '✅' : '❌'}</div>
+          <h2 class="text-3xl font-bold ${correct ? 'text-green-600' : 'text-red-500'}">${correct ? 'כל הכבוד!' : 'לא בדיוק...'}</h2>
+        </div>
+        <div class="bg-yellow-50 border-2 border-yellow-300 rounded-2xl p-4 mb-4">
+          <p class="font-bold text-yellow-800 mb-1">התשובה הנכונה:</p>
+          <p class="text-2xl font-bold text-yellow-700">${q.options[q.correct]}</p>
+        </div>
+        <div class="bg-blue-50 rounded-2xl p-4 mb-6">
+          <p class="text-blue-800 text-lg">${q.explanation}</p>
+        </div>
+        <button onclick="next()" class="w-full py-4 bg-purple-500 hover:bg-purple-600 text-white rounded-2xl text-2xl font-bold">
+          ${current + 1 < questions.length ? 'שאלה הבאה ➡️' : 'לתוצאות 🏆'}
+        </button>
+      </div>`;
+  }
+}
+
+function selectAnswer(i) {
+  selected = i;
+  render();
+}
+
+function reveal() {
+  if (selected === null) return;
+  if (selected === questions[current].correct) score++;
+  phase = 'answer';
+  render();
+}
+
+function next() {
+  current++;
+  selected = null;
+  phase = 'question';
+  render();
+}
+
+function restart() {
+  current = 0;
+  score = 0;
+  selected = null;
+  phase = 'question';
+  render();
+}
+
+render();
+</script>
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif"><a href="https://www.kol-toda.co.il/" style="color:#4f46e5">← לאתר הקול החמישי</a></p>
+</body>
+</html>

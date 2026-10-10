@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>שלום בית – אפליקציה עם משימות יומיות ומשוב – הקול החמישי</title>
+<meta name="description" content="משימות יומיות קטנות לשלום בית – הודיה, מחמאה, הקשבה ועזרה – עם מעקב ומשוב.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .level-display {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .level-title {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .level-quote {
+            font-size: 1.3rem;
+            font-style: italic;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .level-score {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .progress-container {
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 10px;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            height: 25px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.8s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -50px;
+            width: 50px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -50px; }
+            100% { left: 100%; }
+        }
+
+        .daily-checklist {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .checklist-item:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-color: #6c5ce7;
+        }
+
+        .checklist-item.completed {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .checkbox {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #6c5ce7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .checkbox.checked {
+            background: #00b894;
+            border-color: #00b894;
+            animation: checkPulse 0.5s ease;
+        }
+
+        .checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        @keyframes checkPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .submit-section {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .submit-btn:active {
+            transform: scale(0.95);
+        }
+
+        .feedback-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            margin: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.5s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: scale(0.8) translateY(-50px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .modal-score {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #2d3436;
+        }
+
+        .modal-quote {
+            font-size: 1.4rem;
+            font-style: italic;
+            line-height: 1.6;
+            color: #636e72;
+            margin-bottom: 20px;
+        }
+
+        .modal-encouragement {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-size: 1.1rem;
+        }
+
+        .close-btn {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .stats-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #6c5ce7;
+        }
+
+        .streak-fire {
+            animation: fireFlicker 1s infinite alternate;
+        }
+
+        @keyframes fireFlicker {
+            0% { transform: scale(1) rotate(-1deg); }
+            100% { transform: scale(1.1) rotate(1deg); }
+        }
+
+        .achievement-badge {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin: 5px;
+            display: inline-block;
+            animation: badgePulse 2s infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                margin: 10px;
+                padding: 30px 20px;
+            }
+            
+            .level-score {
+                font-size: 2.5rem;
+            }
+            
+            .modal-score {
+                font-size: 3rem;
+            }
+        }
+    </style>
+<meta property="og:title" content="שלום בית – אפליקציה עם משימות יומיות ומשוב – הקול החמישי">
+<meta property="og:description" content="משימות יומיות קטנות לשלום בית – הודיה, מחמאה, הקשבה ועזרה – עם מעקב ומשוב.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-dapim-e39965ec.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/dapim/e39965ec.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 שלום בית - מסע לשלמות 👸</h1>
+            <p>האישה כבת המלך • הכרת הטוב • השכנת שכינה</p>
+        </div>
+
+        <div class="level-display" id="levelDisplay">
+            <div class="level-title" id="levelTitle">🌱 מתחיל בדרך</div>
+            <div class="level-score" id="currentScore">0</div>
+            <div class="level-quote" id="levelQuote">
+                "תחילתה של כל דרך גדולה היא צעד ראשון קטן"
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="levelProgress" style="width: 0%"></div>
+                </div>
+                <div style="margin-top: 10px; color: rgba(255,255,255,0.9);">
+                    <span id="progressText">0/50 עד הרמה הבאה</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-display">
+            <div class="stat-card">
+                <div class="stat-number" id="streakDays">0</div>
+                <div>ימים ברצף <span class="streak-fire">🔥</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalPoints">0</div>
+                <div>נקודות סה"כ ⭐</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="weeklyAverage">0</div>
+                <div>ממוצע שבועי 📊</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="currentLevel">1</div>
+                <div>רמה נוכחית 🏆</div>
+            </div>
+        </div>
+
+        <div class="daily-checklist">
+            <h2 style="margin-bottom: 20px; color: #2d3436;">📋 המשימות היומיות שלי</h2>
+            <p style="margin-bottom: 25px; font-size: 1.1rem; color: #636e72;">
+                בחרו את המשימות שביצעתם היום והקליקו "שלח" לקבלת המשוב שלכם:
+            </p>
+            
+            <div class="checklist-item" data-points="2" onclick="toggleTask(this)">
+                <div class="checkbox"></div>
+                <div>
+                    <strong>🤲 הודיה לה' על מתנת הזוגיות</strong>
+                    <div style="font-size: 0.9rem; color: #636e72;">אמרתי הודיה לה' על האישה המופלאה שלי</div>
+                </div>
+                <div style="margin-right: auto; font-weight: bold; color: #6c5ce7;">+2</div>
+            </div>
+            
+            <div class="checklist-item" data-points="3" onclick="toggleTask(this)">
+                <div class="checkbox"></div>
+                <div>
+                    <strong>👀 התבוננות במעלותיה (10 דקות)</strong>
+                    <div style="font-size: 0.9rem; color: #636e72;">ישבתי וחשבתי על המעלות הטובות שלה</div>
+                </div>
+                <div style="margin-right: auto; font-weight: bold; color: #6c5ce7;">+3</div>
+            </div>
+            
+            <div class="checklist-item" data-points="3" onclick="toggleTask(this)">
+                <div class="checkbox"></div>
+                <div>
+                    <strong>💬 מחמאה כנה ואמיתית</strong>
+                    <div style="font-size: 0.9rem; color: #636e72;">נתתי לה מחמאה על דבר שהיא מושלמת בו</div>
+                </div>
+                <div style="margin-right: auto; font-weight: bold; color: #6c5ce7;">+3</div>
+            </div>
+            
+            <div class="checklist-item" data-points="4" onclick="toggleTask(this)">
+                <div class="checkbox"></div>
+                <div>
+                    <strong>👂 הקשבה מלאה</strong>
+                    <div style="font-size: 0.9rem; color: #636e72;">כשדיברה איתי - עצרתי הכל והקשבתי באמת</div>
+                </div>
+                <div style="margin-right: auto; font-weight: bold; color: #6c5ce7;">+4</div>
+            </div>
+            
+            <div class="checklist-item" data-points="4" onclick="toggleTask(this)">
+                <div class="checkbox"></div>
+                <div>
+                    <strong>⚡ זריזות בעזרה</strong>
+                    <div style="font-size: 0.9rem; color: #636e72;">כשקראה לעזרה - עזבתי הכל ורצתי לעזור</div>
+                </div>
+                <div style="margin-right: auto; font-weight: bold; color: #6c5ce7;">+4</div>
+            </div>
+            
+            <div class="checklist-item" data-points="3" onclick="toggleTask(this)">
+                <div class="checkbox"></div>
+                <div>
+                    <strong>🎁 הפתעה קטנה</strong>
+                    <div style="font-size: 0.9rem; color: #636e72;">הכנתי לה הפתעה קטנה שמשמחת</div>
+                </div>
+                <div style="margin-right: auto; font-weight: bold; color: #6c5ce7;">+3</div>
+            </div>
+            
+            <div class="checklist-item" data-points="3" onclick="toggleTask(this)">
+                <div class="checkbox"></div>
+                <div>
+                    <strong>🤗 חיבה פיזית עדינה</strong>
+                    <div style="font-size: 0.9rem; color: #636e72;">חיבקתי/ליטפתי/נשקתי ללא סיבה מיוחדת</div>
+                </div>
+                <div style="margin-right: auto; font-weight: bold; color: #6c5ce7;">+3</div>
+            </div>
+            
+            <div class="checklist-item" data-points="5" onclick="toggleTask(this)">
+                <div class="checkbox"></div>
+                <div>
+                    <strong>🕊️ דיבור בנחת</strong>
+                    <div style="font-size: 0.9rem; color: #636e72;">דיברתי איתה בנחת גם כשהיו קשיים</div>
+                </div>
+                <div style="margin-right: auto; font-weight: bold; color: #6c5ce7;">+5</div>
+            </div>
+            
+            <div class="checklist-item" data-points="4" onclick="toggleTask(this)">
+                <div class="checkbox"></div>
+                <div>
+                    <strong>👸 התייחסות כמלכה</strong>
+                    <div style="font-size: 0.9rem; color: #636e72;">התייחסתי אליה כבת המלך שהיא</div>
+                </div>
+                <div style="margin-right: auto; font-weight: bold; color: #6c5ce7;">+4</div>
+            </div>
+            
+            <div class="checklist-item" data-points="2" onclick="toggleTask(this)">
+                <div class="checkbox"></div>
+                <div>
+                    <strong>🙏 תפילה על הזוגיות</strong>
+                    <div style="font-size: 0.9rem; color: #636e72;">התפללתי שאזכה לאהוב ולכבד אותה יותר</div>
+                </div>
+                <div style="margin-right: auto; font-weight: bold; color: #6c5ce7;">+2</div>
+            </div>
+
+            <div class="submit-section">
+                <h3 style="color: white; margin-bottom: 15px;">סיימתם את היום? 🌅</h3>
+                <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">
+                    הקליקו "שלח" לקבלת הציון והמשוב שלכם על היום
+                </p>
+                <button class="submit-btn" onclick="submitDay()">
+                    🚀 שלח והצג את הציון שלי!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- מודל המשוב -->
+    <div class="feedback-modal" id="feedbackModal">
+        <div class="modal-content">
+            <div class="modal-score" id="modalScore">0</div>
+            <div class="modal-title" id="modalTitle">כותרת</div>
+            <div class="modal-quote" id="modalQuote">ציטוט</div>
+            <div class="modal-encouragement" id="modalEncouragement">עידוד</div>
+            <div id="achievementBadges"></div>
+            <button class="close-btn" onclick="closeModal()">💫 המשך במסע!</button>
+        </div>
+    </div>
+
+    <script>
+        let userData = {
+            totalPoints: parseInt(localStorage.getItem('totalPoints')) || 0,
+            currentLevel: parseInt(localStorage.getItem('currentLevel')) || 1,
+            streakDays: parseInt(localStorage.getItem('streakDays')) || 0,
+            lastSubmission: localStorage.getItem('lastSubmission') || null,
+            weeklyScores: JSON.parse(localStorage.getItem('weeklyScores')) || []
+        };
+
+        let selectedTasks = new Set();
+        let dailyScore = 0;
+
+        const levels = [
+            {
+                name: "🌱 מתחיל בדרך",
+                minPoints: 0,
+                quote: "תחילתה של כל דרך גדולה היא צעד ראשון קטן",
+                color: "linear-gradient(135deg, #fd79a8 0%, #e84393 100%)"
+            },
+            {
+                name: "🌿 מכיר את הדרך",
+                minPoints: 50,
+                quote: "הכרת הטוב היא היסוד לכל שלום בית אמיתי",
+                color: "linear-gradient(135deg, #fdcb6e 0%, #e17055 100%)"
+            },
+            {
+                name: "🌳 מעמיק בחכמה",
+                minPoints: 150,
+                quote: "האישה היא בת המלך - התייחסו אליה כמלכה",
+                color: "linear-gradient(135deg, #00b894 0%, #00cec9 100%)"
+            },
+            {
+                name: "⭐ מורה דרך",
+                minPoints: 300,
+                quote: "כבדו את נשותיכם כדי שתתעשרו - רבא",
+                color: "linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)"
+            },
+            {
+                name: "👑 מלך שלום בית",
+                minPoints: 500,
+                quote: "השכינה שורה בביתכם - אתם משכינים קדושה בעולם",
+                color: "linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%)"
+            },
+            {
+                name: "✨ צדיק דור",
+                minPoints: 750,
+                quote: "כמו החפץ חיים והרב שך - אתם מעלה של גדולי הדור",
+                color: "linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%)"
+            }
+        ];
+
+        const feedbackMessages = {
+            0: {
+                title: "👶 כל התחלה קשה",
+                quote: "אל תייאשו! גם מסע של אלף מיל מתחיל בצעד אחד",
+                encouragement: "מחר יום חדש! כל יום הוא הזדמנות לשמח את בת המלך שלכם 👸"
+            },
+            1: {
+                title: "🌱 צעד ראשון נעשה!",
+                quote: "חכמינו אומרים: הפותח במצווה אחת - זוכה להמשיך",
+                encouragement: "התחלה מעולה! המשיכו לטפח את האהבה והכבוד 💝"
+            },
+            5: {
+                title: "🌿 מתקדם יפה!",
+                quote: "דרך מלך הולכת בצעדים קבועים ובטוחים",
+                encouragement: "אתם בדרך הנכונה! האישה שלכם מתחילה להרגיש את השינוי ✨"
+            },
+            10: {
+                title: "🌳 בעל מכבד!",
+                quote: "המעשים שלכם מביאים נחת רוח לשמיים",
+                encouragement: "יום מדהים! אתם באמת מתייחסים אליה כבת מלך 👑"
+            },
+            15: {
+                title: "⭐ גיבור שלום בית!",
+                quote: "כמו גדולי הדור שהשקיעו הכל באהבת האישה",
+                encouragement: "מופלא! השכינה מתחילה לשרות בביתכם באמת 🕊️"
+            },
+            20: {
+                title: "👑 מלך האהבה!",
+                quote: "אתם משכינים קדושה בעולם דרך כבוד האישה",
+                encouragement: "יום מושלם! אתם דוגמה למה שיכול להיות 🌟"
+            },
+            25: {
+                title: "✨ צדיק של דור!",
+                quote: "המעשים שלכם מאירים את העולם כולו",
+                encouragement: "לא ייאמן! אתם חיים כמו החפץ חיים והרב שך 🔥"
+            },
+            30: {
+                title: "🔥 אגדה חיה!",
+                quote: "אתם כותבים היסטוריה של אהבה וקדושה",
+                encouragement: "יום שישמח גם את גדולי הדור! אתם מחליפים עולמות 🌍✨"
+            }
+        };
+
+        function getCurrentLevel() {
+            for (let i = levels.length - 1; i >= 0; i--) {
+                if (userData.totalPoints >= levels[i].minPoints) {
+                    return { ...levels[i], index: i };
+                }
+            }
+            return { ...levels[0], index: 0 };
+        }
+
+        function updateLevelDisplay() {
+            const currentLevel = getCurrentLevel();
+            const nextLevel = levels[currentLevel.index + 1];
+            
+            document.getElementById('levelTitle').textContent = currentLevel.name;
+            document.getElementById('levelQuote').textContent = currentLevel.quote;
+            document.getElementById('levelDisplay').style.background = currentLevel.color;
+            
+            if (nextLevel) {
+                const pointsToNext = nextLevel.minPoints - userData.totalPoints;
+                const progress = ((userData.totalPoints - currentLevel.minPoints) / (nextLevel.minPoints - currentLevel.minPoints)) * 100;
+                document.getElementById('levelProgress').style.width = Math.max(0, progress) + '%';
+                document.getElementById('progressText').textContent = `${pointsToNext} נקודות עד: ${nextLevel.name}`;
+            } else {
+                document.getElementById('levelProgress').style.width = '100%';
+                document.getElementById('progressText').textContent = 'הגעתם לרמה הגבוהה ביותר! 🏆';
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('streakDays').textContent = userData.streakDays;
+            document.getElementById('totalPoints').textContent = userData.totalPoints;
+            document.getElementById('currentLevel').textContent = userData.currentLevel;
+            document.getElementById('currentScore').textContent = userData.totalPoints;
+            
+            // חשב ממוצע שבועי
+            const weeklyAvg = userData.weeklyScores.length > 0 
+                ? Math.round(userData.weeklyScores.reduce((a, b) => a + b, 0) / userData.weeklyScores.length)
+                : 0;
+            document.getElementById('weeklyAverage').textContent = weeklyAvg;
+        }
+
+        function toggleTask(taskElement) {
+            const checkbox = taskElement.querySelector('.checkbox');
+            const points = parseInt(taskElement.dataset.points);
+            
+            if (checkbox.classList.contains('checked')) {
+                checkbox.classList.remove('checked');
+                taskElement.classList.remove('completed');
+                selectedTasks.delete(taskElement);
+                dailyScore -= points;
+            } else {
+                checkbox.classList.add('checked');
+                taskElement.classList.add('completed');
+                selectedTasks.add(taskElement);
+                dailyScore += points;
+                
+                // אנימציה של הצלחה
+                taskElement.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    taskElement.style.transform = 'scale(1.02)';
+                }, 200);
+            }
+        }
+
+        function getFeedbackForScore(score) {
+            const thresholds = Object.keys(feedbackMessages)
+                .map(Number)
+                .sort((a, b) => b - a);
+            
+            for (let threshold of thresholds) {
+                if (score >= threshold) {
+                    return feedbackMessages[threshold];
+                }
+            }
+            return feedbackMessages[0];
+        }
+
+        function generateAchievements(score) {
+            const achievements = [];
+            
+            if (score >= 30) achievements.push("🔥 יום מושלם!");
+            if (score >= 25) achievements.push("👑 מלך שלום בית");
+            if (score >= 20) achievements.push("✨ צדיק אמיתי");
+            if (score >= 15) achievements.push("⭐ גיבור האהבה");
+            if (score >= 10) achievements.push("🌟 בעל מכבד");
+            if (userData.streakDays >= 7) achievements.push("🔥 שבוע מושלם!");
+            if (userData.streakDays >= 30) achievements.push("📅 חודש אגדי!");
+            
+            return achievements;
+        }
+
+        function submitDay() {
+            const feedback = getFeedbackForScore(dailyScore);
+            const achievements = generateAchievements(dailyScore);
+            
+            // עדכן נתונים
+            userData.totalPoints += dailyScore;
+            userData.weeklyScores.push(dailyScore);
+            if (userData.weeklyScores.length > 7) {
+                userData.weeklyScores.shift();
+            }
+            
+            // עדכן רצף ימים
+            const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+            
+            if (userData.lastSubmission === yesterday) {
+                userData.streakDays++;
+            } else if (userData.lastSubmission !== today) {
+                userData.streakDays = 1;
+            }
+            userData.lastSubmission = today;
+            
+            // עדכן רמה
+            const newLevel = getCurrentLevel();
+            userData.currentLevel = newLevel.index + 1;
+            
+            // שמור נתונים
+            localStorage.setItem('totalPoints', userData.totalPoints);
+            localStorage.setItem('currentLevel', userData.currentLevel);
+            localStorage.setItem('streakDays', userData.streakDays);
+            localStorage.setItem('lastSubmission', userData.lastSubmission);
+            localStorage.setItem('weeklyScores', JSON.stringify(userData.weeklyScores));
+            
+            // הצג משוב
+            document.getElementById('modalScore').textContent = dailyScore;
+            document.getElementById('modalTitle').textContent = feedback.title;
+            document.getElementById('modalQuote').textContent = feedback.quote;
+            document.getElementById('modalEncouragement').textContent = feedback.encouragement;
+            
+            // הצג הישגים
+            const badgesContainer = document.getElementById('achievementBadges');
+            badgesContainer.innerHTML = '';
+            achievements.forEach(achievement => {
+                const badge = document.createElement('span');
+                badge.className = 'achievement-badge';
+                badge.textContent = achievement;
+                badgesContainer.appendChild(badge);
+            });
+            
+            // הצג מודל
+            document.getElementById('feedbackModal').style.display = 'flex';
+            
+            // עדכן תצוגה
+            updateStats();
+            updateLevelDisplay();
+            
+            // איפוס המשימות
+            selectedTasks.clear();
+            dailyScore = 0;
+            document.querySelectorAll('.checklist-item').forEach(item => {
+                item.classList.remove('completed');
+                item.querySelector('.checkbox').classList.remove('checked');
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('feedbackModal').style.display = 'none';
+        }
+
+        // אתחול האפליקציה
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            updateLevelDisplay();
+            
+            // בדיקה אם כבר הוגש היום
+            const today = new Date().toDateString();
+            if (userData.lastSubmission === today) {
+                document.querySelector('.submit-btn').textContent = '✅ היום כבר הוגש!';
+                document.querySelector('.submit-btn').disabled = true;
+            }
+        });
+
+        // סגירת מודל בלחיצה על הרקע
+        document.getElementById('feedbackModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif"><a href="https://www.kol-toda.co.il/" style="color:#4f46e5">← לאתר הקול החמישי</a></p>
+</body>
+</html>
+            

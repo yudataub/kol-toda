@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>משחק זיכרון – מושגי יום כיפור – הקול החמישי</title>
+<meta name="description" content="משחק התאמה בין מושגי יום כיפור להסבריהם.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="משחק זיכרון – מושגי יום כיפור – הקול החמישי">
+<meta property="og:description" content="משחק התאמה בין מושגי יום כיפור להסבריהם.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-dapim-79d0f51f.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/dapim/79d0f51f.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const RotateCcw = window.LucideReact["RotateCcw"] || window.LucideReact.Circle;
+const Volume2 = window.LucideReact["Volume2"] || window.LucideReact.Circle;
+const VolumeX = window.LucideReact["VolumeX"] || window.LucideReact.Circle;
+const YomKippurMemoryGame = () => {
+  const cardPairs = [{
+    id: 1,
+    concept: 'המהר"ל מפראג',
+    explanation: 'הסביר שהצום מטהר דרך הידבקות בה\', כמו טבילה במקווה'
+  }, {
+    id: 2,
+    concept: 'רבי עקיבא',
+    explanation: 'שאל "לפני מי אתם מטהרים?" וענה "אביכם שבשמיים"'
+  }, {
+    id: 3,
+    concept: '"יסוד ושורש העבודה"',
+    explanation: 'לימד שיש לשמוח בצער הצום כי זו מצווה ארוכה'
+  }, {
+    id: 4,
+    concept: 'מקווה',
+    explanation: 'מים טהורים שלא נגעה בהם יד אדם. מסמלים את הקב"ה'
+  }, {
+    id: 5,
+    concept: '"טובל ושרץ בידו"',
+    explanation: 'אדם שמנסה להיטהר אך עדיין אוחז בחטא. לכן צריך תשובה'
+  }, {
+    id: 6,
+    concept: 'דבקות בה\'',
+    explanation: 'ההתעלות הרוחנית מעל הגשמיות, שהיא הסיבה האמיתית לכפרה'
+  }, {
+    id: 7,
+    concept: 'שמחה בצום',
+    explanation: 'הופכת את המצווה לגדולה פי מיליון, כי היא מראה על אהבת ה\''
+  }, {
+    id: 8,
+    concept: 'אכילה בערב יום כיפור',
+    explanation: 'מבטאת את השמחה לקראת יום הכפרה, ונחשבת כצום נוסף'
+  }, {
+    id: 9,
+    concept: 'מצוות עשה',
+    explanation: '"ועניתם את נפשותיכם" - הציווי האקטיבי להתענות'
+  }, {
+    id: 10,
+    concept: 'בן חביב לאביו',
+    explanation: 'המשל לאדם ששמח לקיים את רצון ה\' ורוצה שהמצווה תימשך'
+  }];
+  const [cards, setCards] = useState([]);
+  const [flipped, setFlipped] = useState([]);
+  const [matched, setMatched] = useState([]);
+  const [moves, setMoves] = useState(0);
+  const [score, setScore] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // Sound effects using Web Audio API
+  const playSound = type => {
+    if (!soundEnabled) return;
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    switch (type) {
+      case 'flip':
+        oscillator.frequency.value = 400;
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+        break;
+      case 'match':
+        oscillator.frequency.value = 523.25; // C5
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+        oscillator.start(audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(783.99, audioContext.currentTime + 0.1); // G5
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.stop(audioContext.currentTime + 0.3);
+        break;
+      case 'mismatch':
+        oscillator.frequency.value = 200;
+        gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.2);
+        break;
+      case 'win':
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C-E-G-C
+        notes.forEach((freq, i) => {
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.2, audioContext.currentTime + i * 0.15);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.3);
+          osc.start(audioContext.currentTime + i * 0.15);
+          osc.stop(audioContext.currentTime + i * 0.15 + 0.3);
+        });
+        break;
+    }
+  };
+  const colors = ['from-purple-500 to-pink-500', 'from-blue-500 to-cyan-500', 'from-green-500 to-emerald-500', 'from-orange-500 to-red-500', 'from-indigo-500 to-purple-500', 'from-yellow-500 to-orange-500', 'from-pink-500 to-rose-500', 'from-teal-500 to-green-500', 'from-violet-500 to-fuchsia-500', 'from-cyan-500 to-blue-500'];
+  useEffect(() => {
+    initializeGame();
+  }, []);
+  const initializeGame = () => {
+    const gameCards = [];
+    cardPairs.forEach((pair, index) => {
+      gameCards.push({
+        id: `concept-${pair.id}`,
+        pairId: pair.id,
+        text: pair.concept,
+        type: 'concept',
+        color: colors[index]
+      });
+      gameCards.push({
+        id: `explanation-${pair.id}`,
+        pairId: pair.id,
+        text: pair.explanation,
+        type: 'explanation',
+        color: colors[index]
+      });
+    });
+    const shuffled = gameCards.sort(() => Math.random() - 0.5);
+    setCards(shuffled);
+    setFlipped([]);
+    setMatched([]);
+    setMoves(0);
+    setScore(0);
+  };
+  const handleCardClick = cardId => {
+    if (flipped.length === 2 || flipped.includes(cardId) || matched.includes(cardId)) {
+      return;
+    }
+    playSound('flip');
+    const newFlipped = [...flipped, cardId];
+    setFlipped(newFlipped);
+    if (newFlipped.length === 2) {
+      setMoves(moves + 1);
+      const [first, second] = newFlipped;
+      const firstCard = cards.find(c => c.id === first);
+      const secondCard = cards.find(c => c.id === second);
+      if (firstCard.pairId === secondCard.pairId) {
+        setTimeout(() => {
+          playSound('match');
+          setMatched([...matched, first, second]);
+          setFlipped([]);
+          setScore(score + 10);
+
+          // Check if game is complete
+          if (matched.length + 2 === cards.length) {
+            setTimeout(() => playSound('win'), 300);
+          }
+        }, 800);
+      } else {
+        setTimeout(() => {
+          playSound('mismatch');
+          setFlipped([]);
+        }, 1500);
+      }
+    }
+  };
+  const isGameComplete = matched.length === cards.length && cards.length > 0;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-8",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-6xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center mb-8"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-5xl font-bold text-white mb-4 flex items-center justify-center gap-3"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    className: "text-yellow-300"
+  }), "\u05DE\u05E9\u05D7\u05E7 \u05D6\u05D9\u05DB\u05E8\u05D5\u05DF - \u05DE\u05D5\u05E9\u05D2\u05D9 \u05D9\u05D5\u05DD \u05DB\u05D9\u05E4\u05D5\u05E8", /*#__PURE__*/React.createElement(Sparkles, {
+    className: "text-yellow-300"
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-xl text-purple-200"
+  }, "\u05DE\u05E6\u05D0 \u05D0\u05EA \u05D4\u05D4\u05EA\u05D0\u05DE\u05D5\u05EA \u05D1\u05D9\u05DF \u05D4\u05DE\u05D5\u05E9\u05D2\u05D9\u05DD \u05DC\u05D4\u05E1\u05D1\u05E8\u05D9\u05D4\u05DD")), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8 flex justify-around items-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-4xl font-bold text-yellow-300"
+  }, score), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-purple-200"
+  }, "\u05E0\u05E7\u05D5\u05D3\u05D5\u05EA")), /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-4xl font-bold text-blue-300"
+  }, moves), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-purple-200"
+  }, "\u05DE\u05D4\u05DC\u05DB\u05D9\u05DD")), /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-4xl font-bold text-green-300"
+  }, matched.length / 2, "/10"), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-purple-200"
+  }, "\u05D6\u05D5\u05D2\u05D5\u05EA")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setSoundEnabled(!soundEnabled),
+    className: "bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all",
+    title: soundEnabled ? 'השתק צלילים' : 'הפעל צלילים'
+  }, soundEnabled ? /*#__PURE__*/React.createElement(Volume2, {
+    size: 20
+  }) : /*#__PURE__*/React.createElement(VolumeX, {
+    size: 20
+  })), /*#__PURE__*/React.createElement("button", {
+    onClick: initializeGame,
+    className: "bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all"
+  }, /*#__PURE__*/React.createElement(RotateCcw, {
+    size: 20
+  }), "\u05DE\u05E9\u05D7\u05E7 \u05D7\u05D3\u05E9")), !isGameComplete ? /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-4 gap-4 mb-8"
+  }, cards.map(card => {
+    const isFlipped = flipped.includes(card.id);
+    const isMatched = matched.includes(card.id);
+    const showFront = isFlipped || isMatched;
+    return /*#__PURE__*/React.createElement("div", {
+      key: card.id,
+      onClick: () => handleCardClick(card.id),
+      className: "cursor-pointer h-40 perspective",
+      style: {
+        perspective: '1000px'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: `relative w-full h-full transition-all duration-500 transform-style-3d ${showFront ? 'rotate-y-180' : ''}`,
+      style: {
+        transformStyle: 'preserve-3d',
+        transform: showFront ? 'rotateY(180deg)' : 'rotateY(0deg)'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "absolute w-full h-full backface-hidden rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg",
+      style: {
+        backfaceVisibility: 'hidden'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl"
+    }, "\uD83D\uDCD6")), /*#__PURE__*/React.createElement("div", {
+      className: `absolute w-full h-full backface-hidden rounded-xl bg-gradient-to-br ${card.color} p-4 flex items-center justify-center shadow-lg ${isMatched ? 'ring-4 ring-yellow-300' : ''}`,
+      style: {
+        backfaceVisibility: 'hidden',
+        transform: 'rotateY(180deg)'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-white text-center font-semibold leading-tight text-sm"
+    }, card.text))));
+  })) : /*#__PURE__*/React.createElement("div", {
+    className: "bg-white/10 backdrop-blur-lg rounded-2xl p-12 text-center"
+  }, /*#__PURE__*/React.createElement(Trophy, {
+    className: "w-24 h-24 text-yellow-300 mx-auto mb-6"
+  }), /*#__PURE__*/React.createElement("h2", {
+    className: "text-4xl font-bold text-white mb-4"
+  }, "!\u05DB\u05DC \u05D4\u05DB\u05D1\u05D5\u05D3"), /*#__PURE__*/React.createElement("p", {
+    className: "text-2xl text-purple-200 mb-2"
+  }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05D4\u05DE\u05E9\u05D7\u05E7!"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xl text-purple-300 mb-6"
+  }, "\u05E6\u05D1\u05E8\u05EA ", score, " \u05E0\u05E7\u05D5\u05D3\u05D5\u05EA \u05D1-", moves, " \u05DE\u05D4\u05DC\u05DB\u05D9\u05DD"), /*#__PURE__*/React.createElement("button", {
+    onClick: initializeGame,
+    className: "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-4 rounded-xl text-xl font-bold flex items-center gap-3 mx-auto transition-all"
+  }, /*#__PURE__*/React.createElement(RotateCcw, {
+    size: 24
+  }), "\u05E9\u05D7\u05E7 \u05E9\u05D5\u05D1")), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white/10 backdrop-blur-lg rounded-2xl p-6 text-white"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-2xl font-bold mb-4"
+  }, "\uD83D\uDCCB \u05D4\u05D5\u05E8\u05D0\u05D5\u05EA \u05D4\u05DE\u05E9\u05D7\u05E7"), /*#__PURE__*/React.createElement("ul", {
+    className: "space-y-2 text-purple-100"
+  }, /*#__PURE__*/React.createElement("li", null, "\u2022 \u05DC\u05D7\u05E5 \u05E2\u05DC \u05E9\u05E0\u05D9 \u05DB\u05E8\u05D8\u05D9\u05E1\u05D9\u05DD \u05D1\u05DB\u05DC \u05EA\u05D5\u05E8"), /*#__PURE__*/React.createElement("li", null, "\u2022 \u05DE\u05E6\u05D0 \u05D0\u05EA \u05D4\u05D4\u05EA\u05D0\u05DE\u05D4 \u05D1\u05D9\u05DF \u05D4\u05DE\u05D5\u05E9\u05D2 \u05DC\u05D4\u05E1\u05D1\u05E8 \u05E9\u05DC\u05D5"), /*#__PURE__*/React.createElement("li", null, "\u2022 \u05DB\u05DC \u05D6\u05D5\u05D2 \u05E0\u05DB\u05D5\u05DF \u05DE\u05D6\u05DB\u05D4 \u05D1-10 \u05E0\u05E7\u05D5\u05D3\u05D5\u05EA"), /*#__PURE__*/React.createElement("li", null, "\u2022 \u05E0\u05E1\u05D4 \u05DC\u05DE\u05E6\u05D5\u05D0 \u05D0\u05EA \u05DB\u05DC \u05D4\u05D6\u05D5\u05D2\u05D5\u05EA \u05D1\u05DE\u05D9\u05E0\u05D9\u05DE\u05D5\u05DD \u05DE\u05D4\u05DC\u05DB\u05D9\u05DD")))));
+};
+const __App = YomKippurMemoryGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif"><a href="https://www.kol-toda.co.il/" style="color:#4f46e5">← לאתר הקול החמישי</a></p>
+</body>
+</html>
