@@ -34,7 +34,11 @@ h1{margin:6px 0 4px;font-size:clamp(26px,5vw,40px);font-weight:800}
 .group small{font-weight:500;color:var(--mute);font-size:15px}
 .gnote{color:var(--mute);margin:0 0 10px;font-size:15px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:8px;border-top:5px solid var(--c,#be185d)}
+.card{overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:8px;border-top:5px solid var(--c,#be185d)}
+.card{padding-top:0}
+.pic{display:block;margin:0 -16px 4px;aspect-ratio:16/10;overflow:hidden;border-bottom:1px solid var(--line);background:var(--soft)}
+.pic img{width:100%;height:100%;object-fit:cover;object-position:top;display:block;transition:transform .25s}
+.pic:hover img{transform:scale(1.03)}
 .card h3{margin:0;font-size:18px;display:flex;gap:8px;align-items:flex-start}
 .card h3 .e{font-size:24px;line-height:1}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
@@ -80,7 +84,11 @@ footer{color:var(--mute);font-size:14px;padding:26px 0 34px}
   <footer>הקול החמישי · יהודה טאוב · <a href="../t/games.html">לכל משחקי הלימוד באתר</a> · <a href="../">לעמוד הבית</a></footer>
 </main>
 <script>
-const A = id => "https://claude.ai/public/artifacts/" + id;
+// the games run from the site itself (games/<id>.html, built from the Claude artifacts by catalog-kit/claude_artifact_pages.js).
+// Four of them talk to Claude's AI while you play, so they stay on Claude.
+const AI = new Set(["91caf4aa", "deb18edd", "6c36601c", "ad1cacc0"]);
+const A = id => AI.has(id.slice(0, 8)) ? "https://claude.ai/public/artifacts/" + id : "games/" + id.slice(0, 8) + ".html";
+const pic = x => "img/" + (x.im || x.l[0][1].replace(/^.*\//, "").replace(/\.html$/, "").slice(0, 8)) + ".webp";
 const GROUPS = [
   {k:"quiz", e:"🧩", t:"חידונים ומשחקי ידע", c:"#be185d", n:"משחקים קצרים שבודקים ומחזקים את המושגים. טובים לפתיחה או לחזרה."},
   {k:"life", e:"🗺️", t:"תרחישים ובחירות מהחיים", c:"#7c3aed", n:"לא שאלות על מושגים, אלא מצבים מחיי היומיום: מה הייתם בוחרים, ולמה זו אהבת ה'."},
@@ -98,7 +106,7 @@ const GAMES = [
   {g:"quiz", e:"🍎", t:"מי נהנה – גוף, שכל או נשמה?", tags:["חידון מהיר","מתחילים"],
    d:"לכל הנאה מחליטים: האם זו הנאה של הגוף, של השכל או של הנשמה. עם מונה תשובות נכונות ורצף.",
    x:"<b>הקצר ביותר.</b> שאלה אחת חוזרת על עצמה. מתאים לפתיחת שיעור על ההבדל בין עונג גשמי לעונג רוחני.",
-   l:[["שחקו","../apps/g21bb4fce5ca6.html"]]},
+   l:[["שחקו","../apps/g21bb4fce5ca6.html"]], im:"nehene"},
   {g:"quiz", e:"🎪", t:"לימוד אהבת ה' במגוון משחקים", tags:["5 סוגי שאלות","חזרה כללית"],
    d:"משחק אחד שמשלב רב-בחירה, התאמות, \"מה ההבדל?\", תרחישים מעשיים וניתוח.",
    x:"<b>הכי מגוון.</b> במקום סוג שאלה אחד יש חמישה, ולכן הוא טוב לחזרה על כל החומר לפני מבחן.",
@@ -120,11 +128,11 @@ const GAMES = [
    d:"מצבים מהחיים שבהם צריך לזהות את העיקרון, להבחין וליישם. כל תשובה מגיעה עם הסבר מפורט.",
    x:"<b>הקפדני ביותר.</b> אפשר לעלות רמה רק עם 95% ומעלה, כך שהוא בודק הבנה אמיתית ולא ניחוש.",
    l:[["התחילו",A("299d82ad-f097-425f-a026-41832c69b97a")]]},
-  {g:"life", e:"⏱️", t:"יום בחיים", tags:["סימולציה","אסטרטגיה"],
+  {g:"life", e:"⏱️", t:"יום בחיים", tags:["סימולציה","אסטרטגיה","🤖 עם בינה מלאכותית – נפתח ב-Claude"],
    d:"יום שלם בחמישה תרחישים, ורק 5 \"אסימוני פעולה\" לכל המשחק. בכל פעם בוחרים בין בחירה של אהבה לבחירה נוחה.",
    x:"<b>יש מחיר לכל בחירה.</b> בגלל שהאסימונים מוגבלים, צריך לחשוב מה באמת חשוב, כמו בחיים.",
    l:[["התחילו את היום",A("91caf4aa-158d-4413-871f-8da8de364b91")]]},
-  {g:"life", e:"✨", t:"דרך האור", tags:["משחק תפקידים"],
+  {g:"life", e:"✨", t:"דרך האור", tags:["משחק תפקידים","🤖 עם בינה מלאכותית – נפתח ב-Claude"],
    d:"נכנסים לדמות ובוחרים באור גם כשקשה: מצוות כהזדמנות לאושר, והכרת טוב למי שנותן לנו.",
    x:"<b>משחק תפקידים.</b> לא עונים על שאלות אלא חיים את הסיפור מבפנים.",
    l:[["צאו למסע",A("deb18edd-4c9c-4404-b01f-0f0d09537b1f")]]},
@@ -141,11 +149,11 @@ const GAMES = [
    d:"חוקרים למה מצווה שהיא \"תכלית כל התורה\" נזנחה: אוספים ראיות ממקורות ומדברי גדולי ישראל, ומגיעים לפתרון.",
    x:"<b>עובדים עם מקורות.</b> דורש חשיבה ביקורתית וקריאה, ולכן מתאים לגדולים יותר.",
    l:[["לחקירה",A("f1522965-1921-4779-9a22-dd76c8db621c")]]},
-  {g:"journey", e:"🌈", t:"הכוח לבחור בעונג", tags:["חוויה מונחית"],
+  {g:"journey", e:"🌈", t:"הכוח לבחור בעונג", tags:["חוויה מונחית","🤖 עם בינה מלאכותית – נפתח ב-Claude"],
    d:"מסע לגילוי \"גן העדן שבעולם הזה\": איך הבחירות שלנו, וגם איך שאנחנו בוחרים להרגיש, יוצרות חיים של אושר.",
    x:"<b>לא חידון ולא תחרות.</b> חוויה שקטה ומונחית על שמחה ועונג במצוות.",
    l:[["גלו את הכוח לבחור",A("6c36601c-42fd-4971-a281-5d4b3cc341e5")]]},
-  {g:"journey", e:"🧠", t:"מסע רפלקציה אישית", tags:["מאמן AI","יומן אישי","נוער ומבוגרים"],
+  {g:"journey", e:"🧠", t:"מסע רפלקציה אישית", tags:["מאמן AI","יומן אישי","נוער ומבוגרים","🤖 עם בינה מלאכותית – נפתח ב-Claude"],
    d:"6 שלבים מדורגים להעמקת הקשר, עם מאמן AI שמתאים את השאלות לתשובות שלכם, ויומן לתיעוד הדרך.",
    x:"<b>האישי ביותר.</b> אין בו תשובות נכונות: הוא שואל אתכם, ומתקדם לפי מה שכתבתם.",
    l:[["התחילו את המסע",A("ad1cacc0-8421-4658-afe6-e89e8a8b902f")]]},
@@ -166,7 +174,7 @@ const GAMES = [
   {g:"class", e:"📣", t:"שעשועון: אהבת השם מתוך שמחה", tags:["3 קבוצות","להקרנה בכיתה"],
    d:"שעשועון תחרותי לשלוש קבוצות עם לוח ניקוד. המורה בוחר מי עונה ומציג את התשובה הנכונה.",
    x:"<b>היחיד שבנוי לתחרות קבוצתית מול הלוח.</b> מתאים לסיום יחידה או למסיבה כיתתית.",
-   l:[["לשעשועון","../apps/g7b582309cbe3.html"]]},
+   l:[["לשעשועון","../apps/g7b582309cbe3.html"]], im:"shaashuon"},
   {g:"class", e:"💝", t:"ארבע דרכים להראות אהבה – ערכת כרטיסיות", tags:["להדפסה","כיתות ב׳–ה׳","הוראות למורה"],
    d:"32 כרטיסיות מצבים מחיי ילדים ב-4 קטגוריות צבעוניות, ב-3 רמות קושי, עם הוראות מפורטות ופעילויות המשך.",
    x:"<b>משחק שולחן ולא מסך.</b> מדפיסים ומשחקים בקבוצות קטנות בכיתה.",
@@ -174,7 +182,7 @@ const GAMES = [
   {g:"class", e:"📊", t:"נער הדבקות – מצגת", tags:["מצגת","כיתה ו׳"],
    d:"מצגת אינטראקטיבית שהיא סימולציה של שליחות: מתרגלים את הדרכים לקנות אהבת ה' בחיי היומיום.",
    x:"<b>להקרנה ולהובלה של המורה,</b> ולא למשחק עצמאי של התלמיד.",
-   l:[["למצגת","https://gamma.app/docs/-v0kq8jyerppzbdj"]]},
+   l:[["למצגת","https://gamma.app/docs/-v0kq8jyerppzbdj"]], im:"naar"},
   // series
   {g:"series", e:"📚", t:"שיעורי אהבת השם – 30 שיעורים ב-6 עונות", tags:["סדרה","30 שיעורים"],
    d:"מסע לימוד שלם: יסודות האהבה, העמקה, שיא המסע, הרגש והנשמה, האושר והאור, והסיכום הגדול. בכל עונה 5 שיעורים.",
@@ -196,7 +204,7 @@ function render(){
   list.innerHTML = GROUPS.filter(g => cur === "all" || g.k === cur).map(g => {
     const gs = GAMES.filter(x => x.g === g.k);
     return `<h2 class="group" id="${g.k}">${g.e} ${g.t} <small>(${gs.length})</small></h2><p class="gnote">${g.n}</p><div class="grid">` +
-      gs.map(x => `<article class="card" style="--c:${g.c}"><h3><span class="e">${x.e}</span><span>${esc(x.t)}</span></h3>
+      gs.map(x => `<article class="card" style="--c:${g.c}"><a class="pic" href="${x.l[0][1]}" target="_blank" rel="noopener"><img src="${pic(x)}" alt="" loading="lazy"></a><h3><span class="e">${x.e}</span><span>${esc(x.t)}</span></h3>
         <div class="tags">${x.tags.map(t => `<span class="tag">${esc(t)}</span>`).join("")}</div>
         <p>${esc(x.d)}</p><div class="diff">${x.x}</div>
         <div class="btns">${x.l.map((b, i) => `<a class="btn${i ? " alt" : ""}" href="${b[1]}" target="_blank" rel="noopener">${esc(b[0])}</a>`).join("")}</div></article>`).join("") + "</div>";

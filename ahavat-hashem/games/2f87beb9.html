@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>game1_lessons_1-3 – הקול החמישי</title>
+<meta name="description" content="Learn Torah concepts through an engaging quiz game exploring how ancient teachings apply to modern technology and lifestyle choices. Interactive lessons with instant feedback.">
+<script src="../lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="game1_lessons_1-3 – הקול החמישי">
+<meta property="og:description" content="Learn Torah concepts through an engaging quiz game exploring how ancient teachings apply to modern technology and lifestyle choices. Interactive lessons with instant feedback.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-ahavat-hashem-games-2f87beb9.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/ahavat-hashem/games/2f87beb9.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="../lib/react.js"></script>
+<script src="../lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="../lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const CheckCircle = window.LucideReact["CheckCircle"] || window.LucideReact.Circle;
+const XCircle = window.LucideReact["XCircle"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const BookOpen = window.LucideReact["BookOpen"] || window.LucideReact.Circle;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+
+// ====== מערכת צלילים ======
+const playSuccessSound = () => {
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const notes = [261.63, 329.63, 392.00]; // C-E-G
+  notes.forEach((freq, index) => {
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.frequency.value = freq;
+    oscillator.type = 'sine';
+    const startTime = audioContext.currentTime + index * 0.15;
+    gainNode.gain.setValueAtTime(0.3, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+    oscillator.start(startTime);
+    oscillator.stop(startTime + 0.3);
+  });
+};
+const playCelebrationSound = async () => {
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25]; // C5-E5-G5-C6-G5-E5
+
+  for (let i = 0; i < notes.length; i++) {
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.frequency.value = notes[i];
+    oscillator.type = 'sine';
+    const startTime = audioContext.currentTime + i * 0.3;
+    gainNode.gain.setValueAtTime(0.3, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.25);
+    oscillator.start(startTime);
+    oscillator.stop(startTime + 0.25);
+  }
+
+  // המתן לסיום הצליל
+  await new Promise(resolve => setTimeout(resolve, 1800));
+};
+
+// ====== תוכן השיעורים ======
+const lessonsData = [{
+  id: 1,
+  title: 'הקללה המקורית – עולם של קושי',
+  content: `
+      <h3 style="color: #2563eb; margin-bottom: 16px;">🌍 "בְּזֵעַת אַפֶּיךָ תֹּאכַל לֶחֶם"</h3>
+      <p style="line-height: 1.8; margin-bottom: 12px;">
+        זוהי אחת הקללות המרכזיות שניתנו לאדם הראשון לאחר חטא עץ הדעת. 
+        במשך אלפי שנים, קללה זו הגדירה את החוויה האנושית הבסיסית כ"חיים קשים".
+      </p>
+      <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 20px; border-radius: 12px; margin: 20px 0; border-right: 4px solid #f59e0b;">
+        <h4 style="color: #92400e; margin-bottom: 12px; font-size: 18px;">💪 המציאות הישנה</h4>
+        <p style="color: #78350f; line-height: 1.7;">
+          כל צורך קיומי הושג בעבודה פיזית מפרכת. להכין לחם? צריך לזרוע, לחרוש, לקצור, 
+          לעמר, לדוש, לזרות... ואז ללוש ולאפות. לכבס בגדים? ללכת לנהר ולשפשף שעות.
+        </p>
+      </div>
+      <p style="line-height: 1.8; margin-top: 16px;">
+        <strong style="color: #7c3aed;">💎 נקודת מפתח:</strong> 
+        ה"קללה" אינה עונש אקראי, אלא <strong>שינוי במצב היסוד של העולם</strong>. 
+        העולם הפך להיות "נאמן לקללה" – המערכת הטבעית מחייבת יגיעה ועמל עבור כל צורך בסיסי.
+      </p>
+    `,
+  quiz: [{
+    question: 'על פי מה שלמדנו, מהי המשמעות המרכזית של "קללת" האדם "בזיעת אפיך תאכל לחם"?',
+    options: ['שהקב"ה מעניש את האדם באופן פעיל על כל דבר קטן', 'שהעבודה הפיזית היא חסרת ערך ומשפילה', 'שהמערכת הטבעית של העולם, לאחר החטא, מחייבת מאמץ ויגיעה כדי להתקיים', 'שהאדם לעולם לא יצליח להגיע לסיפוק כלכלי'],
+    correct: 2,
+    explanation: 'התשובה הנכונה היא שהמערכת הטבעית השתנתה. ה"קללה" אינה עונש מתמשך ופעיל, אלא שינוי במצב היסוד של העולם. העולם הפך להיות "נאמן לקללה" – חוקי הטבע השתנו כך שמאמץ ויגיעה הפכו לחלק אינהרנטי מהקיום האנושי.',
+    encouragement: '🌟 מעולה! הבנת את היסוד – הקושי הוא חלק מ"כללי המשחק" של העולם, לא עונש אישי נגדנו. זו המסגרת שה\' הציב בפני כל האנושות.'
+  }]
+}, {
+  id: 2,
+  title: 'המהפכה המודרנית – האם הקללה מתבטלת?',
+  content: `
+      <h3 style="color: #2563eb; margin-bottom: 16px;">⚡ נפל דבר!</h3>
+      <p style="line-height: 1.8; margin-bottom: 12px;">
+        במאה השנים האחרונות חלה מהפכה דרמטית. הטכנולוגיה התפתחה ב"צעדי ענק" 
+        ושינתה את מציאות חיינו באופן חסר תקדים. מה שהיה פעם "קשה" הפך ל"קל".
+      </p>
+      <div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 24px; border-radius: 12px; margin: 20px 0;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr style="background: #1e40af; color: white;">
+            <th style="padding: 12px; text-align: right; border-radius: 8px 0 0 0;">⏪ זיעת העבר</th>
+            <th style="padding: 12px; text-align: right; border-radius: 0 8px 0 0;">⏩ זיעת ההווה</th>
+          </tr>
+          <tr>
+            <td style="padding: 16px; vertical-align: top; border-left: 3px solid #3b82f6;">
+              <strong>המאמץ:</strong> להשיג לחם לאכול<br/>
+              <strong>הדוגמה:</strong> עומדים שעות בתור בתקופת הצנע<br/>
+              <strong>טבע המאבק:</strong> הישרדות פיזית
+            </td>
+            <td style="padding: 16px; vertical-align: top; border-right: 3px solid #3b82f6;">
+              <strong>המאמץ:</strong> לממן רמת חיים גבוהה<br/>
+              <strong>הדוגמה:</strong> עבודה עד מאוחר לשלם משכנתא<br/>
+              <strong>טבע המאבק:</strong> שימור סטטוס וסגנון חיים
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div style="background: #fef2f2; padding: 20px; border-radius: 12px; border-right: 4px solid #dc2626; margin-top: 20px;">
+        <h4 style="color: #991b1b; margin-bottom: 12px;">⚠️ החשד הקדום</h4>
+        <p style="color: #7f1d1d; line-height: 1.7;">
+          <strong>דור המבול</strong> היה דור מפותח טכנולוגית, עם רפואה משוכללת ותוחלת חיים גבוהה.
+          אך למרות הקידמה החומרית המרשימה – סופו היה כיליון מוחלט. 
+          <br/><br/>
+          <strong style="font-size: 18px;">🤔 השאלה המתבקשת:</strong> 
+          האם קידמה חומרית היא בהכרח סימן לתיקון רוחני?
+        </p>
+      </div>
+    `,
+  quiz: [{
+    question: 'מדוע ההשוואה לדור המבול, כפי שמתואר בספר איוב, מעוררת ספק לגבי הברכה שבהתפתחות הטכנולוגית?',
+    options: ['כי דור המבול לא השתמש בטכנולוגיה בצורה יעילה', 'כי למרות שהיה דור מפותח חומרית, סופו היה כיליון, מה שמראה שקידמה חומרית אינה בהכרח התקדמות חיובית', 'כי הטכנולוגיה של דור המבול הייתה פרימיטיבית בהשוואה לטכנולוגיה של ימינו', 'כי ספר איוב טוען שהקב"ה תמיד מעניש דורות שיש להם יותר מדי שפע'],
+    correct: 1,
+    explanation: 'ההשוואה לדור המבול משמשת כ"נורת אזהרה". היא מלמדת אותנו ששפע חומרי, נוחות וקידמה טכנולוגית אינם ערובה לתיקון רוחני או מוסרי. דור המבול נהנה מרמת חיים גבוהה, אך התדרדר מבחינה רוחנית עד שהגיע לכיליון.',
+    encouragement: '💎 מצוין! התורה מלמדת אותנו לא להסתנוור מהצלחות חיצוניות. עלינו תמיד לבחון – האם הנוחות והשפע מקרבים אותנו לה\' ומפתחים אותנו רוחנית?'
+  }]
+}, {
+  id: 3,
+  title: 'שאלת המיליון – כיצד ניגש לפינוק של העולם?',
+  content: `
+      <h3 style="color: #2563eb; margin-bottom: 16px;">❓ השאלה המעשית של דורנו</h3>
+      <p style="line-height: 1.8; margin-bottom: 12px;">
+        זו לא שאלה תיאורטית! היא נוגעת לכל אחד מאיתנו בהחלטות יומיומיות:
+      </p>
+      <div style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); padding: 20px; border-radius: 12px; margin: 20px 0;">
+        <ul style="line-height: 2; color: #581c87; font-size: 16px;">
+          <li>🚶‍♂️ האם ללכת ברגל או לנסוע ברכב?</li>
+          <li>🍽️ האם להדיח כלים בידיים או במכונה?</li>
+          <li>📱 האם לעשות דברים ידנית או לאוטמט הכל?</li>
+        </ul>
+      </div>
+      
+      <h4 style="color: #7c3aed; margin: 24px 0 12px 0;">🎯 התשובה המורכבת – "להיות נורמלי"</h4>
+      <p style="line-height: 1.8; margin-bottom: 16px;">
+        התורה אינה דורשת מאיתנו לחיות חיים של סגפנות קיצונית. 
+        מי שיזרוק היום את מכונת הכביסה שלו הוא <strong style="color: #dc2626;">"לא נורמלי לכל הדעות"</strong>.
+      </p>
+      
+      <div style="background: #ecfdf5; padding: 20px; border-radius: 12px; border-right: 4px solid #10b981; margin: 20px 0;">
+        <h4 style="color: #065f46; margin-bottom: 12px;">✅ דוגמה: נח והמחרשה</h4>
+        <p style="color: #047857; line-height: 1.7;">
+          התורה משבחת את נח על שהמציא את המחרשה כדי "להקל על עבודת האדמה".
+          זה מראה שיש <strong>ערך חיובי בהקלה על המאמץ</strong> – הקלה אינה פסולה מעצם טבעה!
+        </p>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 24px; border-radius: 12px; margin: 20px 0; border: 2px solid #f59e0b;">
+        <h4 style="color: #92400e; margin-bottom: 12px; font-size: 20px;">⚖️ "תמיד נצטרך ללכת בין הפטיש לסדן"</h4>
+        <p style="color: #78350f; line-height: 1.8; font-size: 16px;">
+          החיים בעולם הזה, שהוא "עולם הבירור", מחייבים אותנו כל הזמן למצוא את <strong>שביל הזהב</strong>. 
+          אין פתרונות קסם קיצוניים:
+          <br/><br/>
+          מחד: עלינו להימנע מפינוק יתר שמזיק לנו
+          <br/>
+          מאידך: עלינו לאמץ הקלות מבורכות שמסייעות לנו
+          <br/><br/>
+          <strong style="color: #b45309; font-size: 18px;">
+            💡 זוהי עבודת בירור מתמדת ואישית של כל אדם
+          </strong>
+        </p>
+      </div>
+      
+      <p style="line-height: 1.8; margin-top: 20px; font-size: 17px; background: #ede9fe; padding: 16px; border-radius: 8px;">
+        <strong style="color: #5b21b6;">🎯 המסר המרכזי:</strong> 
+        התשובה לשאלת הפינוק אינה קיצונית. היא דורשת מאיתנו איזון, שיקול דעת, ו"נורמליות". 
+        אנחנו נדרשים ללכת בדרך האמצע.
+      </p>
+    `,
+  quiz: [{
+    question: 'מהי הגישה הנכונה להתמודדות עם ה"פינוקים" של העולם המודרני, על פי העיקרון של "להיות נורמלי"?',
+    options: ['לדחות כל טכנולוגיה חדשה ולחיות כמו בדורות הקודמים', 'לאמץ כל הקלה אפשרית ללא כל שיקול דעת, כי "חיים קלים" זו ברכה', 'למצוא איזון: לא לזרוק את מכונת הכביסה, אך להבין שלא כל הקלה היא בהכרח חיובית ושיש להיזהר מפינוק יתר', 'להשתמש בטכנולוגיה רק לדברים שקשורים לעבודת ה\' באופן ישיר'],
+    correct: 2,
+    explanation: 'העיקרון של "להיות נורמלי" ו"ללכת בין הפטיש לסדן" מלמד אותנו שאין פתרונות קסם קיצוניים. היהדות אינה דורשת התנזרות מהעולם, אך גם מזהירה מפני שקיעה בפינוקים. הדוגמה של נח שהמציא את המחרשה מראה שהקלה על העמל יכולה להיות דבר מבורך.',
+    encouragement: '🌟 כל הכבוד! הקב"ה לא רוצה שנהיה אנשים מוזרים ומנותקים, אך הוא גם לא רוצה שנשכח את מטרתנו. היכולת למצוא את "שביל הזהב" היא סימן לבגרות רוחנית אמיתית!'
+  }]
+}];
+
+// ====== רכיב המשחק הראשי ======
+function GamePart1() {
+  const [currentLesson, setCurrentLesson] = useState(0);
+  const [stage, setStage] = useState('content'); // 'content' or 'quiz'
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [lessonScores, setLessonScores] = useState([]);
+  const [shuffledOptions, setShuffledOptions] = useState([]);
+  const [gameComplete, setGameComplete] = useState(false);
+  const [answeredQuestions, setAnsweredQuestions] = useState([]);
+
+  // פונקציה לערבוב אפשרויות
+  const shuffleArray = array => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // ערבוב אפשרויות בכל שאלה חדשה
+  useEffect(() => {
+    if (stage === 'quiz' && lessonsData[currentLesson]) {
+      const question = lessonsData[currentLesson].quiz[currentQuestion];
+      if (question) {
+        const optionsWithIndex = question.options.map((opt, idx) => ({
+          text: opt,
+          originalIndex: idx
+        }));
+        setShuffledOptions(shuffleArray(optionsWithIndex));
+      }
+    }
+  }, [stage, currentLesson, currentQuestion]);
+  const handleAnswerSelect = optionIndex => {
+    if (showFeedback) return;
+    setSelectedAnswer(optionIndex);
+  };
+  const handleSubmitAnswer = async () => {
+    if (selectedAnswer === null) return;
+    const question = lessonsData[currentLesson].quiz[currentQuestion];
+    const selectedOption = shuffledOptions[selectedAnswer];
+    const isCorrect = selectedOption.originalIndex === question.correct;
+    setShowFeedback(true);
+    setAnsweredQuestions([...answeredQuestions, {
+      correct: isCorrect
+    }]);
+    if (isCorrect) {
+      playSuccessSound();
+    }
+
+    // המתן לפני מעבר לשאלה הבאה
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    // בדיקה אם זו השאלה האחרונה בשיעור
+    if (currentQuestion === lessonsData[currentLesson].quiz.length - 1) {
+      // חישוב ציון השיעור
+      const correctAnswers = [...answeredQuestions, {
+        correct: isCorrect
+      }].filter(a => a.correct).length;
+      const totalQuestions = lessonsData[currentLesson].quiz.length;
+      const score = correctAnswers / totalQuestions * 100;
+      setLessonScores([...lessonScores, score]);
+
+      // בדיקה אם עבר (95%+)
+      if (score >= 95) {
+        await playCelebrationSound();
+
+        // מעבר לשיעור הבא או סיום משחק
+        if (currentLesson < lessonsData.length - 1) {
+          setCurrentLesson(currentLesson + 1);
+          setStage('content');
+          setCurrentQuestion(0);
+          setAnsweredQuestions([]);
+        } else {
+          setGameComplete(true);
+        }
+      } else {
+        // חזרה על השיעור
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setStage('content');
+        setCurrentQuestion(0);
+        setAnsweredQuestions([]);
+      }
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+    } else {
+      // מעבר לשאלה הבאה
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+    }
+  };
+  const renderContent = () => {
+    const lesson = lessonsData[currentLesson];
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        animation: 'fadeIn 0.5s ease-in'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        padding: '32px',
+        borderRadius: '16px',
+        color: 'white',
+        marginBottom: '24px',
+        boxShadow: '0 10px 40px rgba(102, 126, 234, 0.3)'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        marginBottom: '8px'
+      }
+    }, /*#__PURE__*/React.createElement(BookOpen, {
+      size: 32
+    }), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: '18px',
+        opacity: 0.9
+      }
+    }, "\u05E9\u05D9\u05E2\u05D5\u05E8 ", lesson.id, " \u05DE\u05EA\u05D5\u05DA 3")), /*#__PURE__*/React.createElement("h2", {
+      style: {
+        fontSize: '28px',
+        margin: '0',
+        fontWeight: 'bold'
+      }
+    }, lesson.title)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'white',
+        padding: '32px',
+        borderRadius: '16px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        marginBottom: '24px',
+        lineHeight: '1.8'
+      },
+      dangerouslySetInnerHTML: {
+        __html: lesson.content
+      }
+    }), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setStage('quiz'),
+      style: {
+        width: '100%',
+        padding: '20px',
+        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '12px',
+        fontSize: '20px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)',
+        transition: 'transform 0.2s, box-shadow 0.2s'
+      },
+      onMouseOver: e => {
+        e.target.style.transform = 'translateY(-2px)';
+        e.target.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.5)';
+      },
+      onMouseOut: e => {
+        e.target.style.transform = 'translateY(0)';
+        e.target.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.4)';
+      }
+    }, "\u05D1\u05D5\u05D0\u05D5 \u05E0\u05D1\u05D3\u05D5\u05E7 \u05D0\u05EA \u05D4\u05D4\u05D1\u05E0\u05D4! \uD83C\uDFAF"));
+  };
+  const renderQuiz = () => {
+    const lesson = lessonsData[currentLesson];
+    const question = lesson.quiz[currentQuestion];
+    const correctAnswers = answeredQuestions.filter(a => a.correct).length;
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        animation: 'fadeIn 0.5s ease-in'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+        padding: '24px',
+        borderRadius: '16px',
+        color: 'white',
+        marginBottom: '24px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
+      }
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '16px',
+        opacity: 0.9,
+        marginBottom: '4px'
+      }
+    }, "\u05E9\u05D9\u05E2\u05D5\u05E8 ", lesson.id, ": \u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, " \u05DE\u05EA\u05D5\u05DA ", lesson.quiz.length), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '20px',
+        fontWeight: 'bold'
+      }
+    }, "\u05E6\u05D9\u05D5\u05DF \u05E0\u05D5\u05DB\u05D7\u05D9: ", answeredQuestions.length > 0 ? Math.round(correctAnswers / answeredQuestions.length * 100) : 0, "%")), /*#__PURE__*/React.createElement(Sparkles, {
+      size: 40
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'white',
+        padding: '32px',
+        borderRadius: '16px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        marginBottom: '24px'
+      }
+    }, /*#__PURE__*/React.createElement("h3", {
+      style: {
+        fontSize: '22px',
+        lineHeight: '1.6',
+        color: '#1f2937',
+        marginBottom: '32px',
+        fontWeight: '600'
+      }
+    }, question.question), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px'
+      }
+    }, shuffledOptions.map((option, index) => {
+      const isSelected = selectedAnswer === index;
+      const isCorrectOption = showFeedback && option.originalIndex === question.correct;
+      const isWrongSelection = showFeedback && isSelected && option.originalIndex !== question.correct;
+      let backgroundColor = '#f9fafb';
+      let borderColor = '#e5e7eb';
+      let textColor = '#374151';
+      if (isCorrectOption) {
+        backgroundColor = '#d1fae5';
+        borderColor = '#10b981';
+        textColor = '#065f46';
+      } else if (isWrongSelection) {
+        backgroundColor = '#fee2e2';
+        borderColor = '#ef4444';
+        textColor = '#991b1b';
+      } else if (isSelected) {
+        backgroundColor = '#dbeafe';
+        borderColor = '#3b82f6';
+        textColor = '#1e40af';
+      }
+      return /*#__PURE__*/React.createElement("button", {
+        key: index,
+        onClick: () => handleAnswerSelect(index),
+        disabled: showFeedback,
+        style: {
+          padding: '20px',
+          background: backgroundColor,
+          border: `3px solid ${borderColor}`,
+          borderRadius: '12px',
+          textAlign: 'right',
+          fontSize: '17px',
+          lineHeight: '1.6',
+          cursor: showFeedback ? 'default' : 'pointer',
+          transition: 'all 0.3s ease',
+          color: textColor,
+          fontWeight: isSelected ? '600' : '400',
+          position: 'relative'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          minWidth: '32px',
+          height: '32px',
+          borderRadius: '50%',
+          background: isSelected ? borderColor : '#e5e7eb',
+          color: isSelected ? 'white' : '#6b7280',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 'bold',
+          fontSize: '16px'
+        }
+      }, isCorrectOption && showFeedback ? '✓' : index + 1), /*#__PURE__*/React.createElement("span", {
+        style: {
+          flex: 1
+        }
+      }, option.text)));
+    })), !showFeedback && /*#__PURE__*/React.createElement("button", {
+      onClick: handleSubmitAnswer,
+      disabled: selectedAnswer === null,
+      style: {
+        width: '100%',
+        padding: '18px',
+        marginTop: '24px',
+        background: selectedAnswer !== null ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : '#9ca3af',
+        color: 'white',
+        border: 'none',
+        borderRadius: '12px',
+        fontSize: '18px',
+        fontWeight: 'bold',
+        cursor: selectedAnswer !== null ? 'pointer' : 'not-allowed',
+        boxShadow: selectedAnswer !== null ? '0 4px 15px rgba(59, 130, 246, 0.4)' : 'none',
+        transition: 'all 0.3s ease'
+      }
+    }, selectedAnswer !== null ? 'בדוק את התשובה שלי! ✨' : 'בחר תשובה כדי להמשיך'), showFeedback && /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: '24px',
+        padding: '24px',
+        background: shuffledOptions[selectedAnswer].originalIndex === question.correct ? 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)' : 'linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)',
+        borderRadius: '12px',
+        borderRight: `4px solid ${shuffledOptions[selectedAnswer].originalIndex === question.correct ? '#10b981' : '#f97316'}`
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '20px',
+        fontWeight: 'bold',
+        marginBottom: '12px',
+        color: shuffledOptions[selectedAnswer].originalIndex === question.correct ? '#065f46' : '#9a3412'
+      }
+    }, shuffledOptions[selectedAnswer].originalIndex === question.correct ? ['מצוין! ⭐', 'פצצה! 🎯', 'כל הכבוד! 💪'][Math.floor(Math.random() * 3)] : 'כמעט! 💡'), /*#__PURE__*/React.createElement("p", {
+      style: {
+        lineHeight: '1.7',
+        marginBottom: '12px',
+        color: shuffledOptions[selectedAnswer].originalIndex === question.correct ? '#047857' : '#c2410c'
+      }
+    }, question.explanation), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'rgba(255, 255, 255, 0.5)',
+        padding: '16px',
+        borderRadius: '8px',
+        marginTop: '16px'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      style: {
+        lineHeight: '1.7',
+        fontWeight: '500',
+        color: '#1f2937',
+        margin: 0
+      }
+    }, question.encouragement)))));
+  };
+  const renderCompletion = () => {
+    const totalScore = Math.round(lessonScores.reduce((a, b) => a + b, 0) / lessonScores.length);
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        animation: 'fadeIn 0.5s ease-in',
+        textAlign: 'center'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+        padding: '48px',
+        borderRadius: '20px',
+        color: 'white',
+        marginBottom: '32px',
+        boxShadow: '0 10px 40px rgba(251, 191, 36, 0.4)'
+      }
+    }, /*#__PURE__*/React.createElement(Award, {
+      size: 80,
+      style: {
+        marginBottom: '24px'
+      }
+    }), /*#__PURE__*/React.createElement("h2", {
+      style: {
+        fontSize: '36px',
+        margin: '0 0 16px 0',
+        fontWeight: 'bold'
+      }
+    }, "\uD83C\uDF89 \u05DB\u05DC \u05D4\u05DB\u05D1\u05D5\u05D3! \uD83C\uDF89"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '24px',
+        margin: 0,
+        opacity: 0.95
+      }
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4 \u05D0\u05EA \u05D7\u05DC\u05E7 1")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'white',
+        padding: '32px',
+        borderRadius: '16px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        marginBottom: '32px'
+      }
+    }, /*#__PURE__*/React.createElement("h3", {
+      style: {
+        fontSize: '28px',
+        color: '#1f2937',
+        marginBottom: '24px'
+      }
+    }, "\u05D4\u05E6\u05D9\u05D5\u05DF \u05D4\u05DB\u05D5\u05DC\u05DC \u05E9\u05DC\u05DA: ", totalScore, "% \uD83C\uDF1F"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginBottom: '32px'
+      }
+    }, lessonScores.map((score, index) => /*#__PURE__*/React.createElement("div", {
+      key: index,
+      style: {
+        background: '#f3f4f6',
+        padding: '16px',
+        borderRadius: '8px',
+        marginBottom: '12px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: '600',
+        color: '#374151'
+      }
+    }, "\u05E9\u05D9\u05E2\u05D5\u05E8 ", index + 1, ": ", lessonsData[index].title), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: 'bold',
+        color: score === 100 ? '#10b981' : '#3b82f6',
+        fontSize: '18px'
+      }
+    }, Math.round(score), "%")))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
+        padding: '24px',
+        borderRadius: '12px',
+        marginBottom: '24px',
+        textAlign: 'right'
+      }
+    }, /*#__PURE__*/React.createElement("h4", {
+      style: {
+        color: '#3730a3',
+        marginBottom: '16px',
+        fontSize: '20px'
+      }
+    }, "\uD83D\uDC8E \u05DE\u05D4 \u05DC\u05DE\u05D3\u05E0\u05D5?"), /*#__PURE__*/React.createElement("ul", {
+      style: {
+        color: '#4338ca',
+        lineHeight: '2',
+        textAlign: 'right',
+        paddingRight: '24px'
+      }
+    }, /*#__PURE__*/React.createElement("li", null, "\u05D4\u05E7\u05DC\u05DC\u05D4 \u05D4\u05DE\u05E7\u05D5\u05E8\u05D9\u05EA \u05D4\u05D9\u05D0 \u05E9\u05D9\u05E0\u05D5\u05D9 \u05D1\u05DE\u05E6\u05D1 \u05D4\u05D9\u05E1\u05D5\u05D3 \u05E9\u05DC \u05D4\u05E2\u05D5\u05DC\u05DD"), /*#__PURE__*/React.createElement("li", null, "\u05E7\u05D9\u05D3\u05DE\u05D4 \u05D8\u05DB\u05E0\u05D5\u05DC\u05D5\u05D2\u05D9\u05EA \u05D0\u05D9\u05E0\u05D4 \u05E2\u05E8\u05D5\u05D1\u05D4 \u05DC\u05EA\u05D9\u05E7\u05D5\u05DF \u05E8\u05D5\u05D7\u05E0\u05D9"), /*#__PURE__*/React.createElement("li", null, "\u05E2\u05DC\u05D9\u05E0\u05D5 \u05DC\u05DE\u05E6\u05D5\u05D0 \u05D0\u05D9\u05D6\u05D5\u05DF \u2013 \"\u05DC\u05DC\u05DB\u05EA \u05D1\u05D9\u05DF \u05D4\u05E4\u05D8\u05D9\u05E9 \u05DC\u05E1\u05D3\u05DF\""))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: '#fef3c7',
+        padding: '20px',
+        borderRadius: '12px',
+        borderRight: '4px solid #f59e0b',
+        textAlign: 'right',
+        marginBottom: '24px'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '18px',
+        lineHeight: '1.8',
+        color: '#92400e',
+        margin: 0
+      }
+    }, /*#__PURE__*/React.createElement("strong", null, "\uD83D\uDE80 \u05DE\u05D5\u05DB\u05DF \u05DC\u05D4\u05DE\u05E9\u05D9\u05DA?"), /*#__PURE__*/React.createElement("br", null), "\u05D1\u05D7\u05DC\u05E7 \u05D4\u05D1\u05D0 \u05E0\u05D2\u05DC\u05D4 \u05D0\u05EA \u05D4\u05D4\u05D2\u05D3\u05E8\u05D4 \u05D4\u05DE\u05D4\u05E4\u05DB\u05E0\u05D9\u05EA \u05E9\u05DC \u05D4\u05E7\u05DC\u05DC\u05D4 \u05D4\u05D0\u05DE\u05D9\u05EA\u05D9\u05EA \u05D5\u05E0\u05D1\u05D9\u05DF \u05DB\u05D9\u05E6\u05D3 \u05D4\u05E2\u05DE\u05DC \u05D4\u05D5\u05D0 \u05D4\u05D1\u05E8\u05DB\u05D4!"))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+        padding: '32px',
+        borderRadius: '16px',
+        color: 'white',
+        textAlign: 'center',
+        marginTop: '40px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+      }
+    }, /*#__PURE__*/React.createElement("h3", {
+      style: {
+        fontSize: '24px',
+        marginBottom: '16px'
+      }
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '28px',
+        fontWeight: 'bold',
+        margin: '0 0 16px 0'
+      }
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '22px',
+        margin: 0
+      }
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: ", /*#__PURE__*/React.createElement("span", {
+      dir: "ltr",
+      style: {
+        fontWeight: 'bold'
+      }
+    }, "052-713-9520"))));
+  };
+
+  // פרוגרס בר
+  const progress = currentLesson / lessonsData.length * 100;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: '40px 20px',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      direction: 'rtl'
+    }
+  }, /*#__PURE__*/React.createElement("style", null, `
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `), /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxWidth: '900px',
+      margin: '0 auto'
+    }
+  }, !gameComplete && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: 'rgba(255, 255, 255, 0.2)',
+      borderRadius: '12px',
+      padding: '8px',
+      marginBottom: '24px',
+      backdropFilter: 'blur(10px)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: '12px',
+      background: 'linear-gradient(90deg, #10b981 0%, #34d399 100%)',
+      borderRadius: '8px',
+      width: `${progress}%`,
+      transition: 'width 0.5s ease',
+      boxShadow: '0 2px 10px rgba(16, 185, 129, 0.5)'
+    }
+  })), gameComplete ? renderCompletion() : stage === 'content' ? renderContent() : renderQuiz()));
+}
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(GamePart1));
+</script>
+</body>
+</html>

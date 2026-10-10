@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>משחק_שיתופי_ואהבת – הקול החמישי</title>
+<meta name="description" content="Cooperative educational game teaching Jewish concepts of divine love through 6 interactive stations. Hebrew interface with team challenges and discussions.">
+<script src="../lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="משחק_שיתופי_ואהבת – הקול החמישי">
+<meta property="og:description" content="Cooperative educational game teaching Jewish concepts of divine love through 6 interactive stations. Hebrew interface with team challenges and discussions.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-ahavat-hashem-games-f1522965.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/ahavat-hashem/games/f1522965.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="../lib/react.js"></script>
+<script src="../lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="../lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Users = window.LucideReact["Users"] || window.LucideReact.Circle;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const AlertCircle = window.LucideReact["AlertCircle"] || window.LucideReact.Circle;
+const CheckCircle = window.LucideReact["CheckCircle"] || window.LucideReact.Circle;
+const Lightbulb = window.LucideReact["Lightbulb"] || window.LucideReact.Circle;
+const Book = window.LucideReact["Book"] || window.LucideReact.Circle;
+const Crown = window.LucideReact["Crown"] || window.LucideReact.Circle;
+const Eye = window.LucideReact["Eye"] || window.LucideReact.Circle;
+const Gift = window.LucideReact["Gift"] || window.LucideReact.Circle;
+const VeahavtaCooperativeGame = () => {
+  const [gameState, setGameState] = useState('intro');
+  const [currentStation, setCurrentStation] = useState(0);
+  const [closenessLevel, setClosenessLevel] = useState(70);
+  const [players, setPlayers] = useState([]);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [playerAnswers, setPlayerAnswers] = useState({});
+  const [showResult, setShowResult] = useState(false);
+  const [challengeActive, setChallengeActive] = useState(false);
+  const [currentChallenge, setCurrentChallenge] = useState(null);
+  const [questionsAnswered, setQuestionsAnswered] = useState(0);
+  const [teamInsights, setTeamInsights] = useState([]);
+  const stations = [{
+    id: 0,
+    title: "שער הכניסה: ההכרה",
+    icon: Eye,
+    color: "from-blue-400 to-blue-600",
+    description: "מהי אהבת ה' ומדוע היא תכלית הכל?"
+  }, {
+    id: 1,
+    title: "שער ההתבוננות",
+    icon: Sparkles,
+    color: "from-green-400 to-green-600",
+    description: "התבוננות בטוב האלוקי"
+  }, {
+    id: 2,
+    title: "שער הקדושה",
+    icon: Crown,
+    color: "from-purple-400 to-purple-600",
+    description: "אהבת הקדושה - משיכה פנימית"
+  }, {
+    id: 3,
+    title: "שער הקבלה",
+    icon: Heart,
+    color: "from-pink-400 to-pink-600",
+    description: "קבלת מלכות שמיים באהבה"
+  }, {
+    id: 4,
+    title: "שער התורה",
+    icon: Book,
+    color: "from-yellow-400 to-yellow-600",
+    description: "אהבת ה' דרך אהבת התורה"
+  }, {
+    id: 5,
+    title: "שער השלמות",
+    icon: Gift,
+    color: "from-red-400 to-red-600",
+    description: "המסע המשותף - אהבה בפועל"
+  }];
+  const playerRoles = [{
+    id: 'observer',
+    name: 'המתבונן',
+    icon: Eye,
+    description: 'מחפש את הטוב בכל פרט קטן',
+    color: 'text-blue-600'
+  }, {
+    id: 'learner',
+    name: 'הלומד',
+    icon: Book,
+    description: 'מעמיק בחכמה ובהבנה',
+    color: 'text-green-600'
+  }, {
+    id: 'receiver',
+    name: 'המקבל',
+    icon: Heart,
+    description: 'פותח את הלב לקבל אהבה',
+    color: 'text-pink-600'
+  }, {
+    id: 'awakener',
+    name: 'המעורר',
+    icon: Sparkles,
+    description: 'מעורר את הקבוצה להתרוממות',
+    color: 'text-purple-600'
+  }];
+  const stationQuestions = {
+    0: [{
+      q: "למה אהבת ה' היא 'תכלית כל המעלות'?",
+      options: ["כי היא המצווה הכי קשה לקיים", "כי היא המטרה האמיתית של כל התורה והמצוות", "כי רק צדיקים יכולים להשיגה", "כי היא נותנת לנו שכר גדול"],
+      correct: 1,
+      insight: "אהבת ה' אינה עוד מצווה - היא התכלית! כל שאר המצוות הן מדרגות בסולם המוביל לפסגה הזו.",
+      discussion: "שתפו: איך אתם מרגישים כשאתם חושבים שכל מה שאתם עושים הוא בעצם דרך להתקרב לבורא?"
+    }, {
+      q: "מה ההבדל בין 'עבד' ל'בן' ביחס לבורא?",
+      options: ["עבד עושה הכל מפחד, בן מתוך אהבה", "עבד מקבל פקודות, בן מקבל מתנות", "עבד עובד קשה, בן נהנה מהחיים", "אין הבדל - שניהם צריכים לציית"],
+      correct: 0,
+      insight: "המטרה היא לעבור מקשר של 'עבד-אדון' לקשר של 'בן-אב' - מפחד לאהבה, מחובה לשמחה!",
+      discussion: "חשבו ביחד: מתי הרגשתם 'בן' ומתי 'עבד' בעבודת ה'? מה השתנה?"
+    }],
+    1: [{
+      q: "מהו 'שער הכניסה' לאהבת ה'?",
+      options: ["לימוד תורה שעות ארוכות", "התבוננות והכרת הטוב על החסדים", "תפילה ארוכה בכוונה", "קיום מצוות קשות"],
+      correct: 1,
+      insight: "השער הראשון הוא פשוט: לפקוח עיניים! להכיר בטובו בכל פרט - זה מעורר הכרת טוב, וממנה צומחת אהבה.",
+      discussion: "כל אחד יספר: מה דבר אחד שראיתם היום שגרם לכם להרגיש הכרת טוב?"
+    }, {
+      q: "איך התבוננות בבריאה מעוררת אהבה?",
+      options: ["זה מראה כמה הבורא חזק", "זה מזכיר לנו שאנחנו קטנים", "זה מגלה את אהבתו אלינו בכל פרט", "זה עוזר לנו לזכור את המצוות"],
+      correct: 2,
+      insight: "כל פרח, כל נשימה, כל פרט - הם 'שירה של אהבה', לחישה מתמדת של הבורא אלינו!",
+      discussion: "תארו ביחד: פרט אחד בטבע שממחיש לכם אהבה אלוקית. למה?"
+    }],
+    2: [{
+      q: "מהי 'אהבת הקדושה'?",
+      options: ["אהבה לצדיקים וקדושים", "אהבה הנובעת ממשיכה פנימית לקדושה עצמה", "אהבה רק בזמן תפילה", "אהבה שרק אנשים מיוחדים יכולים להרגיש"],
+      correct: 1,
+      insight: "זו אהבה שלא תלויה במתנות! היא נובעת מהמשיכה הטבעית של הנשמה אל הקדושה והטהרה.",
+      discussion: "ספרו: מתי הרגשתם משיכה פנימית לדבר שבקדושה? מה זה עשה לכם?"
+    }, {
+      q: "מה ההבדל בין 'אהבת חסדו' ל'אהבת קדושתו'?",
+      options: ["אין הבדל - שתיהן אותו דבר", "אהבת חסדו על מה שקיבלנו, אהבת קדושתו משיכה פנימית לקדושה", "אהבת חסדו קלה יותר", "אהבת קדושתו רק לצדיקים"],
+      correct: 1,
+      insight: "שני סוגים משלימים! אהבת החסד - 'תודה על הפרי', אהבת הקדושה - 'שמחה מהשבת עצמה'.",
+      discussion: "נסו להבחין: מה יותר מניע אתכם - תודה על הטוב שקיבלתם, או משיכה לרוחניות?"
+    }],
+    3: [{
+      q: "מהי 'קבלת מלכות שמיים באהבה'?",
+      options: ["לומר קריאת שמע בכוונה", "לקבל את רצון ה' במצוות ובחיים בשמחה ואהבה", "לקבל על עצמנו עול מצוות", "להיות מלך בעבודת ה'"],
+      correct: 1,
+      insight: "זוהי הפסגה! לקבל את כל מה שה' מזמן - במצוות ובחיים - מתוך שמחה פנימית ואהבה אמיתית.",
+      discussion: "שתפו בזהירות: איזה אתגר בחיים קשה לכם לקבל באהבה? איך אתם עובדים על זה?"
+    }, {
+      q: "איך הופכים קושי בחיים ל'קבלת רצון' באהבה?",
+      options: ["להתעלם מהקושי ולהעמיד פנים שהכל בסדר", "להבין שגם הקושי מאהבה ולטובתנו", "לקוות שזה יעבור מהר", "להתלונן פחות"],
+      correct: 1,
+      insight: "ההבדל: אדם אחד מקבל אתגר במרירות, השני באמונה ואהבה - יודע שגם כאן מתגלה רצון ה' לטובתו!",
+      discussion: "עזרו אחד לשני: ספרו על קושי שעבר עליכם - איך אתם רואים אותו היום?"
+    }],
+    4: [{
+      q: "למה לימוד תורה הוא 'הדרך המלכותית' לאהבת ה'?",
+      options: ["כי זו המצווה הכי חשובה", "כי הוא מזין את כל סוגי האהבה - חסד, קדושה וקבלת רצון", "כי צריך ללמוד הרבה שעות", "כי רק דרך לימוד אפשר לאהוב"],
+      correct: 1,
+      insight: "התורה היא השער שמוביל לכל היכלות האהבה! היא מגלה חסד, מזככת לקדושה ומבהירה את הרצון.",
+      discussion: "חלקו: איזה חלק בתורה/תפילה חיבר אתכם הכי הרבה לאהבת ה'? למה?"
+    }, {
+      q: "מה 'איכות הלימוד' שמעוררת אהבה?",
+      options: ["כמות שעות גדולה", "לימוד מתוך כוונה לקרבת ה' והכנת הלב", "לימוד במקום קדוש", "לימוד רק עם חברותא"],
+      correct: 1,
+      insight: "'דקה אחת בדרגה גבוהה שווה כמו שלוש שעות בדרגה נמוכה' - הכוונה היא המכפיל!",
+      discussion: "שאלו אחד את השני: איך אתם מכינים את הלב ללימוד? מה עוזר לכם?"
+    }],
+    5: [{
+      q: "מה המשמעות של 'מסע משותף' באהבת ה'?",
+      options: ["כולם צריכים ללכת באותה מהירות", "כל אחד עוזר לשני ומעורר את חברו", "צריך ללמוד רק בקבוצה", "לא לדבר על זה עם אחרים"],
+      correct: 1,
+      insight: "המסע הזה לא בודד! כשאנחנו מחזקים אחד את השני, מעוררים ומעודדים - כולנו גדלים יחד!",
+      discussion: "הודו אחד לשני: איך כל אחד מכם תרם למסע המשותף הזה? מה למדתם אחד מהשני?"
+    }, {
+      q: "מהי התכלית של כל המסע הזה?",
+      options: ["לדעת הרבה על אהבת ה'", "לחיות עם הבורא בקשר חי, אישי ואוהב", "להיות טובים יותר", "לקבל שכר בעולם הבא"],
+      correct: 1,
+      insight: "התכלית: לא רק לדעת, אלא לחיות! קשר חי ואוהב עם הבורא בכל רגע ורגע.",
+      discussion: "סיכום משותף: מה הדבר המשמעותי ביותר שלמדתם במסע הזה ביחד?"
+    }]
+  };
+  const challenges = [{
+    type: 'doubt',
+    title: '☁️ אתגר: ענן הספק',
+    description: 'רגע של ספק מתגנב: "האם באמת אפשר להרגיש אהבה כזו?"',
+    options: ['להתעלם מהספק ולהמשיך', 'לדבר על זה ביחד ולחזק אחד את השני', 'להפסיק את המשחק - זה קשה מדי'],
+    correctIndex: 1,
+    damage: -15,
+    reward: +10,
+    message: 'כשמדברים על הספקות ביחד, הם הופכים לכוח! 💪'
+  }, {
+    type: 'sadness',
+    title: '😢 אתגר: עצב פתאומי',
+    description: 'אחד מכם מרגיש רחוק מהדברים האלו...',
+    options: ['כל אחד ימשיך בעצמו', 'להקשיב לו ולעודד אותו ביחד', 'להגיד לו להתאמץ יותר'],
+    correctIndex: 1,
+    damage: -12,
+    reward: +8,
+    message: 'אמפתיה וחיזוק הדדי - זה הכוח של מסע משותף! ❤️'
+  }, {
+    type: 'tiredness',
+    title: '😴 אתגר: עייפות',
+    description: 'הדרך ארוכה והקבוצה מתעייפת...',
+    options: ['להתמיד בעצמנו - כל אחד לבד', 'לעצור לרגע, לעודד אחד את השני ולהמשיך יחד', 'לוותר ולחזור'],
+    correctIndex: 1,
+    damage: -10,
+    reward: +7,
+    message: 'עצירה קצרה לחיזוק משותף נותנת כוח להמשיך! 🌟'
+  }, {
+    type: 'distraction',
+    title: '📱 אתגר: הסחות דעת',
+    description: 'העולם הרועש מנסה למשוך אתכם...',
+    options: ['כל אחד יתמודד בעצמו', 'ביחד תזכירו אחד לשני מה החשוב באמת', 'זה לא כזה נורא להסיח דעת'],
+    correctIndex: 1,
+    damage: -13,
+    reward: +9,
+    message: 'כשמזכירים אחד לשני את המטרה - ההסחות נעלמות! ✨'
+  }];
+
+  // Initialize players
+  const initPlayers = count => {
+    const newPlayers = [];
+    for (let i = 0; i < count; i++) {
+      newPlayers.push({
+        id: i,
+        name: `שחקן ${i + 1}`,
+        role: playerRoles[i % playerRoles.length],
+        hasAnswered: false
+      });
+    }
+    setPlayers(newPlayers);
+    setGameState('playing');
+    loadQuestion();
+  };
+  const loadQuestion = () => {
+    const stationQs = stationQuestions[currentStation];
+    if (stationQs) {
+      const randomQ = stationQs[Math.floor(Math.random() * stationQs.length)];
+      setCurrentQuestion(randomQ);
+      setPlayerAnswers({});
+      setShowResult(false);
+
+      // Random challenge appearance (30% chance)
+      if (Math.random() < 0.3) {
+        setTimeout(() => {
+          triggerChallenge();
+        }, 3000);
+      }
+    }
+  };
+  const triggerChallenge = () => {
+    const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
+    setCurrentChallenge(randomChallenge);
+    setChallengeActive(true);
+  };
+  const handleChallengeResponse = optionIndex => {
+    const isCorrect = optionIndex === currentChallenge.correctIndex;
+    if (isCorrect) {
+      setClosenessLevel(prev => Math.min(100, prev + currentChallenge.reward));
+      playSuccessSound();
+    } else {
+      setClosenessLevel(prev => Math.max(0, prev + currentChallenge.damage));
+    }
+    setTimeout(() => {
+      setChallengeActive(false);
+      setCurrentChallenge(null);
+    }, 2500);
+  };
+  const handleAnswer = answerIndex => {
+    if (showResult) return;
+    const isCorrect = answerIndex === currentQuestion.correct;
+    if (isCorrect) {
+      setClosenessLevel(prev => Math.min(100, prev + 8));
+      playSuccessSound();
+    } else {
+      setClosenessLevel(prev => Math.max(0, prev - 5));
+    }
+    setShowResult(true);
+    setQuestionsAnswered(prev => prev + 1);
+    if (isCorrect) {
+      setTeamInsights(prev => [...prev, currentQuestion.insight]);
+    }
+
+    // Check if ready for next station
+    if (questionsAnswered >= 1) {
+      setTimeout(() => {
+        if (currentStation < stations.length - 1) {
+          setCurrentStation(prev => prev + 1);
+          setQuestionsAnswered(0);
+          loadQuestion();
+          playLevelUpSound();
+        } else {
+          // Game complete
+          if (closenessLevel >= 85) {
+            setGameState('victory');
+            playCelebrationSound();
+          } else {
+            setGameState('tryAgain');
+          }
+        }
+      }, 4000);
+    } else {
+      setTimeout(() => {
+        loadQuestion();
+      }, 4000);
+    }
+  };
+  const playSuccessSound = () => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [261.63, 329.63, 392.00];
+    notes.forEach((freq, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = freq;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + index * 0.15);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + index * 0.15 + 0.3);
+      oscillator.start(audioContext.currentTime + index * 0.15);
+      oscillator.stop(audioContext.currentTime + index * 0.15 + 0.3);
+    });
+  };
+  const playLevelUpSound = () => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 523.25];
+    notes.forEach((freq, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = freq;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.25, audioContext.currentTime + index * 0.2);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + index * 0.2 + 0.4);
+      oscillator.start(audioContext.currentTime + index * 0.2);
+      oscillator.stop(audioContext.currentTime + index * 0.2 + 0.4);
+    });
+  };
+  const playCelebrationSound = () => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const melody = [523.25, 587.33, 659.25, 783.99, 880.00, 783.99, 659.25, 523.25];
+    melody.forEach((freq, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = freq;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + index * 0.25);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + index * 0.25 + 0.5);
+      oscillator.start(audioContext.currentTime + index * 0.25);
+      oscillator.stop(audioContext.currentTime + index * 0.25 + 0.5);
+    });
+  };
+
+  // Intro Screen
+  if (gameState === 'intro') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8 border-4 border-purple-200"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-8"
+    }, /*#__PURE__*/React.createElement(Users, {
+      className: "w-20 h-20 mx-auto mb-4 text-purple-600"
+    }), /*#__PURE__*/React.createElement("h1", {
+      className: "text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+    }, "\uD83C\uDF1F 6 \u05E9\u05E2\u05E8\u05D9 \u05D4\u05D0\u05D4\u05D1\u05D4 \uD83C\uDF1F"), /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl text-gray-700 mb-6"
+    }, "\u05DE\u05E9\u05D7\u05E7 \u05E9\u05D9\u05EA\u05D5\u05E4\u05D9 - \u05DE\u05E1\u05E2 \u05DE\u05E9\u05D5\u05EA\u05E3 \u05DC\u05D0\u05D4\u05D1\u05EA \u05D4'")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-6 mb-8 border-2 border-purple-300"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold mb-4 text-purple-800 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-6 h-6"
+    }), "\u05D0\u05D9\u05DA \u05DE\u05E9\u05D7\u05E7\u05D9\u05DD?"), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3 text-gray-700 text-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl"
+    }, "\uD83D\uDC65"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, "2-4 \u05E9\u05D7\u05E7\u05E0\u05D9\u05DD"), " \u05E2\u05D5\u05D1\u05D3\u05D9\u05DD ", /*#__PURE__*/React.createElement("strong", null, "\u05D1\u05D9\u05D7\u05D3"), " \u05DC\u05E2\u05D1\u05D5\u05E8 6 \u05EA\u05D7\u05E0\u05D5\u05EA")), /*#__PURE__*/React.createElement("p", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl"
+    }, "\u2764\uFE0F"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, "\u05DE\u05D3 \u05E7\u05E8\u05D1\u05D4 \u05DE\u05E9\u05D5\u05EA\u05E3"), " - \u05E6\u05E8\u05D9\u05DA \u05DC\u05D4\u05D2\u05D9\u05E2 \u05DC-85%+ \u05DB\u05D3\u05D9 \u05DC\u05E0\u05E6\u05D7")), /*#__PURE__*/React.createElement("p", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl"
+    }, "\uD83C\uDFAD"), /*#__PURE__*/React.createElement("span", null, "\u05DB\u05DC \u05E9\u05D7\u05E7\u05DF \u05DE\u05E7\u05D1\u05DC ", /*#__PURE__*/React.createElement("strong", null, "\u05EA\u05E4\u05E7\u05D9\u05D3 \u05D9\u05D9\u05D7\u05D5\u05D3\u05D9"), " \u05D1\u05E7\u05D1\u05D5\u05E6\u05D4")), /*#__PURE__*/React.createElement("p", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl"
+    }, "\uD83D\uDCAC"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, "\u05D3\u05D9\u05D5\u05E0\u05D9\u05DD \u05DE\u05E9\u05D5\u05EA\u05E4\u05D9\u05DD"), " \u05E2\u05DC \u05D4\u05E9\u05D0\u05DC\u05D5\u05EA - \u05DC\u05D0 \u05E1\u05EA\u05DD \u05EA\u05E9\u05D5\u05D1\u05D5\u05EA!")), /*#__PURE__*/React.createElement("p", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl"
+    }, "\u26A1"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, "\u05D0\u05EA\u05D2\u05E8\u05D9 \u05D7\u05D9\u05D9\u05DD"), " \u05D9\u05D5\u05E4\u05D9\u05E2\u05D5 - \u05EA\u05E6\u05D8\u05E8\u05DB\u05D5 \u05DC\u05D4\u05EA\u05DE\u05D5\u05D3\u05D3 \u05D1\u05D9\u05D7\u05D3")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-yellow-50 rounded-xl p-6 mb-8 border-2 border-yellow-300"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold mb-4 text-yellow-800 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(Lightbulb, {
+      className: "w-6 h-6"
+    }), "\u05D7\u05E9\u05D5\u05D1 \u05DC\u05D3\u05E2\u05EA!"), /*#__PURE__*/React.createElement("ul", {
+      className: "space-y-2 text-gray-700 text-lg"
+    }, /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", null, "\u2728"), /*#__PURE__*/React.createElement("span", null, "\u05D6\u05D4 \u05DC\u05D0 \u05EA\u05D7\u05E8\u05D5\u05EA - ", /*#__PURE__*/React.createElement("strong", null, "\u05DB\u05D5\u05DC\u05DB\u05DD \u05DE\u05E0\u05E6\u05D7\u05D9\u05DD \u05D0\u05D5 \u05DE\u05E4\u05E1\u05D9\u05D3\u05D9\u05DD \u05D1\u05D9\u05D7\u05D3!"))), /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDDE3\uFE0F"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, "\u05E9\u05D9\u05D7\u05D5 \u05D1\u05D9\u05E0\u05D9\u05DB\u05DD"), " - \u05D4\u05E9\u05D9\u05EA\u05D5\u05E3 \u05D4\u05D5\u05D0 \u05D4\u05DB\u05D5\u05D7 \u05E9\u05DC \u05D4\u05DE\u05E9\u05D7\u05E7")), /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCAA"), /*#__PURE__*/React.createElement("span", null, "\u05E2\u05D6\u05E8\u05D5 \u05D0\u05D7\u05D3 \u05DC\u05E9\u05E0\u05D9 - ", /*#__PURE__*/React.createElement("strong", null, "\u05D0\u05D7\u05E8\u05D9\u05D5\u05EA \u05D4\u05D3\u05D3\u05D9\u05EA!"))))), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold text-center text-gray-700"
+    }, "\u05DB\u05DE\u05D4 \u05E9\u05D7\u05E7\u05E0\u05D9\u05DD?"), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-2 gap-4"
+    }, [2, 3, 4].map(num => /*#__PURE__*/React.createElement("button", {
+      key: num,
+      onClick: () => initPlayers(num),
+      className: "bg-gradient-to-r from-purple-500 to-pink-500 text-white text-2xl font-bold py-6 rounded-xl hover:from-purple-600 hover:to-pink-600 transform hover:scale-105 transition-all shadow-lg"
+    }, num, " \u05E9\u05D7\u05E7\u05E0\u05D9\u05DD")))))));
+  }
+
+  // Challenge Screen
+  if (challengeActive && currentChallenge) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 p-6 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-3xl w-full"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8 border-4 border-red-300"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-6"
+    }, /*#__PURE__*/React.createElement(AlertCircle, {
+      className: "w-20 h-20 mx-auto mb-4 text-red-600 animate-pulse"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold mb-4 text-red-700"
+    }, currentChallenge.title), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700 mb-8"
+    }, currentChallenge.description)), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-center text-lg font-bold text-gray-700 mb-4"
+    }, "\u05D0\u05D9\u05DA \u05EA\u05EA\u05DE\u05D5\u05D3\u05D3\u05D5 \u05D1\u05D9\u05D7\u05D3?"), currentChallenge.options.map((option, index) => /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => handleChallengeResponse(index),
+      className: "w-full bg-gradient-to-r from-orange-400 to-red-400 text-white text-xl font-bold py-6 px-6 rounded-xl hover:from-orange-500 hover:to-red-500 transform hover:scale-105 transition-all shadow-lg text-right"
+    }, option))))));
+  }
+
+  // Playing Screen
+  if (gameState === 'playing' && currentQuestion) {
+    const currentStationData = stations[currentStation];
+    const StationIcon = currentStationData.icon;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-5xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-xl p-6 mb-6 border-2 border-purple-200"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between mb-4"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-bold text-gray-800 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(StationIcon, {
+      className: "w-8 h-8 text-purple-600"
+    }), currentStationData.title), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600 text-lg mt-1"
+    }, currentStationData.description)), /*#__PURE__*/React.createElement("div", {
+      className: "text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl font-bold text-purple-600"
+    }, currentStation + 1, "/6"), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-500"
+    }, "\u05EA\u05D7\u05E0\u05D5\u05EA"))), /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-2 mb-4"
+    }, stations.map((station, index) => /*#__PURE__*/React.createElement("div", {
+      key: index,
+      className: `flex-1 h-3 rounded-full transition-all ${index < currentStation ? 'bg-green-500' : index === currentStation ? 'bg-purple-500 animate-pulse' : 'bg-gray-200'}`
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "mt-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between mb-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-lg font-bold text-gray-700 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: `w-6 h-6 ${closenessLevel >= 85 ? 'text-red-500' : 'text-gray-400'}`
+    }), "\u05DE\u05D3 \u05D4\u05E7\u05E8\u05D1\u05D4 \u05D4\u05DE\u05E9\u05D5\u05EA\u05E3"), /*#__PURE__*/React.createElement("span", {
+      className: `text-3xl font-bold ${closenessLevel >= 85 ? 'text-green-600' : closenessLevel >= 60 ? 'text-yellow-600' : 'text-red-600'}`
+    }, closenessLevel, "%")), /*#__PURE__*/React.createElement("div", {
+      className: "w-full h-8 bg-gray-200 rounded-full overflow-hidden border-2 border-gray-300"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: `h-full transition-all duration-700 ${closenessLevel >= 85 ? 'bg-gradient-to-r from-green-400 to-green-600' : closenessLevel >= 60 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' : 'bg-gradient-to-r from-red-400 to-red-600'}`,
+      style: {
+        width: `${closenessLevel}%`
+      }
+    })), /*#__PURE__*/React.createElement("p", {
+      className: "text-center text-sm text-gray-600 mt-2"
+    }, closenessLevel >= 85 ? '🌟 מצוין! ממשיכים בכוח!' : closenessLevel >= 60 ? '💪 טוב! עוד קצת...' : '⚠️ זהירות! מד הקרבה יורד...'))), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"
+    }, players.map(player => {
+      const RoleIcon = player.role.icon;
+      return /*#__PURE__*/React.createElement("div", {
+        key: player.id,
+        className: "bg-white rounded-xl shadow-lg p-4 border-2 border-purple-200"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "text-center"
+      }, /*#__PURE__*/React.createElement(RoleIcon, {
+        className: `w-10 h-10 mx-auto mb-2 ${player.role.color}`
+      }), /*#__PURE__*/React.createElement("div", {
+        className: "font-bold text-gray-800"
+      }, player.name), /*#__PURE__*/React.createElement("div", {
+        className: `text-sm ${player.role.color}`
+      }, player.role.name), /*#__PURE__*/React.createElement("div", {
+        className: "text-xs text-gray-500 mt-1"
+      }, player.role.description)));
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-xl p-8 border-2 border-purple-200"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-3xl font-bold mb-8 text-gray-800 text-center"
+    }, currentQuestion.q), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4 mb-6"
+    }, currentQuestion.options.map((option, index) => /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => handleAnswer(index),
+      disabled: showResult,
+      className: `w-full text-xl font-bold py-6 px-6 rounded-xl transition-all shadow-lg text-right ${showResult ? index === currentQuestion.correct ? 'bg-gradient-to-r from-green-400 to-green-600 text-white' : 'bg-gray-300 text-gray-600' : 'bg-gradient-to-r from-purple-400 to-pink-400 text-white hover:from-purple-500 hover:to-pink-500 transform hover:scale-105'}`
+    }, option))), showResult && /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 space-y-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border-2 border-green-300"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-start gap-3"
+    }, /*#__PURE__*/React.createElement(Lightbulb, {
+      className: "w-8 h-8 text-yellow-600 flex-shrink-0 mt-1"
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-xl text-gray-800 mb-2"
+    }, "\uD83D\uDCA1 \u05EA\u05D5\u05D1\u05E0\u05D4:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700"
+    }, currentQuestion.insight)))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-300"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-start gap-3"
+    }, /*#__PURE__*/React.createElement(Users, {
+      className: "w-8 h-8 text-purple-600 flex-shrink-0 mt-1"
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-xl text-gray-800 mb-2"
+    }, "\uD83D\uDDE3\uFE0F \u05DC\u05D3\u05D9\u05D5\u05DF \u05DE\u05E9\u05D5\u05EA\u05E3:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700"
+    }, currentQuestion.discussion))))))));
+  }
+
+  // Victory Screen
+  if (gameState === 'victory') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-yellow-50 via-green-50 to-blue-50 p-6 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl w-full"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-12 border-4 border-yellow-300 text-center"
+    }, /*#__PURE__*/React.createElement(Crown, {
+      className: "w-32 h-32 mx-auto mb-6 text-yellow-500"
+    }), /*#__PURE__*/React.createElement("h1", {
+      className: "text-6xl font-bold mb-6 bg-gradient-to-r from-yellow-600 to-green-600 bg-clip-text text-transparent"
+    }, "\uD83C\uDF89 \u05E0\u05D9\u05E6\u05D7\u05EA\u05DD \u05D1\u05D9\u05D7\u05D3! \uD83C\uDF89"), /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl text-gray-700 mb-8"
+    }, "\u05E2\u05D1\u05E8\u05EA\u05DD \u05D0\u05EA 6 \u05E9\u05E2\u05E8\u05D9 \u05D4\u05D0\u05D4\u05D1\u05D4 \u05D1\u05DE\u05E1\u05E2 \u05DE\u05E9\u05D5\u05EA\u05E3 \u05DE\u05E8\u05D2\u05E9!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-green-100 to-blue-100 rounded-xl p-8 mb-8 border-2 border-green-300"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold mb-4 text-gray-800"
+    }, "\uD83D\uDCCA \u05E1\u05D9\u05DB\u05D5\u05DD \u05D4\u05DE\u05E1\u05E2:"), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-2 gap-6 text-xl"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl font-bold text-green-600"
+    }, closenessLevel, "%"), /*#__PURE__*/React.createElement("div", {
+      className: "text-gray-600"
+    }, "\u05E8\u05DE\u05EA \u05E7\u05E8\u05D1\u05D4 \u05E1\u05D5\u05E4\u05D9\u05EA")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl font-bold text-purple-600"
+    }, teamInsights.length), /*#__PURE__*/React.createElement("div", {
+      className: "text-gray-600"
+    }, "\u05EA\u05D5\u05D1\u05E0\u05D5\u05EA \u05DE\u05E9\u05D5\u05EA\u05E4\u05D5\u05EA")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-8 mb-8 border-2 border-purple-300"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold mb-4 text-purple-800 flex items-center justify-center gap-2"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-8 h-8"
+    }), "\u05D4\u05DC\u05E7\u05D7 \u05D4\u05D2\u05D3\u05D5\u05DC"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700 leading-relaxed"
+    }, "\u05D4\u05D5\u05DB\u05D7\u05EA\u05DD \u05E9\u05DB\u05D0\u05E9\u05E8 \u05E2\u05D5\u05D1\u05D3\u05D9\u05DD ", /*#__PURE__*/React.createElement("strong", null, "\u05D1\u05D9\u05D7\u05D3"), ", \u05DE\u05D7\u05D6\u05E7\u05D9\u05DD ", /*#__PURE__*/React.createElement("strong", null, "\u05D0\u05D7\u05D3 \u05D0\u05EA \u05D4\u05E9\u05E0\u05D9"), ", \u05D5\u05DE\u05EA\u05DE\u05D5\u05D3\u05D3\u05D9\u05DD \u05E2\u05DD ", /*#__PURE__*/React.createElement("strong", null, "\u05D4\u05D0\u05EA\u05D2\u05E8\u05D9\u05DD \u05D1\u05D9\u05D7\u05D3"), " - \u05D0\u05E4\u05E9\u05E8 \u05DC\u05D4\u05D2\u05D9\u05E2 \u05DC\u05DE\u05E7\u05D5\u05DE\u05D5\u05EA \u05D2\u05D1\u05D5\u05D4\u05D9\u05DD!", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl"
+    }, "\uD83D\uDCAB"), " ", /*#__PURE__*/React.createElement("strong", null, "\u05D4\u05DE\u05E1\u05E2 \u05DC\u05D0\u05D4\u05D1\u05EA \u05D4' \u05D4\u05D5\u05D0 \u05DE\u05E1\u05E2 \u05DE\u05E9\u05D5\u05EA\u05E3 \u05E9\u05DC \u05DB\u05DC \u05E2\u05DD \u05D9\u05E9\u05E8\u05D0\u05DC"), " ", /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl"
+    }, "\uD83D\uDCAB"))), /*#__PURE__*/React.createElement("div", {
+      className: "text-lg text-gray-600 mb-8"
+    }, "\"\u05DC\u05D6\u05D4 \u05DB\u05D1\u05D9\u05DB\u05D5\u05DC \u05DE\u05D7\u05DB\u05D4 \u05D4\u05E9\u05D9\"\u05EA, \u05E9\u05DB\u05B7\u05BC\u05DC\u05B8\u05EA\u05D5\u05B9 \u05D4\u05D0\u05D4\u05D5\u05D1\u05D4 \u05EA\u05EA\u05E2\u05D5\u05E8\u05E8 \u05DE\u05EA\u05E8\u05D3\u05DE\u05EA\u05D4", /*#__PURE__*/React.createElement("br", null), "\u05D5\u05DE\u05D0\u05D3\u05D9\u05E9\u05D5\u05EA\u05D4 \u05D5\u05EA\u05E8\u05E2\u05E0\u05DF \u05D0\u05EA \u05E8\u05D2\u05E9\u05D5\u05EA \u05D0\u05D4\u05D1\u05EA\u05D4 \u05D0\u05DC\u05D9\u05D5 \u2013 \u05D0\u05D4\u05D1\u05EA \u05DB\u05DC\u05D5\u05DC\u05D5\u05EA\u05D9\u05D4.\""), /*#__PURE__*/React.createElement("button", {
+      onClick: () => window.location.reload(),
+      className: "bg-gradient-to-r from-purple-500 to-pink-500 text-white text-2xl font-bold py-6 px-12 rounded-xl hover:from-purple-600 hover:to-pink-600 transform hover:scale-105 transition-all shadow-xl"
+    }, "\uD83D\uDD04 \u05DE\u05E1\u05E2 \u05D7\u05D3\u05E9"))));
+  }
+
+  // Try Again Screen
+  if (gameState === 'tryAgain') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-red-50 p-6 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-3xl w-full"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-12 border-4 border-orange-300 text-center"
+    }, /*#__PURE__*/React.createElement(Sparkles, {
+      className: "w-24 h-24 mx-auto mb-6 text-orange-500"
+    }), /*#__PURE__*/React.createElement("h1", {
+      className: "text-5xl font-bold mb-6 text-gray-800"
+    }, "\uD83C\uDF31 \u05D4\u05EA\u05D7\u05DC\u05D4 \u05D8\u05D5\u05D1\u05D4!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-gray-700 mb-8"
+    }, "\u05E2\u05D1\u05E8\u05EA\u05DD \u05D0\u05EA \u05DB\u05DC \u05D4\u05EA\u05D7\u05E0\u05D5\u05EA, \u05D0\u05D1\u05DC \u05DE\u05D3 \u05D4\u05E7\u05E8\u05D1\u05D4 \u05DC\u05D0 \u05D4\u05D2\u05D9\u05E2 \u05DC-85%"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-8 mb-8 border-2 border-yellow-300"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold mb-4 text-gray-800"
+    }, "\uD83D\uDCA1 \u05E2\u05E6\u05D5\u05EA \u05DC\u05E0\u05D9\u05E1\u05D9\u05D5\u05DF \u05D4\u05D1\u05D0:"), /*#__PURE__*/React.createElement("ul", {
+      className: "text-xl text-gray-700 space-y-3 text-right"
+    }, /*#__PURE__*/React.createElement("li", null, "\u2728 \u05D3\u05D1\u05E8\u05D5 \u05D9\u05D5\u05EA\u05E8 \u05D1\u05D9\u05E0\u05D9\u05DB\u05DD \u05E2\u05DC \u05D4\u05E9\u05D0\u05DC\u05D5\u05EA"), /*#__PURE__*/React.createElement("li", null, "\uD83D\uDCAA \u05D7\u05D6\u05E7\u05D5 \u05D0\u05D7\u05D3 \u05D0\u05EA \u05D4\u05E9\u05E0\u05D9 \u05D1\u05D0\u05EA\u05D2\u05E8\u05D9\u05DD"), /*#__PURE__*/React.createElement("li", null, "\u2764\uFE0F \u05D4\u05E7\u05E9\u05D9\u05D1\u05D5 \u05DC\u05E8\u05D2\u05E9\u05D5\u05EA \u05E9\u05DC \u05DB\u05DC \u05D0\u05D7\u05D3 \u05D1\u05E7\u05D1\u05D5\u05E6\u05D4"), /*#__PURE__*/React.createElement("li", null, "\uD83E\uDD1D \u05D6\u05DB\u05E8\u05D5 - \u05D0\u05EA\u05DD \u05E6\u05D5\u05D5\u05EA \u05D0\u05D7\u05D3!"))), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => window.location.reload(),
+      className: "w-full bg-gradient-to-r from-green-500 to-blue-500 text-white text-2xl font-bold py-6 px-12 rounded-xl hover:from-green-600 hover:to-blue-600 transform hover:scale-105 transition-all shadow-xl"
+    }, "\uD83D\uDD04 \u05E0\u05E1\u05D5 \u05E9\u05D5\u05D1 \u05D1\u05D9\u05D7\u05D3")))));
+  }
+  return null;
+};
+const __App = VeahavtaCooperativeGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

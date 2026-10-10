@@ -1,0 +1,2707 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ahavat_hashem_game – הקול החמישי</title>
+<meta name="description" content="Play an engaging Hebrew educational game exploring love of God through role-playing scenarios, moral choices, and spiritual growth challenges.">
+<script src="../lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="ahavat_hashem_game – הקול החמישי">
+<meta property="og:description" content="Play an engaging Hebrew educational game exploring love of God through role-playing scenarios, moral choices, and spiritual growth challenges.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-ahavat-hashem-games-48aabcb6.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/ahavat-hashem/games/48aabcb6.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="../lib/react.js"></script>
+<script src="../lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="../lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const ArrowRight = window.LucideReact["ArrowRight"] || window.LucideReact.Circle;
+const RefreshCw = window.LucideReact["RefreshCw"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const AhavatHashemGame = () => {
+  // Game state
+  const [gameStage, setGameStage] = useState('welcome'); // welcome, roleSelect, playing, levelComplete, gameComplete
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [currentLevel, setCurrentLevel] = useState('easy'); // easy, medium, hard
+  const [currentScenario, setCurrentScenario] = useState(0);
+  const [score, setScore] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+  const [kindnessPoints, setKindnessPoints] = useState(0);
+  const [masteryLevel, setMasteryLevel] = useState(0);
+  const [missionMeter, setMissionMeter] = useState(0);
+  const [feedback, setFeedback] = useState('');
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [levelScores, setLevelScores] = useState({
+    easy: 0,
+    medium: 0,
+    hard: 0
+  });
+
+  // Role definitions
+  const roles = [{
+    id: 'gratitude',
+    name: 'שגריר תודה',
+    icon: '🙏',
+    description: 'עבודתך העיקרית היא הכרת הטוב והתבוננות במתנות ה׳',
+    aspect: 'בכל מאודך',
+    color: 'from-amber-500 to-yellow-600'
+  }, {
+    id: 'scholar',
+    name: 'חוקר מילים',
+    icon: '📚',
+    description: 'עבודתך העיקרית היא לימוד והשגה של טעמי המצוות',
+    aspect: 'בכל לבבך',
+    color: 'from-blue-500 to-indigo-600'
+  }, {
+    id: 'builder',
+    name: 'בנאי חשבון',
+    icon: '💪',
+    description: 'עבודתך העיקרית היא מסירות נפש ופעולה',
+    aspect: 'בכל נפשך',
+    color: 'from-green-500 to-emerald-600'
+  }];
+
+  // Scenarios for each level
+  const scenarios = {
+    easy: [{
+      id: 1,
+      title: '🌅 בוקר של תפילין',
+      situation: 'אתה מניח תפילין בפעם הראשונה כבר מצווה. מה הדרך הטובה ביותר לעשות את זה?',
+      choices: [{
+        text: 'להניח במהירות ולסיים',
+        points: 5,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'חשוב להתמהמה ולהרגיש את החיבור! ⏰',
+          scholar: 'זכור - הלב צריך מחשבה ותבונה 🤔',
+          builder: 'המצווה חשובה, אבל הכוונה עוד יותר! 💡'
+        }
+      }, {
+        text: 'לחשוב על משמעות התפילין ולהניח בכוונה',
+        points: 10,
+        kindness: 2,
+        mastery: 2,
+        mission: 25,
+        feedback: {
+          gratitude: 'מצוין! גילית את הדרך לחוות הנאה בתכלית העונג! ⭐',
+          scholar: 'פצצה! השגה עמוקה מולידה אהבה! 🎯',
+          builder: 'כל הכבוד! כוונה עמוקה היא הבסיס! 💪'
+        }
+      }, {
+        text: 'לומר בלבי: "אני אוהב אותך ריבונו של עולם"',
+        points: 10,
+        kindness: 2,
+        mastery: 1,
+        mission: 25,
+        feedback: {
+          gratitude: 'נפלא! הדיבור מעורר את הלב! ✨',
+          scholar: 'מעולה! התבטאות חיצונית מחזקת פנימיות! 🌟',
+          builder: 'יפה מאוד! הדיבור נותן כוח עצום ללב! 🎉'
+        }
+      }, {
+        text: 'לקרוא הסבר על התפילין לפני ההנחה',
+        points: 8,
+        kindness: 1,
+        mastery: 2,
+        mission: 20,
+        feedback: {
+          gratitude: 'יפה! ידע מוביל לאהבה! 💫',
+          scholar: 'מצוין! ההכנה חשובה מאוד! 📖',
+          builder: 'טוב! התבוננות מקדימה היא חשובה! 🔍'
+        }
+      }]
+    }, {
+      id: 2,
+      title: '🍹 מיץ טבעי מתוק',
+      situation: 'אתה שותה מיץ טבעי טעים. איך תגיב?',
+      choices: [{
+        text: 'אשתה במהירות כי אני צמא',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 8,
+        feedback: {
+          gratitude: 'נסה לשים לב לפרטים המיוחדים! 🤔',
+          scholar: 'זו הזדמנות להכרת הטוב! 💭',
+          builder: 'גם פעולות פשוטות יכולות להיות עבודת ה׳! ⚡'
+        }
+      }, {
+        text: 'להתפעל מהצבע והטעם - ה׳ לא חסך והמציא טעמים רבים רק להנאתי',
+        points: 10,
+        kindness: 3,
+        mastery: 2,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! הכרת החסד המרובה! 🏆',
+          scholar: 'פנטסטי! זיהית את האהבה היתירה! 🎯',
+          builder: 'הנפש קיבלה אנרגיה גבוהה! זו הדרך! 🚀'
+        }
+      }, {
+        text: 'להודות על הויטמינים החיוניים',
+        points: 6,
+        kindness: 1,
+        mastery: 0,
+        mission: 15,
+        feedback: {
+          gratitude: 'יפה, אבל אל תהיה "אורח רע" - ראה את החסד המיוחד! 💡',
+          scholar: 'טוב, אך נסה לראות מעבר להכרח! 🔍',
+          builder: 'התחלה טובה, אבל יש עומק גדול יותר! 🌱'
+        }
+      }, {
+        text: 'לשהות ברגש של נעימות השתייה',
+        points: 8,
+        kindness: 2,
+        mastery: 1,
+        mission: 20,
+        feedback: {
+          gratitude: 'כיוון נכון! השהייה מעמיקה! 🌟',
+          scholar: 'מעולה! לשהות בתוך הרגש מאפשר לו לחדור חזק! ⭐',
+          builder: 'יפה! חוויה מודעת היא רבת עוצמה! 💫'
+        }
+      }]
+    }, {
+      id: 3,
+      title: '🎒 ניקיון התיק',
+      situation: 'אתה בבית, מרגיש עצלות, וצריך לנקות את התיק. מה תעשה?',
+      choices: [{
+        text: 'אדחה לאחר כך',
+        points: 3,
+        kindness: 0,
+        mastery: 0,
+        mission: 5,
+        feedback: {
+          gratitude: 'זריזות היא דרך לאהבה! 🏃',
+          scholar: 'העצלות מונעת התקדמות! 💭',
+          builder: 'המסמר מחכה לפטיש! אל תוותר! 🔨'
+        }
+      }, {
+        text: 'להתגבר בזריזות ולומר בלב: "אני עושה כמסירת רצון לשמח את ה׳"',
+        points: 10,
+        kindness: 3,
+        mastery: 2,
+        mission: 25,
+        feedback: {
+          gratitude: 'פצצה! זו עבודת ה׳ אמיתית! 🎯',
+          scholar: 'הוכחת שליטה עצמית! הפטיש החזק! 💪',
+          builder: 'כל הכבוד! כך תוקעים את הרצון לאהבה! 🏆'
+        }
+      }, {
+        text: 'לעשות, אבל להתלונן על הקושי',
+        points: 6,
+        kindness: 1,
+        mastery: 0,
+        mission: 15,
+        feedback: {
+          gratitude: 'טוב אחד בצער שווה ממאה שלא בצער - אבל עם שמחה! 💡',
+          scholar: 'המעשה טוב, אבל הכוונה צריכה שיפור! 🔍',
+          builder: 'השקעה עם שמחה מולידה אהבה חזקה יותר! 🌱'
+        }
+      }, {
+        text: 'לעסוק בלימוד תורה במקום',
+        points: 5,
+        kindness: 0,
+        mastery: 1,
+        mission: 12,
+        feedback: {
+          gratitude: 'תורה חשובה, אבל כיבוש היצר הוא האמצעי הטוב! 📚',
+          scholar: 'לימוד נפלא, אך ההתגברות היא המבחן! 💭',
+          builder: 'האיזון בין לימוד לפעולה הוא המפתח! ⚖️'
+        }
+      }]
+    }, {
+      id: 4,
+      title: '💰 כסף שמצאת',
+      situation: 'יש לך 20 ₪ לחטיף. חבר שלך לא מצליח להגיע הביתה בגלל שחסר לו כסף לכרטיס. מה תעשה?',
+      choices: [{
+        text: 'לשמור את הכסף לעצמי',
+        points: 2,
+        kindness: -1,
+        mastery: 0,
+        mission: 5,
+        feedback: {
+          gratitude: 'האוהב את האב אוהב את בניו! 💔',
+          scholar: 'הזדמנות פז להראות אהבה! 🔍',
+          builder: 'נתינה מולידה אהבה! זו ההזדמנות! 💡'
+        }
+      }, {
+        text: 'לתת לו את כל הכסף - הוא "בן יקר" של ה׳',
+        points: 10,
+        kindness: 4,
+        mastery: 2,
+        mission: 25,
+        feedback: {
+          gratitude: 'זהו שיא ההודיה! המאודך שלך הפך לכלי לאהבת ה׳! 🏆',
+          scholar: 'מושלם! נתינה כמתנת נדבה לבורא! 🎯',
+          builder: 'מדהים! האהבה נמדדת בנתינה! פסגת ההשקעה! 🚀'
+        }
+      }, {
+        text: 'להתפלל עבורו אבל לשמור את הכסף',
+        points: 5,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'תפילה חשובה, אבל מעשה חזק יותר! 🙏',
+          scholar: 'מחשבה טובה, אך פעולה מחזקת לבבות! 💭',
+          builder: 'הפטיש הוא המעשה! לא רק הכוונה! 🔨'
+        }
+      }, {
+        text: 'להציע לו להתחלק בחטיף',
+        points: 7,
+        kindness: 2,
+        mastery: 1,
+        mission: 18,
+        feedback: {
+          gratitude: 'יפה, אבל נתינה מלאה מראה אהבה מלאה! 💫',
+          scholar: 'התחלה טובה, אך מסירות היא הדרגה הגבוהה! 🌟',
+          builder: 'כיוון נכון! השקעה מלאה מולידה אהבה מלאה! ⭐'
+        }
+      }]
+    }, {
+      id: 5,
+      title: '📖 שיעור תורה',
+      situation: 'אתה בשיעור תורה. איך תתייחס אליו?',
+      choices: [{
+        text: 'להקשיב בלי להתעמק',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'כל מילה היא מתנה! הקשב בעומק! 💎',
+          scholar: 'תורה דורשת התעמקות להשגה! 📚',
+          builder: 'העמל בתורה מחזק את האהבה! 💪'
+        }
+      }, {
+        text: 'להתבונן איך כל הלכה מראה את חוכמת ה׳',
+        points: 10,
+        kindness: 2,
+        mastery: 3,
+        mission: 25,
+        feedback: {
+          gratitude: 'נפלא! התבוננות מולידת התפעלות! ✨',
+          scholar: 'מצוין! השגה עמוקה היא הדרך! 🎯',
+          builder: 'פנטסטי! כך בונים את היסודות! 🏗️'
+        }
+      }, {
+        text: 'לשאול שאלות להבנה עמוקה יותר',
+        points: 9,
+        kindness: 1,
+        mastery: 2,
+        mission: 22,
+        feedback: {
+          gratitude: 'מעולה! סקרנות היא דלת לאהבה! 🚪',
+          scholar: 'כל הכבוד! שאלות מעמיקות את ההבנה! 💡',
+          builder: 'יפה מאוד! חקירה בונה שליטה! 🔍'
+        }
+      }, {
+        text: 'לרשום את העיקרים בלבד',
+        points: 6,
+        kindness: 1,
+        mastery: 1,
+        mission: 15,
+        feedback: {
+          gratitude: 'טוב, אבל פספס את העומק! 📝',
+          scholar: 'סיכום חשוב, אך לא מספיק להשגה! 📖',
+          builder: 'התחלה, אבל צריך יותר עומק! 🌱'
+        }
+      }]
+    }, {
+      id: 6,
+      title: '🌳 טיול בטבע',
+      situation: 'אתה רואה עץ מלבלב מדהים בטיול. מה עובר לך בראש?',
+      choices: [{
+        text: '"איזה עץ יפה"',
+        points: 5,
+        kindness: 1,
+        mastery: 0,
+        mission: 12,
+        feedback: {
+          gratitude: 'תשים לב למי יצר את זה! 🌳',
+          scholar: 'העץ הוא שליח - מי השולח? 🤔',
+          builder: 'חבר את היופי ליוצר! 🔗'
+        }
+      }, {
+        text: '"ראה איזו בריאה מופלאה ברא הקב״ה!"',
+        points: 10,
+        kindness: 3,
+        mastery: 2,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! זיהית את המתנה ואת הנותן! 🎁',
+          scholar: 'פצצה! חיבור מושלם בין בריאה לבורא! 🌟',
+          builder: 'כל הכבוד! התבוננות זו מעוררת אהבה! ⭐'
+        }
+      }, {
+        text: 'לחשוב על איך הטבע עובד',
+        points: 7,
+        kindness: 1,
+        mastery: 1,
+        mission: 18,
+        feedback: {
+          gratitude: 'מעניין, אבל מי תיכנן את המערכת? 🧬',
+          scholar: 'כיוון טוב! עכשיו חבר לחכמת ה׳! 💫',
+          builder: 'התחלה נכונה - הוסף את הבורא לתמונה! 🖼️'
+        }
+      }, {
+        text: 'להמשיך הלאה בלי להתעכב',
+        points: 3,
+        kindness: 0,
+        mastery: 0,
+        mission: 8,
+        feedback: {
+          gratitude: 'אל תפספס הזדמנויות להכרת הטוב! ⏰',
+          scholar: 'כל רגע הוא הזדמנות להשגה! 🔍',
+          builder: 'עצור ושים לב - זה חלק מהעבודה! 🛑'
+        }
+      }]
+    }, {
+      id: 7,
+      title: '😊 יום קשה',
+      situation: 'יום היה קשה ומתיש. איך תסיים אותו?',
+      choices: [{
+        text: 'פשוט ללכת לישון',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 8,
+        feedback: {
+          gratitude: 'גם ביום קשה יש על מה להודות! 🌙',
+          scholar: 'התבוננות לפני שינה מחזקת! 💭',
+          builder: 'חשבון נפש יומי הוא כלי חשוב! 📊'
+        }
+      }, {
+        text: 'לחשוב על 3 דברים טובים שקרו היום - גם הקטנים',
+        points: 10,
+        kindness: 3,
+        mastery: 2,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! הכרת הטוב היומיומית! 🏆',
+          scholar: 'נפלא! התבוננות מתמדת מעמיקה אהבה! ✨',
+          builder: 'פנטסטי! כך בונים אהבה יום יום! 🧱'
+        }
+      }, {
+        text: 'להתלונן על הקשיים',
+        points: 2,
+        kindness: -1,
+        mastery: 0,
+        mission: 5,
+        feedback: {
+          gratitude: 'תלונות מרחיקות מאהבה! חפש את הטוב! 🔎',
+          scholar: 'גם בקושי יש טוב נסתר! 💡',
+          builder: 'התגברות על תלונות מחזקת! 💪'
+        }
+      }, {
+        text: 'לקרוא תהילים',
+        points: 8,
+        kindness: 2,
+        mastery: 1,
+        mission: 20,
+        feedback: {
+          gratitude: 'יפה! דוד המלך מלמד הכרת הטוב! 👑',
+          scholar: 'מעולה! תהילים מלאים באהבת ה׳! 📖',
+          builder: 'נכון! תפילה מחזקת את הקשר! 🙏'
+        }
+      }]
+    }, {
+      id: 8,
+      title: '🎮 זמן פנוי',
+      situation: 'יש לך שעה פנויה. מה תעשה?',
+      choices: [{
+        text: 'לשחק במשחק מחשב',
+        points: 3,
+        kindness: 0,
+        mastery: 0,
+        mission: 8,
+        feedback: {
+          gratitude: 'זמן פנוי הוא הזדמנות לצמיחה! ⏰',
+          scholar: 'איך תשתמש במתנת הזמן? 🎁',
+          builder: 'גם בזמן פנוי יש מקום לעבודת ה׳! 🎯'
+        }
+      }, {
+        text: 'ללמוד משהו חדש שמעניין אותי',
+        points: 9,
+        kindness: 2,
+        mastery: 2,
+        mission: 23,
+        feedback: {
+          gratitude: 'נפלא! כל לימוד מקרב לבורא! 📚',
+          scholar: 'מצוין! סקרנות מולידה השגה! 🔍',
+          builder: 'כל הכבוד! השקעה נכונה! 💎'
+        }
+      }, {
+        text: 'לעזור בבית',
+        points: 10,
+        kindness: 3,
+        mastery: 1,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! חסד בפעולה! 🏠',
+          scholar: 'פצצה! "דרך ארץ קדמה לתורה"! ⭐',
+          builder: 'פנטסטי! פעולה מולידה אהבה! 🚀'
+        }
+      }, {
+        text: 'לנוח - אני עייף',
+        points: 6,
+        kindness: 1,
+        mastery: 0,
+        mission: 15,
+        feedback: {
+          gratitude: 'מנוחה חשובה, אבל לא תמיד הכרחית! 😴',
+          scholar: 'זריזות מביאה להשגה! 💡',
+          builder: 'איזון נכון, אבל אל תפספס הזדמנויות! ⚖️'
+        }
+      }]
+    }, {
+      id: 9,
+      title: '👨‍👩‍👦 ויכוח בבית',
+      situation: 'אתה רב עם אח או אחות. מה תעשה?',
+      choices: [{
+        text: 'להתעקש על הצדק שלי',
+        points: 3,
+        kindness: -1,
+        mastery: 0,
+        mission: 8,
+        feedback: {
+          gratitude: 'שלום בית חשוב מצדק! 🏠',
+          scholar: 'ענווה מובילה לאהבה! 💭',
+          builder: 'כיבוש הכעס הוא פטיש חזק! 🔨'
+        }
+      }, {
+        text: 'לוותר ולחשוב: "אני עושה זאת כדי לשמח את ה׳"',
+        points: 10,
+        kindness: 4,
+        mastery: 2,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! ויתור לשם שמיים! 🏆',
+          scholar: 'נפלא! מסירת רצון אמיתית! 🌟',
+          builder: 'פצצה! כך בונים דבקות! 🎯'
+        }
+      }, {
+        text: 'להתנצל גם אם לא אשם',
+        points: 9,
+        kindness: 3,
+        mastery: 1,
+        mission: 23,
+        feedback: {
+          gratitude: 'יפה מאוד! ענווה אמיתית! ✨',
+          scholar: 'כל הכבוד! שלום עולה על הכל! 💫',
+          builder: 'מצוין! התגברות על גאווה! 💪'
+        }
+      }, {
+        text: 'להתרחק ולא לדבר',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'שלום דורש פעולה, לא בריחה! 🤝',
+          scholar: 'פתרון בעיות מחזק יחסים! 🔧',
+          builder: 'גישור הוא כוח! 🌉'
+        }
+      }]
+    }, {
+      id: 10,
+      title: '🌟 ברכה לפני אכילה',
+      situation: 'אתה רעב מאוד ורוצה לאכול. איך תברך?',
+      choices: [{
+        text: 'לברך מהר ולאכול',
+        points: 5,
+        kindness: 1,
+        mastery: 0,
+        mission: 12,
+        feedback: {
+          gratitude: 'ברכה צריכה כוונה! 🙏',
+          scholar: 'התבוננות בברכה מעמיקה אותה! 💭',
+          builder: 'גם ברעב - שים לב למילים! 🎯'
+        }
+      }, {
+        text: 'לעצור, להתרכז, ולהודות מהלב על המזון',
+        points: 10,
+        kindness: 3,
+        mastery: 2,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! הכרה אמיתית במתנה! 🎁',
+          scholar: 'פנטסטי! כוונה עמוקה בברכה! ⭐',
+          builder: 'נפלא! כך מחזקים את הקשר! 🔗'
+        }
+      }, {
+        text: 'לומר את הברכה לפי ההלכה',
+        points: 7,
+        kindness: 1,
+        mastery: 1,
+        mission: 18,
+        feedback: {
+          gratitude: 'נכון, אבל הוסף רגש! ❤️',
+          scholar: 'הלכה חשובה, אבל גם כוונה! 📚',
+          builder: 'יפה, עכשיו הוסף עומק! 🌊'
+        }
+      }, {
+        text: 'לחשוב על תהליך הבאת המזון לשולחן',
+        points: 9,
+        kindness: 2,
+        mastery: 2,
+        mission: 22,
+        feedback: {
+          gratitude: 'מעולה! התבוננות מעמיקה! 🔍',
+          scholar: 'כל הכבוד! ראיית השרשרת כולה! 🔗',
+          builder: 'יפה מאוד! הבנה הוליסטית! 🌍'
+        }
+      }]
+    }],
+    medium: [{
+      id: 11,
+      title: '⚖️ החלטה קשה',
+      situation: 'חבר מבקש שתעזור לו בעבודה, אבל זה הזמן שלך ללמוד לבגרות חשובה. מה תעשה?',
+      choices: [{
+        text: 'לסרב - הלימוד שלי חשוב יותר',
+        points: 5,
+        kindness: 0,
+        mastery: 0,
+        mission: 12,
+        feedback: {
+          gratitude: 'גם בלחץ - אהבת הזולת חשובה! ⏰',
+          scholar: 'האיזון בין צרכים הוא חלק מהחכמה! ⚖️',
+          builder: 'ויתור קטן יכול להיות מסירות גדולה! 💪'
+        }
+      }, {
+        text: 'לעזור קצת ואז לחזור ללמוד',
+        points: 9,
+        kindness: 2,
+        mastery: 1,
+        mission: 22,
+        feedback: {
+          gratitude: 'כיוון נכון! איזון חכם! 🎯',
+          scholar: 'מעולה! גמישות בשירות! 💫',
+          builder: 'יפה! שילוב נכון של ערכים! ⭐'
+        }
+      }, {
+        text: 'לעזור במלואי ולהאמין שה׳ יעזור לי בבגרות',
+        points: 10,
+        kindness: 4,
+        mastery: 2,
+        mission: 25,
+        feedback: {
+          gratitude: 'פצצה! ביטחון ומסירות! 🏆',
+          scholar: 'מדהים! אמונה בפעולה! 🌟',
+          builder: 'מושלם! זו מסירות אמיתית! 🚀'
+        }
+      }, {
+        text: 'להמליץ לו על מישהו אחר',
+        points: 6,
+        kindness: 1,
+        mastery: 0,
+        mission: 15,
+        feedback: {
+          gratitude: 'רעיון טוב, אבל אולי יש אפשרות אישית? 🤔',
+          scholar: 'לפעמים המענה האישי הוא הנכון! 💭',
+          builder: 'פתרון מעשי, אך חסרה נגיעה אישית! 🤝'
+        }
+      }]
+    }, {
+      id: 12,
+      title: '🎁 מתנה מיוחדת',
+      situation: 'קיבלת מתנה שחלמת עליה. איך תגיב?',
+      choices: [{
+        text: 'לשמוח ולהודות למי שנתן',
+        points: 7,
+        kindness: 2,
+        mastery: 0,
+        mission: 18,
+        feedback: {
+          gratitude: 'יפה, אבל מי העומד מאחורי הנותן? 🎁',
+          scholar: 'טוב, אך זכור את המקור העליון! ⭐',
+          builder: 'נכון, אבל יש שכבה נוספת! 🌟'
+        }
+      }, {
+        text: 'להודות למי שנתן ולומר בלבי: "תודה לה׳ שסידר לי את זה"',
+        points: 10,
+        kindness: 3,
+        mastery: 3,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! הכרת הטוב בשני הרבדים! 🏆',
+          scholar: 'פנטסטי! חיבור מלא בין הנראה והנסתר! ✨',
+          builder: 'נפלא! זו ההכרה המלאה! 🎯'
+        }
+      }, {
+        text: 'לחשוב על כמה מזל יש לי',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'זה לא מזל - זו השגחה! 🌟',
+          scholar: 'מקרים אינם קיימים! 💭',
+          builder: 'גלה את ההשגחה בכל דבר! 🔍'
+        }
+      }, {
+        text: 'לחשוב איך להשתמש במתנה לעבודת ה׳',
+        points: 9,
+        kindness: 2,
+        mastery: 2,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! מחשבה על שימוש נכון! 💡',
+          scholar: 'כל הכבוד! הפיכת חומר לרוחני! 🌈',
+          builder: 'יפה מאוד! תכנון לעבודה! 📋'
+        }
+      }]
+    }, {
+      id: 13,
+      title: '😤 כעס וחוסר סבלנות',
+      situation: 'משהו לא הסתדר כמו שתכננת וזה ממש מעצבן. איך תגיב?',
+      choices: [{
+        text: 'להתעצבן ולהתלונן',
+        points: 3,
+        kindness: -1,
+        mastery: 0,
+        mission: 8,
+        feedback: {
+          gratitude: 'כעס מכבה את אור האהבה! 🔥',
+          scholar: 'גם בקושי - חפש את הטוב! 🔍',
+          builder: 'שליטה עצמית היא כוח! 💪'
+        }
+      }, {
+        text: 'לנשום עמוק ולחשוב: "ה׳ יודע מה טוב לי"',
+        points: 10,
+        kindness: 2,
+        mastery: 3,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! אמונה בפעולה! 🏆',
+          scholar: 'פצצה! ביטול רצון אמיתי! 🌟',
+          builder: 'נפלא! כיבוש הכעס הוא פטיש עוצמתי! 🔨'
+        }
+      }, {
+        text: 'לנסות למצוא פתרון אחר',
+        points: 7,
+        kindness: 1,
+        mastery: 1,
+        mission: 18,
+        feedback: {
+          gratitude: 'יוזמה טובה! הוסף אמונה! 💡',
+          scholar: 'חשיבה פעילה יפה, אך גם קבלה! ⚡',
+          builder: 'פעולה נכונה, אבל זכור את ההשגחה! 🎯'
+        }
+      }, {
+        text: 'לחשוב מה ה׳ רוצה ללמד אותי מזה',
+        points: 9,
+        kindness: 2,
+        mastery: 2,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! חיפוש משמעות! 🔍',
+          scholar: 'כל הכבוד! צמיחה מתוך קושי! 🌱',
+          builder: 'יפה מאוד! ראיית המסר! 📨'
+        }
+      }]
+    }, {
+      id: 14,
+      title: '💬 לשון הרע',
+      situation: 'שומע דברים לא יפים על חבר. מה תעשה?',
+      choices: [{
+        text: 'להפיץ הלאה את מה ששמעתי',
+        points: 1,
+        kindness: -2,
+        mastery: 0,
+        mission: 3,
+        feedback: {
+          gratitude: 'לשון הרע הורסת! 💔',
+          scholar: 'שמירת הלשון היא מצוות התורה! 🛡️',
+          builder: 'מילים בונות או הורסות - בחר נכון! 🔨'
+        }
+      }, {
+        text: 'להפסיק את השיחה ולהגן על החבר',
+        points: 10,
+        kindness: 4,
+        mastery: 2,
+        mission: 25,
+        feedback: {
+          gratitude: 'גיבור! הגנת על "בן יקר" של ה׳! 🏆',
+          scholar: 'מושלם! "אוהב את הבריות" בפעולה! 🌟',
+          builder: 'פצצה! אומץ לעמוד על האמת! 💪'
+        }
+      }, {
+        text: 'לא להגיב ופשוט ללכת',
+        points: 6,
+        kindness: 1,
+        mastery: 0,
+        mission: 15,
+        feedback: {
+          gratitude: 'טוב שלא השתתפת, אבל יכולת להגן! 🤔',
+          scholar: 'שתיקה טובה, אבל פעילות עדיפה! 💭',
+          builder: 'התחלה, אך אומץ לעשות נדרש! 🌱'
+        }
+      }, {
+        text: 'להסביר למדברים שזה לא נכון',
+        points: 9,
+        kindness: 3,
+        mastery: 2,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! חינוך והגנה ביחד! ✨',
+          scholar: 'כל הכבוד! אמת ואהבה! 💫',
+          builder: 'יפה מאוד! עמידה איתנה! ⭐'
+        }
+      }]
+    }, {
+      id: 15,
+      title: '🌙 תפילת ערבית',
+      situation: 'עייף מאוד לפני השינה. איך תתפלל ערבית?',
+      choices: [{
+        text: 'לדלג - אני עייף מדי',
+        points: 2,
+        kindness: 0,
+        mastery: 0,
+        mission: 5,
+        feedback: {
+          gratitude: 'תפילה היא הזדמנות לחיבור! 🙏',
+          scholar: 'גם בעייפות - קשר עם ה׳ חשוב! 💭',
+          builder: 'התגברות מולידה כוח! 💪'
+        }
+      }, {
+        text: 'לומר מהר ולגמור',
+        points: 5,
+        kindness: 1,
+        mastery: 0,
+        mission: 12,
+        feedback: {
+          gratitude: 'יפה שהתפללת, אך כוונה חשובה! ⏰',
+          scholar: 'מהירות טובה, אבל לא במחיר הכוונה! 🎯',
+          builder: 'איכות עדיפה על כמות! 💎'
+        }
+      }, {
+        text: 'להתאמץ להתרכז ולהתפלל בכוונה',
+        points: 10,
+        kindness: 3,
+        mastery: 3,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! מסירות נפש אמיתית! 🏆',
+          scholar: 'פנטסטי! תפילה בכוונה היא הדבקות! ⭐',
+          builder: 'נפלא! כך תוקעים את האהבה בלב! 🔨'
+        }
+      }, {
+        text: 'לקרוא את העיקר בלבד',
+        points: 7,
+        kindness: 2,
+        mastery: 1,
+        mission: 18,
+        feedback: {
+          gratitude: 'פשרה מעשית, אך זכור את המטרה! ⚖️',
+          scholar: 'איזון נכון, אבל שאף לשלמות! 🌟',
+          builder: 'התחלה טובה! עבוד על המשכיות! 🌱'
+        }
+      }]
+    }, {
+      id: 16,
+      title: '🎯 ריכוז בלימוד',
+      situation: 'קשה לך להתרכז בלימוד. מה תעשה?',
+      choices: [{
+        text: 'להפסיק ללמוד',
+        points: 3,
+        kindness: 0,
+        mastery: 0,
+        mission: 8,
+        feedback: {
+          gratitude: 'ויתור הוא הפסד! נסה שוב! 🔄',
+          scholar: 'קושי הוא חלק מהלמידה! 💪',
+          builder: 'התמדה בונה שליטה! 🏗️'
+        }
+      }, {
+        text: 'להיאבק ולהמשיך בכוח רצון',
+        points: 9,
+        kindness: 2,
+        mastery: 2,
+        mission: 23,
+        feedback: {
+          gratitude: 'כל הכבוד! עקשנות קדושה! 💫',
+          scholar: 'מעולה! העמל מביא להשגה! ⭐',
+          builder: 'יפה מאוד! כח הרצון! 🎯'
+        }
+      }, {
+        text: 'לעשות הפסקה קצרה ולחזור ממוקד',
+        points: 8,
+        kindness: 2,
+        mastery: 1,
+        mission: 20,
+        feedback: {
+          gratitude: 'חכם! מנוחה לחידוש כוחות! ⚡',
+          scholar: 'אסטרטגיה טובה! 💡',
+          builder: 'פרקטי ונכון! 🔧'
+        }
+      }, {
+        text: 'להתפלל לה׳ שיעזור לי להתרכז',
+        points: 10,
+        kindness: 2,
+        mastery: 3,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! זיהוי המקור לכח! 🏆',
+          scholar: 'פצצה! ביטחון בעזרת ה׳! 🌟',
+          builder: 'נפלא! תפילה ופעולה ביחד! 🤝'
+        }
+      }]
+    }, {
+      id: 17,
+      title: '🏃 ספורט וזריזות',
+      situation: 'יש אימון קשה. איך תתייחס אליו?',
+      choices: [{
+        text: 'להשתמט ולא להגיע',
+        points: 2,
+        kindness: 0,
+        mastery: 0,
+        mission: 5,
+        feedback: {
+          gratitude: 'בריאות היא מתנה לשמור! 💪',
+          scholar: 'גוף בריא - נשמה בריאה! 🏃',
+          builder: 'משמעת היא יסוד! 🎯'
+        }
+      }, {
+        text: 'להגיע ולעשות מינימום',
+        points: 5,
+        kindness: 1,
+        mastery: 0,
+        mission: 12,
+        feedback: {
+          gratitude: 'נוכחות טובה, אך השקעה חסרה! ⏰',
+          scholar: 'מחצית הדרך! 🌓',
+          builder: 'צריך מאמץ מלא! 💡'
+        }
+      }, {
+        text: 'להשקיע במלואי ולחשוב: "אני מחזק את הכלי לעבודת ה׳"',
+        points: 10,
+        kindness: 3,
+        mastery: 3,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! קידוש השם בספורט! 🏆',
+          scholar: 'פנטסטי! כוונה רוחנית בפעולה גשמית! ⭐',
+          builder: 'נפלא! בניית כלי לשליחות! 🚀'
+        }
+      }, {
+        text: 'לעודד את החברים באימון',
+        points: 9,
+        kindness: 3,
+        mastery: 1,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! מחזק אחרים! 🤝',
+          scholar: 'כל הכבוד! אהבת הזולת! 💫',
+          builder: 'יפה מאוד! מנהיגות! 👑'
+        }
+      }]
+    }, {
+      id: 18,
+      title: '📱 רשתות חברתיות',
+      situation: 'יש לך הזדמנות לפרסם משהו. מה תפרסם?',
+      choices: [{
+        text: 'תמונה של עצמי',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'זהירות מגאווה! 🦚',
+          scholar: 'מה המטרה האמיתית? 🎯',
+          builder: 'שקול את ההשפעה! 💭'
+        }
+      }, {
+        text: 'דבר תורה מעורר השראה',
+        points: 10,
+        kindness: 3,
+        mastery: 3,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! הפצת אור! 🕯️',
+          scholar: 'פצצה! הפצת תורה! 📚',
+          builder: 'נפלא! בניית עולם! 🌍'
+        }
+      }, {
+        text: 'משהו מצחיק',
+        points: 6,
+        kindness: 2,
+        mastery: 0,
+        mission: 15,
+        feedback: {
+          gratitude: 'שמחה טובה, אבל יכול להיות עומק! 😊',
+          scholar: 'בידור כשר, אך יש ערך רוחני! 🎭',
+          builder: 'פשרה - אפשר יותר! ⚖️'
+        }
+      }, {
+        text: 'משהו שיעודד ויחזק אחרים',
+        points: 9,
+        kindness: 3,
+        mastery: 2,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! חיזוק זולת! 💪',
+          scholar: 'כל הכבוד! הפצת טוב! 🌟',
+          builder: 'יפה מאוד! השפעה חיובית! ⭐'
+        }
+      }]
+    }, {
+      id: 19,
+      title: '💼 עבודה קשה',
+      situation: 'יש משימה קשה ומייגעת. איך תתייחס?',
+      choices: [{
+        text: 'להתלונן כל הזמן',
+        points: 2,
+        kindness: -1,
+        mastery: 0,
+        mission: 5,
+        feedback: {
+          gratitude: 'תלונות מרחיקות מאושר! 😔',
+          scholar: 'ראה את ההזדמנות בקושי! 🔍',
+          builder: 'גישה שלילית מחלישה! 📉'
+        }
+      }, {
+        text: 'לעשות בשמחה ולדעת שזו הזדמנות לצמוח',
+        points: 10,
+        kindness: 3,
+        mastery: 3,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! קושי הוא מתנה מחופשת! 🎁',
+          scholar: 'פנטסטי! צמיחה מתוך אתגר! 🌱',
+          builder: 'נפלא! עבודה קשה מזככת! 💎'
+        }
+      }, {
+        text: 'לחפש קיצורי דרך',
+        points: 6,
+        kindness: 1,
+        mastery: 0,
+        mission: 15,
+        feedback: {
+          gratitude: 'יעילות טובה, אבל לא במחיר הערך! ⚡',
+          scholar: 'זהיר מהשתמטות! 🚨',
+          builder: 'התגברות מלאה עדיפה! 💪'
+        }
+      }, {
+        text: 'לעשות בהקדשה לכבוד ה׳',
+        points: 9,
+        kindness: 2,
+        mastery: 2,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! קידוש ה׳ בעבודה! ⭐',
+          scholar: 'כל הכבוד! כוונה קדושה! 🕊️',
+          builder: 'יפה מאוד! יסוד חזק! 🏛️'
+        }
+      }]
+    }, {
+      id: 20,
+      title: '🎨 יצירתיות',
+      situation: 'יש לך כישרון מיוחד. איך תשתמש בו?',
+      choices: [{
+        text: 'רק לשם כיף',
+        points: 5,
+        kindness: 1,
+        mastery: 0,
+        mission: 12,
+        feedback: {
+          gratitude: 'כישרון הוא אמנה! 🎨',
+          scholar: 'השתמש בו למטרה נעלה! 🎯',
+          builder: 'פוטנציאל רב מחכה! 💎'
+        }
+      }, {
+        text: 'להשתמש בו לקדש שם שמיים',
+        points: 10,
+        kindness: 4,
+        mastery: 3,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! כישרון בשירות האמת! 🏆',
+          scholar: 'פצצה! קידוש ה׳ דרך יצירה! 🌟',
+          builder: 'נפלא! בניית עולם רוחני! 🌈'
+        }
+      }, {
+        text: 'לפתח אותו למקצוע',
+        points: 7,
+        kindness: 1,
+        mastery: 1,
+        mission: 18,
+        feedback: {
+          gratitude: 'מעשי, אבל זכור את המטרה הגבוהה! 💼',
+          scholar: 'טוב, אך יכול להיות רוחני יותר! 📈',
+          builder: 'בסיס טוב, הוסף כוונה! 🌱'
+        }
+      }, {
+        text: 'ללמד ולעודד אחרים',
+        points: 9,
+        kindness: 3,
+        mastery: 2,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! שיתוף ברכה! 🤝',
+          scholar: 'כל הכבוד! חינוך ואהבה! 💫',
+          builder: 'יפה מאוד! מנהיגות! 👑'
+        }
+      }]
+    }, {
+      id: 21,
+      title: '⏰ זמן יקר',
+      situation: 'יש לך 30 דקות חופשיות. איך תנצל אותן?',
+      choices: [{
+        text: 'לגלוש ברשת בלי מטרה',
+        points: 2,
+        kindness: 0,
+        mastery: 0,
+        mission: 5,
+        feedback: {
+          gratitude: 'זמן הוא מתנה! אל תבזבז! ⏳',
+          scholar: 'כל רגע יכול להיות משמעותי! 💎',
+          builder: 'ניצול נכון של זמן בונה! 🏗️'
+        }
+      }, {
+        text: 'ללמוד משהו שמקרב אותי לה׳',
+        points: 10,
+        kindness: 2,
+        mastery: 3,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! השקעה בנכס הטוב ביותר! 🏆',
+          scholar: 'פצצה! צמיחה רוחנית מתמדת! 📚',
+          builder: 'נפלא! בניית אישיות! 🎯'
+        }
+      }, {
+        text: 'להתקשר למישהו ולחזק אותו',
+        points: 9,
+        kindness: 4,
+        mastery: 1,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! השקעה במערכות יחסים! 📞',
+          scholar: 'כל הכבוד! אהבת הבריות! 💫',
+          builder: 'יפה מאוד! בניית חיבורים! 🤝'
+        }
+      }, {
+        text: 'לתכנן את היום הבא',
+        points: 7,
+        kindness: 1,
+        mastery: 1,
+        mission: 18,
+        feedback: {
+          gratitude: 'חכם! ארגון טוב! 📋',
+          scholar: 'נכון! תכנון מוביל להצלחה! 🗓️',
+          builder: 'בסיס טוב לפעולה! 🎯'
+        }
+      }]
+    }, {
+      id: 22,
+      title: '🌈 אחרי גשם',
+      situation: 'רואה קשת מדהימה אחרי הגשם. מה תחשוב?',
+      choices: [{
+        text: '"וואו, איזה יופי!"',
+        points: 5,
+        kindness: 1,
+        mastery: 0,
+        mission: 12,
+        feedback: {
+          gratitude: 'יפה, אבל מה המסר? 🌈',
+          scholar: 'ראה את הסמל והמשמעות! 🔍',
+          builder: 'חבר את היופי למקור! 🎨'
+        }
+      }, {
+        text: '"ברוך שכחו וקיימו בעולם - זו הברית של ה׳!"',
+        points: 10,
+        kindness: 3,
+        mastery: 3,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! הכרת הברית וההשגחה! 🏆',
+          scholar: 'פנטסטי! חיבור עמוק למקור! 🌟',
+          builder: 'נפלא! ראיית הרוחני בגשמי! ⭐'
+        }
+      }, {
+        text: 'לצלם ולשלוח לחברים',
+        points: 6,
+        kindness: 2,
+        mastery: 0,
+        mission: 15,
+        feedback: {
+          gratitude: 'שיתוף נחמד, אבל חסר עומק! 📸',
+          scholar: 'טוב, אך הוסף משמעות! 💭',
+          builder: 'התחלה, אבל יש יותר! 🌱'
+        }
+      }, {
+        text: 'לעצור ולהודות על היופי שבבריאה',
+        points: 9,
+        kindness: 2,
+        mastery: 2,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! עצירה והכרה! 🙏',
+          scholar: 'כל הכבוד! התבוננות והודיה! 💫',
+          builder: 'יפה מאוד! זמן איכות עם הבורא! ⏰'
+        }
+      }]
+    }, {
+      id: 23,
+      title: '📚 סיום מסכת',
+      situation: 'סיימת מסכת בגמרא. איך תחוגג?',
+      choices: [{
+        text: 'לא צריך לחגוג',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'הישג כזה ראוי לחגיגה! 🎊',
+          scholar: 'שמחה בתורה חשובה! 😊',
+          builder: 'חיזוק ההצלחה מעודד! 💪'
+        }
+      }, {
+        text: 'לעשות סיום עם חברים ומשפחה, להודות לה׳',
+        points: 10,
+        kindness: 4,
+        mastery: 3,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! שמחה משותפת והודיה! 🎉',
+          scholar: 'פצצה! קידוש ה׳ ושמחת תורה! 🏆',
+          builder: 'נפלא! חיזוק הציבור! 🌟'
+        }
+      }, {
+        text: 'להתחיל מסכת חדשה מיד',
+        points: 7,
+        kindness: 1,
+        mastery: 2,
+        mission: 18,
+        feedback: {
+          gratitude: 'נלהב! אבל רגע של הודיה חשוב! 📖',
+          scholar: 'שקידה יפה, אך שמחה גם! ⚖️',
+          builder: 'המשכיות טובה, אבל זכור לחגוג! 🎯'
+        }
+      }, {
+        text: 'לשתף את החוויה ולעודד אחרים',
+        points: 9,
+        kindness: 3,
+        mastery: 2,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! השראה לאחרים! ✨',
+          scholar: 'כל הכבוד! מנהיגות רוחנית! 💫',
+          builder: 'יפה מאוד! בניית קהילה! 🤝'
+        }
+      }]
+    }, {
+      id: 24,
+      title: '🎭 פיתוי',
+      situation: 'יש לך הזדמנות לעשות משהו לא נכון בלי שאף אחד ידע. מה תעשה?',
+      choices: [{
+        text: 'אף אחד לא יודע, אז למה לא?',
+        points: 0,
+        kindness: -2,
+        mastery: 0,
+        mission: 0,
+        feedback: {
+          gratitude: 'ה׳ רואה הכל! 👁️',
+          scholar: 'יראת שמיים היא גם בסתר! 🕊️',
+          builder: 'אופי נבנה גם בחשאי! 🏗️'
+        }
+      }, {
+        text: 'להימנע - ה׳ רואה אותי תמיד',
+        points: 10,
+        kindness: 3,
+        mastery: 3,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! יראת שמיים אמיתית! 🏆',
+          scholar: 'פצצה! הכרה בהשגחה! 🌟',
+          builder: 'נפלא! כוח אופי! 💪'
+        }
+      }, {
+        text: 'להתלבט ואז לוותר',
+        points: 7,
+        kindness: 1,
+        mastery: 1,
+        mission: 18,
+        feedback: {
+          gratitude: 'טוב שהחלטת נכון! המשך כך! ⭐',
+          scholar: 'הלב במקום הנכון! חזק! 💫',
+          builder: 'התגברות נכונה! 🎯'
+        }
+      }, {
+        text: 'לחשוב איך זה משפיע על הקשר שלי עם ה׳',
+        points: 9,
+        kindness: 2,
+        mastery: 2,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! חשיבה על היחסים! 💭',
+          scholar: 'כל הכבוד! שיקול דעת עמוק! 🔍',
+          builder: 'יפה מאוד! בניית מצפון! ⚖️'
+        }
+      }]
+    }, {
+      id: 25,
+      title: '🎪 אירוע משפחתי',
+      situation: 'יש אירוע משפחתי משעמם. איך תתנהג?',
+      choices: [{
+        text: 'להתלונן ולהראות שאני משועמם',
+        points: 2,
+        kindness: -1,
+        mastery: 0,
+        mission: 5,
+        feedback: {
+          gratitude: 'כיבוד הורים גם בקושי! 👨‍👩‍👦',
+          scholar: 'חובה לשמח את המשפחה! 💝',
+          builder: 'משמעת וכבוד! 🎯'
+        }
+      }, {
+        text: 'להשתתף בשמחה ולשמח את המשפחה',
+        points: 10,
+        kindness: 4,
+        mastery: 2,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! שמחת הורים ומשפחה! 🎊',
+          scholar: 'פצצה! "ושמחת בחגך" בפעולה! 🏆',
+          builder: 'נפלא! בניית משפחה חזקה! 🌟'
+        }
+      }, {
+        text: 'לשבת בצד עם הטלפון',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'נוכחות פיזית לא מספיקה! 📱',
+          scholar: 'השתתפות אמיתית נדרשת! 💭',
+          builder: 'להיות נוכח באמת! 🎯'
+        }
+      }, {
+        text: 'למצוא דרך להנות ולעזור',
+        points: 9,
+        kindness: 3,
+        mastery: 1,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! יוזמה חיובית! ✨',
+          scholar: 'כל הכבוד! יצירתיות! 💫',
+          builder: 'יפה מאוד! גישה בונה! ⭐'
+        }
+      }]
+    }],
+    hard: [{
+      id: 26,
+      title: '💔 אכזבה גדולה',
+      situation: 'השקעת הרבה באבל לא צלחת. איך תגיב?',
+      choices: [{
+        text: 'לכעוס ולהתייאש',
+        points: 2,
+        kindness: -1,
+        mastery: 0,
+        mission: 5,
+        feedback: {
+          gratitude: 'כעס מרחיק מהשגחה! 😔',
+          scholar: 'גם בכשלון יש שיעור! 📖',
+          builder: 'נפילה היא הזדמנות לקימה! 🌱'
+        }
+      }, {
+        text: 'להאמין שה׳ יודע מה טוב לי ולחפש את השיעור',
+        points: 10,
+        kindness: 3,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! אמונה מוחלטת בהשגחה! 🏆',
+          scholar: 'פנטסטי! צמיחה מתוך אתגר! 🌟',
+          builder: 'נפלא! פטיש שתוקע את האמונה! 🔨'
+        }
+      }, {
+        text: 'לנסות להבין מה לא עבד',
+        points: 7,
+        kindness: 1,
+        mastery: 2,
+        mission: 18,
+        feedback: {
+          gratitude: 'ניתוח טוב, אבל חסר אמונה! 🔍',
+          scholar: 'שילוב חכמה ואמונה! 💭',
+          builder: 'בסיס נכון, הוסף ביטחון! 🎯'
+        }
+      }, {
+        text: 'לשאול ה׳: "מה אתה רוצה ללמד אותי?"',
+        points: 9,
+        kindness: 2,
+        mastery: 3,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! דיאלוג אמיתי! 💬',
+          scholar: 'כל הכבוד! חיפוש משמעות! 💫',
+          builder: 'יפה מאוד! התבוננות פנימית! 🔍'
+        }
+      }]
+    }, {
+      id: 27,
+      title: '⚔️ מלחמה פנימית',
+      situation: 'יש לך יצר חזק לעשות משהו שגוי. איך תילחם בו?',
+      choices: [{
+        text: 'להיכנע ליצר',
+        points: 0,
+        kindness: -2,
+        mastery: 0,
+        mission: 0,
+        feedback: {
+          gratitude: 'כל נפילה היא הזדמנות לחזור! 🔄',
+          scholar: 'המלחמה האמיתית היא פנימית! ⚔️',
+          builder: 'קום ונצח את היצר! 💪'
+        }
+      }, {
+        text: 'לברוח מהמצב, להתפלל, ולחשוב על אהבת ה׳',
+        points: 10,
+        kindness: 3,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! שילוש המנצח: בריחה, תפילה, התבוננות! 🏆',
+          scholar: 'פצצה! שימוש בכל הכלים! 🛡️',
+          builder: 'נפלא! כוח רצון וביטחון! 🌟'
+        }
+      }, {
+        text: 'לנסות להתאפק בכוחות עצמי',
+        points: 7,
+        kindness: 1,
+        mastery: 1,
+        mission: 18,
+        feedback: {
+          gratitude: 'יפה, אבל תפילה מחזקת! 🙏',
+          scholar: 'כוח עצמי חשוב, אבל לא מספיק! 💭',
+          builder: 'השתמש בכל המשאבים! 🔧'
+        }
+      }, {
+        text: 'לקרוא תהילים ולבקש עזרה',
+        points: 9,
+        kindness: 2,
+        mastery: 3,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! פנייה לעזרה! 📖',
+          scholar: 'כל הכבוד! תפילה ופעולה! 💫',
+          builder: 'יפה מאוד! חיבור לכוח עליון! ⭐'
+        }
+      }]
+    }, {
+      id: 28,
+      title: '🎯 בחירת עתיד',
+      situation: 'צריך להחליט על כיוון בחיים. איך תחליט?',
+      choices: [{
+        text: 'לפי מה שמרוויח הכי הרבה כסף',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'כסף הוא אמצעי, לא מטרה! 💰',
+          scholar: 'מה המשמעות האמיתית? 🎯',
+          builder: 'שאל: איך זה משרת את ה׳? 🤔'
+        }
+      }, {
+        text: 'איפה אוכל לתרום הכי הרבה לעולם ולקרב לה׳',
+        points: 10,
+        kindness: 4,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! חיים של משמעות ושליחות! 🏆',
+          scholar: 'פנטסטי! תכלית האדם! 🌟',
+          builder: 'נפלא! חיים של עבודת ה׳! 🚀'
+        }
+      }, {
+        text: 'מה שהכי מעניין אותי',
+        points: 6,
+        kindness: 1,
+        mastery: 1,
+        mission: 15,
+        feedback: {
+          gratitude: 'עניין חשוב, אבל יש יותר! 💭',
+          scholar: 'שלב הנאה עם משמעות! ⚖️',
+          builder: 'הוסף מטרה רוחנית! 🎯'
+        }
+      }, {
+        text: 'אתפלל ואשאל הדרכה',
+        points: 9,
+        kindness: 2,
+        mastery: 3,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! תפילה והתבוננות! 🙏',
+          scholar: 'כל הכבוד! בקשת הדרכה! 💫',
+          builder: 'יפה מאוד! ביטחון בה׳! ⭐'
+        }
+      }]
+    }, {
+      id: 29,
+      title: '🌪️ משבר אמונה',
+      situation: 'משהו קרה שקשה לך להבין למה. איך תתמודד?',
+      choices: [{
+        text: 'לכעוס על ה׳',
+        points: 1,
+        kindness: -1,
+        mastery: 0,
+        mission: 3,
+        feedback: {
+          gratitude: 'כעס מרחיק, אמונה מקרבת! 💔',
+          scholar: 'גם בקושי - ה׳ אוהב אותך! 💝',
+          builder: 'זה הזמן לחזק את האמונה! 💪'
+        }
+      }, {
+        text: 'להאמין שיש סיבה שאני לא רואה, ולבטוח באהבת ה׳',
+        points: 10,
+        kindness: 3,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! אמונה מוחלטת בתוך הקושי! 🏆',
+          scholar: 'פצצה! "צדיק באמונתו יחיה"! 🌟',
+          builder: 'נפלא! אמונה היא הפטיש הכי חזק! 🔨'
+        }
+      }, {
+        text: 'לדבר עם מישהו חכם',
+        points: 8,
+        kindness: 2,
+        mastery: 2,
+        mission: 20,
+        feedback: {
+          gratitude: 'חכם לבקש עזרה! 🤝',
+          scholar: 'נכון! חכמה משותפת! 💭',
+          builder: 'טוב, אבל גם אמונה פנימית! 🎯'
+        }
+      }, {
+        text: 'לקרוא בספרי אמונה ולחפש תשובות',
+        points: 9,
+        kindness: 2,
+        mastery: 3,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! חיפוש אמת! 📚',
+          scholar: 'כל הכבוד! בניית יסודות! 💫',
+          builder: 'יפה מאוד! חיזוק השכל! ⭐'
+        }
+      }]
+    }, {
+      id: 30,
+      title: '💸 מבחן היושר',
+      situation: 'מצאת ארנק עם הרבה כסף. אין שום זיהוי. מה תעשה?',
+      choices: [{
+        text: 'לשמור לעצמי',
+        points: 0,
+        kindness: -2,
+        mastery: 0,
+        mission: 0,
+        feedback: {
+          gratitude: 'זה מבחן אמיתי! ה׳ בוחן! 👁️',
+          scholar: '"הרחק מכל דבר שקר"! ⚖️',
+          builder: 'יושר בונה אופי! 🏗️'
+        }
+      }, {
+        text: 'למסור למשטרה ולנסות למצוא בעלים',
+        points: 10,
+        kindness: 4,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! קידוש ה׳ אמיתי! 🏆',
+          scholar: 'פצצה! "ואהבת לרעך כמוך"! 🌟',
+          builder: 'נפלא! יושר מוחלט! 💎'
+        }
+      }, {
+        text: 'לתת לצדקה',
+        points: 6,
+        kindness: 2,
+        mastery: 1,
+        mission: 15,
+        feedback: {
+          gratitude: 'כוונה טובה, אבל זה לא שלך! 💭',
+          scholar: 'מצווה הבאה בעבירה! 🚫',
+          builder: 'יושר קודם! 🎯'
+        }
+      }, {
+        text: 'לפרסם מודעות חיפוש',
+        points: 9,
+        kindness: 3,
+        mastery: 3,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! מאמץ להשבה! 📢',
+          scholar: 'כל הכבוד! מצוות השבת אבדה! 💫',
+          builder: 'יפה מאוד! אחריות! ⭐'
+        }
+      }]
+    }, {
+      id: 31,
+      title: '🎓 הצלחה גדולה',
+      situation: 'הצלחת במשהו גדול וכולם משבחים אותך. איך תגיב?',
+      choices: [{
+        text: 'להתגאות בהישג',
+        points: 3,
+        kindness: 0,
+        mastery: 0,
+        mission: 8,
+        feedback: {
+          gratitude: 'גאווה מכשילה! 🦚',
+          scholar: 'כל כוח בא מה׳! 💪',
+          builder: 'ענווה בונה, גאווה הורסת! ⚖️'
+        }
+      }, {
+        text: 'להכיר שהכוח והיכולת מה׳, ולהודות',
+        points: 10,
+        kindness: 3,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! ענווה והכרה אמיתית! 🏆',
+          scholar: 'פצצה! "לא לנו ה׳ לא לנו"! 🌟',
+          builder: 'נפלא! יסוד איתן של ענווה! 💎'
+        }
+      }, {
+        text: 'להודות לכל מי שעזר',
+        points: 8,
+        kindness: 3,
+        mastery: 1,
+        mission: 20,
+        feedback: {
+          gratitude: 'יפה, אבל זכור את המקור העליון! 🙏',
+          scholar: 'טוב, אך הוסף הודיה לה׳! 💭',
+          builder: 'נכון, אבל חסר משהו! 🎯'
+        }
+      }, {
+        text: 'לנצל את ההזדמנות לעודד אחרים',
+        points: 9,
+        kindness: 4,
+        mastery: 2,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! שימוש בהצלחה לטובת אחרים! ✨',
+          scholar: 'כל הכבוד! מנהיגות צנועה! 💫',
+          builder: 'יפה מאוד! השפעה חיובית! ⭐'
+        }
+      }]
+    }, {
+      id: 32,
+      title: '🔥 הרגע האמיתי',
+      situation: 'רגע של דבקות אמיתי בתפילה. איך תשמור עליו?',
+      choices: [{
+        text: 'זה יעבור בקרוב',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'שמור על הרגעים! 💎',
+          scholar: 'קבע אותם בלב! 💭',
+          builder: 'בנה מהם יסוד! 🏗️'
+        }
+      }, {
+        text: 'לתעד אותו בלב, לנסות לחזור אליו, ולהתפלל על המשכו',
+        points: 10,
+        kindness: 3,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! שימור רוחני אמיתי! 🏆',
+          scholar: 'פנטסטי! בניית דבקות מתמדת! 🌟',
+          builder: 'נפלא! תשתית לעליה רוחנית! 🚀'
+        }
+      }, {
+        text: 'לספר לאחרים על החוויה',
+        points: 7,
+        kindness: 2,
+        mastery: 1,
+        mission: 18,
+        feedback: {
+          gratitude: 'שיתוף טוב, אבל שמור גם לעצמך! 💬',
+          scholar: 'יפה, אך צנעה חשובה! 🔒',
+          builder: 'איזון נכון! 🎯'
+        }
+      }, {
+        text: 'לנסות להגיע שוב למצב הזה',
+        points: 9,
+        kindness: 2,
+        mastery: 3,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! שאיפה לחזרה! ⭐',
+          scholar: 'כל הכבוד! תשוקה רוחנית! 💫',
+          builder: 'יפה מאוד! בניית המשכיות! 🌱'
+        }
+      }]
+    }, {
+      id: 33,
+      title: '🌍 תיקון עולם',
+      situation: 'אתה רואה אי צדק בעולם. מה תעשה?',
+      choices: [{
+        text: 'להתעלם - זה לא עניין שלי',
+        points: 2,
+        kindness: -1,
+        mastery: 0,
+        mission: 5,
+        feedback: {
+          gratitude: 'כולנו אחראים! 🌍',
+          scholar: '"כל ישראל ערבים"! 🤝',
+          builder: 'פעולה קטנה משנה! 💪'
+        }
+      }, {
+        text: 'לפעול בכל יכולתי לתקן, מתוך אהבת ה׳ ובריותיו',
+        points: 10,
+        kindness: 4,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! שותף בבריאה! 🏆',
+          scholar: 'פצצה! "תיקון עולם במלכות שדי"! 🌟',
+          builder: 'נפלא! מנהיגות אמיתית! 👑'
+        }
+      }, {
+        text: 'להתפלל שזה ישתנה',
+        points: 7,
+        kindness: 2,
+        mastery: 1,
+        mission: 18,
+        feedback: {
+          gratitude: 'תפילה חשובה, אבל גם פעולה! 🙏',
+          scholar: 'טוב, אך השתמש בידיים! 💭',
+          builder: 'שלב תפילה עם מעשה! 🎯'
+        }
+      }, {
+        text: 'לעורר מודעות ברשתות',
+        points: 8,
+        kindness: 3,
+        mastery: 2,
+        mission: 20,
+        feedback: {
+          gratitude: 'יפה! הפצת מודעות! 📢',
+          scholar: 'כיוון נכון! 💫',
+          builder: 'התחלה טובה! 🌱'
+        }
+      }]
+    }, {
+      id: 34,
+      title: '💬 סוד אמיתי',
+      situation: 'חבר סיפר לך סוד אישי ורגיש. מה תעשה?',
+      choices: [{
+        text: 'לספר לעוד מישהו',
+        points: 0,
+        kindness: -2,
+        mastery: 0,
+        mission: 0,
+        feedback: {
+          gratitude: 'בגידה הורסת אמון! 💔',
+          scholar: 'שמירת סוד היא מצווה! 🔒',
+          builder: 'אמון נבנה, לא נהרס! 🏗️'
+        }
+      }, {
+        text: 'לשמור בכל כוחי ולהיות שם בשבילו',
+        points: 10,
+        kindness: 4,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! אמינות מוחלטת! 🏆',
+          scholar: 'פצצה! "איש רכיל מגלה סוד"! 🌟',
+          builder: 'נפלא! יסוד של אמון! 💎'
+        }
+      }, {
+        text: 'לספר להורים שלי',
+        points: 5,
+        kindness: 1,
+        mastery: 0,
+        mission: 12,
+        feedback: {
+          gratitude: 'רק אם הוא בסכנה! ⚠️',
+          scholar: 'שקול את הנסיבות! 💭',
+          builder: 'אחריות וזהירות! 🎯'
+        }
+      }, {
+        text: 'לעזור לו לפתור את הבעיה',
+        points: 9,
+        kindness: 3,
+        mastery: 3,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! תמיכה אקטיבית! 🤝',
+          scholar: 'כל הכבוד! "נושא בעול עם חברו"! 💫',
+          builder: 'יפה מאוד! עזרה אמיתית! ⭐'
+        }
+      }]
+    }, {
+      id: 35,
+      title: '🎨 כישרון מיוחד',
+      situation: 'גילית שיש לך כישרון נדיר. איך תשתמש בו?',
+      choices: [{
+        text: 'להצליח ולהתפרסם',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'כישרון הוא אמנה! 🎁',
+          scholar: 'לשם מה? 🎯',
+          builder: 'מה המטרה האמיתית? 💭'
+        }
+      }, {
+        text: 'להשתמש בו לקדש שם שמיים ולהביא אור לעולם',
+        points: 10,
+        kindness: 4,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! שליחות אמיתית! 🏆',
+          scholar: 'פצצה! כישרון כעבודת ה׳! 🌟',
+          builder: 'נפלא! בניית עולם רוחני! 🚀'
+        }
+      }, {
+        text: 'להרוויח ממנו כסף',
+        points: 5,
+        kindness: 1,
+        mastery: 0,
+        mission: 12,
+        feedback: {
+          gratitude: 'פרנסה חשובה, אבל יש יותר! 💰',
+          scholar: 'הוסף מטרה רוחנית! 💭',
+          builder: 'שלב ערך עליון! 🎯'
+        }
+      }, {
+        text: 'לפתח אותו ללא הרף',
+        points: 8,
+        kindness: 2,
+        mastery: 2,
+        mission: 20,
+        feedback: {
+          gratitude: 'יפה, אך לאן זה מוביל? 🧭',
+          scholar: 'פיתוח טוב, אך מה המטרה? 💫',
+          builder: 'חסר כיוון! 🎯'
+        }
+      }]
+    }, {
+      id: 36,
+      title: '⏳ זמן מוגבל',
+      situation: 'יש לך שעה אחת ביום לעצמך. איך תשקיע אותה?',
+      choices: [{
+        text: 'בילוי קליל',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'זמן הוא המטבע היקר! ⏰',
+          scholar: 'השקעה נבונה! 💎',
+          builder: 'בחר בחוכמה! 🎯'
+        }
+      }, {
+        text: 'בלימוד, תפילה, וחיזוק הקשר עם ה׳',
+        points: 10,
+        kindness: 3,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! השקעה באין ערך! 🏆',
+          scholar: 'פנטסטי! עיקר החיים! 🌟',
+          builder: 'נפלא! בניית נצח! 💎'
+        }
+      }, {
+        text: 'בשינה',
+        points: 5,
+        kindness: 0,
+        mastery: 0,
+        mission: 12,
+        feedback: {
+          gratitude: 'מנוחה טובה, אך לא תמיד נדרשת! 😴',
+          scholar: 'האם באמת עייף? 💭',
+          builder: 'זריזות מנצחת! ⚡'
+        }
+      }, {
+        text: 'בעזרה לאחרים',
+        points: 9,
+        kindness: 4,
+        mastery: 2,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! אהבת הזולת! 🤝',
+          scholar: 'כל הכבוד! "ואהבת לרעך"! 💫',
+          builder: 'יפה מאוד! בניית קהילה! ⭐'
+        }
+      }]
+    }, {
+      id: 37,
+      title: '🌟 רגע של השראה',
+      situation: 'קיבלת השראה רוחנית חזקה. איך תנהג?',
+      choices: [{
+        text: 'זה יחלוף',
+        points: 3,
+        kindness: 0,
+        mastery: 0,
+        mission: 8,
+        feedback: {
+          gratitude: 'אל תיתן לזה לחלוף! 🔥',
+          scholar: 'תפוס את הרגע! ⏰',
+          builder: 'בנה מזה יסוד! 🏗️'
+        }
+      }, {
+        text: 'לכתוב, להתחייב, ולבנות מזה תשתית לעבודת ה׳ שלי',
+        points: 10,
+        kindness: 3,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! הפיכת השראה למציאות! 🏆',
+          scholar: 'פצצה! קבלת קבלה אמיתית! 🌟',
+          builder: 'נפלא! בניית מבנה רוחני! 🚀'
+        }
+      }, {
+        text: 'לשתף בקבוצת וואטסאפ',
+        points: 6,
+        kindness: 2,
+        mastery: 0,
+        mission: 15,
+        feedback: {
+          gratitude: 'שיתוף טוב, אבל עשה יותר! 📱',
+          scholar: 'לפני השיתוף - הפנמה! 💭',
+          builder: 'גם פעולה אישית! 🎯'
+        }
+      }, {
+        text: 'להתפלל שזה יימשך',
+        points: 8,
+        kindness: 2,
+        mastery: 2,
+        mission: 20,
+        feedback: {
+          gratitude: 'תפילה טובה, אך גם פעולה! 🙏',
+          scholar: 'שלב עם מעשה! 💫',
+          builder: 'הוסף מחויבות! ⭐'
+        }
+      }]
+    }, {
+      id: 38,
+      title: '🔍 גילוי עצמי',
+      situation: 'גילית חולשה אמיתית בעצמך. מה תעשה?',
+      choices: [{
+        text: 'להתעלם ממנה',
+        points: 2,
+        kindness: 0,
+        mastery: 0,
+        mission: 5,
+        feedback: {
+          gratitude: 'גילוי הוא ההזדמנות! 🔍',
+          scholar: 'השבר הוא המקום! 💎',
+          builder: 'בנה מהשבר! 🏗️'
+        }
+      }, {
+        text: 'להודות לה׳ על הגילוי, ולעבוד בכנות על תיקון',
+        points: 10,
+        kindness: 3,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! הכרה אמיתית וצמיחה! 🏆',
+          scholar: 'פנטסטי! "יורד לצורך עליה"! 🌟',
+          builder: 'נפלא! תיקון אמיתי! 🔨'
+        }
+      }, {
+        text: 'להתייאש',
+        points: 1,
+        kindness: -1,
+        mastery: 0,
+        mission: 3,
+        feedback: {
+          gratitude: 'אל תיכנע! זו הזדמנות! 💪',
+          scholar: 'גם מהבור - עולים! 🌱',
+          builder: 'כל נפילה היא קפיצה! 🦘'
+        }
+      }, {
+        text: 'לבקש עזרה ממורה רוחני',
+        points: 9,
+        kindness: 2,
+        mastery: 3,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! ענווה ובקשת עזרה! 🙏',
+          scholar: 'כל הכבוד! חכמת הרבים! 💫',
+          builder: 'יפה מאוד! בניית תמיכה! ⭐'
+        }
+      }]
+    }, {
+      id: 39,
+      title: '💝 מתנה אמיתית',
+      situation: 'מישהו נתן לך מתנה יקרה ללא סיבה. איך תגיב?',
+      choices: [{
+        text: 'לקחת וזהו',
+        points: 3,
+        kindness: 0,
+        mastery: 0,
+        mission: 8,
+        feedback: {
+          gratitude: 'הכרה והודיה! 🎁',
+          scholar: 'ראה את האהבה! 💝',
+          builder: 'תגמול טוב! 🤝'
+        }
+      }, {
+        text: 'להודות עמוקות, לראות את אהבת ה׳ דרך הנותן, ולחשוב איך להעביר הלאה',
+        points: 10,
+        kindness: 4,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! שרשרת אהבה מלאה! 🏆',
+          scholar: 'פצצה! ראיית ה׳ בהווה! 🌟',
+          builder: 'נפלא! העברה קדימה! 🚀'
+        }
+      }, {
+        text: 'להרגיש לא בנוח',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'קבל באהבה! 💝',
+          scholar: 'נתינה וקבלה שוות! ⚖️',
+          builder: 'גאווה לא במקום! 🎯'
+        }
+      }, {
+        text: 'לחזור במתנה דומה',
+        points: 7,
+        kindness: 2,
+        mastery: 1,
+        mission: 18,
+        feedback: {
+          gratitude: 'יפה, אבל לא רק זה! 🎁',
+          scholar: 'הכרה עמוקה יותר! 💭',
+          builder: 'יש רובד נוסף! 💫'
+        }
+      }]
+    }, {
+      id: 40,
+      title: '🏆 השיא האישי',
+      situation: 'הגעת לשיא בעבודת ה׳ שלך. מה עכשיו?',
+      choices: [{
+        text: 'לנוח על זרי הדפנים',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'תמיד יש לאן לעלות! 📈',
+          scholar: 'עבודה מתמדת! 🔄',
+          builder: 'אין עמידה ברוחניות! ⬆️'
+        }
+      }, {
+        text: 'להודות, להעמיק, ולחפש את הדרגה הבאה בענווה',
+        points: 10,
+        kindness: 3,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! צמיחה מתמדת! 🏆',
+          scholar: 'פנטסטי! "מעלין בקודש"! 🌟',
+          builder: 'נפלא! בניית מדרגות נצח! 🪜'
+        }
+      }, {
+        text: 'לספר לכולם',
+        points: 5,
+        kindness: 1,
+        mastery: 0,
+        mission: 12,
+        feedback: {
+          gratitude: 'זהירות מגאווה! 🦚',
+          scholar: 'צנעה יקרה! 🔒',
+          builder: 'ענווה תמיד! 🙏'
+        }
+      }, {
+        text: 'לחזק אחרים מהניסיון',
+        points: 9,
+        kindness: 4,
+        mastery: 2,
+        mission: 23,
+        feedback: {
+          gratitude: 'מעולה! שיתוף חכם! 🤝',
+          scholar: 'כל הכבוד! הפצת אור! 💫',
+          builder: 'יפה מאוד! מנהיגות! 👑'
+        }
+      }]
+    }, {
+      id: 41,
+      title: '🌊 גלים של שינוי',
+      situation: 'הכל משתנה סביבך. איך תגיב?',
+      choices: [{
+        text: 'להילחם בשינוי',
+        points: 3,
+        kindness: 0,
+        mastery: 0,
+        mission: 8,
+        feedback: {
+          gratitude: 'שינוי הוא הזדמנות! 🌊',
+          scholar: 'זרום עם רצון ה׳! 🎯',
+          builder: 'גמישות היא כוח! 💪'
+        }
+      }, {
+        text: 'לראות את יד ה׳, לבטוח, ולזרום בהשגחה',
+        points: 10,
+        kindness: 3,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! ביטחון מוחלט! 🏆',
+          scholar: 'פצצה! "גם זו לטובה"! 🌟',
+          builder: 'נפלא! גמישות אמונית! 🌊'
+        }
+      }, {
+        text: 'לפחד',
+        points: 2,
+        kindness: -1,
+        mastery: 0,
+        mission: 5,
+        feedback: {
+          gratitude: 'אל תפחד! ה׳ איתך! 🛡️',
+          scholar: 'אמונה מבטלת פחד! 💝',
+          builder: 'כוח ואומץ! 💪'
+        }
+      }, {
+        text: 'לתכנן מחדש',
+        points: 7,
+        kindness: 1,
+        mastery: 1,
+        mission: 18,
+        feedback: {
+          gratitude: 'חכם, אך השתמש באמונה! 📋',
+          scholar: 'תכנון טוב, אך ביטחון עדיף! 💭',
+          builder: 'הוסף רובד של אמונה! 🎯'
+        }
+      }]
+    }, {
+      id: 42,
+      title: '👥 מנהיגות רוחנית',
+      situation: 'מבקשים ממך להוביל. מה תעשה?',
+      choices: [{
+        text: 'לסרב - אני לא ראוי',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'ענווה טובה, אך גם אחריות! ⚖️',
+          scholar: 'לפעמים זו השליחות! 💭',
+          builder: 'גם בחוסר ביטחון - קדימה! 🎯'
+        }
+      }, {
+        text: 'לקבל בענווה, להתפלל על עזרה, ולהוביל בדוגמה אישית',
+        points: 10,
+        kindness: 4,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! מנהיגות אמיתית! 🏆',
+          scholar: 'פצצה! "ענוים ינחה במשפט"! 🌟',
+          builder: 'נפלא! הובלה מתוך שירות! 👑'
+        }
+      }, {
+        text: 'לקבל ולנהל',
+        points: 6,
+        kindness: 1,
+        mastery: 1,
+        mission: 15,
+        feedback: {
+          gratitude: 'טוב, אך חסר רובד רוחני! 📊',
+          scholar: 'ניהול טכני לא מספיק! 💭',
+          builder: 'הוסף השראה! 🎯'
+        }
+      }, {
+        text: 'לבקש לחלוק במנהיגות',
+        points: 8,
+        kindness: 3,
+        mastery: 2,
+        mission: 20,
+        feedback: {
+          gratitude: 'חכם! עבודת צוות! 🤝',
+          scholar: 'ענווה ושיתוף! 💫',
+          builder: 'פרקטי ונכון! ⭐'
+        }
+      }]
+    }, {
+      id: 43,
+      title: '💎 הבחירה הקשה',
+      situation: 'עומד לפניך דילמה אמיתית. איך תכריע?',
+      choices: [{
+        text: 'לפי מה שנוח לי',
+        points: 3,
+        kindness: 0,
+        mastery: 0,
+        mission: 8,
+        feedback: {
+          gratitude: 'נוחות לא תמיד רצון ה׳! ⚖️',
+          scholar: 'חפש את האמת! 🔍',
+          builder: 'קושי לפעמים נכון! 💪'
+        }
+      }, {
+        text: 'לשאול: מה ה׳ רוצה? להתפלל, להתייעץ, ולהכריע באמת',
+        points: 10,
+        kindness: 3,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! תהליך נכון להחלטה! 🏆',
+          scholar: 'פצצה! דעת תורה! 🌟',
+          builder: 'נפלא! יסודות איתנים להחלטה! 💎'
+        }
+      }, {
+        text: 'להחליט מהר',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'החלטה חשובה דורשת זמן! ⏰',
+          scholar: 'שקול היטב! 💭',
+          builder: 'זהירות וחכמה! 🎯'
+        }
+      }, {
+        text: 'לשאול כמה אנשים',
+        points: 8,
+        kindness: 2,
+        mastery: 2,
+        mission: 20,
+        feedback: {
+          gratitude: 'חכמה בצוות! טוב! 👥',
+          scholar: 'אבל גם פנייה לה׳! 🙏',
+          builder: 'הוסף תפילה! 💫'
+        }
+      }]
+    }, {
+      id: 44,
+      title: '🕊️ שלום פנימי',
+      situation: 'מרגיש חוסר שלום פנימי. מה תעשה?',
+      choices: [{
+        text: 'להתעלם',
+        points: 2,
+        kindness: 0,
+        mastery: 0,
+        mission: 5,
+        feedback: {
+          gratitude: 'התמודד עם הרגש! 💭',
+          scholar: 'בדוק את המקור! 🔍',
+          builder: 'תיקון פנימי חשוב! 🏗️'
+        }
+      }, {
+        text: 'לחפש את המקור, להתפלל, לעשות חשבון נפש, ולחזור לאהבת ה׳',
+        points: 10,
+        kindness: 3,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מושלם! תהליך תיקון שלם! 🏆',
+          scholar: 'פנטסטי! "שובה ישראל"! 🌟',
+          builder: 'נפלא! בניית שלמות פנימית! 💎'
+        }
+      }, {
+        text: 'להתעסק בדברים אחרים',
+        points: 3,
+        kindness: 0,
+        mastery: 0,
+        mission: 8,
+        feedback: {
+          gratitude: 'הסחה לא פותרת! 🎯',
+          scholar: 'פנה פנימה! 💭',
+          builder: 'תקן את השורש! 🌱'
+        }
+      }, {
+        text: 'לדבר עם מישהו מבוגר',
+        points: 8,
+        kindness: 2,
+        mastery: 2,
+        mission: 20,
+        feedback: {
+          gratitude: 'חכם לבקש עזרה! 🤝',
+          scholar: 'טוב, הוסף תפילה! 🙏',
+          builder: 'נכון! עוד שכבות! 💫'
+        }
+      }]
+    }, {
+      id: 45,
+      title: '🌈 סוף המסע',
+      situation: 'המסע שלך בגיל 13 מתקדם. מה החזון שלך?',
+      choices: [{
+        text: 'סתם להמשיך',
+        points: 4,
+        kindness: 0,
+        mastery: 0,
+        mission: 10,
+        feedback: {
+          gratitude: 'חזון מניע! 🎯',
+          scholar: 'שאף למטרה! 🏔️',
+          builder: 'חזון בונה! 💭'
+        }
+      }, {
+        text: 'לחיות בדבקות תמידית, לאהוב את ה׳ בכל רגע, ולהיות שותף בתיקון העולם',
+        points: 10,
+        kindness: 4,
+        mastery: 4,
+        mission: 25,
+        feedback: {
+          gratitude: 'מדהים! חזון שלם ומושלם! 🏆',
+          scholar: 'פצצה! זו תכלית האדם! 🌟',
+          builder: 'נפלא! זהו המסע האמיתי! 🚀'
+        }
+      }, {
+        text: 'להצליח בחיים',
+        points: 5,
+        kindness: 1,
+        mastery: 0,
+        mission: 12,
+        feedback: {
+          gratitude: 'הצלחה טובה, אבל מהי? 🤔',
+          scholar: 'הגדר הצלחה אמיתית! 💭',
+          builder: 'יש עומק רב יותר! 🎯'
+        }
+      }, {
+        text: 'להיות אדם טוב',
+        points: 7,
+        kindness: 2,
+        mastery: 1,
+        mission: 18,
+        feedback: {
+          gratitude: 'יפה! אבל למה? 💝',
+          scholar: 'הוסף את הרובד האלוקי! 💫',
+          builder: 'עוד שכבה נדרשת! ⭐'
+        }
+      }]
+    }]
+  };
+
+  // Get current level configuration
+  const levelConfig = {
+    easy: {
+      name: 'קל',
+      required: 10,
+      passScore: 80,
+      color: 'green'
+    },
+    medium: {
+      name: 'בינוני',
+      required: 15,
+      passScore: 85,
+      color: 'blue'
+    },
+    hard: {
+      name: 'קשה',
+      required: 20,
+      passScore: 90,
+      color: 'purple'
+    }
+  };
+  const currentLevelData = levelConfig[currentLevel];
+  const currentScenarios = scenarios[currentLevel];
+
+  // Handle choice selection
+  const handleChoice = choiceIndex => {
+    const scenario = currentScenarios[currentScenario];
+    const choice = scenario.choices[choiceIndex];
+
+    // Update scores
+    setScore(prev => prev + choice.points);
+    setTotalQuestions(prev => prev + 1);
+    setKindnessPoints(prev => prev + choice.kindness);
+    setMasteryLevel(prev => Math.max(0, Math.min(5, prev + choice.mastery)));
+    setMissionMeter(prev => Math.min(100, prev + choice.mission));
+
+    // Show feedback
+    const roleKey = selectedRole.id;
+    setFeedback(choice.feedback[roleKey]);
+    setShowFeedback(true);
+
+    // Move to next scenario after delay
+    setTimeout(() => {
+      setShowFeedback(false);
+      if (currentScenario < currentScenarios.length - 1) {
+        setCurrentScenario(prev => prev + 1);
+      } else {
+        // Level complete
+        completeLevel();
+      }
+    }, 3000);
+  };
+
+  // Complete level
+  const completeLevel = () => {
+    const percentage = score / (totalQuestions * 10) * 100;
+    setLevelScores(prev => ({
+      ...prev,
+      [currentLevel]: percentage
+    }));
+    setGameStage('levelComplete');
+  };
+
+  // Move to next level
+  const moveToNextLevel = () => {
+    const levels = ['easy', 'medium', 'hard'];
+    const currentIndex = levels.indexOf(currentLevel);
+    if (currentIndex < levels.length - 1) {
+      setCurrentLevel(levels[currentIndex + 1]);
+      setCurrentScenario(0);
+      setScore(0);
+      setTotalQuestions(0);
+      setGameStage('playing');
+      setAttempts(0);
+    } else {
+      setGameStage('gameComplete');
+    }
+  };
+
+  // Retry level
+  const retryLevel = () => {
+    setCurrentScenario(0);
+    setScore(0);
+    setTotalQuestions(0);
+    setGameStage('playing');
+    setAttempts(prev => prev + 1);
+  };
+
+  // Reset game
+  const resetGame = () => {
+    setGameStage('welcome');
+    setSelectedRole(null);
+    setCurrentLevel('easy');
+    setCurrentScenario(0);
+    setScore(0);
+    setTotalQuestions(0);
+    setKindnessPoints(0);
+    setMasteryLevel(0);
+    setMissionMeter(0);
+    setAttempts(0);
+    setLevelScores({
+      easy: 0,
+      medium: 0,
+      hard: 0
+    });
+  };
+
+  // Welcome Screen
+  if (gameStage === 'welcome') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-red-500 flex items-center justify-center p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full text-center animate-fadeIn"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl mb-4"
+    }, "\u2764\uFE0F"), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600"
+    }, "\u05D2\u05D9\u05DC 13 \u2013 \u05E1\u05D5\u05D3 \u05D4\u05D0\u05D4\u05D1\u05D4"), /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl mb-4 text-gray-700"
+    }, "13 = \u05D0\u05D4\u05D1\u05D4 \u2728"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-600 mb-8"
+    }, "\u05D2\u05D9\u05DC 13 \u05D4\u05D5\u05D0 \u05E8\u05D2\u05E2 \u05DE\u05DB\u05D5\u05E0\u05DF \u05E9\u05D1\u05D5 \u05D0\u05EA\u05D4 \u05DE\u05EA\u05D7\u05D9\u05DC ", /*#__PURE__*/React.createElement("strong", null, "\u05DC\u05E4\u05EA\u05D7 \u05DE\u05E2\u05E8\u05DB\u05EA \u05D9\u05D7\u05E1\u05D9\u05DD \u05E2\u05DD \u05D4\u05D1\u05D5\u05E8\u05D0"), ".", /*#__PURE__*/React.createElement("br", null), "\u05D4\u05DE\u05E9\u05D9\u05DE\u05D4 \u05E9\u05DC\u05DA: \u05DC\u05D0\u05E1\u05D5\u05E3 \u05E0\u05E7\u05D5\u05D3\u05D5\u05EA \u05D7\u05E1\u05D3 \u05D5\u05DC\u05D4\u05D2\u05D1\u05D9\u05E8 \u05D0\u05EA \u05E8\u05DE\u05EA \u05D4\u05E9\u05DC\u05D9\u05D8\u05D4 \u05D1\u05DE\u05E6\u05D5\u05D5\u05EA \u05D0\u05D4\u05D1\u05EA \u05D4\u05F3"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setGameStage('roleSelect'),
+      className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform shadow-lg"
+    }, "\u05D4\u05EA\u05D7\u05DC \u05D0\u05EA \u05D4\u05DE\u05E1\u05E2! \uD83D\uDE80")));
+  }
+
+  // Role Selection Screen
+  if (gameStage === 'roleSelect') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-600 via-purple-500 to-pink-500 flex items-center justify-center p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8 max-w-4xl w-full"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-center mb-8 text-gray-800"
+    }, "\u05D1\u05D7\u05E8 \u05D0\u05EA \u05D3\u05E8\u05DA \u05D4\u05E2\u05D1\u05D5\u05D3\u05D4 \u05E9\u05DC\u05DA \uD83C\uDFAF"), /*#__PURE__*/React.createElement("div", {
+      className: "grid md:grid-cols-3 gap-6 mb-8"
+    }, roles.map(role => /*#__PURE__*/React.createElement("button", {
+      key: role.id,
+      onClick: () => {
+        setSelectedRole(role);
+        setGameStage('playing');
+      },
+      className: `bg-gradient-to-br ${role.color} text-white p-6 rounded-2xl hover:scale-105 transition-transform shadow-lg`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-5xl mb-3"
+    }, role.icon), /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold mb-2"
+    }, role.name), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm mb-3"
+    }, role.aspect), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm opacity-90"
+    }, role.description))))));
+  }
+
+  // Playing Screen
+  if (gameStage === 'playing' && selectedRole) {
+    const scenario = currentScenarios[currentScenario];
+    const progress = (currentScenario + 1) / currentScenarios.length * 100;
+    const currentPercentage = totalQuestions > 0 ? Math.round(score / (totalQuestions * 10) * 100) : 0;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl p-6 mb-6 shadow-xl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between items-center mb-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl"
+    }, selectedRole.icon), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "font-bold text-lg"
+    }, selectedRole.name), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, "\u05E8\u05DE\u05D4: ", currentLevelData.name))), /*#__PURE__*/React.createElement("div", {
+      className: "text-right"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl font-bold text-purple-600"
+    }, currentPercentage, "%"), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, "\u05E9\u05D0\u05DC\u05D4 ", currentScenario + 1, "/", currentScenarios.length))), /*#__PURE__*/React.createElement("div", {
+      className: "w-full bg-gray-200 rounded-full h-3 mb-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-600 to-pink-600 h-3 rounded-full transition-all duration-500",
+      style: {
+        width: `${progress}%`
+      }
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-3 gap-4 text-center"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl"
+    }, "\uD83D\uDC96"), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, "\u05E0\u05E7\u05D5\u05D3\u05D5\u05EA \u05D7\u05E1\u05D3"), /*#__PURE__*/React.createElement("div", {
+      className: "font-bold text-lg"
+    }, kindnessPoints)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl"
+    }, "\u2B50"), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, "\u05E8\u05DE\u05EA \u05E9\u05DC\u05D9\u05D8\u05D4"), /*#__PURE__*/React.createElement("div", {
+      className: "font-bold text-lg"
+    }, masteryLevel, "/5")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl"
+    }, "\uD83C\uDFAF"), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, "\u05DE\u05D3 \u05DE\u05E9\u05D9\u05DE\u05D4"), /*#__PURE__*/React.createElement("div", {
+      className: "font-bold text-lg"
+    }, missionMeter, "%")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl p-8 shadow-xl"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold mb-2 text-center"
+    }, scenario.title), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 mb-6 text-center leading-relaxed"
+    }, scenario.situation), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, scenario.choices.map((choice, index) => /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => handleChoice(index),
+      disabled: showFeedback,
+      className: "w-full text-right p-4 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl transition-all hover:scale-102 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-purple-200 hover:border-purple-400"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-semibold text-purple-800"
+    }, choice.text)))), showFeedback && /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 p-6 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl border-2 border-yellow-400 animate-fadeIn"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-semibold text-center text-gray-800"
+    }, feedback)))));
+  }
+
+  // Level Complete Screen
+  if (gameStage === 'levelComplete') {
+    const percentage = levelScores[currentLevel];
+    const passed = percentage >= currentLevelData.passScore;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-green-500 via-blue-500 to-purple-500 flex items-center justify-center p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl mb-4"
+    }, passed ? '🏆' : '💪'), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold mb-4"
+    }, passed ? 'כל הכבוד!' : 'כמעט שם!'), /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600"
+    }, percentage, "%"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700 mb-8"
+    }, passed ? currentLevel === 'hard' ? 'השלמת את כל הרמות! אתה אלוף! 🎉' : 'עברת את הרמה! מוכן לאתגר הבא? 🚀' : attempts >= 2 ? 'אולי כדאי לחזור על החומר? 📚' : 'נסה שוב! אתה יכול! 💪'), /*#__PURE__*/React.createElement("div", {
+      className: "mb-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-lg mb-2"
+    }, "\u05E1\u05D8\u05D8\u05D9\u05E1\u05D8\u05D9\u05E7\u05D5\u05EA:"), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-3 gap-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-pink-100 to-red-100 p-4 rounded-xl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl mb-1"
+    }, "\uD83D\uDC96"), /*#__PURE__*/React.createElement("div", {
+      className: "font-bold"
+    }, kindnessPoints), /*#__PURE__*/React.createElement("div", {
+      className: "text-xs text-gray-600"
+    }, "\u05E0\u05E7\u05D5\u05D3\u05D5\u05EA \u05D7\u05E1\u05D3")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-blue-100 to-indigo-100 p-4 rounded-xl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl mb-1"
+    }, "\u2B50"), /*#__PURE__*/React.createElement("div", {
+      className: "font-bold"
+    }, masteryLevel, "/5"), /*#__PURE__*/React.createElement("div", {
+      className: "text-xs text-gray-600"
+    }, "\u05E8\u05DE\u05EA \u05E9\u05DC\u05D9\u05D8\u05D4")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-purple-100 to-pink-100 p-4 rounded-xl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl mb-1"
+    }, "\uD83C\uDFAF"), /*#__PURE__*/React.createElement("div", {
+      className: "font-bold"
+    }, missionMeter, "%"), /*#__PURE__*/React.createElement("div", {
+      className: "text-xs text-gray-600"
+    }, "\u05DE\u05D3 \u05DE\u05E9\u05D9\u05DE\u05D4")))), /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-4 justify-center"
+    }, passed && currentLevel !== 'hard' && /*#__PURE__*/React.createElement("button", {
+      onClick: moveToNextLevel,
+      className: "bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform shadow-lg"
+    }, "\u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4! \uD83D\uDE80"), passed && currentLevel === 'hard' && /*#__PURE__*/React.createElement("button", {
+      onClick: () => setGameStage('gameComplete'),
+      className: "bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform shadow-lg"
+    }, "\u05E1\u05D9\u05DB\u05D5\u05DD \u05D4\u05DE\u05E1\u05E2! \uD83C\uDFC6"), !passed && /*#__PURE__*/React.createElement("button", {
+      onClick: retryLevel,
+      className: "bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform shadow-lg"
+    }, "\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1! \uD83D\uDCAA"), /*#__PURE__*/React.createElement("button", {
+      onClick: resetGame,
+      className: "bg-gray-500 text-white px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform shadow-lg"
+    }, "\u05D4\u05EA\u05D7\u05DC \u05DE\u05D7\u05D3\u05E9 \uD83D\uDD04"))));
+  }
+
+  // Game Complete Screen
+  if (gameStage === 'gameComplete') {
+    const totalPercentage = Math.round((levelScores.easy + levelScores.medium + levelScores.hard) / 3);
+
+    // Determine primary path based on role
+    let pathMessage = '';
+    if (selectedRole.id === 'gratitude') {
+      pathMessage = 'כיוון שבחרת לעסוק ביישום הכרת הטוב (בכל מאודך) כבסיס לאהבה, הצלחת לחוות את "השמחה הגדולה של אהבת ה׳". גילית את העין הטובה המבחינה ב"אהבה היתירה" של ה׳ שאינה תלויה בהכרח.';
+    } else if (selectedRole.id === 'scholar') {
+      pathMessage = 'כיוון שבחרת לחקור את ה"דעת" (בכל לבבך) ולהתבונן במצוות ובחסדים, עלית על נתיב השגה שגרם לך "הנאה בתכלית העונג". הוכחת כי האמונה והאהבה צריכות להיות חקוקות על ליבנו בכל עת.';
+    } else if (selectedRole.id === 'builder') {
+      pathMessage = 'כיוון שבחרת לפעול מתוך מסירות נפש (בכל נפשך) ולהתגבר על יצר הרע, השתמשת ב"פטיש החזק" של המעשים כדי לקבע את האהבה בלבך. הוכחת כי אהבה היא "עבודה".';
+    }
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-yellow-400 via-orange-400 to-red-400 flex items-center justify-center p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8 max-w-3xl w-full"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-7xl mb-4"
+    }, "\uD83C\uDFC6"), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-red-600"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05D4\u05DE\u05E1\u05E2!"), /*#__PURE__*/React.createElement("div", {
+      className: "text-5xl font-bold text-purple-600 mb-4"
+    }, totalPercentage, "%"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700"
+    }, "\u05E6\u05D9\u05D5\u05DF \u05DE\u05DE\u05D5\u05E6\u05E2 \u05D1\u05DB\u05DC \u05D4\u05E8\u05DE\u05D5\u05EA")), /*#__PURE__*/React.createElement("div", {
+      className: `bg-gradient-to-br ${selectedRole.color} text-white p-6 rounded-2xl mb-6`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-3 mb-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-5xl"
+    }, selectedRole.icon), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold"
+    }, selectedRole.name), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm opacity-90"
+    }, selectedRole.aspect))), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg leading-relaxed"
+    }, pathMessage)), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-3 gap-4 mb-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-pink-100 to-red-100 p-6 rounded-xl text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl mb-2"
+    }, "\uD83D\uDC96"), /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl font-bold"
+    }, kindnessPoints), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, "\u05E0\u05E7\u05D5\u05D3\u05D5\u05EA \u05D7\u05E1\u05D3")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-blue-100 to-indigo-100 p-6 rounded-xl text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl mb-2"
+    }, "\u2B50"), /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl font-bold"
+    }, masteryLevel, "/5"), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, "\u05E8\u05DE\u05EA \u05E9\u05DC\u05D9\u05D8\u05D4")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-purple-100 to-pink-100 p-6 rounded-xl text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl mb-2"
+    }, "\uD83C\uDFAF"), /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl font-bold"
+    }, missionMeter, "%"), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, "\u05DE\u05D3 \u05DE\u05E9\u05D9\u05DE\u05D4"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gray-50 rounded-xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-xl mb-4 text-center"
+    }, "\u05E6\u05D9\u05D5\u05E0\u05D9\u05DD \u05DC\u05E4\u05D9 \u05E8\u05DE\u05D4:"), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between items-center"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-semibold"
+    }, "\u05E8\u05DE\u05D4 \u05E7\u05DC\u05D4:"), /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl font-bold text-green-600"
+    }, levelScores.easy, "%")), /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between items-center"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-semibold"
+    }, "\u05E8\u05DE\u05D4 \u05D1\u05D9\u05E0\u05D5\u05E0\u05D9\u05EA:"), /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl font-bold text-blue-600"
+    }, levelScores.medium, "%")), /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between items-center"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-semibold"
+    }, "\u05E8\u05DE\u05D4 \u05E7\u05E9\u05D4:"), /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl font-bold text-purple-600"
+    }, levelScores.hard, "%")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-100 to-orange-100 p-6 rounded-xl border-2 border-yellow-400 mb-6"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-xl mb-3 text-center"
+    }, "\uD83C\uDF1F \u05E9\u05D0\u05DC\u05EA \u05E8\u05E4\u05DC\u05E7\u05E6\u05D9\u05D4:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-center text-gray-800 leading-relaxed"
+    }, "\u05E2\u05DC \u05DE\u05D4 \u05EA\u05D0\u05DE\u05E8 \u05EA\u05D5\u05D3\u05D4 \u05D4\u05D9\u05D5\u05DD (\u05D1\u05D2\u05D9\u05DC 13), \u05E9\u05DE\u05D5\u05DB\u05D9\u05D7 \u05DC\u05DA \u05E9\u05D4\u05F3 \u05D0\u05D5\u05D4\u05D1 \u05D0\u05D5\u05EA\u05DA \u05D0\u05D4\u05D1\u05D4 \u05E9\u05D0\u05D9\u05E0\u05D4 \u05EA\u05DC\u05D5\u05D9\u05D4 \u05D1\u05D3\u05D1\u05E8?")), /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-4 justify-center mb-6"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: resetGame,
+      className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform shadow-lg"
+    }, "\u05D4\u05EA\u05D7\u05DC \u05DE\u05E1\u05E2 \u05D7\u05D3\u05E9! \uD83D\uDD04")), /*#__PURE__*/React.createElement("div", {
+      className: "border-t-2 border-gray-200 pt-6 text-center"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold text-gray-800 mb-2"
+    }, "\u2728 \u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9: \u2728"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-purple-600 mb-1"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: ", /*#__PURE__*/React.createElement("a", {
+      href: "tel:0527139520",
+      className: "text-blue-600 hover:underline"
+    }, "0527139520")))));
+  }
+  return null;
+};
+const __App = AhavatHashemGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>
