@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tzniut_game – הקול החמישי</title>
+<meta name="description" content="Educational game teaching Jewish modesty (tzniut) concepts through interactive lessons and quizzes. Learn about body respect, clothing choices, and relationships.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="tzniut_game – הקול החמישי">
+<meta property="og:description" content="Educational game teaching Jewish modesty (tzniut) concepts through interactive lessons and quizzes. Learn about body respect, clothing choices, and relationships.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-e37ced7f.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/e37ced7f.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const useRef = window.React.useRef;
+const Check = window.LucideReact["Check"] || window.LucideReact.Circle;
+const X = window.LucideReact["X"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const BookOpen = window.LucideReact["BookOpen"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const TzniutLearningGame = () => {
+  const [currentLesson, setCurrentLesson] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [score, setScore] = useState(0);
+  const [lessonScores, setLessonScores] = useState([0, 0, 0]);
+  const [gameComplete, setGameComplete] = useState(false);
+  const [showLessonContent, setShowLessonContent] = useState(true);
+  const audioContextRef = useRef(null);
+
+  // אתחול AudioContext
+  useEffect(() => {
+    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
+
+  // פונקציה לניגון צליל
+  const playSound = (frequencies, durations) => {
+    const ctx = audioContextRef.current;
+    if (!ctx) return;
+    let startTime = ctx.currentTime;
+    frequencies.forEach((freq, index) => {
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      oscillator.frequency.value = freq;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + durations[index]);
+      oscillator.start(startTime);
+      oscillator.stop(startTime + durations[index]);
+      startTime += durations[index];
+    });
+  };
+  const lessons = [{
+    id: 1,
+    title: "הגוף שלי הוא מתנה - האוצר המיוחד שלי",
+    emoji: "💝",
+    content: /*#__PURE__*/React.createElement("div", {
+      className: "space-y-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-pink-50 to-purple-50 p-6 rounded-2xl border-2 border-pink-200"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold text-pink-800 mb-4 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "text-pink-500"
+    }), "\u05D4\u05D2\u05D5\u05E3 \u05E9\u05DC\u05D9 - \u05D4\u05E9\u05D5\u05EA\u05E3 \u05D4\u05DB\u05D9 \u05E7\u05E8\u05D5\u05D1 \u05DC\u05DE\u05E1\u05E2 \u05D4\u05D7\u05D9\u05D9\u05DD"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg leading-relaxed text-gray-700"
+    }, "\u05D4\u05D2\u05D5\u05E3 \u05E9\u05DC\u05E0\u05D5 \u05D0\u05D9\u05E0\u05D5 \u05D7\u05E4\u05E5 \u05E9\u05E6\u05E8\u05D9\u05DA \u05DC\u05E9\u05DE\u05D5\u05E8 \u05E2\u05DC\u05D9\u05D5, \u05D5\u05D0\u05E4\u05D9\u05DC\u05D5 \u05DC\u05D0 \u05E8\u05E7 \u05DE\u05EA\u05E0\u05D4 \u05E9\u05E7\u05D9\u05D1\u05DC\u05E0\u05D5.", /*#__PURE__*/React.createElement("strong", {
+      className: "text-pink-700"
+    }, " \u05D4\u05D5\u05D0 \u05D4\u05E9\u05D5\u05EA\u05E3 \u05D4\u05DB\u05D9 \u05E7\u05E8\u05D5\u05D1 \u05E9\u05DC\u05E0\u05D5 \u05DC\u05DE\u05E1\u05E2 \u05D4\u05D7\u05D9\u05D9\u05DD"), " - \u05D7\u05D1\u05E8, \u05D9\u05D5\u05E2\u05E5 \u05D5\u05E0\u05D0\u05DE\u05DF. \u05D4\u05E6\u05E0\u05D9\u05E2\u05D5\u05EA \u05D4\u05D9\u05D0 \u05D4\u05E9\u05E4\u05D4 \u05E9\u05D1\u05D4 \u05D0\u05E0\u05D7\u05E0\u05D5 \u05DE\u05E0\u05D4\u05DC\u05D5\u05EA \u05D0\u05EA \u05D4\u05E9\u05D5\u05EA\u05E4\u05D5\u05EA \u05D4\u05D6\u05D5 \u05D1\u05DB\u05D1\u05D5\u05D3 \u05D5\u05D1\u05D0\u05D4\u05D1\u05D4.")), /*#__PURE__*/React.createElement("div", {
+      className: "grid md:grid-cols-3 gap-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-5 rounded-xl shadow-md border-r-4 border-purple-400"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl mb-2"
+    }, "\uD83D\uDCD4"), /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-purple-800 mb-2"
+    }, "\u05D9\u05D5\u05DE\u05DF \u05E1\u05D5\u05D3\u05D9 \u05D0\u05D9\u05E9\u05D9"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-600"
+    }, "\u05D4\u05D2\u05D5\u05E3 \u05E9\u05DC\u05E0\u05D5 \u05D4\u05D5\u05D0 \u05DB\u05DE\u05D5 \u05D9\u05D5\u05DE\u05DF \u05D0\u05D9\u05E9\u05D9, \u05E9\u05D1\u05D5 \u05DB\u05EA\u05D5\u05D1\u05D9\u05DD \u05D4\u05E8\u05D2\u05E9\u05D5\u05EA \u05D5\u05D4\u05D7\u05DC\u05D5\u05DE\u05D5\u05EA \u05D4\u05DB\u05D9 \u05DB\u05DE\u05D5\u05E1\u05D9\u05DD. \u05D0\u05E0\u05D7\u05E0\u05D5 \u05D1\u05D5\u05D7\u05E8\u05D5\u05EA \u05D1\u05D6\u05D4\u05D9\u05E8\u05D5\u05EA \u05E2\u05DD \u05DE\u05D9 \u05DC\u05D7\u05DC\u05D5\u05E7 \u05D0\u05D5\u05EA\u05D5.")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-5 rounded-xl shadow-md border-r-4 border-yellow-400"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl mb-2"
+    }, "\uD83D\uDC8E"), /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-yellow-800 mb-2"
+    }, "\u05EA\u05D9\u05D1\u05EA \u05D0\u05D5\u05E6\u05E8\u05D5\u05EA \u05E4\u05E8\u05D8\u05D9\u05EA"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-600"
+    }, "\u05D2\u05D5\u05E4\u05E0\u05D5 \u05D4\u05D5\u05D0 \u05EA\u05D9\u05D1\u05EA \u05D4\u05D0\u05D5\u05E6\u05E8\u05D5\u05EA \u05E9\u05DC\u05E0\u05D5. \u05D0\u05E0\u05D7\u05E0\u05D5 \u05E9\u05D5\u05DE\u05E8\u05D5\u05EA \u05E2\u05DC\u05D9\u05D4 \u05DC\u05D0 \u05DE\u05E4\u05D7\u05D3, \u05D0\u05DC\u05D0 \u05DB\u05D9 \u05D0\u05E0\u05D7\u05E0\u05D5 \u05D0\u05D5\u05D4\u05D1\u05D5\u05EA \u05D0\u05EA \u05DE\u05D4 \u05E9\u05D9\u05E9 \u05D1\u05EA\u05D5\u05DB\u05D4.")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-5 rounded-xl shadow-md border-r-4 border-pink-400"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl mb-2"
+    }, "\uD83D\uDC51"), /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-pink-800 mb-2"
+    }, "\u05DE\u05DE\u05DC\u05DB\u05D4 \u05E7\u05E1\u05D5\u05DE\u05D4"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-600"
+    }, "\u05D4\u05D2\u05D5\u05E3 \u05E9\u05DC\u05E0\u05D5 \u05D4\u05D5\u05D0 \u05DE\u05DE\u05DC\u05DB\u05D4 \u05E7\u05E1\u05D5\u05DE\u05D4, \u05D5\u05D0\u05E0\u05D7\u05E0\u05D5 \u05D4\u05DE\u05DC\u05DB\u05D5\u05EA \u05E9\u05DC\u05D4. \u05DC\u05E0\u05D5 \u05D9\u05E9 \u05D0\u05EA \u05D4\u05DB\u05D5\u05D7 \u05DC\u05D4\u05D7\u05DC\u05D9\u05D8 \u05D0\u05EA \u05DE\u05D9 \u05DC\u05D4\u05DB\u05E0\u05D9\u05E1 \u05D1\u05E9\u05E2\u05E8\u05D9 \u05D4\u05DE\u05DE\u05DC\u05DB\u05D4."))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-red-50 p-5 rounded-xl border-2 border-red-200"
+    }, /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-red-800 mb-3 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(X, {
+      className: "text-red-600"
+    }), "\u05DC\u05DE\u05D4 \u05DE\u05E9\u05DC\u05D9\u05DD \u05DB\u05DE\u05D5 \"\u05E2\u05D2\u05D1\u05E0\u05D9\u05D9\u05D4\" \u05D5\"\u05D9\u05D4\u05DC\u05D5\u05DD\" \u05DC\u05D0 \u05DE\u05EA\u05D0\u05D9\u05DE\u05D9\u05DD?"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed"
+    }, "\u05DE\u05E9\u05DC\u05D9\u05DD \u05D0\u05DC\u05D5 \u05D2\u05D5\u05E8\u05DE\u05D9\u05DD \u05DC\u05E0\u05D5 \u05DC\u05D7\u05E9\u05D5\u05D1 \u05E9\u05D4\u05E2\u05E8\u05DA \u05E9\u05DC\u05E0\u05D5 \u05E0\u05E7\u05D1\u05E2 \u05E2\u05DC \u05D9\u05D3\u05D9 \u05D0\u05D7\u05E8\u05D9\u05DD - \u05DB\u05DE\u05D5 \u05E7\u05D5\u05E0\u05D4 \u05D1\u05E9\u05D5\u05E7. \u05D4\u05DD \u05DE\u05DC\u05DE\u05D3\u05D9\u05DD \u05E9\u05D4\u05E2\u05E8\u05DA \u05E9\u05DC\u05E0\u05D5 \u05E2\u05DC\u05D5\u05DC \"\u05DC\u05D4\u05D9\u05E4\u05D2\u05DD\" \u05D0\u05D5 \"\u05DC\u05E8\u05D3\u05EA\".", /*#__PURE__*/React.createElement("strong", {
+      className: "text-red-700"
+    }, " \u05D0\u05D1\u05DC \u05D4\u05E2\u05E8\u05DA \u05E9\u05DC\u05E0\u05D5 \u05D4\u05D5\u05D0 \u05E4\u05E0\u05D9\u05DE\u05D9, \u05E7\u05D1\u05D5\u05E2 \u05D5\u05D0\u05D9\u05E0\u05D5 \u05EA\u05DC\u05D5\u05D9 \u05D1\u05DE\u05D1\u05D8 \u05D7\u05D9\u05E6\u05D5\u05E0\u05D9!"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-l from-purple-100 to-pink-100 p-6 rounded-2xl text-center"
+    }, /*#__PURE__*/React.createElement(Sparkles, {
+      className: "inline-block text-purple-600 mb-2",
+      size: 32
+    }), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-purple-800"
+    }, "\u05D0\u05EA \u05D4\u05DE\u05DC\u05DB\u05D4 \u05E9\u05DC \u05D4\u05DE\u05DE\u05DC\u05DB\u05D4 \u05E9\u05DC\u05DA! \uD83D\uDC51\u2728"))),
+    questions: [{
+      q: "מהי הדרך הטובה ביותר לחשוב על הגוף שלנו, לפי מה שלמדנו?",
+      options: ["הגוף שלנו הוא משהו שצריך להסתיר כדי לא להפריע לאחרים", "הגוף שלנו הוא אוצר פרטי ומיוחד, ואנחנו שומרות עליו מתוך אהבה", "הגוף שלנו הוא כמו עגבנייה בשוק, וצריך להיזהר שלא ייגעו בו", "הגוף שלנו הוא הדבר הכי פחות חשוב, והפנימיות היא הדבר היחיד שקובע"],
+      correct: 1,
+      explanation: {
+        correct: "מעולה! 🌟 למדנו שצניעות בריאה מתחילה בתפיסה חיובית של הגוף כמתנה יקרה ואישית. זו לא שמירה מתוך פחד מאחרים או תחושת בושה, אלא שמירה מתוך אהבה וכבוד עצמי. כמו שאנחנו שומרות על יומן סודי או על חפץ יקר לנו, כך אנחנו מתייחסות לגופנו. את מבינה את זה לעומק! 💝",
+        wrong: "כמעט! 💭 בואי נחשוב ביחד: האם אנחנו שומרות על הגוף שלנו בגלל מה שאחרים חושבים? או בגלל שהוא יקר לנו? למדנו שצניעות בריאה מתחילה מבפנים - מתוך אהבה לעצמנו ולגוף שלנו. הגוף שלנו הוא כמו יומן סודי או תיבת אוצרות - אנחנו שומרות עליו כי הוא שלנו ויקר לנו, לא בגלל מה שאחרים יגידו. זה מגיע מתוך אהבה עצמית וכבוד! 💪"
+      }
+    }, {
+      q: "מדוע 'משל העגבנייה' הוא לא דוגמה טובה לצניעות?",
+      options: ["כי רוב האנשים לא אוהבים עגבניות, ולכן המשל לא משכנע", "כי עגבניות הן אדומות ובולטות, וזה לא מתאים לצניעות", "כי הוא גורם לנו לחשוב שהערך שלנו נקבע על ידי אנשים אחרים", "כי עדיף להשתמש במשל על פרי אחר, כמו תפוח או בננה"],
+      correct: 2,
+      explanation: {
+        correct: "נכון מאוד! 🎯 משל העגבנייה (וכן משל היהלום) מציג את ערכה של האישה כדבר שעלול 'להיפגם' או 'לרדת' אם אחרים 'נוגעים' או 'רואים'. גישה זו מתמקדת במבט החיצוני ובמה שאחרים חושבים, במקום בערך הפנימי והבלתי תלוי שלנו. צניעות אמיתית נובעת מהידיעה שהערך שלנו קבוע ופנימי. את ממש הבנת! ✨",
+        wrong: "בואי נעמיק יותר 🤔 השאלה היא לא על העגבנייה עצמה, אלא על מה המשל הזה מלמד אותנו. כשאומרים לנו שאנחנו כמו עגבנייה בשוק שכולם נוגעים בה, מה זה אומר על הערך שלנו? האם הערך שלנו יורד אם מישהו 'נגע' או 'הסתכל'? זו הבעיה! המשל הזה גורם לנו להרגיש שהערך שלנו תלוי במה שאחרים עושים או חושבים. אבל למדנו שהערך שלנו הוא פנימי וקבוע - הוא לא משתנה בגלל מבט או מגע של מישהו אחר! 💪"
+      }
+    }, {
+      q: "מהי המטרה העיקרית של שמירה על הגוף שלנו כדבר פרטי ויקר?",
+      options: ["כדי למלא את חוקי ההלכה בצורה מדויקת ולהיות ילדות טובות", "כדי להימנע ממחשבות לא טובות של גברים וממצבים מסוכנים", "כדי שנוכל לבטא את האהבה והכבוד שאנחנו מרגישות כלפי עצמנו", "כדי לגרום לבנים לכבד אותנו יותר ולהתייחס אלינו ברצינות"],
+      correct: 2,
+      explanation: {
+        correct: "מושלם! 🏆 המניע המרכזי לצניעות בריאה הוא פנימי. זוהי דרך לבטא את הקשר החיובי שלנו עם עצמנו - את האהבה, הכבוד וההערכה שאנו חשות כלפי הגוף והנפש שלנו. המטרות האחרות (כבוד מאחרים, הימנעות מסכנה) עשויות להיות תוצאה של הגישה הזו, אך הן אינן המניע המרכזי, שצריך לנבוע תמיד מבפנים. את מבינה את ההבדל! 💖",
+        wrong: "חשוב להבין! 💡 כל התשובות האחרות מדברות על סיבות *חיצוניות* - מה אחרים חושבים, איך הם יתייחסו אלינו, או סכנות מבחוץ. אבל למדנו משהו עמוק יותר: צניעות אמיתית מתחילה מבפנים! היא באה מהאהבה והכבוד שאנחנו מרגישות לעצמנו. זה כמו לשמור על יומן סודי - לא כי אנחנו מפחדות ממישהו, אלא כי הוא יקר ואישי לנו. המניע צריך להיות פנימי! 🌟"
+      }
+    }]
+  }, {
+    id: 2,
+    title: "שפת הלבוש - מה הבגדים שלי מספרים עליי?",
+    emoji: "👗",
+    content: /*#__PURE__*/React.createElement("div", {
+      className: "space-y-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-2xl border-2 border-blue-200"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold text-blue-800 mb-4 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(BookOpen, {
+      className: "text-blue-500"
+    }), "\u05D4\u05D1\u05D2\u05D3\u05D9\u05DD \u05E9\u05DC\u05D9 \u05DE\u05E1\u05E4\u05E8\u05D9\u05DD \u05E1\u05D9\u05E4\u05D5\u05E8"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg leading-relaxed text-gray-700"
+    }, "\u05D4\u05D1\u05D2\u05D3\u05D9\u05DD \u05E9\u05DC\u05E0\u05D5 \u05D4\u05DD \u05DC\u05D0 \u05E8\u05E7 \u05DB\u05D9\u05E1\u05D5\u05D9 - \u05D4\u05DD ", /*#__PURE__*/React.createElement("strong", {
+      className: "text-blue-700"
+    }, "\u05E9\u05E4\u05D4!"), " \u05DB\u05DE\u05D5 \u05DE\u05D9\u05DC\u05D9\u05DD, \u05D4\u05D1\u05D2\u05D3\u05D9\u05DD \u05E9\u05DC\u05E0\u05D5 \u05DE\u05E1\u05E4\u05E8\u05D9\u05DD \u05E2\u05DC \u05DE\u05D9 \u05E9\u05D0\u05E0\u05D7\u05E0\u05D5, \u05E2\u05DC \u05DE\u05E6\u05D1 \u05D4\u05E8\u05D5\u05D7 \u05E9\u05DC\u05E0\u05D5, \u05D5\u05E2\u05DC \u05DE\u05D4 \u05E9\u05D7\u05E9\u05D5\u05D1 \u05DC\u05E0\u05D5.")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-l from-purple-50 to-pink-50 p-6 rounded-2xl border-2 border-purple-200"
+    }, /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-purple-800 mb-3 text-xl"
+    }, "\u2728 \"\u05E0\u05E8\u05D0\u05D9\u05DF \u05D5\u05D0\u05D9\u05DF \u05E0\u05E8\u05D0\u05D9\u05DF\" - \u05D4\u05E1\u05D5\u05D3 \u05D4\u05D9\u05E4\u05D4\u05E4\u05D4"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed"
+    }, "\u05D4\u05E8\u05E2\u05D9\u05D5\u05DF \u05D4\u05D6\u05D4 \u05DE\u05D2\u05D9\u05E2 \u05DE\u05D4\u05DE\u05E7\u05D5\u05DD \u05D4\u05DB\u05D9 \u05E7\u05D3\u05D5\u05E9 - \u05E7\u05D5\u05D3\u05E9 \u05D4\u05E7\u05D5\u05D3\u05E9\u05D9\u05DD. \u05DB\u05DE\u05D5 \u05D0\u05E8\u05D5\u05DF \u05D4\u05D1\u05E8\u05D9\u05EA \u05E9\u05D4\u05D9\u05D4 \u05E9\u05DD \u05D0\u05D1\u05DC \u05E0\u05E1\u05EA\u05E8, \u05DB\u05DA \u05D2\u05DD \u05D1\u05D2\u05D5\u05E3 \u05D5\u05D1\u05E0\u05E4\u05E9 \u05E9\u05DC\u05E0\u05D5 \u05D9\u05E9 ", /*#__PURE__*/React.createElement("strong", {
+      className: "text-purple-700"
+    }, "\u05E2\u05D5\u05DE\u05E7 \u05E0\u05E1\u05EA\u05E8 \u05D5\u05E7\u05D3\u05D5\u05E9"), ". \u05D4\u05D1\u05D2\u05D3\u05D9\u05DD \u05E9\u05DC\u05E0\u05D5 \u05E8\u05D5\u05DE\u05D6\u05D9\u05DD \u05E2\u05DC \u05D4\u05E1\u05D5\u05D3 \u05D4\u05D9\u05E4\u05D4\u05E4\u05D4 \u05D4\u05D6\u05D4, \u05D5\u05DE\u05D6\u05DE\u05D9\u05E0\u05D9\u05DD \u05DC\u05D4\u05DB\u05D9\u05E8 \u05D0\u05D5\u05EA\u05E0\u05D5 \u05DC\u05E2\u05D5\u05DE\u05E7.")), /*#__PURE__*/React.createElement("div", {
+      className: "grid md:grid-cols-2 gap-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-5 rounded-xl shadow-md border-r-4 border-green-400"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl mb-2"
+    }, "\uD83C\uDF89"), /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-green-800 mb-2"
+    }, "\u05E9\u05DE\u05DC\u05D4 \u05D7\u05D2\u05D9\u05D2\u05D9\u05EA"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-600"
+    }, "\u05DE\u05E1\u05E4\u05E8\u05EA \u05E9\u05D0\u05E0\u05D7\u05E0\u05D5 \u05D1\u05E9\u05DE\u05D7\u05D4 \u05D5\u05E9\u05D0\u05E0\u05D7\u05E0\u05D5 \u05DE\u05DB\u05D1\u05D3\u05D5\u05EA \u05D0\u05EA \u05D4\u05D0\u05D9\u05E8\u05D5\u05E2 \u05D4\u05DE\u05D9\u05D5\u05D7\u05D3.")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-5 rounded-xl shadow-md border-r-4 border-orange-400"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl mb-2"
+    }, "\uD83C\uDFC3\u200D\u2640\uFE0F"), /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-orange-800 mb-2"
+    }, "\u05D1\u05D2\u05D3\u05D9 \u05E1\u05E4\u05D5\u05E8\u05D8"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-600"
+    }, "\u05DE\u05E1\u05E4\u05E8\u05D9\u05DD \u05E9\u05D0\u05E0\u05D7\u05E0\u05D5 \u05D0\u05D5\u05D4\u05D1\u05D5\u05EA \u05DC\u05D6\u05D5\u05D6, \u05DC\u05D4\u05D9\u05D5\u05EA \u05E4\u05E2\u05D9\u05DC\u05D5\u05EA \u05D5\u05DC\u05D4\u05E8\u05D2\u05D9\u05E9 \u05D7\u05D5\u05E4\u05E9\u05D9\u05D5\u05EA.")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-5 rounded-xl shadow-md border-r-4 border-blue-400"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl mb-2"
+    }, "\uD83D\uDE34"), /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-blue-800 mb-2"
+    }, "\u05E4\u05D9\u05D2'\u05DE\u05D4"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-600"
+    }, "\u05DE\u05E1\u05E4\u05E8\u05EA \u05E9\u05D0\u05E0\u05D7\u05E0\u05D5 \u05D1\u05DE\u05E8\u05D7\u05D1 \u05D4\u05E4\u05E8\u05D8\u05D9 \u05E9\u05DC\u05E0\u05D5, \u05E0\u05D7\u05D5\u05EA \u05D5\u05DE\u05EA\u05DB\u05D5\u05E0\u05E0\u05D5\u05EA \u05DC\u05E9\u05D9\u05E0\u05D4.")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-5 rounded-xl shadow-md border-r-4 border-purple-400"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl mb-2"
+    }, "\uD83D\uDCDA"), /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-purple-800 mb-2"
+    }, "\u05DE\u05D3\u05D9 \u05D1\u05D9\u05EA \u05E1\u05E4\u05E8"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-600"
+    }, "\u05DE\u05E1\u05E4\u05E8\u05D9\u05DD \u05E9\u05D0\u05E0\u05D7\u05E0\u05D5 \u05DE\u05D5\u05DB\u05E0\u05D5\u05EA \u05DC\u05DC\u05DE\u05D5\u05D3 \u05D5\u05DC\u05D4\u05D9\u05D5\u05EA \u05D7\u05DC\u05E7 \u05DE\u05E7\u05D4\u05D9\u05DC\u05D4."))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-yellow-50 p-5 rounded-xl border-2 border-yellow-300"
+    }, /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-yellow-900 mb-3 flex items-center gap-2"
+    }, "\uD83C\uDFA8 \u05DC\u05DB\u05DC \u05D6\u05DE\u05DF \u05D5\u05DC\u05DB\u05DC \u05DE\u05E7\u05D5\u05DD"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed"
+    }, "\u05D4\u05EA\u05D0\u05DE\u05EA \u05D4\u05DC\u05D1\u05D5\u05E9 \u05DC\u05DE\u05E7\u05D5\u05DD \u05D5\u05DC\u05E1\u05D9\u05D8\u05D5\u05D0\u05E6\u05D9\u05D4 \u05D4\u05D9\u05D0 \u05D1\u05D9\u05D8\u05D5\u05D9 \u05E9\u05DC ", /*#__PURE__*/React.createElement("strong", {
+      className: "text-yellow-800"
+    }, "\u05DB\u05D1\u05D5\u05D3 \u05D5\u05EA\u05D1\u05D5\u05E0\u05D4"), ". \u05D6\u05D4\u05D5 \u05DB\u05D1\u05D5\u05D3 \u05DB\u05DC\u05E4\u05D9 \u05E2\u05E6\u05DE\u05E0\u05D5, \u05DB\u05DC\u05E4\u05D9 \u05D0\u05D7\u05E8\u05D9\u05DD \u05D5\u05DB\u05DC\u05E4\u05D9 \u05D4\u05DE\u05E2\u05DE\u05D3. \u05D0\u05E0\u05D7\u05E0\u05D5 \u05DE\u05EA\u05DC\u05D1\u05E9\u05D5\u05EA \u05D0\u05D7\u05E8\u05EA \u05DC\u05D1\u05D9\u05EA \u05D4\u05E1\u05E4\u05E8, \u05DC\u05DE\u05E1\u05D9\u05D1\u05D4, \u05DC\u05D8\u05D9\u05D5\u05DC \u05D0\u05D5 \u05DC\u05D1\u05D9\u05EA \u05D4\u05DB\u05E0\u05E1\u05EA - \u05D5\u05D6\u05D4 \u05DE\u05E8\u05D0\u05D4 \u05E9\u05D0\u05E0\u05D7\u05E0\u05D5 \u05DE\u05D1\u05D9\u05E0\u05D5\u05EA \u05D0\u05EA \u05D4\u05E1\u05D1\u05D9\u05D1\u05D4 \u05D5\u05DE\u05EA\u05E7\u05E9\u05E8\u05D5\u05EA \u05D0\u05D9\u05EA\u05D4 \u05E0\u05DB\u05D5\u05DF.")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-pink-100 to-purple-100 p-6 rounded-2xl text-center"
+    }, /*#__PURE__*/React.createElement(Star, {
+      className: "inline-block text-purple-600 mb-2",
+      size: 32
+    }), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-purple-800"
+    }, "\u05D4\u05D1\u05D2\u05D3\u05D9\u05DD \u05E9\u05DC\u05DA \u05D4\u05DD \u05D4\u05E7\u05D5\u05DC \u05E9\u05DC\u05DA! \u05DE\u05D4 \u05D0\u05EA \u05E8\u05D5\u05E6\u05D4 \u05DC\u05E1\u05E4\u05E8? \uD83C\uDF1F"))),
+    questions: [{
+      q: "כיצד למדנו להתייחס לבגדים שאנחנו לובשות?",
+      options: ["כחובה מעצבנת שצריך לציית לה לפי כללים נוקשים", "ככיסוי שנועד בעיקר להסתיר את הגוף כדי שלא יבלוט", "כשפה שדרכה אנחנו יכולות לבטא את האישיות שלנו ואת עומקנו הפנימי", "כדרך להראות שאנחנו הכי יפות ומיוחדות יותר מכולן"],
+      correct: 2,
+      explanation: {
+        correct: "מצוין! 🎯 למדנו שהבגדים שלנו הם סוג של שפה. הם יכולים לבטא את מצב הרוח שלנו, את תחומי העניין שלנו ואת האישיות שלנו. צניעות אינה מחיקה של הביטוי העצמי, אלא בחירה לבטא את עצמנו בדרך שרומזת על עולם פנימי עשיר ומכבדת את עצמנו ואת הסביבה. את מבינה את הקסם של 'שפת הלבוש'! ✨",
+        wrong: "בואי נחשוב ביחד 💭 למדנו משהו מיוחד על בגדים - הם לא רק 'כיסוי' או 'חובה'. הבגדים שלנו הם כמו שפה! בדיוק כמו שאנחנו משתמשות במילים כדי להביע את עצמנו, כך הבגדים מספרים סיפור על מי שאנחנו. שמלה חגיגית 'אומרת' שאנחנו שמחות, בגדי ספורט 'אומרים' שאנחנו אוהבות לזוז. זו לא הסתרה - זה ביטוי! זו דרך להראות את העולם הפנימי שלנו בכבוד. 🌈"
+      }
+    }, {
+      q: "מדוע אנחנו מתלבשות אחרת לאירועים שונים (למשל, מסיבה וטיול)?",
+      options: ["כי אנחנו רוצות להראות לכולם שיש לנו הרבה בגדים יפים בארון", "כי בכל מקום יש כללים שונים ואנחנו מפחדות שיכעסו עלינו", "כי הבגדים שלנו צריכים להיות מתאימים ונוחים לפעילות שאנחנו עושות", "כי בכל אירוע אנחנו רוצות להתאים את עצמנו למה שכולן לובשות"],
+      correct: 2,
+      explanation: {
+        correct: "נכון לגמרי! 💪 התאמת הלבוש למקום ולסיטואציה היא ביטוי של תבונה, כבוד ובשלות. לבוש שמתאים לפעילות (כמו בגדי ספורט לטיול) או למעמד (כמו שמלה חגיגית לאירוע) מראה שאנחנו מבינות את הסביבה שלנו ומתקשרות איתה נכון. זהו חלק מ'שפת הלבוש' שמבטאת כבוד לעצמנו ולאחרים. יפה מאוד! 🌟",
+        wrong: "נסי לחשוב אחרת 🤔 השאלה היא לא על מה אחרים יחשבו או מה כולן לובשות. חשבי על זה כך: האם את לובשת פיג'מה לטיול? כנראה שלא - כי זה לא נוח ולא מתאים! למדנו שאנחנו בוחרות בגדים לפי המקום והפעילות, כי זה הגיוני. בגדי ספורט לטיול כי נוח לנו לזוז, שמלה חגיגית למסיבה כי זה מכבד את האירוע. זו התאמה חכמה שמראה שאנחנו מבינות את הסביבה - לא פחד! 💫"
+      }
+    }, {
+      q: "מהו 'רמז' בהקשר של לבוש, לפי מה שלמדנו?",
+      options: ["פתק קטן שאנחנו מחביאות בכיס כדי לרמוז משהו לחברה", "דרך להראות את העולם הפנימי והקדוש שלנו מבלי לחשוף הכול", "רמז לכך שאנחנו מנסות להסתיר משהו שאנחנו מתביישות בו", "לבוש שגורם לבנים להסתכל עלינו ולחשוב עלינו כל הזמן"],
+      correct: 1,
+      explanation: {
+        correct: "מושלם! ✨ הרעיון של 'רמז' מבוסס על תפיסת הצניעות כ'נראין ואין נראין'. הלבוש שלנו יכול לרמוז על האישיות, הרגשות והעומק הקדוש שבתוכנו, מבלי 'לשים הכול על השולחן'. זה יוצר עניין, כבוד ומסתורין בריא, ומזמין אנשים להכיר את הפנימיות שלנו, ולא רק את החיצוניות. את ממש מבינה את העומק! 💝",
+        wrong: "בואי נעמיק בעניין 💡 המילה 'רמז' כאן לא מדברת על פתק או הסתרה. זה משהו הרבה יותר יפה! למדנו על הרעיון 'נראין ואין נראין' - כמו ארון הברית שהיה בקודש הקודשים. הוא היה שם, אבל נסתר. כך גם הבגדים שלנו: הם 'רומזים' על העומק והיופי שיש בתוכנו, מבלי לחשוף הכול. זה יוצר עניין בריא ומזמין אנשים להכיר אותנו לעומק - לא רק להסתכל מבחוץ. זו שפה של כבוד! 🌸"
+      }
+    }]
+  }, {
+    id: 3,
+    title: "מעגלים של אהבה",
+    emoji: "💕",
+    content: /*#__PURE__*/React.createElement("div", {
+      className: "space-y-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-rose-50 to-red-50 p-6 rounded-2xl border-2 border-rose-200"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold text-rose-800 mb-4 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "text-rose-500"
+    }), "\u05DE\u05E2\u05D2\u05DC\u05D9 \u05D4\u05E7\u05E8\u05D1\u05D4 \u05D1\u05D7\u05D9\u05D9\u05DD \u05E9\u05DC\u05E0\u05D5"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg leading-relaxed text-gray-700"
+    }, "\u05D1\u05D7\u05D9\u05D9\u05DD \u05E9\u05DC\u05E0\u05D5 \u05D9\u05E9 ", /*#__PURE__*/React.createElement("strong", {
+      className: "text-rose-700"
+    }, "\u05DE\u05E2\u05D2\u05DC\u05D9\u05DD \u05E9\u05D5\u05E0\u05D9\u05DD \u05E9\u05DC \u05E7\u05E8\u05D1\u05D4 \u05D5\u05D0\u05D9\u05E0\u05D8\u05D9\u05DE\u05D9\u05D5\u05EA"), ". \u05D6\u05D4 \u05D8\u05D1\u05E2\u05D9 \u05D5\u05D1\u05E8\u05D9\u05D0 \u05DC\u05D7\u05DC\u05D5\u05E7 \u05D0\u05EA \u05E2\u05E6\u05DE\u05E0\u05D5 \u05D1\u05D0\u05D5\u05E4\u05DF \u05E9\u05D5\u05E0\u05D4 \u05E2\u05DD \u05D0\u05E0\u05E9\u05D9\u05DD \u05E9\u05D5\u05E0\u05D9\u05DD, \u05D1\u05D4\u05EA\u05D0\u05DD \u05DC\u05DE\u05D9\u05D3\u05EA \u05D4\u05E7\u05E8\u05D1\u05D4 \u05D5\u05D4\u05D0\u05DE\u05D5\u05DF.")), /*#__PURE__*/React.createElement("div", {
+      className: "relative"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-1 gap-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-pink-500 to-rose-500 text-white p-6 rounded-2xl shadow-lg"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl mb-2"
+    }, "\u2764\uFE0F"), /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-2xl mb-2"
+    }, "\u05D4\u05DC\u05D9\u05D1\u05D4 - \u05D4\u05DE\u05E9\u05E4\u05D7\u05D4"), /*#__PURE__*/React.createElement("p", {
+      className: "text-pink-100"
+    }, "\u05D0\u05D4\u05D1\u05D4 \u05E9\u05D0\u05D9\u05E0\u05D4 \u05EA\u05DC\u05D5\u05D9\u05D4 \u05D1\u05D3\u05D1\u05E8, \u05D1\u05D9\u05D8\u05D7\u05D5\u05DF \u05D5\u05E9\u05D9\u05EA\u05D5\u05E3 \u05E2\u05DE\u05D5\u05E7. \u05D6\u05D4\u05D5 \u05D4\u05DE\u05E2\u05D2\u05DC \u05D4\u05DB\u05D9 \u05E7\u05E8\u05D5\u05D1 \u05D0\u05DC\u05D9\u05E0\u05D5.")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-400 to-pink-400 text-white p-5 rounded-xl shadow-lg mr-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl mb-2"
+    }, "\uD83D\uDC9C"), /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-xl mb-2"
+    }, "\u05D4\u05D7\u05D1\u05E8\u05D5\u05EA \u05D4\u05DB\u05D9 \u05D8\u05D5\u05D1\u05D5\u05EA"), /*#__PURE__*/React.createElement("p", {
+      className: "text-purple-100"
+    }, "\u05DB\u05D0\u05DF \u05D7\u05D5\u05DC\u05E7\u05D9\u05DD \u05E1\u05D5\u05D3\u05D5\u05EA, \u05D7\u05D9\u05D1\u05D5\u05E7\u05D9\u05DD, \u05EA\u05DE\u05D9\u05DB\u05D4 \u05E8\u05D2\u05E9\u05D9\u05EA \u05D5\u05E9\u05D9\u05D7\u05D5\u05EA \u05E0\u05E4\u05E9 \u05E2\u05DE\u05D5\u05E7\u05D5\u05EA.")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-blue-300 to-purple-300 text-white p-5 rounded-xl shadow-md mr-12"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl mb-2"
+    }, "\uD83D\uDC99"), /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-lg mb-2"
+    }, "\u05D7\u05D1\u05E8\u05D5\u05EA \u05DC\u05DB\u05D9\u05EA\u05D4 \u05D5\u05EA\u05E0\u05D5\u05E2\u05D4"), /*#__PURE__*/React.createElement("p", {
+      className: "text-blue-100"
+    }, "\u05E9\u05D9\u05D7\u05D5\u05EA, \u05DE\u05E9\u05D7\u05E7\u05D9\u05DD \u05D5\u05D7\u05D5\u05D5\u05D9\u05D5\u05EA \u05DE\u05E9\u05D5\u05EA\u05E4\u05D5\u05EA \u05D1\u05E8\u05DE\u05EA \u05E7\u05E8\u05D1\u05D4 \u05E4\u05EA\u05D5\u05D7\u05D4 \u05D9\u05D5\u05EA\u05E8.")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-cyan-200 to-blue-200 text-gray-800 p-4 rounded-xl mr-18"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-xl mb-2"
+    }, "\uD83E\uDD1D"), /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold mb-2"
+    }, "\u05D0\u05E0\u05E9\u05D9\u05DD \u05D6\u05E8\u05D9\u05DD"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 text-sm"
+    }, "\u05E0\u05D9\u05DE\u05D5\u05E1 \u05D5\u05DB\u05D1\u05D5\u05D3, \u05D0\u05DA \u05E9\u05DE\u05D9\u05E8\u05D4 \u05E2\u05DC \u05DE\u05E8\u05D7\u05E7 \u05D1\u05E8\u05D9\u05D0 \u05D5\u05D8\u05D1\u05E2\u05D9.")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-l from-red-50 to-pink-50 p-6 rounded-2xl border-2 border-red-200"
+    }, /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-red-800 mb-3 text-xl flex items-center gap-2"
+    }, "\uD83D\uDC8E \u05DC\u05E9\u05DE\u05D5\u05E8 \u05D0\u05EA \u05D4\u05DE\u05D2\u05E2 \u05D4\u05DE\u05D9\u05D5\u05D7\u05D3"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed mb-3"
+    }, "\u05D4\u05DE\u05D2\u05E2 \u05D4\u05D6\u05D5\u05D2\u05D9 \u05D5\u05D4\u05E8\u05D5\u05DE\u05E0\u05D8\u05D9 \u05D4\u05D5\u05D0 \u05E1\u05D5\u05D2 \u05DE\u05D9\u05D5\u05D7\u05D3 \u05DE\u05D0\u05D5\u05D3 \u05E9\u05DC \u05E7\u05E8\u05D1\u05D4 - \u05E9\u05E4\u05D4 \u05D9\u05D9\u05D7\u05D5\u05D3\u05D9\u05EA \u05E9\u05E9\u05D9\u05D9\u05DB\u05EA \u05DC\u05E2\u05D5\u05DC\u05DD \u05E9\u05DC \u05D1\u05E8\u05D9\u05EA \u05D5\u05D0\u05D4\u05D1\u05D4 \u05E2\u05DE\u05D5\u05E7\u05D4. \u05D6\u05D4 \u05DB\u05DE\u05D5 ", /*#__PURE__*/React.createElement("strong", {
+      className: "text-red-700"
+    }, "\"\u05D0\u05D5\u05E6\u05E8\" \u05E9\u05E9\u05D5\u05DE\u05E8\u05D9\u05DD \u05DC\u05E8\u05D2\u05E2 \u05D4\u05E0\u05DB\u05D5\u05DF"), ", \u05E2\u05DD \u05D4\u05D0\u05D3\u05DD \u05D4\u05D0\u05D7\u05D3 \u05D5\u05D4\u05DE\u05D9\u05D5\u05D7\u05D3."), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-4 rounded-xl"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-800 font-semibold"
+    }, "\u2B50 \u05D7\u05E9\u05D5\u05D1 \u05DC\u05D4\u05D1\u05D9\u05DF: \u05D0\u05E0\u05D7\u05E0\u05D5 \u05DC\u05D0 \u05E9\u05D5\u05DE\u05E8\u05D5\u05EA \u05DE\u05E9\u05D4\u05D5 '\u05E8\u05E2' \u05D0\u05D5 '\u05DE\u05E1\u05D5\u05DB\u05DF' \u05E9\u05E4\u05EA\u05D0\u05D5\u05DD \u05D9\u05D4\u05E4\u05D5\u05DA \u05DC'\u05D8\u05D5\u05D1'. \u05D0\u05E0\u05D7\u05E0\u05D5 \u05E9\u05D5\u05DE\u05E8\u05D5\u05EA \u05DE\u05E9\u05D4\u05D5 ", /*#__PURE__*/React.createElement("span", {
+      className: "text-red-600"
+    }, "\u05D9\u05E7\u05E8 \u05D5\u05E7\u05D3\u05D5\u05E9"), " \u05DC\u05E8\u05D2\u05E2 \u05E9\u05D1\u05D5 \u05D4\u05D5\u05D0 \u05D9\u05D5\u05DB\u05DC \u05DC\u05D4\u05EA\u05D2\u05DC\u05D5\u05EA \u05D1\u05DE\u05DC\u05D5\u05D0 \u05D4\u05DE\u05E9\u05DE\u05E2\u05D5\u05EA \u05E9\u05DC\u05D5."))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-100 to-orange-100 p-6 rounded-2xl text-center"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "inline-block text-orange-600 mb-2",
+      size: 36
+    }), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-orange-800"
+    }, "\u05DB\u05DC \u05DE\u05E2\u05D2\u05DC \u05D4\u05D5\u05D0 \u05DE\u05D9\u05D5\u05D7\u05D3! \u05DB\u05D5\u05DC\u05DD \u05D7\u05E9\u05D5\u05D1\u05D9\u05DD \u05D1\u05D7\u05D9\u05D9\u05DD \u05E9\u05DC\u05E0\u05D5 \uD83C\uDF08"))),
+    questions: [{
+      q: "מה מלמד אותנו הרעיון של 'מעגלי חברות'?",
+      options: ["שכדי להיות פופולרית, צריך שיהיו לנו כמה שיותר חברות", "שלכל אחת צריכה להיות רק חברה אחת הכי טובה וזהו", "שצריך להתייחס לכל האנשים בעולם בדיוק באותו האופן", "שזה טבעי ובריא לחלוק רמות שונות של קרבה עם אנשים שונים"],
+      correct: 3,
+      explanation: {
+        correct: "נכון מאוד! 🎯 מודל 'מעגלי החברות' מלמד אותנו על אינטימיות מדורגת. זה טבעי ונכון לשמור את הסודות העמוקים, החיבוקים החמים והשיחות האישיות ביותר למעגלים הקרובים אלינו ביותר (משפחה, חברות טובות). זוהי דרך בריאה לנהל קשרים חברתיים ולשמור על המרחב הרגשי שלנו. את מבינה את החשיבות של גבולות בריאים! 💪",
+        wrong: "בואי נחשוב על זה אחרת 💭 האם את חולקת את אותם הדברים עם כולם? כנראה שלא! יש דברים שאת מספרת רק לאמא שלך, דברים שאת משתפת רק עם החברה הכי טובה, ודברים שבסדר לספר לכל הכיתה. זה בריא! למדנו על 'מעגלי חברות' - ככל שמישהו קרוב יותר אלינו, אנחנו חולקות איתו יותר. זה לא אומר שצריך להיות פופולרית או שכולם שווים - זה אומר שכל קשר הוא ברמה אחרת, וזה טבעי! 🌟"
+      }
+    }, {
+      q: "מהי המטרה העיקרית של 'שמירת נגיעה' על פי מה שלמדנו?",
+      options: ["להוכיח לכולם שיש לנו כוח רצון חזק ויכולת שליטה עצמית גבוהה", "לשמור סוג מיוחד של קרבה פיזית לקשר זוגי עתידי כדי להעצים ולקדש אותו", "להימנע ממגע עם בנים כי כל מגע הוא מסוכן ועלול להוביל לחטא", "לציית לחוקי ההלכה כי זוהי הדרך היחידה להיות בת דתייה טובה"],
+      correct: 1,
+      explanation: {
+        correct: "מושלם! 🏆 בשיעור למדנו לראות ב'שמירת נגיעה' לא איסור שמקורו בפחד, אלא בחירה שמקורה באהבה וברצון ליצור משמעות. המטרה היא לשמור את המגע הרומנטי, שהוא ביטוי עמוק של קרבה, לקשר של ברית ונישואין. השמירה הזו הופכת את המגע העתידי למיוחד, קדוש ובעל משמעות אדירה. את מבינה את העומק של הבחירה הזו! 💝",
+        wrong: "בואי נבין ביחד את העומק 💡 שמירת נגיעה זה לא על 'לא לעשות משהו רע' או 'להוכיח כוח רצון'. זה משהו הרבה יותר יפה! תחשבי על זה כמו אוצר שאת שומרת לאדם המיוחד ביותר בחיים שלך. למדנו שהמגע הזוגי הוא שפה קדושה ומיוחדת - ואנחנו שומרות אותה לקשר של אהבה אמיתית ונישואין. זו לא שמירה מתוך פחד, אלא בנייה של משהו משמעותי! כשאת שומרת משהו יקר, הוא הופך להיות עוד יותר מיוחד ברגע הנכון. 💫"
+      }
+    }, {
+      q: "מהו המסר המרכזי של כל שלושת השיעורים שלמדנו?",
+      options: ["שהעולם בחוץ הוא מקום מסוכן וצניעות היא הדרך שלנו להתחבא", "שהדבר הכי חשוב בצניעות הוא איך אחרים רואים וחושבים עלינו", "שצניעות אמיתית מגיעה מבפנים, מתוך אהבה עצמית ורצון למשמעות", "שצניעות היא מערכת של חוקים וכללים שנועדה להגן עלינו"],
+      correct: 2,
+      explanation: {
+        correct: "מדהים! 🌟🏆 המסר המרכזי ששזור בכל שלושת השיעורים הוא שצניעות בריאה היא תהליך פנימי. היא מתחילה באהבה לגוף, ממשיכה בביטוי עצמי מכבד דרך הלבוש, ומגיעה לשיאה בבניית קשרים משמעותיים תוך שמירה על מה שיקר לנו. זוהי דרך חיים שלמה שבמרכזה אהבה, שמחה וחיבור. את ממש הבנת את כל המסע! 💖✨",
+        wrong: "כמעט! בואי נסכם את כל מה שלמדנו 💭 עברנו מסע מדהים ב-3 השיעורים: (1) הבנו שהגוף שלנו הוא מתנה יקרה ואנחנו שומרות עליו מתוך אהבה לעצמנו - לא פחד מאחרים, (2) גילינו שהבגדים שלנו הם שפה לבטא את מי שאנחנו, (3) למדנו על מעגלי קרבה ושמירה על מה שקדוש. מה המשותף לכל זה? שהכול מתחיל מבפנים! מאהבה עצמית, מרצון ליצור משמעות, מבחירה שלנו. לא מפחד, לא בגלל מה שאחרים יגידו - אלא כי זה חשוב לנו! זה 'באה מאהבה'! 🌈"
+      }
+    }]
+  }];
+  const shuffleArray = array => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+  const [shuffledOptions, setShuffledOptions] = useState([]);
+  useEffect(() => {
+    if (lessons[currentLesson] && lessons[currentLesson].questions[currentQuestion]) {
+      const options = lessons[currentLesson].questions[currentQuestion].options;
+      const correctIndex = lessons[currentLesson].questions[currentQuestion].correct;
+      const correctAnswer = options[correctIndex];
+      const shuffled = shuffleArray(options);
+      const newCorrectIndex = shuffled.indexOf(correctAnswer);
+      setShuffledOptions(shuffled.map((opt, idx) => ({
+        text: opt,
+        isCorrect: idx === newCorrectIndex
+      })));
+    }
+  }, [currentLesson, currentQuestion]);
+  const handleAnswer = index => {
+    if (showFeedback) return;
+    setSelectedAnswer(index);
+    setShowFeedback(true);
+    const isCorrect = shuffledOptions[index].isCorrect;
+    if (isCorrect) {
+      playSound([523.25, 659.25, 783.99], [0.15, 0.15, 0.15]);
+      setScore(score + 1);
+      const newLessonScores = [...lessonScores];
+      newLessonScores[currentLesson]++;
+      setLessonScores(newLessonScores);
+    }
+  };
+  const handleNext = () => {
+    const questionsInLesson = lessons[currentLesson].questions.length;
+    if (currentQuestion < questionsInLesson - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+    } else {
+      const lessonScore = lessonScores[currentLesson];
+      const percentage = lessonScore / questionsInLesson * 100;
+      if (percentage >= 66) {
+        if (currentLesson < lessons.length - 1) {
+          playSound([523.25, 659.25, 783.99, 1046.50, 783.99, 659.25], [0.3, 0.3, 0.3, 0.4, 0.3, 0.3]);
+          setTimeout(() => {
+            setCurrentLesson(currentLesson + 1);
+            setCurrentQuestion(0);
+            setSelectedAnswer(null);
+            setShowFeedback(false);
+            setShowLessonContent(true);
+          }, 1800);
+        } else {
+          playSound([523.25, 659.25, 783.99, 1046.50, 783.99, 659.25], [0.3, 0.3, 0.3, 0.4, 0.3, 0.3]);
+          setTimeout(() => {
+            setGameComplete(true);
+          }, 1800);
+        }
+      } else {
+        setCurrentQuestion(0);
+        setSelectedAnswer(null);
+        setShowFeedback(false);
+        const newLessonScores = [...lessonScores];
+        newLessonScores[currentLesson] = 0;
+        setLessonScores(newLessonScores);
+        setScore(score - lessonScore);
+      }
+    }
+  };
+  const startQuiz = () => {
+    setShowLessonContent(false);
+  };
+  if (gameComplete) {
+    const totalQuestions = lessons.reduce((sum, lesson) => sum + lesson.questions.length, 0);
+    const percentage = Math.round(score / totalQuestions * 100);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-rose-100 p-4",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "mb-6"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-24 h-24 text-yellow-500 mx-auto mb-4 animate-bounce"
+    }), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold text-purple-800 mb-2"
+    }, "\uD83C\uDF89 \u05DB\u05DC \u05D4\u05DB\u05D1\u05D5\u05D3! \u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05D4\u05DE\u05E1\u05E2! \uD83C\uDF89"), /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center gap-2 mb-4"
+    }, /*#__PURE__*/React.createElement(Star, {
+      className: "text-yellow-400 fill-yellow-400",
+      size: 32
+    }), /*#__PURE__*/React.createElement(Star, {
+      className: "text-yellow-400 fill-yellow-400",
+      size: 32
+    }), /*#__PURE__*/React.createElement(Star, {
+      className: "text-yellow-400 fill-yellow-400",
+      size: 32
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-purple-800 mb-4"
+    }, "\u05D4\u05E6\u05D9\u05D5\u05DF \u05E9\u05DC\u05DA: ", score, "/", totalQuestions, " (", percentage, "%)"), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3"
+    }, lessons.map((lesson, idx) => /*#__PURE__*/React.createElement("div", {
+      key: idx,
+      className: "bg-white rounded-xl p-4 flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-3"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-3xl"
+    }, lesson.emoji), /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-gray-800"
+    }, lesson.title)), /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl font-bold text-purple-600"
+    }, lessonScores[idx], "/", lesson.questions.length))))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-6 mb-6 text-right"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold text-rose-800 mb-4 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "text-rose-500"
+    }), "\u05E9\u05D0\u05DC\u05D5\u05EA \u05DC\u05DE\u05D7\u05E9\u05D1\u05D4 \u05E2\u05DE\u05D5\u05E7\u05D4"), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3 text-gray-700"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "leading-relaxed"
+    }, "\uD83D\uDCAD ", /*#__PURE__*/React.createElement("strong", null, "\u05D0\u05D9\u05D6\u05D5 \u05DE\u05D8\u05D0\u05E4\u05D5\u05E8\u05D4 \u05D4\u05DB\u05D9 \u05DE\u05D3\u05D1\u05E8\u05EA \u05D0\u05DC\u05D9\u05D9?"), " \u05D9\u05D5\u05DE\u05DF \u05E1\u05D5\u05D3\u05D9, \u05EA\u05D9\u05D1\u05EA \u05D0\u05D5\u05E6\u05E8\u05D5\u05EA, \u05D0\u05D5 \u05DE\u05DE\u05DC\u05DB\u05D4 \u05E7\u05E1\u05D5\u05DE\u05D4? \u05DC\u05DE\u05D4?"), /*#__PURE__*/React.createElement("p", {
+      className: "leading-relaxed"
+    }, "\uD83C\uDFA8 ", /*#__PURE__*/React.createElement("strong", null, "\u05DE\u05D4 \u05D4\u05D1\u05D2\u05D3\u05D9\u05DD \u05E9\u05DC\u05D9 \u05DE\u05E1\u05E4\u05E8\u05D9\u05DD \u05E2\u05DC\u05D9\u05D9 \u05D4\u05D9\u05D5\u05DD?"), " \u05D4\u05D0\u05DD \u05D6\u05D4 \u05DE\u05D4 \u05E9\u05D0\u05E0\u05D9 \u05E8\u05D5\u05E6\u05D4 \u05DC\u05D1\u05D8\u05D0?"), /*#__PURE__*/React.createElement("p", {
+      className: "leading-relaxed"
+    }, "\uD83D\uDC95 ", /*#__PURE__*/React.createElement("strong", null, "\u05DE\u05D9 \u05E0\u05DE\u05E6\u05D0 \u05D1\u05DE\u05E2\u05D2\u05DC\u05D9\u05DD \u05D4\u05E9\u05D5\u05E0\u05D9\u05DD \u05D1\u05D7\u05D9\u05D9\u05DD \u05E9\u05DC\u05D9?"), " \u05D4\u05D0\u05DD \u05D0\u05E0\u05D9 \u05DE\u05E8\u05D2\u05D9\u05E9\u05D4 \u05D1\u05E0\u05D5\u05D7 \u05E2\u05DD \u05D6\u05D4?"), /*#__PURE__*/React.createElement("p", {
+      className: "leading-relaxed"
+    }, "\u2728 ", /*#__PURE__*/React.createElement("strong", null, "\u05D0\u05D9\u05DA \u05D0\u05E0\u05D9 \u05D9\u05DB\u05D5\u05DC\u05D4 \u05DC\u05D7\u05D9\u05D5\u05EA \"\u05D1\u05D0\u05D4 \u05DE\u05D0\u05D4\u05D1\u05D4\""), " \u05D1\u05D7\u05D9\u05D9 \u05D4\u05D9\u05D5\u05DD-\u05D9\u05D5\u05DD?"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-100 to-orange-100 rounded-2xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement(Sparkles, {
+      className: "inline-block text-orange-600 mb-3",
+      size: 36
+    }), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-orange-800 mb-2"
+    }, "\u05D6\u05DB\u05E8\u05D9: \u05E6\u05E0\u05D9\u05E2\u05D5\u05EA \u05D0\u05DE\u05D9\u05EA\u05D9\u05EA \u05D1\u05D0\u05D4 \u05DE\u05D0\u05D4\u05D1\u05D4!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700"
+    }, "\u05D0\u05EA \u05DE\u05DC\u05DB\u05D4 \u05E9\u05DC \u05D4\u05DE\u05DE\u05DC\u05DB\u05D4 \u05E9\u05DC\u05DA, \u05D5\u05D4\u05D1\u05D2\u05D3\u05D9\u05DD \u05E9\u05DC\u05DA \u05D4\u05DD \u05D4\u05E9\u05E4\u05D4 \u05E9\u05DC\u05DA. \u05D4\u05DE\u05E2\u05D2\u05DC\u05D9\u05DD \u05D1\u05D7\u05D9\u05D9\u05DD \u05E9\u05DC\u05DA \u05D4\u05DD \u05DE\u05EA\u05E0\u05D4. \u05D4\u05DE\u05E9\u05D9\u05DB\u05D9 \u05DC\u05E6\u05DE\u05D5\u05D7 \u05D1\u05D0\u05D4\u05D1\u05D4! \uD83C\uDF38")), /*#__PURE__*/React.createElement("div", {
+      className: "border-t-2 border-purple-200 pt-6 mt-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6"
+    }, /*#__PURE__*/React.createElement(Award, {
+      className: "inline-block text-purple-600 mb-3",
+      size: 40
+    }), /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold text-purple-800 mb-3"
+    }, "\uD83C\uDF8A \u05DE\u05D6\u05DC \u05D8\u05D5\u05D1! \u05D0\u05EA \u05E0\u05DB\u05E0\u05E1\u05EA \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4 \u05E0\u05D5\u05E9\u05D0\u05EA \u05E4\u05E8\u05E1\u05D9\u05DD! \uD83C\uDF8A"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 mb-4"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4 \u05D0\u05EA \u05DB\u05DC \u05D4\u05E9\u05D9\u05E2\u05D5\u05E8\u05D9\u05DD! \u05D6\u05DB\u05D9\u05EA \u05DC\u05D4\u05D9\u05DB\u05E0\u05E1 \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4 \u05DE\u05D9\u05D5\u05D7\u05D3\u05EA \u05E2\u05DD \u05E4\u05E8\u05E1\u05D9\u05DD \u05DE\u05D3\u05D4\u05D9\u05DE\u05D9\u05DD."), /*#__PURE__*/React.createElement("a", {
+      href: "https://forms.gle/A66uubei4XSX6SG2A",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: "inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xl px-8 py-4 rounded-full hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 shadow-lg"
+    }, "\uD83C\uDF81 \u05DC\u05D7\u05E6\u05D9 \u05DB\u05D0\u05DF \u05DC\u05E8\u05D9\u05E9\u05D5\u05DD \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4! \uD83C\uDF81"))), /*#__PURE__*/React.createElement("div", {
+      className: "border-t-2 border-gray-200 pt-6 mt-8"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600 mb-2"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-purple-800"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 mt-2"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: ", /*#__PURE__*/React.createElement("span", {
+      className: "font-bold"
+    }, "0527139520"))))));
+  }
+  const currentLessonData = lessons[currentLesson];
+  const totalQuestions = lessons.reduce((sum, lesson) => sum + lesson.questions.length, 0);
+  const progressPercentage = (currentLesson * 3 + currentQuestion) / totalQuestions * 100;
+  if (showLessonContent) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 p-4",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-6 md:p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "mb-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between mb-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-sm font-semibold text-purple-600"
+    }, "\u05E9\u05D9\u05E2\u05D5\u05E8 ", currentLesson + 1, " \u05DE\u05EA\u05D5\u05DA ", lessons.length), /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl"
+    }, currentLessonData.emoji)), /*#__PURE__*/React.createElement("h1", {
+      className: "text-3xl md:text-4xl font-bold text-purple-800 mb-4 text-right"
+    }, currentLessonData.title), /*#__PURE__*/React.createElement("div", {
+      className: "w-full bg-gray-200 rounded-full h-3 mb-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500",
+      style: {
+        width: `${progressPercentage}%`
+      }
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "mb-8"
+    }, currentLessonData.content), /*#__PURE__*/React.createElement("div", {
+      className: "text-center"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: startQuiz,
+      className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xl px-8 py-4 rounded-full hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 mx-auto"
+    }, /*#__PURE__*/React.createElement("span", null, "\u05D1\u05D5\u05D0\u05D9 \u05E0\u05D1\u05D3\u05D5\u05E7 \u05DE\u05D4 \u05DC\u05DE\u05D3\u05E0\u05D5!"), /*#__PURE__*/React.createElement(Sparkles, {
+      size: 24
+    }))))));
+  }
+  const currentQuestionData = currentLessonData.questions[currentQuestion];
+  const isCorrect = selectedAnswer !== null && shuffledOptions[selectedAnswer]?.isCorrect;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 p-4",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-3xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl shadow-2xl p-6 md:p-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-semibold text-purple-600"
+  }, "\u05E9\u05D9\u05E2\u05D5\u05E8 ", currentLesson + 1, " \u2022 \u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, "/", currentLessonData.questions.length), /*#__PURE__*/React.createElement("div", {
+    className: "text-3xl"
+  }, currentLessonData.emoji)), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-3 mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500",
+    style: {
+      width: `${progressPercentage}%`
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between text-sm text-gray-600"
+  }, /*#__PURE__*/React.createElement("span", null, "\u05E6\u05D9\u05D5\u05DF \u05DB\u05D5\u05DC\u05DC: ", score, "/", totalQuestions), /*#__PURE__*/React.createElement("span", null, "\u05E9\u05D9\u05E2\u05D5\u05E8 \u05D6\u05D4: ", lessonScores[currentLesson], "/", currentLessonData.questions.length))), /*#__PURE__*/React.createElement("div", {
+    className: "mb-8"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-bold text-gray-800 mb-6 text-right leading-relaxed"
+  }, currentQuestionData.q), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, shuffledOptions.map((option, index) => {
+    const isSelected = selectedAnswer === index;
+    const showCorrect = showFeedback && option.isCorrect;
+    const showWrong = showFeedback && isSelected && !option.isCorrect;
+    return /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => handleAnswer(index),
+      disabled: showFeedback,
+      className: `w-full p-4 rounded-xl text-right transition-all transform hover:scale-102 ${showCorrect ? 'bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-500 shadow-lg' : showWrong ? 'bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-400' : isSelected ? 'bg-gradient-to-r from-purple-100 to-pink-100 border-2 border-purple-400' : 'bg-gray-50 border-2 border-gray-200 hover:border-purple-300 hover:bg-purple-50'}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-right flex-1 font-medium text-gray-800"
+    }, option.text), showCorrect && /*#__PURE__*/React.createElement(Check, {
+      className: "text-green-600 mr-3",
+      size: 24
+    }), showWrong && /*#__PURE__*/React.createElement(X, {
+      className: "text-red-600 mr-3",
+      size: 24
+    })));
+  }))), showFeedback && /*#__PURE__*/React.createElement("div", {
+    className: `mb-6 p-6 rounded-2xl ${isCorrect ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300' : 'bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-300'}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3 mb-3"
+  }, isCorrect ? /*#__PURE__*/React.createElement(Check, {
+    className: "text-green-600 flex-shrink-0 mt-1",
+    size: 28
+  }) : /*#__PURE__*/React.createElement(Sparkles, {
+    className: "text-blue-600 flex-shrink-0 mt-1",
+    size: 28
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "text-right flex-1"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: `text-xl font-bold mb-2 ${isCorrect ? 'text-green-800' : 'text-blue-800'}`
+  }, isCorrect ? 'מצוין! ⭐' : 'בואי נלמד ביחד 💡'), /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-700 leading-relaxed"
+  }, isCorrect ? currentQuestionData.explanation.correct : currentQuestionData.explanation.wrong))), /*#__PURE__*/React.createElement("button", {
+    onClick: handleNext,
+    className: "w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 px-6 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 shadow-md mt-4"
+  }, currentQuestion < currentLessonData.questions.length - 1 ? 'השאלה הבאה ←' : 'סיום השיעור! 🎉')))));
+};
+const __App = TzniutLearningGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

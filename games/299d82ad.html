@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>משחק אינטראקטיבי: &quot;ואהבת את ה' אלוהיך&quot; – הקול החמישי</title>
+<meta name="description" content="Test your understanding of Jewish spiritual concepts through interactive scenarios. Features 3 difficulty levels, detailed explanations, and progress tracking.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="משחק אינטראקטיבי: &quot;ואהבת את ה&#x27; אלוהיך&quot; – הקול החמישי">
+<meta property="og:description" content="Test your understanding of Jewish spiritual concepts through interactive scenarios. Features 3 difficulty levels, detailed explanations, and progress tracking.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-299d82ad.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/299d82ad.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const AlertCircle = window.LucideReact["AlertCircle"] || window.LucideReact.Circle;
+const Check = window.LucideReact["Check"] || window.LucideReact.Circle;
+const X = window.LucideReact["X"] || window.LucideReact.Circle;
+const LoveHashemGame = () => {
+  const [currentLevel, setCurrentLevel] = useState("easy");
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [levelScores, setLevelScores] = useState({
+    easy: [],
+    medium: [],
+    hard: []
+  });
+  const [gameStarted, setGameStarted] = useState(false);
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  const questions = {
+    easy: [{
+      id: 1,
+      question: "דני לומד גמרא כבר שעה. הוא מתחיל להרגיש עייפות, אבל פתאום מבין קושיא עמוקה וחש התרגשות גדולה. לפי החומר, מה הוא חווה עכשיו?",
+      answers: ["את השלב הראשון בתהליך רכישת האהבה - חשיבה והתבוננות", "את השלב השלישי בתהליך - הנאה רוחנית שתוביל לאהבה", "את השלב השני בתהליך - השגה ברורה של חכמת הבורא", "את השלב הרביעי - אהבה שהתקבעה כבר בלב"],
+      correct: 2,
+      explanation: "דני כבר עבר את שלב החשיבה (שעה של לימוד) והגיע להשגה - הבנה ברורה ('פתאום מבין קושיא עמוקה'). ההתרגשות שהוא חש היא תחילת ההנאה, אבל עדיין לא ההנאה המלאה שמובילה לאהבה. זה השלב השני בתהליך: חשיבה → השגה → הנאה → אהבה."
+    }, {
+      id: 2,
+      question: "שרה אוכלת תפוז ומברכת 'בורא פרי העץ'. היא חושבת: 'כמה טוב שיש לי מה לאכול'. לפי החומר, מה חסר בהתייחסות שלה?",
+      answers: ["היא לא הודתה על הטעם הטוב של התפוז", "היא לא התבוננה ביחס החיבה של הנותן, רק בהנאה עצמה", "היא לא אמרה את הברכה בקול רם מספיק", "היא לא התבוננה במורכבות הבריאה של התפוז"],
+      correct: 1,
+      explanation: "החומר מסביר שרוב האנשים מאוהבים באהבתם - נמשכים להנאה עצמה ולא לנותן. שרה התמקדה בכך שיש לה מה לאכול (ההנאה), אבל לא התבוננה ביחס החיבה של ה' שנתן לה את זה. הברכה הראשונה היא הודיה על תשומת הלב והאהבה של הנותן, לא רק על האוכל עצמו."
+    }, {
+      id: 3,
+      question: "יוסי קורא בסידור 'אהבת עולם אהבתנו' לפני 'ואהבת את ה''. למה זה לא סתם מקרי לפי החומר?",
+      answers: ["כדי שהתפילה תהיה יותר ארוכה ומרשימה", "כדי להשריש את האמונה שה' אוהב אותנו תחילה, שבלעדיה אי אפשר לאהוב אותו", "כדי לזכור את ההיסטוריה של עם ישראל", "כדי להכין את הלב רגשית לפני הקריאה"],
+      correct: 1,
+      explanation: "החומר מדגיש עיקרון יסודי: אדם לא יכול לאהוב מי ששונא אותו! חז\"ל קבעו שנאמר 'אהבת עולם אהבתנו' תחילה כדי להשריש את האמונה שה' אוהב אותנו אהבה בלתי מותנית. רק אחרי שאנחנו מאמינים באהבתו אלינו, אנחנו יכולים לאהוב אותו בחזרה. זו לא סתם הכנה רגשית - זו תנאי מוקדם הכרחי."
+    }, {
+      id: 4,
+      question: "מרים לומדת תורה ומתפעלת מהחכמה שהיא מגלה. אבל אחרי שעתיים היא חשה שהרגש כבר נחלש. מה החומר ממליץ לה?",
+      answers: ["להפסיק ללמוד ולחזור מחר כשתהיה יותר רעננה", "להמשיך ללמוד בלי לשים לב לרגשות, כי רק הלימוד חשוב", "לחשוב ולהתבונן באהבת ה' כל הזמן, כי רגשות כהים מהר", "להתרכז יותר בהבנת התוכן ופחות ברגש"],
+      correct: 2,
+      explanation: "החומר מדגיש נקודה קריטית: רגשות כהים מהר מאוד! לכן התורה מצווה 'בשבתך בביתך ובלכתך בדרך' - לחשוב ולהתבונן תמיד. האהבה היא לא אירוע חד-פעמי אלא מיומנות נרכשת שדורשת תרגול מתמיד. מרים צריכה להבין שחולשת הרגש היא תופעה טבעית, והפתרון הוא עבודה מתמדת על חידוש ההתבוננות והמחשבה."
+    }, {
+      id: 5,
+      question: "אבי נהנה מאוד מפרח יפה בגן. הוא חושב: 'מה יפה!' איזו התבוננות נוספת תעזור לו להגיע לאהבת ה' לפי 'בכל מאודך'?",
+      answers: ["לחשוב על התהליך הביולוגי שיצר את הפרח", "להתבונן שיופי הפרח הוא 'מותר' שלא הכרחי לחיים - זו אהבה יתירה", "לזכור שיש פרחים יפים אפילו יותר במקומות אחרים", "להתרכז בכמה זמן הפרח יישאר יפה לפני שיבול"],
+      correct: 1,
+      explanation: "החומר מסביר שבכל מאודך כולל התבוננות במותרות - דברים שלא הכרחיים לחיים (פירות קיץ, ריחות, יופי אסתטי). אלו המצאות שנוצרו רק להנאתנו, והן מגלים את אהבתו היתירה של ה'. אבי צריך לשאול את עצמו: למה הבורא יצר יופי אסתטי? זה לא הכרחי להישרדות! התשובה: כדי להנות אותנו - זו הוכחה לאהבה עמוקה."
+    }],
+    medium: [{
+      id: 6,
+      question: "רחל עושה חסד גדול למישהו שהיא לא מכירה, ושילמה על זה כסף. זה לא נוח לה, אבל היא עושה את זה. לאיזה חלק של 'ואהבת' זה משתייך בעיקר?",
+      answers: ["בכל לבבך - כי היא חשבה על זה היטב לפני", "בכל נפשך - כי היא ויתרה על רצונותיה והנוחות שלה למען ה'", "בכל מאודך - כי היא השתמשה בממון", "לכל החלקים באותה מידה כי חסד כולל הכל"],
+      correct: 1,
+      explanation: "למרות שרחל השתמשה בממון (בכל מאודך), העיקר כאן הוא בכל נפשך. החומר מדגיש: אהבה נבחנת במסירות - כאשר האדם מוכן לוותר על רצונותיו והנוחות שלו. המקור מוסיף: הנתינה צריכה להיעשות גם כאשר הדבר אינו נוח לאדם, שכן אז מוכח שהאהבה כנה. רחל עושה משהו שלא נוח לה - ביטוי של מסירות הרצון, זו מהות בכל נפשך."
+    }, {
+      id: 7,
+      question: "משה לומד עמוק ומשיג רעיונות נפלאים, אבל הוא לא מרגיש הנאה - הלימוד מרגיש לו כמו עבודה קשה. מה החומר היה אומר לו?",
+      answers: ["שהוא עושה נכון - לימוד תורה זו עבודה קשה", "שהוא מפספס את עיקר מצוות לימוד התורה - להנות ולהתענג", "שהוא צריך ללמוד נושאים קלים יותר", "שההנאה תבוא אחרי כמה שנים של עמל"],
+      correct: 1,
+      explanation: "החומר חד וברור: עיקר מצוות לימוד התורה היא להנות ולהתענג במה שמשיג האדם. משה אמנם משיג רעיונות (השגה), אבל הוא לא מגיע להנאה - השלב השלישי בתהליך! בלי הנאה, ההשגה לא תוביל לאהבה. זה לא אומר שהלימוד צריך להיות קל, אלא שצריך לחפש את העונג הרוחני שבהשגה. התענוג והשמחה הם אמורים להיות חלק מהלימוד."
+    }, {
+      id: 8,
+      question: "דוד עובר תקופה קשה בחיים עם הרבה יסורים. חבר אומר לו: 'זה בגלל שעשית משהו לא טוב'. מה החומר מלמד אותנו על יסורים?",
+      answers: ["שיסורים תמיד באים בגלל חטא", "שיסורים יכולים לבוא גם לצדיק - כדי להרגיל אותו למסירות ולחזק האהבה בפועל", "שיסורים הם עונש שצריך להימנע ממנו בכל מחיר", "שיסורים לא קשורים בכלל לאהבת ה'"],
+      correct: 1,
+      explanation: "החומר מביא נקודה חשובה: יסורים ניתנים גם לצדיק (כמו עוני) כדי להרגיל אותו לסבול טורח ועמל בפועל לאהבתו של מקום. זה לא עונש! זה אולם אימונים לאהבה. למה? כי מעשה בפועל (לסבול ממש) יוצר תכונה חזקה יותר בנפש מאשר רק מחשבה. היסורים הם הזדמנות להתאמן באהבה דרך קושי אמיתי - בכל נפשך בפועל."
+    }, {
+      id: 9,
+      question: "איתן מרגיש אהבה גדולה לה' כשהוא בסביבה של קדושה (בית כנסת, שבת), אבל ביום חול זה נעלם. מה הבעיה לפי החומר?",
+      answers: ["שהאהבה שלו תלויה באטמוספרה חיצונית, לא בדעת פנימית", "שהוא צריך לבלות יותר זמן בבית כנסת", "שהוא לא מספיק מתאמץ להרגיש", "שזה בסדר גמור - אהבה צריכה להיות קשורה למקום קדוש"],
+      correct: 0,
+      explanation: "החומר מדגיש: אהבה אמיתית צריכה לנבוע מדעת (הכרת המציאות), לא מדמיון או אטמוספירה. כן, החומר ממליץ לבנות אטמוספירה של קדושה, אבל זה רק כלי עזר, לא היסוד. איתן סומך רק על גירויים חיצוניים. אהבה שאינה תלויה בדבר היא זו המבוססת על הכרה מתמדת בקיומו של הבורא - מציאות שלא משתנה בין שבת לחול. הבעיה: האהבה שלו תלויה באטמוספירה, לא מושרשת בדעת."
+    }, {
+      id: 10,
+      question: "גילה מתבוננת בזריחה מדהימה ומרגישה אהבה עזה לה'. אבל אחרי חצי שעה הרגש כבר חלש. איזו הבנה חסרה לה?",
+      answers: ["שזריחות לא באמת משמעותיות לאהבת ה'", "שהיא צריכה לצלם את הזריחה כדי לזכור", "שרגש לבד לא מספיק - צריך לתרגם למעשים שיחזקו את האהבה בלב", "שהיא צריכה להתבונן בזריחות רק בשבת"],
+      correct: 2,
+      explanation: "החומר מסביר שרגשות (גם עזים) כהים מהר. גילה חוותה רגש אמיתי, אבל היא לא תרגמה אותו לפעולה. החומר אומר: פעולות הן כפטיש חזק שתוקע את האהבה (שבשכל) אל הלב. רגש = מסמר, פעולה = הפטיש. בלי הפטיש, המסמר לא נשאר. גילה צריכה לשאול: מה אני יכולה לעשות עכשיו שיבטא את האהבה הזו? (חסד, תפילה, לימוד) - כך הרגש לא ידעך."
+    }],
+    hard: [{
+      id: 11,
+      question: "שני אנשים לומדים את אותו הדף גמרא. הראשון מבין היטב אבל חושב 'כמה אני חכם'. השני מבין ומרגיש 'איזה חכמה נפלאה יש בזה'. מי מהם קרוב יותר לאהבת ה' ולמה?",
+      answers: ["הראשון - כי הוא משיג טוב יותר את התוכן", "השני - כי הוא מתמקד בחכמת הבורא ולא בעצמו, זו ההשגה שמובילה לאהבה", "שניהם באותה מידה - העיקר ההבנה", "אף אחד - כי שניהם לא הגיעו להנאה אמיתית"],
+      correct: 1,
+      explanation: "זו שאלה עדינה! שניהם משיגים (מבינים), אבל יש הבדל מהותי במוקד ההשגה. החומר אומר: חשיבה והתבוננות במצוותיו, מאמריו ופעולותיו של ה' - המוקד צריך להיות בבורא, לא באדם עצמו. הראשון חווה גאווה עצמית (כמה אני חכם), השני חווה התפעלות מהבורא (איזו חכמה נפלאה). רק ההשגה של השני יכולה להוביל לאהבה, כי היא מכוונת לנכון - כלפי ה', לא כלפי העצמי."
+    }, {
+      id: 12,
+      question: "חיים עובד קשה כדי לפרנס את משפחתו. הוא מרגיש שאין לו זמן ללמוד או להתפלל בכוונה. האם הוא בכלל יכול לקיים 'ואהבת' במצב כזה?",
+      answers: ["לא - ואהבת דורשת זמן ללימוד ותפילה תמיד", "כן - אם הוא מתבונן שהעבודה עצמה לפרנסת המשפחה היא נתינה שמגלה אהבה", "כן - אבל רק אם הוא מפסיק לישון כדי ללמוד", "לא - מצבו קשה מדי לקיום המצווה"],
+      correct: 1,
+      explanation: "זו שאלה מורכבת! החומר מלמד: אהבה מביאה לנתינה ובכל נפשך = מסירת הרצון והכוחות. חיים מוסר את רצונותיו (נוחות, זמן, כוח) כדי לדאוג למשפחתו - זו מסירות בפועל! אם הוא מתבונן שהוא עושה זאת מתוך אהבת ה' (מצוות פרנסה, אהבת הזולת שמובילה לאהבת ה'), העבודה עצמה הופכת לביטוי של ואהבת. החומר אומר: לחפש כיצד לעשות פעולות שיגרמו לה' נחת רוח - פרנסה נכונה היא בדיוק זה!"
+    }, {
+      id: 13,
+      question: "תמר חווה טרגדיה קשה במשפחה. חברה אומרת: 'תברכי על הרעה כמו על הטובה'. תמר כועסת: 'איך אפשר לברך בשמחה על זה?!' מה תשובת החומר?",
+      answers: ["החברה צודקת לחלוטין - צריך להתעלם מהכאב ולברך בשמחה", "תמר צודקת - אי אפשר לברך בשמחה על טרגדיה", "בכל מאודך דורש לברך בטוב נפש מתוך אהבה יתירה וביטחון שהכל טוב, לא להתעלם מהכאב", "זה תלוי בגודל הטרגדיה - לפעמים אפשר, לפעמים לא"],
+      correct: 2,
+      explanation: "זו השאלה הקשה ביותר! החומר אומר: בכל מאודך כולל לברך על הרעה בטוב נפש כדרך שמברך על הטובה. אבל מה זה אומר? לא להתעלם מהכאב או להעמיד פנים! זה אומר אמונה עמוקה שגם הרעה באה מאהבה (אהבת עולם נשארת גם ביסורים). טוב נפש = קבלה מאוהבת, לא אדישות. תמר צריכה לחוש את הכאב (היא אדם!), אבל בו-זמנית לברך מתוך אמונה שגם זה מאהבה - כמו בן שסומך על אביו גם כשלא מבין."
+    }, {
+      id: 14,
+      question: "רוני משתמש בכספו כדי להקים ארגון חסד גדול שעוזר לאלפים. הוא מרגיש גאווה גדולה במה שעשה. האם זו אהבת ה' אמיתית?",
+      answers: ["כן - הוא השתמש בממונו (בכל מאודך) וזה מספיק", "לא - הגאווה מבטלת את כל הטוב", "תלוי: אם המניע העיקרי הוא לעשות נחת רוח לה' והגאווה משנית - כן. אם הגאווה עיקרית - לא", "כן - גאווה היא דבר טבעי ולא מפריע"],
+      correct: 2,
+      explanation: "שאלה מורכבת מאוד! החומר אומר: לחפש כיצד לעשות פעולות שיגרמו לה' נחת רוח ולהאהיב את ה' על הבריות. רוני עושה זאת! אבל הוא גם חש גאווה. האם זה בטל הכל? לא בהכרח. האדם הוא מורכב - יכולים להיות כמה מניעים. השאלה: מה העיקר? אם העיקר הוא אהבת ה' והחסד לזולת והגאווה היא תוצר לוואי (היצר), זו עדיין אהבה אמיתית עם עבודה לתיקון. אם העיקר הוא הגאווה והכבוד והחסד רק אמצעי - זו לא אהבת ה' אמיתית."
+    }, {
+      id: 15,
+      question: "מיכל חשה דבקות עזה בה' בתפילה - היא מרגישה שאין לה מציאות נפרדת ממנו. זו חוויה נדירה ומיוחדת. מה מעמד החוויה הזו לפי החומר?",
+      answers: ["זו טעות מסוכנת - אדם לא יכול להרגיש איחוד עם ה'", "זו אהבת תמתי - תכלית הדבקות שבה אין לאדם תחושת מציאות נפרדת, זו השלמות", "זו פנטזיה רגשית שצריך להימנע ממנה", "זה טוב אבל לא הכי חשוב - העיקר הוא לימוד תורה"],
+      correct: 1,
+      explanation: "החומר מתאר את השלמות הגבוהה ביותר: אהבת תמתי (אהבת האחדות) - ביטול גמור של האוהב אל הנאהב עד כדי דבקות ואיחוד. זו לא טעות - זו התכלית של בכל נפשך! החומר מדגיש שהקשר בין איש לאשה הוא בית הספר לאהבת השם - מי שמגיע לדבקות מושלמת בנישואין מוכשר להתעלות לאותה דבקות כלפי ה'. מיכל חווה את התכלית - חוויה נדירה של דבקות אמיתית."
+    }]
+  };
+  const levelNames = {
+    easy: "קל",
+    medium: "בינוני",
+    hard: "קשה"
+  };
+  const levelColors = {
+    easy: "bg-green-500",
+    medium: "bg-yellow-500",
+    hard: "bg-red-500"
+  };
+  useEffect(() => {
+    if (gameStarted) {
+      shuffleAnswers();
+    }
+  }, [currentQuestion, currentLevel, gameStarted]);
+  const shuffleAnswers = () => {
+    const currentQ = questions[currentLevel][currentQuestion];
+    const answersWithIndex = currentQ.answers.map((answer, index) => ({
+      text: answer,
+      originalIndex: index
+    }));
+    for (let i = answersWithIndex.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [answersWithIndex[i], answersWithIndex[j]] = [answersWithIndex[j], answersWithIndex[i]];
+    }
+    setShuffledAnswers(answersWithIndex);
+  };
+  const handleAnswer = originalIndex => {
+    const currentQ = questions[currentLevel][currentQuestion];
+    setSelectedAnswer(originalIndex);
+    setShowExplanation(true);
+    const isCorrect = originalIndex === currentQ.correct;
+    const newLevelScores = {
+      ...levelScores
+    };
+    newLevelScores[currentLevel].push(isCorrect ? 1 : 0);
+    setLevelScores(newLevelScores);
+    if (isCorrect) {
+      setScore(score + 1);
+    }
+  };
+  const nextQuestion = () => {
+    if (currentQuestion < questions[currentLevel].length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+    } else {
+      checkLevelCompletion();
+    }
+  };
+  const checkLevelCompletion = () => {
+    const levelScore = levelScores[currentLevel];
+    const percentage = levelScore.filter(s => s === 1).length / levelScore.length * 100;
+    if (percentage >= 95) {
+      if (currentLevel === "easy") {
+        alert(`כל הכבוד! השגת ${percentage.toFixed(0)}% - עברת לרמה הבינונית!`);
+        setCurrentLevel("medium");
+      } else if (currentLevel === "medium") {
+        alert(`מצוין! השגת ${percentage.toFixed(0)}% - עברת לרמה הקשה!`);
+        setCurrentLevel("hard");
+      } else {
+        alert(`מדהים! סיימת את כל המשחק עם ${percentage.toFixed(0)}% ברמה הקשה!`);
+      }
+      setCurrentQuestion(0);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+    } else {
+      alert(`השגת ${percentage.toFixed(0)}%. צריך 95%+ כדי לעבור לרמה הבאה. נסה שוב!`);
+      setLevelScores({
+        ...levelScores,
+        [currentLevel]: []
+      });
+      setCurrentQuestion(0);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+    }
+  };
+  const getCurrentPercentage = () => {
+    const levelScore = levelScores[currentLevel];
+    if (levelScore.length === 0) return 0;
+    return levelScore.filter(s => s === 1).length / levelScore.length * 100;
+  };
+  if (!gameStarted) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-lg shadow-xl p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-8"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-16 h-16 text-red-500 mx-auto mb-4"
+    }), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold text-gray-800 mb-4"
+    }, "\u05DE\u05E9\u05D7\u05E7 \"\u05D5\u05D0\u05D4\u05D1\u05EA \u05D0\u05EA \u05D4' \u05D0\u05DC\u05D5\u05D4\u05D9\u05DA\""), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-600"
+    }, "\u05DE\u05E9\u05D7\u05E7 \u05D0\u05D9\u05E0\u05D8\u05E8\u05D0\u05E7\u05D8\u05D9\u05D1\u05D9 \u05DC\u05D1\u05D3\u05D9\u05E7\u05EA \u05D4\u05D1\u05E0\u05D4 \u05E2\u05DE\u05D5\u05E7\u05D4")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-50 border-r-4 border-blue-500 p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "font-bold text-lg mb-3 text-blue-900"
+    }, "\u05DC\u05DE\u05D4 \u05D1\u05D7\u05E8\u05EA\u05D9 \u05D1\u05DE\u05E9\u05D7\u05E7 \u05E1\u05D9\u05D8\u05D5\u05D0\u05E6\u05D9\u05D5\u05EA?"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed"
+    }, "\u05D1\u05D3\u05D9\u05E7\u05EA \u05D4\u05D1\u05E0\u05D4 \u05E2\u05DE\u05D5\u05E7\u05D4 \u05E9\u05DC \u05DE\u05D5\u05E9\u05D2\u05D9\u05DD \u05E8\u05D5\u05D7\u05E0\u05D9\u05D9\u05DD \u05DC\u05D0 \u05D9\u05DB\u05D5\u05DC\u05D4 \u05DC\u05D4\u05D9\u05E2\u05E9\u05D5\u05EA \u05D1\u05E9\u05D0\u05DC\u05D5\u05EA \"\u05DE\u05D4 \u05D6\u05D4 X\". \u05D1\u05DE\u05E9\u05D7\u05E7 \u05D6\u05D4 \u05EA\u05EA\u05DE\u05D5\u05D3\u05D3 \u05E2\u05DD ", /*#__PURE__*/React.createElement("strong", null, "\u05E1\u05D9\u05D8\u05D5\u05D0\u05E6\u05D9\u05D5\u05EA \u05D0\u05DE\u05D9\u05EA\u05D9\u05D5\u05EA"), " \u05E9\u05D3\u05D5\u05E8\u05E9\u05D5\u05EA:"), /*#__PURE__*/React.createElement("ul", {
+      className: "list-disc list-inside mt-2 space-y-1 text-gray-700"
+    }, /*#__PURE__*/React.createElement("li", null, "\u05D6\u05D9\u05D4\u05D5\u05D9 \u05D0\u05D9\u05D6\u05D4 \u05E2\u05D9\u05E7\u05E8\u05D5\u05DF \u05E8\u05DC\u05D5\u05D5\u05E0\u05D8\u05D9"), /*#__PURE__*/React.createElement("li", null, "\u05D4\u05D1\u05D7\u05E0\u05D4 \u05D1\u05D9\u05DF \u05DE\u05D5\u05E9\u05D2\u05D9\u05DD \u05D3\u05D5\u05DE\u05D9\u05DD"), /*#__PURE__*/React.createElement("li", null, "\u05D4\u05E1\u05D1\u05E8 ", /*#__PURE__*/React.createElement("strong", null, "\u05DC\u05DE\u05D4"), " \u05D4\u05EA\u05E9\u05D5\u05D1\u05D4 \u05E0\u05DB\u05D5\u05E0\u05D4"))), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4 mb-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gray-50 p-4 rounded-lg"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold mb-2"
+    }, "\uD83D\uDCCB \u05DB\u05DC\u05DC\u05D9 \u05D4\u05DE\u05E9\u05D7\u05E7:"), /*#__PURE__*/React.createElement("ul", {
+      className: "space-y-2 text-gray-700"
+    }, /*#__PURE__*/React.createElement("li", null, "\u2705 3 \u05E8\u05DE\u05D5\u05EA: \u05E7\u05DC, \u05D1\u05D9\u05E0\u05D5\u05E0\u05D9, \u05E7\u05E9\u05D4"), /*#__PURE__*/React.createElement("li", null, "\u2705 \u05E6\u05E8\u05D9\u05DA 95%+ \u05DB\u05D3\u05D9 \u05DC\u05E2\u05D1\u05D5\u05E8 \u05DC\u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4"), /*#__PURE__*/React.createElement("li", null, "\u2705 \u05DB\u05DC \u05EA\u05E9\u05D5\u05D1\u05D4 \u05DB\u05D5\u05DC\u05DC\u05EA \u05D4\u05E1\u05D1\u05E8 \u05DE\u05E4\u05D5\u05E8\u05D8"), /*#__PURE__*/React.createElement("li", null, "\u2705 \u05D4\u05EA\u05E9\u05D5\u05D1\u05D5\u05EA \u05D4\u05DE\u05D8\u05E2\u05D5\u05EA \u05DE\u05D1\u05D5\u05E1\u05E1\u05D5\u05EA \u05E2\u05DC \u05D8\u05E2\u05D5\u05D9\u05D5\u05EA \u05E0\u05E4\u05D5\u05E6\u05D5\u05EA")))), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setGameStarted(true),
+      className: "w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-lg text-xl font-bold hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
+    }, "\u05D4\u05EA\u05D7\u05DC \u05DE\u05E9\u05D7\u05E7! \uD83C\uDFAE"))));
+  }
+  const currentQ = questions[currentLevel][currentQuestion];
+  const totalQuestions = questions[currentLevel].length;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4 md:p-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-lg shadow-lg p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement(Heart, {
+    className: "w-8 h-8 text-red-500"
+  }), /*#__PURE__*/React.createElement("h1", {
+    className: "text-2xl font-bold text-gray-800"
+  }, "\u05D5\u05D0\u05D4\u05D1\u05EA \u05D0\u05EA \u05D4' \u05D0\u05DC\u05D5\u05D4\u05D9\u05DA")), /*#__PURE__*/React.createElement("div", {
+    className: `px-4 py-2 rounded-full text-white ${levelColors[currentLevel]}`
+  }, "\u05E8\u05DE\u05D4: ", levelNames[currentLevel])), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between text-sm text-gray-600"
+  }, /*#__PURE__*/React.createElement("span", null, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, " \u05DE\u05EA\u05D5\u05DA ", totalQuestions), /*#__PURE__*/React.createElement("span", null, "\u05E6\u05D9\u05D5\u05DF \u05E0\u05D5\u05DB\u05D7\u05D9: ", getCurrentPercentage().toFixed(0), "%")), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-2 mt-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: `h-2 rounded-full transition-all ${levelColors[currentLevel]}`,
+    style: {
+      width: `${(currentQuestion + 1) / totalQuestions * 100}%`
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-lg shadow-lg p-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-6"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-lg leading-relaxed text-gray-800"
+  }, currentQ.question)), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3 mb-6"
+  }, shuffledAnswers.map((answer, index) => {
+    const isSelected = selectedAnswer === answer.originalIndex;
+    const isCorrect = answer.originalIndex === currentQ.correct;
+    const showResult = showExplanation;
+    let buttonStyle = "w-full text-right p-4 rounded-lg border-2 transition-all ";
+    if (!showResult) {
+      buttonStyle += "border-gray-300 hover:border-blue-500 hover:bg-blue-50";
+    } else if (isCorrect) {
+      buttonStyle += "border-green-500 bg-green-50";
+    } else if (isSelected && !isCorrect) {
+      buttonStyle += "border-red-500 bg-red-50";
+    } else {
+      buttonStyle += "border-gray-300 opacity-50";
+    }
+    return /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => !showExplanation && handleAnswer(answer.originalIndex),
+      disabled: showExplanation,
+      className: buttonStyle
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-gray-800 leading-relaxed flex-1"
+    }, answer.text), showResult && isCorrect && /*#__PURE__*/React.createElement(Check, {
+      className: "w-6 h-6 text-green-600 mr-2 flex-shrink-0"
+    }), showResult && isSelected && !isCorrect && /*#__PURE__*/React.createElement(X, {
+      className: "w-6 h-6 text-red-600 mr-2 flex-shrink-0"
+    })));
+  })), showExplanation && /*#__PURE__*/React.createElement("div", {
+    className: `p-6 rounded-lg mb-6 ${selectedAnswer === currentQ.correct ? "bg-green-50 border-2 border-green-500" : "bg-red-50 border-2 border-red-500"}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3 mb-3"
+  }, selectedAnswer === currentQ.correct ? /*#__PURE__*/React.createElement(Check, {
+    className: "w-6 h-6 text-green-600 flex-shrink-0 mt-1"
+  }) : /*#__PURE__*/React.createElement(AlertCircle, {
+    className: "w-6 h-6 text-red-600 flex-shrink-0 mt-1"
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    className: "font-bold text-lg mb-2"
+  }, selectedAnswer === currentQ.correct ? "נכון! 🎉" : "לא נכון"), /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-800 leading-relaxed"
+  }, currentQ.explanation)))), showExplanation && /*#__PURE__*/React.createElement("button", {
+    onClick: nextQuestion,
+    className: "w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-all"
+  }, currentQuestion < totalQuestions - 1 ? "שאלה הבאה ←" : "סיים רמה ✓")), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-lg shadow-lg p-6 mt-6 text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-700 mb-2"
+  }, "\u05E0\u05D1\u05E0\u05D4 \u05D1\u05DE\u05D9\u05D5\u05D7\u05D3 \u05E2\u05D1\u05D5\u05E8\u05DA \u05E2\u05DC \u05D9\u05D3\u05D9 \u05D4\u05E8\u05D1 ", /*#__PURE__*/React.createElement("strong", null, "\u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1"), " \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+    className: "text-blue-600 font-bold"
+  }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+};
+const __App = LoveHashemGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מבחן אמריקאי - יחוס השבטים</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Varela+Round:wght@400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Varela Round', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '✨';
+            position: absolute;
+            font-size: 40px;
+            animation: twinkle 2s infinite;
+            top: 20px;
+            left: 50px;
+        }
+        
+        .header::after {
+            content: '📜';
+            position: absolute;
+            font-size: 35px;
+            animation: bounce 2s infinite;
+            top: 20px;
+            right: 50px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .quiz-section {
+            padding: 40px;
+        }
+        
+        .section-title {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 1.5em;
+            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+        }
+        
+        .question-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+        
+        .question-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        
+        .question-text {
+            color: white;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .option {
+            background: white;
+            border: 3px solid transparent;
+            border-radius: 12px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+        
+        .option:hover {
+            transform: scale(1.05);
+            border-color: #4facfe;
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+        }
+        
+        .option:hover::before {
+            left: 100%;
+        }
+        
+        .option.correct {
+            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+            color: white;
+            border-color: #56ab2f;
+            animation: correctPulse 0.6s ease;
+        }
+        
+        .option.incorrect {
+            background: linear-gradient(45deg, #ff4757, #ff6b7a);
+            color: white;
+            border-color: #ff4757;
+            animation: incorrectShake 0.6s ease;
+        }
+        
+        .score-display {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(45deg, #ffd89b, #19547b);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            z-index: 2000;
+            display: none;
+        }
+        
+        .feedback.correct {
+            color: #56ab2f;
+            border: 5px solid #56ab2f;
+        }
+        
+        .feedback.incorrect {
+            color: #ff4757;
+            border: 5px solid #ff4757;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .progress-bar {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+        
+        .final-score {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .final-score h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .final-score p {
+            font-size: 1.3em;
+        }
+    </style>
+<meta property="og:title" content="מבחן אמריקאי - יחוס השבטים">
+<meta property="og:description" content="מבחן אמריקאי - יחוס השבטים">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-d5c7b9dd.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/d5c7b9dd.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 מבחן אמריקאי 🎯</h1>
+            <p>יחוס השבטים - שמות פרק ו</p>
+        </div>
+        
+        <div class="score-display">
+            <span id="current-score">נכון: 0</span> | <span id="total-questions">שאלות: 16</span>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        
+        <div class="quiz-section">
+            <div class="section-title">🔍 שלב א' - איתור פרטים בסיסי</div>
+            
+            <div class="question-card" data-question="1" data-answer="רְאוּבֵן">
+                <div class="question-text">1. מי הוא בכור ישראל?</div>
+                <div class="options">
+                    <div class="option" data-value="רְאוּבֵן">רְאוּבֵן</div>
+                    <div class="option" data-value="שִׁמְעוֹן">שִׁמְעוֹן</div>
+                    <div class="option" data-value="לֵוִי">לֵוִי</div>
+                    <div class="option" data-value="יְהוּדָה">יְהוּדָה</div>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="2" data-answer="שֶׁבַע וּשְׁלֹשִׁים וּמְאַת שָׁנָה">
+                <div class="question-text">2. כמה שנים חי לוי?</div>
+                <div class="options">
+                    <div class="option" data-value="שֶׁבַע וּשְׁלֹשִׁים וּמְאַת שָׁנָה">137 שנה</div>
+                    <div class="option" data-value="שָׁלֹשׁ וּשְׁלֹשִׁים וּמְאַת שָׁנָה">133 שנה</div>
+                    <div class="option" data-value="מאה שנה">100 שנה</div>
+                    <div class="option" data-value="שמונים שנה">80 שנה</div>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="3" data-answer="יוֹכֶבֶד">
+                <div class="question-text">3. מי אשתו של עמרם?</div>
+                <div class="options">
+                    <div class="option" data-value="יוֹכֶבֶד">יוֹכֶבֶד</div>
+                    <div class="option" data-value="אֱלִישֶׁבַע">אֱלִישֶׁבַע</div>
+                    <div class="option" data-value="מרים">מרים</div>
+                    <div class="option" data-value="רבקה">רבקה</div>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="4" data-answer="ארבעה">
+                <div class="question-text">4. כמה בנים נולדו לאהרון ואלישבע?</div>
+                <div class="options">
+                    <div class="option" data-value="שניים">שניים</div>
+                    <div class="option" data-value="שלושה">שלושה</div>
+                    <div class="option" data-value="ארבעה">ארבעה</div>
+                    <div class="option" data-value="חמישה">חמישה</div>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="5" data-answer="אֱלִישֶׁבַע">
+                <div class="question-text">5. איך קוראים לאשתו של אהרון?</div>
+                <div class="options">
+                    <div class="option" data-value="אֱלִישֶׁבַע">אֱלִישֶׁבַע</div>
+                    <div class="option" data-value="יוֹכֶבֶד">יוֹכֶבֶד</div>
+                    <div class="option" data-value="מרים">מרים</div>
+                    <div class="option" data-value="רחל">רחל</div>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="6" data-answer="עַמִּינָדָב">
+                <div class="question-text">6. מי אבי אלישבע?</div>
+                <div class="options">
+                    <div class="option" data-value="עַמִּינָדָב">עַמִּינָדָב</div>
+                    <div class="option" data-value="נַחְשׁוֹן">נַחְשׁוֹן</div>
+                    <div class="option" data-value="עמרם">עמרם</div>
+                    <div class="option" data-value="אהרון">אהרון</div>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="7" data-answer="שֶׁבַע וּשְׁלֹשִׁים וּמְאַת שָׁנָה">
+                <div class="question-text">7. כמה שנים חי עמרם?</div>
+                <div class="options">
+                    <div class="option" data-value="שֶׁבַע וּשְׁלֹשִׁים וּמְאַת שָׁנָה">137 שנה</div>
+                    <div class="option" data-value="שָׁלֹשׁ וּשְׁלֹשִׁים וּמְאַת שָׁנָה">133 שנה</div>
+                    <div class="option" data-value="120 שנה">120 שנה</div>
+                    <div class="option" data-value="110 שנה">110 שנה</div>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="8" data-answer="פִּינְחָס">
+                <div class="question-text">8. איך קוראים לבנו של אלעזר?</div>
+                <div class="options">
+                    <div class="option" data-value="פִּינְחָס">פִּינְחָס</div>
+                    <div class="option" data-value="נדב">נדב</div>
+                    <div class="option" data-value="אביהוא">אביהוא</div>
+                    <div class="option" data-value="איתמר">איתמר</div>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="9" data-answer="נַחְשׁוֹן">
+                <div class="question-text">9. מי אחי אלישבע?</div>
+                <div class="options">
+                    <div class="option" data-value="נַחְשׁוֹן">נַחְשׁוֹן</div>
+                    <div class="option" data-value="עַמִּינָדָב">עַמִּינָדָב</div>
+                    <div class="option" data-value="אהרון">אהרון</div>
+                    <div class="option" data-value="עמרם">עמרם</div>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="10" data-answer="שָׁלֹשׁ וּשְׁלֹשִׁים וּמְאַת שָׁנָה">
+                <div class="question-text">10. כמה שנים חי קהת?</div>
+                <div class="options">
+                    <div class="option" data-value="שָׁלֹשׁ וּשְׁלֹשִׁים וּמְאַת שָׁנָה">133 שנה</div>
+                    <div class="option" data-value="שֶׁבַע וּשְׁלֹשִׁים וּמְאַת שָׁנָה">137 שנה</div>
+                    <div class="option" data-value="130 שנה">130 שנה</div>
+                    <div class="option" data-value="140 שנה">140 שנה</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="quiz-section">
+            <div class="section-title">🔎 שלב ב' - איתור פרטים מתקדם</div>
+            
+            <div class="question-card" data-question="11" data-answer="דֹּדָתוֹ">
+                <div class="question-text">11. איך מכונה יוכבד ביחס לעמרם?</div>
+                <div class="options">
+                    <div class="option" data-value="דֹּדָתוֹ">דֹּדָתוֹ</div>
+                    <div class="option" data-value="אחותו">אחותו</div>
+                    <div class="option" data-value="בת דודו">בת דודו</div>
+                    <div class="option" data-value="אמו">אמו</div>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="12" data-answer="שֶׁבַע וּשְׁלֹשִׁים וּמְאַת שָׁנָה">
+                <div class="question-text">12. מה משותף לגיל לוי ולגיל עמרם?</div>
+                <div class="options">
+                    <div class="option" data-value="שֶׁבַע וּשְׁלֹשִׁים וּמְאַת שָׁנָה">שניהם חיו 137 שנה</div>
+                    <div class="option" data-value="שניהם חיו 133 שנה">שניהם חיו 133 שנה</div>
+                    <div class="option" data-value="שניהם חיו 120 שנה">שניהם חיו 120 שנה</div>
+                    <div class="option" data-value="שניהם חיו 100 שנה">שניהם חיו 100 שנה</div>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="13" data-answer="יוכבד היא דודתו של עמרם">
+                <div class="question-text">13. איזה קשר משפחתי מיוחד יש בין עמרם ליוכבד?</div>
+                <div class="options">
+                    <div class="option" data-value="יוכבד היא דודתו של עמרם">יוכבד היא דודתו של עמרם</div>
+                    <div class="option" data-value="הם בני דודים">הם בני דודים</div>
+                    <div class="option" data-value="יוכבד היא אחותו">יוכבד היא אחותו</div>
+                    <div class="option" data-value="אין קשר משפחתי">אין קשר משפחתי</div>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="14" data-answer="אַהֲרֹן וְאֶת מֹשֶׁה">
+                <div class="question-text">14. מי הם שני הבנים המפורסמים של עמרם ויוכבד?</div>
+                <div class="options">
+                    <div class="option" data-value="אַהֲרֹן וְאֶת מֹשֶׁה">אַהֲרֹן וְמֹשֶׁה</div>
+                    <div class="option" data-value="נדב ואביהוא">נדב ואביהוא</div>
+                    <div class="option" data-value="אלעזר ואיתמר">אלעזר ואיתמר</div>
+                    <div class="option" data-value="קורח ונפג">קורח ונפג</div>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="15" data-answer="מִשְׁפְּחֹת הַקָּרְחִי">
+                <div class="question-text">15. מאיזה בית אב היו בני קורח?</div>
+                <div class="options">
+                    <div class="option" data-value="מִשְׁפְּחֹת הַקָּרְחִי">מִשְׁפְּחֹת הַקָּרְחִי</div>
+                    <div class="option" data-value="משפחת לוי">משפחת לוי</div>
+                    <div class="option" data-value="משפחת קהת">משפחת קהת</div>
+                    <div class="option" data-value="משפחת גרשון">משפחת גרשון</div>
+                </div>
+            </div>
+            
+            <div class="question-card" data-question="16" data-answer="רָאשֵׁי אֲבוֹת הַלְוִיִּם לְמִשְׁפְּחֹתָם">
+                <div class="question-text">16. איך מכונים ראשי האבות של הלויים?</div>
+                <div class="options">
+                    <div class="option" data-value="רָאשֵׁי אֲבוֹת הַלְוִיִּם לְמִשְׁפְּחֹתָם">רָאשֵׁי אֲבוֹת הַלְוִיִּם לְמִשְׁפְּחֹתָם</div>
+                    <div class="option" data-value="ראשי השבטים">ראשי השבטים</div>
+                    <div class="option" data-value="כהנים גדולים">כהנים גדולים</div>
+                    <div class="option" data-value="זקני ישראל">זקני ישראל</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="final-score" id="final-score">
+            <h2>🎉 כל הכבוד! 🎉</h2>
+            <p id="final-message"></p>
+        </div>
+    </div>
+    
+    <div class="feedback" id="feedback"></div>
+    
+    <script>
+        let score = 0;
+        let totalQuestions = 16;
+        let currentQuestion = 0;
+        let answered = [];
+        
+        // Audio context for sound effects
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Create sound effects
+        function playCorrectSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+            oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+            oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+        
+        function playIncorrectSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(150, audioContext.currentTime + 0.1);
+            oscillator.frequency.setValueAtTime(100, audioContext.currentTime + 0.2);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.4);
+        }
+        
+        function showFeedback(isCorrect, correctAnswer = '') {
+            const feedback = document.getElementById('feedback');
+            
+            if (isCorrect) {
+                feedback.textContent = '🎉 נכון מאוד! 🎉';
+                feedback.className = 'feedback correct';
+                playCorrectSound();
+            } else {
+                feedback.textContent = `❌ לא נכון. התשובה הנכונה: ${correctAnswer}`;
+                feedback.className = 'feedback incorrect';
+                playIncorrectSound();
+            }
+            
+            feedback.style.display = 'block';
+            
+            setTimeout(() => {
+                feedback.style.display = 'none';
+            }, 2000);
+        }
+        
+        function updateScore() {
+            document.getElementById('current-score').textContent = `נכון: ${score}`;
+            document.getElementById('progress-fill').style.width = `${(answered.length / totalQuestions) * 100}%`;
+        }
+        
+        function showFinalScore() {
+            const percentage = Math.round((score / totalQuestions) * 100);
+            let message = '';
+            
+            if (percentage >= 90) {
+                message = `מצוין! קיבלת ${score} מתוך ${totalQuestions} (${percentage}%) 🏆`;
+            } else if (percentage >= 80) {
+                message = `טוב מאוד! קיבלת ${score} מתוך ${totalQuestions} (${percentage}%) 🥈`;
+            } else if (percentage >= 70) {
+                message = `לא רע! קיבלת ${score} מתוך ${totalQuestions} (${percentage}%) 🥉`;
+            } else {
+                message = `צריך לשפר... קיבלת ${score} מתוך ${totalQuestions} (${percentage}%) 📚`;
+            }
+            
+            document.getElementById('final-message').textContent = message;
+            
+            if (answered.length === totalQuestions) {
+                document.getElementById('final-score').style.display = 'block';
+            }
+        }
+        
+        // Shuffle options for each question
+        function shuffleOptions() {
+            document.querySelectorAll('.question-card').forEach(questionCard => {
+                const optionsContainer = questionCard.querySelector('.options');
+                const options = Array.from(optionsContainer.children);
+                
+                // Shuffle the options array
+                for (let i = options.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [options[i], options[j]] = [options[j], options[i]];
+                }
+                
+                // Re-append shuffled options
+                options.forEach(option => optionsContainer.appendChild(option));
+            });
+        }
+        
+        // Initialize the quiz
+        function initializeQuiz() {
+            shuffleOptions();
+            
+            // Add click handlers for all options
+            document.querySelectorAll('.option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const questionCard = this.closest('.question-card');
+                    const questionNum = questionCard.dataset.question;
+                    
+                    // Prevent multiple answers for same question
+                    if (answered.includes(questionNum)) return;
+                    
+                    const correctAnswer = questionCard.dataset.answer;
+                    const selectedAnswer = this.dataset.value;
+                    const allOptions = questionCard.querySelectorAll('.option');
+                    
+                    // Disable all options for this question
+                    allOptions.forEach(opt => {
+                        opt.style.pointerEvents = 'none';
+                    });
+                    
+                    if (selectedAnswer === correctAnswer) {
+                        this.classList.add('correct');
+                        score++;
+                        showFeedback(true);
+                    } else {
+                        this.classList.add('incorrect');
+                        // Highlight the correct answer
+                        allOptions.forEach(opt => {
+                            if (opt.dataset.value === correctAnswer) {
+                                opt.classList.add('correct');
+                            }
+                        });
+                        showFeedback(false, correctAnswer);
+                    }
+                    
+                    answered.push(questionNum);
+                    updateScore();
+                    
+                    setTimeout(() => {
+                        showFinalScore();
+                    }, 1000);
+                });
+            });
+        }
+        
+        // Initialize audio context on first user interaction
+        document.addEventListener('click', function() {
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }, { once: true });
+        
+        // Start the quiz when page loads
+        document.addEventListener('DOMContentLoaded', initializeQuiz);
+    </script>
+</body>
+</html>

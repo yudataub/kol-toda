@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ahavat_hashem_game_season6 – הקול החמישי</title>
+<meta name="description" content="Engaging Hebrew educational game teaching spiritual concepts through interactive quizzes. Features progress tracking, audio feedback, and completion certificates.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="ahavat_hashem_game_season6 – הקול החמישי">
+<meta property="og:description" content="Engaging Hebrew educational game teaching spiritual concepts through interactive quizzes. Features progress tracking, audio feedback, and completion certificates.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-83451117.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/83451117.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const CheckCircle = window.LucideReact["CheckCircle"] || window.LucideReact.Circle;
+const XCircle = window.LucideReact["XCircle"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const Gift = window.LucideReact["Gift"] || window.LucideReact.Circle;
+const Users = window.LucideReact["Users"] || window.LucideReact.Circle;
+const Rocket = window.LucideReact["Rocket"] || window.LucideReact.Circle;
+const Crown = window.LucideReact["Crown"] || window.LucideReact.Circle;
+const PartyPopper = window.LucideReact["PartyPopper"] || window.LucideReact.Circle;
+const LearningGameSeason6 = () => {
+  const [currentLesson, setCurrentLesson] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showContent, setShowContent] = useState(true);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [feedback, setFeedback] = useState(null);
+  const [lessonScore, setLessonScore] = useState(0);
+  const [totalScore, setTotalScore] = useState(0);
+  const [answeredQuestions, setAnsweredQuestions] = useState([]);
+  const [gameComplete, setGameComplete] = useState(false);
+  const [showCertificate, setShowCertificate] = useState(false);
+  const [studentName, setStudentName] = useState('');
+  const [certificateReady, setCertificateReady] = useState(false);
+  const playSuccessSound = () => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [261.63, 329.63, 392.00];
+    notes.forEach((freq, i) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = freq;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.15);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.3);
+      oscillator.start(audioContext.currentTime + i * 0.15);
+      oscillator.stop(audioContext.currentTime + i * 0.15 + 0.3);
+    });
+  };
+  const playCelebrationSound = () => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25];
+    notes.forEach((freq, i) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = freq;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.3);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.3 + 0.25);
+      oscillator.start(audioContext.currentTime + i * 0.3);
+      oscillator.stop(audioContext.currentTime + i * 0.3 + 0.25);
+    });
+  };
+  const lessons = [{
+    title: "קרבנות הודיה וביכורים",
+    content: `
+        <div class="lesson-content">
+          <h3 class="text-2xl font-bold text-green-700 mb-4">🎁 ההודיה במקום המיוחד</h3>
+          <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-lg mb-4">
+            <p class="text-lg mb-3">כל מתנות כהונה ניתנות בגבולים, אך ביכורים צריך להביא למקדש! 🏛️</p>
+            <p class="text-xl font-bold text-green-800 mb-3">מדוע הודיה מחייבת מקום מרכזי ומוקדש יותר?</p>
+            <p class="text-lg">זה מדגיש את האהבה שבהודיה - ההודיה היא מיוחדת!</p>
+          </div>
+          <div class="bg-emerald-50 p-5 rounded-lg border-r-4 border-emerald-400">
+            <p class="font-semibold text-gray-800">💝 <strong>העיקרון:</strong> הודיה אינה רק מתנה - היא ביטוי אהבה שדורש מקום מיוחד!</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "מדוע ביכורים (הודיה) צריך להביא דווקא למקדש?",
+      answers: [{
+        text: "כי הודיה היא ביטוי אהבה שמחייב מקום מיוחד",
+        correct: true
+      }, {
+        text: "כי רק במקדש יש כהנים שיכולים לקבל",
+        correct: false
+      }, {
+        text: "כי זה הכי נוח מבחינה לוגיסטית",
+        correct: false
+      }, {
+        text: "כי התורה ציוותה כך ללא סיבה מיוחדת",
+        correct: false
+      }],
+      explanation: "הודיה היא מיוחדת! היא לא רק מתנה אלא ביטוי אהבה, ולכן צריכה מקום מרכזי. 🏛️💖"
+    }, {
+      question: "מה ההבדל בין מתנות כהונה רגילות לביכורים?",
+      answers: [{
+        text: "ביכורים הם הודיה ולכן דורשים מקום מקודש",
+        correct: true
+      }, {
+        text: "ביכורים שווים יותר כסף מבחינה כלכלית",
+        correct: false
+      }, {
+        text: "ביכורים ניתנים פעם בשנה בלבד",
+        correct: false
+      }, {
+        text: "אין הבדל מהותי ביניהם כלל",
+        correct: false
+      }],
+      explanation: "זה עניין של אהבה! ביכורים הם הודיה, והאהבה דורשת מקום מיוחד. 🎁✨"
+    }, {
+      question: "מה מלמדת אותנו העובדה שהודיה צריכה מקום מרכזי?",
+      answers: [{
+        text: "שהודיה היא לא פעולה רגילה אלא מעשה אהבה",
+        correct: true
+      }, {
+        text: "שההודיה קשה יותר מכל המצוות האחרות",
+        correct: false
+      }, {
+        text: "שרק אנשים עשירים יכולים להודות נכון",
+        correct: false
+      }, {
+        text: "שההודיה היא רק לאירועים מיוחדים",
+        correct: false
+      }],
+      explanation: "הודיה זו אהבה! המיקום המיוחד מדגיש שזו לא חובה רגילה אלא מעשה לב. 💝🌟"
+    }]
+  }, {
+    title: "אהבה וקשר במשפחה",
+    content: `
+        <div class="lesson-content">
+          <h3 class="text-2xl font-bold text-pink-700 mb-4">👨‍👩‍👧‍👦 אהבה כרצון להתחבר</h3>
+          <div class="bg-gradient-to-r from-pink-50 to-rose-50 p-6 rounded-lg mb-4">
+            <p class="text-lg mb-3">אהבה היא לא רק רגש - היא "רצון להתחבר ולהתאחד"! 🔗</p>
+            <p class="text-xl font-bold text-pink-800 mb-3">בבית לומדים את כל סוגי הקשר: עם הורים, ילדים, בן זוג!</p>
+            <p class="text-lg">הבית היהודי הוא המעבדה שבה מתאמנים על אהבת ה'.</p>
+          </div>
+          <div class="bg-rose-50 p-5 rounded-lg border-r-4 border-rose-400">
+            <p class="font-semibold text-gray-800">🏠 <strong>התובנה:</strong> כל קשר במשפחה מלמד אותך איך לאהוב את ה' יותר!</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "מהי ההגדרה העמוקה של אהבה?",
+      answers: [{
+        text: "רצון עמוק להתחבר ולהתאחד עם הנאהב",
+        correct: true
+      }, {
+        text: "רגש נעים שמופיע ונעלם מעצמו",
+        correct: false
+      }, {
+        text: "תלות הדדית בין שני אנשים",
+        correct: false
+      }, {
+        text: "הרגשה טובה כשנמצאים ביחד",
+        correct: false
+      }],
+      explanation: "אהבה היא רצון! לא רק רגש אלא רצון פעיל להיות מחובר. 🔗💕"
+    }, {
+      question: "איך הבית היהודי משמש כהכנה לאהבת ה'?",
+      answers: [{
+        text: "בבית מתרגלים את כל סוגי האהבה והקשר",
+        correct: true
+      }, {
+        text: "בבית יש תפילה ולימוד תורה יומי",
+        correct: false
+      }, {
+        text: "בבית שומרים על כללי ההלכה בקפדנות",
+        correct: false
+      }, {
+        text: "בבית יש מזוזות וספרי קודש",
+        correct: false
+      }],
+      explanation: "זו המעבדה! כל קשר בבית מאמן אותך לקשר עם ה'. 🏠✨"
+    }, {
+      question: "מה מיוחד בקשרים המשפחתיים?",
+      answers: [{
+        text: "הם מלמדים אהבה דרך אתגרים וקשיים",
+        correct: true
+      }, {
+        text: "הם קלים וטבעיים ללא מאמץ",
+        correct: false
+      }, {
+        text: "הם תמיד מלאי הרמוניה ושלום",
+        correct: false
+      }, {
+        text: "הם דורשים רק טכניקות תקשורת",
+        correct: false
+      }],
+      explanation: "זו הגדולה! האהבה במשפחה דורשת עבודה - וזה מכשיר לאהבת ה'. 💪❤️"
+    }]
+  }, {
+    title: "פיתוח האהבה בפועל",
+    content: `
+        <div class="lesson-content">
+          <h3 class="text-2xl font-bold text-purple-700 mb-4">🌱 מהתיאוריה למעשה!</h3>
+          <div class="bg-gradient-to-r from-purple-50 to-violet-50 p-6 rounded-lg mb-4">
+            <p class="text-lg mb-3">כל הכלים שלמדנו - עכשיו זמן ליישם אותם! 💪</p>
+            <p class="text-xl font-bold text-purple-800 mb-3">התבוננות, הודיה, עונג, נתינה - הכל ביחד!</p>
+            <p class="text-lg">לחפש ספר חדש, זמן חדש, דרכים חדשות - להתחדש תמיד!</p>
+          </div>
+          <div class="bg-violet-50 p-5 rounded-lg border-r-4 border-violet-400">
+            <p class="font-semibold text-gray-800">🎯 <strong>המעשה:</strong> אל תסתפק בידיעה - פעל! תרגל! חיה את האהבה!</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "מהו הצעד הראשון ביישום מעשי של האהבה?",
+      answers: [{
+        text: "לבחור כלי אחד ולהתחיל לתרגל אותו היום",
+        correct: true
+      }, {
+        text: "לקרוא עוד ספרים על הנושא בלבד",
+        correct: false
+      }, {
+        text: "לחכות למצב מושלם כדי להתחיל",
+        correct: false
+      }, {
+        text: "לתכנן בפירוט את כל השנה הבאה",
+        correct: false
+      }],
+      explanation: "התחל עכשיו! בחר כלי אחד והתחל - זה הדרך היחידה. 🚀"
+    }, {
+      question: "איך מתגברים על הרגלים ישנים?",
+      answers: [{
+        text: "דרך חידוש מתמיד - ספר חדש, זמן חדש, דרך חדשה",
+        correct: true
+      }, {
+        text: "דרך לחץ עצמי וביקורת קשה",
+        correct: false
+      }, {
+        text: "דרך ויתור מוחלט על הישן",
+        correct: false
+      }, {
+        text: "דרך חזרה מכנית על אותו דבר",
+        correct: false
+      }],
+      explanation: "חידוש הוא המפתח! שנה משהו כדי שהרגש יתחדש. 🔄✨"
+    }, {
+      question: "מהי המשמעות של 'לחיות את האהבה'?",
+      answers: [{
+        text: "להפוך את כל הכלים למעשים יומיומיים",
+        correct: true
+      }, {
+        text: "לדבר על אהבה בכל שיחה שיש",
+        correct: false
+      }, {
+        text: "לקרוא את החומר פעם נוספת",
+        correct: false
+      }, {
+        text: "להרגיש רגש חזק כל הזמן",
+        correct: false
+      }],
+      explanation: "מעשה הוא העיקר! תהפוך את הידע לחיים, לא רק למחשבות. 💪💖"
+    }]
+  }, {
+    title: "סיכום הקורס - לקצור ולעשות",
+    content: `
+        <div class="lesson-content">
+          <h3 class="text-2xl font-bold text-blue-700 mb-4">📚 סיכום כל המסע!</h3>
+          <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 rounded-lg mb-4">
+            <p class="text-lg mb-3">עברנו מסע מדהים: מהות אהבה, הכרת טוב, עונג, הודיה, אושר! 🌈</p>
+            <p class="text-xl font-bold text-blue-800 mb-3">הגיע הזמן "לקצור ולעשות" - לקחת את הכלים ולהשתמש בהם!</p>
+            <p class="text-lg">מכלול הכלים הרגשיים יוצר מערכת יחסים שלמה עם הבורא.</p>
+          </div>
+          <div class="bg-cyan-50 p-5 rounded-lg border-r-4 border-cyan-400">
+            <p class="font-semibold text-gray-800">🎁 <strong>המתנה:</strong> יש לך עכשיו את כל הכלים - השאלה היא רק האם תשתמש בהם!</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "מהו הסיכום המרכזי של הקורס?",
+      answers: [{
+        text: "מכלול כלים רגשיים ליצירת קשר שלם עם ה'",
+        correct: true
+      }, {
+        text: "רשימת כללים הלכתיים לקיום מצוות",
+        correct: false
+      }, {
+        text: "הוכחות פילוסופיות לקיום הבורא",
+        correct: false
+      }, {
+        text: "מידע אינטלקטואלי על מושגים רוחניים",
+        correct: false
+      }],
+      explanation: "זה על קשר! לא ידע אלא כלים לבניית מערכת יחסים אמיתית. 💝🔗"
+    }, {
+      question: "מה המשמעות של 'לקצור ולעשות'?",
+      answers: [{
+        text: "לקחת את הכלים שלמדנו ולהשתמש בהם במעשה",
+        correct: true
+      }, {
+        text: "לסיים את הלימוד ולעבור לנושא אחר",
+        correct: false
+      }, {
+        text: "לאסוף מידע נוסף לפני שמתחילים",
+        correct: false
+      }, {
+        text: "להמתין לרגע המושלם כדי להתחיל",
+        correct: false
+      }],
+      explanation: "עכשיו לפעול! קח את כל מה שלמדת והפוך אותו למעשה היום. 🎯💪"
+    }, {
+      question: "איך יודעים שהקורס הצליח?",
+      answers: [{
+        text: "כשמערכת היחסים שלך עם ה' משתפרת ופורחת",
+        correct: true
+      }, {
+        text: "כשמקבלים ציון גבוה במבחן הסופי",
+        correct: false
+      }, {
+        text: "כשזוכרים את כל המושגים בעל פה",
+        correct: false
+      }, {
+        text: "כשמספרים לאחרים על מה שלמדת",
+        correct: false
+      }],
+      explanation: "התוצאה היא הקשר! אם הקשר שלך עם ה' משתפר - זו ההצלחה. 🌟💖"
+    }]
+  }, {
+    title: "חיים מאירים - גן עדן כאן!",
+    content: `
+        <div class="lesson-content">
+          <h3 class="text-2xl font-bold text-yellow-700 mb-4">🌺 גן עדן כאן ועכשיו!</h3>
+          <div class="bg-gradient-to-r from-yellow-50 to-amber-50 p-6 rounded-lg mb-4">
+            <p class="text-lg mb-3">אפשר לחיות בגן עדן כאן בעולם הזה! 🌈</p>
+            <p class="text-xl font-bold text-yellow-800 mb-3">לגלות את האור של יוצר המאורות בכל רגע!</p>
+            <p class="text-lg">בואו נלמד איך ליצור גן עדן כאן, לקראת ימות המשיח! ✨</p>
+          </div>
+          <div class="bg-amber-50 p-5 rounded-lg border-r-4 border-amber-400">
+            <p class="font-semibold text-gray-800">☀️ <strong>החזון:</strong> חיים מאירים באהבה - זה לא חלום אלא מציאות שאתה בוחר!</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "איך אפשר לחיות בגן עדן כאן בעולם הזה?",
+      answers: [{
+        text: "דרך חיים של אהבה, הודיה ועונג במצוות",
+        correct: true
+      }, {
+        text: "דרך הימנעות מכל קשר עם העולם הגשמי",
+        correct: false
+      }, {
+        text: "דרך המתנה לימות המשיח בלבד",
+        correct: false
+      }, {
+        text: "דרך השגת הצלחה חומרית גדולה",
+        correct: false
+      }],
+      explanation: "זה כאן ועכשיו! כשאתה חי באהבה ועונג - אתה בגן עדן. 🌺☀️"
+    }, {
+      question: "מהי המשמעות של 'לגלות את האור של יוצר המאורות'?",
+      answers: [{
+        text: "לראות את נוכחות ה' והטוב שלו בכל רגע",
+        correct: true
+      }, {
+        text: "ללמוד קבלה ומיסטיקה עמוקה בלבד",
+        correct: false
+      }, {
+        text: "להתנתק מהעולם הגשמי לחלוטין",
+        correct: false
+      }, {
+        text: "לחכות לגילויים עתידיים משמיים",
+        correct: false
+      }],
+      explanation: "זו ראייה! לראות את ה' בכל מקום ובכל רגע - זה האור. 💡✨"
+    }, {
+      question: "מה הקשר בין חיים מאירים לימות המשיח?",
+      answers: [{
+        text: "חיים מאירים עכשיו מכינים לגילוי השלם בעתיד",
+        correct: true
+      }, {
+        text: "אין קשר - זה רק בעתיד הרחוק",
+        correct: false
+      }, {
+        text: "חיים מאירים אפשריים רק אחרי המשיח",
+        correct: false
+      }, {
+        text: "זה אותו דבר בדיוק בלי הבדל",
+        correct: false
+      }],
+      explanation: "זו הכנה! אתה מתאמן עכשיו על הגילוי השלם שיבוא. 🚀👑"
+    }]
+  }];
+  const shuffleAnswers = answers => {
+    const shuffled = [...answers];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+  const [shuffledQuestions] = useState(lessons.map(lesson => ({
+    ...lesson,
+    questions: lesson.questions.map(q => ({
+      ...q,
+      shuffledAnswers: shuffleAnswers(q.answers)
+    }))
+  })));
+  const handleAnswerClick = answer => {
+    if (selectedAnswer !== null) return;
+    setSelectedAnswer(answer);
+    const isCorrect = answer.correct;
+    if (isCorrect) {
+      playSuccessSound();
+      setLessonScore(prev => prev + 1);
+      setFeedback({
+        type: 'correct',
+        messages: ['נפלא! 🌟', 'מושלם! 👑', 'גאון! 💎', 'אלופ! 🏆', 'יפה מאוד! ✨'][Math.floor(Math.random() * 5)]
+      });
+    } else {
+      setFeedback({
+        type: 'wrong',
+        message: 'כמעט שם... עוד ניסיון! 🌱'
+      });
+    }
+  };
+  const handleNext = async () => {
+    setAnsweredQuestions([...answeredQuestions, {
+      lesson: currentLesson,
+      question: currentQuestion,
+      correct: selectedAnswer?.correct || false
+    }]);
+    if (currentQuestion < shuffledQuestions[currentLesson].questions.length - 1) {
+      setCurrentQuestion(prev => prev + 1);
+      setSelectedAnswer(null);
+      setFeedback(null);
+    } else {
+      const percentage = lessonScore / shuffledQuestions[currentLesson].questions.length * 100;
+      if (percentage >= 66) {
+        setTotalScore(prev => prev + lessonScore);
+        if (currentLesson < lessons.length - 1) {
+          playCelebrationSound();
+          await new Promise(resolve => setTimeout(resolve, 1800));
+          setCurrentLesson(prev => prev + 1);
+          setCurrentQuestion(0);
+          setLessonScore(0);
+          setSelectedAnswer(null);
+          setFeedback(null);
+          setShowContent(true);
+        } else {
+          playCelebrationSound();
+          await new Promise(resolve => setTimeout(resolve, 1800));
+          setGameComplete(true);
+        }
+      } else {
+        setCurrentQuestion(0);
+        setLessonScore(0);
+        setSelectedAnswer(null);
+        setFeedback(null);
+        setShowContent(true);
+      }
+    }
+  };
+  const startQuiz = () => {
+    setShowContent(false);
+  };
+  const currentLessonData = shuffledQuestions[currentLesson];
+  const currentQuestionData = currentLessonData.questions[currentQuestion];
+  const progress = (currentLesson * 3 + currentQuestion) / (lessons.length * 3) * 100;
+  if (showCertificate) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-2xl p-8 border-8 border-double border-yellow-600"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-6"
+    }, /*#__PURE__*/React.createElement(Crown, {
+      className: "w-32 h-32 text-yellow-600 mx-auto mb-4 animate-bounce"
+    }), /*#__PURE__*/React.createElement("h1", {
+      className: "text-5xl font-bold text-yellow-700 mb-4"
+    }, "\uD83C\uDF89 \u05EA\u05E2\u05D5\u05D3\u05EA \u05E1\u05D9\u05D5\u05DD \u05DE\u05DC\u05D0\u05D4! \uD83C\uDF89"), /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-orange-600 mb-2"
+    }, "\u05E2\u05D5\u05E0\u05D4 6 - \u05D4\u05E1\u05D9\u05DB\u05D5\u05DD \u05D4\u05D2\u05D3\u05D5\u05DC"), /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center gap-1 mb-4 flex-wrap"
+    }, [...Array(10)].map((_, i) => /*#__PURE__*/React.createElement(Star, {
+      key: i,
+      className: "w-8 h-8 text-yellow-500 fill-yellow-500"
+    })))), /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-8"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl mb-4"
+    }, "\u05DE\u05D5\u05E2\u05E0\u05E7\u05EA \u05D1\u05D6\u05D0\u05EA \u05DC"), !certificateReady ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      value: studentName,
+      onChange: e => setStudentName(e.target.value),
+      placeholder: "\u05D4\u05DB\u05E0\u05E1 \u05D0\u05EA \u05E9\u05DE\u05DA",
+      className: "text-3xl font-bold text-yellow-800 border-b-4 border-yellow-300 px-4 py-2 text-center mb-4"
+    }), /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setCertificateReady(true),
+      className: "bg-yellow-600 text-white px-8 py-3 rounded-lg font-bold text-xl hover:bg-yellow-700 mt-4"
+    }, "\u05D4\u05DE\u05E9\u05DA")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+      className: "text-5xl font-bold text-yellow-800 mb-6"
+    }, studentName), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl mb-2"
+    }, "\u05E2\u05DC \u05E1\u05D9\u05D5\u05DD \u05DE\u05DC\u05D0 \u05D5\u05DE\u05D5\u05E9\u05DC\u05DD \u05E9\u05DC"), /*#__PURE__*/React.createElement("p", {
+      className: "text-4xl font-bold text-orange-600 mb-2"
+    }, "\u05DB\u05DC 30 \u05D4\u05E9\u05D9\u05E2\u05D5\u05E8\u05D9\u05DD! \uD83C\uDFC6"), /*#__PURE__*/React.createElement("p", {
+      className: "text-3xl text-yellow-700 mb-6"
+    }, "\u05D7\u05D9\u05D9\u05DD \u05DE\u05D0\u05D9\u05E8\u05D9\u05DD \u05D1\u05D0\u05D4\u05D1\u05D4 \u2728"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-100 to-orange-100 p-8 rounded-xl mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-3xl font-bold text-yellow-700 mb-3"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05D4\u05DE\u05E1\u05E2 \u05D4\u05DE\u05DC\u05D0!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-orange-600"
+    }, "\u05E6\u05D9\u05D5\u05DF \u05E2\u05D5\u05E0\u05D4 6: ", totalScore, "/", lessons.length * 3, " \uD83D\uDC51"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mt-4 text-gray-700"
+    }, "\u05D0\u05EA\u05D4 \u05E2\u05DB\u05E9\u05D9\u05D5 \u05D1\u05E2\u05DC \u05DB\u05DC \u05D4\u05DB\u05DC\u05D9\u05DD \u05DC\u05D7\u05D9\u05D9\u05DD \u05DE\u05D0\u05D9\u05E8\u05D9\u05DD \u05D1\u05D0\u05D4\u05D1\u05D4!")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-yellow-50 border-4 border-yellow-400 rounded-xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement(PartyPopper, {
+      className: "w-16 h-16 text-yellow-600 mx-auto mb-3"
+    }), /*#__PURE__*/React.createElement("p", {
+      className: "text-3xl font-bold text-orange-600 mb-3"
+    }, "\uD83C\uDF81 \u05DE\u05D6\u05DC \u05D8\u05D5\u05D1 \u05D2\u05D3\u05D5\u05DC! \uD83C\uDF81"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-4"
+    }, "\u05E0\u05DB\u05E0\u05E1\u05EA \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4 \u05E0\u05D5\u05E9\u05D0\u05EA \u05E4\u05E8\u05E1\u05D9\u05DD \u05DE\u05D9\u05D5\u05D7\u05D3\u05D9\u05DD!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg mb-4"
+    }, "\u05E8\u05E9\u05D5\u05DD \u05D0\u05EA \u05E4\u05E8\u05D8\u05D9\u05DA \u05DB\u05D0\u05DF:"), /*#__PURE__*/React.createElement("a", {
+      href: "https://forms.gle/A66uubei4XSX6SG2A",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: "inline-block bg-orange-500 text-white px-12 py-5 rounded-lg font-bold text-2xl hover:bg-orange-600 shadow-xl transform hover:scale-105 transition"
+    }, "\u05DC\u05D7\u05E5 \u05DB\u05D0\u05DF \u05DC\u05D4\u05E8\u05E9\u05DE\u05D4 \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4 \uD83C\uDFAF")), /*#__PURE__*/React.createElement("div", {
+      className: "border-t-2 border-gray-300 pt-6 mt-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-semibold mb-2"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-3xl font-bold text-blue-700 mb-2"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-gray-700"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520")))))));
+  }
+  if (gameComplete) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-3xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-2xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement(Rocket, {
+      className: "w-40 h-40 text-yellow-600 mx-auto mb-6 animate-bounce"
+    }), /*#__PURE__*/React.createElement("h1", {
+      className: "text-6xl font-bold text-yellow-700 mb-4"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA! \uD83C\uDF8A"), /*#__PURE__*/React.createElement("p", {
+      className: "text-3xl mb-6"
+    }, "\u05D0\u05EA \u05DB\u05DC 30 \u05D4\u05E9\u05D9\u05E2\u05D5\u05E8\u05D9\u05DD \u05D1\u05DE\u05DC\u05D5\u05D0\u05DD!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-8 mb-8"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-4xl font-bold text-yellow-800 mb-4"
+    }, "\u05E6\u05D9\u05D5\u05DF \u05E2\u05D5\u05E0\u05D4 6: ", totalScore, "/", lessons.length * 3, " \uD83D\uDC51"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-gray-700 mb-4"
+    }, totalScore === lessons.length * 3 ? 'מושלם לחלוטין! 💯' : 'מדהים! 🌟'), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-orange-600"
+    }, "\u05D4\u05E9\u05DC\u05DE\u05EA \u05D0\u05EA \u05D4\u05DE\u05E1\u05E2 \u05D4\u05DE\u05DC\u05D0 \u05E9\u05DC \u05D7\u05D9\u05D9\u05DD \u05DE\u05D0\u05D9\u05E8\u05D9\u05DD \u05D1\u05D0\u05D4\u05D1\u05D4!")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-blue-50 to-green-50 rounded-xl p-6 mb-8 text-right"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-3xl font-bold text-blue-700 mb-4"
+    }, "\uD83C\uDF1F \u05E1\u05D9\u05DB\u05D5\u05DD \u05D4\u05DE\u05E1\u05E2"), /*#__PURE__*/React.createElement("ul", {
+      className: "space-y-3 text-xl"
+    }, /*#__PURE__*/React.createElement("li", null, "\u2705 \u05DC\u05DE\u05D3\u05EA \u05D0\u05EA \u05DE\u05D4\u05D5\u05EA \u05D4\u05D0\u05D4\u05D1\u05D4 \u05D5\u05D4\u05E7\u05E9\u05E8"), /*#__PURE__*/React.createElement("li", null, "\u2705 \u05D4\u05DB\u05E8\u05EA \u05D0\u05EA \u05DB\u05D5\u05D7 \u05D4\u05D4\u05D5\u05D3\u05D9\u05D4 \u05D5\u05D4\u05E2\u05D5\u05E0\u05D2"), /*#__PURE__*/React.createElement("li", null, "\u2705 \u05D2\u05D9\u05DC\u05D9\u05EA \u05D0\u05EA \u05D4\u05D0\u05D5\u05E8 \u05D4\u05E4\u05E0\u05D9\u05DE\u05D9 \u05E9\u05D1\u05DA"), /*#__PURE__*/React.createElement("li", null, "\u2705 \u05E7\u05D9\u05D1\u05DC\u05EA \u05DB\u05DC\u05D9\u05DD \u05DE\u05E2\u05E9\u05D9\u05D9\u05DD \u05DC\u05D7\u05D9\u05D9 \u05D0\u05D4\u05D1\u05D4"), /*#__PURE__*/React.createElement("li", null, "\u2705 \u05DE\u05D5\u05DB\u05DF \u05DC\u05D9\u05E6\u05D5\u05E8 \u05D2\u05DF \u05E2\u05D3\u05DF \u05DB\u05D0\u05DF \u05D5\u05E2\u05DB\u05E9\u05D9\u05D5!"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 mb-8"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-3xl font-bold text-purple-700 mb-4"
+    }, "\uD83D\uDC9D \u05E2\u05DB\u05E9\u05D9\u05D5 \u05DE\u05D4?"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700 mb-4"
+    }, "\u05D9\u05E9 \u05DC\u05DA \u05D0\u05EA \u05DB\u05DC \u05D4\u05DB\u05DC\u05D9\u05DD - \u05D4\u05E9\u05D0\u05DC\u05D4 \u05D4\u05D9\u05D0 \u05E8\u05E7 \u05D0\u05DD \u05EA\u05E9\u05EA\u05DE\u05E9 \u05D1\u05D4\u05DD!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-purple-600"
+    }, "\u05D4\u05EA\u05D7\u05DC \u05E2\u05D5\u05D3 \u05D4\u05D9\u05D5\u05DD - \u05D1\u05D7\u05E8 \u05DB\u05DC\u05D9 \u05D0\u05D7\u05D3 \u05D5\u05EA\u05E8\u05D2\u05DC \u05D0\u05D5\u05EA\u05D5!")), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setShowCertificate(true),
+      className: "bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-16 py-6 rounded-full font-bold text-3xl hover:from-yellow-600 hover:to-orange-600 shadow-2xl transform hover:scale-105 transition"
+    }, "\u05E7\u05D1\u05DC \u05EA\u05E2\u05D5\u05D3\u05EA \u05E1\u05D9\u05D5\u05DD \u05DE\u05DC\u05D0\u05D4! \uD83C\uDFC6"))));
+  }
+  if (showContent) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "mb-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-100 to-orange-100 rounded-lg p-4 mb-4 text-center"
+    }, /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold text-yellow-700 mb-2"
+    }, "\uD83D\uDC51 \u05E2\u05D5\u05E0\u05D4 6: \u05D4\u05E1\u05D9\u05DB\u05D5\u05DD \u05D4\u05D2\u05D3\u05D5\u05DC! \uD83C\uDFC6"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700"
+    }, "\u05D4\u05E9\u05D9\u05E2\u05D5\u05E8\u05D9\u05DD \u05D4\u05D0\u05D7\u05E8\u05D5\u05E0\u05D9\u05DD - \u05E1\u05D5\u05D2\u05E8\u05D9\u05DD \u05D0\u05EA \u05D4\u05DE\u05E2\u05D2\u05DC!")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gray-200 rounded-full h-4 overflow-hidden"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-600 to-orange-600 h-full transition-all duration-500",
+      style: {
+        width: `${progress}%`
+      }
+    })), /*#__PURE__*/React.createElement("p", {
+      className: "text-center mt-2 text-gray-600"
+    }, "\u05E9\u05D9\u05E2\u05D5\u05E8 ", currentLesson + 1, " \u05DE\u05EA\u05D5\u05DA ", lessons.length)), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-2xl p-8 mb-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-center gap-3 mb-6"
+    }, /*#__PURE__*/React.createElement(Crown, {
+      className: "w-12 h-12 text-yellow-600 fill-yellow-600"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold text-center text-yellow-700"
+    }, currentLessonData.title), /*#__PURE__*/React.createElement(Sparkles, {
+      className: "w-12 h-12 text-orange-500"
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "prose prose-lg max-w-none",
+      dangerouslySetInnerHTML: {
+        __html: currentLessonData.content
+      }
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "text-center"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: startQuiz,
+      className: "bg-gradient-to-r from-yellow-600 to-orange-600 text-white px-12 py-4 rounded-full font-bold text-2xl hover:from-yellow-700 hover:to-orange-700 shadow-xl transform hover:scale-105 transition"
+    }, "\u05D1\u05D5\u05D0\u05D5 \u05E0\u05EA\u05D7\u05D9\u05DC \u05D0\u05EA \u05D4\u05D7\u05D9\u05D3\u05D5\u05DF \u05D4\u05D0\u05D7\u05E8\u05D5\u05DF! \uD83C\uDFAF"))));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-3xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gray-200 rounded-full h-4 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-green-500 to-blue-500 h-full transition-all duration-500",
+    style: {
+      width: `${progress}%`
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-center mt-2 text-gray-600"
+  }, "\u05E9\u05D9\u05E2\u05D5\u05E8 ", currentLesson + 1, ", \u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, "/", currentLessonData.questions.length), /*#__PURE__*/React.createElement("p", {
+    className: "text-center text-lg font-bold text-yellow-700"
+  }, "\u05E0\u05D9\u05E7\u05D5\u05D3 \u05D1\u05E9\u05D9\u05E2\u05D5\u05E8: ", lessonScore, "/", currentQuestion + 1)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-2xl p-8"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-2xl font-bold text-gray-800 mb-6 text-center"
+  }, currentQuestionData.question), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4 mb-6"
+  }, currentQuestionData.shuffledAnswers.map((answer, idx) => {
+    const isSelected = selectedAnswer === answer;
+    const isCorrect = answer.correct;
+    const showResult = selectedAnswer !== null;
+    let buttonClass = "w-full p-4 text-right rounded-xl border-2 transition-all text-lg font-semibold ";
+    if (!showResult) {
+      buttonClass += "border-gray-300 hover:border-yellow-500 hover:bg-yellow-50 bg-white";
+    } else if (isSelected && isCorrect) {
+      buttonClass += "border-green-500 bg-green-100 text-green-800";
+    } else if (isSelected && !isCorrect) {
+      buttonClass += "border-red-500 bg-red-100 text-red-800";
+    } else if (isCorrect) {
+      buttonClass += "border-green-500 bg-green-50 text-green-800";
+    } else {
+      buttonClass += "border-gray-200 bg-gray-50 text-gray-500";
+    }
+    return /*#__PURE__*/React.createElement("button", {
+      key: idx,
+      onClick: () => handleAnswerClick(answer),
+      disabled: selectedAnswer !== null,
+      className: buttonClass
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("span", null, answer.text), showResult && isCorrect && /*#__PURE__*/React.createElement(CheckCircle, {
+      className: "w-6 h-6 text-green-600"
+    }), showResult && isSelected && !isCorrect && /*#__PURE__*/React.createElement(XCircle, {
+      className: "w-6 h-6 text-red-600"
+    })));
+  })), feedback && /*#__PURE__*/React.createElement("div", {
+    className: `p-6 rounded-xl mb-6 ${feedback.type === 'correct' ? 'bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-500' : 'bg-gradient-to-r from-orange-100 to-yellow-100 border-2 border-orange-500'}`
+  }, /*#__PURE__*/React.createElement("p", {
+    className: `text-2xl font-bold mb-3 ${feedback.type === 'correct' ? 'text-green-700' : 'text-orange-700'}`
+  }, feedback.type === 'correct' ? feedback.messages : feedback.message), /*#__PURE__*/React.createElement("p", {
+    className: "text-lg text-gray-700"
+  }, currentQuestionData.explanation)), selectedAnswer && /*#__PURE__*/React.createElement("button", {
+    onClick: handleNext,
+    className: "w-full bg-gradient-to-r from-yellow-600 to-orange-600 text-white px-8 py-4 rounded-xl font-bold text-xl hover:from-yellow-700 hover:to-orange-700 shadow-lg transform hover:scale-105 transition"
+  }, currentQuestion < currentLessonData.questions.length - 1 ? 'השאלה הבאה ➡️' : 'סיום השיעור האחרון! ✨')), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-xl shadow-lg p-4 inline-block"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement(Award, {
+    className: "w-8 h-8 text-yellow-600"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-xl font-bold text-yellow-700"
+  }, "\u05E0\u05D9\u05E7\u05D5\u05D3 \u05DB\u05D5\u05DC\u05DC: ", totalScore + lessonScore))))));
+};
+const __App = LearningGameSeason6;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

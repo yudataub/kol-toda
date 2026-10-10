@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>חידון מדעי החיוך - עם עובדות מדעיות – הקול החמישי</title>
+<meta name="description" content="חידון אינטראקטיבי המשלב חכמת חז&quot;ל עם מדע מודרני על חיוך. 3 רמות קושי, עובדות מדעיות מרתקות ומשחק חינוכי מהנה לכל המשפחה.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="חידון מדעי החיוך - עם עובדות מדעיות – הקול החמישי">
+<meta property="og:description" content="חידון אינטראקטיבי המשלב חכמת חז&quot;ל עם מדע מודרני על חיוך. 3 רמות קושי, עובדות מדעיות מרתקות ומשחק חינוכי מהנה לכל המשפחה.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-0b2e3b33.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/0b2e3b33.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Microscope = window.LucideReact["Microscope"] || window.LucideReact.Circle;
+const ScienceSmileQuiz = () => {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [shuffledQuestions, setShuffledQuestions] = useState([]);
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [unlockedLevels, setUnlockedLevels] = useState([1]);
+  const [showLevelSelect, setShowLevelSelect] = useState(false);
+  const [showScience, setShowScience] = useState('');
+  const levelAQuestions = [{
+    question: 'מדוע "המלבין שיניים לחברו" עדיף יותר ממשקהו חלב?',
+    emoji: '🥛',
+    options: ['כי חיוך ניתן בכל עת ובלי הגבלה', 'כי החלב מרווה רק הגוף, והחיוך מרווה את הנפש', 'כי חיוך דורש פחות שרירים', 'תשובות א׳ וב׳ נכונות'],
+    correct: 3,
+    explanation: 'חז״ל לימדונו שחיוך עדיף כי הוא ניתן תמיד ומזין את הנפש - לא רק את הגוף!',
+    science: '🔬 עובדה מדעית: חיוך דורש רק 26 שרירי פנים, לעומת 62-96 שרירים להבעת דאגה או כעס - חיוך הוא יעיל ביותר!'
+  }, {
+    question: 'מהו אופי השמחה הנדרשת בעבודת ה׳?',
+    emoji: '🎵',
+    options: ['תמיד לרקוד ולשיר', 'סיפוק רגעי והישגים חומריים', 'תחושת סיפוק פנימי - "טוב לב"', 'תוצר של "שיוויתי ה׳ לנגדי תמיד"'],
+    correct: 3,
+    explanation: 'השמחה היא תוצר של "שיוויתי ה׳ לנגדי תמיד" והיא תיקון ליסוד המים!',
+    science: '🔬 עובדה מדעית: חיוך גורם למוח לייצר דופמין וסרוטונין - הורמוני האושר הטבעיים!'
+  }, {
+    question: 'מה משמעות "ה׳ צלך" ביחס לחיוך?',
+    emoji: '🪞',
+    options: ['הקב״ה צריך צל', 'כשנחייך לזולת, גם ה׳ יאיר לנו פנים', 'רק בזמנים מיוחדים', 'ה׳ משחק איתנו'],
+    correct: 1,
+    explanation: 'מידה כנגד מידה - כשנאיר פנים לזולת, גם הקב״ה יאיר לנו פנים!',
+    science: '🔬 עובדה מדעית: חיוך מדבק! כשרואים חיוך, מופעלים נוירוני מראה במוח שגורמים לנו לחייך אוטומטית!'
+  }, {
+    question: 'מדוע החיוך עולה על יין וחלב לפי המהר״ל?',
+    emoji: '🍷',
+    options: ['יין וחלב רוחניים', 'החיוך דבר רוחני נבדל ונצחי', 'יין וחלב גורמים לעצבות', 'רק משל'],
+    correct: 1,
+    explanation: 'יין וחלב גשמיים, אך החיוך רוחני ונצחי - עולה על כל גשמיות!',
+    science: '🔬 עובדה מדעית: חיוך נחשב לסימן חיובי אוניברסלי בכל תרבות ושפה - הוא שובר מחסומים!'
+  }, {
+    question: 'מה ההבדל בין "שבח שטחי" ל"הערכה עמוקה"?',
+    emoji: '💝',
+    options: ['שבח שטחי הוא חיוך מזויף', 'שבח רק על תוצאה, הערכה מחברת לכוונה', 'שבח לזרים, הערכה לבני זוג', 'אין הבדל'],
+    correct: 1,
+    explanation: 'שבח שטחי רק על התוצאה, אך הערכה אמיתית מחברת לכוונה ולמסירות!',
+    science: '🔬 עובדה מדעית: חוקרים מצאו 19 סוגי חיוך - אנשים מזהים בקלות חיוכים מזויפים לעומת אותנטיים!'
+  }, {
+    question: 'למה שמאי ראה בחיוך חובה ולא רק חסד?',
+    emoji: '⚖️',
+    options: ['כי דיבר רק על חובות', 'כי פנים חתומות משדרות זלזול', 'כי רק חיוך רחב חובה', 'כי זה מיישר הכל'],
+    correct: 1,
+    explanation: 'פנים חתומות משדרות זלזול וחוסר הערכה - זה אסור בתכלית!',
+    science: '🔬 עובדה מדעית: אנשים חייכנים נתפסים כאטרקטיביים, אמינים ורגועים יותר - יש יותר סיכוי להצליח בחיים!'
+  }, {
+    question: 'מה הסכנה כשתלמיד חכם לא מחייך?',
+    emoji: '📚',
+    options: ['תלמודו לא מתקיים', 'חילול השם', 'יחשדו בו שהכניס סם', 'תשובות ב׳ וג׳'],
+    correct: 3,
+    explanation: 'תלמיד חכם ללא חיוך גורם לחילול השם וחשדות - זה חמור מאוד!',
+    science: '🔬 עובדה מדעית: חיוך משפיע על טון הדיבור - אנשים תופסים אותנו כחברותיים יותר גם בטלפון!'
+  }, {
+    question: 'מה המסר שהציל יהודי בפח זבל?',
+    emoji: '💗',
+    options: ['אתה רוצה להתאבד', 'אני אוהב אותך ומרגיש אותך', 'תשתה חלב', 'אמצא לך עבודה'],
+    correct: 1,
+    explanation: 'המסר "אני אוהב אותך ומרגיש אותך" הציל חיים - חום אמיתי מציל!',
+    science: '🔬 עובדה מדעית: חיוך מפחית הפרשת קורטיזול ואדרנלין - הורמוני הלחץ שמופעלים בטראומה!'
+  }, {
+    question: 'מה נדרש בהומור אמיתי?',
+    emoji: '😄',
+    options: ['מזל', 'מרכיב ההפתעה!', 'להיות עם חברים', 'להוכיח שאתה הטוב ביותר'],
+    correct: 1,
+    explanation: 'הומור אמיתי בנוי על הפתעה ושינוי בציפיות - זו שנינות!',
+    science: '🔬 עובדה מדעית: בני אדם מסוגלים לזהות חיוך מרחוק של עד 90 מטר - זה סימן חיובי מאוד!'
+  }, {
+    question: 'מה תפקיד "לחיצת זרת" ו"שרשרת מרפקים"?',
+    emoji: '🤝',
+    options: ['לבדוק מספר תלמידים', 'לאפשר שלום בכיף!', 'רק לכיתות גבוהות', 'לפתח אינטליגנציה'],
+    correct: 1,
+    explanation: 'כלים כיפיים שעוזרים לילדים לומר שלום אחד לשני בשמחה!',
+    science: '🔬 עובדה מדעית: חיוך מחזק את המערכת החיסונית - מגדיל כדוריות לבנות שנלחמות במחלות!'
+  }, {
+    question: 'מה הוכח על חיוך מזויף?',
+    emoji: '🧪',
+    options: ['מזיק לבריאות', 'גורם לייצור אנדורפינים!', 'נעלם מהר', 'לא משפיע'],
+    correct: 1,
+    explanation: 'אפילו חיוך מזויף גורם למוח לייצר אנדורפינים - "Fake it till you make it"!',
+    science: '🔬 עובדה מדעית: חיוך אינו רק תוצאה של שמחה - הוא בעצמו יוצר שמחה במוח!'
+  }, {
+    question: 'איך הרב ד. התמודד עם מחלתו?',
+    emoji: '💪',
+    options: ['רק שכב במיטה', 'סירב להיות חולה, המשיך ללמד בחיוך!', 'נמנע ממשפחה', 'לא שמע עצות'],
+    correct: 1,
+    explanation: 'הרב המשיך ללמד ולחייך גם בימים קשים - גבורה אמיתית!',
+    science: '🔬 עובדה מדעית: אנדורפינים מחיוך משמשים כמשכך כאבים טבעי - מפחית כאב פיזי ונפשי!'
+  }, {
+    question: 'מתי הזמן הקריטי לאווירה חיובית עם ילדים?',
+    emoji: '🌙',
+    options: ['בצהריים', 'לפני השינה!', 'במהלך הלימודים', 'לפני התפילה'],
+    correct: 1,
+    explanation: 'לפני השינה חשוב לסגור חשבונות ולהקדיש זמן אוהב - מונע נשירה!',
+    science: '🔬 עובדה מדעית: חיוך מפחית לחץ דם גבוה ומחזור הלב - משפר בריאות הגוף!'
+  }, {
+    question: 'מה מוכיח שחיוך אוניברסלי?',
+    emoji: '👶',
+    options: ['כולם מכירים אותו', 'הוא מדבק', 'מתפתח ברחם ואצל עיוורים!', 'נשאר לנצח'],
+    correct: 2,
+    explanation: 'חיוך מתפתח כבר ברחם ונצפה אצל תינוקות עיוורים - הוכחה טבעית!',
+    science: '🔬 עובדה מדעית: חיוך מולד ואינו נלמד! עוברים מחייכים ברחם, ותינוקות עיוורים מחייכים מלידה!'
+  }, {
+    question: 'למה פתיחה לא שגרתית של יום הלימודים חשובה?',
+    emoji: '🎓',
+    options: ['לשמוע חיוך בטלפון', 'ללמד שפות', 'התחלה רגועה ונעימה!', 'לבדוק אינטליגנציה'],
+    correct: 2,
+    explanation: 'התחלה רגועה ונעימה משפיעה על כל היום - יוצרת אווירה חיובית!',
+    science: '🔬 עובדה מדעית: אנשים עם חיוך רחב חיו חיים ארוכים יותר - מחקר על שחקני בייסבול הוכיח זאת!'
+  }];
+  const levelBQuestions = [{
+    question: 'מדוע החלב מרווה רק את הגוף והחיוך את הנפש?',
+    emoji: '🥛',
+    options: ['כי החלב נוזלי', 'החיוך מזין את הנפש בחותם נצחי', 'כי החלב זול', 'אין הבדל'],
+    correct: 1,
+    explanation: 'החיוך מרווה ומזין את הנפש בחותם שלא ימחה לעולם - זה עומק רוחני!',
+    science: '🔬 עובדה מדעית: חיוך הוא "עסקה כדאית" - 26 שרירים בלבד לעומת 96 שרירים לכיווץ פנים!'
+  }, {
+    question: 'מה העומק של שמחה כ"טוב לב משתה תמיד"?',
+    emoji: '🎵',
+    options: ['רק אוכל', 'סיפוק פנימי עמוק מאמונה', 'רק בחגים', 'רק ריקודים'],
+    correct: 1,
+    explanation: 'שמחה היא סיפוק פנימי עמוק ומצב קבוע של טוב לב - לא תלוי בנסיבות!',
+    science: '🔬 עובדה מדעית: חיוך יוצר אושר! שרירי הפנים שולחים משוב למוח שמפעיל את מערכת התגמול!'
+  }, {
+    question: 'איך "ה׳ צלך" קשור לאיך שאנחנו מתנהגים?',
+    emoji: '🪞',
+    options: ['לא קשור', 'כשנשמח ונחייך, גם ה׳ יאיר לנו', 'רק בתפילה', 'רק בשבת'],
+    correct: 1,
+    explanation: 'כשאנחנו שמחים ומחייכים לזולת, גם השכינה שמחה וה׳ מאיר לנו פנים!',
+    science: '🔬 עובדה מדעית: כשרואים חיוך, נוירוני המראה במוח גורמים לנו לחייך אוטומטית - זה לא רצוני!'
+  }, {
+    question: 'מדוע החיוך הוא דבר רוחני נבדל?',
+    emoji: '✨',
+    options: ['כי הוא לא גשמי', 'עולה בחשיבות על כל דבר גשמי!', 'רק משל', 'לא נכון'],
+    correct: 1,
+    explanation: 'יין וחלב גשמיים וזמניים, אך החיוך רוחני ונצחי - המהר״ל!',
+    science: '🔬 עובדה מדעית: חיוך הוא שפה אוניברסלית - מובן בכל תרבות ובכל שפה בעולם!'
+  }, {
+    question: 'מה המשמעות של הערכה שמחברת לכוונה?',
+    emoji: '💝',
+    options: ['רק שבח', 'מחברת את המעשה ללב ולמסירות!', 'רק למבוגרים', 'אין הבדל'],
+    correct: 1,
+    explanation: 'הערכה אמיתית (Wertschätzung) מחברת את המעשה לכוונה הפנימית ולמסירות!',
+    science: '🔬 עובדה מדעית: נמצאו 19 סוגי חיוך - "חברתי" ו"אותנטי" - אנשים מבחינים ביניהם!'
+  }, {
+    question: 'מדוע פנים חתומות נחשבות כזלזול?',
+    emoji: '😐',
+    options: ['כי זה לא יפה', 'משדרות חוסר הערכה - אסור מוחלט!', 'רק לפעמים', 'זה לא אסור'],
+    correct: 1,
+    explanation: 'הבעת פנים חתומות משדרת זלזול וחוסר הערכה - זה אסור בתכלית!',
+    science: '🔬 עובדה מדעית: עובדים חייכנים הצליחו יותר להתקבל לעבודה ולקבל קידום!'
+  }, {
+    question: 'מה חומרת תלמיד חכם שלא מקבל בסבר פנים יפות?',
+    emoji: '📖',
+    options: ['לא חמור', 'חילול השם גדול וחשדות!', 'רק בעיה חברתית', 'אין בעיה'],
+    correct: 1,
+    explanation: 'הרמב״ם קבע: תלמיד חכם ללא סבר פנים - חילול השם וחשד לרעה!',
+    science: '🔬 עובדה מדעית: חיוך משפיע על טון הדיבור - בטלפון תופסים אותנו כחברותיים!'
+  }, {
+    question: 'איזה כוח יש למסר "אני אוהב אותך ומרגיש אותך"?',
+    emoji: '💗',
+    options: ['כוח קטן', 'מציל נפשות מייאוש ומוות!', 'רק שמחה רגעית', 'כלום'],
+    correct: 1,
+    explanation: 'מסר לבבי אמיתי עם חיוך הציל נפשות מייאוש - זה כוח עצום!',
+    science: '🔬 עובדה מדעית: חיוך מפחית קורטיזול ואדרנלין - הורמונים שמופעלים בטראומה וחרדה!'
+  }, {
+    question: 'מה עושה הומור בנוי על הפתעה?',
+    emoji: '🎭',
+    options: ['כלום', 'מעיד על שנינות ויצירתיות!', 'רק מצחיק', 'לא חשוב'],
+    correct: 1,
+    explanation: 'הומור עם מרכיב הפתעה מעיד על שנינות ויצירתיות אמיתית!',
+    science: '🔬 עובדה מדעית: בני אדם יכולים לזהות חיוך מרחוק של עד 90 מטר - סימן חיובי חזק!'
+  }, {
+    question: 'מה היעילות של כלים כמו "לחיצת זרת"?',
+    emoji: '🤝',
+    options: ['רק משחק', 'יוצרים חיבור חיובי מהיר!', 'לא עוזר', 'רק למבוגרים'],
+    correct: 1,
+    explanation: 'הכלים יוצרים תבניות לשלום וחיבור חיובי מהיר בין תלמידים!',
+    science: '🔬 עובדה מדעית: חיוך מחזק חיסון - מפחית לחץ ומגדיל כדוריות לבנות בדם!'
+  }, {
+    question: 'מה המשמעות של "Fake it till you make it" בחיוך?',
+    emoji: '🎪',
+    options: ['חיוך מזויף רע', 'חיוך מאולץ יוצר אושר אמיתי!', 'רק תיאוריה', 'לא עובד'],
+    correct: 1,
+    explanation: 'אפילו חיוך טכני או מאולץ יוצר אושר אמיתי במוח - זה מדעי!',
+    science: '🔬 עובדה מדעית: חיוך גורם לשרירי הפנים לשגר מידע למוח שמפעיל תחושה חיובית!'
+  }, {
+    question: 'מה המסר מגבורת הרב ד. במחלה?',
+    emoji: '💪',
+    options: ['רק להיות חזק', 'חיוך וביטחון מנצחים מחלה!', 'להתעלם מהכול', 'לא להקשיב לאחרים'],
+    correct: 1,
+    explanation: 'הרב סירב להיראות חולה, המשיך בחיוך - הוכיח שחיוך וביטחון מנצחים!',
+    science: '🔬 עובדה מדעית: אנדורפינים מחיוך פועלים כמשכך כאבים טבעי במוח!'
+  }, {
+    question: 'מה הקשר בין חיוך לפני השינה למניעת נשירה?',
+    emoji: '🌙',
+    options: ['אין קשר', 'סגירת חשבונות באהבה מונעת נשירה!', 'רק שינה טובה', 'לא חשוב'],
+    correct: 1,
+    explanation: 'סגירת חשבונות לפני השינה בחיוך ואהבה מונעת נשירה לרחוב!',
+    science: '🔬 עובדה מדעית: חיוך מפחית לחץ דם ומחזור הלב - משפיע על בריאות כללית!'
+  }, {
+    question: 'מה מוכיח שחיוך מולד ולא נלמד?',
+    emoji: '👶',
+    options: ['רק חיקוי', 'עוברים ברחם ותינוקות עיוורים מחייכים!', 'תרבותי', 'נלמד מהסביבה'],
+    correct: 1,
+    explanation: 'עוברים מחייכים ברחם ותינוקות עיוורים מחייכים - הוכחה שזה מולד!',
+    science: '🔬 עובדה מדעית: חיוך הוא תופעה טבועה מלידה - זו אחת השפות הראשונות של תינוק!'
+  }, {
+    question: 'איך פתיחה לא שגרתית משפיעה על היום?',
+    emoji: '🎓',
+    options: ['רק כיף', 'קובעת את האווירה לכל היום!', 'לא משפיע', 'רק למורים'],
+    correct: 1,
+    explanation: 'התחלה רגועה וחיובית של היום קובעת את האווירה לכל היום!',
+    science: '🔬 עובדה מדעית: מחקר הראה שרוחב חיוך של שחקן בייסבול ניבא את אורך חייו!'
+  }];
+  const levelCQuestions = [{
+    question: 'מה העומק של "החיוך מרווה את הנפש בחותם נצחי"?',
+    emoji: '💎',
+    options: ['רק משל', 'חיוך משאיר רושם נצחי בנפש!', 'רק רגעי', 'לא נכון'],
+    correct: 1,
+    explanation: 'החיוך מזין את הנפש בחותם שלא ימחה לעולם - השפעה נצחית!',
+    science: '🔬 עובדה מדעית: חיוך דורש 26 שרירים, כעס 96 - חיוך יעיל פי 3.7!'
+  }, {
+    question: 'איך שמחה של "טוב לב" קשורה לשיוויתי ה׳?',
+    emoji: '🙏',
+    options: ['לא קשור', 'שמחה מתוך אמונה היא תיקון נשמתי!', 'רק בתפילה', 'רק בחגים'],
+    correct: 1,
+    explanation: 'שמחה כ"טוב לב" היא תוצר של "שיוויתי ה׳ לנגדי תמיד" - תיקון ליסוד המים!',
+    science: '🔬 עובדה מדעית: חיוך גורם למוח לייצר אנדורפינים, דופמין וסרוטונין - שילוש האושר!'
+  }, {
+    question: 'מה העומק של "ה׳ צלך" במידה כנגד מידה?',
+    emoji: '🪞',
+    options: ['רק דימוי', 'הקב״ה מתנהג עמנו כפי מעשינו!', 'לא מדויק', 'רק לצדיקים'],
+    correct: 1,
+    explanation: 'מידה כנגד מידה מלאה - כשנאיר פנים, גם ה׳ יאיר לנו ויעניק שפע!',
+    science: '🔬 עובדה מדעית: נוירוני מראה גורמים למוח לחייך אוטומטית כשרואים חיוך - חיבור עצבי!'
+  }, {
+    question: 'מדוע המהר״ל קבע שהרוחני עולה על הגשמי?',
+    emoji: '✨',
+    options: ['כי הגשמי זמני', 'הרוחני נצחי ונבדל במהותו!', 'רק דעה', 'לא נכון'],
+    correct: 1,
+    explanation: 'הטעם הטוב של חיוך הוא דבר רוחני נבדל ונצחי - עולה על כל גשמיות!',
+    science: '🔬 עובדה מדעית: חיוך מוכר בכל תרבות כסימן חיובי - מתעלה מעל כל גבולות!'
+  }, {
+    question: 'מה הכוח של הערכה המחברת לכוונה הפנימית?',
+    emoji: '💝',
+    options: ['רק מילים', 'חיבור עמוק בין מעשה לנפש!', 'לא חשוב', 'רק חיצוני'],
+    correct: 1,
+    explanation: 'Wertschätzung - הערכה שמחברת את המעשה לכוונה, ללב ולמסירות הפנימית!',
+    science: '🔬 עובדה מדעית: 19 סוגי חיוך - "חברתי" מזויף ו"אותנטי" אמיתי, אנשים מזהים!'
+  }, {
+    question: 'למה פנים חתומות נחשבות לאיסור מוחלט?',
+    emoji: '⛔',
+    options: ['רק לא יפה', 'משדרות זלזול - פוגעות בנפש!', 'רק לפעמים רע', 'לא כל כך רציני'],
+    correct: 1,
+    explanation: 'פנים חתומות משדרות זלזול וחוסר הערכה שפוגעים בנפש - אסור בתכלית!',
+    science: '🔬 עובדה מדעית: חייכנים נחשבים אמינים יותר - הצליחו יותר בעבודה ובקריירה!'
+  }, {
+    question: 'מה העומק של חילול השם על ידי תלמיד חכם?',
+    emoji: '📖',
+    options: ['רק בעיה חברתית', 'גורם לזלזול בתורה ובאמונה!', 'לא כל כך חמור', 'רק אישי'],
+    correct: 1,
+    explanation: 'תלמיד חכם ללא סבר פנים יפות גורם לחילול השם הגדול - זלזול בתורה!',
+    science: '🔬 עובדה מדעית: חיוך משפיע על אינטונציה וטון - גם בטלפון נשמע חיובי!'
+  }, {
+    question: 'איך חיוך ומסר אמיתי יכולים להציל נפשות?',
+    emoji: '🦸',
+    options: ['לא יכולים', 'חום אמיתי מונע ייאוש והידרדרות!', 'רק פיזית', 'רק רגעי'],
+    correct: 1,
+    explanation: 'מסר "אני אוהב אותך ומרגיש אותך" עם חיוך מציל מייאוש - הצלה נפשית!',
+    science: '🔬 עובדה מדעית: חיוך מפחית קורטיזול ואדרנלין - מונע התמוטטות במשבר!'
+  }, {
+    question: 'מה המשמעות העמוקה של הפתעה בהומור?',
+    emoji: '🎭',
+    options: ['רק צחוק', 'מעידה על חוכמה ויצירתיות נפשית!', 'לא חשוב', 'רק טכני'],
+    correct: 1,
+    explanation: 'הפתעה בהומור מעידה על שנינות, יצירתיות וחוכמה נפשית עמוקה!',
+    science: '🔬 עובדה מדעית: זיהוי חיוך מ-90 מטר - התפתח כמנגנון הישרדות חברתי!'
+  }, {
+    question: 'איך תבניות חיבור משפיעות על התפתחות נפשית?',
+    emoji: '🧠',
+    options: ['לא משפיעות', 'יוצרות דפוסים חיוביים במוח!', 'רק משחק', 'רק חיצוני'],
+    correct: 1,
+    explanation: 'תבניות כמו "לחיצת זרת" יוצרות דפוסים חיוביים של חיבור במוח הילד!',
+    science: '🔬 עובדה מדעית: חיוך מחזק חיסון - מפחית לחץ ומגדיל תאים לוחמים בדם!'
+  }, {
+    question: 'מה המנגנון הנוירולוגי של "Fake it till you make it"?',
+    emoji: '🧬',
+    options: ['אין מנגנון', 'שרירי פנים שולחים משוב למוח!', 'רק פסיכולוגי', 'לא מדעי'],
+    correct: 1,
+    explanation: 'שרירי הפנים שולחים מידע למוח שמפעיל מערכת תגמול - משוב ביולוגי!',
+    science: '🔬 עובדה מדעית: חיוך מפעיל את מערכת התגמול במוח - אושר ביוכימי אמיתי!'
+  }, {
+    question: 'מה קשר האנדורפינים לגבורה במחלה?',
+    emoji: '💪',
+    options: ['אין קשר', 'משככי כאב טבעיים שמחזקים!', 'רק נפשי', 'לא עוזר'],
+    correct: 1,
+    explanation: 'אנדורפינים מחיוך פועלים כמשככי כאב טבעיים - עוזרים בהתמודדות!',
+    science: '🔬 עובדה מדעית: אנדורפינים משמשים כמשכך כאבים טבעי במוח - מפחית סבל!'
+  }, {
+    question: 'איך חיוך לפני השינה משפיע על התפתחות?',
+    emoji: '🌙',
+    options: ['רק שינה טובה', 'יוצר ביטחון רגשי שמונע נשירה!', 'לא משפיע', 'רק רגעי'],
+    correct: 1,
+    explanation: 'חיוך וסגירת חשבונות לפני שינה יוצרים ביטחון רגשי שמונע נשירה!',
+    science: '🔬 עובדה מדעית: חיוך מפחית לחץ דם - משפיע על בריאות לטווח ארוך!'
+  }, {
+    question: 'מה המשמעות של חיוך כשפה ראשונה?',
+    emoji: '👶',
+    options: ['רק דימוי', 'מערכת תקשורת מולדת קדומה!', 'נלמד', 'לא נכון'],
+    correct: 1,
+    explanation: 'חיוך הוא אחת השפות הראשונות - מערכת תקשורת מולדת וקדומה!',
+    science: '🔬 עובדה מדעית: עוברים מחייכים ברחם, תינוקות עיוורים מחייכים - מולד לגמרי!'
+  }, {
+    question: 'מה הקשר בין חיוך לאריכות ימים?',
+    emoji: '⏳',
+    options: ['אין קשר', 'חייכנים חיים יותר - מדעית מוכח!', 'רק מקרה', 'לא נכון'],
+    correct: 1,
+    explanation: 'מחקרים הוכיחו שחייכנים בתדירות גבוהה בריאים ומאריכי ימים!',
+    science: '🔬 עובדה מדעית: מחקר על שחקני בייסבול - רוחב החיוך ניבא את אורך החיים!'
+  }];
+  useEffect(() => {
+    loadLevel(currentLevel);
+  }, [currentLevel]);
+  const loadLevel = level => {
+    let questions = [];
+    if (level === 1) questions = [...levelAQuestions];else if (level === 2) questions = [...levelBQuestions];else if (level === 3) questions = [...levelCQuestions];
+    const shuffled = questions.sort(() => Math.random() - 0.5);
+    setShuffledQuestions(shuffled);
+    setCurrentQuestion(0);
+    setScore(0);
+    setGameFinished(false);
+    setShowFeedback(false);
+    setShowLevelSelect(false);
+  };
+  const playSound = isCorrect => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    if (isCorrect) {
+      const notes = [523.25, 587.33, 659.25, 783.99];
+      let time = audioContext.currentTime;
+      notes.forEach(freq => {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.2, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+        osc.start(time);
+        osc.stop(time + 0.1);
+        time += 0.08;
+      });
+    } else {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      osc.frequency.value = 200;
+      gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+      osc.start(audioContext.currentTime);
+      osc.stop(audioContext.currentTime + 0.4);
+    }
+  };
+  const playLevelUpSound = () => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const melody = [{
+      freq: 523.25,
+      duration: 0.15
+    }, {
+      freq: 587.33,
+      duration: 0.15
+    }, {
+      freq: 659.25,
+      duration: 0.15
+    }, {
+      freq: 783.99,
+      duration: 0.2
+    }, {
+      freq: 880,
+      duration: 0.3
+    }];
+    let time = audioContext.currentTime;
+    melody.forEach(note => {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      osc.frequency.value = note.freq;
+      gain.gain.setValueAtTime(0.25, time);
+      gain.gain.exponentialRampToValueAtTime(0.01, time + note.duration);
+      osc.start(time);
+      osc.stop(time + note.duration);
+      time += note.duration;
+    });
+  };
+  const handleAnswer = answerIndex => {
+    const correct = shuffledQuestions[currentQuestion].correct === answerIndex;
+    setIsCorrect(correct);
+    setShowFeedback(true);
+    playSound(correct);
+    if (correct) {
+      setScore(score + 1);
+      setShowScience(shuffledQuestions[currentQuestion].science);
+    }
+    setTimeout(() => {
+      setShowFeedback(false);
+      setShowScience('');
+      if (currentQuestion < shuffledQuestions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+      } else {
+        setGameFinished(true);
+        checkLevelCompletion();
+      }
+    }, correct ? 6000 : 3000);
+  };
+  const checkLevelCompletion = () => {
+    const percentage = (score + (isCorrect ? 1 : 0)) / shuffledQuestions.length * 100;
+    if (percentage >= 95) {
+      if (currentLevel === 1 && !unlockedLevels.includes(2)) {
+        setUnlockedLevels([...unlockedLevels, 2]);
+        playLevelUpSound();
+      } else if (currentLevel === 2 && !unlockedLevels.includes(3)) {
+        setUnlockedLevels([...unlockedLevels, 3]);
+        playLevelUpSound();
+      }
+    }
+  };
+  const resetGame = () => {
+    loadLevel(currentLevel);
+  };
+  const selectLevel = level => {
+    if (unlockedLevels.includes(level)) {
+      setCurrentLevel(level);
+    }
+  };
+  if (shuffledQuestions.length === 0) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-b from-blue-100 to-purple-100 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl"
+    }, "\u05D8\u05D5\u05E2\u05DF..."));
+  }
+  if (showLevelSelect) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl w-full"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-12"
+    }, /*#__PURE__*/React.createElement("h1", {
+      className: "text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4"
+    }, "\uD83D\uDD2C \u05D7\u05D9\u05D3\u05D5\u05DF \u05DE\u05D3\u05E2\u05D9 \u05D4\u05D7\u05D9\u05D5\u05DA \uD83D\uDD2C"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-gray-700"
+    }, "\u05D1\u05D7\u05E8 \u05D0\u05EA \u05E8\u05DE\u05EA \u05D4\u05E7\u05D5\u05E9\u05D9")), /*#__PURE__*/React.createElement("div", {
+      className: "grid gap-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      onClick: () => selectLevel(1),
+      className: `bg-white rounded-3xl p-8 cursor-pointer transform transition-all hover:scale-105 shadow-xl border-4 ${currentLevel === 1 ? 'border-blue-500 ring-4 ring-blue-300' : 'border-gray-300'}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-4"
+    }, /*#__PURE__*/React.createElement(Star, {
+      className: "w-12 h-12 text-blue-500"
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "text-3xl font-bold text-blue-700"
+    }, "\u05E8\u05DE\u05D4 \u05D0 - \u05D1\u05E1\u05D9\u05E1\u05D9"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600"
+    }, "\u05E9\u05D0\u05DC\u05D5\u05EA \u05D9\u05E1\u05D5\u05D3 + \u05E2\u05D5\u05D1\u05D3\u05D5\u05EA \u05DE\u05D3\u05E2\u05D9\u05D5\u05EA"))), /*#__PURE__*/React.createElement("div", {
+      className: "text-blue-600 text-2xl"
+    }, "\u2713 \u05E4\u05EA\u05D5\u05D7"))), /*#__PURE__*/React.createElement("div", {
+      onClick: () => selectLevel(2),
+      className: `bg-white rounded-3xl p-8 cursor-pointer transform transition-all ${unlockedLevels.includes(2) ? 'hover:scale-105 opacity-100' : 'opacity-50 cursor-not-allowed'} shadow-xl border-4 ${currentLevel === 2 ? 'border-purple-500 ring-4 ring-purple-300' : 'border-gray-300'}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-4"
+    }, /*#__PURE__*/React.createElement(Award, {
+      className: "w-12 h-12 text-purple-500"
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "text-3xl font-bold text-purple-700"
+    }, "\u05E8\u05DE\u05D4 \u05D1 - \u05D1\u05D9\u05E0\u05D5\u05E0\u05D9"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600"
+    }, "\u05E9\u05D0\u05DC\u05D5\u05EA \u05DE\u05D5\u05E8\u05DB\u05D1\u05D5\u05EA + \u05DE\u05D3\u05E2 \u05DE\u05EA\u05E7\u05D3\u05DD"))), /*#__PURE__*/React.createElement("div", {
+      className: `text-2xl ${unlockedLevels.includes(2) ? 'text-purple-600' : 'text-gray-400'}`
+    }, unlockedLevels.includes(2) ? '✓ פתוח' : '🔒 דרוש 95%'))), /*#__PURE__*/React.createElement("div", {
+      onClick: () => selectLevel(3),
+      className: `bg-white rounded-3xl p-8 cursor-pointer transform transition-all ${unlockedLevels.includes(3) ? 'hover:scale-105 opacity-100' : 'opacity-50 cursor-not-allowed'} shadow-xl border-4 ${currentLevel === 3 ? 'border-pink-500 ring-4 ring-pink-300' : 'border-gray-300'}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-4"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-12 h-12 text-pink-500"
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "text-3xl font-bold text-pink-700"
+    }, "\u05E8\u05DE\u05D4 \u05D2 - \u05DE\u05EA\u05E7\u05D3\u05DD"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600"
+    }, "\u05E9\u05D0\u05DC\u05D5\u05EA \u05E2\u05D5\u05DE\u05E7 + \u05DE\u05D3\u05E2 \u05DE\u05EA\u05E7\u05D3\u05DD"))), /*#__PURE__*/React.createElement("div", {
+      className: `text-2xl ${unlockedLevels.includes(3) ? 'text-pink-600' : 'text-gray-400'}`
+    }, unlockedLevels.includes(3) ? '✓ פתוח' : '🔒 דרוש 95%')))), /*#__PURE__*/React.createElement("div", {
+      className: "text-center mt-8"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => setShowLevelSelect(false),
+      className: "bg-gradient-to-r from-blue-500 to-purple-500 text-white text-2xl px-12 py-4 rounded-full font-bold hover:scale-110 transition-transform shadow-lg"
+    }, "\u25B6\uFE0F \u05D4\u05EA\u05D7\u05DC \u05D7\u05D9\u05D3\u05D5\u05DF"))));
+  }
+  if (gameFinished) {
+    const percentage = score / shuffledQuestions.length * 100;
+    let message = '';
+    let emoji = '';
+    let levelUnlocked = false;
+    if (percentage >= 95) {
+      if (currentLevel === 1 && unlockedLevels.includes(2) && unlockedLevels.length === 2) {
+        message = 'מעולה! רמה ב נפתחה! 🎊';
+        emoji = '🔓';
+        levelUnlocked = true;
+      } else if (currentLevel === 2 && unlockedLevels.includes(3) && unlockedLevels.length === 3) {
+        message = 'מדהים! רמה ג נפתחה! 🏆';
+        emoji = '🔓';
+        levelUnlocked = true;
+      } else if (percentage === 100) {
+        message = 'מושלם! אתה מדען החיוך! 👑';
+        emoji = '🔬';
+      } else {
+        message = 'מצוין! עברת ב-95%+! 🎉';
+        emoji = '😊';
+      }
+    } else if (percentage >= 90) {
+      message = 'טוב מאוד! עוד קצת ל-95%! 🎉';
+      emoji = '🙂';
+    } else if (percentage >= 80) {
+      message = 'יפה! אבל צריך 95% לרמה הבאה 😊';
+      emoji = '😌';
+    } else {
+      message = 'כדאי לחזור על החומר... תחייך! 📖';
+      emoji: '😅';
+    }
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full border-8 border-purple-600"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-8xl mb-6 animate-bounce"
+    }, emoji), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold text-purple-700 mb-4"
+    }, "\u05E8\u05DE\u05D4 ", currentLevel === 1 ? 'א' : currentLevel === 2 ? 'ב' : 'ג', " \u05D4\u05E1\u05EA\u05D9\u05D9\u05DE\u05D4!"), /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl font-bold text-purple-600 mb-2"
+    }, score, "/", shuffledQuestions.length), /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl font-bold text-pink-600 mb-4"
+    }, percentage.toFixed(0), "%"), /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl text-gray-700 mb-8"
+    }, message), levelUnlocked && /*#__PURE__*/React.createElement("div", {
+      className: "bg-yellow-100 border-4 border-yellow-400 rounded-2xl p-6 mb-6 animate-pulse"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl mb-2"
+    }, "\uD83C\uDF8A"), /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl font-bold text-yellow-800"
+    }, "\u05E8\u05DE\u05D4 \u05D7\u05D3\u05E9\u05D4 \u05E0\u05E4\u05EA\u05D7\u05D4!")), /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-4 justify-center flex-wrap"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: resetGame,
+      className: "bg-gradient-to-r from-blue-500 to-blue-600 text-white text-2xl px-8 py-4 rounded-full font-bold hover:scale-110 transition-transform shadow-lg"
+    }, "\uD83D\uDD04 \u05E9\u05D7\u05E7 \u05E9\u05D5\u05D1"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setShowLevelSelect(true),
+      className: "bg-gradient-to-r from-gray-500 to-gray-600 text-white text-2xl px-8 py-4 rounded-full font-bold hover:scale-110 transition-transform shadow-lg"
+    }, "\uD83D\uDCCB \u05D1\u05D7\u05E8 \u05E8\u05DE\u05D4")))));
+  }
+  const currentQ = shuffledQuestions[currentQuestion];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-4 flex justify-between items-center"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowLevelSelect(true),
+    className: "bg-white hover:bg-gray-50 px-4 py-2 rounded-full shadow-lg text-gray-700 font-bold transition-all"
+  }, "\u25C0 \u05D7\u05D6\u05E8\u05D4"), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white px-6 py-2 rounded-full shadow-lg font-bold text-xl"
+  }, "\u05E8\u05DE\u05D4 ", currentLevel === 1 ? 'א' : currentLevel === 2 ? 'ב' : 'ג')), /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-b from-white to-blue-50 rounded-3xl shadow-2xl border-8 border-blue-400 p-8 relative"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "absolute top-0 left-0 text-6xl -ml-4 -mt-8 animate-bounce"
+  }, "\uD83D\uDD2C"), /*#__PURE__*/React.createElement("div", {
+    className: "absolute top-0 right-0 text-6xl -mr-4 -mt-8 animate-bounce"
+  }, "\uD83D\uDE0A"), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-8 bg-gradient-to-r from-blue-500 to-purple-500 p-5 rounded-2xl text-white shadow-xl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-2xl font-bold"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, "/", shuffledQuestions.length), /*#__PURE__*/React.createElement("div", {
+    className: "text-3xl font-bold flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Microscope, {
+    className: "w-8 h-8 text-yellow-300"
+  }), score, " \u05E0\u05E7\u05D5\u05D3\u05D5\u05EA")), /*#__PURE__*/React.createElement("div", {
+    className: "text-center mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-9xl mb-6 animate-bounce"
+  }, currentQ.emoji), /*#__PURE__*/React.createElement("h2", {
+    className: "text-3xl font-bold text-gray-800 mb-6 leading-relaxed"
+  }, currentQ.question)), /*#__PURE__*/React.createElement("div", {
+    className: "grid gap-4 mb-4"
+  }, currentQ.options.map((option, index) => /*#__PURE__*/React.createElement("button", {
+    key: index,
+    onClick: () => handleAnswer(index),
+    disabled: showFeedback,
+    className: `bg-gradient-to-r ${index === 0 ? 'from-blue-400 to-blue-500' : index === 1 ? 'from-purple-400 to-purple-500' : index === 2 ? 'from-pink-400 to-pink-500' : 'from-indigo-400 to-indigo-500'} text-white text-lg py-5 px-4 rounded-2xl font-bold hover:scale-105 transition-all shadow-lg disabled:opacity-50 text-right ${showFeedback && isCorrect && currentQ.correct === index ? 'ring-4 ring-green-400' : ''} ${showFeedback && !isCorrect && currentQ.correct === index ? 'ring-4 ring-green-600' : ''}`
+  }, option))), showFeedback && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: `p-6 rounded-2xl text-center text-xl font-bold mb-4 ${isCorrect ? 'bg-green-100 text-green-700 border-4 border-green-500' : 'bg-red-100 text-red-700 border-4 border-red-500'}`
+  }, isCorrect ? '😊 נכון מאוד! כל הכבוד!' : '😔 לא נכון'), currentQ.explanation && /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 bg-blue-50 border-4 border-blue-300 rounded-2xl p-5 mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-xl font-bold text-blue-800 mb-2"
+  }, "\uD83D\uDCA1 \u05D4\u05E1\u05D1\u05E8:"), /*#__PURE__*/React.createElement("div", {
+    className: "text-lg text-blue-900 text-right leading-relaxed"
+  }, currentQ.explanation)), showScience && isCorrect && /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 bg-gradient-to-r from-purple-100 to-pink-100 border-4 border-purple-400 rounded-2xl p-6 animate-pulse"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-2xl font-bold text-purple-800 mb-3 flex items-center justify-center gap-2"
+  }, /*#__PURE__*/React.createElement(Microscope, {
+    className: "w-8 h-8"
+  }), "\u05E2\u05D5\u05D1\u05D3\u05D4 \u05DE\u05D3\u05E2\u05D9\u05EA \u05DE\u05E8\u05EA\u05E7\u05EA!", /*#__PURE__*/React.createElement(Microscope, {
+    className: "w-8 h-8"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "text-xl text-purple-900 text-center leading-relaxed font-bold"
+  }, showScience)))), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-center gap-6 mt-6 text-5xl"
+  }, ['🔬', '😊', '🧬', '💜', '🧠', '💙', '⚗️'].map((emoji, i) => /*#__PURE__*/React.createElement("span", {
+    key: i,
+    className: "animate-bounce",
+    style: {
+      animationDelay: `${i * 0.1}s`
+    }
+  }, emoji)))));
+};
+const __App = ScienceSmileQuiz;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

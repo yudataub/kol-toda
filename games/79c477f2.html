@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>סיפורי צדיקים — ספרייה</title>
+<style>
+  :root{
+    --gold:#c9a227;
+    --gold-light:#e8cf7a;
+    --cream:#fbf3df;
+    --navy:#1e2a3a;
+    --navy-light:#2c3e54;
+    --accent:#8b5e34;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    font-family:'Segoe UI',Arial,sans-serif;
+    background:linear-gradient(160deg,var(--navy) 0%,var(--navy-light) 100%);
+    overflow:hidden;
+    direction:rtl;
+  }
+  #app{
+    position:relative;
+    width:100%;height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  .stage{
+    width:min(940px,95vw);
+    height:min(660px,88vh);
+    background:var(--cream);
+    border-radius:22px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45);
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  /* ---- HOME SCREEN ---- */
+  .home{
+    flex:1;
+    overflow-y:auto;
+    padding:26px 30px;
+  }
+  .home h1{
+    text-align:center;
+    color:var(--navy);
+    margin:0 0 4px;
+    font-size:clamp(22px,3.2vw,30px);
+  }
+  .home p.sub{
+    text-align:center;
+    color:var(--accent);
+    margin:0 0 22px;
+    font-size:14px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:16px;
+  }
+  .card{
+    background:#fff;
+    border-radius:16px;
+    padding:18px 16px;
+    cursor:pointer;
+    border:2px solid transparent;
+    box-shadow:0 4px 14px rgba(0,0,0,0.1);
+    transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    text-align:center;
+  }
+  .card:hover{
+    transform:translateY(-4px);
+    border-color:var(--gold);
+    box-shadow:0 8px 22px rgba(0,0,0,0.18);
+  }
+  .card .icon{font-size:44px;margin-bottom:8px;display:block;}
+  .card h3{
+    margin:0 0 6px;
+    font-size:15px;
+    color:var(--navy);
+    line-height:1.35;
+  }
+  .card p{
+    margin:0;
+    font-size:12.5px;
+    color:#777;
+    line-height:1.4;
+  }
+  .card .count{
+    display:inline-block;
+    margin-top:8px;
+    font-size:11px;
+    background:var(--cream);
+    color:var(--accent);
+    padding:2px 10px;
+    border-radius:12px;
+    font-weight:700;
+  }
+  /* ---- STORY VIEW (reused pattern) ---- */
+  .visual{
+    flex:1 1 44%;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    transition:background 0.6s ease;
+  }
+  .visual .emoji-scene{
+    font-size:min(13vw,84px);
+    filter:drop-shadow(0 6px 10px rgba(0,0,0,0.25));
+    animation:floatIn 0.7s ease;
+    text-align:center;
+    line-height:1.1;
+  }
+  .visual .onscreen-text{
+    position:absolute;
+    bottom:14px;left:20px;right:20px;
+    text-align:center;
+    font-size:clamp(15px,2.4vw,24px);
+    font-weight:700;
+    color:#fff;
+    background:rgba(30,42,58,0.55);
+    padding:10px 16px;
+    border-radius:12px;
+    backdrop-filter:blur(2px);
+    animation:fadeUp 0.8s ease;
+  }
+  @keyframes floatIn{from{opacity:0;transform:translateY(14px) scale(0.94);}to{opacity:1;transform:translateY(0) scale(1);}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .panel{
+    flex:1 1 56%;
+    background:#fff;
+    padding:16px 26px 8px;
+    overflow-y:auto;
+    border-top:3px solid var(--gold);
+  }
+  .slide-counter{font-size:13px;color:var(--accent);font-weight:700;letter-spacing:0.5px;}
+  .say-label{display:inline-block;background:var(--gold);color:#3a2a05;font-size:12px;font-weight:800;padding:3px 10px;border-radius:20px;margin:8px 0 6px;}
+  .say-text{font-size:clamp(14px,2vw,18px);line-height:1.55;color:var(--navy);white-space:pre-line;}
+  .cue-label{display:inline-block;background:var(--navy);color:#fff;font-size:12px;font-weight:800;padding:3px 10px;border-radius:20px;margin:10px 0 6px;}
+  .cue-text{font-size:13.5px;color:#555;line-height:1.5;font-style:italic;}
+  .nav-bar{position:absolute;bottom:16px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;padding:0 10px;}
+  .nav-btn{background:var(--gold);border:none;color:#3a2a05;font-size:15px;font-weight:800;padding:9px 16px;border-radius:30px;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.3);transition:transform 0.15s ease, background 0.2s ease;}
+  .nav-btn:hover{transform:translateY(-2px);background:var(--gold-light);}
+  .nav-btn:active{transform:translateY(0);}
+  .nav-btn:disabled{opacity:0.35;cursor:not-allowed;transform:none;}
+  .nav-btn.home-btn{background:var(--navy);color:#fff;}
+  .dots{display:flex;gap:4px;align-items:center;flex-wrap:wrap;max-width:260px;justify-content:center;}
+  .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.35);cursor:pointer;transition:background 0.2s, transform 0.2s;}
+  .dot.active{background:var(--gold);transform:scale(1.4);}
+  .top-bar{width:min(940px,95vw);display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:var(--cream);}
+  .top-title{font-size:15px;font-weight:700;opacity:0.9;}
+  .mem-btn{background:transparent;border:1.5px solid var(--gold);color:var(--gold-light);padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;transition:background 0.2s;}
+  .mem-btn:hover{background:rgba(201,162,39,0.15);}
+  .mem-overlay{position:fixed;inset:0;background:rgba(10,15,22,0.85);display:none;align-items:center;justify-content:center;z-index:50;}
+  .mem-overlay.show{display:flex;}
+  .mem-box{background:var(--cream);width:min(700px,92vw);max-height:85vh;overflow-y:auto;border-radius:16px;padding:24px 28px;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+  .mem-box h2{color:var(--navy);margin-top:0;border-bottom:3px solid var(--gold);padding-bottom:8px;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th,td{text-align:right;padding:7px 9px;border-bottom:1px solid #ddd;}
+  th{background:var(--gold);color:#3a2a05;}
+  tr:nth-child(even){background:#f6ecd0;}
+  .close-mem{margin-top:16px;background:var(--navy);color:#fff;border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-weight:700;}
+  @media (max-width:600px){.stage{border-radius:14px;}.panel{padding:12px 14px 6px;}.grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}}
+</style>
+<meta property="og:title" content="סיפורי צדיקים — ספרייה">
+<meta property="og:description" content="סיפורי צדיקים — ספרייה">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-79c477f2.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/79c477f2.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="app">
+  <div class="top-bar">
+    <div class="top-title" id="topTitle">📚 ספריית סיפורי צדיקים</div>
+    <button class="mem-btn" id="memBtn" style="display:none;">טבלת זיכרון מהירה</button>
+  </div>
+
+  <div class="stage">
+    <div id="homeScreen" class="home"></div>
+
+    <div id="storyScreen" style="display:none; flex-direction:column; height:100%;">
+      <div class="visual" id="visual">
+        <div class="emoji-scene" id="emojiScene"></div>
+        <div class="onscreen-text" id="onscreenText"></div>
+      </div>
+      <div class="panel">
+        <div class="slide-counter" id="slideCounter"></div>
+        <div class="say-label">🗣️ אתה אומר</div>
+        <div class="say-text" id="sayText"></div>
+        <div class="cue-label">🎭 כיווני ביצוע</div>
+        <div class="cue-text" id="cueText"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar" id="navBar" style="display:none;">
+    <button class="nav-btn home-btn" id="homeBtn">🏠 תפריט</button>
+    <button class="nav-btn" id="prevBtn">◀ הקודם</button>
+    <div class="dots" id="dots"></div>
+    <button class="nav-btn" id="nextBtn">הבא ▶</button>
+  </div>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table id="memTable"></table>
+    <button class="close-mem" id="closeMem">סגור</button>
+  </div>
+</div>
+
+<script>
+const STORIES = {
+  arod: {
+    icon:"🐍", title:"רבי חנינא בן דוסא והנחש הערוד",
+    blurb:"נאמנות, אומץ ודין 'לא הנחש ממית'",
+    slides:[
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"🏚️✨",onscreen:"עני בכסף, עשיר באמונה",
+        say:`ילדים... בואו נתקרב רגע.\n\nאני הולך לספר לכם על מישהו מיוחד. מישהו שהיה כל כך עני, שלא היה לו כמעט מה לאכול. אבל היה לו משהו שאף מלך בעולם לא היה יכול לקנות בכסף. מי מנחש מה?`,
+        cue:`טון חם, איטי. עצירה לתשובות (2-3 ילדים).`},
+      {bg:"linear-gradient(160deg,#c9a227,#3a2a05)",emoji:"🌟📢",onscreen:"\"כל העולם ניזון בזכות חנינא בני\"",
+        say:`בדיוק — אמונה! שמו היה רבי חנינא בן דוסא. וכל בוקר, הייתה יוצאת קריאה מהשמיים ואומרת...\n\n(עצירה, שינוי טון לקול חגיגי ואיטי)\n\n'כל העולם כולו ניזון בזכות חנינא בני!'`,
+        cue:`כאן משנים קול — יותר עמוק וחגיגי, כמו הכרזה משמיים.`},
+      {bg:"linear-gradient(160deg,#4a6741,#1e2a3a)",emoji:"🐍🕳️",onscreen:"יצור מסוכן במיוחד",
+        say:`באחד המקומות בארץ ישראל, היה מסתובב יצור מסוכן במיוחד — נחש ארסי שנקרא 'ערוד'.\n\n(לחישה)\n\nהוא היה מתחבא בחור באדמה, ומי שהוא נשך — לא היה לו סיכוי.`,
+        cue:`להנמיך קול ללחישה במילה 'ערוד'.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#4a6741)",emoji:"😰❓",onscreen:"מה אתם הייתם עושים?",
+        say:`התושבים באו מבוהלים לרבי חנינא. אם הייתם רבי חנינא — מה הייתם עושים?`,
+        cue:`לשמוע 2-3 תשובות, לאשר כל תשובה.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#4a6741)",emoji:"🚶‍♂️〰️🏃‍♂️🏃‍♀️",onscreen:"הם מרחוק. הוא קרוב.",
+        say:`רבי חנינא לא נבהל. הוא אמר: 'הראו לי את החור שלו.'\n\nוהם הראו לו את החור מרחוק — מרוב פחד. ורבי חנינא לא פחד בכלל.`,
+        cue:`אפשר לצעוד צעד קדימה כשמדברים על רבי חנינא, ולהצטמצם לאחור כשמדברים על התושבים.`},
+      {bg:"linear-gradient(160deg,#4a6741,#1e2a3a)",emoji:"👣🕳️",onscreen:"",
+        say:`(קול נחוש, איטי)\n\nהוא הלך... ישר... לחור. שם את העקב שלו — ממש על הפתח. וחיכה.`,
+        cue:`האטה קיצונית בקצב הדיבור.`},
+      {bg:"radial-gradient(circle at 50% 60%,#4a6741 0%,#0d1218 85%)",emoji:"🐍",onscreen:"",
+        say:`הערוד יצא... (עצירה) ונשך אותו בעקב...\n\n(עצירה ארוכה, שתיקה של ממש)\n\nמה קרה לדעתכם?`,
+        cue:`זו השתיקה החשובה בכל הסיפור.`},
+      {bg:"linear-gradient(160deg,#3a7d9c,#c9a227)",emoji:"💧✨👣",onscreen:"מעיין נבקע תחת עקבו",
+        say:`ואז נבקע מהאדמה מעיין מים! מי שמגיע ראשון למים — נשאר בחיים. וה' דאג שדווקא רבי חנינא יגיע ראשון.`,
+        cue:`קול של התפעלות, לא למהר.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"🙌🐍",onscreen:"בריא ושלם!",
+        say:`והנחש מת. ורבי חנינא עמד שם, בריא ושלם. הוא הביא אותו לבית המדרש ואמר...`,
+        cue:`רגע של הקלה בקול.`},
+      {bg:"linear-gradient(160deg,#c9a227,#8b5e34)",emoji:"💛",onscreen:"\"אין ערוד ממית, אלא החטא ממית\"",
+        say:`(בקול של רבי חנינא עצמו) 'ראו בני — לא הנחש ממית, אלא החטא ממית.'`,
+        cue:`תני לזה לשקוע.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#3a7d9c)",emoji:"💭❓",onscreen:"למה דווקא הוא לא פחד?",
+        say:`למה דווקא רבי חנינא יכול היה לגשת בלי לפחד?\n\n(לשמוע תשובות)\n\nולמה הוא התכוון ב'לא הנחש ממית, אלא החטא'?`,
+        cue:`אל תתני את התשובה!`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#3a7d9c)",emoji:"🧑‍🎓📖😰",onscreen:"גם לנו יש \"נחשים\" משלנו",
+        say:`לכם אין נחשים מסוכנים. אבל יש דברים שמפחידים — מבחן, לעמוד מול הכיתה. ילד שמשתדל לעשות מצוות — יש לו כוח פנימי מיוחד.`,
+        cue:`קול חם ואישי, איטי.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"🏚️✨",onscreen:"איפה אתם תהיו כמו רבי חנינא?",
+        say:`איפה אתם יכולים להיות קצת כמו רבי חנינא — השבוע?\n\n(לתת לכמה ילדים לשתף)`,
+        cue:`נעילה רגועה.`}
+    ],
+    mem:[["1-2","פתיחה + בת קול","עני אבל אמונה"],["3-4","הבעיה + שאלה","נחש = פחד"],["5","'הראו לי את החור'","הם מרחוק, הוא קרוב"],["6-7","הליכה + שיא","שתיקה!"],["8","נס המעיין","מי מגיע ראשון למים"],["9-10","תוצאה + משפט מרכזי","'לא הנחש, החטא'"],["11","דיון","שאלות, לא תשובות"],["12-13","חיבור + סגירה","'הנחש שלי'"]]
+  },
+
+  nechunya:{
+    icon:"💧", title:"בתו של נחוניה חופר שיחין",
+    blurb:"חסד שמגן — האיל שהציל את הבת",
+    slides:[
+      {bg:"linear-gradient(160deg,#e8cf7a,#7a4a2b)",emoji:"🏜️🚶‍♂️🕳️",onscreen:"בואו נכיר את נחוניה",
+        say:`פעם, כשאנשים היו הולכים ברגל לירושלים — היה חם. היה איש צדיק, ששמו נחוניה, שחפר בורות מים לאורך הדרכים בשביל כל מי שיעבור.`,
+        cue:`טון חם, סיפורי.`},
+      {bg:"linear-gradient(160deg,#3a7d9c,#1e2a3a)",emoji:"😨🕳️👧",onscreen:"יום אחד קרה משהו נורא",
+        say:`בתו של נחוניה נפלה לתוך אחד הבורות העמוקים. עמוק, עמוק. והיא לא הצליחה לצאת משם.`,
+        cue:`האטה, קול נמוך יותר.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#8b5e34)",emoji:"❓🏃‍♂️🏃‍♀️",onscreen:"מי חושבים אתם שקראו לו?",
+        say:`האנשים ראו וממש נבהלו. מי חושבים אתם שהם רצו לקרוא לו כדי שיעזור?`,
+        cue:`אם עונים 'רבי חנינא!' — לחייך ולומר שהם זוכרים אותו.`},
+      {bg:"linear-gradient(160deg,#c9a227,#3a2a05)",emoji:"🙏✨",onscreen:"רבי חנינא מתפלל",
+        say:`האנשים רצו בבהלה לרבי חנינא בן דוסא. הוא עצם את העיניים והתפלל מעומק הלב.`,
+        cue:`אפשר לעצום עיניים כדי להמחיש.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#3a7d9c)",emoji:"⏳",onscreen:"שעה 1: \"שלום לה\"   שעה 2: \"עדיין שלום לה\"",
+        say:`בשעה הראשונה אמר: 'שלום לה — היא בריאה ושלמה.' עברה שעה. שוב: 'עדיין שלום לה.' עברה עוד שעה...`,
+        cue:`חזרה קצבית — אפשר לתת לילדים לומר איתך 'שלום לה!'`},
+      {bg:"radial-gradient(circle at 50% 60%,#3a7d9c 0%,#1e2a3a 80%)",emoji:"🌟",onscreen:"",
+        say:`(עצירה ארוכה)\n\nובשעה השלישית פתח עיניים ואמר... 'כעת היא כבר עלתה מן הבור!'`,
+        cue:`נקודת השיא הרגשית.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"🙌👧☀️",onscreen:"יבשה ובריאה!",
+        say:`האנשים רצו לבור... ומצאו את הבת עומדת בחוץ, יבשה ובריאה ושלמה.`,
+        cue:`קול שמח, קצב מהיר יותר.`},
+      {bg:"linear-gradient(160deg,#c9a227,#8b5e34)",emoji:"🐏🧓✨",onscreen:"מי העלה אותך?",
+        say:`היא ענתה: 'עדר כבשים עבר, ובראשו איל גדול. איש זקן הוביל אותם. האיל הושיט לי קרניים, אחזתי בהן והוא משך אותי החוצה.'`,
+        cue:`קול של פליאה קלה.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#1e2a3a)",emoji:"🤔",onscreen:"רבי, האם אתה נביא?",
+        say:`שאלו: 'רבי, איך ידעת בדיוק מתי היא עלתה? האם אתה נביא?'`,
+        cue:`להאט כאן.`},
+      {bg:"linear-gradient(160deg,#c9a227,#e8cf7a)",emoji:"💛",onscreen:"\"האם המכשול יהיה מהחסד?\"",
+        say:`רבי חנינא ענה: 'לא נביא אנוכי. אמרתי בליבי — האם יתכן שדבר שהצדיק נחוניה טרח בו, יהיה בדיוק הדבר שבו תיפגע בתו? לא יתכן.'`,
+        cue:`תני למשפט לשקוע.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#3a7d9c)",emoji:"💭❓",onscreen:"למה היה בטוח שהיא תינצל?",
+        say:`למה רבי חנינא היה כל כך בטוח שהיא תינצל?\n\n(לשמוע תשובות)\n\nומה זה אומר, שהחסד של אביה 'שמר' עליה?`,
+        cue:`אל תתני את התשובה!`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#3a7d9c)",emoji:"🤝💧",onscreen:"גם לנו יש \"בורות מים\" לחפור",
+        say:`נחוניה לא ידע שיום אחד זה יגן על בתו. כשאתם עוזרים למישהו, אף פעם לא יודעים לאן זה יחזור.`,
+        cue:`קול חם, אישי.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"🏜️🚶‍♂️🕳️",onscreen:"איזה \"בור מים\" תחפרו השבוע?",
+        say:`איזה 'בור מים' תוכלו לחפור השבוע — למישהו אחר?\n\n(לתת לכמה ילדים לשתף)`,
+        cue:`נעילה רגועה.`}
+    ],
+    mem:[["1","פתיחה — נחוניה","חופר מים לזרים"],["2-3","האסון + שאלה","בת נופלת לבור"],["4-5","תפילה + 3 שעות","'שלום לה'"],["6","השיא","שתיקה!"],["7-8","מוצאים + האיל","עדר, איל מציל"],["9-10","'נביא?' + תשובה","'המכשול לא מהחסד'"],["11","דיון","שאלות, לא תשובות"],["12-13","חיבור + סגירה","'בור המים שלי'"]]
+  },
+
+  iku:{
+    icon:"🪵", title:"נס הקורות שהתארכו עבור איכו",
+    blurb:"תפילה אישית ומדויקת בשביל שכנה עניה",
+    slides:[
+      {bg:"linear-gradient(160deg,#e8cf7a,#7a4a2b)",emoji:"🏚️👵",onscreen:"איכו בונה בית קטן",
+        say:`הייתה שכנה עניה מאוד ששמה 'איכו'. היא עבדה קשה ובנתה לעצמה קירות לבית.\n\nמה עוד צריך כדי שבית יהיה באמת בית?`,
+        cue:`עצירה לתשובות — 'גג!'`},
+      {bg:"linear-gradient(160deg,#7a4a2b,#1e2a3a)",emoji:"📏😟",onscreen:"הקורות קצרות מדי!",
+        say:`כשהגיע הזמן לבנות גג, איכו גילתה: הקורות היו קצרות מדי, לא הגיעו מקיר לקיר.`,
+        cue:`קול של דאגה, לא דרמטי מדי.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#4a2f1a)",emoji:"💰❌",onscreen:"אין כסף לקנות קורות",
+        say:`לא היה לה כסף לקנות קורות חדשות. אם הייתם איכו — מה הייתם עושים?`,
+        cue:`שאלה קצרה, לא לעצור עליה יותר מדי.`},
+      {bg:"linear-gradient(160deg,#c9a227,#7a4a2b)",emoji:"🚶‍♀️😔",onscreen:"\"בניתי, אך הקורות קצרות!\"",
+        say:`איכו הלכה לרבי חנינא ואמרה: 'בניתי את ביתי... אך הקורות קצרות מדי!'`,
+        cue:`קול עצוב, לא בוכייני.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"🤔💬",onscreen:"\"מה שמך?\"",
+        say:`רבי חנינא שאל בעדינות: 'מה שמך?' היא ענתה: 'איכו שמי.'`,
+        cue:`תני לתמיהה לעמוד באוויר — אל תסבירי.`},
+      {bg:"linear-gradient(160deg,#c9a227,#3a2a05)",emoji:"🙏🪵",onscreen:"\"איכו! יתארכו קורותייך!\"",
+        say:`רבי חנינא התפלל: 'איכו! יהי רצון שיתארכו קורותייך ויגיעו לקירות הבית!'`,
+        cue:`קול בטוח, לא צועק.`},
+      {bg:"radial-gradient(circle at 50% 55%,#e8cf7a 0%,#1e2a3a 85%)",emoji:"🪵➡️➡️",onscreen:"",
+        say:`(עצירה ארוכה)\n\nהקורות התחילו להימתח. לבד. באורח פלא.\n\nמה קרה לדעתכם?`,
+        cue:`השתיקה החשובה בכל הסיפור.`},
+      {bg:"linear-gradient(160deg,#3a7d9c,#e8cf7a)",emoji:"🏠➖➖➖➖",onscreen:"אמה שלמה מכל צד!",
+        say:`הקורות הגיעו מקיר לקיר... ואז המשיכו! בלטו החוצה עוד אמה שלמה מכל צד.`,
+        cue:`קול של התלהבות עולה.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#c9a227)",emoji:"👁️🏠",onscreen:"\"אני עצמי ראיתי!\"",
+        say:`החכם פלימו סיפר: 'אני עצמי ראיתי את הבית של איכו, והקורות בולטות החוצה!'`,
+        cue:`קול של עד-ראייה, כמעט מתרגש.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#7a4a2b)",emoji:"💭❓",onscreen:"למה שאל \"מה שמך\"?",
+        say:`למה רבי חנינא שאל 'מה שמך' לפני שהתפלל?\n\n(לשמוע תשובות)\n\nומה זה אומר שהתפילה הייתה בדיוק על שמה?`,
+        cue:`אל תתני את התשובה!`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#3a7d9c)",emoji:"🤲💛",onscreen:"מי סביבנו צריך תפילה?",
+        say:`לפעמים אנחנו רואים מישהו בצער ולא יודעים איך לעזור. אפשר להתפלל בשבילו, מעומק הלב.`,
+        cue:`קול חם, אישי, איטי.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#7a4a2b)",emoji:"🏚️👵",onscreen:"בשביל מי תתפללו?",
+        say:`יש מישהו שקצת קשה לו עכשיו? חבר, בן משפחה, שכן?\n\n(לתת לכמה ילדים לשתף)`,
+        cue:`נעילה רגועה.`}
+    ],
+    mem:[["1","פתיחה","ענייה, בית קטן"],["2","הבעיה","הקורות קצרות מדי"],["3","שאלת מעורבות","אין כסף לקנות"],["4","פונה לרבי חנינא","'בניתי אך קצרות'"],["5","'מה שמך?'","שאלה תמוהה"],["6","התפילה","'איכו! יתארכו'"],["7","השיא","שתיקה!"],["8","מעבר הגבול","אמה מכל צד!"],["9","עדות פלימו","'אני עצמי ראיתי'"],["10","דיון","שאלות, לא תשובות"],["11-12","חיבור + סגירה","תפילה למישהו אחר"]]
+  },
+
+  goldenTable:{
+    icon:"🪙", title:"רגל שולחן הזהב",
+    blurb:"למה מוטב להמתין לשכר האמיתי?",
+    slides:[
+      {bg:"linear-gradient(160deg,#e8cf7a,#7a4a2b)",emoji:"🏚️💬",onscreen:"\"עד מתי נצטער?\"",
+        say:`אשתו של רבי חנינא פנתה אליו: 'בעלי היקר, עד מתי נצטער בעוני הזה? התפלל שייתן לנו קצת עזרה.'`,
+        cue:`טון חם ואנושי.`},
+      {bg:"linear-gradient(160deg,#c9a227,#3a2a05)",emoji:"🙏",onscreen:"",
+        say:`רבי חנינא התפלל. ומיד קרה דבר מדהים.`,
+        cue:`קצר וממוקד.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#4a2f1a)",emoji:"❓✨",onscreen:"מה ירד להם משמים?",
+        say:`תנחשו: מה ירד להם משמים כתשובה לתפילה?`,
+        cue:`לשמוע כמה ניחושים.`},
+      {bg:"radial-gradient(circle at 50% 40%,#e8cf7a 0%,#5a4a8f 80%)",emoji:"🤚✨🪑",onscreen:"רגל שולחן מזהב טהור!",
+        say:`(עצירה)\n\nיצאה יד מהשמים והושיטה לרבי חנינא... רגל של שולחן, עשויה כולה זהב טהור!`,
+        cue:`קול של פליאה גדולה.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"😊🪙",onscreen:"שמחה גדולה",
+        say:`רבי חנינא ואשתו שמחו מאוד. סוף סוף — קצת עזרה.`,
+        cue:`קול שמח וקליל.`},
+      {bg:"linear-gradient(160deg,#5a4a8f,#1e2a3a)",emoji:"💭🌙",onscreen:"החלום",
+        say:`(האטה, קול חלומי)\n\nבלילה חלם: ראה את כל הצדיקים בגן עדן, יושבים סביב שולחנות זהב שלמים, בעלי שלוש רגליים.`,
+        cue:`קול איטי ורך יותר — אנחנו בעולם החלום.`},
+      {bg:"linear-gradient(160deg,#5a4a8f,#c9a227)",emoji:"🪑💫",onscreen:"שולחן זהב... חסר רגל",
+        say:`ואילו הוא ואשתו ישבו סביב שולחן זהב חסר — רק שתי רגליים, כי השלישית כבר ניתנה למטה.`,
+        cue:`הפסקה קלה אחרי 'חסר'.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#5a4a8f)",emoji:"🤔🪑",onscreen:"\"האם יהיה לך טוב שכולם שלמים ורק אנו חסרים?\"",
+        say:`בבוקר שאל את אשתו: 'האם יהיה לך טוב שכל הצדיקים יאכלו על שולחנות שלמים, ורק אנו על שולחן חסר?'`,
+        cue:`תני לשאלה רגע לשקוע.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#8b5e34)",emoji:"🙋‍♀️🙋‍♂️",onscreen:"מה אתם הייתם עונים?",
+        say:`אם היו שואלים אתכם — מה הייתם עונים?`,
+        cue:`לתת לילדים להתלבט, לא לכוון.`},
+      {bg:"linear-gradient(160deg,#c9a227,#7a4a2b)",emoji:"💛🙅‍♀️",onscreen:"\"חלילה! נסתפק במה שיש!\"",
+        say:`אשתו ענתה מיד: 'חלילה! התפלל שייקחו בחזרה את רגל הזהב, ונסתפק במה שיש לנו!'`,
+        cue:`קול נחוש ומהיר.`},
+      {bg:"radial-gradient(circle at 50% 40%,#5a4a8f 0%,#1e2a3a 85%)",emoji:"🤚⬆️",onscreen:"",
+        say:`רבי חנינא התפלל שוב. ופיסת יד ירדה ונטלה בחזרה את רגל הזהב.`,
+        cue:`קול רגוע, כמעט שלֵו.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#5a4a8f)",emoji:"💭❓",onscreen:"למה הם ויתרו על עושר?",
+        say:`למה הם ויתרו על עושר עכשיו, בשביל משהו שהם אפילו לא רואים?\n\n(לשמוע תשובות)\n\nמה חשוב יותר — מה שיש עכשיו, או מה ששווה לחכות לו?`,
+        cue:`אל תתני את התשובה!`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#3a7d9c)",emoji:"🧸😊",onscreen:"לשמוח עם מה שיש",
+        say:`לפעמים לחבר יש משהו שאין לנו. אפשר להיות שמחים גם עם מה שיש לנו — כי לפעמים הדברים הכי טובים שווים לחכות להם.`,
+        cue:`קול חם ואישי, לא שיפוטי.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#7a4a2b)",emoji:"🏚️💛",onscreen:"במה אתם יכולים לשמוח היום?",
+        say:`במה אתם כבר יכולים לשמוח היום, בלי לקבל משהו חדש?\n\n(לתת לכמה ילדים לשתף)`,
+        cue:`נעילה רגועה ומחממת לב.`}
+    ],
+    mem:[["1-2","בקשה + תפילה","'עד מתי נצטער?'"],["3-4","ניחוש + נס הזהב","יד משמים, רגל זהב"],["5","שמחה","רגע של אושר"],["6-7","החלום","שולחן חסר בגן עדן"],["8-9","השאלה + ניחוש","'שלם או חסר?'"],["10-11","תשובת האישה + נס שני","'חלילה! נסתפק'"],["12","דיון","שאלות, לא תשובות"],["13-14","חיבור + סגירה","'לשמוח עם מה שיש'"]]
+  },
+
+  hillelTray:{
+    icon:"🍞", title:"המגש שנעלם בערב החתונה",
+    blurb:"שני מעשי 'דן לכף זכות' מקבילים",
+    slides:[
+      {bg:"linear-gradient(160deg,#e8cf7a,#c1512e)",emoji:"🍲🥖👩‍🍳",onscreen:"ריח מדהים במטבח",
+        say:`תארו לכם ריח מדהים — לחם טרי, בשר ודגים. זה היה במטבח של אשת הלל הזקן, שעבדה קשה כל היום.`,
+        cue:`טון חם ומזמין.`},
+      {bg:"linear-gradient(160deg,#c9a227,#7a4a2b)",emoji:"🍽️😊",onscreen:"הלל והאורח ממתינים",
+        say:`הלל, נשיא ישראל, הזמין את חברו לסעודה חגיגית. הכול היה מוכן לתפארת.`,
+        cue:`קול רגוע ונינוח.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#2c3e54)",emoji:"🚪❔",onscreen:"",
+        say:`אבל לפתע, כשסידרה הכול על מגש ענק — היא שמעה דפיקה חלשה ועצובה על הדלת האחורית.`,
+        cue:`להנמיך קול — דפיקה עצובה, לא נחרצת.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#1e2a3a)",emoji:"😢🧑",onscreen:"\"שלום לך, בני\"",
+        say:`בחור צעיר ועני עמד בפתח, פניו נפולות ודמעות על לחייו. 'שלום לך, בני,' שאלה, 'במה אוכל לעזור?'`,
+        cue:`קול רך ומרחם.`},
+      {bg:"linear-gradient(160deg,#c1512e,#4a2f1a)",emoji:"💍😭",onscreen:"\"היום חתונתי... אין לחם\"",
+        say:`(קול בוכה) 'היום חתונתי! אין לנו אפילו פרוסת לחם, ואני מתבייש לבוא לחופה בידיים ריקות!'`,
+        cue:`קול שבור, איטי.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"💛🤔",onscreen:"היא דנה אותו לכף זכות",
+        say:`אשת הלל לא כעסה, ולא חשבה עליו רע. היא למדה עליו זכות.`,
+        cue:`קול חם ורגוע — משפט מפתח, להאט.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#c9a227)",emoji:"🙋‍♀️🙋‍♂️",onscreen:"מה אתם הייתם עושים?",
+        say:`אתם עבדתם כל היום, ובדיוק כשהארוחה מוכנה, מגיע מי שצריך אותה יותר. מה הייתם עושים?`,
+        cue:`לשמוע תשובות, לא לאשר או לפסול.`},
+      {bg:"linear-gradient(160deg,#c1512e,#e8cf7a)",emoji:"🎁🥘",onscreen:"היא נותנת לו הכל",
+        say:`בלי היסוס נטלה את כל מאכלי הסעודה וארזה אותם לחתן העני.`,
+        cue:`קול נחוש ומהיר.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"🏃‍♂️💨😊",onscreen:"רץ בשמחה לחתונתו",
+        say:`אורו פניו של הבחור. הוא הודה מעומק הלב ורץ בשמחה לחתונתו.`,
+        cue:`קול שמח וקליל.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#4a2f1a)",emoji:"🥣🔁",onscreen:"מתחילה הכל מחדש",
+        say:`ומה עשתה אשת הלל? הפשילה שרוולים והתחילה הכול מחדש — בלי שום כעס.`,
+        cue:`קול נינוח ומקבל.`},
+      {bg:"linear-gradient(160deg,#2c3e54,#1e2a3a)",emoji:"📖⏳",onscreen:"השעה מאוחרת... האורח רעב",
+        say:`הלל והאורח דיברו דברי תורה. השעה נעשתה מאוחרת. האורח הרגיש רעב כבד.`,
+        cue:`קול איטי — תחושת זמן חולף.`},
+      {bg:"linear-gradient(160deg,#c9a227,#8b5e34)",emoji:"🧔💭",onscreen:"\"בוודאי יש סיבה טובה\"",
+        say:`הלל לא קרא לה בכעס. הוא אמר בליבו: 'אשתי אישה טובה, בוודאי יש סיבה טובה לעיכוב.' דן אותה לכף זכות והמתין בשלווה.`,
+        cue:`כרטיס מקביל לקודם — אותו ערך, הפעם מצד הלל.`},
+      {bg:"radial-gradient(circle at 50% 45%,#e8cf7a 0%,#1e2a3a 85%)",emoji:"🍲✨",onscreen:"",
+        say:`(עצירה ארוכה)\n\nלאחר שעתיים של עבודה קשה, יצאה עם מגש מלא בתבשילים טריים.`,
+        cue:`השתיקה החשובה — 'שעתיים' צריך להישמע כמו נצח.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"❓🧔",onscreen:"\"מפני מה לא הבאת מיד?\"",
+        say:`שאל אותה הלל בנימוס: 'בתי, מפני מה לא הבאת לנו מיד את הסעודה?'`,
+        cue:`קול רך, לא מאשים.`},
+      {bg:"linear-gradient(160deg,#c1512e,#8b5e34)",emoji:"🗣️👂",onscreen:"היא מספרת הכל",
+        say:`סיפרה לו את כל מה שקרה עם החתן העני.`,
+        cue:`קצר וממוקד.`},
+      {bg:"linear-gradient(160deg,#c9a227,#e8cf7a)",emoji:"🤝💛",onscreen:"\"אף אני דנתי אותך לכף זכות\"",
+        say:`הלל שמח מאוד ואמר: 'בתי היקרה, אף אני לא דנתי אותך לכף חובה אלא לכף זכות. היה ברור לי שכל מה שעשית — לשם שמיים.'`,
+        cue:`קול חם, גאה ואוהב — השיא הרגשי.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#8b5e34)",emoji:"💭❓",onscreen:"מה זה \"לדון לכף זכות\"?",
+        say:`מה זה אומר 'לדון לכף זכות'?\n\n(לשמוע תשובות)\n\nמה היה קורה אילו הלל כעס לפני ששמע מה קרה?`,
+        cue:`אל תתני את התשובה!`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#3a7d9c)",emoji:"🧑‍🤝‍🧑⏰",onscreen:"כשחבר מאחר...",
+        say:`חבר מאחר או לא עונה — קל לכעוס. אפשר גם לחשוב: 'בטח יש לו סיבה טובה.'`,
+        cue:`קול חם ואישי, איטי.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c1512e)",emoji:"🍲💛",onscreen:"על מי תדונו לכף זכות?",
+        say:`על מי תוכלו לדון לכף זכות השבוע?\n\n(לתת לכמה ילדים לשתף)`,
+        cue:`נעילה חמה ורגועה.`}
+    ],
+    mem:[["1-2","פתיחה + אורח","ריח, סעודה מוכנה"],["3-4","דפיקה + הבחור","'שלום לך, בני'"],["5","הסיפור שלו","'אין לחם'"],["6-7","דנה לכף זכות + שאלה","לא כעסה"],["8-9","נותנת + הוא רץ","סל אוכל, שמחה"],["10-11","מתחילה מחדש + המתנה","בלי כעס"],["12","הלל דן לכף זכות","'בוודאי יש סיבה'"],["13","השיא","שתיקה! שעתיים"],["14-16","שאלה + סיפור + תגובה","'אף אני דנתי'"],["17","דיון","שאלות, לא תשובות"],["18-19","חיבור + סגירה","'לדון לכף זכות'"]]
+  },
+
+  marUkva:{
+    icon:"🔥", title:"מר עוקבא, אשתו והתנור הלוהט",
+    blurb:"מוטב להיכווה מלביש פני אדם",
+    slides:[
+      {bg:"linear-gradient(160deg,#e8cf7a,#8b5e34)",emoji:"🕯️🌇",onscreen:"ערב שבת המלכה",
+        say:`ערב שבת. בביתו של מר עוקבא, דיין וצדיק גדול, הכול מוכן לכבוד שבת.`,
+        cue:`טון רגוע, חגיגי מעט.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#2c3e54)",emoji:"🤫🚶‍♂️🚶‍♀️",onscreen:"מנהג סודי",
+        say:`למר עוקבא ואשתו היה מנהג סודי — בכל ערב שבת יצאו בשקט אל ביתו של שכן עני.`,
+        cue:`קול נמוך, כמעט לוחש.`},
+      {bg:"linear-gradient(160deg,#c9a227,#7a4a2b)",emoji:"🪙🚪",onscreen:"לא רצה שהעני יתבייש",
+        say:`מר עוקבא לא רצה שהעני יתבייש. הוא היה משחיל מטבעות מתחת לדלת ובורח.`,
+        cue:`קול עדין ומכבד — נקודת המפתח הערכית.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#c9a227)",emoji:"🤔👂",onscreen:"\"מי דואג לי כך?\"",
+        say:`העני, ששמע כל שבוע את צלצול המטבעות, הסתקרן: 'מי זה האדם הטוב? הפעם אגלה!'`,
+        cue:`קול של סקרנות עולה.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#8b5e34)",emoji:"🙋‍♀️🙋‍♂️",onscreen:"מה הייתם עושים לגלות?",
+        say:`אם הייתם מקבלים עזרה כל שבוע ולא יודעים ממי — מה הייתם עושים?`,
+        cue:`לשמוע 2-3 תשובות קצרות.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#4a2f1a)",emoji:"🚪🤫",onscreen:"",
+        say:`באותו יום שישי, העני המתין מאחורי הדלת בשקט.`,
+        cue:`האטה, קול נמוך.`},
+      {bg:"radial-gradient(circle at 50% 40%,#c1512e 0%,#1e2a3a 80%)",emoji:"🚪💥",onscreen:"הדלת נפתחה במהירות!",
+        say:`מר עוקבא שלשל את המטבעות, ולפתע... (עצירה) הדלת נפתחה! העני יצא לראות את מיטיבו!`,
+        cue:`שינוי קצב פתאומי — תדהמה.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#1e2a3a)",emoji:"🏃‍♂️🏃‍♀️💨",onscreen:"בריחה בסמטאות",
+        say:`הם נבהלו עד עומק נשמתם, לא רצו שיזהו אותם. רצו בכל כוחם — והעני רץ אחריהם.`,
+        cue:`קצב מהיר, נשימה — תחושת מרדף.`},
+      {bg:"linear-gradient(160deg,#c1512e,#4a2f1a)",emoji:"🔥🧱",onscreen:"\"מה נעשה?\"",
+        say:`הגיעו למקום ללא מוצא — חצר עם תנור בוער. 'מה נעשה?' לחש מר עוקבא, 'הוא תכף יגיע!'`,
+        cue:`קול של פחד אמיתי.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#c1512e)",emoji:"🤔🔥",onscreen:"מה הם היו עושים?",
+        say:`מבוי סתום, תנור בוער, מישהו רודף אחריכם. מה הייתם עושים?`,
+        cue:`לתת לילדים באמת להתלבט.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c1512e)",emoji:"💛🔥",onscreen:"\"מוטב שנילהט באש!\"",
+        say:`אשתו אחזה בידו: 'בוא, ניכנס יחד לתנור. מוטב שניכווה באש, ובלבד שלא נביישו!'`,
+        cue:`ביטחון מלא, לא פחד.`},
+      {bg:"radial-gradient(circle at 50% 50%,#c1512e 0%,#3a1a0a 85%)",emoji:"🔥",onscreen:"",
+        say:`(עצירה ארוכה)\n\nוקפצו יחד לתוך התנור החם, ועמדו על הגחלים.\n\nמה קרה לדעתכם?`,
+        cue:`השתיקה החשובה בכל הסיפור.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#3a7d9c)",emoji:"😌🔥",onscreen:"האש לא פגעה בהם!",
+        say:`העני לא מצא איש וחזר לביתו. ובתוך התנור? נס עצום — האש הלוהטת לא פגעה בהם כלל.`,
+        cue:`קול של הקלה גדולה.`},
+      {bg:"linear-gradient(160deg,#c9a227,#8b5e34)",emoji:"🦶❓",onscreen:"\"מדוע רגלייך קרירות יותר?\"",
+        say:`מר עוקבא הרגיש את רגליו מתחממות, ואשתו רגועה ורגליה קרירות. 'מדוע?' שאל בפליאה.`,
+        cue:`קול תמה, לא מבוהל.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"🍞💛",onscreen:"\"חסדי מקורב ומהיר יותר\"",
+        say:`חייכה: 'אתה נותן מטבעות, והם צריכים ללכת לשוק. אני מושיטה אוכל מוכן שמשביע מיד. לכן חסדי מקורב ומהיר יותר.'`,
+        cue:`תני למשפט זמן לשקוע.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#8b5e34)",emoji:"💭❓",onscreen:"למה נכנסו לתנור?",
+        say:`למה העדיפו להיכנס לתנור בוער, ולא פשוט לתת לעני להכיר אותם?\n\n(לשמוע תשובות)\n\nולמה חסדה היה 'מהיר יותר'?`,
+        cue:`אל תתני את התשובה!`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#3a7d9c)",emoji:"🎁📝",onscreen:"לתת בלי שיידעו",
+        say:`לפעמים רוצים לעזור בלי שהצד השני ירגיש נבוך. אפשר לתת בלי שאף אחד ידע.`,
+        cue:`קול חם ואישי, איטי.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#8b5e34)",emoji:"🕯️💛",onscreen:"איך תעזרו בסתר?",
+        say:`איך תוכלו לעזור למישהו השבוע, בלי שהוא ידע שזה הייתם אתם?\n\n(לתת לכמה ילדים לשתף)`,
+        cue:`נעילה חמה ורגועה.`}
+    ],
+    mem:[["1-2","פתיחה + מנהג סודי","יציאה בשקט"],["3","הערך המרכזי","לא לבייש, בסתר"],["4-5","סקרנות + שאלה","'מי דואג לי?'"],["6-7","מארב + דלת נפתחת","מפנה דרמטי!"],["8-9","בריחה + מבוי סתום","תנור בוער"],["10-11","שאלה + החלטה","'מוטב שנילהט'"],["12","השיא","שתיקה!"],["13-14","הנס + פרט מוזר","רגליים חמות"],["15","התשובה המפתח","'חסדי מקורב'"],["16","דיון","שאלות, לא תשובות"],["17-18","חיבור + סגירה","'לתת בלי שיידעו'"]]
+  },
+
+  tavi:{
+    icon:"🍯", title:"רבן שמעון והלשון המתוקה מדבש",
+    blurb:"מבנה סימטרי — אותה לשון, טוב ורע",
+    slides:[
+      {bg:"linear-gradient(160deg,#e8cf7a,#8b5e34)",emoji:"🏛️🧔🧑‍🦱",onscreen:"רבן שמעון וטבי",
+        say:`רבן שמעון בן גמליאל היה נשיא חכם. עבדו הנאמן טבי נקרא אליו לקראת סעודה גדולה.`,
+        cue:`טון חם, מכיר.`},
+      {bg:"linear-gradient(160deg,#c9a227,#7a4a2b)",emoji:"🗣️✨",onscreen:"\"קנה את הדבר הטוב ביותר\"",
+        say:`'טבי, צא לשוק וקנה עבורי את הדבר הטוב ביותר שיש בעולם.'`,
+        cue:`קול חייכני וסקרן.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#c9a227)",emoji:"🤔🛒",onscreen:"מה אתם הייתם קונים?",
+        say:`אם הייתם צריכים לקנות את הדבר הכי טוב בעולם — מה הייתם קונים?`,
+        cue:`לשמוע כמה תשובות שונות.`},
+      {bg:"linear-gradient(160deg,#7a4a2b,#4a2f1a)",emoji:"📦🚶‍♂️",onscreen:"טבי חוזר מהשוק",
+        say:`טבי יצא לשוק וחזר עם קופסת עץ קטנה.`,
+        cue:`קול סקרני, לא ממהר.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#d98c1f)",emoji:"📦👅",onscreen:"\"הו, לשון! מאכל משובח!\"",
+        say:`(עצירה קלה) פתח את הקופסה ומצא... לשון של בקר! 'באמת מאכל משובח וטעים!'`,
+        cue:`קול הפתעה ואישור.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#8b5e34)",emoji:"😈🗑️",onscreen:"\"קנה את הדבר הרע ביותר!\"",
+        say:`למחרת: 'עכשיו קנה את הדבר הגרוע והרע ביותר שקיים בעולם!'`,
+        cue:`קול משתעשע.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#1e2a3a)",emoji:"🌵🪨",onscreen:"קוצים? אבנים מלוכלכות?",
+        say:`מה אתם חושבים טבי יביא הפעם? קוצים? אבנים מלוכלכות?`,
+        cue:`לשמוע ניחושים משעשעים.`},
+      {bg:"linear-gradient(160deg,#7a4a2b,#2c3e54)",emoji:"🚪📦",onscreen:"קופסה זהה לקודמת",
+        say:`הדלת נפתחה בשקט. טבי נכנס — ובידו קופסה זהה לקודמת.`,
+        cue:`הדגישו את המילה 'זהה'.`},
+      {bg:"radial-gradient(circle at 50% 45%,#d98c1f 0%,#1e2a3a 85%)",emoji:"📦",onscreen:"",
+        say:`(עצירה ארוכה)\n\nפתח בזריזות... ולתדהמתו מצא בתוכה...\n\n(עצירה)\n\nשוב לשון!`,
+        cue:`השתיקה החשובה בכל הסיפור.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"😲🧔",onscreen:"\"כיצד זה יתכן?\"",
+        say:`רבן שמעון שאל בתמיהה: 'כשביקשתי הטוב ביותר — לשון, וכשביקשתי הרע ביותר — שוב לשון?!'`,
+        cue:`קול תמה, לא כועס.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#d98c1f)",emoji:"😇📖💛",onscreen:"\"מהלשון יוצאים דברים מתוקים\"",
+        say:`טבי הסביר: 'מהלשון יוצאים דברי תורה, תפילות, מילים חמות, נחמה. כשהלשון מדברת טוב — אין דבר מתוק ממנו!'`,
+        cue:`קול איטי וחכם.`},
+      {bg:"linear-gradient(160deg,#2c3e54,#1e2a3a)",emoji:"😔💔",onscreen:"\"אך כשמתקלקלת...\"",
+        say:`(שינוי טון, רציני יותר) 'אך אוי לנו כשהלשון מתקלקלת. יוצאים שקר, לשון הרע, מריבות. היא מחשיכה את העולם!'`,
+        cue:`ניגוד ברור — קול נמוך ורציני.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#8b5e34)",emoji:"🙏✨",onscreen:"שיעור עמוק בחוכמת החיים",
+        say:`רבן שמעון הביט בטבי בהערצה, והבין שקיבל שיעור עמוק.`,
+        cue:`קול חם ומעריך.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#8b5e34)",emoji:"💭❓",onscreen:"למה דווקא הלשון?",
+        say:`למה דווקא הלשון יכולה להיות גם הכי טובה וגם הכי רעה?\n\n(לשמוע תשובות)\n\nמה זה אומר, שהכוח לבנות או להרוס נמצא בפה שלנו?`,
+        cue:`אל תתני את התשובה!`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#3a7d9c)",emoji:"💬😊😢",onscreen:"המילים שלי היום",
+        say:`כמה פעמים המילים שלכם עשו למישהו טוב? וכמה פעמים פגעו, גם בלי כוונה?`,
+        cue:`קול חם ואישי, לא שיפוטי.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#d98c1f)",emoji:"🍯💛",onscreen:"איזו מילה מתוקה תגידו?",
+        say:`איזו מילה מתוקה מדבש תוכלו להגיד למישהו היום?\n\n(לתת לכמה ילדים לשתף)`,
+        cue:`נעילה חמה ומעודדת.`}
+    ],
+    mem:[["1-2","פתיחה + משימה 1","'הדבר הטוב ביותר'"],["3-4","ניחוש + טבי חוזר","קופסת עץ"],["5","הגילוי הראשון","לשון של בקר"],["6-7","משימה 2 + ניחוש","'הדבר הרע ביותר'"],["8-9","הדלת + השיא","שתיקה! 'שוב לשון!'"],["10","תמיהת הנשיא","'כיצד יתכן?'"],["11-12","ההסבר — טוב ורע","מתוקה / מחשיכה"],["13","הערצה","שיעור עמוק"],["14","דיון","שאלות, לא תשובות"],["15-16","חיבור + סגירה","'לשון מתוקה מדבש'"]]
+  },
+
+  tanurLechem:{
+    icon:"🍞", title:"התנור המלא לחם והשכנה הרעה",
+    blurb:"ה' לא נותן לצדקת להתבייש",
+    slides:[
+      {bg:"linear-gradient(160deg,#e8cf7a,#7a4a2b)",emoji:"🏚️🕯️",onscreen:"אין קמח לחלות",
+        say:`לרבי חנינא ולאשתו לא היה כמעט כלום. בכל יום שישי, לא היה להם קמח לאפות חלות לשבת.`,
+        cue:`טון חם עם נימה של עצב עדין.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#4a2f1a)",emoji:"💨🏠",onscreen:"עשן בלי לחם",
+        say:`אשתו התביישה שהשכנים ידעו. אז בכל שישי הייתה מדליקה ענפים בתנור — רק כדי שיעלה עשן, כאילו אופים.`,
+        cue:`קול שקצת 'מתחבא' — סוד קטן.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#8b5e34)",emoji:"👀🚪",onscreen:"\"אביך אותם!\"",
+        say:`שכנה קנאית ראתה את העשן וחשדה: 'אני יודעת שאין להם כלום! אלך לבדוק ואביך אותם!'`,
+        cue:`קול חד וזדוני — ניגוד לדמות הטובה.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#1e2a3a)",emoji:"😳🏃‍♀️",onscreen:"מה הייתם מרגישים?",
+        say:`השכנה דפקה בחוזקה. אם הייתם אשת רבי חנינא, ויודעים שהתנור ריק — מה הייתם מרגישים?`,
+        cue:`לשמוע 2-3 תשובות — פחד, בושה.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#2c3e54)",emoji:"🏃‍♀️🚪",onscreen:"מתחבאת בחדר הפנימי",
+        say:`אשת רבי חנינא נבהלה כל כך, שרצה להתחבא בחדר הפנימי — רק כדי לא לפתוח את התנור מולה.`,
+        cue:`קול מהיר, נשימה — תחושת פאניקה קלה.`},
+      {bg:"radial-gradient(circle at 50% 45%,#e8cf7a 0%,#1e2a3a 85%)",emoji:"🚪",onscreen:"",
+        say:`(עצירה ארוכה)\n\nהשכנה פתחה בעצמה את דלת התנור...\n\nמה חושבים אתם שהיא ראתה?`,
+        cue:`השתיקה החשובה בכל הסיפור — תני לילדים לנחש 'ריק!' לפני שממשיכים.`},
+      {bg:"linear-gradient(160deg,#c9a227,#e8cf7a)",emoji:"🍞🍞🍞",onscreen:"התנור מלא לחם!",
+        say:`נס גדול! התנור היה מלא עד אפס מקום בחלות ולחמים חמים ויפים, וקערת בצק טרייה לצדו!`,
+        cue:`קול הפתעה ושמחה גדולה — אפשר להרים קול ולחייך בגלוי.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#8b5e34)",emoji:"😱🍞",onscreen:"\"הביאי מהר את המרדה!\"",
+        say:`השכנה צעקה בבהלה אל אשת רבי חנינא: 'הביאי מהר את המרדה — הלחם מתחיל להישרף!'`,
+        cue:`קול נסער וממהר — היא שכחה שבאה לחשוף.`},
+      {bg:"linear-gradient(160deg,#c9a227,#7a4a2b)",emoji:"😌🥖",onscreen:"\"בדיוק לשם כך נכנסתי\"",
+        say:`ואשת רבי חנינא ענתה מהחדר, ברוגע גמור: 'הנה, בדיוק לשם כך נכנסתי לחדר הפנימי — להביא את המרדה!'`,
+        cue:`הניגוד בין הבהלה שלה לשלווה המוחלטת — הרגע העדין ביותר בסיפור.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#8b5e34)",emoji:"💭❓",onscreen:"איך ידעה להביא מרדה?",
+        say:`איך ידעה בדיוק להביא מרדה, אם חשבה שהתנור ריק?\n\n(לשמוע תשובות)\n\nולמה ה' עשה את הנס דווקא ברגע הזה?`,
+        cue:`אל תתני את התשובה!`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#3a7d9c)",emoji:"🤫💛",onscreen:"לשמור על כבוד בסתר",
+        say:`כשמישהו מתבייש, אפשר לעזור לו בעדינות, בלי לגרום לו להרגיש רע. וכשאנחנו שומרים על כבוד אחר — ה' שומר עלינו.`,
+        cue:`קול חם ואישי, איטי.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#7a4a2b)",emoji:"🍞💛",onscreen:"איך תשמרו על כבוד מישהו?",
+        say:`איך תוכלו לשמור על הכבוד של מישהו השבוע, בלי שהוא בכלל ידע?\n\n(לתת לכמה ילדים לשתף)`,
+        cue:`נעילה רגועה.`}
+    ],
+    mem:[["1","פתיחה","אין קמח לחלות"],["2-3","הבושה + השכנה","עשן בלי לחם"],["4-5","שאלה + התחבאות","'אביך אותם!'"],["6","השיא","שתיקה!"],["7","הנס","תנור מלא לחם"],["8-9","הקריאה + התשובה","'בדיוק לשם כך'"],["10","דיון","שאלות, לא תשובות"],["11-12","חיבור + סגירה","'לשמור כבוד בסתר'"]]
+  },
+
+  pinchas:{
+    icon:"🌾", title:"רבי פנחס בן יאיר ושק השעורים",
+    blurb:"שבע שנים של נאמנות לרכוש הזולת",
+    slides:[
+      {bg:"linear-gradient(160deg,#e8cf7a,#8b5e34)",emoji:"🧓✨",onscreen:"רבי פנחס בן יאיר — כנה מאוד",
+        say:`רבי פנחס בן יאיר היה ידוע כנה מאוד. משהו ששייך למישהו אחר — אפילו הכי קטן — היה בשבילו קדוש.`,
+        cue:`טון חם, מכיר.`},
+      {bg:"linear-gradient(160deg,#c9a227,#7a4a2b)",emoji:"🎒🧑‍🦱🧑",onscreen:"שני אנשים עייפים בדלת",
+        say:`יום אחד דפקו על דלתו שני אנשים עניים, בגדיהם מאובקים, שק קטן וקרוע בידיהם.`,
+        cue:`קול עייף ומתון — כמו שני אנשים שהלכו הרבה.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#4a2f1a)",emoji:"💬🎒",onscreen:"\"תשמור לנו את השק?\"",
+        say:`'רבי, אנחנו הולכים למרחקים לחפש עבודה. יש בשק מעט שעורים. תוכל לשמור עליו עד שנחזור?'`,
+        cue:`קול מבקש, מעט חושש.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"😊🎒",onscreen:"\"בוודאי\"",
+        say:`'בוודאי,' ענה רבי פנחס במאור פנים, ושם את השק בפינת המחסן.`,
+        cue:`קול קליל ובטוח, בלי היסוס.`},
+      {bg:"linear-gradient(160deg,#7a4a2b,#4a2f1a)",emoji:"🍂🎒",onscreen:"מה קורה לשעורים אחרי זמן?",
+        say:`עברה שנה שלמה. הם לא חזרו. מה אתם חושבים קורה לשעורים אחרי כל כך הרבה זמן?`,
+        cue:`האטה — הזמן צריך 'להרגיש' ארוך.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#1e2a3a)",emoji:"😟🌾",onscreen:"\"הן ירקבו!\"",
+        say:`רבי פנחס ראה שהשעורים מתחילות להתקלקל. 'אני חייב לשמור על רכושם!' חשב בדאגה.`,
+        cue:`רגע של מחשבה פנימית — לעצור, כמו חושב.`},
+      {bg:"linear-gradient(160deg,#c9a227,#4a2f1a)",emoji:"🌱🚜",onscreen:"הפתרון: לזרוע!",
+        say:`אז מה עשה? לקח את השעורים, יצא לשדה שלו — וזרע אותן באדמה.`,
+        cue:`קול נחוש ופשוט.`},
+      {bg:"linear-gradient(160deg,#c9a227,#e8cf7a)",emoji:"🌾🌻🌾",onscreen:"שנים של טיפול",
+        say:`חודשים של השקיה ועידור. השעורים צמחו זהובות. הייתה כמות גדולה — אך רבי פנחס לא נגע בה: 'שייכת לשני העניים.'`,
+        cue:`קצב מהיר — מעביר תחושת שנים חולפות.`},
+      {bg:"linear-gradient(160deg,#c9a227,#8b5e34)",emoji:"🏚️➡️🏭",onscreen:"7 שנים — מחסנים מתמלאים",
+        say:`בשנה הבאה זרע שוב — היבול גדל עוד יותר! שוב ושוב, עד שנאלץ לבנות מחסנים ואסמים. שבע שנים חלפו.`,
+        cue:`קול של התפעלות עולה — 'שבע שנים' נאמר לאט ובמשקל.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#4a2f1a)",emoji:"🧓🧓🚪",onscreen:"הזקנים חוזרים",
+        say:`שני אנשים זקנים ושבורים הופיעו בפתח: 'רבי, אתה זוכר אותנו? אפילו את השק הקטן אנחנו צריכים כדי לחיות.'`,
+        cue:`קול חלש ועייף — הניגוד למה שמחכה להם.`},
+      {bg:"radial-gradient(circle at 50% 45%,#e8cf7a 0%,#1e2a3a 85%)",emoji:"😊",onscreen:"",
+        say:`(עצירה)\n\nחיוך רחב ואור גדול האירו את פניו. 'בואו אחריי,' אמר בשמחה.\n\nמה הוא עמד להראות להם?`,
+        cue:`השתיקה החשובה — הילדים עדיין לא יודעים על שבע השנים.`},
+      {bg:"linear-gradient(160deg,#c9a227,#e8cf7a)",emoji:"🏭🌾🏭",onscreen:"\"כל זה שלכם!\"",
+        say:`שורת מחסני ענק מלאים תבואה זהובה. 'כל המחסנים האלה — שלכם הם! זרעתי וטיפלתי בהן כל השנים.'`,
+        cue:`קול נדיב וחגיגי — משפט המפתח.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#8b5e34)",emoji:"💭❓",onscreen:"למה לא לקח כלום לעצמו?",
+        say:`למה רבי פנחס לא לקח אפילו קצת לעצמו, אחרי כל כך הרבה עבודה?\n\n(לשמוע תשובות)\n\nמה היה קורה אם היה פשוט משאיר את השק?`,
+        cue:`אל תתני את התשובה!`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#3a7d9c)",emoji:"✏️🤝",onscreen:"להחזיר מה שלא שייך לי",
+        say:`דבר קטן שמצאנו, גם אם עברו שנים — נשאר שייך למי שהוא שלו. לשמור עליו זו דרך יפה להראות כבוד.`,
+        cue:`קול חם ואישי, איטי.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#8b5e34)",emoji:"🧓✨",onscreen:"מה תעשו כשתמצאו משהו?",
+        say:`מה תעשו בפעם הבאה שתמצאו משהו שלא שייך לכם?\n\n(לתת לכמה ילדים לשתף)`,
+        cue:`נעילה חמה ורגועה.`}
+    ],
+    mem:[["1","פתיחה","'כנה, לא נוגע ברכוש זר'"],["2-4","הבקשה + 'בוודאי'","שק שעורים"],["5-6","הזמן חולף + הדילמה","שעורים מתקלקלות"],["7-8","הפתרון + טיפול","זריעה, גידול"],["9","7 שנים","מחסנים מתמלאים"],["10","הזקנים חוזרים","'אפילו את השק הקטן'"],["11","השיא","שתיקה!"],["12","הגילוי","'כל זה שלכם'"],["13","דיון","שאלות, לא תשובות"],["14-15","חיבור + סגירה","'להחזיר מה שלא שייך'"]]
+  },
+
+  yannai:{
+    icon:"🧴", title:"רבי ינאי ורוכל סם החיים",
+    blurb:"סם החיים האמיתי — שמירת הלשון",
+    slides:[
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"📢🛒",onscreen:"\"סם חיים! סם חיים!\"",
+        say:`קול צעקה רעש בשוק ההומה. רוכל עבר בין החנויות והכריז: 'סם חיים! מי רוצה לקנות סוד לחיים ארוכים ומאושרים?'`,
+        cue:`קול רם וקצבי, כמו קריין שוק אמיתי.`},
+      {bg:"linear-gradient(160deg,#c9a227,#8b5e34)",emoji:"🙌🪙",onscreen:"ההמון מתקבץ",
+        say:`ההמונים התקבצו במהירות, הושיטו מטבעות זהב: 'תן לנו מן הסם הזה! הצל את חיינו!'`,
+        cue:`קול נרגש, כמעט נלהב — הבהלה הקולקטיבית.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#2c3e54)",emoji:"📖🪟",onscreen:"מה הייתם עושים?",
+        say:`רבי ינאי ישב בחלון ועסק בתורה. כששמע, נתמלא פליאה. מה אתם הייתם עושים אם שומעים מישהו מכריז על 'סם חיים'?`,
+        cue:`האטה משמעותית — מרעש שוק לשקט חדר לימוד.`},
+      {bg:"linear-gradient(160deg,#c9a227,#7a4a2b)",emoji:"🗣️🪟",onscreen:"\"עלה נא אלי!\"",
+        say:`פתח את החלון וקרא: 'הו, מוכר חביב! עלה נא אלי הביתה ומכור גם לי מן הסם הנפלא הזה!'`,
+        cue:`קול חם, מזמין וסקרן.`},
+      {bg:"linear-gradient(160deg,#8b5e34,#1e2a3a)",emoji:"🙅‍♂️😌",onscreen:"\"הסם הזה לא בשבילכם\"",
+        say:`הרוכל הביט ברב וענה בענווה: 'לא, אדוני. אתה וחבריך החכמים אינכם צריכים ממני דבר. הסם אינו מיועד עבורכם.'`,
+        cue:`קול נמוך, מכובד ורגוע — למילה 'לא' משקל.`},
+      {bg:"linear-gradient(160deg,#c9a227,#8b5e34)",emoji:"🚪🧑‍🦳",onscreen:"למה כל כך רצה לדעת?",
+        say:`אך רבי ינאי התעקש שוב ושוב, עד שהרוכל עלה. למה לדעתכם רבי ינאי כל כך רצה לדעת מה בארגז?`,
+        cue:`קול נמרץ — סקרנות אמיתית.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"📖👆",onscreen:"פותח את ספר התהילים",
+        say:`הרוכל הניח את הארגז, פתח את ספר תהילים והצביע על הפסוק המפורסם...`,
+        cue:`האטה — משפטים קצרים, הפסקה בין כל שורה.`},
+      {bg:"radial-gradient(circle at 50% 45%,#e8cf7a 0%,#1e2a3a 85%)",emoji:"📖",onscreen:"",
+        say:`(עצירה של 2-3 שניות, בלי מילה)`,
+        cue:`שתיקה מוחלטת. הרגע החשוב ביותר בסיפור.`},
+      {bg:"linear-gradient(160deg,#c9a227,#e8cf7a)",emoji:"✨📖",onscreen:"\"מִי הָאִישׁ הֶחָפֵץ חַיִּים\"",
+        say:`הרוכל קרא בקול שקט וחזק: 'מי האיש החפץ חיים, אוהב ימים לראות טוב?'`,
+        cue:`קראו לאט, כל מילה בנפרד — משפט המפתח הראשון.`},
+      {bg:"linear-gradient(160deg,#c9a227,#8b5e34)",emoji:"🤐💛",onscreen:"\"נְצֹר לְשׁוֹנְךָ מֵרָע\"",
+        say:`'נצור לשונך מרע, ושפתיך מדבר מרמה! סור מרע ועשה טוב, בקש שלום ורדפהו!'`,
+        cue:`המשך באותו קול שקט וחזק, כרצף אחד.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#d98c1f)",emoji:"😇📕",onscreen:"\"זהו סם החיים האמיתי\"",
+        say:`הרוכל סגר את הספר וחייך: 'זהו סם החיים שלי. שמירת הפה מפני מילים רעות היא הדרך היחידה לזכות בחיים מאושרים.'`,
+        cue:`קול חם ובטוח — משפט המפתח המרכזי.`},
+      {bg:"linear-gradient(160deg,#c9a227,#e8cf7a)",emoji:"🤗📚",onscreen:"\"בואו וראו!\"",
+        say:`רבי ינאי חיבק את הרוכל בהתרגשות וקרא לתלמידיו: 'כל ימי קראתי את הפסוק, ולא הבנתי עד כמה הוא פשוט — עד שהרוכל הסביר לי!'`,
+        cue:`קול חם, מלא התרגשות — עלו באנרגיה אחרי השקט.`},
+      {bg:"linear-gradient(160deg,#1e2a3a,#8b5e34)",emoji:"💭❓",onscreen:"למה דווקא הרוכל?",
+        say:`למה דווקא הרוכל, ולא אחד מהחכמים, הוא זה שהזכיר לרבי ינאי את הפסוק?\n\n(לשמוע תשובות)`,
+        cue:`שאלות פתוחות — אל תענו בעצמכם.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#3a7d9c)",emoji:"💬💛",onscreen:"עוזרת או פוגעת?",
+        say:`אפשר גם אנחנו, כל יום, לבחור מילים טובות. לפני שמדברים — לעצור רגע ולשאול: המילה הזאת עוזרת או פוגעת?`,
+        cue:`קול רגוע, מזמין ולא מטיף.`},
+      {bg:"linear-gradient(160deg,#e8cf7a,#c9a227)",emoji:"📢🪟",onscreen:"איזו מילה טובה תגידו?",
+        say:`התשובה האמיתית לא הייתה בארגז — היא הייתה כל הזמן בספר הפתוח. איזו מילה טובה תגידו היום?`,
+        cue:`קול חם וסוגר, טון יורד בהדרגה.`}
+    ],
+    mem:[["1","קריאת הרוכל בשוק","סם חיים"],["3","רבי ינאי שומע מהחלון","פליאה"],["5","סירוב הרוכל","ענווה"],["8","השתיקה","פתיחת התהילים"],["9-10","הפסוק מתגלה","חפץ חיים / נצור לשונך"],["11","הסבר הרוכל","סם החיים האמיתי"],["12","התרגשות רבי ינאי","פשוט ומוחשי"],["13","דיון","שאלות, לא תשובות"],["14-15","חיבור + סגירה","מילה טובה היום"]]
+  }
+};
+
+let currentStoryKey = null;
+let current = 0;
+
+const homeScreen = document.getElementById('homeScreen');
+const storyScreen = document.getElementById('storyScreen');
+const topTitle = document.getElementById('topTitle');
+const memBtn = document.getElementById('memBtn');
+const navBar = document.getElementById('navBar');
+const emojiScene = document.getElementById('emojiScene');
+const onscreenText = document.getElementById('onscreenText');
+const visual = document.getElementById('visual');
+const sayText = document.getElementById('sayText');
+const cueText = document.getElementById('cueText');
+const slideCounter = document.getElementById('slideCounter');
+const dotsEl = document.getElementById('dots');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const homeBtn = document.getElementById('homeBtn');
+
+function buildHome(){
+  homeScreen.innerHTML = `
+    <h1>📚 ספריית סיפורי צדיקים</h1>
+    <p class="sub">בחרו סיפור להתחיל לספר</p>
+    <div class="grid" id="grid"></div>
+  `;
+  const grid = document.getElementById('grid');
+  Object.keys(STORIES).forEach(key => {
+    const s = STORIES[key];
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <span class="icon">${s.icon}</span>
+      <h3>${s.title}</h3>
+      <p>${s.blurb}</p>
+      <span class="count">${s.slides.length} כרטיסים</span>
+    `;
+    card.addEventListener('click', () => openStory(key));
+    grid.appendChild(card);
+  });
+}
+
+function openStory(key){
+  currentStoryKey = key;
+  current = 0;
+  homeScreen.style.display = 'none';
+  storyScreen.style.display = 'flex';
+  navBar.style.display = 'flex';
+  memBtn.style.display = 'inline-block';
+  topTitle.textContent = STORIES[key].icon + ' ' + STORIES[key].title;
+  renderSlide();
+}
+
+function goHome(){
+  currentStoryKey = null;
+  homeScreen.style.display = 'block';
+  storyScreen.style.display = 'none';
+  navBar.style.display = 'none';
+  memBtn.style.display = 'none';
+  topTitle.textContent = '📚 ספריית סיפורי צדיקים';
+}
+
+function buildDots(){
+  const slides = STORIES[currentStoryKey].slides;
+  dotsEl.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.addEventListener('click', () => { current = i; renderSlide(); });
+    dotsEl.appendChild(d);
+  });
+}
+
+function renderSlide(){
+  const slides = STORIES[currentStoryKey].slides;
+  const s = slides[current];
+  visual.style.background = s.bg;
+  emojiScene.textContent = s.emoji;
+  onscreenText.textContent = s.onscreen;
+  onscreenText.style.display = s.onscreen ? 'block' : 'none';
+  sayText.textContent = s.say;
+  cueText.textContent = s.cue;
+  slideCounter.textContent = 'כרטיס ' + (current+1) + ' מתוך ' + slides.length;
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = current === slides.length - 1;
+  nextBtn.textContent = current === slides.length - 1 ? 'סוף הסיפור ✓' : 'הבא ▶';
+  buildDots();
+  document.querySelector('.panel').scrollTop = 0;
+}
+
+prevBtn.addEventListener('click', () => {
+  if(current > 0){ current--; renderSlide(); }
+});
+nextBtn.addEventListener('click', () => {
+  const slides = STORIES[currentStoryKey].slides;
+  if(current < slides.length - 1){ current++; renderSlide(); }
+});
+homeBtn.addEventListener('click', goHome);
+
+document.addEventListener('keydown', (e) => {
+  if(!currentStoryKey) return;
+  const slides = STORIES[currentStoryKey].slides;
+  if(e.key === 'ArrowLeft'){
+    if(current < slides.length - 1){ current++; renderSlide(); }
+  } else if(e.key === 'ArrowRight'){
+    if(current > 0){ current--; renderSlide(); }
+  }
+});
+
+const memOverlay = document.getElementById('memOverlay');
+const memTable = document.getElementById('memTable');
+const closeMem = document.getElementById('closeMem');
+memBtn.addEventListener('click', () => {
+  if(!currentStoryKey) return;
+  const mem = STORIES[currentStoryKey].mem;
+  let html = '<tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>';
+  mem.forEach(row => {
+    html += `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td></tr>`;
+  });
+  memTable.innerHTML = html;
+  memOverlay.classList.add('show');
+});
+closeMem.addEventListener('click', () => memOverlay.classList.remove('show'));
+memOverlay.addEventListener('click', (e) => {
+  if(e.target === memOverlay) memOverlay.classList.remove('show');
+});
+
+buildHome();
+</script>
+</body>
+</html>

@@ -1,0 +1,1395 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>game3_lessons_7-10 – הקול החמישי</title>
+<meta name="description" content="Engaging educational game teaching Torah lessons through interactive quizzes, sound effects, and progress tracking. Features Hebrew content on youth guidance and spiritual growth.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="game3_lessons_7-10 – הקול החמישי">
+<meta property="og:description" content="Engaging educational game teaching Torah lessons through interactive quizzes, sound effects, and progress tracking. Features Hebrew content on youth guidance and spiritual growth.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-4a9b5275.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/4a9b5275.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const CheckCircle = window.LucideReact["CheckCircle"] || window.LucideReact.Circle;
+const XCircle = window.LucideReact["XCircle"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const BookOpen = window.LucideReact["BookOpen"] || window.LucideReact.Circle;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Target = window.LucideReact["Target"] || window.LucideReact.Circle;
+const Users = window.LucideReact["Users"] || window.LucideReact.Circle;
+
+// ====== מערכת צלילים ======
+const playSuccessSound = () => {
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const notes = [261.63, 329.63, 392.00]; // C-E-G
+  notes.forEach((freq, index) => {
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.frequency.value = freq;
+    oscillator.type = 'sine';
+    const startTime = audioContext.currentTime + index * 0.15;
+    gainNode.gain.setValueAtTime(0.3, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+    oscillator.start(startTime);
+    oscillator.stop(startTime + 0.3);
+  });
+};
+const playCelebrationSound = async () => {
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25]; // C5-E5-G5-C6-G5-E5
+
+  for (let i = 0; i < notes.length; i++) {
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.frequency.value = notes[i];
+    oscillator.type = 'sine';
+    const startTime = audioContext.currentTime + i * 0.3;
+    gainNode.gain.setValueAtTime(0.3, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.25);
+    oscillator.start(startTime);
+    oscillator.stop(startTime + 0.25);
+  }
+  await new Promise(resolve => setTimeout(resolve, 1800));
+};
+const playFinalCelebration = async () => {
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const melody = [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25, 523.25, 659.25, 783.99];
+  for (let i = 0; i < melody.length; i++) {
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.frequency.value = melody[i];
+    oscillator.type = 'sine';
+    const startTime = audioContext.currentTime + i * 0.25;
+    gainNode.gain.setValueAtTime(0.35, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.22);
+    oscillator.start(startTime);
+    oscillator.stop(startTime + 0.22);
+  }
+  await new Promise(resolve => setTimeout(resolve, 2500));
+};
+
+// ====== תוכן השיעורים ======
+const lessonsData = [{
+  id: 7,
+  title: 'דור הפינוק – כיצד נעזור לנוער?',
+  icon: '👥',
+  content: `
+      <h3 style="color: #dc2626; margin-bottom: 16px; font-size: 26px;">😟 הבעיה של דור הנוער שלנו</h3>
+      <p style="line-height: 1.8; margin-bottom: 12px; font-size: 17px;">
+        למרות כל השפע וההזדמנויות, <strong style="color: #991b1b;">"אתה רואה שלא טוב להם"</strong>.
+        פניהם מיוסרות, והם "סוחבים איתם קשיים". מה קורה כאן?
+      </p>
+      
+      <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 28px; border-radius: 12px; margin: 24px 0; border: 4px solid #f59e0b;">
+        <h4 style="color: #92400e; margin-bottom: 16px; font-size: 22px;">🔍 אבחון המחלה</h4>
+        <div style="background: white; padding: 24px; border-radius: 8px; margin-bottom: 16px;">
+          <p style="color: #78350f; line-height: 1.9; font-size: 17px; margin: 0;">
+            הם <strong style="font-size: 19px;">"קרבן הפינוק של שנת 2018"</strong>. 
+            הם סובלים באופן ישיר מחוסר עמל ומחוסר מאמץ.
+            <br/><br/>
+            <span style="display: block; background: #fef2f2; padding: 16px; border-radius: 8px; border-right: 4px solid #dc2626; margin-top: 12px;">
+              <strong style="color: #991b1b; font-size: 18px;">💔 למה?</strong>
+              <br/>
+              <span style="color: #7f1d1d; font-size: 16px;">
+                "ממתי שהוא נולד דחפו לו הכל בתוך כפית של זהב". 
+                החברה כולה הרגילה אותם לקבל <strong>מקסימום הנאה במינימום מאמץ</strong>,
+                וכתוצאה מכך הם <strong>"הולכים ונובלים"</strong> מחוסר עמל.
+              </span>
+            </span>
+          </p>
+        </div>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); padding: 28px; border-radius: 12px; margin: 24px 0; border-right: 5px solid #dc2626;">
+        <h4 style="color: #991b1b; margin-bottom: 16px; font-size: 22px;">❌ הטעות הנפוצה של המבוגרים</h4>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 20px; background: white; border-radius: 8px; margin-bottom: 12px;">
+              <div style="font-size: 32px; margin-bottom: 8px;">😰</div>
+              <strong style="color: #991b1b; font-size: 18px;">התגובה האינסטינקטיבית:</strong>
+              <p style="color: #7f1d1d; margin-top: 8px; line-height: 1.7; font-size: 16px;">
+                כשאנחנו רואים נער שרע לו, התגובה הטבעית שלנו מתוך רחמים היא 
+                לנסות <strong>"להקל עליהם עוד"</strong>.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 20px; background: #fef2f2; border-radius: 8px; margin-top: 12px; border: 3px solid #ef4444;">
+              <div style="font-size: 32px; margin-bottom: 8px;">🚫</div>
+              <strong style="color: #b91c1c; font-size: 18px;">למה זה פעולה הפוכה?</strong>
+              <p style="color: #991b1b; margin-top: 8px; line-height: 1.8; font-size: 17px; font-weight: 600;">
+                "בזה אנחנו רק מורידים אותם יותר"
+                <br/><br/>
+                בכך שאנו מקלים עליהם עוד, אנחנו למעשה <strong>מנתקים אותם עוד יותר</strong> 
+                מה"אינפוזיה" של העמל – המקור היחיד שיכול להעניק טעם וריפוי לחייהם!
+              </p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); padding: 28px; border-radius: 12px; margin: 24px 0; border: 3px solid #10b981;">
+        <h4 style="color: #065f46; margin-bottom: 16px; font-size: 22px;">✅ הפתרון הנכון</h4>
+        <p style="color: #047857; line-height: 1.9; font-size: 17px; margin-bottom: 16px;">
+          הדרך לעזור לנוער אינה בהכרח דרך הקלות נוספות, 
+          אלא לעיתים קרובות דווקא דרך <strong style="font-size: 19px;">הצבת אתגרים</strong> 
+          ויצירת הזדמנויות לעמל, יצירה ותחושת מסוגלות.
+        </p>
+        <div style="background: white; padding: 20px; border-radius: 8px;">
+          <h5 style="color: #065f46; margin-bottom: 12px; font-size: 18px;">💡 האיזון הנכון:</h5>
+          <ul style="color: #047857; line-height: 2; padding-right: 24px; font-size: 16px;">
+            <li><strong>לא:</strong> דרישות קשות ללא אהבה → הקשחה מזיקה</li>
+            <li><strong>לא:</strong> הקלות מתמדת מתוך רחמים → חולשה מזיקה</li>
+            <li><strong>כן:</strong> אתגרים + אמונה + חום + תמיכה → צמיחה אמיתית! 🌱</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); padding: 28px; border-radius: 12px; margin: 24px 0; border-right: 5px solid #6366f1;">
+        <h4 style="color: #3730a3; margin-bottom: 16px; font-size: 22px; text-align: center;">
+          💪 המסר למחנכים והורים
+        </h4>
+        <p style="color: #4338ca; line-height: 2; font-size: 18px; text-align: center; margin: 0; font-weight: 600;">
+          אהבה אמיתית אינה תמיד לתת למישהו את מה שהוא רוצה,
+          <br/>
+          אלא <strong style="font-size: 20px; color: #4f46e5;">את מה שהוא צריך</strong>.
+          <br/><br/>
+          <span style="display: block; background: rgba(255,255,255,0.7); padding: 16px; border-radius: 8px; margin-top: 12px;">
+            כשאנחנו מאמינים במישהו, אנחנו לא חוששים לדרוש ממנו,
+            <br/>
+            כי אנחנו יודעים שהוא מסוגל! 🌟
+          </span>
+        </p>
+      </div>
+    `,
+  quiz: [{
+    question: 'מדוע הניסיון "להקל עוד" על נער שסובל מ"פינוק יתר" עלול להחמיר את מצבו?',
+    options: ['כי הוא עלול להפוך לעצלן ולא לרצות לעבוד בעתיד', 'כי הוא יפסיק להעריך את מה שההורים נותנים לו ויתפנק עוד יותר', 'כי הבעיה שלו נובעת מחוסר עמל, והקלה נוספת רק מנתקת אותו עוד יותר מ"האינפוזיה" של המשמעות', 'כי חשוב לחנך ילדים לקשיחות ועצמאות מגיל צעיר ללא חמלה'],
+    correct: 2,
+    explanation: 'הבעיה המרכזית של "דור הפינוק" אינה עצלנות, אלא הריקנות הנובעת מחוסר עמל. הם "קרבנות" של סביבה שלא אפשרה להם להתמודד, לעמול ולהרגיש את הסיפוק העצום שביצירה ובהתגברות. לכן, כשאנו "מגינים" עליהם מעוד מאמץ, אנו למעשה מונעים מהם את התרופה היחידה למחלתם.',
+    encouragement: '🎯 מצוין! הבנת שאהבה אמיתית היא לא תמיד לתת מה שרוצים, אלא מה שצריכים. לפעמים, הדבר שאדם צריך יותר מכל הוא אתגר!'
+  }, {
+    question: 'מהו הגורם המרכזי ל"מחלה" של דור הנוער המודרני, על פי השיעור?',
+    options: ['החברה הרגילה אותם לקבל מקסימום הנאה במינימום מאמץ, וכתוצאה הם נובלים מחוסר עמל', 'הם חשופים יותר מדי לטכנולוגיה ולמסכים שפוגעים בבריאות הנפשית', 'הם לא מקבלים מספיק אהבה ותמיכה רגשית מההורים שלהם', 'הם חיים בלחץ גבוה מדי של ציפיות והישגיות מהחברה'],
+    correct: 0,
+    explanation: 'הגורם המרכזי הוא שהדור הזה גדל בסביבה שבה "ממתי שהוא נולד דחפו לו הכל בתוך כפית של זהב". הם התרגלו למקסימום הנאה במינימום מאמץ, ולכן הם סובלים מחוסר עמל – שהוא בדיוק מה שהנפש צריכה כדי להרגיש משמעות וסיפוק. זו לא בעיה של חוסר אהבה, אלא בדיוק ההיפך – "אהבה" מוטעית שמונעת מהם להתמודד.',
+    encouragement: '💎 נכון לגמרי! הם לא עצלנים רעים – הם קרבנות של גישה חינוכית שטעתה בהבנת מה ילדים באמת צריכים כדי לפרוח!'
+  }, {
+    question: 'מהו "האיזון הנכון" בגישה לנוער, על פי השיעור?',
+    options: ['להיות קשוח ולהציב דרישות גבוהות ללא התחשבות ברגשות', 'להקל עליהם בכל דרך אפשרית ולתת להם הכל כדי שיהיו מאושרים', 'להציב אתגרים מתוך אמונה באפשרויותיהם, בשילוב עם חום, אהבה ותמיכה', 'לתת להם חופש מוחלט לבחור בעצמם מה הם רוצים ללא הדרכה'],
+    correct: 2,
+    explanation: 'האיזון הנכון הוא לא קיצוני – לא הקשחה קרה ולא פינוק מוחלט. הפתרון הוא להציב אתגרים אמיתיים שמאפשרים לנוער לעמול, ליצור ולהרגיש מסוגלות, אבל לעשות זאת מתוך אמונה, חום, אהבה ותמיכה. כשאנחנו מאמינים במישהו, אנחנו לא חוששים לדרוש ממנו – כי אנחנו יודעים שהוא מסוגל.',
+    encouragement: '🌟 מעולה! זהו האיזון העדין של חינוך אמיתי – להאמין מספיק כדי לדרוש, ולאהוב מספיק כדי לתמוך בדרך!'
+  }]
+}, {
+  id: 8,
+  title: 'לקרוא את המפה – מהו העמל הנדרש בדורנו?',
+  icon: '🗺️',
+  content: `
+      <h3 style="color: #2563eb; margin-bottom: 16px; font-size: 26px;">🧭 להבין את האתגר של הדור שלנו</h3>
+      <p style="line-height: 1.8; margin-bottom: 12px; font-size: 17px;">
+        במקום להילחם במציאות ולהצטייר כ"אינדיאני תמהוני" שרוצה לחזור לעבר, 
+        עלינו <strong style="color: #1e40af;">"ללמוד את המפה"</strong> – 
+        להבין מה הקב"ה דורש מאיתנו בתוך המציאות של הדור הזה.
+      </p>
+      
+      <div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 28px; border-radius: 12px; margin: 24px 0; border: 4px solid #3b82f6;">
+        <h4 style="color: #1e40af; margin-bottom: 16px; font-size: 22px;">💡 העיקרון המרכזי</h4>
+        <div style="background: white; padding: 24px; border-radius: 8px;">
+          <p style="color: #1e3a8a; line-height: 2; font-size: 18px; margin: 0; font-weight: 600; text-align: center;">
+            העמל לא נעלם – <strong style="font-size: 20px; color: #2563eb;">הוא פשוט שינה צורה!</strong>
+            <br/><br/>
+            <span style="display: block; background: #eff6ff; padding: 16px; border-radius: 8px; margin-top: 12px; color: #1e40af;">
+              האתגר עבר ממאבק על <strong>הישרדות פיזית</strong>
+              <br/>
+              למאבק על <strong>מיקוד רוחני והתמדה נפשית</strong>
+            </span>
+          </p>
+        </div>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 28px; border-radius: 12px; margin: 24px 0; border-right: 5px solid #f59e0b;">
+        <h4 style="color: #92400e; margin-bottom: 20px; font-size: 22px; text-align: center;">
+          ⚖️ השוואת סוגי העמל: אתמול מול היום
+        </h4>
+        
+        <div style="background: white; padding: 24px; border-radius: 12px; margin-bottom: 20px; border: 3px solid #8b5cf6;">
+          <h5 style="color: #6b21a8; margin-bottom: 16px; font-size: 20px;">📚 עמל של לימוד תורה</h5>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr style="background: #f3e8ff;">
+              <th style="padding: 16px; text-align: right; border-bottom: 2px solid #8b5cf6; font-size: 17px;">⏪ פעם</th>
+              <th style="padding: 16px; text-align: right; border-bottom: 2px solid #8b5cf6; font-size: 17px;">⏩ היום</th>
+            </tr>
+            <tr>
+              <td style="padding: 20px; vertical-align: top; border-left: 3px solid #8b5cf6;">
+                <strong style="color: #6b21a8; font-size: 17px;">עמל של איכות</strong>
+                <p style="color: #7c3aed; margin-top: 8px; line-height: 1.8; font-size: 16px;">
+                  מסירות נפש עצומה על <strong>שעת לימוד אחת</strong>, 
+                  לאחר יום עבודה מפרך ובלי מאוורר.
+                  <br/>
+                  האתגר: למצוא את <strong>הכוח</strong> ללמוד בכלל!
+                </p>
+              </td>
+              <td style="padding: 20px; vertical-align: top; border-right: 3px solid #8b5cf6;">
+                <strong style="color: #6b21a8; font-size: 17px;">עמל של כמות</strong>
+                <p style="color: #7c3aed; margin-top: 8px; line-height: 1.8; font-size: 16px;">
+                  היכולת לשבת <strong>8 שעות רצופות</strong> בכולל ממוזג, 
+                  מתוך שמחה וטוב לבב.
+                  <br/>
+                  האתגר: לשמור על <strong>ריכוז והתמדה</strong>!
+                </p>
+              </td>
+            </tr>
+          </table>
+        </div>
+        
+        <div style="background: white; padding: 24px; border-radius: 12px; border: 3px solid #10b981;">
+          <h5 style="color: #065f46; margin-bottom: 16px; font-size: 20px;">💰 עמל של קיום ופרנסה</h5>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr style="background: #d1fae5;">
+              <th style="padding: 16px; text-align: right; border-bottom: 2px solid #10b981; font-size: 17px;">⏪ פעם</th>
+              <th style="padding: 16px; text-align: right; border-bottom: 2px solid #10b981; font-size: 17px;">⏩ היום</th>
+            </tr>
+            <tr>
+              <td style="padding: 20px; vertical-align: top; border-left: 3px solid #10b981;">
+                <strong style="color: #065f46; font-size: 17px;">"בנפשנו נביא לחמנו"</strong>
+                <p style="color: #047857; margin-top: 8px; line-height: 1.8; font-size: 16px;">
+                  המאמץ היה להשיג את <strong>הקיום הבסיסי</strong> – 
+                  מזון, מים, בגדים.
+                  <br/>
+                  האתגר: <strong>הישרדות פיזית</strong> יום-יומית.
+                </p>
+              </td>
+              <td style="padding: 20px; vertical-align: top; border-right: 3px solid #10b981;">
+                <strong style="color: #065f46; font-size: 17px;">"בנפשנו נמנע את המותרות"</strong>
+                <p style="color: #047857; margin-top: 8px; line-height: 1.8; font-size: 16px;">
+                  המאמץ הוא להתמודד עם <strong>שפע הפיתויים</strong> 
+                  ולבחור שלא להיסחף אליהם.
+                  <br/>
+                  האתגר: <strong>שליטה עצמית</strong> נפשית ורוחנית.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); padding: 28px; border-radius: 12px; margin: 24px 0; border: 3px solid #6366f1;">
+        <h4 style="color: #3730a3; margin-bottom: 16px; font-size: 22px;">🤔 שאלות למחשבה</h4>
+        <div style="background: white; padding: 20px; border-radius: 8px;">
+          <ul style="color: #4338ca; line-height: 2.2; padding-right: 24px; font-size: 17px; list-style: none;">
+            <li style="margin-bottom: 12px;">
+              <strong style="color: #4f46e5;">🔹 מה קשה יותר?</strong>
+              <br/>
+              לעבוד פיזית כל היום בשדה, או לשבת וללמוד בריכוז 8 שעות מול גמרא פתוחה?
+            </li>
+            <li style="margin-bottom: 12px;">
+              <strong style="color: #4f46e5;">🔹 מה המאבק האמיתי?</strong>
+              <br/>
+              להימנע ממותרות שכולם נהנים מהן, או להשיג פת לחם?
+            </li>
+          </ul>
+          <div style="background: #fef3c7; padding: 16px; border-radius: 8px; margin-top: 16px; border-right: 4px solid #f59e0b;">
+            <p style="color: #92400e; line-height: 1.9; font-size: 16px; margin: 0; font-weight: 600;">
+              💡 התשובה: לכל דור יש את הניסיונות והעמל הייחודיים לו, 
+              ואין לזלזל באתגרים של אף דור. כל אחד נאבק עם האתגרים של זמנו!
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%); padding: 28px; border-radius: 12px; margin: 24px 0; border-right: 5px solid #ef4444;">
+        <h4 style="color: #991b1b; margin-bottom: 16px; font-size: 22px; text-align: center;">
+          🎯 המסר המרכזי
+        </h4>
+        <p style="color: #7f1d1d; line-height: 2; font-size: 19px; text-align: center; margin: 0; font-weight: 600;">
+          <strong style="font-size: 22px; color: #dc2626;">"תמיד יש מה לעמול"</strong>
+          <br/><br/>
+          הקב"ה לעולם לא משאיר אותנו ללא אתגרים.
+          <br/>
+          תפקידנו הוא להיות חכמים ו<strong>"לדעת איפה העמל הנדרש"</strong>
+          <br/>
+          בדורנו הספציפי! 💪
+        </p>
+      </div>
+    `,
+  quiz: [{
+    question: 'מהו השינוי המרכזי באופי ה"עמל" הנדרש בדורנו לעומת דורות קודמים, על פי השיעור?',
+    options: ['בדורנו כבר אין צורך בעמל, והכל מגיע בקלות רבה', 'העמל עבר ממאבק על קיום פיזי ומסירות נפש על איכות, למאבק על ריכוז רוחני והתמדה בכמות', 'העמל היום קל יותר באופן משמעותי מהעמל שהיה בדורות הקודמים', 'העמל נשאר בדיוק אותו הדבר, רק הכלים הטכנולוגיים השתנו'],
+    correct: 1,
+    explanation: 'העיקרון של "ללמוד את המפה" מלמד אותנו שהעמל לא נעלם, הוא פשוט שינה צורה. פעם, הניסיון היה במסירות הנפש על מעט קדושה (איכות), כמו שעת לימוד אחת ביום. היום, כשהתנאים החיצוניים נוחים, הניסיון הוא ביכולת להתמיד לאורך זמן (כמות), כמו 8 שעות לימוד. פעם, הניסיון היה להשיג לחם; היום, הניסיון הוא להימנע מהמותרות.',
+    encouragement: '💎 מצוין! ה\' לא דורש מאיתנו להיות כמו הדורות הקודמים. הוא דורש מאיתנו להיות אנחנו, כאן ועכשיו, עם האתגרים שלנו!'
+  }, {
+    question: 'מהי המשמעות של "בנפשנו נביא לחמנו" לעומת "בנפשנו נמנע את המותרות"?',
+    options: ['שני הביטויים מתארים את אותו הקושי בדיוק, רק במילים שונות', 'הביטוי הראשון מתאר את העמל של פעם להשיג קיום בסיסי, והשני את העמל של היום להתמודד עם פיתויים ולשמור על שליטה עצמית', 'הביטוי הראשון מתאר עבודה פיזית, והשני מתאר עבודה רוחנית בלבד', 'הביטוי הראשון הוא לעניים, והשני לעשירים שיכולים לבחור'],
+    correct: 1,
+    explanation: '"בנפשנו נביא לחמנו" מתאר את המאבק של פעם – המאמץ האדיר להשיג את הקיום הבסיסי, הישרדות פיזית יום-יומית. "בנפשנו נמנע את המותרות" מתאר את המאבק של היום – המאמץ להתמודד עם שפע הפיתויים סביבנו ולבחור שלא להיסחף. זהו מעבר ממאבק פיזי למאבק נפשי ורוחני.',
+    encouragement: '🌟 נכון! לנצח את היצר בדור שלנו, לוותר על מותרות למרות שכולם נהנים מהן – זו הגבורה שה\' מצפה מאיתנו!'
+  }, {
+    question: 'מה הלקח המרכזי מה"השוואת סוגי העמל" בין פעם להיום?',
+    options: ['שהדורות הקודמים היו גיבורים אמיתיים ואנחנו חלשים בהשוואה', 'שלכל דור יש את האתגרים הייחודיים לו, ואין לזלזל באתגרים של אף דור', 'שהעמל של היום קל יותר ולכן אנחנו צריכים להיות אסירי תודה', 'שצריך לנסות לחיות כמו הדורות הקודמים כדי להיות קדושים באמת'],
+    correct: 1,
+    explanation: 'הלקח המרכזי הוא שכל דור נאבק עם האתגרים של זמנו. לא נכון לומר ששעת לימוד אחת אחרי יום עבודה מפרך היא "יותר טובה" מ-8 שעות לימוד בנוחות, או להיפך. אלו פשוט אתגרים שונים. תפקידנו הוא "לקרוא את המפה" של הדור שלנו ולהבין מה ה\' דורש מאיתנו בתוך המציאות הספציפית שלנו.',
+    encouragement: '🎯 מעולה! כל דור הוא גיבור במאבק שלו. האתגרים שלנו שונים, אבל לא פחות משמעותיים. ה\' יודע בדיוק מה הוא דורש מכל דור!'
+  }]
+}, {
+  id: 9,
+  title: 'משל התיבה – לוותר על "מנעמי העולם"',
+  icon: '⛵',
+  content: `
+      <h3 style="color: #0891b2; margin-bottom: 16px; font-size: 26px;">🌊 סיפור נח והתיבה – משל נצחי</h3>
+      <p style="line-height: 1.8; margin-bottom: 12px; font-size: 17px;">
+        הסיפור על נח והתיבה אינו רק אירוע היסטורי, אלא <strong style="color: #0e7490;">משל נצחי</strong> 
+        להתמודדות הרוחנית של כל אדם שומר תורה ומצוות, ובמיוחד בחור ישיבה, 
+        בעולם המודרני המלא פיתויים. <strong>התיבה היא סמל לחיים של קדושה</strong>.
+      </p>
+      
+      <div style="background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%); padding: 28px; border-radius: 12px; margin: 24px 0; border: 4px solid #06b6d4;">
+        <h4 style="color: #0e7490; margin-bottom: 16px; font-size: 22px;">⏰ שתי נקודות זמן מכריעות</h4>
+        
+        <div style="background: white; padding: 24px; border-radius: 8px; margin-bottom: 16px; border-right: 4px solid #06b6d4;">
+          <div style="font-size: 32px; margin-bottom: 12px; text-align: center;">1️⃣</div>
+          <h5 style="color: #0e7490; margin-bottom: 12px; font-size: 19px; text-align: center;">
+            הכניסה "כשדחקוהו המים"
+          </h5>
+          <p style="color: #155e75; line-height: 1.9; font-size: 17px; text-align: center;">
+            נח נכנס לתיבה <strong>כשהמבול כבר החל</strong> והסכנה הייתה מוחשית.
+            <br/><br/>
+            <span style="display: inline-block; background: #fef3c7; padding: 12px 20px; border-radius: 8px; margin-top: 8px;">
+              <strong style="color: #92400e;">❌ זו לא החכמה הגדולה</strong>
+              <br/>
+              <span style="color: #78350f; font-size: 16px;">
+                באותו רגע, היה ברור לכל שאין ברירה אחרת!
+              </span>
+            </span>
+          </p>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 24px; border-radius: 8px; border: 4px solid #f59e0b;">
+          <div style="font-size: 32px; margin-bottom: 12px; text-align: center;">2️⃣</div>
+          <h5 style="color: #92400e; margin-bottom: 12px; font-size: 19px; text-align: center;">
+            הבחירה 120 שנה קודם לכן
+          </h5>
+          <p style="color: #78350f; line-height: 1.9; font-size: 17px; text-align: center; margin-bottom: 16px;">
+            כאשר <strong>"עולם כמנהגו נוהג"</strong>, כולם <strong>"נהנים מהחיים"</strong>,
+            <br/>
+            ובאותו זמן נח עומד ובונה תיבה.
+          </p>
+          <div style="background: white; padding: 20px; border-radius: 8px;">
+            <p style="color: #b91c1c; line-height: 2; font-size: 19px; text-align: center; margin: 0; font-weight: 700;">
+              ✅ זו החכמה האמיתית!
+              <br/><br/>
+              <span style="font-size: 17px; font-weight: 600; color: #7f1d1d;">
+                מוכן לוותר על כל "מנעמי העולם"
+                <br/>
+                מתוך אמונה בציווי ה' – עוד לפני שהסכנה ברורה! 💪
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); padding: 28px; border-radius: 12px; margin: 24px 0; border: 3px solid #6366f1;">
+        <h4 style="color: #3730a3; margin-bottom: 16px; font-size: 22px;">🎯 הנמשל לדורנו</h4>
+        <div style="background: white; padding: 24px; border-radius: 8px;">
+          <p style="color: #4338ca; line-height: 2; font-size: 17px; margin-bottom: 20px;">
+            החכמה היא <strong style="font-size: 19px; color: #4f46e5;">לא להבין בגיל מבוגר</strong>, 
+            לאחר מעשה, "שהיה כדאי להיכנס לתיבה".
+          </p>
+          <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 24px; border-radius: 8px; border: 4px solid #f59e0b;">
+            <p style="color: #78350f; line-height: 2.2; font-size: 18px; margin: 0; font-weight: 600; text-align: center;">
+              💎 החכמה האמיתית היא לעשות זאת <strong style="font-size: 20px; color: #b91c1c;">"כעת"</strong>!
+              <br/><br/>
+              כשאתה צעיר, כשהעולם קורץ ומפתה,
+              <br/>
+              וכשהוויתור נראה כמו הפסד.
+              <br/><br/>
+              <span style="display: block; background: rgba(255,255,255,0.8); padding: 16px; border-radius: 8px; margin-top: 12px; color: #92400e;">
+                הוויתור המודע על "הסיפוקים" וההנאות הרגעיות עכשיו,
+                <br/>
+                מתוך אמונה בצדקת הדרך –
+                <br/>
+                <strong style="font-size: 20px; color: #dc2626;">זה מה ש"קונה את עולמך"!</strong> 🌟
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%); padding: 28px; border-radius: 12px; margin: 24px 0; border-right: 5px solid #ef4444;">
+        <h4 style="color: #991b1b; margin-bottom: 16px; font-size: 22px;">💭 הפסד ורווח – ראייה רוחנית</h4>
+        <div style="background: white; padding: 24px; border-radius: 8px; margin-bottom: 16px;">
+          <p style="color: #7f1d1d; line-height: 2; font-size: 17px; margin-bottom: 16px;">
+            המסר העוצמתי מהמקור:
+          </p>
+          <div style="background: #eff6ff; padding: 20px; border-radius: 8px; border-right: 4px solid #3b82f6;">
+            <p style="color: #1e40af; line-height: 2.2; font-size: 19px; margin: 0; font-weight: 600; text-align: center;">
+              "יום יבוא ואתה תראה שלא הפסדת כלום"
+              <br/><br/>
+              <span style="color: #1e3a8a; font-size: 17px; display: block; margin-top: 12px;">
+                למה? כי בסופו של דבר, יתברר ש
+                <br/>
+                <strong style="font-size: 19px; color: #dc2626;">
+                  "חוץ ממבול אחד גדול אין שום דבר
+                  <br/>
+                  בעולם הנוצץ הזה"
+                </strong> 💧
+              </span>
+            </p>
+          </div>
+        </div>
+        <div style="background: #fef3c7; padding: 20px; border-radius: 8px; border-right: 4px solid #f59e0b;">
+          <p style="color: #78350f; line-height: 1.9; font-size: 16px; margin: 0;">
+            <strong style="font-size: 18px; color: #92400e;">🔍 הקשר לשיעורים הקודמים:</strong>
+            <br/><br/>
+            תחושת הריקנות והאכזבה שדיברנו עליה – זו מנת חלקם של אלו שרודפים 
+            אחרי ההנאות הרגעיות של העולם החיצון. הם מגלים בסוף שזה היה "מבול" של חוסר משמעות.
+          </p>
+        </div>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); padding: 32px; border-radius: 12px; margin: 24px 0; border: 4px solid #10b981;">
+        <h4 style="color: #065f46; margin-bottom: 16px; font-size: 24px; text-align: center;">
+          🌟 המסר המרכזי לצעירים
+        </h4>
+        <p style="color: #047857; line-height: 2.2; font-size: 19px; text-align: center; margin: 0; font-weight: 600;">
+          העמל האמיתי של דורנו, במיוחד עבור הצעירים,
+          <br/>
+          הוא הבחירה המודעת ב<strong style="font-size: 21px; color: #059669;">"תיבה"</strong>
+          <br/><br/>
+          <span style="display: block; background: rgba(255,255,255,0.8); padding: 20px; border-radius: 8px; margin-top: 12px;">
+            בחיים של תורה, ערכים וקדושה
+            <br/>
+            גם ובעיקר כאשר זה קשה
+            <br/>
+            וכרוך בוויתור על הנאות רגעיות שנראות מפתות
+            <br/><br/>
+            <strong style="font-size: 22px; color: #dc2626;">
+              זוהי מסירות הנפש הנדרשת מאיתנו! 💪
+            </strong>
+          </span>
+        </p>
+      </div>
+    `,
+  quiz: [{
+    question: 'איזה מהתרחישים הבאים ממחיש בצורה הטובה ביותר את "החכמה הגדולה" של נח?',
+    options: ['תלמיד שמתחיל ללמוד למבחן הגמר רק אחרי שקיבל ציון נכשל במבחן אמצע', 'נער שמחליט להתחייב לסדר לימוד יומי קבוע, למרות שכל חבריו מתכננים את חופשת הקיץ', 'אדם שמחליט להתחיל לחסוך לפנסיה כשהוא מגיע לגיל 60 ומבין שצריך', 'חברה שמתקינה מערכת אבטחה חדשה רק לאחר שחוותה פריצה חמורה'],
+    correct: 1,
+    explanation: 'קל לבחור בטוב כשהרע מתגלה במלוא כיעורו ("כשדוחקים המים"). הגדולה האמיתית, החכמה של נח, הייתה לבחור בטוב מתוך אמונה, כשהעולם מסביב נראה מושך ומהנה. הנמשל לדורנו ברור: הגבורה היא לא להצטער על טעויות העבר בגיל מבוגר. הגבורה היא לבחור ב"תיבה" – בלימוד התורה, בקיום המצוות – עכשיו, בגיל צעיר.',
+    encouragement: '🎯 מצוין! לפעמים, הדרך הנכונה נראית כמו הפסד. משל התיבה מלמד אותנו להסתכל למרחוק. בסופו של דבר, מי שבחר בתיבה לא הפסיד כלום!'
+  }, {
+    question: 'מה המשמעות של הביטוי "חוץ ממבול אחד גדול אין שום דבר בעולם הנוצץ הזה"?',
+    options: ['שהעולם החיצוני מסוכן פיזית ויכול לגרום לנזקים רפואיים', 'שההנאות והפיתויים של העולם החיצוני הם בסופו של דבר ריקים ממשמעות, והרודפים אחריהם יגלו חוסר משמעות', 'שצריך להימנע מכל קשר עם העולם החיצוני ולחיות בבידוד מוחלט', 'שהעולם החומרי הוא רע מטבעו ויש להתנזר ממנו לחלוטין'],
+    correct: 1,
+    explanation: 'הביטוי מתאר את תחושת הריקנות והאכזבה שדיברנו עליה בשיעורים הקודמים. אלו שרודפים אחרי ההנאות הרגעיות של העולם החיצון, מגלים בסופו של דבר שזה היה "מבול" של חוסר משמעות. כל מה שנראה נוצץ ומפתה מבחוץ, מתגלה כריק מתוכן. זה לא אומר שצריך להתנזר מהעולם, אלא שצריך לבחור ב"תיבה" – בחיים של משמעות אמיתית.',
+    encouragement: '💎 נכון מאוד! האמונה נותנת לנו את הכוח לראות את האמת הזו עוד לפני שהיא מתגלה לכולם. זו בחירה חכמה של ראייה למרחוק!'
+  }, {
+    question: 'מהו "העמל האמיתי" של דורנו לפי משל התיבה?',
+    options: ['לעבוד קשה יותר מהדורות הקודמים כדי להוכיח את מסירותנו', 'הבחירה המודעת בחיים של תורה וקדושה, גם כשזה כרוך בוויתור על הנאות רגעיות מפתות', 'להימנע מכל טכנולוגיה ולחזור לאורח חיים פשוט של פעם', 'להעמיד פנים שאנחנו צדיקים בפני החברה החיצונית'],
+    correct: 1,
+    explanation: 'העמל האמיתי של דורנו, במיוחד עבור הצעירים, הוא הבחירה המודעת ב"תיבה" – בחיים של תורה, ערכים וקדושה – גם ובעיקר כאשר זה קשה וכרוך בוויתור על הנאות רגעיות שנראות מפתות. זוהי מסירות הנפש הנדרשת מאיתנו. הוויתור המודע על "הסיפוקים" עכשיו, מתוך אמונה בצדקת הדרך, זה מה ש"קונה את עולמך".',
+    encouragement: '🌟 מדהים! הבחירה הזו, שנעשית מתוך קושי כשאתה צעיר, היא זו שבונה את העולם הנצחי שלך. זו לא בריחה מהעולם – זו בחירה אמיצה בזהות ובמשמעות!'
+  }]
+}, {
+  id: 10,
+  title: 'סיכום – "אדם לעמל יולד" כברכה',
+  icon: '🏆',
+  content: `
+      <h3 style="color: #7c3aed; margin-bottom: 16px; font-size: 26px;">🎊 סיכום המסע – מקללה לברכה</h3>
+      <p style="line-height: 1.8; margin-bottom: 12px; font-size: 17px;">
+        הגענו לסוף מסע לימודי מרתק! בואו נסכם את התובנות המרכזיות 
+        שלמדנו ונבין כיצד הן משנות את כל התמונה של החיים שלנו.
+      </p>
+      
+      <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 28px; border-radius: 12px; margin: 24px 0; border: 4px solid #f59e0b;">
+        <h4 style="color: #92400e; margin-bottom: 20px; font-size: 22px; text-align: center;">
+          📚 סקירת המסע הלימודי
+        </h4>
+        <div style="display: grid; gap: 16px;">
+          <div style="background: white; padding: 20px; border-radius: 8px; border-right: 4px solid #3b82f6;">
+            <strong style="color: #1e40af; font-size: 17px;">🔹 נקודת המוצא</strong>
+            <p style="color: #1e3a8a; margin-top: 8px; line-height: 1.7; font-size: 16px;">
+              ההבנה הפשוטה של "בזיעת אפיך" כקללה והחיים כקושי
+            </p>
+          </div>
+          <div style="background: white; padding: 20px; border-radius: 8px; border-right: 4px solid #8b5cf6;">
+            <strong style="color: #6b21a8; font-size: 17px;">🔹 המהפכה המודרנית</strong>
+            <p style="color: #7c3aed; margin-top: 8px; line-height: 1.7; font-size: 16px;">
+              הטכנולוגיה הפכה את החיים לקלים והעלתה שאלות חדשות
+            </p>
+          </div>
+          <div style="background: white; padding: 20px; border-radius: 8px; border-right: 4px solid #10b981;">
+            <strong style="color: #065f46; font-size: 17px;">🔹 נקודת המפנה</strong>
+            <p style="color: #047857; margin-top: 8px; line-height: 1.7; font-size: 16px;">
+              ההגדרה החדשה של הקללה כריקנות ושל העמל כתרופה
+            </p>
+          </div>
+          <div style="background: white; padding: 20px; border-radius: 8px; border-right: 4px solid #f59e0b;">
+            <strong style="color: #92400e; font-size: 17px;">🔹 היישומים המעשיים</strong>
+            <p style="color: #78350f; margin-top: 8px; line-height: 1.7; font-size: 16px;">
+              הגישה לעבודה, הבנת דור השפע, והעמל הייחודי הנדרש מאיתנו
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); padding: 32px; border-radius: 12px; margin: 24px 0; border: 4px solid #6366f1;">
+        <h4 style="color: #3730a3; margin-bottom: 20px; font-size: 24px; text-align: center;">
+          💎 שלוש התובנות המרכזיות
+        </h4>
+        
+        <div style="background: white; padding: 24px; border-radius: 8px; margin-bottom: 16px; border: 3px solid #6366f1;">
+          <div style="font-size: 36px; margin-bottom: 8px; text-align: center;">1️⃣</div>
+          <h5 style="color: #4f46e5; font-size: 19px; margin-bottom: 12px; text-align: center; font-weight: 700;">
+            הקללה האמיתית היא חיים ריקים מתוכן
+          </h5>
+          <p style="color: #4338ca; line-height: 1.9; font-size: 17px; text-align: center;">
+            המאמץ אינו עונש, אלא הדרך שנתן לנו ה' ליצוק משמעות, סיפוק ושמחה בחיינו.
+            העמל הוא <strong>הברכה והתרופה</strong>! 💪
+          </p>
+        </div>
+        
+        <div style="background: white; padding: 24px; border-radius: 8px; margin-bottom: 16px; border: 3px solid #10b981;">
+          <div style="font-size: 36px; margin-bottom: 8px; text-align: center;">2️⃣</div>
+          <h5 style="color: #059669; font-size: 19px; margin-bottom: 12px; text-align: center; font-weight: 700;">
+            החיפוש אחר נוחות מוחלטת עלול להוביל לחוסר שמחה
+          </h5>
+          <p style="color: #047857; line-height: 1.9; font-size: 17px; text-align: center;">
+            במלחמה נגד ה"קושי", נלחמנו בטעות בתרופה וכך חשפנו את עצמנו 
+            למחלת הריקנות. זו "טעות בחשבון" ששינתה את דורנו. 😔
+          </p>
+        </div>
+        
+        <div style="background: white; padding: 24px; border-radius: 8px; border: 3px solid #f59e0b;">
+          <div style="font-size: 36px; margin-bottom: 8px; text-align: center;">3️⃣</div>
+          <h5 style="color: #d97706; font-size: 19px; margin-bottom: 12px; text-align: center; font-weight: 700;">
+            לכל דור יש את העמל שלו
+          </h5>
+          <p style="color: #92400e; line-height: 1.9; font-size: 17px; text-align: center;">
+            תפקידנו הוא "לקרוא את המפה" ולהבין מהי הגבורה הנדרשת מאיתנו היום, 
+            בעולם של שפע ופיתויים. העמל שלנו שונה, אך לא פחות חשוב! 🗺️
+          </p>
+        </div>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); padding: 32px; border-radius: 12px; margin: 24px 0; border: 4px solid #10b981;">
+        <h4 style="color: #065f46; margin-bottom: 16px; font-size: 24px; text-align: center;">
+          🌟 מבט לעתיד – כיצד לחיות בדור של שפע?
+        </h4>
+        <div style="background: white; padding: 24px; border-radius: 8px;">
+          <p style="color: #047857; line-height: 2; font-size: 17px; margin-bottom: 16px;">
+            המטרה אינה להתנזר מהעולם, אלא <strong>להשתמש בו נכון</strong>:
+          </p>
+          <ul style="color: #065f46; line-height: 2.2; padding-right: 24px; font-size: 17px;">
+            <li><strong>✅ לאמץ</strong> טכנולוגיה שמסייעת לנו בעבודת ה' ובחיינו</li>
+            <li><strong>⚠️ להיזהר</strong> מפינוק שמוביל לבטלה ולחוסר משמעות</li>
+            <li><strong>💪 לבחור</strong> באתגרים ובעמל שיוצקים טעם בחיינו</li>
+            <li><strong>🎯 לזכור</strong> תמיד: "ללכת בין הפטיש לסדן"</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%); padding: 36px; border-radius: 16px; margin: 32px 0; border: 5px solid #ef4444; text-align: center;">
+        <h4 style="color: #991b1b; margin-bottom: 20px; font-size: 28px; font-weight: 700;">
+          🏆 "אדם לעמל נברא!"
+        </h4>
+        <p style="color: #7f1d1d; line-height: 2.2; font-size: 20px; margin: 0; font-weight: 600;">
+          זו אינה גזירה – זוהי <strong style="font-size: 22px; color: #dc2626;">קריאה לייעודנו</strong>!
+          <br/><br/>
+          <span style="display: block; background: rgba(255,255,255,0.8); padding: 24px; border-radius: 12px; margin-top: 16px;">
+            הקב"ה נתן לנו את מתנת העמל לא כדי להקשות עלינו,
+            <br/>
+            אלא כדי <strong style="color: #059669; font-size: 22px;">לכבד אותנו</strong>.
+            <br/><br/>
+            הוא הפך אותנו <strong>לשותפים במעשה בראשית</strong> 🌟
+            <br/>
+            ונתן לנו את הכוח ליצוק תוכן ומשמעות בחיינו!
+          </span>
+        </p>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 32px; border-radius: 12px; margin: 24px 0; border: 4px solid #f59e0b;">
+        <h4 style="color: #92400e; margin-bottom: 16px; font-size: 22px; text-align: center;">
+          💪 המסר הסופי
+        </h4>
+        <p style="color: #78350f; line-height: 2.2; font-size: 19px; text-align: center; margin: 0; font-weight: 600;">
+          בכל פעם שנרגיש קושי, במקום להתייאש,
+          <br/>
+          נוכל להזכיר לעצמנו:
+          <br/><br/>
+          <span style="display: block; background: white; padding: 20px; border-radius: 8px; margin-top: 12px; color: #dc2626; font-size: 21px;">
+            "הנה ההזדמנות שלי! ✨
+            <br/>
+            כאן אני בונה את המשמעות!
+            <br/>
+            כאן אני מתרפא מהריקנות!"
+          </span>
+          <br/>
+          <span style="color: #065f46; font-size: 20px; display: block; margin-top: 12px;">
+            הגישה הזו הופכת כל אתגר למתנה 🎁
+            <br/>
+            וכל מאמץ – לצעד נוסף בדרך לחיים שלמים,
+            <br/>
+            שמחים וקרובים לה'! 🌈
+          </span>
+        </p>
+      </div>
+    `,
+  quiz: [{
+    question: 'מהי התובנה המרכזית והמסכמת של כל מערך השיעורים בנוגע לפסוק "בזיעת אפיך תאכל לחם"?',
+    options: ['שהפסוק הוא קללה נוראה, ועלינו לעשות הכל כדי לבטל אותה באמצעות טכנולוגיה מתקדמת', 'שהפסוק מתאר מציאות היסטורית שכבר אינה רלוונטית לדור המודרני שלנו', 'שהפסוק אינו הקללה, אלא הברכה והתרופה לקללה האמיתית של חיים ריקים מתוכן ומשמעות', 'שהפסוק רלוונטי רק לאנשים שעובדים בעבודה פיזית קשה במיוחד'],
+    correct: 2,
+    explanation: 'זוהי המהפכה התפיסתית שעברנו לאורך כל עשרת השיעורים. התחלנו מההבנה הפשוטה של "בזיעת אפיך" כקללה, וסיימנו בהבנה העמוקה שזוהי הברכה הגדולה ביותר. בעולם שאיבד את "ערכו העצמי", העמל הוא הכלי שנתן לנו ה\' כדי לברוא משמעות, להרגיש סיפוק ולחיות חיים מלאי טעם. לכן, הפסוק "אדם לעמל יולד" אינו תיאור של גורל מר, אלא קריאה לייעודנו הנעלה.',
+    encouragement: '🏆 מדהים! כעת, כשאנו יוצאים לחיים עם התובנה הזו, יש לנו כלי אדיר. כל קושי הוא הזדמנות לבנות משמעות. זו בחירה שמשנה חיים!'
+  }, {
+    question: 'כיצד עלינו לגשת למאמצים ולקשיים בחיינו, לאור כל מה שלמדנו?',
+    options: ['להתייאש ולקבל את העובדה שהחיים הם סבל שאין מנוס ממנו', 'מתוך הבנה עמוקה שזוהי הדרך שלנו לחיות חיים מלאים ושמחים, לא מתוך תחושת עונש', 'לנסות להימנע מכל קושי אפשרי ולחפש תמיד את הדרך הקלה ביותר', 'להקשיח את עצמנו ולהתעלם מהכאב והקושי שבדרך'],
+    correct: 1,
+    explanation: 'התובנה המרכזית והמעשית של כל הקורס היא שעלינו לגשת למשימותינו, לקשיינו ולעמל חיינו לא מתוך עצבות, תחושת עונש או כניעה, אלא מתוך הבנה עמוקה שזוהי הדרך שלנו לחיות חיים מלאים, שמחים ובעלי משמעות. בכל פעם שנרגיש קושי, נוכל להזכיר: "הנה ההזדמנות שלי. כאן אני בונה את המשמעות. כאן אני מתרפא מהריקנות".',
+    encouragement: '💎 נכון לגמרי! הגישה הזו הופכת כל אתגר למתנה, וכל מאמץ – לצעד נוסף בדרך לחיים שלמים, שמחים וקרובים לה\'! שנזכה לחיות כך תמיד!'
+  }, {
+    question: 'מה הייעוד האמיתי של האדם לפי ההבנה החדשה ש למדנו?',
+    options: ['לסבול בשקט ולקבל את גורלו המר ללא התנגדות', 'להיות שותף של הקב"ה במעשה בראשית, ליצוק תוכן ומשמעות בחיים באמצעות עמל ויצירה', 'לעבוד קשה כדי להצטיין ולהצליח בעולם החומרי והפיננסי', 'לברוח מהעולם ולהתנזר מכל הנאה חומרית ופיזית'],
+    correct: 1,
+    explanation: 'המסר הסופי של הקורס הוא שהקב"ה נתן לנו את מתנת העמל לא כדי להקשות עלינו, אלא כדי לכבד אותנו. הוא הפך אותנו לשותפים במעשה בראשית, ונתן לנו את הכוח ליצוק תוכן ומשמעות בחיינו ובחיי הסובבים אותנו. זוהי הדרך הבטוחה והאמיתית לחיים של סיפוק, אושר וקרבת ה\'. "אדם לעמל נברא" – זוהי קריאה לייעודנו, לא גזירה!',
+    encouragement: '🌟 מושלם! איזו מתנה מופלאה! כל טיפת זיעה, כל אתגר שמתגברים עליו, הוא הזדמנות להזריק קדושה וערך לעולם. זה לא עונש – זו ההזדמנות היקרה ביותר שלנו!'
+  }]
+}];
+
+// ====== רכיב המשחק הראשי ======
+function GamePart3() {
+  const [currentLesson, setCurrentLesson] = useState(0);
+  const [stage, setStage] = useState('content');
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [lessonScores, setLessonScores] = useState([]);
+  const [shuffledOptions, setShuffledOptions] = useState([]);
+  const [gameComplete, setGameComplete] = useState(false);
+  const [answeredQuestions, setAnsweredQuestions] = useState([]);
+  const [showCertificate, setShowCertificate] = useState(false);
+  const shuffleArray = array => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+  useEffect(() => {
+    if (stage === 'quiz' && lessonsData[currentLesson]) {
+      const question = lessonsData[currentLesson].quiz[currentQuestion];
+      if (question) {
+        const optionsWithIndex = question.options.map((opt, idx) => ({
+          text: opt,
+          originalIndex: idx
+        }));
+        setShuffledOptions(shuffleArray(optionsWithIndex));
+      }
+    }
+  }, [stage, currentLesson, currentQuestion]);
+  const handleAnswerSelect = optionIndex => {
+    if (showFeedback) return;
+    setSelectedAnswer(optionIndex);
+  };
+  const handleSubmitAnswer = async () => {
+    if (selectedAnswer === null) return;
+    const question = lessonsData[currentLesson].quiz[currentQuestion];
+    const selectedOption = shuffledOptions[selectedAnswer];
+    const isCorrect = selectedOption.originalIndex === question.correct;
+    setShowFeedback(true);
+    setAnsweredQuestions([...answeredQuestions, {
+      correct: isCorrect
+    }]);
+    if (isCorrect) {
+      playSuccessSound();
+    }
+    await new Promise(resolve => setTimeout(resolve, 3500));
+    if (currentQuestion === lessonsData[currentLesson].quiz.length - 1) {
+      const correctAnswers = [...answeredQuestions, {
+        correct: isCorrect
+      }].filter(a => a.correct).length;
+      const totalQuestions = lessonsData[currentLesson].quiz.length;
+      const score = correctAnswers / totalQuestions * 100;
+      setLessonScores([...lessonScores, score]);
+      if (score >= 95) {
+        await playCelebrationSound();
+        if (currentLesson < lessonsData.length - 1) {
+          setCurrentLesson(currentLesson + 1);
+          setStage('content');
+          setCurrentQuestion(0);
+          setAnsweredQuestions([]);
+        } else {
+          await playFinalCelebration();
+          setGameComplete(true);
+        }
+      } else {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setStage('content');
+        setCurrentQuestion(0);
+        setAnsweredQuestions([]);
+      }
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+    } else {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+    }
+  };
+  const renderContent = () => {
+    const lesson = lessonsData[currentLesson];
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        animation: 'fadeIn 0.5s ease-in'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'linear-gradient(135deg, #f59e0b 0%, #dc2626 100%)',
+        padding: '32px',
+        borderRadius: '16px',
+        color: 'white',
+        marginBottom: '24px',
+        boxShadow: '0 10px 40px rgba(245, 158, 11, 0.3)'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        marginBottom: 8
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: '36px'
+      }
+    }, lesson.icon), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: '18px',
+        opacity: 0.9
+      }
+    }, "\u05E9\u05D9\u05E2\u05D5\u05E8 ", lesson.id, " \u05DE\u05EA\u05D5\u05DA 10 | \u05D7\u05DC\u05E7 3 - \u05E1\u05D9\u05D5\u05DD")), /*#__PURE__*/React.createElement("h2", {
+      style: {
+        fontSize: '28px',
+        margin: '0',
+        fontWeight: 'bold'
+      }
+    }, lesson.title)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'white',
+        padding: '32px',
+        borderRadius: '16px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        marginBottom: '24px',
+        lineHeight: '1.8'
+      },
+      dangerouslySetInnerHTML: {
+        __html: lesson.content
+      }
+    }), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setStage('quiz'),
+      style: {
+        width: '100%',
+        padding: '20px',
+        background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '12px',
+        fontSize: '20px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        boxShadow: '0 4px 15px rgba(220, 38, 38, 0.4)',
+        transition: 'transform 0.2s, box-shadow 0.2s'
+      },
+      onMouseOver: e => {
+        e.target.style.transform = 'translateY(-2px)';
+        e.target.style.boxShadow = '0 6px 20px rgba(220, 38, 38, 0.5)';
+      },
+      onMouseOut: e => {
+        e.target.style.transform = 'translateY(0)';
+        e.target.style.boxShadow = '0 4px 15px rgba(220, 38, 38, 0.4)';
+      }
+    }, "\u05D1\u05D5\u05D0\u05D5 \u05E0\u05D1\u05D3\u05D5\u05E7 \u05D0\u05EA \u05D4\u05D4\u05D1\u05E0\u05D4! \uD83C\uDFAF"));
+  };
+  const renderQuiz = () => {
+    const lesson = lessonsData[currentLesson];
+    const question = lesson.quiz[currentQuestion];
+    const correctAnswers = answeredQuestions.filter(a => a.correct).length;
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        animation: 'fadeIn 0.5s ease-in'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+        padding: '24px',
+        borderRadius: '16px',
+        color: 'white',
+        marginBottom: '24px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
+      }
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '16px',
+        opacity: 0.9,
+        marginBottom: '4px'
+      }
+    }, "\u05E9\u05D9\u05E2\u05D5\u05E8 ", lesson.id, ": \u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, " \u05DE\u05EA\u05D5\u05DA ", lesson.quiz.length), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '20px',
+        fontWeight: 'bold'
+      }
+    }, "\u05E6\u05D9\u05D5\u05DF \u05E0\u05D5\u05DB\u05D7\u05D9: ", answeredQuestions.length > 0 ? Math.round(correctAnswers / answeredQuestions.length * 100) : 0, "%")), /*#__PURE__*/React.createElement(Sparkles, {
+      size: 40
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'white',
+        padding: '32px',
+        borderRadius: '16px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        marginBottom: '24px'
+      }
+    }, /*#__PURE__*/React.createElement("h3", {
+      style: {
+        fontSize: '22px',
+        lineHeight: '1.6',
+        color: '#1f2937',
+        marginBottom: '32px',
+        fontWeight: '600'
+      }
+    }, question.question), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px'
+      }
+    }, shuffledOptions.map((option, index) => {
+      const isSelected = selectedAnswer === index;
+      const isCorrectOption = showFeedback && option.originalIndex === question.correct;
+      const isWrongSelection = showFeedback && isSelected && option.originalIndex !== question.correct;
+      let backgroundColor = '#f9fafb';
+      let borderColor = '#e5e7eb';
+      let textColor = '#374151';
+      if (isCorrectOption) {
+        backgroundColor = '#d1fae5';
+        borderColor = '#10b981';
+        textColor = '#065f46';
+      } else if (isWrongSelection) {
+        backgroundColor = '#fee2e2';
+        borderColor = '#ef4444';
+        textColor = '#991b1b';
+      } else if (isSelected) {
+        backgroundColor = '#dbeafe';
+        borderColor = '#3b82f6';
+        textColor = '#1e40af';
+      }
+      return /*#__PURE__*/React.createElement("button", {
+        key: index,
+        onClick: () => handleAnswerSelect(index),
+        disabled: showFeedback,
+        style: {
+          padding: '20px',
+          background: backgroundColor,
+          border: `3px solid ${borderColor}`,
+          borderRadius: '12px',
+          textAlign: 'right',
+          fontSize: '17px',
+          lineHeight: '1.6',
+          cursor: showFeedback ? 'default' : 'pointer',
+          transition: 'all 0.3s ease',
+          color: textColor,
+          fontWeight: isSelected ? '600' : '400'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          minWidth: '32px',
+          height: '32px',
+          borderRadius: '50%',
+          background: isSelected ? borderColor : '#e5e7eb',
+          color: isSelected ? 'white' : '#6b7280',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 'bold',
+          fontSize: '16px'
+        }
+      }, isCorrectOption && showFeedback ? '✓' : index + 1), /*#__PURE__*/React.createElement("span", {
+        style: {
+          flex: 1
+        }
+      }, option.text)));
+    })), !showFeedback && /*#__PURE__*/React.createElement("button", {
+      onClick: handleSubmitAnswer,
+      disabled: selectedAnswer === null,
+      style: {
+        width: '100%',
+        padding: '18px',
+        marginTop: '24px',
+        background: selectedAnswer !== null ? 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)' : '#9ca3af',
+        color: 'white',
+        border: 'none',
+        borderRadius: '12px',
+        fontSize: '18px',
+        fontWeight: 'bold',
+        cursor: selectedAnswer !== null ? 'pointer' : 'not-allowed',
+        boxShadow: selectedAnswer !== null ? '0 4px 15px rgba(220, 38, 38, 0.4)' : 'none',
+        transition: 'all 0.3s ease'
+      }
+    }, selectedAnswer !== null ? 'בדוק את התשובה שלי! ✨' : 'בחר תשובה כדי להמשיך'), showFeedback && /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: '24px',
+        padding: '24px',
+        background: shuffledOptions[selectedAnswer].originalIndex === question.correct ? 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)' : 'linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)',
+        borderRadius: '12px',
+        borderRight: `4px solid ${shuffledOptions[selectedAnswer].originalIndex === question.correct ? '#10b981' : '#f97316'}`
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '20px',
+        fontWeight: 'bold',
+        marginBottom: '12px',
+        color: shuffledOptions[selectedAnswer].originalIndex === question.correct ? '#065f46' : '#9a3412'
+      }
+    }, shuffledOptions[selectedAnswer].originalIndex === question.correct ? ['מצוין! ⭐', 'פצצה! 🎯', 'כל הכבוד! 💪'][Math.floor(Math.random() * 3)] : 'כמעט! 💡'), /*#__PURE__*/React.createElement("p", {
+      style: {
+        lineHeight: '1.7',
+        marginBottom: '12px',
+        color: shuffledOptions[selectedAnswer].originalIndex === question.correct ? '#047857' : '#c2410c'
+      }
+    }, question.explanation), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'rgba(255, 255, 255, 0.5)',
+        padding: '16px',
+        borderRadius: '8px',
+        marginTop: '16px'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      style: {
+        lineHeight: '1.7',
+        fontWeight: '500',
+        color: '#1f2937',
+        margin: 0
+      }
+    }, question.encouragement)))));
+  };
+  const renderCompletion = () => {
+    const totalScore = Math.round(lessonScores.reduce((a, b) => a + b, 0) / lessonScores.length);
+    if (showCertificate) {
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          animation: 'fadeIn 0.5s ease-in'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+          padding: '48px 32px',
+          borderRadius: '20px',
+          color: 'white',
+          marginBottom: '32px',
+          boxShadow: '0 10px 40px rgba(251, 191, 36, 0.4)',
+          border: '8px solid #f59e0b',
+          position: 'relative',
+          overflow: 'hidden'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          fontSize: '48px'
+        }
+      }, "\uD83C\uDFC6"), /*#__PURE__*/React.createElement("div", {
+        style: {
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          fontSize: '48px'
+        }
+      }, "\uD83C\uDFC6"), /*#__PURE__*/React.createElement("div", {
+        style: {
+          textAlign: 'center',
+          paddingTop: '40px'
+        }
+      }, /*#__PURE__*/React.createElement("h2", {
+        style: {
+          fontSize: '40px',
+          margin: '0 0 16px 0',
+          fontWeight: 'bold'
+        }
+      }, "\u05EA\u05E2\u05D5\u05D3\u05EA \u05D4\u05E6\u05D8\u05D9\u05D9\u05E0\u05D5\u05EA"), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: '72px',
+          margin: '24px 0'
+        }
+      }, "\uD83C\uDF93"), /*#__PURE__*/React.createElement("div", {
+        style: {
+          background: 'rgba(255,255,255,0.95)',
+          padding: '32px',
+          borderRadius: '12px',
+          color: '#1f2937',
+          marginTop: '24px'
+        }
+      }, /*#__PURE__*/React.createElement("p", {
+        style: {
+          fontSize: '20px',
+          marginBottom: '16px',
+          color: '#6b7280'
+        }
+      }, "\u05EA\u05E2\u05D5\u05D3\u05D4 \u05D6\u05D5 \u05DE\u05D5\u05E2\u05E0\u05E7\u05EA \u05DC:"), /*#__PURE__*/React.createElement("p", {
+        style: {
+          fontSize: '32px',
+          fontWeight: 'bold',
+          margin: '16px 0',
+          color: '#dc2626'
+        }
+      }, "\u05EA\u05DC\u05DE\u05D9\u05D3 \u05DE\u05E6\u05D8\u05D9\u05D9\u05DF"), /*#__PURE__*/React.createElement("p", {
+        style: {
+          fontSize: '18px',
+          margin: '24px 0',
+          color: '#374151',
+          lineHeight: '1.8'
+        }
+      }, "\u05E9\u05E1\u05D9\u05D9\u05DD \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4 \u05D0\u05EA \u05DE\u05E2\u05E8\u05DA \u05D4\u05E9\u05D9\u05E2\u05D5\u05E8\u05D9\u05DD \u05D4\u05DE\u05DC\u05D0", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("strong", {
+        style: {
+          fontSize: '20px',
+          color: '#7c3aed'
+        }
+      }, "\"\u05D1\u05D6\u05D9\u05E2\u05EA \u05D0\u05E4\u05D9\u05DA \u05EA\u05D0\u05DB\u05DC \u05DC\u05D7\u05DD \u2013 \u05D1\u05E8\u05DB\u05D4 \u05D0\u05D5 \u05E7\u05DC\u05DC\u05D4?\"")), /*#__PURE__*/React.createElement("div", {
+        style: {
+          background: '#fef3c7',
+          padding: '20px',
+          borderRadius: '8px',
+          margin: '24px 0'
+        }
+      }, /*#__PURE__*/React.createElement("p", {
+        style: {
+          fontSize: '24px',
+          fontWeight: 'bold',
+          color: '#92400e',
+          margin: 0
+        }
+      }, "\u05E6\u05D9\u05D5\u05DF \u05E1\u05D5\u05E4\u05D9: ", totalScore, "% \uD83C\uDF1F")), /*#__PURE__*/React.createElement("p", {
+        style: {
+          fontSize: '16px',
+          color: '#6b7280',
+          marginTop: '24px'
+        }
+      }, "\u05EA\u05D0\u05E8\u05D9\u05DA: ", new Date().toLocaleDateString('he-IL'))))), /*#__PURE__*/React.createElement("button", {
+        onClick: () => setShowCertificate(false),
+        style: {
+          width: '100%',
+          padding: '16px',
+          background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '12px',
+          fontSize: '18px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          marginBottom: '24px'
+        }
+      }, "\u05D7\u05D6\u05E8\u05D4 \u05DC\u05E1\u05D9\u05DB\u05D5\u05DD \uD83D\uDD19"), /*#__PURE__*/React.createElement("div", {
+        style: {
+          background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+          padding: '32px',
+          borderRadius: '16px',
+          color: 'white',
+          textAlign: 'center',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+        }
+      }, /*#__PURE__*/React.createElement("h3", {
+        style: {
+          fontSize: '24px',
+          marginBottom: '16px'
+        }
+      }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+        style: {
+          fontSize: '28px',
+          fontWeight: 'bold',
+          margin: '0 0 16px 0'
+        }
+      }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+        style: {
+          fontSize: '22px',
+          margin: 0
+        }
+      }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: ", /*#__PURE__*/React.createElement("span", {
+        dir: "ltr",
+        style: {
+          fontWeight: 'bold'
+        }
+      }, "052-713-9520"))));
+    }
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        animation: 'fadeIn 0.5s ease-in',
+        textAlign: 'center'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+        padding: '48px',
+        borderRadius: '20px',
+        color: 'white',
+        marginBottom: '32px',
+        boxShadow: '0 10px 40px rgba(251, 191, 36, 0.4)'
+      }
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      size: 80,
+      style: {
+        marginBottom: '24px'
+      }
+    }), /*#__PURE__*/React.createElement("h2", {
+      style: {
+        fontSize: '36px',
+        margin: '0 0 16px 0',
+        fontWeight: 'bold'
+      }
+    }, "\uD83C\uDF8A \u05DE\u05D6\u05DC \u05D8\u05D5\u05D1! \u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05DB\u05DC 10 \u05D4\u05E9\u05D9\u05E2\u05D5\u05E8\u05D9\u05DD! \uD83C\uDF8A"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '24px',
+        margin: 0,
+        opacity: 0.95
+      }
+    }, "\u05D4\u05E6\u05DC\u05D7\u05EA \u05DC\u05E2\u05D1\u05D5\u05E8 \u05DE\u05E1\u05E2 \u05DC\u05D9\u05DE\u05D5\u05D3\u05D9 \u05DE\u05E8\u05EA\u05E7 \u05D5\u05DE\u05E9\u05DE\u05E2\u05D5\u05EA\u05D9!")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'white',
+        padding: '32px',
+        borderRadius: '16px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        marginBottom: '32px'
+      }
+    }, /*#__PURE__*/React.createElement("h3", {
+      style: {
+        fontSize: '28px',
+        color: '#1f2937',
+        marginBottom: '24px'
+      }
+    }, "\u05D4\u05E6\u05D9\u05D5\u05DF \u05D4\u05DB\u05D5\u05DC\u05DC \u05E9\u05DC\u05DA: ", totalScore, "% \uD83C\uDF1F"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginBottom: '32px',
+        maxHeight: '400px',
+        overflowY: 'auto'
+      }
+    }, lessonScores.map((score, index) => /*#__PURE__*/React.createElement("div", {
+      key: index,
+      style: {
+        background: '#f3f4f6',
+        padding: '16px',
+        borderRadius: '8px',
+        marginBottom: '12px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: '600',
+        color: '#374151'
+      }
+    }, lessonsData[index].icon, " \u05E9\u05D9\u05E2\u05D5\u05E8 ", lessonsData[index].id, ": ", lessonsData[index].title), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: 'bold',
+        color: score === 100 ? '#10b981' : '#f59e0b',
+        fontSize: '18px'
+      }
+    }, Math.round(score), "%")))), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setShowCertificate(true),
+      style: {
+        width: '100%',
+        padding: '20px',
+        background: 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '12px',
+        fontSize: '20px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        marginBottom: '24px',
+        boxShadow: '0 4px 15px rgba(124, 58, 237, 0.4)'
+      }
+    }, "\uD83C\uDF93 \u05E6\u05E4\u05D4 \u05D1\u05EA\u05E2\u05D5\u05D3\u05EA \u05D4\u05D4\u05E6\u05D8\u05D9\u05D9\u05E0\u05D5\u05EA \u05E9\u05DC\u05DA!"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
+        padding: '24px',
+        borderRadius: '12px',
+        marginBottom: '24px',
+        textAlign: 'right'
+      }
+    }, /*#__PURE__*/React.createElement("h4", {
+      style: {
+        color: '#3730a3',
+        marginBottom: '16px',
+        fontSize: '20px'
+      }
+    }, "\uD83D\uDC8E \u05D4\u05EA\u05D5\u05D1\u05E0\u05D5\u05EA \u05D4\u05DE\u05E8\u05DB\u05D6\u05D9\u05D5\u05EA \u05E9\u05DC\u05DE\u05D3\u05E0\u05D5:"), /*#__PURE__*/React.createElement("ul", {
+      style: {
+        color: '#4338ca',
+        lineHeight: '2',
+        textAlign: 'right',
+        paddingRight: '24px'
+      }
+    }, /*#__PURE__*/React.createElement("li", null, "\u05D4\u05E7\u05DC\u05DC\u05D4 \u05D4\u05D0\u05DE\u05D9\u05EA\u05D9\u05EA = \u05D7\u05D9\u05D9\u05DD \u05E8\u05D9\u05E7\u05D9\u05DD | \u05D4\u05E2\u05DE\u05DC = \u05D4\u05D1\u05E8\u05DB\u05D4 \u05D5\u05D4\u05EA\u05E8\u05D5\u05E4\u05D4"), /*#__PURE__*/React.createElement("li", null, "\u05DC\u05D4\u05D9\u05D5\u05EA \u05E6\u05E8\u05D9\u05DA \u05DC\u05D2\u05E9\u05EA \u05DC\u05E2\u05D1\u05D5\u05D3\u05D4 \u05D5\u05DE\u05E9\u05D9\u05DE\u05D5\u05EA \u05D1\u05E9\u05DE\u05D7\u05D4, \u05DC\u05D0 \u05D1\u05E8\u05D2\u05DC\u05D9\u05D9\u05DD \u05DB\u05D5\u05E9\u05DC\u05D5\u05EA"), /*#__PURE__*/React.createElement("li", null, "\u05E2\u05E9\u05D9\u05E0\u05D5 \"\u05D8\u05E2\u05D5\u05EA \u05D1\u05D7\u05E9\u05D1\u05D5\u05DF\" \u2013 \u05E0\u05DC\u05D7\u05DE\u05E0\u05D5 \u05D1\u05EA\u05E8\u05D5\u05E4\u05D4 \u05D1\u05DE\u05E7\u05D5\u05DD \u05D1\u05DE\u05D7\u05DC\u05D4"), /*#__PURE__*/React.createElement("li", null, "\u05D3\u05D5\u05E8 \u05D4\u05E4\u05D9\u05E0\u05D5\u05E7 \u05D6\u05E7\u05D5\u05E7 \u05DC\u05D0\u05EA\u05D2\u05E8\u05D9\u05DD, \u05DC\u05D0 \u05DC\u05D4\u05E7\u05DC\u05D5\u05EA \u05E0\u05D5\u05E1\u05E4\u05D5\u05EA"), /*#__PURE__*/React.createElement("li", null, "\u05DC\u05DB\u05DC \u05D3\u05D5\u05E8 \u05D9\u05E9 \u05D0\u05EA \u05D4\u05E2\u05DE\u05DC \u05E9\u05DC\u05D5 \u2013 \u05E2\u05DC\u05D9\u05E0\u05D5 \"\u05DC\u05E7\u05E8\u05D5\u05D0 \u05D0\u05EA \u05D4\u05DE\u05E4\u05D4\""), /*#__PURE__*/React.createElement("li", null, "\u05D4\u05D1\u05D7\u05D9\u05E8\u05D4 \u05D1\"\u05EA\u05D9\u05D1\u05D4\" \u05E2\u05DB\u05E9\u05D9\u05D5 \u05D4\u05D9\u05D0 \u05D4\u05D7\u05DB\u05DE\u05D4 \u05D4\u05D0\u05DE\u05D9\u05EA\u05D9\u05EA"))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: '#fef3c7',
+        padding: '20px',
+        borderRadius: '12px',
+        borderRight: '4px solid #f59e0b',
+        textAlign: 'right',
+        marginBottom: '24px'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '18px',
+        lineHeight: '1.8',
+        color: '#92400e',
+        margin: 0
+      }
+    }, /*#__PURE__*/React.createElement("strong", null, "\uD83D\uDCAA \u05D6\u05DB\u05D5\u05E8 \u05EA\u05DE\u05D9\u05D3:"), /*#__PURE__*/React.createElement("br", null), "\"\u05D0\u05D3\u05DD \u05DC\u05E2\u05DE\u05DC \u05E0\u05D1\u05E8\u05D0\" \u2013 \u05D6\u05D5 \u05E7\u05E8\u05D9\u05D0\u05D4 \u05DC\u05D9\u05D9\u05E2\u05D5\u05D3\u05DA, \u05DC\u05D0 \u05D2\u05D6\u05D9\u05E8\u05D4!", /*#__PURE__*/React.createElement("br", null), "\u05DB\u05DC \u05E7\u05D5\u05E9\u05D9 \u05D4\u05D5\u05D0 \u05D4\u05D6\u05D3\u05DE\u05E0\u05D5\u05EA \u05DC\u05D1\u05E0\u05D5\u05EA \u05DE\u05E9\u05DE\u05E2\u05D5\u05EA. \u05DB\u05DC \u05DE\u05D0\u05DE\u05E5 \u05D4\u05D5\u05D0 \u05E6\u05E2\u05D3 \u05DC\u05D7\u05D9\u05D9\u05DD \u05E9\u05DC\u05DE\u05D9\u05DD!"))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+        padding: '32px',
+        borderRadius: '16px',
+        color: 'white',
+        marginBottom: '32px',
+        boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)'
+      }
+    }, /*#__PURE__*/React.createElement("h3", {
+      style: {
+        fontSize: '28px',
+        marginBottom: '16px'
+      }
+    }, "\uD83C\uDF81 \u05DE\u05D6\u05DC \u05D8\u05D5\u05D1!"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '20px',
+        lineHeight: '1.8',
+        marginBottom: '20px'
+      }
+    }, "\u05E0\u05DB\u05E0\u05E1\u05EA \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4 \u05E0\u05D5\u05E9\u05D0\u05EA \u05E4\u05E8\u05E1\u05D9\u05DD!", /*#__PURE__*/React.createElement("br", null), "\u05E8\u05E9\u05D5\u05DD \u05D0\u05EA \u05E4\u05E8\u05D8\u05D9\u05DA \u05DB\u05D0\u05DF:"), /*#__PURE__*/React.createElement("a", {
+      href: "https://forms.gle/A66uubei4XSX6SG2A",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      style: {
+        display: 'inline-block',
+        padding: '16px 32px',
+        background: 'white',
+        color: '#059669',
+        borderRadius: '12px',
+        fontSize: '20px',
+        fontWeight: 'bold',
+        textDecoration: 'none',
+        boxShadow: '0 4px 15px rgba(255,255,255,0.3)',
+        transition: 'transform 0.2s'
+      },
+      onMouseOver: e => e.target.style.transform = 'scale(1.05)',
+      onMouseOut: e => e.target.style.transform = 'scale(1)'
+    }, "\uD83D\uDCDD \u05DC\u05D7\u05E5 \u05DB\u05D0\u05DF \u05DC\u05D4\u05E8\u05E9\u05DE\u05D4 \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+        padding: '32px',
+        borderRadius: '16px',
+        color: 'white',
+        textAlign: 'center',
+        marginTop: '40px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+      }
+    }, /*#__PURE__*/React.createElement("h3", {
+      style: {
+        fontSize: '24px',
+        marginBottom: '16px'
+      }
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '28px',
+        fontWeight: 'bold',
+        margin: '0 0 16px 0'
+      }
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '22px',
+        margin: 0
+      }
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: ", /*#__PURE__*/React.createElement("span", {
+      dir: "ltr",
+      style: {
+        fontWeight: 'bold'
+      }
+    }, "052-713-9520"))));
+  };
+  const progress = currentLesson / lessonsData.length * 100;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f59e0b 0%, #dc2626 100%)',
+      padding: '40px 20px',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      direction: 'rtl'
+    }
+  }, /*#__PURE__*/React.createElement("style", null, `
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `), /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxWidth: '900px',
+      margin: '0 auto'
+    }
+  }, !gameComplete && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: 'rgba(255, 255, 255, 0.2)',
+      borderRadius: '12px',
+      padding: '8px',
+      marginBottom: '24px',
+      backdropFilter: 'blur(10px)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: '12px',
+      background: 'linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%)',
+      borderRadius: '8px',
+      width: `${progress}%`,
+      transition: 'width 0.5s ease',
+      boxShadow: '0 2px 10px rgba(251, 191, 36, 0.5)'
+    }
+  })), gameComplete ? renderCompletion() : stage === 'content' ? renderContent() : renderQuiz()));
+}
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(GamePart3));
+</script>
+</body>
+</html>

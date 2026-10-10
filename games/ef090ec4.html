@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>משחק פרק אבות א' - חלק 1 – הקול החמישי</title>
+<meta name="description" content="משחק חינוכי אינטראקטיבי ללימוד פרק אבות א' עם שאלות רב ברירה, משחקי התאמה ומשוב מיידי. מתאים לתלמידים ומבוגרים לחיזוק הידע במשנה.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="משחק פרק אבות א&#x27; - חלק 1 – הקול החמישי">
+<meta property="og:description" content="משחק חינוכי אינטראקטיבי ללימוד פרק אבות א&#x27; עם שאלות רב ברירה, משחקי התאמה ומשוב מיידי. מתאים לתלמידים ומבוגרים לחיזוק הידע במשנה.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-ef090ec4.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/ef090ec4.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const CheckCircle = window.LucideReact["CheckCircle"] || window.LucideReact.Circle;
+const XCircle = window.LucideReact["XCircle"] || window.LucideReact.Circle;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const GamePart1 = () => {
+  const [currentLevel, setCurrentLevel] = useState('easy');
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [gameState, setGameState] = useState('playing');
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  const [selectedTerm, setSelectedTerm] = useState(null);
+  const [selectedDef, setSelectedDef] = useState(null);
+  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [easyScore, setEasyScore] = useState(0);
+  const questions = {
+    easy: [{
+      type: 'multipleChoice',
+      question: 'מי קיבל את התורה מסיני?',
+      answers: [{
+        text: 'משה רבנו',
+        correct: true,
+        explanation: 'נכון! משה קיבל תורה מסיני ⭐'
+      }, {
+        text: 'יהושע',
+        correct: false,
+        explanation: 'לא... יהושע קיבל מאחרי משה 🤔'
+      }, {
+        text: 'אהרן הכהן',
+        correct: false,
+        explanation: 'קרוב, אבל משה קיבל ראשון 💡'
+      }, {
+        text: 'הזקנים',
+        correct: false,
+        explanation: 'הם קיבלו מיהושע 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'על כמה דברים העולם עומד, לפי שמעון הצדיק?',
+      answers: [{
+        text: 'שלושה דברים',
+        correct: true,
+        explanation: 'מצוין! תורה, עבודה וגמילות חסדים 🎯'
+      }, {
+        text: 'ארבעה דברים',
+        correct: false,
+        explanation: 'לא בדיוק... זה שלושה 🤔'
+      }, {
+        text: 'חמישה דברים',
+        correct: false,
+        explanation: 'פחות מזה 💡'
+      }, {
+        text: 'שניים דברים',
+        correct: false,
+        explanation: 'יותר מזה 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מי אמר "אל תהיו כעבדים המשמשין את הרב על מנת לקבל פרס"?',
+      answers: [{
+        text: 'אנטיגנוס איש סוכו',
+        correct: true,
+        explanation: 'פצצה! הוא לימד לעבוד את ה\' בלי תמורה 💪'
+      }, {
+        text: 'שמעון הצדיק',
+        correct: false,
+        explanation: 'לא, זה אנטיגנוס איש סוכו 🤔'
+      }, {
+        text: 'יוסי בן יועזר',
+        correct: false,
+        explanation: 'לא הוא, זה מאנטיגנוס 💡'
+      }, {
+        text: 'הלל הזקן',
+        correct: false,
+        explanation: 'הלל אמר דברים אחרים 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מי אמר "יהי ביתך בית ועד לחכמים"?',
+      answers: [{
+        text: 'יוסי בן יועזר',
+        correct: true,
+        explanation: 'כל הכבוד! הוא לימד לפתוח את הבית לחכמים ⭐'
+      }, {
+        text: 'יוסי בן יוחנן',
+        correct: false,
+        explanation: 'הוא אמר "יהי ביתך פתוח לרווחה" 🤔'
+      }, {
+        text: 'יהושע בן פרחיה',
+        correct: false,
+        explanation: 'לא הוא, זה מיוסי בן יועזר 💡'
+      }, {
+        text: 'הלל',
+        correct: false,
+        explanation: 'זה מתקופה מוקדמת יותר 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מי אמר "עשה לך רב וקנה לך חבר"?',
+      answers: [{
+        text: 'יהושע בן פרחיה',
+        correct: true,
+        explanation: 'נכון מאוד! עיקרון חשוב ללימוד 🎯'
+      }, {
+        text: 'רבן גמליאל',
+        correct: false,
+        explanation: 'גם הוא אמר "עשה לך רב", אבל זה יהושע בן פרחיה 🤔'
+      }, {
+        text: 'נתאי הארבלי',
+        correct: false,
+        explanation: 'לא, זה יהושע בן פרחיה 💡'
+      }, {
+        text: 'הלל',
+        correct: false,
+        explanation: 'הלל אמר דברים אחרים 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מי אמר "הרחק משכן רע"?',
+      answers: [{
+        text: 'נתאי הארבלי',
+        correct: true,
+        explanation: 'מעולה! הוא הזהיר מחברה רעה 💪'
+      }, {
+        text: 'יהושע בן פרחיה',
+        correct: false,
+        explanation: 'לא, זה נתאי הארבלי 🤔'
+      }, {
+        text: 'שמעיה',
+        correct: false,
+        explanation: 'לא הוא, זה נתאי 💡'
+      }, {
+        text: 'שמעון בן שטח',
+        correct: false,
+        explanation: 'שמעון אמר על עדים 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מי אמר "הוי מתלמידיו של אהרן"?',
+      answers: [{
+        text: 'הלל הזקן',
+        correct: true,
+        explanation: 'כל הכבוד! אוהב שלום ורודף שלום ⭐'
+      }, {
+        text: 'שמאי',
+        correct: false,
+        explanation: 'שמאי אמר דברים אחרים 🤔'
+      }, {
+        text: 'יהושע בן פרחיה',
+        correct: false,
+        explanation: 'לא, זה הלל 💡'
+      }, {
+        text: 'רבן גמליאל',
+        correct: false,
+        explanation: 'זה הלל הזקן 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם בין החכם למה שהוא אמר:',
+      pairs: [{
+        term: 'שמעון הצדיק',
+        definition: 'העולם עומד על תורה, עבודה וגמילות חסדים'
+      }, {
+        term: 'אנטיגנוס איש סוכו',
+        definition: 'אל תעבדו את ה\' על מנת לקבל פרס'
+      }, {
+        term: 'יוסי בן יועזר',
+        definition: 'יהי ביתך בית ועד לחכמים'
+      }, {
+        term: 'יהושע בן פרחיה',
+        definition: 'עשה לך רב וקנה לך חבר'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם בין החכם לעיקרון שלו:',
+      pairs: [{
+        term: 'נתאי הארבלי',
+        definition: 'הרחק משכן רע'
+      }, {
+        term: 'יהודה בן טבאי',
+        definition: 'אל תעש עצמך כעורכי הדיינים'
+      }, {
+        term: 'שמעון בן שטח',
+        definition: 'הוי מרבה לחקור את העדים'
+      }, {
+        term: 'הלל',
+        definition: 'אוהב שלום ורודף שלום'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם בין החכם לאמירה:',
+      pairs: [{
+        term: 'שמעיה',
+        definition: 'אהוב את המלאכה ושנא את הרבנות'
+      }, {
+        term: 'שמאי',
+        definition: 'עשה תורתך קבע'
+      }, {
+        term: 'רבן גמליאל',
+        definition: 'עשה לך רב והסתלק מן הספק'
+      }, {
+        term: 'שמעון בנו',
+        definition: 'לא המדרש הוא העיקר אלא המעשה'
+      }]
+    }],
+    medium: [{
+      type: 'multipleChoice',
+      question: 'למי מסר משה את התורה?',
+      answers: [{
+        text: 'ליהושע',
+        correct: true,
+        explanation: 'נכון! יהושע קיבל מאחרי משה ⭐'
+      }, {
+        text: 'לאהרן',
+        correct: false,
+        explanation: 'לא, זה יהושע 🤔'
+      }, {
+        text: 'לזקנים',
+        correct: false,
+        explanation: 'הזקנים קיבלו מיהושע 💡'
+      }, {
+        text: 'לנביאים',
+        correct: false,
+        explanation: 'הנביאים באו אחרי 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה אנשי כנסת הגדולה אמרו לעשות?',
+      answers: [{
+        text: 'הוו מתונים בדין, העמידו תלמידים, עשו סייג לתורה',
+        correct: true,
+        explanation: 'מצוין! שלושת העקרונות שלהם 🎯'
+      }, {
+        text: 'לימדו תורה בלבד',
+        correct: false,
+        explanation: 'זה לא מלא, יש עוד 🤔'
+      }, {
+        text: 'שפטו בצדק בלבד',
+        correct: false,
+        explanation: 'זה חלק, אבל יש עוד 💡'
+      }, {
+        text: 'אהבו שלום',
+        correct: false,
+        explanation: 'זה מהלל 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה פירוש "והוי מתאבק בעפר רגליהם"?',
+      answers: [{
+        text: 'להיות קרוב לחכמים וללמוד מהם',
+        correct: true,
+        explanation: 'נכון! דבק בחכמים תמיד 💪'
+      }, {
+        text: 'לנקות את רגליהם',
+        correct: false,
+        explanation: 'לא פשוטו, זה משמעות עמוקה 🤔'
+      }, {
+        text: 'ללכת אחריהם',
+        correct: false,
+        explanation: 'קרוב, אבל יותר עמוק מזה 💡'
+      }, {
+        text: 'לעבוד אצלם',
+        correct: false,
+        explanation: 'זה על למידה 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה יוסי בן יוחנן אמר "יהיו עניים בני ביתך"?',
+      answers: [{
+        text: 'לקבל עניים בחום ולדאוג להם',
+        correct: true,
+        explanation: 'כל הכבוד! גמילות חסדים ⭐'
+      }, {
+        text: 'להיות עני',
+        correct: false,
+        explanation: 'לא, זה על אירוח 🤔'
+      }, {
+        text: 'לתת צדקה',
+        correct: false,
+        explanation: 'יותר מזה - לארח 💡'
+      }, {
+        text: 'לחסוך כסף',
+        correct: false,
+        explanation: 'ההיפך! 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה רע בהרבה שיחה עם האישה?',
+      answers: [{
+        text: 'גורם רעה לעצמו ובוטל מדברי תורה',
+        correct: true,
+        explanation: 'נכון! מונע לימוד תורה 🎯'
+      }, {
+        text: 'זה לא נחמד',
+        correct: false,
+        explanation: 'יותר עמוק מזה 🤔'
+      }, {
+        text: 'זה בזבוז זמן',
+        correct: false,
+        explanation: 'נכון, אבל יותר מזה 💡'
+      }, {
+        text: 'האישה לא אוהבת',
+        correct: false,
+        explanation: 'לא זה הטעם 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה פירוש "והוי דן את כל האדם לכף זכות"?',
+      answers: [{
+        text: 'לשפוט אנשים בצורה חיובית',
+        correct: true,
+        explanation: 'מעולה! תמיד לחשוב טוב 💪'
+      }, {
+        text: 'לשפוט בבית דין',
+        correct: false,
+        explanation: 'לא, זה על חשיבה 🤔'
+      }, {
+        text: 'לא לשפוט בכלל',
+        correct: false,
+        explanation: 'לשפוט, אבל לטובה 💡'
+      }, {
+        text: 'לחפש זכויות',
+        correct: false,
+        explanation: 'קרוב מאוד, אבל רחב יותר 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה יהודה בן טבאי אמר על בעלי דינים?',
+      answers: [{
+        text: 'כשעומדים לפניך - כרשעים, כשנפטרים - כזכאים',
+        correct: true,
+        explanation: 'נכון! איזון בשיפוט ⭐'
+      }, {
+        text: 'תמיד כרשעים',
+        correct: false,
+        explanation: 'לא, יש שינוי 🤔'
+      }, {
+        text: 'תמיד כזכאים',
+        correct: false,
+        explanation: 'לא, תלוי מתי 💡'
+      }, {
+        text: 'כך או כך',
+        correct: false,
+        explanation: 'יש כלל ברור 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה שמעיה אמר "שנא את הרבנות"?',
+      answers: [{
+        text: 'לא לרדוף אחרי כבוד ושררה',
+        correct: true,
+        explanation: 'מצוין! ענוה חשובה 🎯'
+      }, {
+        text: 'רבנים לא טובים',
+        correct: false,
+        explanation: 'לא, זה על כבוד 🤔'
+      }, {
+        text: 'לא להיות רב',
+        correct: false,
+        explanation: 'לא נגד הרבנות, נגד הכבוד 💡'
+      }, {
+        text: 'לשנוא מנהיגות',
+        correct: false,
+        explanation: 'לא לרדוף אחרי שררה 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה הלל אמר "ודלא מוסיף יסיף"?',
+      answers: [{
+        text: 'מי שלא מוסיף בתורה - חסר',
+        correct: true,
+        explanation: 'נכון! תמיד להתקדם 💪'
+      }, {
+        text: 'להוסיף כסף',
+        correct: false,
+        explanation: 'לא, זה על תורה 🤔'
+      }, {
+        text: 'להוסיף חברים',
+        correct: false,
+        explanation: 'לא, זה על לימוד 💡'
+      }, {
+        text: 'להוסיף מצוות',
+        correct: false,
+        explanation: 'ספציפית על תורה 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'על מה רבן שמעון בן גמליאל אמר שהעולם עומד?',
+      answers: [{
+        text: 'על הדין, האמת והשלום',
+        correct: true,
+        explanation: 'כל הכבוד! שלושת העמודים שלו ⭐'
+      }, {
+        text: 'על התורה, עבודה וגמילות חסדים',
+        correct: false,
+        explanation: 'זה שמעון הצדיק 🤔'
+      }, {
+        text: 'על הצדק והמשפט',
+        correct: false,
+        explanation: 'יש עוד - גם שלום 💡'
+      }, {
+        text: 'על האמונה',
+        correct: false,
+        explanation: 'לא זה 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם בין החכם לזוגו:',
+      pairs: [{
+        term: 'יוסי בן יועזר',
+        definition: 'יוסי בן יוחנן'
+      }, {
+        term: 'יהושע בן פרחיה',
+        definition: 'נתאי הארבלי'
+      }, {
+        term: 'יהודה בן טבאי',
+        definition: 'שמעון בן שטח'
+      }, {
+        term: 'שמעיה',
+        definition: 'אבטליון'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם את המושגים לשמעון הצדיק:',
+      pairs: [{
+        term: 'תורה',
+        definition: 'לימוד והוראה'
+      }, {
+        term: 'עבודה',
+        definition: 'תפילה וקורבנות'
+      }, {
+        term: 'גמילות חסדים',
+        definition: 'עזרה לזולת'
+      }, {
+        term: 'שמעון הצדיק',
+        definition: 'משירי כנסת הגדולה'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם בין האמירה למשמעות:',
+      pairs: [{
+        term: 'עשה תורתך קבע',
+        definition: 'קבע זמן קבוע ללימוד'
+      }, {
+        term: 'אמור מעט ועשה הרבה',
+        definition: 'פחות דיבור, יותר מעשים'
+      }, {
+        term: 'קבל את כל האדם בסבר פנים יפות',
+        definition: 'להיות נחמד לכולם'
+      }, {
+        term: 'שמאי',
+        definition: 'אמר את כל אלה'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם את המשפטים לאמירות הלל:',
+      pairs: [{
+        term: 'אם אין אני לי מי לי',
+        definition: 'אדם צריך לדאוג לעצמו'
+      }, {
+        term: 'וכשאני לעצמי מה אני',
+        definition: 'לא רק לעצמי - גם לאחרים'
+      }, {
+        term: 'אם לא עכשיו אימתי',
+        definition: 'לעשות דברים עכשיו'
+      }, {
+        term: 'נגד שמא אבד שמיה',
+        definition: 'מי שמתגאה - מאבד'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם את החכמים לתחומים:',
+      pairs: [{
+        term: 'שמעון בן שטח',
+        definition: 'חקירת עדים בבית דין'
+      }, {
+        term: 'אבטליון',
+        definition: 'זהירות בדיבור של חכמים'
+      }, {
+        term: 'רבן גמליאל',
+        definition: 'עשיית רב והסתלקות מספק'
+      }, {
+        term: 'שמעון בנו',
+        definition: 'המעשה חשוב מהמדרש'
+      }]
+    }]
+  };
+  const levelReqs = {
+    easy: {
+      total: 10,
+      passing: 8
+    },
+    medium: {
+      total: 15,
+      passing: 13
+    }
+  };
+  const currentQuestion = questions[currentLevel][currentQuestionIndex];
+  useEffect(() => {
+    if (currentQuestion?.answers) {
+      setShuffledAnswers([...currentQuestion.answers].sort(() => Math.random() - 0.5));
+    }
+    setMatchedPairs([]);
+    setSelectedTerm(null);
+    setSelectedDef(null);
+  }, [currentQuestionIndex, currentLevel]);
+  const playSuccessSound = () => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [523.25, 659.25, 783.99].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      const start = ctx.currentTime + i * 0.1;
+      gain.gain.setValueAtTime(0.3, start);
+      gain.gain.exponentialRampToValueAtTime(0.01, start + 0.3);
+      osc.start(start);
+      osc.stop(start + 0.3);
+    });
+  };
+  const handleAnswer = (answer, isCorrect) => {
+    setSelectedAnswer(answer);
+    setShowFeedback(true);
+    if (isCorrect) {
+      setScore(score + 1);
+      playSuccessSound();
+    } else {
+      setLives(lives - 1);
+      if (lives - 1 === 0) {
+        setGameState('failed');
+      }
+    }
+  };
+  const handleNext = () => {
+    const isLastQuestion = currentQuestionIndex === questions[currentLevel].length - 1;
+    if (isLastQuestion) {
+      if (currentLevel === 'easy') {
+        if (score >= levelReqs.easy.passing) {
+          setEasyScore(score);
+          setCurrentLevel('medium');
+          setCurrentQuestionIndex(0);
+          setScore(0);
+          setLives(3);
+          setShowFeedback(false);
+          setSelectedAnswer(null);
+        } else {
+          setGameState('failed');
+        }
+      } else {
+        if (score >= levelReqs.medium.passing) {
+          setGameState('part1Complete');
+        } else {
+          setGameState('failed');
+        }
+      }
+    } else {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setShowFeedback(false);
+      setSelectedAnswer(null);
+    }
+  };
+  const handleMatchingClick = (item, type) => {
+    if (type === 'term') {
+      if (selectedTerm === item) {
+        setSelectedTerm(null);
+      } else {
+        setSelectedTerm(item);
+        if (selectedDef) {
+          checkMatch(item, selectedDef);
+        }
+      }
+    } else {
+      if (selectedDef === item) {
+        setSelectedDef(null);
+      } else {
+        setSelectedDef(item);
+        if (selectedTerm) {
+          checkMatch(selectedTerm, item);
+        }
+      }
+    }
+  };
+  const checkMatch = (term, def) => {
+    const pair = currentQuestion.pairs.find(p => p.term === term && p.definition === def);
+    if (pair) {
+      setMatchedPairs([...matchedPairs, pair]);
+      playSuccessSound();
+      setSelectedTerm(null);
+      setSelectedDef(null);
+      if (matchedPairs.length + 1 === currentQuestion.pairs.length) {
+        setScore(score + 1);
+        setTimeout(() => {
+          setShowFeedback(true);
+          setSelectedAnswer({
+            correct: true,
+            explanation: 'כל הכבוד! ⭐'
+          });
+        }, 500);
+      }
+    } else {
+      setLives(lives - 1);
+      setSelectedTerm(null);
+      setSelectedDef(null);
+      if (lives - 1 === 0) {
+        setGameState('failed');
+      }
+    }
+  };
+  const restart = () => {
+    setCurrentLevel('easy');
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setEasyScore(0);
+    setLives(3);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setGameState('playing');
+  };
+  if (gameState === 'failed') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-red-50 to-orange-50 p-8 flex items-center justify-center",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement(XCircle, {
+      className: "w-24 h-24 mx-auto text-red-500 mb-4"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold text-purple-900 mb-4"
+    }, "\u05D0\u05D5\u05E4\u05E1! \uD83D\uDE14"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-6"
+    }, "\u05E0\u05D2\u05DE\u05E8\u05D5 \u05D4\u05DC\u05D1\u05D1\u05D5\u05EA... \u05D0\u05D1\u05DC \u05D0\u05DC \u05EA\u05EA\u05D9\u05D9\u05D0\u05E9!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-purple-50 p-6 rounded-xl mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700"
+    }, "\u05D4\u05E6\u05DC\u05D7\u05EA \u05DC\u05E2\u05E0\u05D5\u05EA \u05E0\u05DB\u05D5\u05DF \u05E2\u05DC ", /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-purple-900"
+    }, score), " \u05E9\u05D0\u05DC\u05D5\u05EA")), /*#__PURE__*/React.createElement("button", {
+      onClick: restart,
+      className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-lg font-bold text-xl hover:opacity-90"
+    }, "\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1! \uD83D\uDD04")));
+  }
+  if (gameState === 'part1Complete') {
+    const totalScore = easyScore + score;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-8",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement(Star, {
+      className: "w-24 h-24 mx-auto text-yellow-500 mb-4 animate-bounce"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold text-purple-900 mb-4"
+    }, "\u05DB\u05DC \u05D4\u05DB\u05D1\u05D5\u05D3! \uD83C\uDF89"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-6"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05D7\u05DC\u05E7 1 - \u05D9\u05E1\u05D5\u05D3\u05D5\u05EA!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-purple-50 p-6 rounded-xl mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-purple-900 mb-2"
+    }, "\u05D4\u05E6\u05D9\u05D5\u05DF \u05E9\u05DC\u05DA: ", totalScore, "/25 (", Math.round(totalScore / 25 * 100), "%)"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, totalScore >= 21 ? 'מושלם! ⭐' : totalScore >= 18 ? 'מצוין! 💪' : 'יפה מאוד! 🌟')), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-50 p-6 rounded-xl mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold text-blue-900 mb-2"
+    }, "\u05DE\u05D5\u05DB\u05DF \u05DC\u05D0\u05EA\u05D2\u05E8 \u05D4\u05D1\u05D0? \uD83D\uDE80"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, "\u05E2\u05D1\u05D5\u05E8 \u05DC\u05D7\u05DC\u05E7 2 - \u05E8\u05DE\u05D4 \u05DE\u05EA\u05E7\u05D3\u05DE\u05EA!")), /*#__PURE__*/React.createElement("button", {
+      onClick: () => alert('חלק 2 יגיע בקרוב! 🎯'),
+      className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-lg font-bold text-xl hover:opacity-90"
+    }, "\u05D4\u05DE\u05E9\u05DA \u05DC\u05D7\u05DC\u05E7 2 \uD83C\uDFAF")), /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 text-center bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 font-bold mb-2"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-purple-900 font-bold text-lg"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-purple-600 mt-2"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520")));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-8",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, [...Array(3)].map((_, i) => /*#__PURE__*/React.createElement(Heart, {
+    key: i,
+    className: `w-8 h-8 ${i < lives ? 'text-red-500 fill-red-500' : 'text-gray-300'}`
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-3xl font-bold text-purple-900"
+  }, "\u05DE\u05E9\u05D7\u05E7 \u05E4\u05E8\u05E7 \u05D0\u05D1\u05D5\u05EA \u05D0\u05F3"), /*#__PURE__*/React.createElement("p", {
+    className: "text-purple-600"
+  }, currentLevel === 'easy' ? '⭐ רמה קלה' : '🎯 רמה בינונית')), /*#__PURE__*/React.createElement("div", {
+    className: "text-left"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-2xl font-bold text-purple-900"
+  }, score, "/", levelReqs[currentLevel].total), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-600"
+  }, "\u05E0\u05DB\u05D5\u05E0\u05D5\u05EA"))), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-purple-600 to-pink-600 h-4 rounded-full transition-all duration-300",
+    style: {
+      width: `${currentQuestionIndex / questions[currentLevel].length * 100}%`
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-center mt-2 text-gray-600"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestionIndex + 1, " \u05DE\u05EA\u05D5\u05DA ", questions[currentLevel].length)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-8 mb-6"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-bold text-purple-900 mb-6 text-center"
+  }, currentQuestion.question), currentQuestion.type === 'multipleChoice' && /*#__PURE__*/React.createElement("div", {
+    className: "grid gap-4"
+  }, shuffledAnswers.map((answer, index) => /*#__PURE__*/React.createElement("button", {
+    key: index,
+    onClick: () => !showFeedback && handleAnswer(answer, answer.correct),
+    disabled: showFeedback,
+    className: `p-4 rounded-xl text-lg font-bold transition-all ${showFeedback && answer === selectedAnswer ? answer.correct ? 'bg-green-500 text-white' : 'bg-red-500 text-white' : 'bg-purple-50 hover:bg-purple-100 text-purple-900'} ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}`
+  }, answer.text))), currentQuestion.type === 'matching' && /*#__PURE__*/React.createElement("div", {
+    className: "grid md:grid-cols-2 gap-6"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    className: "text-lg font-bold text-purple-900 mb-3 text-center"
+  }, "\u05DE\u05D5\u05E9\u05D2\u05D9\u05DD"), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, currentQuestion.pairs.map((pair, index) => /*#__PURE__*/React.createElement("button", {
+    key: index,
+    onClick: () => !matchedPairs.find(p => p.term === pair.term) && handleMatchingClick(pair.term, 'term'),
+    disabled: matchedPairs.find(p => p.term === pair.term),
+    className: `w-full p-4 rounded-xl text-lg font-bold transition-all ${matchedPairs.find(p => p.term === pair.term) ? 'bg-green-500 text-white cursor-not-allowed' : selectedTerm === pair.term ? 'bg-purple-600 text-white' : 'bg-purple-50 hover:bg-purple-100 text-purple-900'}`
+  }, pair.term)))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    className: "text-lg font-bold text-purple-900 mb-3 text-center"
+  }, "\u05D4\u05D2\u05D3\u05E8\u05D5\u05EA"), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, [...currentQuestion.pairs].sort(() => Math.random() - 0.5).map((pair, index) => /*#__PURE__*/React.createElement("button", {
+    key: index,
+    onClick: () => !matchedPairs.find(p => p.definition === pair.definition) && handleMatchingClick(pair.definition, 'def'),
+    disabled: matchedPairs.find(p => p.definition === pair.definition),
+    className: `w-full p-4 rounded-xl text-lg transition-all ${matchedPairs.find(p => p.definition === pair.definition) ? 'bg-green-500 text-white cursor-not-allowed' : selectedDef === pair.definition ? 'bg-pink-600 text-white' : 'bg-pink-50 hover:bg-pink-100 text-purple-900'}`
+  }, pair.definition)))))), showFeedback && selectedAnswer && /*#__PURE__*/React.createElement("div", {
+    className: `rounded-2xl shadow-lg p-6 mb-6 ${selectedAnswer.correct ? 'bg-green-50' : 'bg-red-50'}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-4 mb-4"
+  }, selectedAnswer.correct ? /*#__PURE__*/React.createElement(CheckCircle, {
+    className: "w-12 h-12 text-green-500"
+  }) : /*#__PURE__*/React.createElement(XCircle, {
+    className: "w-12 h-12 text-red-500"
+  }), /*#__PURE__*/React.createElement("h3", {
+    className: `text-2xl font-bold ${selectedAnswer.correct ? 'text-green-900' : 'text-red-900'}`
+  }, selectedAnswer.correct ? 'נכון! 🎉' : 'לא נכון... 😔')), /*#__PURE__*/React.createElement("p", {
+    className: "text-lg text-gray-700 mb-4"
+  }, selectedAnswer.explanation || 'כל הכבוד! ⭐'), /*#__PURE__*/React.createElement("button", {
+    onClick: handleNext,
+    className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90"
+  }, currentQuestionIndex === questions[currentLevel].length - 1 ? currentLevel === 'easy' ? 'עבור לרמה בינונית 🎯' : 'סיים! 🏆' : 'שאלה הבאה ➡️')), /*#__PURE__*/React.createElement("div", {
+    className: "text-center text-gray-600"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "mb-2"
+  }, "\u05E6\u05E8\u05D9\u05DA ", /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-purple-900"
+  }, levelReqs[currentLevel].passing), " \u05EA\u05E9\u05D5\u05D1\u05D5\u05EA \u05E0\u05DB\u05D5\u05E0\u05D5\u05EA \u05DC\u05D4\u05E2\u05E4\u05D9\u05DC"), /*#__PURE__*/React.createElement(Sparkles, {
+    className: "w-6 h-6 mx-auto text-purple-500"
+  }))));
+};
+const __App = GamePart1;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

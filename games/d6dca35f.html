@@ -1,0 +1,916 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🎮 משחק אהבת ה' - חלק 1 – הקול החמישי</title>
+<meta name="description" content="משחק חינוכי אינטראקטיבי ללימוד עקרונות אהבת ה' ביהדות. שאלות רב-ברירה והתאמות ברמות קושי שונות לחיזוק הידע הרוחני והדתי.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="🎮 משחק אהבת ה&#x27; - חלק 1 – הקול החמישי">
+<meta property="og:description" content="משחק חינוכי אינטראקטיבי ללימוד עקרונות אהבת ה&#x27; ביהדות. שאלות רב-ברירה והתאמות ברמות קושי שונות לחיזוק הידע הרוחני והדתי.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-d6dca35f.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/d6dca35f.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const BookOpen = window.LucideReact["BookOpen"] || window.LucideReact.Circle;
+const Music = window.LucideReact["Music"] || window.LucideReact.Circle;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const AlertCircle = window.LucideReact["AlertCircle"] || window.LucideReact.Circle;
+const CheckCircle = window.LucideReact["CheckCircle"] || window.LucideReact.Circle;
+const XCircle = window.LucideReact["XCircle"] || window.LucideReact.Circle;
+const ArrowLeft = window.LucideReact["ArrowLeft"] || window.LucideReact.Circle;
+const GamePart1 = () => {
+  const [currentLevel, setCurrentLevel] = useState('easy');
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [gameState, setGameState] = useState('playing');
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  const [selectedTerm, setSelectedTerm] = useState(null);
+  const [selectedDef, setSelectedDef] = useState(null);
+  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [shuffledTerms, setShuffledTerms] = useState([]);
+  const [shuffledDefs, setShuffledDefs] = useState([]);
+  const questions = {
+    easy: [{
+      type: 'multipleChoice',
+      question: 'מהי המשמעות הבסיסית של "אהבת ה\'"?',
+      answers: [{
+        text: 'רצון ושמחה להיות קרוב לה\'',
+        correct: true,
+        explanation: 'מצוין! זו ההגדרה המדויקת ⭐'
+      }, {
+        text: 'קיום כל המצוות בדקדוק',
+        correct: false,
+        explanation: 'זה חשוב, אבל לא ההגדרה 🤔'
+      }, {
+        text: 'הנאה מכל דבר קדוש',
+        correct: false,
+        explanation: 'קרוב, אבל חסר המרכיב המכריע 💡'
+      }, {
+        text: 'לימוד תורה בלבד',
+        correct: false,
+        explanation: 'התורה חשובה, אך זו לא ההגדרה 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מדוע הנשמה נמשכת באופן טבעי אל הקדושה?',
+      answers: [{
+        text: 'כי היא "חלק אלוק ממעל"',
+        correct: true,
+        explanation: 'פצצה! הנשמה רוצה לחזור למקורה 🎯'
+      }, {
+        text: 'כי זה מה שלימדו אותנו',
+        correct: false,
+        explanation: 'חינוך עוזר, אבל יש סיבה עמוקה יותר 🤔'
+      }, {
+        text: 'כי הקדושה יפה',
+        correct: false,
+        explanation: 'נכון, אבל לא זו הסיבה העמוקה 💡'
+      }, {
+        text: 'כי אנחנו רגילים לזה',
+        correct: false,
+        explanation: 'ההיפך! זו נטייה טבעית 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'האם כל הנאה מקדושה נחשבת אוטומטית לאהבת ה\'?',
+      answers: [{
+        text: 'לא - תלוי במניע ובכוונה',
+        correct: true,
+        explanation: 'כל הכבוד! זו הנקודה המרכזית 💪'
+      }, {
+        text: 'כן - כל קדושה היא אהבת ה\'',
+        correct: false,
+        explanation: 'זו הטעות הנפוצה! 🤔'
+      }, {
+        text: 'רק אם זה לימוד תורה',
+        correct: false,
+        explanation: 'גם בתורה צריך כוונה נכונה 💡'
+      }, {
+        text: 'תלוי בכמות הזמן שמקדישים',
+        correct: false,
+        explanation: 'לא הכמות, אלא האיכות של הכוונה 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה הדוגמה שהגמרא מביאה לקדושה ש"לא לשמה"?',
+      answers: [{
+        text: 'הפרסיים שהיו צנועים אך "מזומנין לגיהנם"',
+        correct: true,
+        explanation: 'נכון! צניעות ללא קשר לה\' אינה בעלת ערך ⭐'
+      }, {
+        text: 'אנשים שלומדים תורה בעצלות',
+        correct: false,
+        explanation: 'זו בעיה אחרת 🤔'
+      }, {
+        text: 'כאלה שלא מתפללים כלל',
+        correct: false,
+        explanation: 'כאן יש קדושה, אבל לא לשמה 💡'
+      }, {
+        text: 'אנשים שאוכלים יותר מדי',
+        correct: false,
+        explanation: 'זה לא הסיפור 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל מושג להגדרה המתאימה:',
+      pairs: [{
+        term: 'אהבת ה\' אמיתית',
+        definition: 'הנאה מהקדושה כגשר להתקרבות אליו יתברך'
+      }, {
+        term: 'קדושה "לא לשמה"',
+        definition: 'הנאה מהקדושה כחוויה רוחנית מנותקת'
+      }, {
+        term: 'הנשמה',
+        definition: '"חלק אלוק ממעל" הנמשכת אל הקדושה'
+      }, {
+        term: 'המניע המכריע',
+        definition: 'האם הקדושה היא מטרה או אמצעי'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה המשמעות של "קב"ה ואורייתא חד"?',
+      answers: [{
+        text: 'הקדוש ברוך הוא והתורה הם אחדות אחת',
+        correct: true,
+        explanation: 'מושלם! לימוד תורה הוא מפגש עם ה\' עצמו 🎉'
+      }, {
+        text: 'צריך ללמוד תורה כל היום',
+        correct: false,
+        explanation: 'זו לא המשמעות הפשטית 🤔'
+      }, {
+        text: 'התורה יותר חשובה מהמצוות',
+        correct: false,
+        explanation: 'לא על חשיבות מדובר 💡'
+      }, {
+        text: 'רק ה\' יכול להבין תורה',
+        correct: false,
+        explanation: 'להפך - אנחנו יכולים להתחבר דרכה 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה התנאי הראשון כדי שלימוד תורה יהפוך לאהבת ה\'?',
+      answers: [{
+        text: 'לעורר דבקות בקדושת התורה - דבקות בשכינה',
+        correct: true,
+        explanation: 'יפה מאוד! זו הכוונה הנכונה 💪'
+      }, {
+        text: 'ללמוד לפחות שעתיים ביום',
+        correct: false,
+        explanation: 'הכמות פחות חשובה מהכוונה 🤔'
+      }, {
+        text: 'להבין כל פרט בסוגיה',
+        correct: false,
+        explanation: 'ההבנה חשובה, אבל חסרה הכוונה 💡'
+      }, {
+        text: 'ללמוד רק מספרים מסוימים',
+        correct: false,
+        explanation: 'כל תורה טובה עם הכוונה הנכונה 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל פעולה למה שהיא אמורה לעורר:',
+      pairs: [{
+        term: 'בחירת ניגון נעים בתפילה',
+        definition: 'לעורר נעימות פנימית בנשמה'
+      }, {
+        term: 'שירת שבח והודיה',
+        definition: 'להשתמש בניגון המשמח את הלב'
+      }, {
+        term: 'לימוד בשמחה וחשק',
+        definition: 'להרגיש נעימות קדושת התורה'
+      }, {
+        term: 'פרישה מהנאות גסות',
+        definition: 'לפנות מקום לטעם הרוחני'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהי המטרה הסופית של שירה בתפילה?',
+      answers: [{
+        text: 'להרגיש שמחת קרבת ה\'',
+        correct: true,
+        explanation: 'בול! הניגון הוא הסולם, לא המטרה 🎯'
+      }, {
+        text: 'ליהנות מהמוזיקה היפה',
+        correct: false,
+        explanation: 'זו רק תחושה חיצונית 🤔'
+      }, {
+        text: 'לשיר יפה יותר מאחרים',
+        correct: false,
+        explanation: 'זה לא תחרות 💡'
+      }, {
+        text: 'להשאיר רושם על הציבור',
+        correct: false,
+        explanation: 'הכוונה צריכה להיות רק כלפי ה\' 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה מומלץ לבחור ניגון שנעים ומתוק בעיניך בתפילה?',
+      answers: [{
+        text: 'כדי שהנועם החיצוני יעורר נעימות פנימית',
+        correct: true,
+        explanation: 'מצוין! הכלי החיצוני משרת את המטרה הפנימית ⭐'
+      }, {
+        text: 'כדי שהתפילה תעבור מהר יותר',
+        correct: false,
+        explanation: 'זו לא המטרה 🤔'
+      }, {
+        text: 'כי ה\' אוהב מוזיקה יפה',
+        correct: false,
+        explanation: 'ה\' רוצה את הכוונה שלנו 💡'
+      }, {
+        text: 'כדי לא להתעייף',
+        correct: false,
+        explanation: 'הסיבה עמוקה יותר 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל עקרון לדרך היישום שלו:',
+      pairs: [{
+        term: '"אחרי הפעולות נמשכים הלבבות"',
+        definition: 'לעשות מעבר למחויב כדי לעורר רגש'
+      }, {
+        term: 'ניקוי החך הרוחני',
+        definition: 'להתרחק מהנאות גשמיות שטחיות'
+      }, {
+        term: 'חיפוש אקטיבי',
+        definition: 'לחפש במודע את הנעימות בלימוד ותפילה'
+      }, {
+        term: 'התנדבות',
+        definition: 'לתת צדקה, ללמוד עוד, להתפלל בכוונה יתרה'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה קורה כש"טעם העולם הזה שולט באדם"?',
+      answers: [{
+        text: 'אין לו אפשרות לחוש את טעם התורה הקדושה',
+        correct: true,
+        explanation: 'נכון! כמו שאי אפשר לטעום יין משובח אחרי מאכל חריף 💪'
+      }, {
+        text: 'הוא לא יכול ללמוד תורה בכלל',
+        correct: false,
+        explanation: 'אפשר ללמוד, אבל קשה להרגיש 🤔'
+      }, {
+        text: 'הוא מאבד את היכולת לחשוב',
+        correct: false,
+        explanation: 'זה לא על היכולת השכלית 💡'
+      }, {
+        text: 'אסור לו לגשת למצוות',
+        correct: false,
+        explanation: 'תמיד מותר, רק קשה להתחבר 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה התוצאה של "ריבוי התנדבות" בעבודת ה\'?',
+      answers: [{
+        text: 'מעורר בלב אהבה והתקשרות לה\' ולתורה',
+        correct: true,
+        explanation: 'פצצה! הפעולה הנדיבה מדליקה את הלב 🎉'
+      }, {
+        text: 'גורם לעייפות ולאיבוד עניין',
+        correct: false,
+        explanation: 'זה כשעושים בלי כוונה 🤔'
+      }, {
+        text: 'מבזבז זמן מלימוד',
+        correct: false,
+        explanation: 'להפך - מחזק את הקשר 💡'
+      }, {
+        text: 'גורם לגאווה יתר',
+        correct: false,
+        explanation: 'כשעושים לשם שמיים, זה מעורר ענוה 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזו ברכה מזכירה שהקדושה היא חלק מקדושת ה\'?',
+      answers: [{
+        text: '"אשר קדשנו במצותיו"',
+        correct: true,
+        explanation: 'כל הכבוד! המצוות מקדשות אותנו בקדושתו יתברך ⭐'
+      }, {
+        text: '"המוציא לחם מן הארץ"',
+        correct: false,
+        explanation: 'זו ברכת המזון 🤔'
+      }, {
+        text: '"שהכל נהיה בדברו"',
+        correct: false,
+        explanation: 'זו על הבריאה 💡'
+      }, {
+        text: '"הטוב והמטיב"',
+        correct: false,
+        explanation: 'זו על הטובות 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה המשמעות של "להתענג על ה\'"?',
+      answers: [{
+        text: 'למצוא את העונג הגדול בקשר עם ה\' דרך המצוות',
+        correct: true,
+        explanation: 'מושלם! זו השאיפה האמיתית 🎯'
+      }, {
+        text: 'לאכול רק מאכלים טעימים',
+        correct: false,
+        explanation: 'זה לא על אכילה גשמית 🤔'
+      }, {
+        text: 'ליהנות מהחיים בכלל',
+        correct: false,
+        explanation: 'יותר ממש ספציפי - התענוג מה\' עצמו 💡'
+      }, {
+        text: 'להרגיש טוב לפעמים',
+        correct: false,
+        explanation: 'זה הרבה יותר עמוק 🌟'
+      }]
+    }],
+    medium: [{
+      type: 'multipleChoice',
+      question: 'שלומי נהנה מאוד מפתרון סוגיה קשה בגמרא. מה הופך את העונג הזה לאהבת ה\' אמיתית?',
+      answers: [{
+        text: 'כשהוא מרגיש שדרך הסוגיה הוא פוגש את נותן התורה',
+        correct: true,
+        explanation: 'נכון מאוד! ההבנה היא המפתח, לא מטרה בפני עצמה 💪'
+      }, {
+        text: 'כשהוא מקדיש הרבה שעות ללימוד',
+        correct: false,
+        explanation: 'הכמות פחות חשובה מהכוונה 🤔'
+      }, {
+        text: 'כשהוא מסביר את הסוגיה לאחרים',
+        correct: false,
+        explanation: 'זה טוב, אבל לא זה המרכיב המכריע 💡'
+      }, {
+        text: 'כשהוא כותב את זה בדף נקי',
+        correct: false,
+        explanation: 'זה עוזר לזיכרון, לא לאהבת ה\' 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה ההבדל בין "נעימות רוחנית עצמאית" לבין אהבת ה\'?',
+      answers: [{
+        text: 'ברוחנית עצמאית - הקדושה מנותקת מהבורא; באהבת ה\' - היא גשר אליו',
+        correct: true,
+        explanation: 'מדויק! זו ההבחנה המרכזית 🎯'
+      }, {
+        text: 'רוחנית עצמאית היא רק לנשים',
+        correct: false,
+        explanation: 'שניהם שייכים לכולם 🤔'
+      }, {
+        text: 'אין הבדל אמיתי ביניהם',
+        correct: false,
+        explanation: 'יש הבדל עצום! 💡'
+      }, {
+        text: 'אהבת ה\' היא רק בתפילה',
+        correct: false,
+        explanation: 'היא בכל עבודת ה\' 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל תיאור לסוג העבודה הנכון:',
+      pairs: [{
+        term: 'נהנה מהסוגיה כי היא מאתגרת ומעניינת',
+        definition: 'עונג שכלי ללא קשר לבורא'
+      }, {
+        term: 'נהנה כי מרגיש קרוב לרצון ה\' דרך ההלכה',
+        definition: 'אהבת ה\' אמיתית'
+      }, {
+        term: 'אוהב את השירה כי היא מרגיעה אותו',
+        definition: 'הנאה מהחוויה עצמה'
+      }, {
+        term: 'השירה מעוררת בו כמיהה לקרבת א-לוהים',
+        definition: 'שימוש נכון בניגון'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה חשוב להתכוונן לרגש המתאים בתפילה (כמו שמחה בשבח)?',
+      answers: [{
+        text: 'כדי שהרגש החיצוני יעורר את הרגש הפנימי של קרבת ה\'',
+        correct: true,
+        explanation: 'מצוין! הכלי משרת את המטרה ⭐'
+      }, {
+        text: 'כדי שהתפילה תהיה יפה לשמוע',
+        correct: false,
+        explanation: 'זה לא תחרות יופי 🤔'
+      }, {
+        text: 'כי אז הקב"ה שומע טוב יותר',
+        correct: false,
+        explanation: 'הקב"ה שומע תמיד את הכוונה 💡'
+      }, {
+        text: 'כדי להרשים את האנשים סביב',
+        correct: false,
+        explanation: 'הכוונה צריכה להיות רק לה\' 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איך "פרישה מהנאות גסות" עוזרת לעבודת ה\'?',
+      answers: [{
+        text: 'מנקה את "חוש הטעם" הרוחני כדי לחוש קדושה',
+        correct: true,
+        explanation: 'כל הכבוד! כמו לנקות את החך לפני יין משובח 💪'
+      }, {
+        text: 'גורמת לאדם להיות עצוב',
+        correct: false,
+        explanation: 'להפך - פותחת מקום לשמחה אמיתית 🤔'
+      }, {
+        text: 'מבטלת את כל ההנאות בחיים',
+        correct: false,
+        explanation: 'רק מההנאות השטחיות והמזיקות 💡'
+      }, {
+        text: 'הופכת אותנו לאנשים קפדניים',
+        correct: false,
+        explanation: 'המטרה היא רגישות רוחנית 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה אומר העקרון "אחרי הפעולות נמשכים הלבבות"?',
+      answers: [{
+        text: 'כשפועלים כאילו יש לנו רגש, הרגש מתעורר',
+        correct: true,
+        explanation: 'פצצה! הפעולה הנדיבה מעוררת את הלב 🎉'
+      }, {
+        text: 'תמיד צריך לחכות לרגש לפני הפעולה',
+        correct: false,
+        explanation: 'להפך - הפעולה מעוררת את הרגש! 🤔'
+      }, {
+        text: 'הלב חשוב יותר מהמעשה',
+        correct: false,
+        explanation: 'שניהם קשורים ומשפיעים זה על זה 💡'
+      }, {
+        text: 'רק אנשים רגשיים יכולים לעבוד את ה\'',
+        correct: false,
+        explanation: 'כולם יכולים באמצעות פעולה 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל דרך לעורר רגש לתוצאה שלה:',
+      pairs: [{
+        term: 'להתנדב - לתת מעבר למחויב',
+        definition: 'מעורר אהבה והתקשרות לה\''
+      }, {
+        term: 'לבחור ניגון מתאים',
+        definition: 'משרת את הכוונה הפנימית'
+      }, {
+        term: 'ללמוד בשמחה וחשק',
+        definition: 'מאפשר לחוש נעימות התורה'
+      }, {
+        term: 'לפרוש מהנאות גסות',
+        definition: 'מנקה את החוש הרוחני'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מדוע העונג מלימוד תורה נחשב לגדול יותר מעונג ממצוות אחרות?',
+      answers: [{
+        text: 'כי קדושת התורה היא מעל כל אמצעי קדושה אחרים',
+        correct: true,
+        explanation: 'נכון! "קב"ה ואורייתא חד" 🎯'
+      }, {
+        text: 'כי התורה יותר קשה ללימוד',
+        correct: false,
+        explanation: 'לא על הקושי מדובר 🤔'
+      }, {
+        text: 'כי רק גברים יכולים ללמוד',
+        correct: false,
+        explanation: 'כולם יכולים להתחבר לקדושת התורה 💡'
+      }, {
+        text: 'כי זה לוקח הכי הרבה זמן',
+        correct: false,
+        explanation: 'לא הכמות אלא האיכות 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איך יודעים שהצלחת להשיג את נעימות קדושת הלימוד?',
+      answers: [{
+        text: 'לפי המידה שבה מרגישים את נעימותה הנעלה',
+        correct: true,
+        explanation: 'מושלם! הרגש הוא המדד להצלחה ⭐'
+      }, {
+        text: 'לפי כמות הדפים שלמדת',
+        correct: false,
+        explanation: 'הכמות לא מעידה על האיכות 🤔'
+      }, {
+        text: 'לפי מה שאנשים אומרים',
+        correct: false,
+        explanation: 'זה עניין פנימי ואישי 💡'
+      }, {
+        text: 'לפי הציונים במבחן',
+        correct: false,
+        explanation: 'הבנה שכלית זה לא הכל 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה המשמעות של "כל דין והלכה בתורה הוא רצונו יתברך"?',
+      answers: [{
+        text: 'כשלומדים הלכה, לומדים את רצון ה\' עצמו',
+        correct: true,
+        explanation: 'כל הכבוד! הלימוד הוא מפגש ישיר עם הרצון 💪'
+      }, {
+        text: 'צריך לקיים רק הלכות קלות',
+        correct: false,
+        explanation: 'כל ההלכות חשובות 🤔'
+      }, {
+        text: 'רק רבנים יכולים להבין את הרצון',
+        correct: false,
+        explanation: 'כל אחד יכול להתחבר דרך הלימוד 💡'
+      }, {
+        text: 'ההלכות משתנות לפי הזמן',
+        correct: false,
+        explanation: 'הרצון הא-לוהי קבוע 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל שלב בעבודת ה\' לתיאור שלו:',
+      pairs: [{
+        term: 'שלב 1 - ניקוי',
+        definition: 'פרישה מהנאות גשמיות שטחיות'
+      }, {
+        term: 'שלב 2 - חיפוש',
+        definition: 'חיפוש אקטיבי של נעימות הקדושה'
+      }, {
+        term: 'שלב 3 - פעולה',
+        definition: 'התנדבות והתנהגות "כאילו"'
+      }, {
+        term: 'שלב 4 - התוצאה',
+        definition: 'רגשות הופכים טבעיים וזמינים'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה חשוב "לעורר לפני הלימוד ובשעת הלימוד את תחושת הדבקות"?',
+      answers: [{
+        text: 'כי בלי כוונה מודעת, הלימוד נשאר שכלי ומנותק',
+        correct: true,
+        explanation: 'מצוין! הכוונה היא המצפן 🎯'
+      }, {
+        text: 'כי אחרת הקב"ה לא מקבל את הלימוד',
+        correct: false,
+        explanation: 'ה\' מקבל, אבל האדם מפסיד 🤔'
+      }, {
+        text: 'כי זה מה שכתוב בספרים',
+        correct: false,
+        explanation: 'נכון, אבל מדוע זה כתוב? 💡'
+      }, {
+        text: 'כדי להראות לאחרים שאנחנו מתאמצים',
+        correct: false,
+        explanation: 'זה עניין פנימי לחלוטין 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה קורה כאשר שלומי "מתעורר לתחושת נעימות הקדושה לעתים קרובות"?',
+      answers: [{
+        text: 'הרגשות הופכים טבעיים וזמינים יותר',
+        correct: true,
+        explanation: 'פצצה! התרגול מחזק את השריר הרוחני 🎉'
+      }, {
+        text: 'הוא מתעייף ומאבד עניין',
+        correct: false,
+        explanation: 'להפך - זה מתחזק! 🤔'
+      }, {
+        text: 'אחרים מתחילים לקנא בו',
+        correct: false,
+        explanation: 'זה לא עניין של השוואה 💡'
+      }, {
+        text: 'הוא הופך לצדיק גמור מיד',
+        correct: false,
+        explanation: 'זו עבודה הדרגתית 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מדוע התורה רוצה שנחוש עונג בעבודת ה\'?',
+      answers: [{
+        text: 'כי העונג הממוקד בה\' מחזק את הקשר ומקרב אותנו אליו',
+        correct: true,
+        explanation: 'נכון מאוד! העונג הוא כלי חיבור רב עוצמה ⭐'
+      }, {
+        text: 'כדי שלא נתלונן',
+        correct: false,
+        explanation: 'המטרה עמוקה הרבה יותר 🤔'
+      }, {
+        text: 'כי זה יותר קל לקיים מצוות',
+        correct: false,
+        explanation: 'זו תוצאה, לא המטרה 💡'
+      }, {
+        text: 'כדי שנספר לאחרים',
+        correct: false,
+        explanation: 'זה עניין פנימי 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל טעות נפוצה לתיקון הנכון:',
+      pairs: [{
+        term: 'חושב שהנאה מקדושה תמיד טובה',
+        definition: 'צריך לבדוק את המניע והכוונה'
+      }, {
+        term: 'מחכה שהרגש יבוא לפני הפעולה',
+        definition: 'הפעולה מעוררת את הרגש'
+      }, {
+        term: 'חושב שהכמות היא הכל',
+        definition: 'האיכות והכוונה חשובות יותר'
+      }, {
+        term: 'סבור שזה רק לצדיקים',
+        definition: 'כל אחד יכול לעבוד על זה בהדרגה'
+      }]
+    }]
+  };
+  const levelReqs = {
+    easy: {
+      total: 10,
+      passing: 8,
+      percentage: 80
+    },
+    medium: {
+      total: 15,
+      passing: 13,
+      percentage: 85
+    }
+  };
+  const currentQuestion = questions[currentLevel][currentQuestionIndex];
+
+  // Shuffle answers for multiple choice
+  useEffect(() => {
+    if (currentQuestion?.type === 'multipleChoice' && currentQuestion?.answers) {
+      setShuffledAnswers([...currentQuestion.answers].sort(() => Math.random() - 0.5));
+    }
+  }, [currentQuestionIndex, currentLevel]);
+
+  // Shuffle matching pairs
+  useEffect(() => {
+    if (currentQuestion?.type === 'matching' && currentQuestion?.pairs) {
+      setShuffledTerms([...currentQuestion.pairs].sort(() => Math.random() - 0.5));
+      setShuffledDefs([...currentQuestion.pairs].map(p => p.definition).sort(() => Math.random() - 0.5));
+      setMatchedPairs([]);
+      setSelectedTerm(null);
+      setSelectedDef(null);
+    }
+  }, [currentQuestionIndex, currentLevel]);
+  const playSuccessSound = () => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [523.25, 659.25, 783.99].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      const start = ctx.currentTime + i * 0.1;
+      gain.gain.setValueAtTime(0.3, start);
+      gain.gain.exponentialRampToValueAtTime(0.01, start + 0.3);
+      osc.start(start);
+      osc.stop(start + 0.3);
+    });
+  };
+  const handleMultipleChoiceAnswer = answer => {
+    setSelectedAnswer(answer);
+    setShowFeedback(true);
+    if (answer.correct) {
+      setScore(score + 1);
+      playSuccessSound();
+    } else {
+      setLives(lives - 1);
+    }
+  };
+  const handleMatchingSelect = (item, type) => {
+    if (type === 'term') {
+      if (selectedTerm?.term === item.term) {
+        setSelectedTerm(null);
+      } else {
+        setSelectedTerm(item);
+        if (selectedDef) {
+          checkMatch(item, selectedDef);
+        }
+      }
+    } else {
+      if (selectedDef === item) {
+        setSelectedDef(null);
+      } else {
+        setSelectedDef(item);
+        if (selectedTerm) {
+          checkMatch(selectedTerm, item);
+        }
+      }
+    }
+  };
+  const checkMatch = (term, def) => {
+    const isCorrect = term.definition === def;
+    if (isCorrect) {
+      setMatchedPairs([...matchedPairs, term.term]);
+      setScore(score + 1);
+      playSuccessSound();
+      setSelectedTerm(null);
+      setSelectedDef(null);
+      if (matchedPairs.length + 1 === currentQuestion.pairs.length) {
+        setTimeout(() => handleNext(), 800);
+      }
+    } else {
+      setLives(lives - 1);
+      setSelectedTerm(null);
+      setSelectedDef(null);
+    }
+  };
+  const handleNext = () => {
+    const currentLevelQuestions = questions[currentLevel];
+    if (lives <= 0) {
+      setGameState('failed');
+      return;
+    }
+    if (currentQuestionIndex < currentLevelQuestions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+    } else {
+      const passedLevel = score >= levelReqs[currentLevel].passing;
+      if (!passedLevel) {
+        setGameState('failed');
+      } else if (currentLevel === 'easy') {
+        setCurrentLevel('medium');
+        setCurrentQuestionIndex(0);
+        setSelectedAnswer(null);
+        setShowFeedback(false);
+      } else {
+        setGameState('part1Complete');
+      }
+    }
+  };
+  if (gameState === 'part1Complete') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-8",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement(Star, {
+      className: "w-24 h-24 mx-auto text-yellow-500 mb-4 animate-bounce"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold text-purple-900 mb-4"
+    }, "\u05DB\u05DC \u05D4\u05DB\u05D1\u05D5\u05D3! \uD83C\uDF89"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-6"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05D7\u05DC\u05E7 1 - \u05D9\u05E1\u05D5\u05D3\u05D5\u05EA!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-purple-50 p-6 rounded-xl mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-purple-900 mb-2"
+    }, "\u05D4\u05E6\u05D9\u05D5\u05DF \u05E9\u05DC\u05DA: ", score, "/25 (", (score / 25 * 100).toFixed(0), "%)"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, score >= 21 ? 'מושלם! ⭐' : score >= 18 ? 'מצוין! 💪' : 'יפה מאוד! 🌟')), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-50 p-6 rounded-xl mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold text-blue-900 mb-2"
+    }, "\u05DE\u05D5\u05DB\u05DF \u05DC\u05D0\u05EA\u05D2\u05E8 \u05D4\u05D1\u05D0? \uD83D\uDE80"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, "\u05E2\u05D1\u05D5\u05E8 \u05DC\u05D7\u05DC\u05E7 2 - \u05E8\u05DE\u05D4 \u05DE\u05EA\u05E7\u05D3\u05DE\u05EA!")), /*#__PURE__*/React.createElement("button", {
+      onClick: () => alert('חלק 2 יהיה זמין בקרוב! 🎯'),
+      className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-lg font-bold text-xl hover:opacity-90 transition-opacity"
+    }, "\u05D4\u05DE\u05E9\u05DA \u05DC\u05D7\u05DC\u05E7 2 \uD83C\uDFAF")), /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 text-center bg-white rounded-xl shadow-lg p-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 font-bold mb-2"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-purple-900 font-bold text-lg"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-purple-600 mt-2"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520")));
+  }
+  if (gameState === 'failed') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-red-50 to-orange-50 p-8 flex items-center justify-center",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-md bg-white rounded-2xl shadow-xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement(XCircle, {
+      className: "w-20 h-20 mx-auto text-red-500 mb-4"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-red-900 mb-4"
+    }, "\u05D0\u05D5\u05E4\u05E1... \uD83D\uDE14"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 mb-6"
+    }, lives <= 0 ? 'נגמרו הלבבות...' : 'לא עברת את הרמה הזו'), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600 mb-6"
+    }, "\u05D4\u05E6\u05D9\u05D5\u05DF \u05E9\u05DC\u05DA: ", score, "/", levelReqs[currentLevel].total), /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setGameState('playing');
+        setCurrentLevel('easy');
+        setCurrentQuestionIndex(0);
+        setScore(0);
+        setLives(3);
+        setSelectedAnswer(null);
+        setShowFeedback(false);
+      },
+      className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90"
+    }, "\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1 \uD83D\uDD04")));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-8",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-xl shadow-lg p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement(BookOpen, {
+    className: "w-8 h-8 text-purple-600"
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
+    className: "text-2xl font-bold text-purple-900"
+  }, "\u05D0\u05D4\u05D1\u05EA \u05D4' - \u05D7\u05DC\u05E7 1"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-600"
+  }, currentLevel === 'easy' ? 'רמה קלה ⭐' : 'רמה בינונית 🎯'))), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, [...Array(3)].map((_, i) => /*#__PURE__*/React.createElement(Heart, {
+    key: i,
+    className: `w-8 h-8 ${i < lives ? 'text-red-500 fill-red-500' : 'text-gray-300'}`
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-3 bg-gray-200 rounded-full overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-full bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-300",
+    style: {
+      width: `${(currentQuestionIndex + 1) / questions[currentLevel].length * 100}%`
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-center text-sm text-gray-600 mt-2"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestionIndex + 1, " \u05DE\u05EA\u05D5\u05DA ", questions[currentLevel].length, " | \u05E6\u05D9\u05D5\u05DF: ", score, "/", levelReqs[currentLevel].total))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-xl shadow-lg p-8 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3 mb-4"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    className: "w-6 h-6 text-purple-600 flex-shrink-0 mt-1"
+  }), /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold text-purple-900"
+  }, currentQuestion.question))), currentQuestion.type === 'multipleChoice' && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, shuffledAnswers.map((answer, index) => {
+    const isSelected = selectedAnswer === answer;
+    const showResult = showFeedback && isSelected;
+    return /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => !showFeedback && handleMultipleChoiceAnswer(answer),
+      disabled: showFeedback,
+      className: `w-full p-4 rounded-lg text-right font-medium transition-all ${showResult ? answer.correct ? 'bg-green-100 border-2 border-green-500 text-green-900' : 'bg-red-100 border-2 border-red-500 text-red-900' : 'bg-purple-50 hover:bg-purple-100 border-2 border-purple-200'} ${showFeedback && !isSelected ? 'opacity-50' : ''}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("span", null, answer.text), showResult && (answer.correct ? /*#__PURE__*/React.createElement(CheckCircle, {
+      className: "w-6 h-6 text-green-600"
+    }) : /*#__PURE__*/React.createElement(XCircle, {
+      className: "w-6 h-6 text-red-600"
+    }))), showResult && /*#__PURE__*/React.createElement("p", {
+      className: "text-sm mt-2 text-right"
+    }, answer.explanation));
+  })), currentQuestion.type === 'matching' && /*#__PURE__*/React.createElement("div", {
+    className: "grid md:grid-cols-2 gap-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold text-purple-900 mb-3"
+  }, "\u05DE\u05D5\u05E9\u05D2\u05D9\u05DD:"), shuffledTerms.map((pair, index) => {
+    const isMatched = matchedPairs.includes(pair.term);
+    const isSelected = selectedTerm?.term === pair.term;
+    return /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => !isMatched && handleMatchingSelect(pair, 'term'),
+      disabled: isMatched,
+      className: `w-full p-4 rounded-lg text-right font-medium transition-all ${isMatched ? 'bg-green-100 border-2 border-green-500 text-green-900 opacity-50' : isSelected ? 'bg-purple-200 border-2 border-purple-600 text-purple-900' : 'bg-purple-50 hover:bg-purple-100 border-2 border-purple-200'}`
+    }, pair.term);
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold text-pink-900 mb-3"
+  }, "\u05D4\u05D2\u05D3\u05E8\u05D5\u05EA:"), shuffledDefs.map((def, index) => {
+    const matchedPair = currentQuestion.pairs.find(p => p.definition === def);
+    const isMatched = matchedPair && matchedPairs.includes(matchedPair.term);
+    const isSelected = selectedDef === def;
+    return /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => !isMatched && handleMatchingSelect(def, 'def'),
+      disabled: isMatched,
+      className: `w-full p-4 rounded-lg text-right font-medium transition-all ${isMatched ? 'bg-green-100 border-2 border-green-500 text-green-900 opacity-50' : isSelected ? 'bg-pink-200 border-2 border-pink-600 text-pink-900' : 'bg-pink-50 hover:bg-pink-100 border-2 border-pink-200'}`
+    }, def);
+  })))), showFeedback && currentQuestion.type === 'multipleChoice' && /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: handleNext,
+    className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-opacity"
+  }, currentQuestionIndex < questions[currentLevel].length - 1 ? 'המשך ➡️' : 'סיים רמה 🏆'))));
+};
+const __App = GamePart1;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

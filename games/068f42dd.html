@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מה מברכים? - משחק ברכות לילדים</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.05) 50%, transparent 70%);
+            transform: rotate(25deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(25deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(25deg); }
+        }
+
+        h1 {
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .question-container {
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .food-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 20px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 120px;
+            background: #f7fafc;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .food-image:hover {
+            transform: scale(1.05);
+        }
+
+        .food-name {
+            font-size: 1.8em;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            color: #4a5568;
+            margin-bottom: 25px;
+            font-weight: normal;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option-btn {
+            padding: 15px 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .option-btn:nth-child(1) { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .option-btn:nth-child(2) { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .option-btn:nth-child(3) { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .option-btn:nth-child(4) { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+        .option-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .option-btn:active {
+            transform: translateY(0);
+        }
+
+        .option-btn.correct {
+            animation: correctPulse 0.6s ease;
+        }
+
+        .option-btn.wrong {
+            animation: wrongShake 0.6s ease;
+        }
+
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); background: #48bb78; }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); background: #f56565; }
+            75% { transform: translateX(10px); background: #f56565; }
+        }
+
+        .feedback {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin: 20px 0;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .feedback.show {
+            opacity: 1;
+        }
+
+        .feedback.correct {
+            color: #48bb78;
+        }
+
+        .feedback.wrong {
+            color: #f56565;
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: confetti-fall 3s linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .final-score {
+            display: none;
+            text-align: center;
+        }
+
+        .final-score h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+    </style>
+<meta property="og:title" content="מה מברכים? - משחק ברכות לילדים">
+<meta property="og:description" content="מה מברכים? - משחק ברכות לילדים">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-068f42dd.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/068f42dd.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+    <div class="app-container">
+        <h1>🍞 מה מברכים? 🍎</h1>
+        
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 25px; font-size: 0.9em; color: #666; border-right: 4px solid #667eea;">
+            <div style="font-weight: bold; color: #4a5568; margin-bottom: 5px;">נערך על ידי:</div>
+            <div>הרב יהודה טאוב</div>
+            <div>רב בית הספר נעם קרית אתא</div>
+            <div style="margin-top: 8px; font-weight: bold;">לפרטים: 052-7139520</div>
+        </div>
+        
+        <div class="score-board">
+            <div>נכונות: <span id="correct-count">0</span></div>
+            <div>שאלה: <span id="question-number">1</span>/15</div>
+        </div>
+
+        <div class="question-container" id="question-container">
+            <div id="food-image" class="food-image"></div>
+            <div class="food-name" id="food-name"></div>
+            <div class="question-text" id="question-text">איזו ברכה מברכים על המאכל הזה?</div>
+            
+            <div class="options-container" id="options-container">
+                <button class="option-btn" onclick="selectAnswer(0)"></button>
+                <button class="option-btn" onclick="selectAnswer(1)"></button>
+                <button class="option-btn" onclick="selectAnswer(2)"></button>
+                <button class="option-btn" onclick="selectAnswer(3)"></button>
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+            <button class="next-btn" id="next-btn" onclick="nextQuestion()">השאלה הבאה ←</button>
+        </div>
+
+        <div class="final-score" id="final-score">
+            <h2>🎉 כל הכבוד! 🎉</h2>
+            <p id="final-text"></p>
+            <button class="restart-btn" onclick="restartGame()">שחק שוב</button>
+        </div>
+    </div>
+
+    <div class="celebration" id="celebration"></div>
+
+    <script>
+        const foods = [
+            // מאפי לחם ודגנים - המוציא
+            { name: "לחם", emoji: "🍞", bracha: "המוציא לחם מן הארץ" },
+            { name: "חלה", emoji: "🥖", bracha: "המוציא לחם מן הארץ" },
+            { name: "פיתה", emoji: "🫓", bracha: "המוציא לחם מן הארץ" },
+            
+            // מזונות
+            { name: "עוגיות", emoji: "🍪", bracha: "מזונות" },
+            { name: "עוגה", emoji: "🍰", bracha: "מזונות" },
+            { name: "אורז", emoji: "🍚", bracha: "מזונות" },
+            { name: "פסטה", emoji: "🍝", bracha: "מזונות" },
+            { name: "סופגניות", emoji: "🍩", bracha: "מזונות" },
+            { name: "פיצה", emoji: "🍕", bracha: "מזונות" },
+            { name: "קרקר", emoji: "🍘", bracha: "מזונות" },
+            { name: "וופלים", emoji: "🧇", bracha: "מזונות" },
+            { name: "עוגיות", emoji: "🥠", bracha: "מזונות" },
+            
+            // פירות העץ - עם אמוג'ים אמיתיים בלבד
+            { name: "תפוח אדום", emoji: "🍎", bracha: "העץ" },
+            { name: "תפוח ירוק", emoji: "🍏", bracha: "העץ" },
+            { name: "בננה", emoji: "🍌", bracha: "האדמה" },
+            { name: "תפוז", emoji: "🍊", bracha: "העץ" },
+            { name: "ענבים", emoji: "🍇", bracha: "העץ" },
+            { name: "אגס", emoji: "🍐", bracha: "העץ" },
+            { name: "דובדבן", emoji: "🍒", bracha: "העץ" },
+            { name: "אפרסק", emoji: "🍑", bracha: "העץ" },
+            { name: "זית", emoji: "🫒", bracha: "העץ" },
+            { name: "לימון", emoji: "🍋", bracha: "העץ" },
+            { name: "ליים", emoji: "🍋‍🟩", bracha: "העץ" },
+            { name: "קיווי", emoji: "🥝", bracha: "העץ" },
+            { name: "אוכמניות", emoji: "🫐", bracha: "העץ" },
+            { name: "אננס", emoji: "🍍", bracha: "האדמה" },
+            { name: "מנגו", emoji: "🥭", bracha: "העץ" },
+            { name: "קוקוס", emoji: "🥥", bracha: "העץ" },
+            
+            // ירקות האדמה
+            { name: "אבטיח", emoji: "🍉", bracha: "האדמה" },
+            { name: "מלון", emoji: "🍈", bracha: "האדמה" },
+            { name: "גזר", emoji: "🥕", bracha: "האדמה" },
+            { name: "תפוח אדמה", emoji: "🥔", bracha: "האדמה" },
+            { name: "בצל", emoji: "🧅", bracha: "האדמה" },
+            { name: "שום", emoji: "🧄", bracha: "האדמה" },
+            { name: "עגבניה", emoji: "🍅", bracha: "האדמה" },
+            { name: "מלפפון", emoji: "🥒", bracha: "האדמה" },
+            { name: "פלפל חריף", emoji: "🌶️", bracha: "האדמה" },
+            { name: "פלפל", emoji: "🫑", bracha: "האדמה" },
+            { name: "חציל", emoji: "🍆", bracha: "האדמה" },
+            { name: "ירקות עלים", emoji: "🥬", bracha: "האדמה" },
+            { name: "ברוקלי", emoji: "🥦", bracha: "האדמה" },
+            { name: "תירס", emoji: "🌽", bracha: "האדמה" },
+            { name: "תות שדה", emoji: "🍓", bracha: "האדמה" },
+            { name: "פופקורן", emoji: "🍿", bracha: "האדמה" },
+            { name: "שעועית", emoji: "🫘", bracha: "האדמה" },
+            { name: "אפונה", emoji: "🫛", bracha: "האדמה" },
+            { name: "בוטנים", emoji: "🥜", bracha: "האדמה" },
+            { name: "צ'ילי", emoji: "🌶️", bracha: "האדמה" },
+            
+            // שהכל
+            { name: "חלב", emoji: "🥛", bracha: "שהכל" },
+            { name: "גבינה", emoji: "🧀", bracha: "שהכל" },
+            { name: "יוגורט", emoji: "🥛", bracha: "שהכל" },
+            { name: "דגים", emoji: "🐟", bracha: "שהכל" },
+            { name: "בשר", emoji: "🥩", bracha: "שהכל" },
+            { name: "עוף", emoji: "🍗", bracha: "שהכל" },
+            { name: "ביצה", emoji: "🥚", bracha: "שהכל" },
+            { name: "דבש", emoji: "🍯", bracha: "שהכל" },
+            { name: "שוקולד", emoji: "🍫", bracha: "שהכל" },
+            { name: "ממתק", emoji: "🍬", bracha: "שהכל" },
+            { name: "קפה", emoji: "☕", bracha: "שהכל" },
+            { name: "תה", emoji: "🍵", bracha: "שהכל" },
+            { name: "מים", emoji: "💧", bracha: "שהכל" },
+            { name: "מיץ", emoji: "🧃", bracha: "שהכל" },
+            { name: "סוכריות", emoji: "🍬", bracha: "שהכל" },
+            { name: "חטיף", emoji: "🍫", bracha: "שהכל" },
+            
+            // יין וגפן
+            { name: "יין", emoji: "🍷", bracha: "הגפן" },
+            { name: "מיץ ענבים", emoji: "🍷", bracha: "הגפן" }
+        ];
+
+        const allBrachot = ["המוציא לחם מן הארץ", "מזונות", "העץ", "האדמה", "שהכל", "הגפן"];
+
+        let currentQuestion = 0;
+        let correctAnswers = 0;
+        let gameQuestions = [];
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function getRandomFoods(count) {
+            const shuffled = shuffleArray([...foods]);
+            return shuffled.slice(0, count);
+        }
+
+        function generateQuestion(food) {
+            const correctBracha = food.bracha;
+            const otherBrachot = allBrachot.filter(b => b !== correctBracha);
+            const shuffledOthers = shuffleArray(otherBrachot).slice(0, 3);
+            const allOptions = shuffleArray([correctBracha, ...shuffledOthers]);
+            
+            return {
+                name: food.name,
+                emoji: food.emoji,
+                correct: correctBracha,
+                options: allOptions
+            };
+        }
+
+        function initGame() {
+            const selectedFoods = getRandomFoods(15);
+            gameQuestions = selectedFoods.map(food => generateQuestion(food));
+            currentQuestion = 0;
+            correctAnswers = 0;
+            document.getElementById('question-container').style.display = 'block';
+            document.getElementById('final-score').style.display = 'none';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = gameQuestions[currentQuestion];
+            
+            document.getElementById('food-image').textContent = question.emoji;
+            document.getElementById('food-name').textContent = question.name;
+            
+            document.getElementById('question-number').textContent = currentQuestion + 1;
+            document.getElementById('correct-count').textContent = correctAnswers;
+            
+            const optionButtons = document.querySelectorAll('.option-btn');
+            optionButtons.forEach((btn, index) => {
+                btn.textContent = question.options[index];
+                btn.disabled = false;
+                btn.className = 'option-btn';
+                btn.style.display = 'block';
+            });
+            
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('next-btn').style.display = 'none';
+        }
+
+        function selectAnswer(selectedIndex) {
+            const question = gameQuestions[currentQuestion];
+            const optionButtons = document.querySelectorAll('.option-btn');
+            const selectedAnswer = optionButtons[selectedIndex].textContent;
+            const isCorrect = selectedAnswer === question.correct;
+            
+            optionButtons.forEach(btn => btn.disabled = true);
+            
+            if (isCorrect) {
+                correctAnswers++;
+                optionButtons[selectedIndex].classList.add('correct');
+                showFeedback('🎉 נכון מאוד! כל הכבוד!', 'correct');
+                playSuccessSound();
+                createConfetti();
+            } else {
+                optionButtons[selectedIndex].classList.add('wrong');
+                
+                // הדגש את התשובה הנכונה
+                optionButtons.forEach((btn, index) => {
+                    if (btn.textContent === question.correct) {
+                        btn.classList.add('correct');
+                    }
+                });
+                
+                showFeedback(`❌ לא נכון. התשובה הנכונה היא: "${question.correct}"`, 'wrong');
+                playErrorSound();
+            }
+            
+            setTimeout(() => {
+                document.getElementById('next-btn').style.display = 'inline-block';
+            }, 1500);
+        }
+
+        function showFeedback(message, type) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = `feedback ${type} show`;
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < gameQuestions.length) {
+                showQuestion();
+            } else {
+                showFinalScore();
+            }
+        }
+
+        function showFinalScore() {
+            document.getElementById('question-container').style.display = 'none';
+            document.getElementById('final-score').style.display = 'block';
+            
+            const percentage = Math.round((correctAnswers / gameQuestions.length) * 100);
+            let message = '';
+            
+            if (percentage >= 90) {
+                message = `🏆 מושלם! ${correctAnswers}/${gameQuestions.length} - אתה מומחה ברכות!`;
+                createBigCelebration();
+            } else if (percentage >= 70) {
+                message = `👏 כל הכבוד! ${correctAnswers}/${gameQuestions.length} - ביצוע מעולה!`;
+                createConfetti();
+            } else if (percentage >= 50) {
+                message = `👍 יפה! ${correctAnswers}/${gameQuestions.length} - אתה בדרך הנכונה!`;
+            } else {
+                message = `💪 ${correctAnswers}/${gameQuestions.length} - בוא ננסה שוב ונשתפר!`;
+            }
+            
+            document.getElementById('final-text').textContent = message;
+        }
+
+        function restartGame() {
+            initGame();
+        }
+
+        function playSuccessSound() {
+            try {
+                // בדיקה אם יש תמיכה ב-Web Audio API
+                if (!window.AudioContext && !window.webkitAudioContext) {
+                    console.log('Web Audio API לא נתמך');
+                    return;
+                }
+                
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // חשוב: resume context אם הוא suspended
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                // מנגינה פשוטה יותר שאמורה לעבוד
+                const playNote = (frequency, startTime, duration) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(frequency, startTime);
+                    
+                    gainNode.gain.setValueAtTime(0.2, startTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + duration);
+                };
+                
+                const now = audioContext.currentTime;
+                playNote(523.25, now, 0.3);        // C5
+                playNote(659.25, now + 0.2, 0.3);  // E5
+                playNote(783.99, now + 0.4, 0.4);  // G5
+                
+            } catch (error) {
+                console.log('שגיאה בהפעלת צליל:', error);
+                // fallback - השתמש בצליל מערכת אם יש
+                try {
+                    const audio = new Audio();
+                    audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmsbBjCKzfPSlTEGH3vJ8OC';
+                    audio.play().catch(() => {});
+                } catch (e) {
+                    console.log('גם צליל fallback לא עבד');
+                }
+            }
+        }
+
+        function playErrorSound() {
+            try {
+                if (!window.AudioContext && !window.webkitAudioContext) {
+                    return;
+                }
+                
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                // צליל "אופס" עדין - לא מתסכל אבל בולט
+                const playNote = (frequency, startTime, duration, volume = 0.15) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.type = 'triangle'; // צליל רך יותר
+                    oscillator.frequency.setValueAtTime(frequency, startTime);
+                    
+                    gainNode.gain.setValueAtTime(volume, startTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + duration);
+                };
+                
+                const now = audioContext.currentTime;
+                
+                // מנגינה יורדת עדינה - סי-לה-סול
+                playNote(493.88, now, 0.2, 0.12);        // B4 - סי
+                playNote(440.00, now + 0.15, 0.2, 0.10); // A4 - לה  
+                playNote(392.00, now + 0.3, 0.3, 0.08);  // G4 - סול
+                
+                // צליל נוסף לתשומת לב
+                setTimeout(() => {
+                    playNote(329.63, audioContext.currentTime, 0.15, 0.06); // E4 - מי נמוך
+                }, 200);
+                
+            } catch (error) {
+                console.log('שגיאה בהפעלת צליל שגיאה:', error);
+                // צליל חלופי פשוט
+                try {
+                    const beep = () => {
+                        const oscillator = new OscillatorNode(new AudioContext());
+                        oscillator.frequency.value = 300;
+                        oscillator.connect(new AudioContext().destination);
+                        oscillator.start();
+                        oscillator.stop(new AudioContext().currentTime + 0.2);
+                    };
+                    beep();
+                } catch (e) {
+                    console.log('גם צליל חלופי לא עבד');
+                }
+            }
+        }
+
+        function createConfetti() {
+            const celebration = document.getElementById('celebration');
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffa726', '#ab47bc'];
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                
+                celebration.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 4000);
+            }
+        }
+
+        function createBigCelebration() {
+            const celebration = document.getElementById('celebration');
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffa726', '#ab47bc'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                confetti.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                
+                celebration.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 6000);
+            }
+        }
+
+        // התחלת המשחק
+        initGame();
+    </script>
+</body>
+</html>

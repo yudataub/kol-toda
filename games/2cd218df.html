@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>arba_minim_game – הקול החמישי</title>
+<meta name="description" content="Master Jewish laws of the Four Species (Arba Minim) through an interactive quiz game with 3 difficulty levels, audio feedback, and detailed explanations.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="arba_minim_game – הקול החמישי">
+<meta property="og:description" content="Master Jewish laws of the Four Species (Arba Minim) through an interactive quiz game with 3 difficulty levels, audio feedback, and detailed explanations.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-2cd218df.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/2cd218df.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+
+<script src="lib/tone.js"></script>
+<script>
+const __ui = n => {
+  const cls = {
+    Card: "rounded-lg border bg-white text-gray-900 shadow-sm",
+    CardHeader: "flex flex-col space-y-1.5 p-6",
+    CardTitle: "text-2xl font-semibold leading-none tracking-tight",
+    CardDescription: "text-sm text-gray-500",
+    CardContent: "p-6 pt-0",
+    CardFooter: "flex items-center p-6 pt-0",
+    Button: "inline-flex items-center justify-center rounded-md px-4 py-2 font-medium bg-gray-900 text-white",
+    Badge: "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold"
+  }[n] || "";
+  const tag = {
+    CardTitle: "h3",
+    CardDescription: "p",
+    Button: "button",
+    Badge: "span"
+  }[n] || "div";
+  return ({
+    className = "",
+    ...p
+  }) => React.createElement(tag, {
+    ...p,
+    className: cls + " " + className
+  });
+};
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Card = __ui("Card");
+const CardContent = __ui("CardContent");
+const Tone = window.Tone;
+const ArbaMinimGame = () => {
+  // Initialize Tone.js on first user interaction
+  const initAudio = async () => {
+    await Tone.start();
+  };
+
+  // Play a pleasant sound for correct answer
+  const playCorrectSound = async () => {
+    await initAudio();
+    const synth = new Tone.Synth({
+      oscillator: {
+        type: 'sine'
+      },
+      envelope: {
+        attack: 0.005,
+        decay: 0.1,
+        sustain: 0.3,
+        release: 0.3
+      }
+    }).toDestination();
+    const now = Tone.now();
+    synth.triggerAttackRelease('C5', '0.2', now);
+    synth.triggerAttackRelease('E5', '0.2', now + 0.15);
+    synth.triggerAttackRelease('G5', '0.3', now + 0.3);
+  };
+
+  // Play a longer, celebratory sound for level completion
+  const playLevelCompleteSound = async () => {
+    await initAudio();
+    const synth = new Tone.Synth({
+      oscillator: {
+        type: 'triangle'
+      },
+      envelope: {
+        attack: 0.01,
+        decay: 0.2,
+        sustain: 0.4,
+        release: 0.4
+      }
+    }).toDestination();
+    const now = Tone.now();
+    // Ascending celebratory melody
+    synth.triggerAttackRelease('C5', '0.25', now);
+    synth.triggerAttackRelease('E5', '0.25', now + 0.2);
+    synth.triggerAttackRelease('G5', '0.25', now + 0.4);
+    synth.triggerAttackRelease('C6', '0.5', now + 0.6);
+    synth.triggerAttackRelease('G5', '0.25', now + 1.0);
+    synth.triggerAttackRelease('C6', '0.6', now + 1.2);
+  };
+  const [level, setLevel] = useState(1);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [gameCompleted, setGameCompleted] = useState(false);
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  const questions = {
+    1: [
+    // רמה קלה - עקרונות בסיסיים
+    {
+      q: "כמה הדסים צריך לקחת בחג הסוכות לכתחילה?",
+      answers: [{
+        text: "שלושה הדסים",
+        correct: true
+      }, {
+        text: "שני הדסים",
+        correct: false,
+        explanation: "טעות נפוצה - מבלבלים עם כמות הערבות (2)"
+      }, {
+        text: "ארבעה הדסים",
+        correct: false,
+        explanation: "טעות נפוצה - מבלבלים עם ארבעת המינים הכוללים"
+      }, {
+        text: "הדס אחד בלבד",
+        correct: false,
+        explanation: "זה רק בדיעבד כשאין שלושה זמינים"
+      }],
+      explanation: "הכמות הנדרשת היא 3 הדסים, 2 ערבות, לולב אחד ואתרוג אחד."
+    }, {
+      q: "באיזו יד אוחזים את הלולב?",
+      answers: [{
+        text: "ביד ימין",
+        correct: true
+      }, {
+        text: "ביד שמאל",
+        correct: false,
+        explanation: "הפוך - השמאל לאתרוג"
+      }, {
+        text: "בשתי הידיים ביחד",
+        correct: false,
+        explanation: "צריך להחזיק בנפרד - לולב בימין ואתרוג בשמאל"
+      }, {
+        text: "אין הבדל באיזו יד",
+        correct: false,
+        explanation: "יש הבדל ברור - החשוב יותר (לולב עם 3 מינים) בימין"
+      }],
+      explanation: "הלולב בימין והאתרוג בשמאל, כי בלולב יש 3 מינים ולכן הוא חשוב יותר."
+    }, {
+      q: "מה צריך לעשות אם אגדת הלולב התפרקה ביום טוב?",
+      answers: [{
+        text: "לדעת השולחן ערוך: לעשות קשר עניבה",
+        correct: true
+      }, {
+        text: "אסור לקשור בכלל ביום טוב",
+        correct: false,
+        explanation: "טעות - מותר, רק השאלה איזה סוג קשר"
+      }, {
+        text: "לעשות שלושה קשרים גמורים",
+        correct: false,
+        explanation: "קשר גמור אסור ביום טוב - זה קושר קשר של קיימא"
+      }, {
+        text: "להשאיר בלי קשר כלל",
+        correct: false,
+        explanation: "צריך אגודה - אי אפשר בלי קשר"
+      }],
+      explanation: "לדעת השולחן ערוך יעשה קשר עניבה, ולדעת הרמ״א יעשה חצי קשר."
+    }, {
+      q: "האם מותר ליטול לולב בלילה?",
+      answers: [{
+        text: "אסור - מצוותו ביום בלבד",
+        correct: true
+      }, {
+        text: "מותר רק בליל יום טוב ראשון",
+        correct: false,
+        explanation: "טעות - אין נטילה בלילה בכלל"
+      }, {
+        text: "מותר אם לא הספיק ביום",
+        correct: false,
+        explanation: "לא - מצוות לולב היא מצוות יום"
+      }, {
+        text: "מותר אבל בלא ברכה",
+        correct: false,
+        explanation: "אפילו בלא ברכה - לא נוטלים בלילה"
+      }],
+      explanation: "מצוות לולב היא מצוות יום בלבד - בלילה אין נוטלים כלל."
+    }, {
+      q: "כיצד צריך לאגוד את ארבעת המינים?",
+      answers: [{
+        text: "כדרך גידולם - הראש למעלה",
+        correct: true
+      }, {
+        text: "הראש למטה לכבוד השכינה",
+        correct: false,
+        explanation: "טעות חמורה - הפוך מדרך גידולם פסול אפילו בדיעבד!"
+      }, {
+        text: "אין הבדל באיזה כיוון",
+        correct: false,
+        explanation: "יש הבדל ברור - חייבים כדרך גידולם"
+      }, {
+        text: "בצד - באלכסון למעלה",
+        correct: false,
+        explanation: "צריך ישר למעלה כדרך שהם גדלים"
+      }],
+      explanation: "חובה לאגוד כדרך גידולם (ראש למעלה) - אם הפוך לא יצא אפילו בדיעבד!"
+    }],
+    2: [
+    // רמה בינונית - דינים מורכבים יותר
+    {
+      q: "אם אין לאדם 3 הדסים ביום הראשון, מה הדין?",
+      answers: [{
+        text: "אם יש לאחרים - חייב לבקש מהם, אם אין לאחרים - מספיק הדס אחד שאינו קטום",
+        correct: true
+      }, {
+        text: "תמיד מספיק הדס אחד בדיעבד",
+        correct: false,
+        explanation: "לא מדויק - הדס אחד צריך להיות שלם (לא קטום)"
+      }, {
+        text: "לא יכול לקיים את המצווה בכלל",
+        correct: false,
+        explanation: "יכול - יש אפשרות של הדס אחד שאינו קטום"
+      }, {
+        text: "יכול להשתמש בהדס קטום בודד",
+        correct: false,
+        explanation: "לא - אם יש רק הדס אחד, הוא חייב להיות שלם"
+      }],
+      explanation: "אם אין לאדם ואין גם לאחרים - מספיק הדס אחד שאינו קטום. אבל אם יש לאחרים - צריך לבקש!"
+    }, {
+      q: "מה הטעם שהלולב נמצא בימין והאתרוג בשמאל?",
+      answers: [{
+        text: "בלולב יש 3 מינים ובאתרוג רק אחד, ולכן הלולב חשוב יותר והחשוב בימין",
+        correct: true
+      }, {
+        text: "הלולב גדול יותר ולכן נוח יותר להחזיק אותו בימין",
+        correct: false,
+        explanation: "לא קשור לנוחות - זה דין הלכתי לפי חשיבות"
+      }, {
+        text: "האתרוג עדין יותר ולכן בשמאל",
+        correct: false,
+        explanation: "לא קשור לעדינות - הטעם הוא מספר המינים"
+      }, {
+        text: "זה מנהג בלבד ללא טעם מיוחד",
+        correct: false,
+        explanation: "יש טעם ברור - חשיבות הלולב (3 מינים)"
+      }],
+      explanation: "הטעם: בלולב יש שלושה מינים (לולב, הדס, ערבה) ובאתרוג רק מין אחד, ולכן החשוב יותר בימין."
+    }, {
+      q: "אדם שמאלי (אטר) - איך ייטול את הלולב לדעת הרמ\"א?",
+      answers: [{
+        text: "לולב בימין שלו (=שמאל של כולם), אתרוג בשמאל שלו (=ימין של כולם)",
+        correct: true
+      }, {
+        text: "כמו כולם - לולב בימין של כולם",
+        correct: false,
+        explanation: "זו דעת השו\"ע, לא הרמ\"א"
+      }, {
+        text: "לא יכול לקיים מצווה בעצמו",
+        correct: false,
+        explanation: "יכול - רק יש מחלוקת איך"
+      }, {
+        text: "אתרוג בימין שלו, לולב בשמאל שלו",
+        correct: false,
+        explanation: "הפוך - הולכים לפי הימין שלו אבל עדיין לולב בימין"
+      }],
+      explanation: "לדעת הרמ\"א: שמאלי הולך לפי הימין שלו, כמו בתפילין - לולב בימין שלו (שמאל של כולם)."
+    }, {
+      q: "אדם נטל בטעות את הלולב בשמאל והאתרוג בימין. מה עליו לעשות?",
+      answers: [{
+        text: "יצא מעיקר הדין אבל יש מחמירים, לכן טוב לחזור וליטול בלא ברכה",
+        correct: true
+      }, {
+        text: "לא יצא כלל וחייב לחזור עם ברכה",
+        correct: false,
+        explanation: "יצא מעיקר הדין, אבל כדאי לחזור בלא ברכה"
+      }, {
+        text: "יצא לגמרי ואין צורך לחזור",
+        correct: false,
+        explanation: "לא מדויק - יש מחמירים, לכן נכון לחזור בלא ברכה"
+      }, {
+        text: "פסול לגמרי כמו נטילה הפוכה",
+        correct: false,
+        explanation: "לא - זה שונה מנטילה הפוכה כדרך גידולם"
+      }],
+      explanation: "מעיקר הדין יצא, אבל יש מחמירים - לכן הדרך הנכונה: לחזור וליטול בלא ברכה."
+    }, {
+      q: "כמה קשרים חייבים לקשור באגידת הלולב מן הדין?",
+      answers: [{
+        text: "אין חובה למספר מסוים - העיקר קשר גמור אחד לפחות",
+        correct: true
+      }, {
+        text: "בדיוק שלושה קשרים חובה",
+        correct: false,
+        explanation: "טעות נפוצה - 3 קשרים זה מנהג יפה בלבד, לא חובה"
+      }, {
+        text: "לפחות שני קשרים",
+        correct: false,
+        explanation: "לא - די בקשר גמור אחד"
+      }, {
+        text: "חמישה קשרים כנגד חמישה חומשי תורה",
+        correct: false,
+        explanation: "אין דין כזה - 3 קשרים זה כנגד אבות (ומנהג)"
+      }],
+      explanation: "מן הדין צריך רק קשר גמור אחד (קשר על גבי קשר). שלושה קשרים זה מנהג יפה כנגד האבות."
+    }],
+    3: [
+    // רמה קשה - מצבים מורכבים והבנה עמוקה
+    {
+      q: "מדוע לדעת הרמ\"א אטר (שמאלי) הולך לפי ימין שלו בלולב, בעוד שהשו\"ע חולק?",
+      answers: [{
+        text: "הרמ\"א: אין הבדל בין דאורייתא לדרבנן, הולכים כמו בתפילין. השו\"ע: בתפילין זה דאורייתא ולכן לפי ימין שלו, כאן דרבנן ולכן כרוב העולם",
+        correct: true
+      }, {
+        text: "הרמ\"א מחמיר יותר בכל המצוות",
+        correct: false,
+        explanation: "לא קשור לחומרה - זו מחלוקת בגדר הדין"
+      }, {
+        text: "השו\"ע סובר שאטר לא יכול לקיים מצווה",
+        correct: false,
+        explanation: "לא נכון - גם השו\"ע מסכים שיכול, רק אופן שונה"
+      }, {
+        text: "הרמ\"א הולך לפי מנהג אשכנז בלבד",
+        correct: false,
+        explanation: "זו לא שאלת מנהג - זו מחלוקת הלכתית בעצם הדין"
+      }],
+      explanation: "המחלוקת: שו\"ע - בתפילין זה דאורייתא (לפי ימין שלו), בלולב דרבנן (כרוב). רמ\"א - אין הבדל, תמיד כמו תפילין."
+    }, {
+      q: "אדם רוצה להיזהר שלא לצאת ידי חובה לפני הברכה. מה הדרך הנכונה?",
+      answers: [{
+        text: "להפוך את האתרוג ולברך, או לברך ורק אז לקחת/להרים את ארבעת המינים",
+        correct: true
+      }, {
+        text: "לברך כשהלולב והאתרוג מונחים על השולחן",
+        correct: false,
+        explanation: "לא מספיק - אם כבר אחז בהם יכול לצאת"
+      }, {
+        text: "לברך רק אחרי שכבר החזיק את כולם",
+        correct: false,
+        explanation: "הפוך - רוצים לברך לפני!"
+      }, {
+        text: "להחזיק רק את הלולב ולברך",
+        correct: false,
+        explanation: "אז לא יצא עדיין, אבל גם לא הפתרון המבוקש"
+      }],
+      explanation: "שני פתרונות: (1) להפוך האתרוג ולברך ואז להפוך חזרה (2) לברך ורק אז לקחת/להרים הכל."
+    }, {
+      q: "אדם רוצה ליטול לולב לפני הנץ החמה. מה הדין?",
+      answers: [{
+        text: "לכתחילה לא, אבל אם נטל משעלה עמוד השחר - יצא בדיעבד",
+        correct: true
+      }, {
+        text: "אסור לגמרי לפני הנץ החמה",
+        correct: false,
+        explanation: "לא נכון - מעמוד השחר יצא בדיעבד"
+      }, {
+        text: "מותר לכתחילה משעלה עמוד השחר",
+        correct: false,
+        explanation: "לא לכתחילה - רק בדיעבד"
+      }, {
+        text: "צריך להמתין עד אחרי תפילת שחרית",
+        correct: false,
+        explanation: "לא - אפשר לנטול כל היום מהנץ"
+      }],
+      explanation: "לכתחילה ממתינים להנץ, אבל בדיעבד אם נטל משעלה עמוד השחר - יצא."
+    }, {
+      q: "מה ההבדל בין דין הדסים ביום הראשון לבין שאר הימים?",
+      answers: [{
+        text: "ביום ראשון צריך 3 הדסים שלמים (לא קטומים), בשאר הימים גם קטומים כשרים בדיעבד",
+        correct: true
+      }, {
+        text: "ביום ראשון צריך דווקא 3, בשאר הימים מספיק 1",
+        correct: false,
+        explanation: "לא - גם בשאר הימים צריך 3 לכתחילה"
+      }, {
+        text: "אין הבדל - תמיד 3 שלמים",
+        correct: false,
+        explanation: "יש הבדל - בשאר ימים קטומים כשרים בדיעבד"
+      }, {
+        text: "ביום ראשון מברכים שהחיינו רק על הדסים",
+        correct: false,
+        explanation: "לא קשור - השהחיינו על כל המצווה"
+      }],
+      explanation: "ביום ראשון - 3 הדסים שלמים דווקא. בשאר ימים - בדיעבד גם קטומים כשרים."
+    }, {
+      q: "מדוע צריך לקשור את ההדס גבוה יותר מהערבה?",
+      answers: [{
+        text: "לפי סדר החשיבות - ההדס חשוב יותר מהערבה",
+        correct: true
+      }, {
+        text: "כדי שהערבה לא תתקלקל",
+        correct: false,
+        explanation: "לא קשור לשמירה - זה דין בסדר הקשירה"
+      }, {
+        text: "זה רק מנהג ללא טעם הלכתי",
+        correct: false,
+        explanation: "יש טעם הלכתי ברור - סדר חשיבות"
+      }, {
+        text: "כי ההדס ארוך יותר",
+        correct: false,
+        explanation: "לא קשור לאורך - זה סדר חשיבות"
+      }],
+      explanation: "הטעם: ההדס חשוב יותר מהערבה (הדס = טוב בעלה, ערבה = לא טוב בעלה ולא בפרי), ולכן נקשר גבוה יותר."
+    }]
+  };
+  const shuffleArray = array => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
+  useEffect(() => {
+    if (questions[level] && questions[level][currentQuestion]) {
+      setShuffledAnswers(shuffleArray(questions[level][currentQuestion].answers));
+    }
+  }, [currentQuestion, level]);
+  const handleAnswer = answer => {
+    setSelectedAnswer(answer);
+    setShowExplanation(true);
+    if (answer.correct) {
+      setScore(score + 1);
+      playCorrectSound(); // Play sound for correct answer
+    }
+  };
+  const handleNext = () => {
+    if (currentQuestion + 1 < questions[level].length) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+    } else {
+      checkLevelCompletion();
+    }
+  };
+  const checkLevelCompletion = () => {
+    const percentage = score / questions[level].length * 100;
+    if (percentage >= 95) {
+      playLevelCompleteSound(); // Play celebratory sound
+      if (level < 3) {
+        setTimeout(() => {
+          alert(`כל הכבוד! השגת ${percentage.toFixed(0)}% - עברת לרמה ${level + 1}!`);
+          setLevel(level + 1);
+          setCurrentQuestion(0);
+          setScore(0);
+          setSelectedAnswer(null);
+          setShowExplanation(false);
+        }, 1800); // Wait for sound to finish
+      } else {
+        setTimeout(() => {
+          setGameCompleted(true);
+        }, 1800);
+      }
+    } else {
+      alert(`השגת ${percentage.toFixed(0)}%. צריך 95% כדי לעבור. נסה שוב!`);
+      setCurrentQuestion(0);
+      setScore(0);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+    }
+  };
+  const resetGame = () => {
+    setLevel(1);
+    setCurrentQuestion(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setGameCompleted(false);
+  };
+  if (gameCompleted) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-green-50 to-yellow-50 p-6 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement(Card, {
+      className: "max-w-2xl w-full shadow-2xl"
+    }, /*#__PURE__*/React.createElement(CardContent, {
+      className: "p-8 text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl mb-4"
+    }, "\uD83C\uDF89"), /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold mb-4 text-green-700"
+    }, "\u05DE\u05D6\u05DC \u05D8\u05D5\u05D1!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-4"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05DB\u05DC \u05D4\u05E8\u05DE\u05D5\u05EA \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg mb-6"
+    }, "\u05D4\u05D5\u05DB\u05D7\u05EA \u05E9\u05DC\u05D9\u05D8\u05D4 \u05DE\u05E2\u05DE\u05D9\u05E7\u05D4 \u05D1\u05D4\u05DC\u05DB\u05D5\u05EA \u05D0\u05E8\u05D1\u05E2\u05EA \u05D4\u05DE\u05D9\u05E0\u05D9\u05DD"), /*#__PURE__*/React.createElement("button", {
+      onClick: resetGame,
+      className: "bg-green-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors"
+    }, "\u05D4\u05EA\u05D7\u05DC \u05DE\u05D7\u05D3\u05E9"), /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 pt-6 border-t border-gray-200 text-sm text-gray-600"
+    }, /*#__PURE__*/React.createElement("p", null, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "font-semibold"
+    }, "\u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520")))));
+  }
+  const currentQ = questions[level][currentQuestion];
+  const progress = (currentQuestion + 1) / questions[level].length * 100;
+  const currentScore = questions[level].length > 0 ? (score / questions[level].length * 100).toFixed(0) : 0;
+  const levelNames = {
+    1: "רמה קלה - יסודות",
+    2: "רמה בינונית - הבנה מעמיקה",
+    3: "רמה קשה - שליטה מקצועית"
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-green-50 to-yellow-50 p-6",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-lg shadow-lg p-6 mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-4"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-2xl font-bold text-green-800"
+  }, "\u05DE\u05E9\u05D7\u05E7 \u05D4\u05DC\u05DB\u05D5\u05EA \u05D0\u05E8\u05D1\u05E2\u05EA \u05D4\u05DE\u05D9\u05E0\u05D9\u05DD"), /*#__PURE__*/React.createElement("div", {
+    className: "text-lg font-semibold"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-green-600"
+  }, levelNames[level]))), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-4 mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-gray-600 mb-1"
+  }, "\u05D4\u05EA\u05E7\u05D3\u05DE\u05D5\u05EA \u05D1\u05E8\u05DE\u05D4"), /*#__PURE__*/React.createElement("div", {
+    className: "bg-gray-200 rounded-full h-3 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-green-600 h-full transition-all duration-300",
+    style: {
+      width: `${progress}%`
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-gray-600"
+  }, "\u05E6\u05D9\u05D5\u05DF \u05E0\u05D5\u05DB\u05D7\u05D9"), /*#__PURE__*/React.createElement("div", {
+    className: "text-2xl font-bold text-green-700"
+  }, currentScore, "%"))), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-gray-500"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, " \u05DE\u05EA\u05D5\u05DA ", questions[level].length, " | \u05E0\u05D3\u05E8\u05E9 95% \u05DC\u05DE\u05E2\u05D1\u05E8 \u05DC\u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4")), /*#__PURE__*/React.createElement(Card, {
+    className: "shadow-xl"
+  }, /*#__PURE__*/React.createElement(CardContent, {
+    className: "p-8"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-bold mb-6 text-gray-800 leading-relaxed"
+  }, currentQ.q), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, shuffledAnswers.map((answer, index) => {
+    const isSelected = selectedAnswer === answer;
+    const isCorrect = answer.correct;
+    let buttonClass = "w-full text-right p-4 rounded-lg border-2 transition-all duration-200 ";
+    if (!showExplanation) {
+      buttonClass += "border-gray-300 hover:border-green-500 hover:bg-green-50 bg-white";
+    } else if (isSelected && isCorrect) {
+      buttonClass += "border-green-500 bg-green-100 font-semibold";
+    } else if (isSelected && !isCorrect) {
+      buttonClass += "border-red-500 bg-red-100";
+    } else if (isCorrect) {
+      buttonClass += "border-green-500 bg-green-50 font-semibold";
+    } else {
+      buttonClass += "border-gray-200 bg-gray-50 opacity-60";
+    }
+    return /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => !showExplanation && handleAnswer(answer),
+      disabled: showExplanation,
+      className: buttonClass
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-start gap-3"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-lg font-semibold text-gray-500 flex-shrink-0"
+    }, String.fromCharCode(1488 + index), "."), /*#__PURE__*/React.createElement("span", {
+      className: "text-lg leading-relaxed flex-1"
+    }, answer.text), showExplanation && isCorrect && /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl flex-shrink-0"
+    }, "\u2713"), showExplanation && isSelected && !isCorrect && /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl flex-shrink-0"
+    }, "\u2717")));
+  })), showExplanation && /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 space-y-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-blue-50 border-r-4 border-blue-500 p-4 rounded"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-blue-900 mb-2"
+  }, "\u05D4\u05E1\u05D1\u05E8:"), /*#__PURE__*/React.createElement("p", {
+    className: "text-blue-800 leading-relaxed"
+  }, currentQ.explanation)), selectedAnswer && !selectedAnswer.correct && selectedAnswer.explanation && /*#__PURE__*/React.createElement("div", {
+    className: "bg-orange-50 border-r-4 border-orange-500 p-4 rounded"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-orange-900 mb-2"
+  }, "\u05DC\u05DE\u05D4 \u05D4\u05EA\u05E9\u05D5\u05D1\u05D4 \u05E9\u05D1\u05D7\u05E8\u05EA \u05E9\u05D2\u05D5\u05D9\u05D4:"), /*#__PURE__*/React.createElement("p", {
+    className: "text-orange-800 leading-relaxed"
+  }, selectedAnswer.explanation)), /*#__PURE__*/React.createElement("button", {
+    onClick: handleNext,
+    className: "w-full bg-green-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors"
+  }, currentQuestion + 1 < questions[level].length ? 'שאלה הבאה ←' : 'סיים רמה')))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 text-center text-sm text-gray-600 bg-white rounded-lg p-4 shadow"
+  }, /*#__PURE__*/React.createElement("p", null, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold"
+  }, "\u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+};
+const __App = ArbaMinimGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

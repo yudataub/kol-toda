@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>exodus-game-nikud – הקול החמישי</title>
+<meta name="description" content="Learn the story of Moses returning to Egypt through an interactive Hebrew game with questions, lessons, and instant feedback. Educational Torah content.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="exodus-game-nikud – הקול החמישי">
+<meta property="og:description" content="Learn the story of Moses returning to Egypt through an interactive Hebrew game with questions, lessons, and instant feedback. Educational Torah content.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-e29ca154.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/e29ca154.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const ExodusLearningGame = () => {
+  const [currentLesson, setCurrentLesson] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [lessonScores, setLessonScores] = useState([]);
+  const [gameComplete, setGameComplete] = useState(false);
+  const [totalQuestionsAnswered, setTotalQuestionsAnswered] = useState(0);
+  const [showCertificate, setShowCertificate] = useState(false);
+  const lessons = [{
+    title: "מֹשֶׁה חוֹזֵר לְמִצְרַיִם 🏜️",
+    content: /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4 text-right leading-relaxed",
+      style: {
+        fontSize: '18px'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-blue-700"
+    }, "\uD83C\uDFAF \u05DE\u05B9\u05E9\u05B6\u05C1\u05D4 \u05DE\u05B0\u05D1\u05B7\u05E7\u05B5\u05BC\u05E9\u05C1 \u05E8\u05B0\u05E9\u05C1\u05D5\u05BC\u05EA \u05DE\u05B4\u05D9\u05B4\u05BC\u05EA\u05B0\u05E8\u05D5\u05B9 \u05DC\u05B7\u05D7\u05B2\u05D6\u05D5\u05B9\u05E8 \u05DC\u05B0\u05DE\u05B4\u05E6\u05B0\u05E8\u05B7\u05D9\u05B4\u05DD"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-50 p-4 rounded-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-semibold"
+    }, /*#__PURE__*/React.createElement("strong", null, "\u05D4\u05B7\u05E4\u05B8\u05BC\u05E1\u05D5\u05BC\u05E7:"), " \"\u05D5\u05B7\u05D9\u05B5\u05BC\u05DC\u05B6\u05DA\u05B0 \u05DE\u05B9\u05E9\u05B6\u05C1\u05D4 \u05D5\u05B7\u05D9\u05B8\u05BC\u05E9\u05B8\u05C1\u05D1 \u05D0\u05B6\u05DC \u05D9\u05B6\u05EA\u05B6\u05E8 \u05D7\u05B9\u05EA\u05B0\u05E0\u05D5\u05B9 \u05D5\u05B7\u05D9\u05B9\u05BC\u05D0\u05DE\u05B6\u05E8 \u05DC\u05D5\u05B9 \u05D0\u05B5\u05DC\u05B0\u05DB\u05B8\u05D4 \u05E0\u05B8\u05BC\u05D0 \u05D5\u05B0\u05D0\u05B8\u05E9\u05C1\u05D5\u05BC\u05D1\u05B8\u05D4 \u05D0\u05B6\u05DC \u05D0\u05B7\u05D7\u05B7\u05D9 \u05D0\u05B2\u05E9\u05B6\u05C1\u05E8 \u05D1\u05B0\u05BC\u05DE\u05B4\u05E6\u05B0\u05E8\u05B8\u05D9\u05B4\u05DD\"")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-yellow-50 p-4 rounded-lg border-r-4 border-yellow-500"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-semibold mb-2"
+    }, "\uD83D\uDCA1 \u05DC\u05B8\u05DE\u05B8\u05BC\u05D4 \u05DE\u05B9\u05E9\u05B6\u05C1\u05D4 \u05DC\u05B9\u05D0 \u05D2\u05B4\u05BC\u05DC\u05B8\u05BC\u05D4 \u05D0\u05B6\u05EA \u05D4\u05B7\u05E9\u05B0\u05BC\u05C1\u05DC\u05B4\u05D9\u05D7\u05D5\u05BC\u05EA \u05D4\u05B8\u05D0\u05B2\u05DE\u05B4\u05EA\u05B4\u05BC\u05D9\u05EA?"), /*#__PURE__*/React.createElement("ul", {
+      className: "space-y-2 mr-4"
+    }, /*#__PURE__*/React.createElement("li", null, "\u2713 \u05D0\u05D5\u05BC\u05DC\u05B7\u05D9 \u05D7\u05B8\u05E9\u05B7\u05C1\u05E9\u05C1 \u05DC\u05B0\u05E1\u05B7\u05E4\u05B5\u05BC\u05E8 \u05E2\u05B7\u05DC \u05D4\u05B7\u05DE\u05B0\u05BC\u05E9\u05B4\u05C2\u05D9\u05DE\u05B8\u05BC\u05D4 \u05D4\u05B7\u05D2\u05B0\u05BC\u05D3\u05D5\u05B9\u05DC\u05B8\u05D4"), /*#__PURE__*/React.createElement("li", null, "\u2713 \u05D0\u05D5\u05BC\u05DC\u05B7\u05D9 \u05DC\u05B9\u05D0 \u05E8\u05B8\u05E6\u05B8\u05D4 \u05DC\u05B0\u05E4\u05B7\u05E8\u05B0\u05E1\u05B5\u05DD \u05DC\u05B4\u05E4\u05B0\u05E0\u05B5\u05D9 \u05E9\u05B6\u05C1\u05D9\u05B7\u05BC\u05E6\u05B0\u05DC\u05B4\u05D9\u05D7\u05B7"), /*#__PURE__*/React.createElement("li", null, "\u2713 \u05E9\u05B6\u05C1\u05DE\u05B8\u05BC\u05D0 \u05D7\u05B8\u05E9\u05B7\u05C1\u05D1 \u05E9\u05B6\u05C1\u05D9\u05B4\u05BC\u05EA\u05B0\u05E8\u05D5\u05B9 \u05DC\u05B9\u05D0 \u05D9\u05B7\u05D0\u05B2\u05DE\u05B4\u05D9\u05DF \u05DC\u05D5\u05B9"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-green-50 p-4 rounded-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-semibold"
+    }, "\u05D4' \u05D0\u05B8\u05DE\u05B7\u05E8 \u05DC\u05B0\u05DE\u05B9\u05E9\u05B6\u05C1\u05D4: ", /*#__PURE__*/React.createElement("span", {
+      className: "text-green-700"
+    }, "\"\u05DB\u05B4\u05BC\u05D9 \u05DE\u05B5\u05EA\u05D5\u05BC \u05DB\u05B8\u05BC\u05DC \u05D4\u05B8\u05D0\u05B2\u05E0\u05B8\u05E9\u05B4\u05C1\u05D9\u05DD \u05D4\u05B7\u05DE\u05B0\u05D1\u05B7\u05E7\u05B0\u05BC\u05E9\u05B4\u05C1\u05D9\u05DD \u05D0\u05B6\u05EA \u05E0\u05B7\u05E4\u05B0\u05E9\u05B6\u05C1\u05DA\u05B8\"")), /*#__PURE__*/React.createElement("p", {
+      className: "mt-2"
+    }, "\uD83D\uDD04 \u05D1\u05B7\u05BC\u05EA\u05B0\u05BC\u05D7\u05B4\u05DC\u05B8\u05BC\u05D4 \u05D7\u05B8\u05E9\u05B7\u05C1\u05D1 \u05DE\u05B9\u05E9\u05B6\u05C1\u05D4 \u05DC\u05B0\u05D4\u05B7\u05D2\u05B4\u05BC\u05D9\u05E2\u05B7 \u05D1\u05B0\u05BC\u05E1\u05B5\u05EA\u05B6\u05E8, \u05D0\u05B2\u05D1\u05B8\u05DC \u05DB\u05B0\u05BC\u05E9\u05B6\u05C1\u05D4\u05B5\u05D1\u05B4\u05D9\u05DF \u05E9\u05B6\u05C1\u05D0\u05B5\u05D9\u05DF \u05E1\u05B7\u05DB\u05B8\u05BC\u05E0\u05B8\u05D4 - \u05DC\u05B8\u05E7\u05B7\u05D7 \u05D0\u05B6\u05EA \u05DB\u05B8\u05BC\u05DC \u05DE\u05B4\u05E9\u05B0\u05C1\u05E4\u05B7\u05BC\u05D7\u05B0\u05EA\u05BC\u05D5\u05B9!"))),
+    questions: [{
+      question: "לָמָּה מֹשֶׁה בִּקֵּשׁ רְשׁוּת מִיִּתְרוֹ לִפְנֵי שֶׁחָזַר לְמִצְרַיִם?",
+      options: ["כִּי הָיָה צָרִיךְ לִשְׁמוֹר עַל כְּבוֹד חוֹתְנוֹ וּלְהִיפָּרֵד כָּרָאוּי", "כִּי יִתְרוֹ הָיָה הַמֶּלֶךְ שֶׁל מִדְיָן וְהָיָה צָרִיךְ אִישּׁוּר רִשְׁמִי", "כִּי חָשַׁשׁ שֶׁיִּתְרוֹ יִכְעַס וְיַחֲזִיר אוֹתוֹ בְּכוֹחַ", "כִּי מֹשֶׁה לֹא הָיָה בָּטוּחַ בְּעַצְמוֹ וְהָיָה צָרִיךְ עִדּוּד"],
+      correct: 0,
+      explanation: "מֹשֶׁה שָׁמַר עַל כְּבוֹד חוֹתְנוֹ וְנָהַג בְּדֶרֶךְ אֶרֶץ - בִּקֵּשׁ רְשׁוּת וְהִיפָּרֵד כָּרָאוּי"
+    }, {
+      question: "מָה הַסִּבָּה הָאֲמִתִּית שֶׁמֹּשֶׁה לֹא גִּלָּה לְיִתְרוֹ אֶת מַטָּרַת הַשְּׁלִיחוּת?",
+      options: ["הוּא חָשַׁשׁ לְסַפֵּר, לֹא רָצָה לְפַרְסֵם לִפְנֵי הַהַצְלָחָה, אוֹ חָשַׁב שֶׁלֹּא יַאֲמִינוּ לוֹ", "יִתְרוֹ הָיָה אוֹיֵב שֶׁל בְּנֵי יִשְׂרָאֵל וְלֹא הָיָה מְעוּנְיָן בְּשִׁחְרוּרָם", "מֹשֶׁה הָיָה בָּטוּחַ שֶׁיִּתְרוֹ כְּבָר יוֹדֵעַ הַכֹּל מִנְּבוּאָה מִשֶּׁלּוֹ", "הוּא לֹא רָצָה שֶׁיִּתְרוֹ יָבוֹא אִתּוֹ וְיִתְעָרֵב בַּמְּשִׂימָּה"],
+      correct: 0,
+      explanation: "מֹשֶׁה הִתְנַהֵג בִּזְהִירוּת - אוּלַי מֵחֲשָׁשׁ, אוּלַי כְּדֵי לֹא לְפַרְסֵם מֵרֹאשׁ, וְאוּלַי כִּי חָשַׁשׁ שֶׁלֹּא יַאֲמִינוּ"
+    }, {
+      question: "מָה הִשְׁתַּנָּה בְּתוֹכְנִית שֶׁל מֹשֶׁה אַחֲרֵי שֶׁה' אָמַר לוֹ שֶׁמֵּתוּ הַמְבַקְשִׁים אֶת נַפְשׁוֹ?",
+      options: ["הוּא הֶחְלִיט לְהָבִיא אֶת כָּל מִשְׁפַּחְתּוֹ בִּמְקוֹם לְהַגִּיעַ בַּחֲשָׁאִי", "הוּא בִּטֵּל אֶת הַמַּסָּע לְמִצְרַיִם וְהֶחְלִיט לְהִשָּׁאֵר בְּמִדְיָן", "הוּא הֶחְלִיט לִנְסוֹעַ רַק עִם אַהֲרֹן וּלְהַשְׁאִיר אֶת הַמִּשְׁפָּחָה בְּמִדְיָן", "הוּא שָׁלַח שָׁלִיחַ לְפָנָיו כְּדֵי לִבְדוֹק אֶת הַמַּצָּב בְּמִצְרַיִם"],
+      correct: 0,
+      explanation: "כְּשֶׁהֵבִין שֶׁאֵין סַכָּנָה, מֹשֶׁה שִׁנָּה תּוֹכְנִית - בִּמְקוֹם לְהַגִּיעַ בְּסֵתֶר, לָקַח אֶת כָּל מִשְׁפַּחְתּוֹ"
+    }]
+  }, {
+    title: "הַקְשָׁיַת לֵב פַּרְעֹה 👑",
+    content: /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4 text-right leading-relaxed",
+      style: {
+        fontSize: '18px'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-purple-700"
+    }, "\u26A1 \u05DC\u05B8\u05DE\u05B8\u05BC\u05D4 \u05D4' \u05D4\u05B4\u05E7\u05B0\u05E9\u05B8\u05C1\u05D4 \u05D0\u05B6\u05EA \u05DC\u05B5\u05D1 \u05E4\u05B7\u05BC\u05E8\u05B0\u05E2\u05B9\u05D4?"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-purple-50 p-4 rounded-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-semibold text-lg mb-3"
+    }, "\"\u05D5\u05B7\u05D0\u05B2\u05E0\u05B4\u05D9 \u05D0\u05B2\u05D7\u05B7\u05D6\u05B5\u05BC\u05E7 \u05D0\u05B6\u05EA \u05DC\u05B4\u05D1\u05BC\u05D5\u05B9 \u05D5\u05B0\u05DC\u05B9\u05D0 \u05D9\u05B0\u05E9\u05B7\u05C1\u05DC\u05B7\u05BC\u05D7 \u05D0\u05B6\u05EA \u05D4\u05B8\u05E2\u05B8\u05DD\""), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-3 rounded border-r-4 border-purple-500"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-semibold text-purple-700 mb-2"
+    }, "\uD83C\uDFAF \u05D4\u05B7\u05D4\u05B6\u05E1\u05B0\u05D1\u05B5\u05BC\u05E8 \u05D4\u05B8\u05E2\u05B8\u05DE\u05D5\u05B9\u05E7:"), /*#__PURE__*/React.createElement("ul", {
+      className: "space-y-2 mr-4"
+    }, /*#__PURE__*/React.createElement("li", null, "\u274C \u05E4\u05B7\u05BC\u05E8\u05B0\u05E2\u05B9\u05D4 \u05DC\u05B9\u05D0 \u05E8\u05B8\u05E6\u05B8\u05D4 \u05EA\u05B0\u05BC\u05E9\u05C1\u05D5\u05BC\u05D1\u05B8\u05D4 \u05D0\u05B2\u05DE\u05B4\u05EA\u05B4\u05BC\u05D9\u05EA - \u05E8\u05B7\u05E7 \u05E4\u05B8\u05BC\u05D7\u05B7\u05D3 \u05DE\u05B5\u05D4\u05B7\u05DE\u05B7\u05BC\u05DB\u05BC\u05D5\u05B9\u05EA"), /*#__PURE__*/React.createElement("li", null, "\u2694\uFE0F \u05D4\u05D5\u05BC\u05D0 \u05D4\u05B4\u05EA\u05B0\u05E0\u05B7\u05D4\u05B5\u05D2 \u05D1\u05B0\u05BC\u05E8\u05B4\u05E9\u05B0\u05C1\u05E2\u05D5\u05BC\u05EA \u05D2\u05B0\u05BC\u05D3\u05D5\u05B9\u05DC\u05B8\u05D4 \u05DB\u05B0\u05BC\u05DC\u05B7\u05E4\u05B5\u05BC\u05D9 \u05D4\u05B7\u05E7\u05B8\u05BC\u05D3\u05D5\u05B9\u05E9\u05C1 \u05D1\u05B8\u05BC\u05E8\u05D5\u05BC\u05DA\u05B0 \u05D4\u05D5\u05BC\u05D0"), /*#__PURE__*/React.createElement("li", null, "\uD83D\uDD0D \u05D2\u05B7\u05BC\u05DD \u05D1\u05B0\u05BC\u05E0\u05B5\u05D9 \u05D9\u05B4\u05E9\u05B0\u05C2\u05E8\u05B8\u05D0\u05B5\u05DC \u05E2\u05B2\u05D3\u05B7\u05D9\u05B4\u05DF \u05E2\u05B8\u05D1\u05B0\u05D3\u05D5\u05BC \u05E2\u05B2\u05D1\u05D5\u05B9\u05D3\u05B8\u05D4 \u05D6\u05B8\u05E8\u05B8\u05D4")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-amber-50 p-4 rounded-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-amber-800 text-lg mb-2"
+    }, "\uD83D\uDCA1 \u05D4\u05B7\u05DE\u05B7\u05BC\u05D8\u05B8\u05BC\u05E8\u05B8\u05D4 \u05D4\u05B8\u05D0\u05B2\u05DE\u05B4\u05EA\u05B4\u05BC\u05D9\u05EA:"), /*#__PURE__*/React.createElement("p", null, "\u05D4' \u05E8\u05B8\u05E6\u05B8\u05D4 \u05DC\u05B0\u05D4\u05B7\u05E2\u05B2\u05E0\u05B4\u05D9\u05E9\u05C1 \u05D0\u05B6\u05EA \u05E4\u05B7\u05BC\u05E8\u05B0\u05E2\u05B9\u05D4 \u05E2\u05B7\u05DC \u05DB\u05B8\u05BC\u05DC \u05E8\u05B4\u05E9\u05B0\u05C1\u05E2\u05D5\u05BC\u05EA\u05D5\u05B9 \u05D5\u05BC\u05DC\u05B0\u05D4\u05B8\u05D1\u05B4\u05D9\u05D0 \u05D0\u05B6\u05EA \u05DB\u05B8\u05BC\u05DC \u05E2\u05B6\u05E9\u05B6\u05C2\u05E8 \u05D4\u05B7\u05DE\u05B7\u05BC\u05DB\u05BC\u05D5\u05B9\u05EA -", /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-amber-900"
+    }, " \u05DB\u05B0\u05BC\u05D3\u05B5\u05D9 \u05DC\u05B0\u05DC\u05B7\u05DE\u05B5\u05BC\u05D3 \u05D0\u05B6\u05EA \u05D4\u05B8\u05E2\u05D5\u05B9\u05DC\u05B8\u05DD \u05DB\u05BB\u05BC\u05DC\u05BC\u05D5\u05B9 \u05E9\u05B4\u05C1\u05E2\u05D5\u05BC\u05E8 \u05D2\u05B8\u05BC\u05D3\u05D5\u05B9\u05DC!"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-l from-blue-100 to-purple-100 p-4 rounded-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold mb-2"
+    }, "\uD83D\uDC51 \u05D9\u05B4\u05E9\u05B0\u05C2\u05E8\u05B8\u05D0\u05B5\u05DC - \u05D4\u05B7\u05D1\u05B0\u05BC\u05DB\u05D5\u05B9\u05E8 \u05E9\u05B6\u05C1\u05DC \u05D4'"), /*#__PURE__*/React.createElement("p", {
+      className: "italic"
+    }, "\"\u05D1\u05B0\u05BC\u05E0\u05B4\u05D9 \u05D1\u05B0\u05DB\u05B9\u05E8\u05B4\u05D9 \u05D9\u05B4\u05E9\u05B0\u05C2\u05E8\u05B8\u05D0\u05B5\u05DC\" - \u05D9\u05B4\u05E9\u05B0\u05C2\u05E8\u05B8\u05D0\u05B5\u05DC \u05E0\u05B4\u05D1\u05B0\u05D7\u05B2\u05E8\u05D5\u05BC \u05D5\u05B0\u05E0\u05B6\u05D0\u05B6\u05D4\u05B1\u05D1\u05D5\u05BC \u05DE\u05B4\u05DB\u05B8\u05BC\u05DC \u05D4\u05B8\u05E2\u05B7\u05DE\u05B4\u05BC\u05D9\u05DD, \u05D4\u05B5\u05DD \u05E2\u05B8\u05DC\u05D5\u05BC \u05D1\u05B7\u05BC\u05DE\u05B7\u05BC\u05D7\u05B2\u05E9\u05B8\u05C1\u05D1\u05B8\u05D4 \u05DC\u05B0\u05D4\u05B4\u05D9\u05D1\u05B8\u05BC\u05E8\u05B5\u05D0 \u05DC\u05B4\u05E4\u05B0\u05E0\u05B5\u05D9 \u05DB\u05B8\u05BC\u05DC \u05D4\u05B7\u05D1\u05B0\u05BC\u05E8\u05B4\u05D9\u05D0\u05B8\u05D4!"))),
+    questions: [{
+      question: "מָה הַסִּבָּה הָאֲמִתִּית שֶׁה' הִקְשָׁה אֶת לֵב פַּרְעֹה?",
+      options: ["כְּדֵי לְהַעֲנִישׁ אֶת פַּרְעֹה עַל רִשְׁעוּתוֹ וּלְהָבִיא אֶת כָּל הַמַּכּוֹת וּלְלַמֵּד אֶת הָעוֹלָם", "כִּי ה' רָצָה לְהַאֲרִיךְ אֶת סִבְלָם שֶׁל בְּנֵי יִשְׂרָאֵל כְּדֵי לְטַהֵר אוֹתָם", "כְּדֵי לִבְדוֹק אִם מֹשֶׁה בֶּאֱמֶת מוּכָן לִהְיוֹת מַנְהִיג חָזָק וְתַקִּיף", "כִּי פַּרְעֹה כְּבָר הָיָה מוּכָן לְשַׁחְרֵר אוֹתָם וְה' רָצָה לְעַכֵּב זֹאת"],
+      correct: 0,
+      explanation: "ה' רָצָה לְהַעֲנִישׁ אֶת פַּרְעֹה הָרָשָׁע וּלְהָבִיא אֶת כָּל הַמַּכּוֹת כְּדֵי לְלַמֵּד שִׁעוּר לָעוֹלָם כֻּלּוֹ"
+    }, {
+      question: "לָמָּה פַּרְעֹה לֹא זָכָה לִתְשׁוּבָה אֲמִתִּית?",
+      options: ["כִּי הוּא רַק חָשַׁשׁ מֵהַמַּכּוֹת אֲבָל לֹא רָצָה לָשׁוּב בִּתְשׁוּבָה שְׁלֵמָה", "כִּי הוּא הָיָה חוֹלֶה וְלֹא יָכוֹל הָיָה לְהָבִין אֶת דִּבְרֵי מֹשֶׁה", "כִּי מֹשֶׁה לֹא דִּבֵּר אִתּוֹ בְּצוּרָה נְכוֹנָה וְלֹא הִסְבִּיר אֶת הַמֶּסֶר", "כִּי בְּנֵי יִשְׂרָאֵל עַצְמָם לֹא רָצוּ לָצֵאת וְלָכֵן פַּרְעֹה לֹא הִשְׁתַּכְנֵעַ"],
+      correct: 0,
+      explanation: "פַּרְעֹה לֹא בֶּאֱמֶת רָצָה לָשׁוּב בִּתְשׁוּבָה - הוּא רַק פָּחַד מֵהַמַּכּוֹת אֲבָל הִמְשִׁיךְ לִהְיוֹת רָשָׁע"
+    }, {
+      question: "מָה הַמַּשְׁמָעוּת שֶׁל 'בְּנִי בְכוֹרִי יִשְׂרָאֵל'?",
+      options: ["יִשְׂרָאֵל הֵם הָעָם הַנִּבְחָר שֶׁעָלוּ בַּמַּחֲשָׁבָה לְהִיבָּרֵא לִפְנֵי כָּל הַבְּרִיאָה", "יִשְׂרָאֵל הָיוּ הָעָם הָרִאשׁוֹן שֶׁהִגִּיעַ לְמִצְרַיִם בִּזְמַן שֶׁל יוֹסֵף", "יִשְׂרָאֵל הֵם הַבְּכוֹר רַק בִּגְלַל שֶׁהֵם הַכִּי חֲזָקִים מִבֵּין כָּל הָעַמִּים", "הַכַּוָּנָה שֶׁרַק הַבְּכוֹרִים בְּיִשְׂרָאֵל קְדוֹשִׁים, לֹא כָּל הָעָם"],
+      correct: 0,
+      explanation: "יִשְׂרָאֵל נִקְרְאוּ 'בְּכוֹרִי' כִּי הֵם הָעָם הָאָהוּב וְהַנִּבְחָר שֶׁעָלוּ בַּמַּחֲשָׁבָה לְהִיבָּרֵא לִפְנֵי כָּל הַבְּרִיאָה"
+    }]
+  }, {
+    title: "הָאִירוּעַ בַּמָּלוֹן 🌙",
+    content: /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4 text-right leading-relaxed",
+      style: {
+        fontSize: '18px'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-red-700"
+    }, "\u26A0\uFE0F \u05DE\u05B9\u05E9\u05B6\u05C1\u05D4 \u05DB\u05B4\u05BC\u05DE\u05B0\u05E2\u05B7\u05D8 \u05D0\u05B4\u05D1\u05B5\u05BC\u05D3 \u05D0\u05B6\u05EA \u05D7\u05B7\u05D9\u05B8\u05BC\u05D9\u05D5 \u05D1\u05B7\u05BC\u05D3\u05B6\u05BC\u05E8\u05B6\u05DA\u05B0!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-red-50 p-4 rounded-lg border-r-4 border-red-500"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-semibold text-lg mb-2"
+    }, "\"\u05D5\u05B7\u05D9\u05B0\u05D4\u05B4\u05D9 \u05D1\u05B7\u05D3\u05B6\u05BC\u05E8\u05B6\u05DA\u05B0 \u05D1\u05B7\u05BC\u05DE\u05B8\u05BC\u05DC\u05D5\u05B9\u05DF \u05D5\u05B7\u05D9\u05B4\u05BC\u05E4\u05B0\u05D2\u05B0\u05BC\u05E9\u05B5\u05C1\u05D4\u05D5\u05BC \u05D4' \u05D5\u05B7\u05D9\u05B0\u05D1\u05B7\u05E7\u05B5\u05BC\u05E9\u05C1 \u05D4\u05B2\u05DE\u05B4\u05D9\u05EA\u05D5\u05B9\""), /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-red-700 text-xl mt-3"
+    }, "\u2757 \u05DC\u05B8\u05DE\u05B8\u05BC\u05D4 \u05E0\u05B6\u05E2\u05B1\u05E0\u05B7\u05E9\u05C1?"), /*#__PURE__*/React.createElement("ul", {
+      className: "space-y-2 mr-4 mt-2"
+    }, /*#__PURE__*/React.createElement("li", null, "\u23F0 \u05D4\u05B4\u05EA\u05B0\u05E2\u05B7\u05DB\u05B5\u05BC\u05D1 \u05D1\u05B0\u05BC\u05DE\u05B4\u05D9\u05DC\u05B7\u05EA \u05D1\u05B0\u05BC\u05E0\u05D5\u05B9 \u05D0\u05B1\u05DC\u05B4\u05D9\u05E2\u05B6\u05D6\u05B6\u05E8"), /*#__PURE__*/React.createElement("li", null, "\uD83C\uDFE8 \u05D4\u05B4\u05EA\u05B0\u05E2\u05B7\u05E1\u05B5\u05BC\u05E7 \u05D1\u05B0\u05BC\u05E1\u05B4\u05D3\u05BC\u05D5\u05BC\u05E8\u05B5\u05D9 \u05DC\u05B4\u05D9\u05E0\u05B8\u05D4 \u05DC\u05B4\u05E4\u05B0\u05E0\u05B5\u05D9 \u05D4\u05B7\u05DE\u05B4\u05BC\u05E6\u05B0\u05D5\u05B8\u05D4"), /*#__PURE__*/React.createElement("li", null, "\u26A1 \u05D4\u05B7\u05E9\u05B4\u05BC\u05C1\u05E2\u05D5\u05BC\u05E8: ", /*#__PURE__*/React.createElement("strong", null, "\u05D6\u05B0\u05E8\u05B4\u05D9\u05D6\u05B4\u05D9\u05DD \u05DE\u05B7\u05E7\u05B0\u05D3\u05B4\u05BC\u05D9\u05DE\u05B4\u05D9\u05DD \u05DC\u05B0\u05DE\u05B4\u05E6\u05B0\u05D5\u05B9\u05EA!")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-50 p-4 rounded-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-semibold text-blue-800 mb-2"
+    }, "\uD83E\uDD14 \u05D0\u05B2\u05D1\u05B8\u05DC \u05E8\u05B6\u05D2\u05B7\u05E2... \u05E8\u05B7\u05D1\u05B4\u05BC\u05D9 \u05D9\u05D5\u05B9\u05E1\u05B5\u05D9 \u05D0\u05D5\u05B9\u05DE\u05B5\u05E8:"), /*#__PURE__*/React.createElement("p", null, "\u05DE\u05B9\u05E9\u05B6\u05C1\u05D4 \u05DC\u05B9\u05D0 \u05D4\u05B4\u05EA\u05B0\u05E8\u05B7\u05E9\u05B5\u05BC\u05C1\u05DC! \u05D4\u05D5\u05BC\u05D0 \u05D7\u05B8\u05E9\u05B7\u05C1\u05E9\u05C1 \u05DC\u05B0\u05E1\u05B7\u05DB\u05B5\u05BC\u05DF \u05D0\u05B6\u05EA \u05D4\u05B7\u05EA\u05B4\u05BC\u05D9\u05E0\u05D5\u05B9\u05E7 \u05D1\u05B4\u05BC\u05D1\u05B0\u05E8\u05B4\u05D9\u05EA \u05D5\u05BC\u05D1\u05B7\u05E0\u05B0\u05BC\u05E1\u05B4\u05D9\u05E2\u05B8\u05D4. \u05D0\u05B2\u05D1\u05B8\u05DC \u05D4\u05B8\u05E2\u05D5\u05B9\u05E0\u05B6\u05E9\u05C1 \u05D1\u05B8\u05BC\u05D0 \u05DB\u05B4\u05BC\u05D9 \u05D4\u05D5\u05BC\u05D0 \u05E7\u05B4\u05D3\u05B5\u05BC\u05DD \u05D0\u05B6\u05EA \u05D4\u05B7\u05DC\u05B4\u05BC\u05D9\u05E0\u05B8\u05D4 \u05DC\u05B4\u05E4\u05B0\u05E0\u05B5\u05D9 \u05D4\u05B7\u05DE\u05B4\u05BC\u05E6\u05B0\u05D5\u05B8\u05D4.")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-green-50 p-4 rounded-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold text-green-800 mb-3"
+    }, "\uD83D\uDCAA \u05E6\u05B4\u05E4\u05BC\u05D5\u05B9\u05E8\u05B8\u05D4 \u05DE\u05B7\u05E6\u05B4\u05BC\u05D9\u05DC\u05B8\u05D4 \u05D0\u05B6\u05EA \u05D4\u05B7\u05D9\u05BC\u05D5\u05B9\u05DD!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-3 rounded"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "mb-2"
+    }, /*#__PURE__*/React.createElement("strong", null, "\u05DE\u05B8\u05D4 \u05E7\u05B8\u05E8\u05B8\u05D4:"), " \"\u05D5\u05B7\u05EA\u05B4\u05BC\u05E7\u05B7\u05BC\u05D7 \u05E6\u05B4\u05E4\u05B9\u05BC\u05E8\u05B8\u05D4 \u05E6\u05B9\u05E8 \u05D5\u05B7\u05EA\u05B4\u05BC\u05DB\u05B0\u05E8\u05B9\u05EA \u05D0\u05B6\u05EA \u05E2\u05B8\u05E8\u05B0\u05DC\u05B7\u05EA \u05D1\u05B0\u05BC\u05E0\u05B8\u05D4\u05BC\""), /*#__PURE__*/React.createElement("p", {
+      className: "text-green-700 font-semibold"
+    }, "\u2728 \u05E6\u05B4\u05E4\u05BC\u05D5\u05B9\u05E8\u05B8\u05D4 \u05D4\u05B5\u05D1\u05B4\u05D9\u05E0\u05B8\u05D4 \u05DE\u05B4\u05D9\u05B8\u05BC\u05D3 \u05DE\u05B8\u05D4 \u05D4\u05B7\u05D1\u05B7\u05BC\u05E2\u05B2\u05D9\u05B8\u05D4 \u05D5\u05BC\u05DE\u05B8\u05DC\u05B0\u05DC\u05B8\u05D4 \u05D0\u05B6\u05EA \u05D1\u05B0\u05BC\u05E0\u05B8\u05D4\u05BC - \u05D5\u05B0\u05DB\u05B8\u05DA\u05B0 \u05D4\u05B4\u05E6\u05B4\u05BC\u05D9\u05DC\u05B8\u05D4 \u05D0\u05B6\u05EA \u05DE\u05B9\u05E9\u05B6\u05C1\u05D4!"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-purple-50 p-4 rounded-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-purple-800 mb-2"
+    }, "\uD83C\uDFAF \"\u05D7\u05B2\u05EA\u05B7\u05DF \u05D3\u05B8\u05BC\u05DE\u05B4\u05D9\u05DD \u05DC\u05B7\u05DE\u05BC\u05D5\u05BC\u05DC\u05B9\u05EA\" - \u05E4\u05B7\u05BC\u05E2\u05B2\u05DE\u05B7\u05D9\u05B4\u05DD!"), /*#__PURE__*/React.createElement("ul", {
+      className: "space-y-2 mr-4"
+    }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "\u05E4\u05B7\u05BC\u05E2\u05B7\u05DD \u05E8\u05B4\u05D0\u05E9\u05C1\u05D5\u05B9\u05E0\u05B8\u05D4:"), " \"\u05D1\u05B7\u05BC\u05E2\u05B0\u05DC\u05B4\u05D9 \u05E0\u05B6\u05D4\u05B1\u05E8\u05B7\u05D2 \u05D1\u05B4\u05BC\u05D2\u05B0\u05DC\u05B8\u05DC\u05B4\u05D9!\" (\u05E1\u05B8\u05E4\u05B5\u05E7 \u05D5\u05B0\u05EA\u05B4\u05E7\u05B0\u05D5\u05B8\u05D4)"), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "\u05E4\u05B7\u05BC\u05E2\u05B7\u05DD \u05E9\u05B0\u05C1\u05E0\u05B4\u05D9\u05B8\u05BC\u05D4:"), " \"\u05D4\u05B7\u05DE\u05B4\u05BC\u05D9\u05DC\u05B8\u05D4 \u05D4\u05B4\u05E6\u05B4\u05BC\u05D9\u05DC\u05B8\u05D4 \u05D0\u05D5\u05B9\u05EA\u05D5\u05B9!\" (\u05D4\u05B2\u05D1\u05B8\u05E0\u05B8\u05D4 \u05D5\u05B0\u05D4\u05D5\u05B9\u05D3\u05B8\u05D9\u05B8\u05D4)"), /*#__PURE__*/React.createElement("li", {
+      className: "text-purple-700 font-bold"
+    }, "\uD83D\uDCA1 \u05D3\u05B7\u05BC\u05DD \u05D4\u05B7\u05DE\u05B4\u05BC\u05D9\u05DC\u05B8\u05D4 \u05D4\u05B7\u05E7\u05B0\u05BC\u05D3\u05D5\u05B9\u05E9\u05B8\u05C1\u05D4 \u05D4\u05B4\u05E6\u05B4\u05BC\u05D9\u05DC \u05D7\u05B7\u05D9\u05B4\u05BC\u05D9\u05DD!")))),
+    questions: [{
+      question: "מָה הָיָה הָעוֹנֶשׁ שֶׁכִּמְעַט קָרָה לְמֹשֶׁה בַּמָּלוֹן, וּמָה הַסִּבָּה לְכָךְ?",
+      options: ["הַמַּלְאָךְ בִּקֵּשׁ לַהֲמִיתוֹ כִּי הוּא הִתְעַסֵּק בְּסִדּוּרֵי לִינָה לִפְנֵי שֶׁמָּל אֶת בְּנוֹ", "הַמַּלְאָךְ רָצָה לְהַעֲנִישׁ אוֹתוֹ כִּי הוּא נָסַע עִם כָּל הַמִּשְׁפָּחָה בִּמְקוֹם לְבַד", "ה' כָּעַס עָלָיו כִּי הוּא לֹא סִפֵּר לְיִתְרוֹ אֶת הָאֱמֶת עַל הַשְּׁלִיחוּת", "פַּרְעֹה שָׁלַח שְׁלִיחִים לַהֲרוֹג אוֹתוֹ וְלִמְנוֹעַ מִמֶּנּוּ לְהַגִּיעַ לְמִצְרַיִם"],
+      correct: 0,
+      explanation: "הַמַּלְאָךְ רָצָה לְהָמִית אֶת מֹשֶׁה כִּי הוּא קִדֵּם אֶת סִדּוּרֵי הַלִּינָה לִפְנֵי מִצְוַת הַמִּילָה - הַשִּׁעוּר: זְרִיזִים מַקְדִּימִים לְמִצְוֹת!"
+    }, {
+      question: "אֵיךְ צִפּוֹרָה הִצִּילָה אֶת מֹשֶׁה מֵהַמָּוֶת?",
+      options: ["הִיא לָקְחָה סַכִּין חַד וּמָלְלָה אֶת בְּנָהּ מִיָּד, וְהֵבִינָה שֶׁזּוֹ הַסִּבָּה לָעוֹנֶשׁ", "הִיא הִתְפַּלְּלָה תְּפִלָּה אֲרוּכָּה וְה' רִחֵם עֲלֵיהֶם וְשָׁלַח מַלְאָךְ אַחֵר", "הִיא הִרְחִיקָה אֶת מֹשֶׁה מֵהַמָּלוֹן וּבָרְחָה אִתּוֹ לְמָקוֹם אַחֵר", "הִיא הֵבִיאָה קָרְבָּן בַּדֶּרֶךְ וְהַמַּלְאָךְ רָצָה וְהִתְרַצָּה לָהֶם"],
+      correct: 0,
+      explanation: "צִפּוֹרָה הֵבִינָה מִיָּד מָה הַבַּעֲיָה, לָקְחָה סַכִּין וּמָלְלָה אֶת בְּנָהּ - וְכָךְ הִצִּילָה אֶת מֹשֶׁה!"
+    }, {
+      question: "מָה הַמַּשְׁמָעוּת שֶׁל 'חֲתַן דָּמִים לַמּוּלֹת' שֶׁצִּפּוֹרָה אָמְרָה פַּעֲמַיִם?",
+      options: ["בַּפַּעַם הָרִאשׁוֹנָה: סָפֵק וְהִתְרַעֲמוּת. בַּפַּעַם הַשְּׁנִיָּה: הֲבָנָה שֶׁהַמִּילָה הִצִּילָה אוֹתוֹ", "בַּפַּעַם הָרִאשׁוֹנָה הִיא הִתְכַּוְּנָה לְמֹשֶׁה, וּבַפַּעַם הַשְּׁנִיָּה לִבְנָהּ", "שְׁתֵּי הַפְּעָמִים הָיוּ אוֹתוֹ מִשְׁפָּט בְּדִיּוּק עִם אוֹתָהּ כַּוָּנָה - הוֹדָיָה עַל הַצָּלָתוֹ", "בַּפַּעַם הָרִאשׁוֹנָה: כַּעַס. בַּפַּעַם הַשְּׁנִיָּה: הִיא בִּקְשָׁה מְחִילָה מֵהַמַּלְאָךְ"],
+      correct: 0,
+      explanation: "בַּפַּעַם הָרִאשׁוֹנָה צִפּוֹרָה אָמְרָה זֹאת מִתּוֹךְ סָפֵק, בַּפַּעַם הַשְּׁנִיָּה - אַחֲרֵי שֶׁהַמַּלְאָךְ עָזַב - הֵבִינָה שֶׁדַּם הַמִּילָה בֶּאֱמֶת הִצִּיל אֶת מֹשֶׁה!"
+    }]
+  }, {
+    title: "שִׁעוּרֵי חַיִּים מֵהַסִּפּוּר 🌟",
+    content: /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4 text-right leading-relaxed",
+      style: {
+        fontSize: '18px'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-indigo-700"
+    }, "\uD83C\uDF93 \u05DE\u05B8\u05D4 \u05DC\u05B8\u05DE\u05B7\u05D3\u05B0\u05E0\u05D5\u05BC \u05DE\u05B4\u05E1\u05B4\u05BC\u05E4\u05BC\u05D5\u05BC\u05E8 \u05DE\u05B9\u05E9\u05B6\u05C1\u05D4 \u05D5\u05B0\u05E6\u05B4\u05E4\u05BC\u05D5\u05B9\u05E8\u05B8\u05D4?"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-l from-blue-50 to-indigo-50 p-4 rounded-lg border-r-4 border-indigo-500"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-lg text-indigo-800 mb-3"
+    }, "1\uFE0F\u20E3 \u05DB\u05B8\u05BC\u05D1\u05D5\u05B9\u05D3 \u05D5\u05B0\u05D3\u05B6\u05E8\u05B6\u05DA\u05B0 \u05D0\u05B6\u05E8\u05B6\u05E5"), /*#__PURE__*/React.createElement("p", null, "\u05DE\u05B9\u05E9\u05B6\u05C1\u05D4 \u05D1\u05B4\u05BC\u05E7\u05B5\u05BC\u05E9\u05C1 \u05E8\u05B0\u05E9\u05C1\u05D5\u05BC\u05EA \u05DE\u05B5\u05D7\u05D5\u05B9\u05EA\u05B0\u05E0\u05D5\u05B9 \u05DC\u05B7\u05DE\u05B0\u05E8\u05D5\u05B9\u05EA \u05E9\u05B6\u05C1\u05D4\u05B8\u05D9\u05B8\u05D4 \u05E6\u05B8\u05E8\u05B4\u05D9\u05DA\u05B0 \u05DC\u05B8\u05DC\u05B6\u05DB\u05B6\u05EA \u05DC\u05B0\u05DE\u05B4\u05E9\u05B0\u05C2\u05D9\u05DE\u05B8\u05BC\u05D4 \u05E7\u05B0\u05D3\u05D5\u05B9\u05E9\u05B8\u05C1\u05D4.", /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-indigo-700"
+    }, " \u05DB\u05B8\u05BC\u05D1\u05D5\u05B9\u05D3 \u05DC\u05B7\u05D0\u05B2\u05E0\u05B8\u05E9\u05B4\u05C1\u05D9\u05DD \u05D7\u05B8\u05E9\u05C1\u05D5\u05BC\u05D1 \u05EA\u05B8\u05BC\u05DE\u05B4\u05D9\u05D3!"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-l from-amber-50 to-orange-50 p-4 rounded-lg border-r-4 border-amber-500"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-lg text-amber-800 mb-3"
+    }, "2\uFE0F\u20E3 \u05D6\u05B0\u05E8\u05B4\u05D9\u05D6\u05D5\u05BC\u05EA \u05D1\u05B0\u05BC\u05DE\u05B4\u05E6\u05B0\u05D5\u05B9\u05EA"), /*#__PURE__*/React.createElement("p", null, "\u05DE\u05B9\u05E9\u05B6\u05C1\u05D4 \u05E0\u05B6\u05E2\u05B1\u05E0\u05B7\u05E9\u05C1 \u05DB\u05B4\u05BC\u05D9 \u05D4\u05B4\u05EA\u05B0\u05E2\u05B7\u05E1\u05B5\u05BC\u05E7 \u05D1\u05B7\u05BC\u05DC\u05B4\u05BC\u05D9\u05E0\u05B8\u05D4 \u05DC\u05B4\u05E4\u05B0\u05E0\u05B5\u05D9 \u05D4\u05B7\u05DE\u05B4\u05BC\u05D9\u05DC\u05B8\u05D4.", /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-amber-700"
+    }, " \u05DE\u05B4\u05E6\u05B0\u05D5\u05B8\u05D4 \u05E7\u05D5\u05B9\u05D3\u05B6\u05DE\u05B6\u05EA \u05DC\u05B7\u05DB\u05B9\u05BC\u05DC!"), " \u26A1")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-l from-green-50 to-emerald-50 p-4 rounded-lg border-r-4 border-green-500"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-lg text-green-800 mb-3"
+    }, "3\uFE0F\u20E3 \u05D7\u05B2\u05E9\u05B4\u05C1\u05D9\u05D1\u05D5\u05BC\u05EA \u05D1\u05B0\u05BC\u05E8\u05B4\u05D9\u05EA \u05D4\u05B7\u05DE\u05B4\u05BC\u05D9\u05DC\u05B8\u05D4"), /*#__PURE__*/React.createElement("p", null, "\u05D3\u05B7\u05BC\u05DD \u05D4\u05B7\u05DE\u05B4\u05BC\u05D9\u05DC\u05B8\u05D4 \u05D4\u05B4\u05E6\u05B4\u05BC\u05D9\u05DC \u05D0\u05B6\u05EA \u05D7\u05B7\u05D9\u05B8\u05BC\u05D9\u05D5 \u05E9\u05B6\u05C1\u05DC \u05DE\u05B9\u05E9\u05B6\u05C1\u05D4!", /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-green-700"
+    }, " \u05D4\u05B7\u05DE\u05B4\u05BC\u05E6\u05B0\u05D5\u05B8\u05D4 \u05D4\u05B7\u05D6\u05B9\u05BC\u05D0\u05EA \u05E7\u05B0\u05D3\u05D5\u05B9\u05E9\u05B8\u05C1\u05D4 \u05D5\u05BC\u05DE\u05B0\u05D2\u05B4\u05D9\u05E0\u05B8\u05D4 \u05E2\u05B8\u05DC\u05B5\u05D9\u05E0\u05D5\u05BC \uD83D\uDEE1\uFE0F"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-l from-purple-50 to-pink-50 p-4 rounded-lg border-r-4 border-purple-500"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-lg text-purple-800 mb-3"
+    }, "4\uFE0F\u20E3 \u05D4\u05B7\u05E7\u05B8\u05BC\u05D3\u05D5\u05B9\u05E9\u05C1 \u05D1\u05B8\u05BC\u05E8\u05D5\u05BC\u05DA\u05B0 \u05D4\u05D5\u05BC\u05D0 \u05DE\u05B0\u05DC\u05B7\u05DE\u05B5\u05BC\u05D3 \u05D0\u05B6\u05EA \u05D4\u05B8\u05E2\u05D5\u05B9\u05DC\u05B8\u05DD"), /*#__PURE__*/React.createElement("p", null, "\u05D4\u05B7\u05E7\u05B0\u05E9\u05B8\u05C1\u05D9\u05B7\u05EA \u05DC\u05B5\u05D1 \u05E4\u05B7\u05BC\u05E8\u05B0\u05E2\u05B9\u05D4 \u05D5\u05B0\u05D4\u05B7\u05DE\u05B7\u05BC\u05DB\u05BC\u05D5\u05B9\u05EA \u05D1\u05B8\u05BC\u05D0\u05D5\u05BC \u05DC\u05B0\u05DC\u05B7\u05DE\u05B5\u05BC\u05D3 \u05D0\u05B6\u05EA \u05D4\u05B8\u05E2\u05D5\u05B9\u05DC\u05B8\u05DD \u05DB\u05BB\u05BC\u05DC\u05BC\u05D5\u05B9 \u05E2\u05B7\u05DC \u05DB\u05BC\u05D5\u05B9\u05D7\u05D5\u05B9 \u05E9\u05B6\u05C1\u05DC \u05D4\u05B7\u05E7\u05B8\u05BC\u05D3\u05D5\u05B9\u05E9\u05C1 \u05D1\u05B8\u05BC\u05E8\u05D5\u05BC\u05DA\u05B0 \u05D4\u05D5\u05BC\u05D0.", /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-purple-700"
+    }, " \u05DB\u05B8\u05BC\u05DC \u05D3\u05B8\u05BC\u05D1\u05B8\u05E8 \u05E7\u05D5\u05B9\u05E8\u05B6\u05D4 \u05D1\u05B0\u05BC\u05D4\u05B7\u05E9\u05B0\u05C1\u05D2\u05B8\u05BC\u05D7\u05B8\u05D4! \uD83D\uDC51"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-l from-rose-50 to-red-50 p-4 rounded-lg border-r-4 border-rose-500"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-lg text-rose-800 mb-3"
+    }, "5\uFE0F\u20E3 \u05EA\u05B0\u05BC\u05E9\u05C1\u05D5\u05BC\u05D1\u05B8\u05D4 \u05D0\u05B2\u05DE\u05B4\u05EA\u05B4\u05BC\u05D9\u05EA"), /*#__PURE__*/React.createElement("p", null, "\u05E4\u05B7\u05BC\u05E8\u05B0\u05E2\u05B9\u05D4 \u05DC\u05B9\u05D0 \u05D6\u05B8\u05DB\u05B8\u05D4 \u05DC\u05B4\u05EA\u05B0\u05E9\u05C1\u05D5\u05BC\u05D1\u05B8\u05D4 \u05DB\u05B4\u05BC\u05D9 \u05E8\u05B7\u05E7 \u05E4\u05B8\u05BC\u05D7\u05B7\u05D3 \u05DE\u05B5\u05D4\u05B7\u05DE\u05B7\u05BC\u05DB\u05BC\u05D5\u05B9\u05EA \u05D0\u05B2\u05D1\u05B8\u05DC \u05DC\u05B9\u05D0 \u05D1\u05B6\u05BC\u05D0\u05B1\u05DE\u05B6\u05EA \u05E9\u05B8\u05C1\u05D1.", /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-rose-700"
+    }, " \u05EA\u05B0\u05BC\u05E9\u05C1\u05D5\u05BC\u05D1\u05B8\u05D4 \u05E6\u05B0\u05E8\u05B4\u05D9\u05DB\u05B8\u05D4 \u05DC\u05B8\u05E6\u05B5\u05D0\u05EA \u05DE\u05B5\u05D4\u05B7\u05DC\u05B5\u05BC\u05D1! \uD83D\uDC99"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-100 via-amber-100 to-orange-100 p-5 rounded-xl mt-6 shadow-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-center text-orange-800 mb-2"
+    }, "\u2728 \u05E2\u05B7\u05DD \u05D9\u05B4\u05E9\u05B0\u05C2\u05E8\u05B8\u05D0\u05B5\u05DC - \u05D4\u05B7\u05D1\u05B0\u05BC\u05DB\u05D5\u05B9\u05E8 \u05E9\u05B6\u05C1\u05DC \u05D4' \u2728"), /*#__PURE__*/React.createElement("p", {
+      className: "text-center text-lg"
+    }, "\u05E0\u05B4\u05D1\u05B0\u05D7\u05B7\u05E8\u05B0\u05E0\u05D5\u05BC \u05DE\u05B4\u05DB\u05B8\u05BC\u05DC \u05D4\u05B8\u05E2\u05B7\u05DE\u05B4\u05BC\u05D9\u05DD \u05DC\u05B4\u05D4\u05B0\u05D9\u05D5\u05B9\u05EA \u05D0\u05D5\u05B9\u05E8 \u05DC\u05B7\u05D2\u05BC\u05D5\u05B9\u05D9\u05B4\u05DD \u05D5\u05BC\u05DC\u05B0\u05DC\u05B7\u05DE\u05B5\u05BC\u05D3 \u05D0\u05B6\u05EA \u05D4\u05B8\u05E2\u05D5\u05B9\u05DC\u05B8\u05DD \u05D3\u05B6\u05BC\u05E8\u05B6\u05DA\u05B0 \u05D4'! \uD83C\uDF0D\uD83D\uDCAB"))),
+    questions: [{
+      question: "אֵיזֶה שִׁעוּר חַיִּים אֲנַחְנוּ לוֹמְדִים מִכָּךְ שֶׁמֹּשֶׁה בִּקֵּשׁ רְשׁוּת מִיִּתְרוֹ?",
+      options: ["חָשׁוּב לִנְהוֹג בְּכָבוֹד וּבְדֶרֶךְ אֶרֶץ גַּם כְּשֶׁיֵּשׁ לָנוּ מִשְׂימָּה קְדוֹשָׁה דְּחוּפָה", "צָרִיךְ תָּמִיד לְסַפֵּר לַכּוּלָּם אֶת כָּל הַתּוֹכְנִיּוֹת שֶׁלָּנוּ לְלֹא סוֹדוֹת", "אָסוּר לִנְסוֹעַ לְמָקוֹם רָחוֹק בְּלִי לְקַבֵּל אִשּׁוּר רִשְׁמִי מֵהַשִּׁלְטוֹנוֹת", "עָדִיף לֹא לְסַפֵּר עַל הַתּוֹכְנִיּוֹת שֶׁלָּנוּ כְּדֵי שֶׁאִישׁ לֹא יֵדַע מָה קוֹרֶה"],
+      correct: 0,
+      explanation: "מֹשֶׁה לִמֵּד אוֹתָנוּ שֶׁכָּבוֹד וְדֶרֶךְ אֶרֶץ חֲשׁוּבִים תָּמִיד - גַּם כְּשֶׁיֵּשׁ מִשְׂימָּה קְדוֹשָׁה וּדְחוּפָה!"
+    }, {
+      question: "מָה הַלֶּקַח הַמֶּרְכָּזִי מֵהָאִירוּעַ בַּמָּלוֹן?",
+      options: ["זְרִיזִים מַקְדִּימִים לְמִצְוֹת - אָסוּר לְהִתְעַסֵּק בִּדְבָרִים אֲחֵרִים לִפְנֵי מִצְוָה", "צָרִיךְ לְהִיזָּהֵר מְאוֹד כְּשֶׁנּוֹסְעִים בִּדְרָכִים מְסוּכָּנוֹת בַּלַּיְלָה", "עָדִיף לֹא לָקַחַת אֶת כָּל הַמִּשְׁפָּחָה לְמַסָּעוֹת אֲרוּכִּים וּמְסוּכָּנִים", "כָּדַאי תָּמִיד לִישׁוֹן בַּבַּיִת וְלֹא בְּמָלוֹן כִּי זֶה מְסוּכָּן"],
+      correct: 0,
+      explanation: "הַלֶּקַח הֶחָשׁוּב: זְרִיזִים מַקְדִּימִים לְמִצְוֹת! מֹשֶׁה נֶעֱנַשׁ כִּי קִדֵּם לִינָה לִפְנֵי מִילַת בְּנוֹ"
+    }, {
+      question: "מָה אֲנַחְנוּ לוֹמְדִים מֵהַקְשָׁיַת לֵב פַּרְעֹה וְהַמַּכּוֹת?",
+      options: ["הַכֹּל קוֹרֶה בְּהַשְׁגָּחָה - הַקָּדוֹשׁ בָּרוּךְ הוּא רָצָה לְלַמֵּד אֶת הָעוֹלָם שִׁעוּר עַל כּוֹחוֹ וְצִדְקוֹ", "הַקָּדוֹשׁ בָּרוּךְ הוּא אַכְזָרִי וְרוֹצֶה לְהַעֲנִישׁ אֲנָשִׁים לְלֹא סִבָּה טוֹבָה", "עָדִיף לֹא לְהִתְווַכֵּחַ עִם מְלָכִים כִּי זֶה תָּמִיד מִסְתַּיֵּם בְּרַע", "בְּנֵי יִשְׂרָאֵל הָיוּ אֲשֵׁמִים בַּמַּכּוֹת כִּי עָבְדוּ עֲבוֹדָה זָרָה"],
+      correct: 0,
+      explanation: "הַמַּכּוֹת בָּאוּ לְלַמֵּד אֶת הָעוֹלָם כֻּלּוֹ עַל כּוֹחַ הַקָּדוֹשׁ בָּרוּךְ הוּא - הַכֹּל קוֹרֶה בְּהַשְׁגָּחָה עֶלְיוֹנָה!"
+    }]
+  }];
+  const feedbackLevel = Math.min(Math.ceil(totalQuestionsAnswered / 1), 10);
+  const playSound = (frequency, duration, level) => {
+    if (level < 4) return;
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = frequency;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + duration);
+    } catch (e) {
+      console.log('Audio not supported');
+    }
+  };
+  const playSuccessSound = level => {
+    if (level >= 10) {
+      setTimeout(() => playSound(523, 0.15, level), 0);
+      setTimeout(() => playSound(659, 0.15, level), 150);
+      setTimeout(() => playSound(784, 0.15, level), 300);
+      setTimeout(() => playSound(1047, 0.3, level), 450);
+      setTimeout(() => playSound(784, 0.15, level), 750);
+      setTimeout(() => playSound(659, 0.3, level), 900);
+    } else if (level >= 4) {
+      setTimeout(() => playSound(523, 0.15, level), 0);
+      setTimeout(() => playSound(659, 0.15, level), 150);
+      setTimeout(() => playSound(784, 0.2, level), 300);
+    }
+  };
+  const getFeedbackText = (isCorrect, level) => {
+    if (isCorrect) {
+      const correctMessages = {
+        1: "נָכוֹן ✓",
+        2: "הִצְלַחְתָּ! ✓",
+        3: "מְצוּיָּן ⭐",
+        4: "כָּל הַכָּבוֹד! 🎯",
+        5: "אֲנִי רוֹאֶה שֶׁהִשְׁקַעְתָּ מַחֲשָׁבָה! 💪",
+        6: "עוֹד צַעַד בַּמַּסָּע שֶׁלְּךָ! 🌟 אַתָּה מִתְקַדֵּם!",
+        7: "מַדְהִים לִרְאוֹת אֶת הַהִתְמָדָה שֶׁלְּךָ! 🎉 זֶה בֶּאֱמֶת מַרְשִׁים",
+        8: "פְּצָצָה! 🚀 רוֹצֶה לָדַעַת פְּרַט מְעַנְיֵן עַל זֶה?",
+        9: "וָאוֹ! 💫 אַתָּה כְּבָר שׁוֹלֵט בָּזֶה כְּמוֹ מְקַצּוֹעָן!",
+        10: "בִּזְכוּתְךָ הָעוֹלָם קְצָת יוֹתֵר חָכָם הַיּוֹם! 🌍 אַתָּה מַדְהִים!"
+      };
+      return correctMessages[level] || correctMessages[10];
+    } else {
+      const incorrectMessages = {
+        1: "לֹא מְדוּיָּק",
+        2: "טָעוּת, נַסֶּה שׁוּב",
+        3: "לֹא בְּדִיּוּק 🤔",
+        4: "כִּמְעַט, חֲשׁוֹב עַל...",
+        5: "נִרְאֶה שֶׁהַמּוּשָׂג הַזֶּה מְאַתְגֵר, בּוֹא נַחֲשׁוֹב בְּיַחַד",
+        6: "הַטָּעוּת הַזֹּאת מְלַמֶּדֶת אוֹתְךָ מַשֶּׁהוּ חָשׁוּב",
+        7: "אֲנִי מֵבִין שֶׁזֶּה מוּרְכָּב. רוֹצֶה רֶמֶז נוֹסָף?",
+        8: "יֵשׁ לְךָ שְׁאֵלָה עַל הַחוֹמֶר? אֲנִי כָּאן בִּשְׁבִילְךָ",
+        9: "זוֹ הַזְדַּמְנוּת מְעוּלָה לִלְמוֹד - מָה בִּלְבֵּל אוֹתְךָ?",
+        10: "כָּל טָעוּת הִיא צַעַד לְעֵבֶר הַצְלָחָה. מַמְשִׁיכִים! 🌱"
+      };
+      return incorrectMessages[level] || incorrectMessages[10];
+    }
+  };
+  const shuffleArray = array => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
+  const [shuffledOptions, setShuffledOptions] = useState([]);
+  useEffect(() => {
+    if (lessons[currentLesson]?.questions[currentQuestion]) {
+      const currentQ = lessons[currentLesson].questions[currentQuestion];
+      const optionsWithIndex = currentQ.options.map((opt, idx) => ({
+        text: opt,
+        originalIndex: idx
+      }));
+      setShuffledOptions(shuffleArray(optionsWithIndex));
+    }
+  }, [currentLesson, currentQuestion]);
+  const handleAnswer = selectedOption => {
+    const correctIndex = lessons[currentLesson].questions[currentQuestion].correct;
+    const isAnswerCorrect = selectedOption.originalIndex === correctIndex;
+    setSelectedAnswer(selectedOption);
+    setIsCorrect(isAnswerCorrect);
+    setShowFeedback(true);
+    setTotalQuestionsAnswered(prev => prev + 1);
+    if (isAnswerCorrect) {
+      setScore(score + 1);
+      playSuccessSound(feedbackLevel + 1);
+    }
+  };
+  const nextQuestion = () => {
+    setShowFeedback(false);
+    setSelectedAnswer(null);
+    if (currentQuestion < lessons[currentLesson].questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      const lessonScore = lessonScores.concat([(lessonScores.length > 0 ? score - lessonScores.reduce((a, b) => a + b, 0) : score) / lessons[currentLesson].questions.length * 100]);
+      setLessonScores(lessonScore);
+      const currentLessonCorrect = lessonScores.length > 0 ? score - lessonScores.reduce((a, b) => a + b, 0) : score;
+      const currentLessonTotal = lessons[currentLesson].questions.length;
+      const percentage = currentLessonCorrect / currentLessonTotal * 100;
+      if (percentage >= 66) {
+        if (currentLesson < lessons.length - 1) {
+          setCurrentLesson(currentLesson + 1);
+          setCurrentQuestion(0);
+        } else {
+          setGameComplete(true);
+        }
+      } else {
+        setCurrentQuestion(0);
+      }
+    }
+  };
+  const restartGame = () => {
+    setCurrentLesson(0);
+    setCurrentQuestion(0);
+    setScore(0);
+    setShowFeedback(false);
+    setIsCorrect(false);
+    setSelectedAnswer(null);
+    setLessonScores([]);
+    setGameComplete(false);
+    setTotalQuestionsAnswered(0);
+    setShowCertificate(false);
+  };
+  const totalQuestions = lessons.reduce((sum, lesson) => sum + lesson.questions.length, 0);
+  const progressPercentage = totalQuestionsAnswered / totalQuestions * 100;
+  if (showCertificate) {
+    return /*#__PURE__*/React.createElement("div", {
+      dir: "rtl",
+      className: "min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-2xl p-12 border-8 border-double border-amber-500"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-8xl mb-4"
+    }, "\uD83C\uDFC6"), /*#__PURE__*/React.createElement("h1", {
+      className: "text-5xl font-bold text-amber-800 mb-2"
+    }, "\u05EA\u05B0\u05BC\u05E2\u05D5\u05BC\u05D3\u05B7\u05EA \u05D4\u05B4\u05E6\u05B0\u05D8\u05B7\u05D9\u05B0\u05BC\u05E0\u05D5\u05BC\u05EA"), /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center gap-2 mb-6"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-4xl"
+    }, "\u2B50"), /*#__PURE__*/React.createElement("span", {
+      className: "text-4xl"
+    }, "\u2B50"), /*#__PURE__*/React.createElement("span", {
+      className: "text-4xl"
+    }, "\u2B50"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-l from-amber-50 to-yellow-50 rounded-xl p-8 mb-8 border-2 border-amber-300"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-center mb-4 leading-relaxed"
+    }, "\u05DE\u05D5\u05BC\u05E2\u05B6\u05E0\u05B6\u05E7\u05B6\u05EA \u05D1\u05B8\u05BC\u05D6\u05B9\u05D0\u05EA \u05DC\u05B0", /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-amber-800 text-3xl mx-3"
+    }, "\u05EA\u05B7\u05BC\u05DC\u05B0\u05DE\u05B4\u05D9\u05D3/\u05B8\u05D4 \u05DE\u05B4\u05E6\u05B0\u05D8\u05B7\u05D9\u05B5\u05BC\u05DF/\u05EA")), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-center text-gray-700 leading-relaxed"
+    }, "\u05E2\u05B7\u05DC \u05D4\u05B7\u05E9\u05B0\u05C1\u05DC\u05B8\u05DE\u05B8\u05D4 \u05DE\u05BB\u05E6\u05B0\u05DC\u05B7\u05D7\u05B7\u05EA \u05E9\u05B6\u05C1\u05DC \u05DE\u05B7\u05E1\u05B7\u05BC\u05E2 \u05D4\u05B7\u05DC\u05B4\u05BC\u05DE\u05BC\u05D5\u05BC\u05D3"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-center font-bold text-amber-700 mt-4"
+    }, "\"\u05DE\u05B9\u05E9\u05B6\u05C1\u05D4 \u05D7\u05D5\u05B9\u05D6\u05B5\u05E8 \u05DC\u05B0\u05DE\u05B4\u05E6\u05B0\u05E8\u05B7\u05D9\u05B4\u05DD\"")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-50 rounded-xl p-6 mb-8 border-2 border-blue-300"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold text-blue-800 text-center mb-4"
+    }, "\u05D4\u05B4\u05E9\u05B8\u05BC\u05C2\u05D2\u05B4\u05D9\u05DD \u05DE\u05B7\u05E8\u05B0\u05E9\u05B4\u05C1\u05D9\u05DE\u05B4\u05D9\u05DD:"), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-3 gap-4 text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-lg p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl mb-2"
+    }, "\uD83C\uDFAF"), /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl font-bold text-blue-700"
+    }, score, "/", totalQuestions), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, "\u05EA\u05B0\u05BC\u05E9\u05C1\u05D5\u05BC\u05D1\u05D5\u05B9\u05EA \u05E0\u05B0\u05DB\u05D5\u05B9\u05E0\u05D5\u05B9\u05EA")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-lg p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl mb-2"
+    }, "\uD83D\uDCDA"), /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl font-bold text-green-700"
+    }, lessons.length), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, "\u05E9\u05B4\u05C1\u05E2\u05D5\u05BC\u05E8\u05B4\u05D9\u05DD \u05D4\u05D5\u05BC\u05E9\u05B0\u05C1\u05DC\u05B0\u05DE\u05D5\u05BC")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-lg p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl mb-2"
+    }, "\u2B50"), /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl font-bold text-amber-600"
+    }, Math.round(score / totalQuestions * 100), "%"), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, "\u05E6\u05B4\u05D9\u05BC\u05D5\u05BC\u05DF \u05E1\u05D5\u05B9\u05E4\u05B4\u05D9")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-purple-50 rounded-xl p-6 mb-8 border-2 border-purple-300"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-lg font-bold text-purple-800 text-center mb-3"
+    }, "\uD83C\uDF1F \u05DE\u05B7\u05E1\u05B7\u05BC\u05E2 \u05D4\u05B7\u05E4\u05B4\u05BC\u05D9\u05D3\u05B0\u05D1\u05B6\u05BC\u05E7\u05B4\u05D9\u05DD \u05E9\u05B6\u05C1\u05E2\u05B8\u05D1\u05B7\u05E8\u05B0\u05EA\u05B8\u05BC \uD83C\uDF1F"), /*#__PURE__*/React.createElement("p", {
+      className: "text-center text-gray-700 mb-4"
+    }, "\u05D4\u05B4\u05EA\u05B0\u05D7\u05B7\u05DC\u05B0\u05EA\u05B8\u05BC \u05D1\u05B0\u05BC\"\u05E0\u05B8\u05DB\u05D5\u05B9\u05DF/\u05E9\u05B8\u05C1\u05D2\u05D5\u05BC\u05D9\" \u05E4\u05B8\u05BC\u05E9\u05C1\u05D5\u05BC\u05D8, \u05D5\u05B0\u05E2\u05B8\u05D1\u05B7\u05E8\u05B0\u05EA\u05B8\u05BC \u05D3\u05B6\u05BC\u05E8\u05B6\u05DA\u05B0 ", /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-purple-700"
+    }, Math.min(totalQuestionsAnswered, 10)), " \u05E8\u05B8\u05DE\u05D5\u05B9\u05EA \u05E9\u05B6\u05C1\u05DC \u05E4\u05B4\u05BC\u05D9\u05D3\u05B0\u05D1\u05B6\u05BC\u05E7!"), /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center gap-2 flex-wrap"
+    }, Array.from({
+      length: Math.min(totalQuestionsAnswered, 10)
+    }, (_, i) => /*#__PURE__*/React.createElement("div", {
+      key: i,
+      className: "bg-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-purple-600 border-2 border-purple-400"
+    }, i + 1)))), /*#__PURE__*/React.createElement("div", {
+      className: "text-center mt-8 pt-6 border-t-2 border-amber-300"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-600 mb-2"
+    }, "\u05EA\u05B8\u05BC\u05D0\u05B2\u05E8\u05B4\u05D9\u05DA\u05B0: ", new Date().toLocaleDateString('he-IL')), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-xl font-semibold text-amber-800"
+    }, "\u2728 \u05D4\u05B7\u05DE\u05B0\u05E9\u05B5\u05C1\u05DA\u05B0 \u05DC\u05B0\u05D4\u05B7\u05E6\u05B0\u05DC\u05B4\u05D9\u05D7\u05B7 \u05D5\u05BC\u05DC\u05B0\u05D4\u05B8\u05D0\u05B4\u05D9\u05E8! \u2728")))), /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 bg-gradient-to-l from-green-50 to-emerald-50 rounded-xl p-8 shadow-xl border-2 border-green-300"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-center text-green-800 mb-4"
+    }, "\uD83C\uDF89 \u05DE\u05B7\u05D6\u05B8\u05BC\u05DC \u05D8\u05D5\u05B9\u05D1! \u05E0\u05B4\u05DB\u05B0\u05E0\u05B7\u05E1\u05B0\u05EA\u05B8\u05BC \u05DC\u05B0\u05D4\u05B7\u05D2\u05B0\u05E8\u05B8\u05DC\u05B8\u05D4! \uD83C\uDF89"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-center mb-6 text-gray-700"
+    }, "\u05D4\u05B4\u05E9\u05B0\u05C1\u05DC\u05B7\u05DE\u05B0\u05EA\u05B8\u05BC \u05D0\u05B6\u05EA \u05D4\u05B7\u05DE\u05B4\u05BC\u05E9\u05B0\u05C2\u05D7\u05B8\u05E7 \u05D1\u05B0\u05BC\u05D4\u05B7\u05E6\u05B0\u05DC\u05B8\u05D7\u05B8\u05D4 \u05D5\u05B0\u05E0\u05B4\u05DB\u05B0\u05E0\u05B7\u05E1\u05B0\u05EA\u05B8\u05BC \u05DC\u05B0\u05D4\u05B7\u05D2\u05B0\u05E8\u05B8\u05DC\u05B8\u05D4 \u05E0\u05D5\u05B9\u05E9\u05B5\u05C2\u05D0\u05EA \u05E4\u05B0\u05BC\u05E8\u05B8\u05E1\u05B4\u05D9\u05DD! \uD83C\uDF81"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-center mb-6 text-gray-600"
+    }, "\u05D0\u05B8\u05E0\u05B8\u05BC\u05D0 \u05E8\u05B0\u05E9\u05C1\u05D5\u05B9\u05DD \u05D0\u05B6\u05EA \u05E4\u05B0\u05BC\u05E8\u05B8\u05D8\u05B6\u05D9\u05DA\u05B8 \u05D1\u05B7\u05BC\u05D8\u05BC\u05D5\u05B9\u05E4\u05B6\u05E1 \u05D4\u05B7\u05D1\u05B8\u05BC\u05D0 \u05DB\u05B0\u05BC\u05D3\u05B5\u05D9 \u05DC\u05B0\u05D4\u05B4\u05E9\u05B0\u05C1\u05EA\u05B7\u05BC\u05EA\u05B5\u05BC\u05E3 \u05D1\u05B7\u05BC\u05D4\u05B7\u05D2\u05B0\u05E8\u05B8\u05DC\u05B8\u05D4:"), /*#__PURE__*/React.createElement("div", {
+      className: "text-center"
+    }, /*#__PURE__*/React.createElement("a", {
+      href: "https://forms.gle/A66uubei4XSX6SG2A",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: "inline-block bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-4 px-8 rounded-full shadow-lg transition-all transform hover:scale-105"
+    }, "\uD83D\uDC49 \u05DC\u05B0\u05D7\u05B7\u05E5 \u05DB\u05B8\u05BC\u05D0\u05DF \u05DC\u05B0\u05E8\u05B4\u05D9\u05E9\u05C1\u05D5\u05BC\u05DD \u05DC\u05B0\u05D4\u05B7\u05D2\u05B0\u05E8\u05B8\u05DC\u05B8\u05D4 \uD83D\uDC48"))), /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 text-center bg-white rounded-xl p-6 shadow-lg"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: restartGame,
+      className: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition-all transform hover:scale-105"
+    }, "\uD83D\uDD04 \u05E9\u05B7\u05C2\u05D7\u05B5\u05E7 \u05E9\u05C1\u05D5\u05BC\u05D1")), /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 text-center bg-gradient-to-l from-blue-50 to-indigo-50 rounded-xl p-6 shadow-lg border-2 border-indigo-300"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-indigo-800 mb-2"
+    }, "\u05E0\u05B4\u05D1\u05B0\u05E0\u05B8\u05D4 \u05E2\u05B7\u05DC \u05D9\u05B0\u05D3\u05B5\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-indigo-900 mb-1"
+    }, "\u05D4\u05B8\u05E8\u05B7\u05D1 \u05D9\u05B0\u05D4\u05D5\u05BC\u05D3\u05B8\u05D4 \u05D8\u05B7\u05D0\u05D5\u05BC\u05D1 \u05DE\u05B4\u05E7\u05B4\u05BC\u05E8\u05B0\u05D9\u05B7\u05EA \u05D0\u05B7\u05EA\u05B8\u05BC\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-indigo-700"
+    }, "\uD83D\uDCDE \u05DC\u05B4\u05E4\u05B0\u05E8\u05B8\u05D8\u05B4\u05D9\u05DD: 0527139520"))));
+  }
+  if (gameComplete) {
+    const finalPercentage = Math.round(score / totalQuestions * 100);
+    return /*#__PURE__*/React.createElement("div", {
+      dir: "rtl",
+      className: "min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-12 text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-8xl mb-6"
+    }, "\uD83C\uDFC6"), /*#__PURE__*/React.createElement("h1", {
+      className: "text-5xl font-bold text-purple-800 mb-6"
+    }, "\uD83C\uDF89 \u05DB\u05B8\u05BC\u05DC \u05D4\u05B7\u05DB\u05B8\u05BC\u05D1\u05D5\u05B9\u05D3! \u05E1\u05B4\u05D9\u05B7\u05BC\u05DE\u05B0\u05EA\u05B8\u05BC \u05D0\u05B6\u05EA \u05D4\u05B7\u05DE\u05B4\u05BC\u05E9\u05B0\u05C2\u05D7\u05B8\u05E7! \uD83C\uDF89"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-l from-yellow-100 to-amber-100 rounded-2xl p-8 mb-8"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-3xl font-bold text-amber-800 mb-4"
+    }, "\u05D4\u05B7\u05E6\u05B4\u05BC\u05D9\u05BC\u05D5\u05BC\u05DF \u05D4\u05B7\u05E1\u05BC\u05D5\u05B9\u05E4\u05B4\u05D9 \u05E9\u05B6\u05C1\u05DC\u05B0\u05BC\u05DA\u05B8: ", score, " \u05DE\u05B4\u05EA\u05BC\u05D5\u05B9\u05DA\u05B0 ", totalQuestions), /*#__PURE__*/React.createElement("p", {
+      className: "text-4xl font-bold text-amber-900"
+    }, finalPercentage, "% \uD83C\uDF1F")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-purple-50 rounded-xl p-6 mb-8 border-2 border-purple-300"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold text-purple-800 mb-4"
+    }, "\uD83C\uDFAF \u05DE\u05B7\u05E1\u05B7\u05BC\u05E2 \u05D4\u05B7\u05E4\u05B4\u05BC\u05D9\u05D3\u05B0\u05D1\u05B6\u05BC\u05E7\u05B4\u05D9\u05DD \u05E9\u05B6\u05C1\u05E2\u05B8\u05D1\u05B7\u05E8\u05B0\u05EA\u05B8\u05BC"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-4"
+    }, "\u05D4\u05B4\u05EA\u05B0\u05D7\u05B7\u05DC\u05B0\u05EA\u05B8\u05BC \u05D1\u05B0\u05BC-\"\u05E0\u05B8\u05DB\u05D5\u05B9\u05DF/\u05E9\u05B8\u05C1\u05D2\u05D5\u05BC\u05D9\" \u05E4\u05B8\u05BC\u05E9\u05C1\u05D5\u05BC\u05D8, \u05D5\u05B0\u05E2\u05B8\u05D1\u05B7\u05E8\u05B0\u05EA\u05B8\u05BC \u05D3\u05B6\u05BC\u05E8\u05B6\u05DA\u05B0 ", /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-purple-700 text-2xl"
+    }, Math.min(totalQuestionsAnswered, 10)), " \u05E8\u05B8\u05DE\u05D5\u05B9\u05EA \u05E9\u05B6\u05C1\u05DC \u05E4\u05B4\u05BC\u05D9\u05D3\u05B0\u05D1\u05B6\u05BC\u05E7 \u05E2\u05B7\u05D3 \u05E8\u05B8\u05DE\u05B8\u05D4 ", Math.min(totalQuestionsAnswered, 10), "! \uD83C\uDF1F"), /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center gap-3 flex-wrap mb-4"
+    }, Array.from({
+      length: Math.min(totalQuestionsAnswered, 10)
+    }, (_, i) => /*#__PURE__*/React.createElement("div", {
+      key: i,
+      className: "flex flex-col items-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-purple-500 to-pink-500 rounded-full w-12 h-12 flex items-center justify-center font-bold text-white border-4 border-purple-300 shadow-lg"
+    }, i + 1), i < Math.min(totalQuestionsAnswered, 10) - 1 && /*#__PURE__*/React.createElement("div", {
+      className: "text-purple-500 text-2xl"
+    }, "\u2192")))), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-purple-700 font-semibold"
+    }, "\u05DE\u05B4\"\u05E0\u05B8\u05DB\u05D5\u05B9\u05DF \u2713\" \u05DC\u05B0\"\u05D1\u05B4\u05BC\u05D6\u05B0\u05DB\u05D5\u05BC\u05EA\u05B0\u05DA\u05B8 \u05D4\u05B8\u05E2\u05D5\u05B9\u05DC\u05B8\u05DD \u05E7\u05B0\u05E6\u05B8\u05EA \u05D9\u05D5\u05B9\u05EA\u05B5\u05E8 \u05D7\u05B8\u05DB\u05B8\u05DD!\" \uD83C\uDF0D")), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+    }, lessons.map((lesson, idx) => /*#__PURE__*/React.createElement("div", {
+      key: idx,
+      className: "bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-300"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-lg text-blue-800 mb-3"
+    }, lesson.title), /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl font-bold text-blue-900"
+    }, lessonScores[idx]?.toFixed(0) || 0, "%"), /*#__PURE__*/React.createElement("div", {
+      className: "mt-2"
+    }, lessonScores[idx] >= 95 ? '🏆' : lessonScores[idx] >= 66 ? '💪' : '🌱')))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-l from-green-50 to-emerald-50 rounded-xl p-8 mb-8 border-2 border-green-400"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-bold text-green-800 mb-4"
+    }, "\uD83D\uDCAD \u05E9\u05B0\u05C1\u05D0\u05B5\u05DC\u05D5\u05B9\u05EA \u05DC\u05B0\u05DE\u05B7\u05D7\u05B2\u05E9\u05B8\u05C1\u05D1\u05B8\u05D4 \u05E2\u05B2\u05DE\u05D5\u05BC\u05E7\u05B8\u05D4"), /*#__PURE__*/React.createElement("div", {
+      className: "text-right space-y-3 text-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "p-3 bg-white rounded-lg"
+    }, "\uD83E\uDD14 \u05D0\u05B5\u05D9\u05D6\u05B6\u05D4 \u05E9\u05B4\u05C1\u05E2\u05D5\u05BC\u05E8 \u05DE\u05B5\u05D4\u05B7\u05E1\u05B4\u05BC\u05E4\u05BC\u05D5\u05BC\u05E8 \u05D4\u05B7\u05D6\u05B6\u05BC\u05D4 \u05D4\u05B7\u05DB\u05B4\u05BC\u05D9 \u05E0\u05B8\u05D2\u05B7\u05E2 \u05DC\u05B0\u05DA\u05B8? \u05DC\u05B8\u05DE\u05B8\u05BC\u05D4?"), /*#__PURE__*/React.createElement("p", {
+      className: "p-3 bg-white rounded-lg"
+    }, "\uD83D\uDCA1 \u05D0\u05B5\u05D9\u05DA\u05B0 \u05D0\u05B7\u05EA\u05B8\u05BC\u05D4 \u05D9\u05B8\u05DB\u05D5\u05B9\u05DC \u05DC\u05B0\u05D9\u05B7\u05D9\u05E9\u05B5\u05BC\u05C2\u05DD \u05D0\u05B6\u05EA \"\u05D6\u05B0\u05E8\u05B4\u05D9\u05D6\u05B4\u05D9\u05DD \u05DE\u05B7\u05E7\u05B0\u05D3\u05B4\u05BC\u05D9\u05DE\u05B4\u05D9\u05DD \u05DC\u05B0\u05DE\u05B4\u05E6\u05B0\u05D5\u05B9\u05EA\" \u05D1\u05B7\u05BC\u05D7\u05B7\u05D9\u05B4\u05BC\u05D9\u05DD \u05E9\u05B6\u05C1\u05DC\u05B0\u05BC\u05DA\u05B8?"), /*#__PURE__*/React.createElement("p", {
+      className: "p-3 bg-white rounded-lg"
+    }, "\uD83C\uDF1F \u05DE\u05B8\u05D4 \u05D4\u05B7\u05DE\u05B7\u05BC\u05E9\u05B0\u05C1\u05DE\u05B8\u05E2\u05D5\u05BC\u05EA \u05E9\u05B6\u05C1\u05DC \u05D6\u05B6\u05D4 \u05E9\u05B6\u05C1\u05D0\u05B2\u05E0\u05B7\u05D7\u05B0\u05E0\u05D5\u05BC \"\u05D1\u05B0\u05BC\u05E0\u05B5\u05D9 \u05D1\u05B0\u05DB\u05D5\u05B9\u05E8\u05B4\u05D9 \u05D9\u05B4\u05E9\u05B0\u05C2\u05E8\u05B8\u05D0\u05B5\u05DC\"?"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-l from-amber-50 to-yellow-50 rounded-xl p-6 mb-8 border-2 border-amber-400"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-bold text-amber-800 mb-3"
+    }, "\u2728 \u05D4\u05B7\u05DE\u05B0\u05E9\u05B5\u05C1\u05DA\u05B0 \u05DC\u05B4\u05DC\u05B0\u05DE\u05D5\u05B9\u05D3 \u05D5\u05B0\u05DC\u05B4\u05E6\u05B0\u05DE\u05D5\u05B9\u05D7\u05B7!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-amber-900"
+    }, "\u05D4\u05B7\u05D9\u05B0\u05D3\u05B7\u05E2 \u05E9\u05B6\u05C1\u05E8\u05B8\u05DB\u05B7\u05E9\u05B0\u05C1\u05EA\u05B8\u05BC \u05D4\u05D5\u05BC\u05D0 \u05E8\u05B7\u05E7 \u05D4\u05B7\u05D4\u05B7\u05EA\u05B0\u05D7\u05B8\u05DC\u05B8\u05D4. \u05D4\u05B7\u05DE\u05B0\u05E9\u05B5\u05C1\u05DA\u05B0 \u05DC\u05B7\u05D7\u05B2\u05E7\u05D5\u05B9\u05E8 \u05D5\u05BC\u05DC\u05B0\u05D4\u05B7\u05E2\u05B2\u05DE\u05B4\u05D9\u05E7 \u05D1\u05B0\u05BC\u05E4\u05B8\u05E8\u05B8\u05E9\u05B7\u05C1\u05EA \u05E9\u05B0\u05C1\u05DE\u05D5\u05B9\u05EA \u05D5\u05BC\u05D1\u05B0\u05DB\u05B8\u05DC \u05D4\u05B7\u05EA\u05BC\u05D5\u05B9\u05E8\u05B8\u05D4! \uD83D\uDCDA")), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setShowCertificate(true),
+      className: "bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white font-bold py-4 px-12 rounded-full text-2xl mb-6 transition-all transform hover:scale-105 shadow-lg"
+    }, "\uD83C\uDFC6 \u05E7\u05B7\u05D1\u05B5\u05BC\u05DC \u05EA\u05B0\u05BC\u05E2\u05D5\u05BC\u05D3\u05B7\u05EA \u05D4\u05B4\u05E6\u05B0\u05D8\u05B7\u05D9\u05B0\u05BC\u05E0\u05D5\u05BC\u05EA"), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: restartGame,
+      className: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-10 rounded-lg text-xl transition-all transform hover:scale-105"
+    }, "\uD83D\uDD04 \u05E9\u05B7\u05C2\u05D7\u05B5\u05E7 \u05E9\u05C1\u05D5\u05BC\u05D1"))), /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 text-center bg-white rounded-xl p-6 shadow-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-gray-800 mb-2"
+    }, "\u05E0\u05B4\u05D1\u05B0\u05E0\u05B8\u05D4 \u05E2\u05B7\u05DC \u05D9\u05B0\u05D3\u05B5\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-blue-900 mb-1"
+    }, "\u05D4\u05B8\u05E8\u05B7\u05D1 \u05D9\u05B0\u05D4\u05D5\u05BC\u05D3\u05B8\u05D4 \u05D8\u05B7\u05D0\u05D5\u05BC\u05D1 \u05DE\u05B4\u05E7\u05B4\u05BC\u05E8\u05B0\u05D9\u05B7\u05EA \u05D0\u05B7\u05EA\u05B8\u05BC\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-blue-700"
+    }, "\uD83D\uDCDE \u05DC\u05B4\u05E4\u05B0\u05E8\u05B8\u05D8\u05B4\u05D9\u05DD: 0527139520"))));
+  }
+  const currentQ = lessons[currentLesson].questions[currentQuestion];
+  return /*#__PURE__*/React.createElement("div", {
+    dir: "rtl",
+    className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4 md:p-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-5xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-xl p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-4xl"
+  }, "\uD83D\uDCD6"), /*#__PURE__*/React.createElement("h1", {
+    className: "text-3xl font-bold text-blue-900"
+  }, "\u05DE\u05B9\u05E9\u05B6\u05C1\u05D4 \u05D7\u05D5\u05B9\u05D6\u05B5\u05E8 \u05DC\u05B0\u05DE\u05B4\u05E6\u05B0\u05E8\u05B7\u05D9\u05B4\u05DD")), /*#__PURE__*/React.createElement("div", {
+    className: "text-left"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-gray-600"
+  }, "\u05E8\u05B8\u05DE\u05B7\u05EA \u05E4\u05B4\u05BC\u05D9\u05D3\u05B0\u05D1\u05B6\u05BC\u05E7"), /*#__PURE__*/React.createElement("div", {
+    className: "text-2xl font-bold text-purple-600"
+  }, feedbackLevel, "/10 \uD83C\uDFAF"))), /*#__PURE__*/React.createElement("div", {
+    className: "mb-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between text-sm text-gray-600 mb-1"
+  }, /*#__PURE__*/React.createElement("span", null, "\u05D4\u05B4\u05EA\u05B0\u05E7\u05B7\u05D3\u05B0\u05BC\u05DE\u05D5\u05BC\u05EA \u05DB\u05BC\u05D5\u05B9\u05DC\u05B6\u05DC\u05B6\u05EA"), /*#__PURE__*/React.createElement("span", null, totalQuestionsAnswered, " / ", totalQuestions)), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-l from-blue-500 to-purple-600 h-4 rounded-full transition-all duration-500 flex items-center justify-end px-2",
+    style: {
+      width: `${progressPercentage}%`
+    }
+  }, progressPercentage > 10 && /*#__PURE__*/React.createElement("span", {
+    className: "text-white text-xs font-bold"
+  }, Math.round(progressPercentage), "%")))), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-4 text-lg"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl"
+  }, "\uD83C\uDFAF"), /*#__PURE__*/React.createElement("span", {
+    className: "font-semibold"
+  }, "\u05E6\u05B4\u05D9\u05BC\u05D5\u05BC\u05DF: ", score, "/", totalQuestionsAnswered)), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl"
+  }, "\uD83E\uDDE0"), /*#__PURE__*/React.createElement("span", {
+    className: "font-semibold"
+  }, "\u05E9\u05B4\u05C1\u05E2\u05D5\u05BC\u05E8 ", currentLesson + 1, "/", lessons.length)))), currentQuestion === 0 && !showFeedback && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-xl p-8 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-6"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-5xl"
+  }, "\u2B50"), /*#__PURE__*/React.createElement("h2", {
+    className: "text-3xl font-bold text-gray-800"
+  }, lessons[currentLesson].title)), lessons[currentLesson].content, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowFeedback(true),
+    className: "mt-8 bg-gradient-to-l from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl text-xl transition-all transform hover:scale-105 shadow-lg w-full"
+  }, "\u05D1\u05BC\u05D5\u05B9\u05D0\u05D5\u05BC \u05E0\u05B7\u05EA\u05B0\u05D7\u05B4\u05D9\u05DC \u05D1\u05B7\u05BC\u05E9\u05B0\u05BC\u05C1\u05D0\u05B5\u05DC\u05D5\u05B9\u05EA! \uD83C\uDFAF")), (currentQuestion > 0 || showFeedback) && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-xl p-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-2"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-xl font-bold text-gray-700"
+  }, "\u05E9\u05B0\u05C1\u05D0\u05B5\u05DC\u05B8\u05D4 ", currentQuestion + 1, " \u05DE\u05B4\u05EA\u05BC\u05D5\u05B9\u05DA\u05B0 ", lessons[currentLesson].questions.length), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-gray-500"
+  }, "\u05E9\u05B0\u05C1\u05D0\u05B5\u05DC\u05B8\u05D4 \u05DB\u05BC\u05D5\u05B9\u05DC\u05B6\u05DC\u05B6\u05EA #", totalQuestionsAnswered + (showFeedback ? 0 : 1))), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-l from-green-500 to-emerald-600 h-2 rounded-full transition-all",
+    style: {
+      width: `${(currentQuestion + 1) / lessons[currentLesson].questions.length * 100}%`
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-l from-indigo-50 to-purple-50 rounded-xl p-6 mb-6 border-r-4 border-indigo-500"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-2xl font-bold text-gray-800 leading-relaxed"
+  }, currentQ.question)), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4 mb-6"
+  }, shuffledOptions.map((option, index) => /*#__PURE__*/React.createElement("button", {
+    key: index,
+    onClick: () => !showFeedback && handleAnswer(option),
+    disabled: showFeedback,
+    className: `w-full text-right p-6 rounded-xl border-2 text-lg font-semibold transition-all transform hover:scale-102 ${showFeedback ? option.originalIndex === currentQ.correct ? feedbackLevel >= 3 ? 'bg-gradient-to-l from-green-100 to-emerald-100 border-green-500 shadow-lg' : 'bg-green-50 border-green-400' : selectedAnswer?.originalIndex === option.originalIndex ? feedbackLevel >= 3 ? 'bg-gradient-to-l from-red-100 to-rose-100 border-red-500' : 'bg-red-50 border-red-400' : 'bg-gray-100 border-gray-300 opacity-50' : 'bg-white border-blue-300 hover:border-blue-500 hover:bg-blue-50 hover:shadow-lg'}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "flex-1"
+  }, option.text), showFeedback && /*#__PURE__*/React.createElement("span", {
+    className: "mr-3"
+  }, option.originalIndex === currentQ.correct ? /*#__PURE__*/React.createElement("span", {
+    className: "text-3xl"
+  }, "\u2705") : selectedAnswer?.originalIndex === option.originalIndex ? /*#__PURE__*/React.createElement("span", {
+    className: "text-3xl"
+  }, "\u274C") : null))))), showFeedback && /*#__PURE__*/React.createElement("div", {
+    className: `rounded-xl p-6 mb-6 border-2 ${feedbackLevel >= 3 ? isCorrect ? 'bg-gradient-to-l from-green-50 to-emerald-50 border-green-400 animate-pulse' : 'bg-gradient-to-l from-orange-50 to-amber-50 border-orange-400' : isCorrect ? 'bg-green-50 border-green-300' : 'bg-orange-50 border-orange-300'}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-4"
+  }, feedbackLevel >= 7 ? /*#__PURE__*/React.createElement("span", {
+    className: "text-4xl"
+  }, "\uD83D\uDC99") : feedbackLevel >= 3 ? isCorrect ? /*#__PURE__*/React.createElement("span", {
+    className: "text-4xl"
+  }, "\u2B50") : /*#__PURE__*/React.createElement("span", {
+    className: "text-4xl"
+  }, "\uD83E\uDDE0") : null, /*#__PURE__*/React.createElement("div", {
+    className: "flex-1"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: `text-2xl font-bold mb-3 ${isCorrect ? 'text-green-700' : 'text-orange-700'}`
+  }, getFeedbackText(isCorrect, feedbackLevel)), feedbackLevel >= 4 && /*#__PURE__*/React.createElement("p", {
+    className: "text-lg text-gray-700 leading-relaxed"
+  }, /*#__PURE__*/React.createElement("strong", null, "\u05D4\u05B6\u05E1\u05B0\u05D1\u05B5\u05BC\u05E8:"), " ", currentQ.explanation)))), showFeedback && /*#__PURE__*/React.createElement("button", {
+    onClick: nextQuestion,
+    className: "bg-gradient-to-l from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-8 rounded-xl text-xl transition-all transform hover:scale-105 shadow-lg w-full"
+  }, currentQuestion < lessons[currentLesson].questions.length - 1 ? '➡️ שְׁאֵלָה הַבָּאָה' : currentLesson < lessons.length - 1 ? '🎉 לַשִּׁעוּר הַבָּא!' : '🏆 סִיּוּם הַמִּשְׂחָק!'), showFeedback && currentQuestion === lessons[currentLesson].questions.length - 1 && /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 bg-gradient-to-l from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-300"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-xl font-bold text-purple-800 mb-3"
+  }, "\uD83D\uDCCA \u05E1\u05B4\u05DB\u05BC\u05D5\u05BC\u05DD \u05D4\u05B7\u05E9\u05B4\u05BC\u05C1\u05E2\u05D5\u05BC\u05E8"), /*#__PURE__*/React.createElement("p", {
+    className: "text-lg"
+  }, (() => {
+    const currentLessonCorrect = lessonScores.length > 0 ? score - lessonScores.reduce((a, b) => a + b, 0) : score;
+    const currentLessonTotal = lessons[currentLesson].questions.length;
+    const percentage = currentLessonCorrect / currentLessonTotal * 100;
+    if (percentage === 100) {
+      return feedbackLevel >= 10 ? '🏆 מַדְהִים! 100%! פּוֹתֵחַ שִׁעוּר הַבָּא 🎉 אַתָּה מֶלֶךְ!' : feedbackLevel >= 7 ? '🏆 מַדְהִים! 100%! פּוֹתֵחַ שִׁעוּר הַבָּא 🎉' : '🏆 מַדְהִים! פּוֹתֵחַ שִׁעוּר הַבָּא 🎉';
+    } else if (percentage >= 66) {
+      return feedbackLevel >= 7 ? '💪 כִּמְעַט מֻשְׁלָם! אַתָּה מִתְמִיד וּמַדְהִים! עוֹבֵר לַשִּׁעוּר הַבָּא! 🌟' : '💪 כִּמְעַט מֻשְׁלָם! עוֹבֵר לַשִּׁעוּר הַבָּא!';
+    } else {
+      return feedbackLevel >= 7 ? '🌱 הַמַּסָּע מַמְשִׁיךְ! בּוֹא נְנַסֶּה שׁוּב - אֲנִי מַאֲמִין בְּךָ!' : '🌱 בּוֹא נְנַסֶּה שׁוּב אֶת הַשִּׁעוּר';
+    }
+  })()))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-8 text-center bg-white rounded-xl p-6 shadow-lg"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-lg font-bold text-gray-800 mb-1"
+  }, "\u05E0\u05B4\u05D1\u05B0\u05E0\u05B8\u05D4 \u05E2\u05B7\u05DC \u05D9\u05B0\u05D3\u05B5\u05D9:"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xl font-bold text-blue-900 mb-1"
+  }, "\u05D4\u05B8\u05E8\u05B7\u05D1 \u05D9\u05B0\u05D4\u05D5\u05BC\u05D3\u05B8\u05D4 \u05D8\u05B7\u05D0\u05D5\u05BC\u05D1 \u05DE\u05B4\u05E7\u05B4\u05BC\u05E8\u05B0\u05D9\u05B7\u05EA \u05D0\u05B7\u05EA\u05B8\u05BC\u05D0"), /*#__PURE__*/React.createElement("p", {
+    className: "text-lg text-blue-700"
+  }, "\uD83D\uDCDE \u05DC\u05B4\u05E4\u05B0\u05E8\u05B8\u05D8\u05B4\u05D9\u05DD: 0527139520"))));
+};
+const __App = ExodusLearningGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

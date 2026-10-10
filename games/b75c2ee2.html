@@ -1,0 +1,1495 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ahavat_hashem_game – הקול החמישי</title>
+<meta name="description" content="Test your knowledge of Jewish teachings about God's love for Israel with this interactive Hebrew quiz game featuring multiple difficulty levels and explanations.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="ahavat_hashem_game – הקול החמישי">
+<meta property="og:description" content="Test your knowledge of Jewish teachings about God&#x27;s love for Israel with this interactive Hebrew quiz game featuring multiple difficulty levels and explanations.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-b75c2ee2.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/b75c2ee2.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const AhavatHashemGame = () => {
+  const [currentLevel, setCurrentLevel] = useState('learning');
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const levels = {
+    easy: {
+      name: 'קל',
+      total: 10,
+      passScore: 8,
+      percentage: 80
+    },
+    medium: {
+      name: 'בינוני',
+      total: 15,
+      passScore: 13,
+      percentage: 85
+    },
+    hard: {
+      name: 'קשה',
+      total: 20,
+      passScore: 18,
+      percentage: 90
+    }
+  };
+  const questions = {
+    easy: [{
+      q: 'מהו המושג "אהבה בחיריית" (חשק)?',
+      answers: [{
+        text: 'אהבה שאינה תלויה בשום סיבה או תנאי',
+        correct: true
+      }, {
+        text: 'אהבה שתלויה במעשים טובים של האדם',
+        correct: false
+      }, {
+        text: 'אהבה שמתעוררת רק בזמן תפילה',
+        correct: false
+      }, {
+        text: 'אהבה שקיימת רק בזמן קיום המצוות',
+        correct: false
+      }],
+      explanation: 'חשק הוא "הפלגת האהבה בלי טעם" - ה\' בחר בעם ישראל לא בגלל ריבויים או מעשים, אלא "כי מאהבת ה\' אתכם".'
+    }, {
+      q: 'כמה לשונות של חיבה מנו חז"ל שבהן חיבב הקב"ה את ישראל?',
+      answers: [{
+        text: '5 לשונות: דביקה, חשיקה, חפיצה, אהבה, דיבור',
+        correct: true
+      }, {
+        text: '3 לשונות: אהבה, רחמים, חמלה',
+        correct: false
+      }, {
+        text: '7 לשונות כנגד 7 ימי השבוע',
+        correct: false
+      }, {
+        text: '4 לשונות כנגד 4 האמהות',
+        correct: false
+      }],
+      explanation: 'חז"ל מנו 5 לשונות של חיבה: דביקה (ואתם הדבקים), חשיקה (חשק ה\' בכם), חפיצה (ארץ חפץ), אהבה (אהבתי אתכם), ודיבור (דברו על לב).'
+    }, {
+      q: 'איזו מתנה במדבר מעידה על "אהבה יתירה" יותר מכל המתנות האחרות?',
+      answers: [{
+        text: 'ענני הכבוד - כי לא היו הכרחיים לקיומם',
+        correct: true
+      }, {
+        text: 'המן - כי היה נחוץ למזון יומיומי',
+        correct: false
+      }, {
+        text: 'באר מרים - כי המים חיוניים לחיים',
+        correct: false
+      }, {
+        text: 'התורה - כי היא המתנה הגדולה ביותר',
+        correct: false
+      }],
+      explanation: 'ענני הכבוד היו "חיבה יתירה" - מתנה שלא הייתה הכרחית לקיומם, והיא מעידה על אהבתו היתירה, לכן ציווה ה\' לזכור אותם במצוות סוכה.'
+    }, {
+      q: 'איך ה\' קורא לעם ישראל כדי להדגיש את אהבתו?',
+      answers: [{
+        text: '"בנים אתם לה\' אלוהיכם" - כל יהודי כבן יחיד',
+        correct: true
+      }, {
+        text: '"עבדים אתם" - כעובדים נאמנים בלבד',
+        correct: false
+      }, {
+        text: '"עמי" - כחלק מהקולקטיב בלבד',
+        correct: false
+      }, {
+        text: '"נחלתי" - כרכוש שלו',
+        correct: false
+      }],
+      explanation: 'ה\' מתייחס לכל יהודי כ"אישיות פרטית", כ"בן" יחיד, ודאגתו מופנית לכל אחד ואחד. זה ביטוי לאהבה אישית.'
+    }, {
+      q: 'מדוע ה\' יצר מאות סוגים של פירות ולא פרי אחד פשוט?',
+      answers: [{
+        text: 'כדי לתת לנו עונג - צבעים וטעמים מגוונים רק בשבילנו',
+        correct: true
+      }, {
+        text: 'כדי שיהיה מגוון תזונתי לבריאות',
+        correct: false
+      }, {
+        text: 'כי כך נוצר העולם בטבע',
+        correct: false
+      }, {
+        text: 'כדי שנוכל לבחור את המועדף עלינו',
+        correct: false
+      }],
+      explanation: 'ה\' יכול היה לברוא פרי אחד חסר טעם, אך יצר מאות סוגים עם צבעים וטעמים - מטרתם היחידה היא העונג שלנו. זה ביטוי ל"חסד" ואהבה.'
+    }, {
+      q: 'מה הברכה הראשונה על המאכל באה להודות עליו?',
+      answers: [{
+        text: 'על תשומת הלב והאהבה שגילה ה\' בהגישו לנו את המאכל',
+        correct: true
+      }, {
+        text: 'רק על עצם המאכל והשובע',
+        correct: false
+      }, {
+        text: 'על הטעם הטוב של המאכל',
+        correct: false
+      }, {
+        text: 'על כך שהמאכל כשר לאכילה',
+        correct: false
+      }],
+      explanation: 'בכל מתנה יש "עצם המתנה" ו"יחס החיבה". הברכה הראשונה היא הודאה על "תשומת הלב ואהבה" של ה\', לא רק על המאכל עצמו.'
+    }, {
+      q: 'מהי המשמעות של "הסוכה" לפי האריז"ל?',
+      answers: [{
+        text: 'חביקה מה\' יתברך כל החג כולו - ביטוי פיזי לאהבה',
+        correct: true
+      }, {
+        text: 'זיכרון ליציאת מצרים בלבד',
+        correct: false
+      }, {
+        text: 'הגנה מפני החום והגשם',
+        correct: false
+      }, {
+        text: 'מקום לאכילה ושינה בחג',
+        correct: false
+      }],
+      explanation: 'האריז"ל מסביר שהסוכה היא צורה של "חביקה מה\' יתברך כל החג כולו אהבה" - ביטוי פיזי מוחשי של אהבת ה\'.'
+    }, {
+      q: 'מהי ההקדמה ההכרחית למידת הביטחון?',
+      answers: [{
+        text: 'האמונה שה\' מרחם על האדם יותר מכל מרחם',
+        correct: true
+      }, {
+        text: 'קיום כל 613 המצוות בדקדוק',
+        correct: false
+      }, {
+        text: 'לימוד תורה רב שנים',
+        correct: false
+      }, {
+        text: 'ריבוי תפילות ותחנונים',
+        correct: false
+      }],
+      explanation: 'האמונה שה\' מרחם עלינו יותר מכל מרחם, ושרחמיו על כל מעשיו - היא ההקדמה ההכרחית לביטחון. זה הבסיס לכל הביטחון.'
+    }, {
+      q: 'איך ה\' מתנהג עם האדם לפי הפסוק "ה\' צלך"?',
+      answers: [{
+        text: 'כצל - כמו שאני מרגיש אהבה אליו, כך הוא מתנהג איתי',
+        correct: true
+      }, {
+        text: 'כשמש - נותן חום ואור קבוע ללא תלות במעשים',
+        correct: false
+      }, {
+        text: 'כירח - מאיר רק בזמנים מסוימים',
+        correct: false
+      }, {
+        text: 'כרוח - בלתי נראה ובלתי מורגש',
+        correct: false
+      }],
+      explanation: 'ה\' מתנהג עם האדם כצֵל - אם יהודי מרגיש וחקוק בליבו את גודל אהבתו יתברך אליו, גם מלמעלה מתנהגים איתו באהבה.'
+    }, {
+      q: 'מה המשותף לכל הביטויים של אהבת ה\' (לשוניים, מעשיים, בקושי)?',
+      answers: [{
+        text: 'כולם באים לעורר אותנו להשיב אהבה ולהגיע לדבקות בה\'',
+        correct: true
+      }, {
+        text: 'כולם תלויים במעשינו הטובים',
+        correct: false
+      }, {
+        text: 'כולם מופיעים רק בתקופות מיוחדות',
+        correct: false
+      }, {
+        text: 'כולם דורשים מאמץ רב להבנה',
+        correct: false
+      }],
+      explanation: 'כל הביטויים - לשוניים, מעשיים ונסתרים - מטרתם לעורר את ישראל להשיב אהבה ולהגיע לדרגת הדבקות, שהיא תכלית התכליות.'
+    }],
+    medium: [{
+      q: 'מדוע לא ציווה ה\' במצווה מיוחדת לזכור את המן והבאר, אבל כן ציווה לזכור את ענני הכבוד?',
+      answers: [{
+        text: 'כי ענני הכבוד היו "חיבה יתירה" - מתנה מעבר להכרח, והיא מעידה יותר על האהבה',
+        correct: true
+      }, {
+        text: 'כי המן והבאר היו נסים נסתרים ולא גלויים',
+        correct: false
+      }, {
+        text: 'כי ענני הכבוד היו הנס הראשון שקיבלו',
+        correct: false
+      }, {
+        text: 'כי המן והבאר לא היו נחוצים באמת',
+        correct: false
+      }],
+      explanation: 'המן והבאר היו הכרחיים לקיום - מזון ומים. ענני הכבוד לא היו הכרחיים, והם מעידים על "אהבה יתירה" שמעבר לצורך - לכן ציווה לזכור דווקא אותם.'
+    }, {
+      q: 'מה ההבדל בין חג הקציר (שבועות) לחג האסיף (סוכות) מבחינת ביטוי האהבה?',
+      answers: [{
+        text: 'שבועות - מזון הכרחי לחיות, סוכות - פירות עונג שלא הכרחיים אך מעידים על חסד',
+        correct: true
+      }, {
+        text: 'שבועות מסמל קציר תבואה, סוכות מסמל קציר ענבים',
+        correct: false
+      }, {
+        text: 'אין הבדל - שניהם חגי תודה על היבול',
+        correct: false
+      }, {
+        text: 'שבועות חשוב יותר כי מתן תורה',
+        correct: false
+      }],
+      explanation: 'ה\' לא רק דאג למזון חיוני (קציר/שבועות), אלא גם למזון שאינו הכרחי לחיותנו - פירות הקיץ (אסיף/סוכות). זה מראה חסד ואהבה מעבר לצורך.'
+    }, {
+      q: 'איך השקפת התורה על יסורים שונה מהשקפת בני אדם?',
+      answers: [{
+        text: 'בני אדם רואים יסורים כשנאה, התורה רואה בהם אהבה - "מי שה\' חפץ בו מדכאו"',
+        correct: true
+      }, {
+        text: 'בני אדם רואים יסורים כדבר רע, התורה רואה בהם עונש בלבד',
+        correct: false
+      }, {
+        text: 'בני אדם רואים יסורים כטבעיים, התורה רואה בהם ניסיון',
+        correct: false
+      }, {
+        text: 'אין הבדל - גם התורה רואה ביסורים סימן לריחוק',
+        correct: false
+      }],
+      explanation: 'השקפת התורה הפוכה: דוקא "מי שה\' חפץ בו מדכאו ביסורים" - ה\' מביא יסורים על הצדיק מאהבה, כדי להרגילו לעבודתו ולהביאו לשלימות.'
+    }, {
+      q: 'מה המשמעות של "ה\' לא מביט בעוון" בהקשר של אהבת ה\' לישראל?',
+      answers: [{
+        text: 'גם כשישראל חוטאים, ה\' עדיין אוהב אותם - "תרועת מלך בו לשון חיבה"',
+        correct: true
+      }, {
+        text: 'ה\' מתעלם מחטאים קטנים בלבד',
+        correct: false
+      }, {
+        text: 'ה\' לא רואה חטאים רק אצל צדיקים גמורים',
+        correct: false
+      }, {
+        text: 'העונש על חטאים מגיע רק בעולם הבא',
+        correct: false
+      }],
+      explanation: 'גם כאשר ישראל חוטאים, ה\' "לא מביט" - כלומר, אהבתו נותרת יציבה. "ה\' אלוקיו תמיד עימו ותרועת מלך בו לשון חיבה ורעות" - גם בזמן חטא.'
+    }, {
+      q: 'מדוע דווקא גלות מצרים, שהייתה תקופת יסורים קשים, נחשבת לזמן של "אהבתו וחמלתו"?',
+      answers: [{
+        text: 'כי ה\' השרה שכינתו עם ישראל בגלות והיה "נושע" בגאולתם',
+        correct: true
+      }, {
+        text: 'כי הגלות הייתה קצרה יחסית',
+        correct: false
+      }, {
+        text: 'כי היסורים לא היו קשים כל כך',
+        correct: false
+      }, {
+        text: 'כי הגלות הובילה למתן תורה',
+        correct: false
+      }],
+      explanation: 'למרות היסורים, הגלות במצרים הייתה זמן של "אהבתו וחמלתו" הגדולה - ה\' משרה שכינתו עם ישראל גם בגלות, והוא "נושע" בגאולתם.'
+    }, {
+      q: 'מהו הקשר בין ההכרה באהבת ה\' אלינו לבין יכולתנו להשיב אהבה?',
+      answers: [{
+        text: 'רק כשאנחנו מאמינים שה\' אוהב אותנו, אנחנו יכולים להשיב אהבה - זה התנאי ההכרחי',
+        correct: true
+      }, {
+        text: 'אין קשר - אפשר לאהוב את ה\' גם בלי להרגיש את אהבתו',
+        correct: false
+      }, {
+        text: 'קודם צריך לאהוב את ה\', ואז הוא יאהב אותנו',
+        correct: false
+      }, {
+        text: 'האהבה צריכה להיות הדדית מההתחלה',
+        correct: false
+      }],
+      explanation: 'אהבת ה\' לישראל היא הבסיס והיסוד שבלעדיו לא ניתן לקיים את "ואהבת את ה\'". האמונה באהבתו אלינו היא התנאי ההכרחי כדי שנוכל להשיב אהבה.'
+    }, {
+      q: 'מה ההבדל בין "עצם המתנה" ל"יחס החיבה והאהבה" במתנות של ה\'?',
+      answers: [{
+        text: 'עצם המתנה הוא הדבר הפיזי, יחס החיבה הוא תשומת הלב והאהבה שמאחורי המתנה',
+        correct: true
+      }, {
+        text: 'עצם המתנה חשוב יותר מיחס החיבה',
+        correct: false
+      }, {
+        text: 'אין הבדל - שניהם אותו דבר',
+        correct: false
+      }, {
+        text: 'יחס החיבה חשוב רק במתנות גדולות',
+        correct: false
+      }],
+      explanation: 'בכל מתנה יש שני מרכיבים: הדבר הפיזי ו"יחס החיבה והאהבה שגילה הנותן". הברכה היא הודאה על שני המרכיבים, במיוחד על תשומת הלב.'
+    }, {
+      q: 'מדוע חשוב להתבונן ב"מותרות" (יופי, ריח, טעם) של הפירות?',
+      answers: [{
+        text: 'כדי לחוש את חסדי ה\' - ההתבוננות נועדה לעורר אותנו לאהבה',
+        correct: true
+      }, {
+        text: 'כדי להעריך את הטבע',
+        correct: false
+      }, {
+        text: 'כדי ללמוד בוטניקה',
+        correct: false
+      }, {
+        text: 'כדי לדעת איזה פרי לבחור',
+        correct: false
+      }],
+      explanation: 'התבוננות במותרות אלו (יופי, ריח, טעם) שאינם הכרחיים לקיום, נועדה לעורר אותנו לחוש את חסדי ה\' ואת אהבתו אלינו.'
+    }, {
+      q: 'איך מתקיימת אהבת ה\' בזמן שאדם חוטא ומרגיש רחוק?',
+      answers: [{
+        text: 'חובה להאמין שה\' אוהב גם כשנכשלנו - "תרועת מלך בו" תמיד',
+        correct: true
+      }, {
+        text: 'האהבה נפסקת זמנית עד שיעשה תשובה',
+        correct: false
+      }, {
+        text: 'האהבה הופכת לדין בלבד',
+        correct: false
+      }, {
+        text: 'רק צדיקים מרגישים את האהבה',
+        correct: false
+      }],
+      explanation: 'חובה להאמין שה\' אוהב אותנו גם כאשר נכשלנו בחטא - "ה\' אלוקיו תמיד עימו" ללא תנאי. זו אמת שצריך להאמין בה תמיד.'
+    }, {
+      q: 'מה הקשר בין אהבת ה\' אלינו לבין מידת הביטחון?',
+      answers: [{
+        text: 'כשאדם יודע שה\' רוצה בהצלחתו יותר ממנו עצמו - זה הבסיס לביטחון',
+        correct: true
+      }, {
+        text: 'הביטחון בא לפני האהבה',
+        correct: false
+      }, {
+        text: 'אין קשר ישיר ביניהם',
+        correct: false
+      }, {
+        text: 'הביטחון תלוי במעשים, לא באהבה',
+        correct: false
+      }],
+      explanation: 'כשאדם מבין שה\' "רוצה בהצלחתו יותר ממה שהוא חפץ בעצמו" - זה הבסיס לביטחון. האמונה ברחמי ה\' היא ההקדמה למידת הביטחון.'
+    }, {
+      q: 'למה "חשק" נחשב ל"הפלגת האהבה"?',
+      answers: [{
+        text: 'כי זו אהבה ללא שום טעם או סיבה - אהבה מוחלטת שאינה תלויה בדבר',
+        correct: true
+      }, {
+        text: 'כי זו האהבה הגדולה ביותר שיש',
+        correct: false
+      }, {
+        text: 'כי זו אהבה שבאה מהלב בלבד',
+        correct: false
+      }, {
+        text: 'כי זו אהבה שנמשכת זמן רב',
+        correct: false
+      }],
+      explanation: 'חשק הוא "הפלגת האהבה בלי טעם" - אהבה שאין לה סיבה או הסבר. ה\' בחר בנו לא מתוך שכל אלא מאהבה טהורה.'
+    }, {
+      q: 'איך "דיבור" (דברו על לב ירושלים) מבטא אהבה?',
+      answers: [{
+        text: 'דברים מנחמים ומיישבים את הלב - שפה של חיבה ותשומת לב אישית',
+        correct: true
+      }, {
+        text: 'ה\' מדבר אלינו דרך הנביאים',
+        correct: false
+      }, {
+        text: 'התורה היא הדיבור של ה\'',
+        correct: false
+      }, {
+        text: 'התפילה היא הדיבור שלנו אליו',
+        correct: false
+      }],
+      explanation: 'לשון "דיבור" (דברו על לב) מבטאת דברים המנחמים ומיישבים את הלב - שפה של חיבה אישית ותשומת לב לכל נפש ונפש.'
+    }, {
+      q: 'מה התכלית שאליה צריכה להוביל ההכרה באהבת ה\'?',
+      answers: [{
+        text: 'דרגת הדבקות - זו תכלית התכליות של כל הביטויים',
+        correct: true
+      }, {
+        text: 'קיום כל המצוות בדקדוק',
+        correct: false
+      }, {
+        text: 'לימוד תורה בעיון',
+        correct: false
+      }, {
+        text: 'תפילה בכוונה',
+        correct: false
+      }],
+      explanation: 'כל הביטויים של האהבה מטרתם לעורר את ישראל להשיב אהבה ולהגיע לדרגת הדבקות, שהיא תכלית התכליות.'
+    }, {
+      q: 'מדוע חז"ל הדגישו דווקא את "בנים אתם" ולא רק "עבדים"?',
+      answers: [{
+        text: 'כי "בן" מבטא יחס אישי ואהבה, בניגוד ל"עבד" שהוא רק יחס תפקידי',
+        correct: true
+      }, {
+        text: 'כי "בנים" הוא דרגה גבוהה יותר מעבדים',
+        correct: false
+      }, {
+        text: 'כי רק בנים מקבלים שכר',
+        correct: false
+      }, {
+        text: 'כי עבדות היא דבר שלילי',
+        correct: false
+      }],
+      explanation: 'ה\' קורא לנו "בנים" ולא רק "עבדים" כי הוא מתייחס לכל יהודי כ"אישיות פרטית", כבן יחיד עם אהבה אישית - לא רק כעובד בשדה.'
+    }, {
+      q: 'איך מתבטאת ה"אהבה יציבה" של ה\' בזמני קושי?',
+      answers: [{
+        text: 'האהבה לא משתנה - היא נותרת קיימת גם בגלות, בחטא וביסורים',
+        correct: true
+      }, {
+        text: 'האהבה מתחזקת רק בזמני שמחה',
+        correct: false
+      }, {
+        text: 'האהבה תלויה במצבנו הרוחני',
+        correct: false
+      }, {
+        text: 'האהבה נבחנת רק במעשים טובים',
+        correct: false
+      }],
+      explanation: 'אהבה יציבה פירושה שהאהבה לא משתנה לפי מצבנו - היא קיימת גם בגלות, בחטא וביסורים. זו אמת שצריך להאמין בה תמיד.'
+    }],
+    hard: [{
+      q: 'תלמיד אומר לך: "אני לא מרגיש את אהבת ה\' כי אני חוטא הרבה." מה התשובה הנכונה לפי החומר?',
+      answers: [{
+        text: 'דווקא עכשיו חשוב להאמין שה\' אוהב אותך - "לא מביט בעוון" והאהבה קיימת תמיד',
+        correct: true
+      }, {
+        text: 'קודם תעשה תשובה ואז תרגיש את האהבה',
+        correct: false
+      }, {
+        text: 'אתה צודק - צריך להפסיק לחטוא כדי להרגיש אהבה',
+        correct: false
+      }, {
+        text: 'האהבה קיימת, אבל היא חלשה יותר כשחוטאים',
+        correct: false
+      }],
+      explanation: 'חובה להאמין שה\' אוהב גם כשנכשלנו - "ה\' אלוקיו תמיד עימו ותרועת מלך בו" גם בזמן חטא. זו הדרך לחזור - דרך האמונה באהבה, לא הפוך.'
+    }, {
+      q: 'למה הברכה על פרי העץ חשובה יותר מסתם אכילת הפרי, מבחינת ביטוי האהבה?',
+      answers: [{
+        text: 'כי הברכה מכירה בתשומת הלב והאהבה שמאחורי המתנה, לא רק במתנה עצמה',
+        correct: true
+      }, {
+        text: 'כי הברכה מכשירה את הפרי לאכילה',
+        correct: false
+      }, {
+        text: 'כי בלי ברכה אסור לאכול',
+        correct: false
+      }, {
+        text: 'כי הברכה מזכירה את החובה להודות',
+        correct: false
+      }],
+      explanation: 'בכל מתנה יש שני מרכיבים: הדבר עצמו והחיבה שמאחוריו. הברכה היא הודאה על "תשומת הלב ואהבה" - זה העומק שמעבר למאכל גופו.'
+    }, {
+      q: 'אדם עובר משבר קשה ושואל: "איפה אהבת ה\'?" מה ההסבר הנכון לפי השקפת התורה?',
+      answers: [{
+        text: 'דווקא היסורים מעידים על אהבה - "מי שה\' חפץ בו מדכאו" כדי להביאו לשלימות',
+        correct: true
+      }, {
+        text: 'זה עונש על חטאים, לא אהבה',
+        correct: false
+      }, {
+        text: 'זה טבע העולם, לא קשור לאהבה',
+        correct: false
+      }, {
+        text: 'צריך לחכות עד שהמשבר יעבור לראות את האהבה',
+        correct: false
+      }],
+      explanation: 'השקפת התורה הפוכה מבני אדם: דוקא היסורים מעידים על אהבה. ה\' מביא יסורים "להרגילו לסבול הטורח והעמל בפעל לאהבתו" - זו אהבה עמוקה יותר.'
+    }, {
+      q: 'מה ההבדל המהותי בין המן לפירות הקיץ, מבחינת ביטוי אהבת ה\'?',
+      answers: [{
+        text: 'המן היה הכרחי לקיום, פירות הקיץ הם עונג נוסף - וההבדל מגלה את עומק החסד',
+        correct: true
+      }, {
+        text: 'המן היה נס, פירות הקיץ הם טבע',
+        correct: false
+      }, {
+        text: 'המן היה במדבר, פירות הקיץ בארץ',
+        correct: false
+      }, {
+        text: 'אין הבדל מהותי - שניהם מזון',
+        correct: false
+      }],
+      explanation: 'ה\' לא רק דאג למזון הכרחי (מן/קציר), אלא גם למזון עונג שאינו הכרחי (פירות/אסיף). ההבדל הזה מגלה שה\' דואג לעונג שלנו, לא רק לקיום - זו אהבה.'
+    }, {
+      q: 'איך הפסוק "ה\' צלך" מלמד אותנו להבין את יחס ה\' אלינו?',
+      answers: [{
+        text: 'כמו שצל חוזר על תנועות הגוף - אם אני מרגיש אהבה לה\', הוא מתנהג איתי באהבה',
+        correct: true
+      }, {
+        text: 'ה\' מגן עלינו כמו צל מהשמש',
+        correct: false
+      }, {
+        text: 'ה\' בלתי נראה כמו צל',
+        correct: false
+      }, {
+        text: 'ה\' הולך אחרינו כמו צל',
+        correct: false
+      }],
+      explanation: 'ה\' מתנהג כצל - אם יהודי מרגיש וחקוק בליבו את אהבתו יתברך אליו, גם מלמעלה מתנהגים איתו באהבה. זו הדדיות שמתחילה מהכרה שלנו באהבה.'
+    }, {
+      q: 'מדוע ענני הכבוד הם הדוגמה הטובה ביותר ל"אהבה יתירה"?',
+      answers: [{
+        text: 'כי הם לא היו נחוצים להישרדות - הם מתנה טהורה שמטרתה רק לחבב ולדאוג',
+        correct: true
+      }, {
+        text: 'כי הם היו הנס הגדול ביותר',
+        correct: false
+      }, {
+        text: 'כי הם היו במדבר זמן הכי ארוך',
+        correct: false
+      }, {
+        text: 'כי הם הגנו מאויבים',
+        correct: false
+      }],
+      explanation: 'המן והבאר היו הכרחיים לקיום. ענני הכבוד לא - הם מתנה שמעבר לצורך, והם מעידים על "אהבה יתירה". לכן רק עליהם ציווה במצווה מיוחדת.'
+    }, {
+      q: 'תלמיד שואל: "איך אפשר להאמין שה\' אוהב כשעם ישראל סובל בגלות?" מה התשובה?',
+      answers: [{
+        text: 'דווקא בגלות ה\' משרה שכינתו עם ישראל ו"נושע" בגאולתם - זו אהבה עמוקה יותר',
+        correct: true
+      }, {
+        text: 'הסבל בגלות הוא עונש על חטאים, לא ביטוי אהבה',
+        correct: false
+      }, {
+        text: 'זו שאלה קשה שאין לה תשובה',
+        correct: false
+      }, {
+        text: 'צריך לחכות לגאולה כדי להבין את האהבה',
+        correct: false
+      }],
+      explanation: 'גלות מצרים, למרות היסורים, הייתה זמן של "אהבתו וחמלתו". ה\' משרה שכינתו עם ישראל גם בגלות - זו אהבה שלא עוזבת גם בקושי.'
+    }, {
+      q: 'מה הקשר בין התבוננות במגוון הפירות (צבעים, טעמים) לבין עבודת ה\'?',
+      answers: [{
+        text: 'התבוננות במותרות אלו נועדה לעורר אותנו לחוש את החסד ולהגיע לאהבת ה\'',
+        correct: true
+      }, {
+        text: 'זו דרך ללמוד על בריאת העולם',
+        correct: false
+      }, {
+        text: 'זו דרך להעריך את הטבע',
+        correct: false
+      }, {
+        text: 'אין קשר ישיר - זה סתם יופי',
+        correct: false
+      }],
+      explanation: 'ה\' יכול היה לברוא פרי אחד חסר טעם, אך יצר מגוון רק לעונג שלנו. התבוננות בזה צריכה לעורר אותנו לחוש את חסדי ה\' ולהגיע לאהבה.'
+    }, {
+      q: 'למה חשוב להבין ש"ה\' רוצה בהצלחתנו יותר ממה שאנחנו חפצים בעצמנו"?',
+      answers: [{
+        text: 'כי זו התשתית לביטחון - כשיודעים שיש מי שדואג לנו יותר מאיתנו, אפשר לסמוך עליו',
+        correct: true
+      }, {
+        text: 'כי אז אפשר להסתמך על ה\' בלי לעשות מאמץ',
+        correct: false
+      }, {
+        text: 'כי זה מסביר למה יש צדיקים עניים',
+        correct: false
+      }, {
+        text: 'כי זה מלמד אותנו להיות ענווים',
+        correct: false
+      }],
+      explanation: 'כשאדם מבין שה\' "רוצה בהצלחתו יותר ממה שהוא חפץ בעצמו" - זה הבסיס לביטחון. האמונה שהרחמן מרחם עלינו יותר מכל היא ההקדמה לביטחון.'
+    }, {
+      q: 'מה ההבדל בין "דביקה" ל"חשיקה" מבין לשונות החיבה?',
+      answers: [{
+        text: 'דביקה היא התקשרות וקשר, חשיקה היא התלהבות ורצון עז - שני ביטויים שונים של אהבה',
+        correct: true
+      }, {
+        text: 'אין הבדל - שניהם אותו דבר',
+        correct: false
+      }, {
+        text: 'דביקה חזקה יותר מחשיקה',
+        correct: false
+      }, {
+        text: 'חשיקה קשורה לרגש, דביקה לשכל',
+        correct: false
+      }],
+      explanation: 'דביקה (ואתם הדבקים) מדברת על התקשרות וקשר. חשיקה (חשק ה\') מדברת על התלהבות ורצון עז. שני ביטויים שונים של אהבה שה\' חיבב אותנו.'
+    }, {
+      q: 'איך אפשר ליישם את העיקרון של "אהבה שאינה תלויה בדבר" בחיים היומיומיים?',
+      answers: [{
+        text: 'להאמין שה\' אוהב אותי גם כשאני נכשל, ולחזק את האמונה הזו בכל מצב',
+        correct: true
+      }, {
+        text: 'לא לעשות מעשים טובים כי האהבה ממילא קיימת',
+        correct: false
+      }, {
+        text: 'לחכות שה\' יגלה את אהבתו בניסים',
+        correct: false
+      }, {
+        text: 'לנסות לזכות לאהבה דרך מצוות',
+        correct: false
+      }],
+      explanation: 'היישום המעשי הוא להאמין שה\' אוהב אותי גם כשאני נכשל - לא בגלל מעשיי אלא "כי מאהבת ה\' אתכם". זו אמונה שצריך לחזק בכל מצב.'
+    }, {
+      q: 'מדוע לשון "דיבור" (דברו על לב) נוספה ללשונות החיבה?',
+      answers: [{
+        text: 'כי דברים מנחמים ומיישבים את הלב הם ביטוי מעשי של תשומת לב ואהבה אישית',
+        correct: true
+      }, {
+        text: 'כי ה\' מדבר אלינו דרך הנביאים',
+        correct: false
+      }, {
+        text: 'כי התורה היא דיבור של ה\'',
+        correct: false
+      }, {
+        text: 'כי התפילה היא דיבור שלנו',
+        correct: false
+      }],
+      explanation: 'הרב אבא בר אלישע הוסיף "דיבור" - "דברו על לב ירושלים". דיבור מנחם ומיישב את הלב הוא ביטוי לתשומת לב אישית ואהבה עמוקה.'
+    }, {
+      q: 'איך הסוכה כ"חביקה" מלמדת אותנו על טבע אהבת ה\'?',
+      answers: [{
+        text: 'החביקה היא ביטוי פיזי מוחשי - ה\' רוצה שנרגיש את אהבתו בצורה מוחשית ולא רק תיאורטית',
+        correct: true
+      }, {
+        text: 'הסוכה מגינה עלינו כמו חיבוק',
+        correct: false
+      }, {
+        text: 'החיבוק מסמל את האיחוד עם ה\'',
+        correct: false
+      }, {
+        text: 'זו דרך לזכור את ענני הכבוד',
+        correct: false
+      }],
+      explanation: 'האריז"ל אומר שהסוכה היא "חביקה מה\' כל החג". חביקה היא ביטוי פיזי מוחשי - ה\' רוצה שנרגיש את אהבתו באופן מוחשי, לא רק במחשבה.'
+    }, {
+      q: 'מה המשמעות המעשית של "על כל פשעים תכסה אהבה" בהקשר של "ה\' צלך"?',
+      answers: [{
+        text: 'אם אני מאמין באהבת ה\' אליי, גם הוא מתנהג איתי באהבה ומכסה על חטאיי',
+        correct: true
+      }, {
+        text: 'ה\' מוחל על כל החטאים ללא תנאי',
+        correct: false
+      }, {
+        text: 'האהבה חשובה יותר מקיום מצוות',
+        correct: false
+      }, {
+        text: 'צריך לעשות תשובה קודם כדי שיכסה על החטאים',
+        correct: false
+      }],
+      explanation: 'אם יהודי מרגיש וחקוק בליבו את אהבת ה\', גם מלמעלה "מתנהגים איתו בבחינת בן ועל כל פשעים תכסה אהבה". האמונה שלנו משפיעה על היחס מלמעלה.'
+    }, {
+      q: 'איך מיישמים את העיקרון של "יסורים מאהבה" כשעוברים תקופה קשה?',
+      answers: [{
+        text: 'להבין שהיסורים הם דרך של ה\' להרגיל אותי לעבודתו ולהביא אותי לשלימות - זו אהבה עמוקה',
+        correct: true
+      }, {
+        text: 'לקבל את היסורים בשתיקה בלי להבין',
+        correct: false
+      }, {
+        text: 'לחשוב שזה עונש ולעשות תשובה',
+        correct: false
+      }, {
+        text: 'לחכות שהיסורים יעברו ואז לחפש את המשמעות',
+        correct: false
+      }],
+      explanation: 'היישום הוא להבין בזמן היסורים עצמם ש-"מי שה\' חפץ בו מדכאו" - היסורים הם אהבה שבאה "להרגילו לסבול הטורח והעמל בפעל לאהבתו".'
+    }, {
+      q: 'מה ההבדל בין חג הקציר לחג האסיף מבחינת מדרגות גילוי האהבה?',
+      answers: [{
+        text: 'קציר = דאגה לצורך חיוני, אסיף = דאגה לעונג מעבר לצורך - מדרגה גבוהה יותר של חסד',
+        correct: true
+      }, {
+        text: 'אין הבדל - שניהם חגי תודה',
+        correct: false
+      }, {
+        text: 'קציר חשוב יותר כי זה לפני אסיף',
+        correct: false
+      }, {
+        text: 'אסיף קשור לסוכות ולכן חשוב יותר',
+        correct: false
+      }],
+      explanation: 'קציר (שבועות) = מזון חיוני. אסיף (סוכות) = פירות עונג שלא הכרחיים. ה\' לא רק דואג לצורך אלא גם לעונג - זו מדרגה גבוהה יותר של חסד ואהבה.'
+    }, {
+      q: 'למה חשוב שנבין ש"ה\' משרה שכינתו עם ישראל גם בגלות"?',
+      answers: [{
+        text: 'כי זה מלמד שהאהבה לא תלויה במצב - גם בצרה ה\' איתנו, וזה הבסיס לביטחון',
+        correct: true
+      }, {
+        text: 'כי זה מסביר למה יש גלויות',
+        correct: false
+      }, {
+        text: 'כי זה מבטיח שהגלות תסתיים מהר',
+        correct: false
+      }, {
+        text: 'כי זה מחייב אותנו להישאר בגלות',
+        correct: false
+      }],
+      explanation: 'ההבנה שה\' משרה שכינתו עם ישראל גם בגלות מלמדת שהאהבה לא תלויה במצב. זה הבסיס לביטחון - ה\' איתנו תמיד, גם בצרה.'
+    }, {
+      q: 'איך העיקרון של "אהבה כתנאי לאהבה" משפיע על עבודת ה\'?',
+      answers: [{
+        text: 'רק אחרי שמבינים שה\' אוהב אותנו אפשר להשיב אהבה - זה השלב הראשון ההכרחי',
+        correct: true
+      }, {
+        text: 'צריך קודם לאהוב את ה\' ואז הוא יאהב אותנו',
+        correct: false
+      }, {
+        text: 'האהבה צריכה להיות הדדית מההתחלה',
+        correct: false
+      }, {
+        text: 'אין תנאי - אפשר לאהוב בכל מצב',
+        correct: false
+      }],
+      explanation: 'אהבת ה\' לישראל היא "הבסיס והיסוד שבלעדיו לא ניתן לקיים את ואהבת". התנאי ההכרחי להשבת אהבה הוא להאמין שה\' אוהב אותנו קודם.'
+    }, {
+      q: 'מה המסר המרכזי שצריך לזכור מכל החומר על אהבת ה\' לישראל?',
+      answers: [{
+        text: 'ה\' אוהב אותנו אהבה בלי תנאי, תמיד - והכרה זו היא הבסיס לכל עבודת ה\' ולדבקות בו',
+        correct: true
+      }, {
+        text: 'צריך לקיים מצוות כדי שה\' יאהב אותנו',
+        correct: false
+      }, {
+        text: 'האהבה קיימת רק כשאנחנו צדיקים',
+        correct: false
+      }, {
+        text: 'האהבה היא רעיון תיאורטי בלבד',
+        correct: false
+      }],
+      explanation: 'המסר המרכזי: ה\' אוהב אותנו אהבה שאינה תלויה בדבר, תמיד, בכל מצב. ההכרה הזו היא הבסיס והיסוד לכל עבודת ה\' ולהגעה לדבקות - תכלית התכליות.'
+    }]
+  };
+  useEffect(() => {
+    if (currentLevel !== 'learning' && currentLevel !== 'complete') {
+      const currentQuestions = questions[currentLevel];
+      if (currentQuestion < currentQuestions.length) {
+        const question = currentQuestions[currentQuestion];
+        const shuffled = [...question.answers].sort(() => Math.random() - 0.5);
+        setShuffledAnswers(shuffled);
+      }
+    }
+  }, [currentQuestion, currentLevel]);
+  const handleAnswer = answer => {
+    if (showFeedback) return;
+    setSelectedAnswer(answer);
+    setShowFeedback(true);
+    setIsCorrect(answer.correct);
+    if (answer.correct) {
+      setScore(score + 1);
+    }
+  };
+  const nextQuestion = () => {
+    const currentQuestions = questions[currentLevel];
+    if (currentQuestion < currentQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+      setIsCorrect(false);
+    } else {
+      checkLevelCompletion();
+    }
+  };
+  const checkLevelCompletion = () => {
+    const levelData = levels[currentLevel];
+    const percentage = score / levelData.total * 100;
+    if (score >= levelData.passScore) {
+      if (currentLevel === 'hard') {
+        setCurrentLevel('complete');
+      } else {
+        const nextLevel = currentLevel === 'easy' ? 'medium' : 'hard';
+        setTimeout(() => {
+          setCurrentLevel(nextLevel);
+          setCurrentQuestion(0);
+          setScore(0);
+          setSelectedAnswer(null);
+          setShowFeedback(false);
+          setAttempts(0);
+        }, 3000);
+      }
+    } else {
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+      if (newAttempts >= 3) {
+        setTimeout(() => {
+          setCurrentLevel('learning');
+          setCurrentQuestion(0);
+          setScore(0);
+          setAttempts(0);
+        }, 3000);
+      } else {
+        setTimeout(() => {
+          setCurrentQuestion(0);
+          setScore(0);
+          setSelectedAnswer(null);
+          setShowFeedback(false);
+        }, 3000);
+      }
+    }
+  };
+  const startGame = level => {
+    setCurrentLevel(level);
+    setCurrentQuestion(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setAttempts(0);
+  };
+  if (currentLevel === 'learning') {
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        maxWidth: '900px',
+        margin: '0 auto',
+        padding: '30px',
+        fontFamily: 'Arial, sans-serif',
+        direction: 'rtl',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        minHeight: '100vh'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'white',
+        borderRadius: '20px',
+        padding: '40px',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+      }
+    }, /*#__PURE__*/React.createElement("h1", {
+      style: {
+        textAlign: 'center',
+        color: '#764ba2',
+        fontSize: '2.5em',
+        marginBottom: '20px',
+        textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
+      }
+    }, "\uD83C\uDF1F \u05D0\u05D4\u05D1\u05EA \u05D4' \u05DC\u05E2\u05DD \u05D9\u05E9\u05E8\u05D0\u05DC \uD83C\uDF1F"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        padding: '30px',
+        borderRadius: '15px',
+        marginBottom: '30px',
+        border: '3px solid #764ba2'
+      }
+    }, /*#__PURE__*/React.createElement("h2", {
+      style: {
+        color: '#667eea',
+        marginBottom: '20px'
+      }
+    }, "\uD83D\uDCD6 \u05DC\u05D9\u05DE\u05D5\u05D3 \u05D4\u05D7\u05D5\u05DE\u05E8"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        lineHeight: '1.8',
+        fontSize: '1.1em'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontWeight: 'bold',
+        fontSize: '1.3em',
+        color: '#764ba2',
+        marginBottom: '15px'
+      }
+    }, "\uD83D\uDC8E \u05D4\u05E2\u05D9\u05E7\u05E8\u05D5\u05DF \u05D4\u05DE\u05E8\u05DB\u05D6\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        background: 'white',
+        padding: '15px',
+        borderRadius: '10px',
+        marginBottom: '20px'
+      }
+    }, "\u05D0\u05D4\u05D1\u05EA \u05D4' \u05DC\u05E2\u05DD \u05D9\u05E9\u05E8\u05D0\u05DC \u05D4\u05D9\u05D0 ", /*#__PURE__*/React.createElement("strong", null, "\u05D4\u05D1\u05E1\u05D9\u05E1 \u05D5\u05D4\u05D9\u05E1\u05D5\u05D3"), " \u05E9\u05D1\u05DC\u05E2\u05D3\u05D9\u05D5 \u05DC\u05D0 \u05E0\u05D9\u05EA\u05DF \u05DC\u05E7\u05D9\u05D9\u05DD \u05D0\u05EA \u05DE\u05E6\u05D5\u05D5\u05EA \"\u05D5\u05D0\u05D4\u05D1\u05EA \u05D0\u05EA \u05D4' \u05D0\u05DC\u05D5\u05D4\u05D9\u05DA\". \u05D0\u05D4\u05D1\u05D4 \u05D6\u05D5 ", /*#__PURE__*/React.createElement("strong", null, "\u05D0\u05D9\u05E0\u05D4 \u05EA\u05DC\u05D5\u05D9\u05D4 \u05D1\u05DE\u05E2\u05E9\u05D9\u05E0\u05D5"), " - \u05D4\u05D9\u05D0 \u05DE\u05E6\u05D9\u05D0\u05D5\u05EA \u05E0\u05E6\u05D7\u05D9\u05EA \u05D5\u05D1\u05DC\u05EA\u05D9 \u05DE\u05D5\u05EA\u05E0\u05D9\u05EA! \u2728"), /*#__PURE__*/React.createElement("h3", {
+      style: {
+        color: '#667eea',
+        marginTop: '25px',
+        marginBottom: '15px'
+      }
+    }, "\uD83C\uDFAF \u05E9\u05DC\u05D5\u05E9\u05EA \u05D4\u05D1\u05D9\u05D8\u05D5\u05D9\u05D9\u05DD \u05E9\u05DC \u05D4\u05D0\u05D4\u05D1\u05D4:"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'white',
+        padding: '20px',
+        borderRadius: '10px',
+        marginBottom: '15px'
+      }
+    }, /*#__PURE__*/React.createElement("h4", {
+      style: {
+        color: '#764ba2'
+      }
+    }, "1\uFE0F\u20E3 \u05D1\u05D9\u05D8\u05D5\u05D9\u05D9\u05DD \u05DC\u05E9\u05D5\u05E0\u05D9\u05D9\u05DD - \u05DE\u05D9\u05DC\u05D9\u05DD \u05E9\u05DC \u05D7\u05D9\u05D1\u05D4"), /*#__PURE__*/React.createElement("ul", {
+      style: {
+        marginTop: '10px'
+      }
+    }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "\u05D7\u05E9\u05E7 (\u05D0\u05D4\u05D1\u05D4 \u05D1\u05D7\u05D9\u05E8\u05D9\u05D9\u05EA):"), " \u05D0\u05D4\u05D1\u05D4 \u05DC\u05DC\u05D0 \u05E9\u05D5\u05DD \u05E1\u05D9\u05D1\u05D4 - \"\u05DB\u05D9 \u05DE\u05D0\u05D4\u05D1\u05EA \u05D4' \u05D0\u05EA\u05DB\u05DD\""), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "5 \u05DC\u05E9\u05D5\u05E0\u05D5\u05EA \u05D7\u05D9\u05D1\u05D4:"), " \u05D3\u05D1\u05D9\u05E7\u05D4, \u05D7\u05E9\u05D9\u05E7\u05D4, \u05D7\u05E4\u05D9\u05E6\u05D4, \u05D0\u05D4\u05D1\u05D4, \u05D3\u05D9\u05D1\u05D5\u05E8"), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "\"\u05D1\u05E0\u05D9\u05DD \u05D0\u05EA\u05DD\":"), " \u05D4' \u05DE\u05EA\u05D9\u05D9\u05D7\u05E1 \u05DC\u05DB\u05DC \u05D9\u05D4\u05D5\u05D3\u05D9 \u05DB\u05D1\u05DF \u05D9\u05D7\u05D9\u05D3 \uD83D\uDC9D"))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'white',
+        padding: '20px',
+        borderRadius: '10px',
+        marginBottom: '15px'
+      }
+    }, /*#__PURE__*/React.createElement("h4", {
+      style: {
+        color: '#764ba2'
+      }
+    }, "2\uFE0F\u20E3 \u05DE\u05EA\u05E0\u05D5\u05EA \u05D5\u05D7\u05E1\u05D3\u05D9\u05DD - \u05E4\u05E2\u05D5\u05DC\u05D5\u05EA \u05E9\u05DC \u05D0\u05D4\u05D1\u05D4"), /*#__PURE__*/React.createElement("ul", {
+      style: {
+        marginTop: '10px'
+      }
+    }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "\u05E2\u05E0\u05E0\u05D9 \u05D4\u05DB\u05D1\u05D5\u05D3:"), " \u05DE\u05EA\u05E0\u05D4 \u05E9\u05DC\u05D0 \u05D4\u05D9\u05D9\u05EA\u05D4 \u05D4\u05DB\u05E8\u05D7\u05D9\u05EA \u2192 \"\u05D0\u05D4\u05D1\u05D4 \u05D9\u05EA\u05D9\u05E8\u05D4\" \u2601\uFE0F"), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "\u05DE\u05D0\u05D5\u05EA \u05E1\u05D5\u05D2\u05D9 \u05E4\u05D9\u05E8\u05D5\u05EA:"), " \u05E6\u05D1\u05E2\u05D9\u05DD \u05D5\u05D8\u05E2\u05DE\u05D9\u05DD \u05E8\u05E7 \u05D1\u05E9\u05D1\u05D9\u05DC \u05D4\u05E2\u05D5\u05E0\u05D2 \u05E9\u05DC\u05E0\u05D5! \uD83C\uDF4E\uD83C\uDF47\uD83C\uDF4A"), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "\u05D4\u05D1\u05E8\u05DB\u05D4:"), " \u05D4\u05D5\u05D3\u05D9\u05D4 \u05E2\u05DC \u05EA\u05E9\u05D5\u05DE\u05EA \u05D4\u05DC\u05D1 \u05D5\u05D4\u05D0\u05D4\u05D1\u05D4 \u05E9\u05D1\u05DE\u05EA\u05E0\u05D4 \uD83D\uDE4F"), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "\u05D4\u05E1\u05D5\u05DB\u05D4:"), " \"\u05D7\u05D1\u05D9\u05E7\u05D4 \u05DE\u05D4' \u05DB\u05DC \u05D4\u05D7\u05D2 \u05DB\u05D5\u05DC\u05D5\" \uD83C\uDFE0"))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'white',
+        padding: '20px',
+        borderRadius: '10px',
+        marginBottom: '15px'
+      }
+    }, /*#__PURE__*/React.createElement("h4", {
+      style: {
+        color: '#764ba2'
+      }
+    }, "3\uFE0F\u20E3 \u05D0\u05D4\u05D1\u05D4 \u05D1\u05D6\u05DE\u05E0\u05D9 \u05E7\u05D5\u05E9\u05D9 - \u05D0\u05D4\u05D1\u05D4 \u05E0\u05E1\u05EA\u05E8\u05EA"), /*#__PURE__*/React.createElement("ul", {
+      style: {
+        marginTop: '10px'
+      }
+    }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "\u05D9\u05E1\u05D5\u05E8\u05D9\u05DD:"), " \"\u05DE\u05D9 \u05E9\u05D4' \u05D7\u05E4\u05E5 \u05D1\u05D5 \u05DE\u05D3\u05DB\u05D0\u05D5\" - \u05D3\u05E8\u05DA \u05DC\u05D4\u05D1\u05D9\u05D0 \u05D0\u05D5\u05EA\u05E0\u05D5 \u05DC\u05E9\u05DC\u05D9\u05DE\u05D5\u05EA \uD83D\uDCAA"), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "\u05D1\u05D6\u05DE\u05DF \u05D7\u05D8\u05D0:"), " \"\u05DC\u05D0 \u05DE\u05D1\u05D9\u05D8 \u05D1\u05E2\u05D5\u05D5\u05DF\" - \u05D4' \u05D0\u05D5\u05D4\u05D1 \u05D2\u05DD \u05DB\u05E9\u05D7\u05D8\u05D0\u05E0\u05D5 \uD83E\uDD32"), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "\u05D1\u05D2\u05DC\u05D5\u05EA:"), " \u05D4' \u05DE\u05E9\u05E8\u05D4 \u05E9\u05DB\u05D9\u05E0\u05EA\u05D5 \u05E2\u05DD \u05D9\u05E9\u05E8\u05D0\u05DC \u05D2\u05DD \u05D1\u05E6\u05E8\u05D4 \uD83D\uDD4A\uFE0F"), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "\"\u05D4' \u05E6\u05DC\u05DA\":"), " \u05DB\u05DE\u05D5 \u05E9\u05D0\u05E0\u05D9 \u05DE\u05E8\u05D2\u05D9\u05E9 \u05D0\u05D4\u05D1\u05D4 - \u05DB\u05DA \u05D4\u05D5\u05D0 \u05DE\u05EA\u05E0\u05D4\u05D2 \u05D0\u05D9\u05EA\u05D9 \uD83D\uDD04"))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        padding: '20px',
+        borderRadius: '10px',
+        marginTop: '25px',
+        textAlign: 'center',
+        fontSize: '1.2em',
+        fontWeight: 'bold'
+      }
+    }, "\uD83C\uDFAF \u05D4\u05DE\u05D8\u05E8\u05D4: \u05DC\u05D4\u05D2\u05D9\u05E2 \u05DC\u05D3\u05E8\u05D2\u05EA \u05D4\u05D3\u05D1\u05E7\u05D5\u05EA - \u05EA\u05DB\u05DC\u05D9\u05EA \u05D4\u05EA\u05DB\u05DC\u05D9\u05D5\u05EA! \uD83C\uDFAF"))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: 'center'
+      }
+    }, /*#__PURE__*/React.createElement("h3", {
+      style: {
+        color: '#667eea',
+        marginBottom: '20px'
+      }
+    }, "\u05D1\u05D7\u05E8 \u05E8\u05DE\u05EA \u05E7\u05D5\u05E9\u05D9 \u05DC\u05D4\u05EA\u05D7\u05DC\u05EA \u05D4\u05DE\u05E9\u05D7\u05E7:"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        gap: '20px',
+        justifyContent: 'center',
+        flexWrap: 'wrap'
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => startGame('easy'),
+      style: {
+        padding: '20px 40px',
+        fontSize: '1.3em',
+        background: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
+        border: 'none',
+        borderRadius: '15px',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+        boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
+        transition: 'transform 0.2s'
+      },
+      onMouseOver: e => e.target.style.transform = 'scale(1.05)',
+      onMouseOut: e => e.target.style.transform = 'scale(1)'
+    }, "\uD83C\uDF31 \u05E7\u05DC", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: '0.8em'
+      }
+    }, "10 \u05E9\u05D0\u05DC\u05D5\u05EA | 80%")), /*#__PURE__*/React.createElement("button", {
+      onClick: () => startGame('medium'),
+      style: {
+        padding: '20px 40px',
+        fontSize: '1.3em',
+        background: 'linear-gradient(135deg, #ffd89b 0%, #19547b 100%)',
+        border: 'none',
+        borderRadius: '15px',
+        cursor: 'pointer',
+        color: 'white',
+        fontWeight: 'bold',
+        boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
+        transition: 'transform 0.2s'
+      },
+      onMouseOver: e => e.target.style.transform = 'scale(1.05)',
+      onMouseOut: e => e.target.style.transform = 'scale(1)'
+    }, "\uD83C\uDFAF \u05D1\u05D9\u05E0\u05D5\u05E0\u05D9", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: '0.8em'
+      }
+    }, "15 \u05E9\u05D0\u05DC\u05D5\u05EA | 85%")), /*#__PURE__*/React.createElement("button", {
+      onClick: () => startGame('hard'),
+      style: {
+        padding: '20px 40px',
+        fontSize: '1.3em',
+        background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        border: 'none',
+        borderRadius: '15px',
+        cursor: 'pointer',
+        color: 'white',
+        fontWeight: 'bold',
+        boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
+        transition: 'transform 0.2s'
+      },
+      onMouseOver: e => e.target.style.transform = 'scale(1.05)',
+      onMouseOut: e => e.target.style.transform = 'scale(1)'
+    }, "\uD83D\uDD25 \u05E7\u05E9\u05D4", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: '0.8em'
+      }
+    }, "20 \u05E9\u05D0\u05DC\u05D5\u05EA | 90%")))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: '40px',
+        padding: '20px',
+        background: '#f8f9fa',
+        borderRadius: '10px',
+        textAlign: 'center',
+        borderTop: '3px solid #764ba2'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontWeight: 'bold',
+        fontSize: '1.1em',
+        marginBottom: '5px'
+      }
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '1.2em',
+        color: '#667eea',
+        fontWeight: 'bold'
+      }
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '1.1em',
+        color: '#764ba2'
+      }
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+  }
+  if (currentLevel === 'complete') {
+    const totalQuestions = levels.easy.total + levels.medium.total + levels.hard.total;
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        maxWidth: '800px',
+        margin: '0 auto',
+        padding: '30px',
+        fontFamily: 'Arial, sans-serif',
+        direction: 'rtl',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'white',
+        borderRadius: '20px',
+        padding: '50px',
+        textAlign: 'center',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
+      }
+    }, /*#__PURE__*/React.createElement("h1", {
+      style: {
+        fontSize: '3em',
+        color: '#764ba2',
+        marginBottom: '30px',
+        animation: 'pulse 2s infinite'
+      }
+    }, "\uD83C\uDFC6 \u05DE\u05D3\u05D4\u05D9\u05DD! \u05D4\u05E9\u05DC\u05DE\u05EA \u05D0\u05EA \u05DB\u05DC \u05D4\u05E8\u05DE\u05D5\u05EA! \uD83C\uDFC6"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'linear-gradient(135deg, #ffd89b 0%, #19547b 100%)',
+        padding: '30px',
+        borderRadius: '15px',
+        color: 'white',
+        fontSize: '1.5em',
+        marginBottom: '30px'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      style: {
+        marginBottom: '15px'
+      }
+    }, "\u2B50 \u05E2\u05D1\u05E8\u05EA \u05D0\u05EA \u05DB\u05DC 3 \u05D4\u05E8\u05DE\u05D5\u05EA \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4! \u2B50"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '1.2em',
+        fontWeight: 'bold'
+      }
+    }, "\uD83C\uDF89 \u05D0\u05EA\u05D4 \u05E9\u05D5\u05DC\u05D8 \u05D1\u05D7\u05D5\u05DE\u05E8 \u05D1\u05D0\u05D5\u05E4\u05DF \u05DE\u05E2\u05D5\u05DC\u05D4! \uD83C\uDF89")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: '#f8f9fa',
+        padding: '25px',
+        borderRadius: '15px',
+        marginBottom: '30px'
+      }
+    }, /*#__PURE__*/React.createElement("h2", {
+      style: {
+        color: '#667eea',
+        marginBottom: '20px'
+      }
+    }, "\uD83D\uDCA1 \u05E9\u05D0\u05DC\u05D5\u05EA \u05DC\u05D4\u05E2\u05DE\u05E7\u05D4 \u05D5\u05D4\u05DE\u05E9\u05DA:"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: 'right',
+        lineHeight: '2'
+      }
+    }, /*#__PURE__*/React.createElement("p", null, "\uD83E\uDD14 \u05D0\u05D9\u05DA \u05D0\u05D5\u05DB\u05DC \u05DC\u05D9\u05D9\u05E9\u05DD \u05D0\u05EA \u05D4\u05E2\u05D9\u05E7\u05E8\u05D5\u05DF \u05E9\u05DC \"\u05D0\u05D4\u05D1\u05D4 \u05E9\u05D0\u05D9\u05E0\u05D4 \u05EA\u05DC\u05D5\u05D9\u05D4 \u05D1\u05D3\u05D1\u05E8\" \u05D1\u05D7\u05D9\u05D9 \u05D4\u05D9\u05D5\u05DE\u05D9\u05D5\u05DD?"), /*#__PURE__*/React.createElement("p", null, "\uD83E\uDD14 \u05D1\u05D0\u05D9\u05DC\u05D5 \u05DE\u05E6\u05D1\u05D9\u05DD \u05D1\u05D7\u05D9\u05D9\u05DD \u05E9\u05DC\u05D9 \u05D0\u05E0\u05D9 \u05D9\u05DB\u05D5\u05DC \u05DC\u05D6\u05D4\u05D5\u05EA \u05D0\u05EA \"\u05D0\u05D4\u05D1\u05EA \u05D4' \u05D1\u05D6\u05DE\u05E0\u05D9 \u05E7\u05D5\u05E9\u05D9\"?"), /*#__PURE__*/React.createElement("p", null, "\uD83E\uDD14 \u05D0\u05D9\u05DA \u05D4\u05D4\u05D1\u05E0\u05D4 \u05E9\u05D4' \u05D0\u05D5\u05D4\u05D1 \u05D0\u05D5\u05EA\u05D9 \u05DC\u05DC\u05D0 \u05EA\u05E0\u05D0\u05D9 \u05DE\u05E9\u05E0\u05D4 \u05D0\u05EA \u05D4\u05D3\u05E8\u05DA \u05E9\u05D1\u05D4 \u05D0\u05E0\u05D9 \u05DE\u05EA\u05E4\u05DC\u05DC?"), /*#__PURE__*/React.createElement("p", null, "\uD83E\uDD14 \u05DE\u05D4 \u05D0\u05D5\u05DB\u05DC \u05DC\u05E2\u05E9\u05D5\u05EA \u05DB\u05D3\u05D9 \u05DC\u05D4\u05E8\u05D2\u05D9\u05E9 \u05D9\u05D5\u05EA\u05E8 \u05D0\u05EA \"\u05EA\u05E9\u05D5\u05DE\u05EA \u05D4\u05DC\u05D1 \u05D5\u05D4\u05D0\u05D4\u05D1\u05D4\" \u05E9\u05D1\u05DB\u05DC \u05DE\u05EA\u05E0\u05D4 \u05DE\u05D4'?"))), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setCurrentLevel('learning'),
+      style: {
+        padding: '20px 50px',
+        fontSize: '1.5em',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '15px',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+        boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
+        marginBottom: '30px'
+      }
+    }, "\uD83D\uDD04 \u05D7\u05D6\u05D5\u05E8 \u05DC\u05DE\u05E1\u05DA \u05D4\u05D1\u05D9\u05EA"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: '30px',
+        padding: '20px',
+        background: '#f8f9fa',
+        borderRadius: '10px',
+        textAlign: 'center',
+        borderTop: '3px solid #764ba2'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontWeight: 'bold',
+        fontSize: '1.1em',
+        marginBottom: '5px'
+      }
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '1.2em',
+        color: '#667eea',
+        fontWeight: 'bold'
+      }
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '1.1em',
+        color: '#764ba2'
+      }
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+  }
+  const currentQuestions = questions[currentLevel];
+  const currentQ = currentQuestions[currentQuestion];
+  const levelData = levels[currentLevel];
+  const progress = (currentQuestion + 1) / levelData.total * 100;
+  const currentScore = (score / (currentQuestion + 1) * 100).toFixed(0);
+  if (currentQuestion >= currentQuestions.length) {
+    const percentage = score / levelData.total * 100;
+    const passed = score >= levelData.passScore;
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        maxWidth: '800px',
+        margin: '0 auto',
+        padding: '30px',
+        fontFamily: 'Arial, sans-serif',
+        direction: 'rtl',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: 'white',
+        borderRadius: '20px',
+        padding: '40px',
+        textAlign: 'center',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
+      }
+    }, /*#__PURE__*/React.createElement("h2", {
+      style: {
+        fontSize: '2.5em',
+        color: passed ? '#28a745' : '#667eea',
+        marginBottom: '20px'
+      }
+    }, passed ? '🎉 כל הכבוד! 🎉' : '💪 התחלה טובה! 💪'), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: passed ? 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)' : 'linear-gradient(135deg, #ffd89b 0%, #19547b 100%)',
+        padding: '30px',
+        borderRadius: '15px',
+        marginBottom: '25px',
+        color: passed ? '#000' : '#fff'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '2em',
+        fontWeight: 'bold',
+        marginBottom: '10px'
+      }
+    }, score, " / ", levelData.total), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '1.5em'
+      }
+    }, percentage.toFixed(0), "% \u05D4\u05E6\u05DC\u05D7\u05D4")), passed ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '1.3em',
+        marginBottom: '20px',
+        color: '#28a745'
+      }
+    }, percentage >= 95 ? '⭐ מדהים! אתה שולט בחומר! ⭐' : '✨ מצוין! עברת את הרמה! ✨'), currentLevel !== 'hard' && /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '1.2em',
+        color: '#667eea',
+        marginBottom: '20px'
+      }
+    }, "\uD83D\uDE80 \u05E4\u05D5\u05EA\u05D7 \u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4... \uD83D\uDE80"), currentLevel === 'hard' && /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '1.2em',
+        color: '#764ba2',
+        marginBottom: '20px'
+      }
+    }, "\uD83C\uDFC6 \u05D4\u05E9\u05DC\u05DE\u05EA \u05D0\u05EA \u05DB\u05DC \u05D4\u05E8\u05DE\u05D5\u05EA \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4! \uD83C\uDFC6")) : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '1.3em',
+        marginBottom: '20px',
+        color: '#667eea'
+      }
+    }, "\u05E0\u05D3\u05E8\u05E9\u05D9\u05DD ", levelData.passScore, " \u05EA\u05E9\u05D5\u05D1\u05D5\u05EA \u05E0\u05DB\u05D5\u05E0\u05D5\u05EA (", levelData.percentage, "%) \u05DC\u05DE\u05E2\u05D1\u05E8 \u05DC\u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '1.1em',
+        color: '#764ba2'
+      }
+    }, attempts < 2 ? '💡 נסה שוב - אתה יכול!' : '🌱 מומלץ לחזור על החומר'))));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxWidth: '900px',
+      margin: '0 auto',
+      padding: '20px',
+      fontFamily: 'Arial, sans-serif',
+      direction: 'rtl',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      minHeight: '100vh'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: 'white',
+      borderRadius: '20px',
+      padding: '30px',
+      boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: '25px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '15px'
+    }
+  }, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      color: '#764ba2',
+      margin: 0,
+      fontSize: '2em'
+    }
+  }, "\u05E8\u05DE\u05D4: ", levelData.name, " ", currentLevel === 'easy' ? '🌱' : currentLevel === 'medium' ? '🎯' : '🔥'), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'left'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '1.5em',
+      fontWeight: 'bold',
+      color: '#667eea'
+    }
+  }, score, " / ", currentQuestion + 1), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '0.9em',
+      color: '#666'
+    }
+  }, currentScore, "% \u05E0\u05DB\u05D5\u05DF \u05E2\u05D3 \u05DB\u05D4"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: '#e0e0e0',
+      borderRadius: '10px',
+      height: '15px',
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+      width: `${progress}%`,
+      height: '100%',
+      transition: 'width 0.3s ease',
+      borderRadius: '10px'
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'center',
+      marginTop: '5px',
+      color: '#666',
+      fontSize: '0.9em'
+    }
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, " \u05DE\u05EA\u05D5\u05DA ", levelData.total)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      padding: '25px',
+      borderRadius: '15px',
+      marginBottom: '25px',
+      border: '3px solid #667eea'
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontSize: '1.4em',
+      lineHeight: '1.6',
+      color: '#333',
+      margin: 0
+    }
+  }, currentQ.q)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: '25px'
+    }
+  }, shuffledAnswers.map((answer, index) => {
+    const isSelected = selectedAnswer === answer;
+    const showResult = showFeedback && isSelected;
+    let buttonStyle = {
+      width: '100%',
+      padding: '20px',
+      marginBottom: '15px',
+      fontSize: '1.1em',
+      textAlign: 'right',
+      border: '2px solid #ddd',
+      borderRadius: '12px',
+      cursor: showFeedback ? 'default' : 'pointer',
+      background: 'white',
+      transition: 'all 0.3s ease',
+      lineHeight: '1.6'
+    };
+    if (showResult) {
+      if (answer.correct) {
+        buttonStyle = {
+          ...buttonStyle,
+          background: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
+          border: '3px solid #28a745',
+          transform: 'scale(1.02)',
+          fontWeight: 'bold'
+        };
+      } else {
+        buttonStyle = {
+          ...buttonStyle,
+          background: 'linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%)',
+          border: '3px solid #dc3545',
+          fontWeight: 'bold'
+        };
+      }
+    }
+    return /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => handleAnswer(answer),
+      disabled: showFeedback,
+      style: buttonStyle,
+      onMouseOver: e => {
+        if (!showFeedback) {
+          e.target.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+          e.target.style.color = 'white';
+          e.target.style.transform = 'translateX(-5px)';
+        }
+      },
+      onMouseOut: e => {
+        if (!showFeedback) {
+          e.target.style.background = 'white';
+          e.target.style.color = 'black';
+          e.target.style.transform = 'translateX(0)';
+        }
+      }
+    }, answer.text);
+  })), showFeedback && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '25px',
+      borderRadius: '15px',
+      marginBottom: '20px',
+      background: isCorrect ? 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)' : 'linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%)',
+      border: `3px solid ${isCorrect ? '#28a745' : '#ff7675'}`,
+      animation: 'slideIn 0.3s ease'
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontSize: '1.5em',
+      marginBottom: '15px',
+      color: isCorrect ? '#28a745' : '#d63031'
+    }
+  }, isCorrect ? '🎉 מצוין! פצצה! ⭐' : '🤔 לא בדיוק... 💡'), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: '1.1em',
+      lineHeight: '1.6',
+      color: '#333'
+    }
+  }, currentQ.explanation), !isCorrect && /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: '1em',
+      marginTop: '15px',
+      color: '#d63031',
+      fontWeight: 'bold'
+    }
+  }, "\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1! \u05D0\u05EA\u05D4 \u05D9\u05DB\u05D5\u05DC! \uD83D\uDCAA"), /*#__PURE__*/React.createElement("button", {
+    onClick: nextQuestion,
+    style: {
+      marginTop: '20px',
+      padding: '15px 40px',
+      fontSize: '1.2em',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      color: 'white',
+      border: 'none',
+      borderRadius: '10px',
+      cursor: 'pointer',
+      fontWeight: 'bold',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
+    }
+  }, currentQuestion < currentQuestions.length - 1 ? 'שאלה הבאה ➡️' : 'סיים רמה ✅')), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: '30px',
+      padding: '20px',
+      background: '#f8f9fa',
+      borderRadius: '10px',
+      textAlign: 'center',
+      borderTop: '3px solid #764ba2'
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontWeight: 'bold',
+      fontSize: '1.1em',
+      marginBottom: '5px'
+    }
+  }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: '1.2em',
+      color: '#667eea',
+      fontWeight: 'bold'
+    }
+  }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: '1.1em',
+      color: '#764ba2'
+    }
+  }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))), /*#__PURE__*/React.createElement("style", null, `
+          @keyframes slideIn {
+            from {
+              opacity: 0;
+              transform: translateY(-20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          @keyframes pulse {
+            0%, 100% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.05);
+            }
+          }
+        `));
+};
+const __App = AhavatHashemGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

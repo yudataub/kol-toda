@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>smile-learning-game – הקול החמישי</title>
+<meta name="description" content="Learn about the power of smiles through an engaging Hebrew educational game with 3 difficulty levels, instant feedback, and progress tracking.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="smile-learning-game – הקול החמישי">
+<meta property="og:description" content="Learn about the power of smiles through an engaging Hebrew educational game with 3 difficulty levels, instant feedback, and progress tracking.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-8a7345a8.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/8a7345a8.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Smile = window.LucideReact["Smile"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Sun = window.LucideReact["Sun"] || window.LucideReact.Circle;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const CheckCircle = window.LucideReact["CheckCircle"] || window.LucideReact.Circle;
+const XCircle = window.LucideReact["XCircle"] || window.LucideReact.Circle;
+const ArrowRight = window.LucideReact["ArrowRight"] || window.LucideReact.Circle;
+const BookOpen = window.LucideReact["BookOpen"] || window.LucideReact.Circle;
+const Brain = window.LucideReact["Brain"] || window.LucideReact.Circle;
+const Lightbulb = window.LucideReact["Lightbulb"] || window.LucideReact.Circle;
+
+// ============= נתוני השאלות =============
+
+const questionsData = {
+  easy: [{
+    id: 1,
+    question: "לפי הכרזות, מהי הדרך הטובה ביותר להתחיל את הבוקר או את השנה?",
+    options: ["עם ארוחת בוקר גדולה", "עם ריצת בוקר מהירה", "עם חיוך", "עם קריאת ספר"],
+    correct: 2,
+    explanation: "הכרזות 'בוקר טוב מתחילים בחיוך' ו'שנה חדשה מתחילה בחיוך' מדגישות שחיוך הוא הפעולה הראשונה והחשובה ביותר.",
+    tip: "כל התחלה היא הזדמנות חדשה. מחר בבוקר, הדבר הראשון שתעשה יהיה לחייך! 😊"
+  }, {
+    id: 2,
+    question: "מה יכול לקרות אם נתחיל את היום בחיוך?",
+    options: ["כל היום יהיה מושלם וללא שום קשיים", "החיוך יכול להשפיע לטובה על ההרגשה שלנו ושל אחרים", "נרגיש עייפים יותר כי בזבזנו אנרגיה על החיוך", "זה לא ישנה דבר, כי היום תלוי רק במזל"],
+    correct: 1,
+    explanation: "חיוך יוצר 'אפקט דומינו' חיובי, המשפיע על מצב הרוח שלנו ועל האווירה סביבנו.",
+    tip: "יש לך יותר כוח ממה שאתה חושב על ההרגשה שלך! 💪"
+  }, {
+    id: 3,
+    question: "כיצד מתואר החיוך מבחינה פיזית?",
+    options: ["כיווץ של המצח", "תנועה מהירה של העיניים", "מתיחת שרירי הפנים מקו ישר לקו מתעגל", "הרמת הכתפיים"],
+    correct: 2,
+    explanation: "החיוך הוא 'מתיחת שרירי הפנים ממצב סרגל ישר למצב של סרגל הנדסי מתעגל' - הפיכת קו ישר לקשת.",
+    tip: "הגוף שלך הוא כלי נגינה, והבעות הפנים הן המנגינות שאתה מנגן! 🎵"
+  }, {
+    id: 4,
+    question: "מה פירוש המושג 'חיוך מדבק'?",
+    options: ["חיוך שגורם למחלות", "חיוך שגורם לאנשים אחרים לרצות לחייך גם כן", "חיוך שמופיע רק כשאנחנו חולים", "חיוך שנשאר על הפנים למשך זמן רב"],
+    correct: 1,
+    explanation: "בדיוק כמו שמחלה יכולה לעבור מאדם לאדם, כך גם חיוך יכול 'לעבור' ולהשפיע על אחרים לחייך.",
+    tip: "החיוך שלך היום יכול להיות קרן האור ביומו של מישהו אחר! ⭐"
+  }, {
+    id: 5,
+    question: "מה הקשר בין חיוך לרגש השמחה?",
+    options: ["אין ביניהם שום קשר", "חיוך הוא הדרך של הפנים להראות שאנחנו שמחים", "אנשים שמחים אף פעם לא מחייכים", "חיוך גורם לנו להיות עצובים"],
+    correct: 1,
+    explanation: "חיוך הוא הביטוי הפיזי המובהק ביותר של רגש השמחה. כאשר אנו חווים שמחה, הגוף מגיב באופן טבעי.",
+    tip: "למד לזהות את הרגשות שלך ולתת להם ביטוי בריא! 💚"
+  }, {
+    id: 6,
+    question: "מדוע חיוך הוא כמו מתנה מיוחדת?",
+    options: ["כי צריך לעטוף אותו בנייר יפה", "כי הוא יקר מאוד", "כי אפשר לתת אותו לכל אחד, והוא לא עולה כסף", "כי אפשר לקנות אותו רק בחנויות מיוחדות"],
+    correct: 2,
+    explanation: "הייחוד של החיוך כמתנה הוא שהוא נגיש לכולם, אינו דורש משאבים חומריים, ועדיין יש לו ערך רגשי עצום.",
+    tip: "הערך האמיתי של מתנה נמדד במחשבה וברגש שמאחוריה! 🎁"
+  }, {
+    id: 7,
+    question: "מה גרם לאיש בסיפור 'החיוך שהציל' להרגיש טוב יותר?",
+    options: ["הוא קיבל כסף מאדם זר", "הוא קיבל חיוך רחב, אוהב ומילת 'שלום' מאדם זר", "הוא מצא חפץ יקר ברחוב", "הוא נזכר בבדיחה מצחיקה"],
+    correct: 1,
+    explanation: "החיוך והברכה הפשוטה, ולא שום דבר חומרי, היו להם את הכוח לשנות את מצבו של האיש ולתת לו תקווה.",
+    tip: "לעולם איננו יודעים את מלוא כוחנו. מעשה קטן שלך יכול להיות נס גדול! ✨"
+  }, {
+    id: 8,
+    question: "לפי מה שלמדנו, מהי דרך מהירה להתחבב על אנשים?",
+    options: ["לספר להם את כל הסודות שלנו", "להראות להם כמה אנחנו חכמים", "לתת להם חיוך", "להתעלם מהם"],
+    correct: 2,
+    explanation: "המקור מציין שחיוך גורם לנו להתחבב על אנשים תוך 4 שניות, מה שהופך אותו לכלי חברתי מהיר ויעיל.",
+    tip: "הצעד הראשון ליצירת חברות הוא לפעמים רק חיוך! 😊"
+  }, {
+    id: 9,
+    question: "מה חיוך יכול 'לומר' מבלי להשתמש במילים?",
+    options: ["שלום, תודה, או שאנחנו שמחים לראות מישהו", "הוראות מסובכות להרכבת רהיטים", "את התשובות למבחן במתמטיקה", "את תחזית מזג האוויר למחר"],
+    correct: 0,
+    explanation: "חיוך משמש לתקשורת רגשית וחברתית בסיסית. הוא יכול להעביר מסרים פשוטים של ברכה, הכרת תודה וחיבה.",
+    tip: "למד 'להקשיב' גם לשפת הגוף ולחיוכים של אנשים! 👀"
+  }, {
+    id: 10,
+    question: "מהי סיבה אפשרית לכך שאדם לא מחייך?",
+    options: ["הוא מרגיש עצוב, כועס או עייף", "הוא תמיד שמח ומאושר", "הוא רוצה להראות לכולם כמה הוא חזק", "הוא אף פעם לא מרגיש שום רגש"],
+    correct: 0,
+    explanation: "יש מגוון רחב של רגשות, וחיוך מבטא בעיקר שמחה. כאשר אדם חווה רגשות אחרים, טבעי שהוא לא יחייך.",
+    tip: "כל הרגשות שלנו לגיטימיים וחשובים, גם אלו הפחות נעימים! 💙"
+  }],
+  medium: [{
+    id: 11,
+    question: "איזו השפעה פיזיולוגית חיובית יש לחיוך על הגוף?",
+    options: ["הוא מעלה את לחץ הדם", "הוא מפחית ייצור של הורמוני סטרס", "הוא גורם לעייפות רבה", "הוא מגביר את תחושת הכאב"],
+    correct: 1,
+    explanation: "חיוך מפחית את ייצור הורמוני הסטרס קורטיזול ואדרנלין, ועוזר לגוף להירגע ולהתאזן.",
+    tip: "הקשר בין גוף לנפש חזק מאוד. דאג לנפש שלך, ואתה דואג גם לגוף! 🌟"
+  }, {
+    id: 12,
+    question: "מהו 'המעגל החיובי' שנוצר בין המוח לחיוך?",
+    options: ["עצב במוח גורם לחיוך, וחיוך גורם לעוד עצב", "שמחה במוח גורמת לחיוך, וחיוך גורם לעוד שמחה במוח", "כעס במוח גורם לחיוך, וחיוך גורם לעוד כעס", "אין קשר בין פעולת החיוך למה שקורה במוח"],
+    correct: 1,
+    explanation: "זהו מעגל משוב חיובי: שמחה → חיוך → עוד שמחה. אפשר להשתמש בחיוך באופן יזום כדי לשפר מצב רוח!",
+    tip: "יש לך את היכולת להשפיע באופן פעיל על הרגשות שלך! 💪"
+  }, {
+    id: 13,
+    question: "לפי 'פניני חיוך', מהו החסד הגדול והנגיש ביותר?",
+    options: ["תרומה של סכום כסף גדול", "התנדבות של שעות רבות", "חיוך לזולת, מילה טובה או טפיחה על השכם", "בניית בית עבור עניים"],
+    correct: 2,
+    explanation: "שלושת אלו הם 'החסד הכי גדול' וגם 'הכי נגיש' - כל אדם יכול להעניק אותם בכל רגע.",
+    tip: "אל תחכה להזדמנויות הגדולות לעשות טוב. העוצמה נמצאת במעשים הקטנים! ✨"
+  }, {
+    id: 14,
+    question: "מדוע החיוך נמשל דווקא לחלב?",
+    options: ["כי לשניהם יש צבע לבן", "כי חלב, בדומה לחיוך, עונה על מספר צרכים בו-זמנית", "כי חיוך הוא טעים כמו חלב", "כי רק תינוקות שותים חלב ומחייכים"],
+    correct: 1,
+    explanation: "כשם שחלב מספק מענה מקיף לצרכים פיזיים (צמא ורעב), כך חיוך מספק מענה מקיף לצרכים רגשיים (הכרה, אהבה, ערך).",
+    tip: "היה קשוב לא רק לצרכים הפיזיים אלא גם לצרכים הרגשיים של חבריך! 💚"
+  }, {
+    id: 15,
+    question: "מה ההבדל המרכזי בין 'מחייך' ל'מלבין שיניים'?",
+    options: ["'מחייך' זה עם פה סגור, ו'מלבין שיניים' זה עם פה פתוח", "'מחייך' הוא חיוך מאולץ, בעוד 'מלבין שיניים' הוא חיוך רחב ואמיתי מהלב", "'מחייך' זה חיוך של אנשים עצובים", "אין שום הבדל"],
+    correct: 1,
+    explanation: "ההבחנה היא בין חיוך מאולץ (הבא מדרך-ארץ) לבין חיוך אותנטי מהלב, שהוא רחב ומגלה שיניים.",
+    tip: "כנות היא חשובה בקשרים. השתדל שהחיוכים שלך יבואו ממקום אמיתי! 😊"
+  }, {
+    id: 16,
+    question: "מה נתן אבי משפחת קלין לניצול השואה הרעב?",
+    options: ["כריך גדול וכוס מיץ", "שטר של כסף", "את ליבו – חיבוק, תמיכה ומילים חמות", "בגדים חדשים"],
+    correct: 2,
+    explanation: "הדבר היחיד שהיה לו להציע היה נתינה רגשית: 'דבר אחד יש לי - לב. את הלב שלי אני נותן לך'.",
+    tip: "לעולם אל תחשוב שאין לך מה לתת. יש לך לב, ולפעמים זה הדבר היקר ביותר! 💖"
+  }, {
+    id: 17,
+    question: "מה גרם לשינוי הגדול בחייו של הבחור ה'בינוני מינוס'?",
+    options: ["הוא קיבל ציון גבוה במבחן", "הוא קיבל פרס כספי גדול", "הוא קיבל מחמאה פשוטה וחיוך מרבי שלום בער", "הוא החליט לעזוב את הישיבה"],
+    correct: 2,
+    explanation: "המחמאה הפשוטה והמילים הטהורות שינו אותו לחלוטין והפכו אותו מ'בינוני מינוס' ל'מצוין פלוס'.",
+    tip: "יש לך אחריות עצומה במילים שלך. בחר להשתמש בהן כדי לבנות! 🌱"
+  }, {
+    id: 18,
+    question: "מהי מטרת המבחן העצמי בשיעור 18?",
+    options: ["לתת לנו ציון מספרי על כמה אנחנו טובים", "להשוות אותנו לחברים שלנו", "לעזור לנו לבחון את עצמנו בכנות ולהעלות את המודעות", "להוכיח שכולנו אנשים רציניים מאוד"],
+    correct: 2,
+    explanation: "מבחן עצמי נועד לעורר רפלקציה ומודעות אישית כדי לאפשר שיפור והתפתחות.",
+    tip: "מודעות עצמית היא המפתח לצמיחה. הכר את עצמך - חוזקות וחולשות! 🔍"
+  }, {
+    id: 19,
+    question: "מדוע חיוך והומור מושווים ל'פיתיון' של דייג?",
+    options: ["כי שניהם מריחים מדגים", "כי זו דרך אפקטיבית 'למשוך' תגובה חיובית ומהירה מאנשים", "כי צריך ללכת לים כדי להשתמש בהם", "כי רק דייגים יודעים איך לחייך"],
+    correct: 1,
+    explanation: "כמו שפיתיון מושך דג, כך הומור וחיוך מושכים תגובה חיובית ויוצרים קשר חברתי מהיר.",
+    tip: "תקשורת יעילה היא מיומנות נרכשת. למד את הכלים הנכונים! 🎣"
+  }, {
+    id: 20,
+    question: "איזה מהתחומים הבאים אינו מושפע ישירות מהחיוך?",
+    options: ["בריאות הגוף", "מצב הרוח והנפש", "קשרים חברתיים", "מזג האוויר"],
+    correct: 3,
+    explanation: "למדנו על השפעות החיוך על הגוף, הנפש והחברה, אך אין לו השפעה על תופעות טבע כמו מזג האוויר.",
+    tip: "חשוב להבחין בין הדברים שבשליטתך לבין הדברים שאינם בשליטתך! ☀️"
+  }],
+  hard: [{
+    id: 21,
+    question: "מהו הגורם המרכזי שמעורר צחוק, על פי ההסבר?",
+    options: ["חזרה על דברים מוכרים וידועים", "מצבים הגיוניים וצפויים מראש", "שבירה פתאומית של ציפיות", "סיפורים עצובים ומרגשים"],
+    correct: 2,
+    explanation: "צחוק נובע משינוי פתאומי בציפיות שלנו. הפתעה, אירוניה ואבסורד הם כולם דוגמאות לשבירת ציפיות.",
+    tip: "החיים מלאים בהפתעות. לפעמים, אם נסתכל עליהן נכון, הן יכולות להיות מקור לשמחה! 🎭"
+  }, {
+    id: 22,
+    question: "על פי ההסבר, מהם שני סוגי האינטליגנציה הדרושים לצחוק?",
+    options: ["אינטליגנציה מוזיקלית ומרחבית", "אינטליגנציה שכלית (להבין את הפאנץ') ואינטליגנציה רגשית (להרגיש שמחה)", "אינטליגנציה גופנית ולשונית", "רק אינטליגנציה שכלית מספיקה"],
+    correct: 1,
+    explanation: "צריך גם להבין את הבדיחה (שכלי) וגם להרגיש שמחה ממנה (רגשי). שני המרכיבים הכרחיים!",
+    tip: "חכמה נמדדת בהרבה דרכים - גם בציונים וגם ביכולת להבין רגשות! 🧠💗"
+  }, {
+    id: 23,
+    question: "מדוע בכה רבי אלימלך בתחילת הסיפור?",
+    options: ["כי הוא פחד מהשומרים", "כי הוא היה רעב וצמא", "כי המקום המטונף מנע ממנו לקיים את מצוות תפילת מנחה", "כי אחיו העליב אותו"],
+    correct: 2,
+    explanation: "רבי אלימלך הצטער על כך שהמקום אינו ראוי לתפילה והוא לא יכול לקיים את המצווה.",
+    tip: "גם הצער על כך שאיננו יכולים לעשות טוב הוא דבר יקר! 💚"
+  }, {
+    id: 24,
+    question: "כיצד הפך רבי זושא את הייאוש לשמחה?",
+    options: ["הוא סיפר בדיחה מצחיקה", "הוא שינה את נקודת המבט: במקום להתמקד במצווה שאי אפשר לקיים, הוא התמקד במצווה שכן אפשר", "הוא הבטיח תפילה ארוכה אחר כך", "הוא ניקה את החדר"],
+    correct: 1,
+    explanation: "רבי זושא ביצע 'חשיבה מחודשת' והראה שגם באי-התפילה יש קיום מצווה של עשיית רצון ה'.",
+    tip: "כמעט בכל מצב אפשר למצוא נקודת אור. האתגר הוא לשנות את זווית הראייה! 🔄"
+  }, {
+    id: 25,
+    question: "כיצד שימוש בהומור עוזר להתמודד עם דחייה או כישלון?",
+    options: ["הוא גורם לבעיה להיעלם", "הוא משדר קור רוח, ביטחון עצמי ועוזר לראות דברים בפרופורציה", "הוא גורם לאנשים לצחוק עלינו", "הוא מוכיח שלא אכפת לנו"],
+    correct: 1,
+    explanation: "הומור משדר קור רוח וביטחון, ועוזר לשמור על פרופורציות ורוגע פנימי.",
+    tip: "חוסן נפשי הוא היכולת לקום כל פעם מחדש. הומור עוזר לנו לקום מהר יותר! 💪"
+  }, {
+    id: 26,
+    question: "ממה נובע הומור עצמי אמיתי?",
+    options: ["מרצון להעליב את עצמנו", "מהערכה עצמית נמוכה", "ממקום של קבלה עצמית וביטחון", "מחוסר מודעות למגרעות שלנו"],
+    correct: 2,
+    explanation: "הומור עצמי אמיתי נובע מקבלה עצמית וביטחון - 'אני יודע שיש לי מגרעות, וזה בסדר'.",
+    tip: "קבלה עצמית היא הבסיס לכל צמיחה. אהב את עצמך כפי שאתה! 💙"
+  }, {
+    id: 27,
+    question: "מתוך איזו תודעה נובעת הראייה של תקלה כ'אסון'?",
+    options: ["מתוך תודעה רוחנית גבוהה", "מתוך תודעה גשמית מצומצמת המאמינה בחוקים קבועים", "מתוך תודעה הומוריסטית", "מתוך תודעה אופטימית"],
+    correct: 1,
+    explanation: "בעולמנו הגשמי המצומצם, כשדברים משתבשים אנו רואים זאת כאסון. התודעה הרוחנית יודעת שיש מציאות גבוהה יותר.",
+    tip: "נסה להסתכל על הבעיות מ'מעוף הציפור'. לפעמים הן נראות קטנות יותר! 🦅"
+  }, {
+    id: 28,
+    question: "מה הציל את חייו של רבי גד'ל אייזנר?",
+    options: ["הוא שתה מים מחברו", "הנאצי ריחם עליו", "חברו צעק לעברו מילת עידוד שהפיחה בו כוחות מחודשים", "הוא נזכר בשיר"],
+    correct: 2,
+    explanation: "מילת העידוד 'גד'ל, לויף!' נתנה לו כוח על-אנושי להמשיך ולהינצל.",
+    tip: "לעולם אל תזלזל בכוחה של מילת עידוד. היא יכולה להיות ההבדל בין ייאוש לתקווה! 🌟"
+  }, {
+    id: 29,
+    question: "מדוע ברכת 'ולבן שיניים מחלב' קשורה דווקא לשבט יהודה?",
+    options: ["כי שבט יהודה היו רועי צאן", "כי לשמו 'יהודה' יש קשר להודיה, וחיוך אמיתי נובע מהכרת תודה", "כי רק בני יהודה ידעו לחייך", "כי לשבט יהודה היו שיניים לבנות"],
+    correct: 1,
+    explanation: "השם 'יהודה' מגיע מהשורש י.ד.ה (הודיה), וחיוך אמיתי נובע מתודעה של הודיה ושפע.",
+    tip: "הכרת תודה היא מפתח לאושר. התמקד במה שיש לך והודה על זה! 🙏"
+  }, {
+    id: 30,
+    question: "מדוע הומור מושווה ל'תבלין'?",
+    options: ["כי הוא יקר כמו תבלינים נדירים", "כי צריך לבשל אותו", "כי במינון נכון הוא מוסיף טעם, אך במינון יתר הוא יכול להרוס", "כי הוא תמיד חריף"],
+    correct: 2,
+    explanation: "כמו תבלין באוכל, הומור במינון נכון משפר, אך במינון יתר יכול לפגוע.",
+    tip: "חכמה היא לדעת לא רק מה לומר, אלא גם מתי וכמה! 🎯"
+  }]
+};
+
+// ============= קומפוננטת צלילים =============
+const SoundPlayer = () => {
+  const audioContext = typeof window !== 'undefined' ? new (window.AudioContext || window.webkitAudioContext)() : null;
+  const playCorrectSound = () => {
+    if (!audioContext) return;
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.frequency.value = 523.25; // C5
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+    setTimeout(() => {
+      const osc2 = audioContext.createOscillator();
+      const gain2 = audioContext.createGain();
+      osc2.connect(gain2);
+      gain2.connect(audioContext.destination);
+      osc2.frequency.value = 659.25; // E5
+      gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      osc2.start(audioContext.currentTime);
+      osc2.stop(audioContext.currentTime + 0.1);
+    }, 100);
+    setTimeout(() => {
+      const osc3 = audioContext.createOscillator();
+      const gain3 = audioContext.createGain();
+      osc3.connect(gain3);
+      gain3.connect(audioContext.destination);
+      osc3.frequency.value = 783.99; // G5
+      gain3.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gain3.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+      osc3.start(audioContext.currentTime);
+      osc3.stop(audioContext.currentTime + 0.15);
+    }, 200);
+  };
+  const playLevelCompleteSound = () => {
+    if (!audioContext) return;
+    const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25];
+    const durations = [0.15, 0.15, 0.15, 0.3, 0.15, 0.15];
+    let time = audioContext.currentTime;
+    notes.forEach((freq, i) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = freq;
+      gainNode.gain.setValueAtTime(0.3, time);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, time + durations[i]);
+      oscillator.start(time);
+      oscillator.stop(time + durations[i]);
+      time += durations[i];
+    });
+  };
+  return {
+    playCorrectSound,
+    playLevelCompleteSound
+  };
+};
+
+// ============= קומפוננטה ראשית =============
+function SmileGame() {
+  const [gameState, setGameState] = useState('intro'); // intro, playing, feedback, levelComplete, gameComplete
+  const [currentLevel, setCurrentLevel] = useState('easy'); // easy, medium, hard
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [shuffledOptions, setShuffledOptions] = useState([]);
+  const [attempts, setAttempts] = useState({
+    easy: 0,
+    medium: 0,
+    hard: 0
+  });
+  const [levelScores, setLevelScores] = useState({
+    easy: [],
+    medium: [],
+    hard: []
+  });
+  const {
+    playCorrectSound,
+    playLevelCompleteSound
+  } = SoundPlayer();
+  const levelConfig = {
+    easy: {
+      questions: 10,
+      passScore: 80,
+      name: 'קל',
+      icon: Sun,
+      color: 'from-yellow-400 to-orange-400'
+    },
+    medium: {
+      questions: 15,
+      passScore: 85,
+      name: 'בינוני',
+      icon: Brain,
+      color: 'from-blue-400 to-purple-400'
+    },
+    hard: {
+      questions: 20,
+      passScore: 90,
+      name: 'קשה',
+      icon: Lightbulb,
+      color: 'from-purple-500 to-pink-500'
+    }
+  };
+  const getCurrentQuestions = () => {
+    const allQuestions = questionsData[currentLevel];
+    return allQuestions.slice(0, levelConfig[currentLevel].questions);
+  };
+  const shuffleArray = array => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
+  useEffect(() => {
+    if (gameState === 'playing') {
+      const questions = getCurrentQuestions();
+      if (questions[currentQuestionIndex]) {
+        const options = questions[currentQuestionIndex].options.map((opt, idx) => ({
+          text: opt,
+          originalIndex: idx
+        }));
+        setShuffledOptions(shuffleArray(options));
+      }
+    }
+  }, [currentQuestionIndex, gameState, currentLevel]);
+  const startGame = level => {
+    setCurrentLevel(level);
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setGameState('playing');
+    setAttempts(prev => ({
+      ...prev,
+      [level]: prev[level] + 1
+    }));
+  };
+  const handleAnswerSelect = optionIndex => {
+    if (showFeedback) return;
+    const questions = getCurrentQuestions();
+    const currentQuestion = questions[currentQuestionIndex];
+    const selectedOption = shuffledOptions[optionIndex];
+    const isCorrect = selectedOption.originalIndex === currentQuestion.correct;
+    setSelectedAnswer(optionIndex);
+    setShowFeedback(true);
+    if (isCorrect) {
+      setScore(score + 1);
+      playCorrectSound();
+    }
+  };
+  const nextQuestion = () => {
+    const questions = getCurrentQuestions();
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+    } else {
+      // סיום רמה
+      const percentage = score / questions.length * 100;
+      setLevelScores(prev => ({
+        ...prev,
+        [currentLevel]: [...prev[currentLevel], percentage]
+      }));
+      playLevelCompleteSound();
+      setGameState('levelComplete');
+    }
+  };
+  const restartLevel = () => {
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setGameState('playing');
+  };
+  const goToNextLevel = () => {
+    const levels = ['easy', 'medium', 'hard'];
+    const currentIndex = levels.indexOf(currentLevel);
+    if (currentIndex < levels.length - 1) {
+      const nextLevel = levels[currentIndex + 1];
+      startGame(nextLevel);
+    } else {
+      setGameState('gameComplete');
+    }
+  };
+  const backToMenu = () => {
+    setGameState('intro');
+  };
+
+  // ============= מסך פתיחה =============
+  if (gameState === 'intro') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-12"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center items-center gap-4 mb-4"
+    }, /*#__PURE__*/React.createElement(Smile, {
+      className: "w-16 h-16 text-yellow-500 animate-bounce"
+    }), /*#__PURE__*/React.createElement("h1", {
+      className: "text-6xl font-bold bg-gradient-to-r from-yellow-500 via-pink-500 to-purple-600 bg-clip-text text-transparent"
+    }, "\u05DE\u05E1\u05E2 \u05D0\u05DC \u05E2\u05D5\u05DC\u05DD \u05D4\u05D7\u05D9\u05D5\u05DA"), /*#__PURE__*/React.createElement(Smile, {
+      className: "w-16 h-16 text-pink-500 animate-bounce",
+      style: {
+        animationDelay: '0.2s'
+      }
+    })), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-gray-700"
+    }, "\u05D2\u05DC\u05D4 \u05D0\u05EA \u05D4\u05DB\u05D5\u05D7 \u05D4\u05DE\u05D5\u05E4\u05DC\u05D0 \u05E9\u05DC \u05D4\u05D7\u05D9\u05D5\u05DA! \u2728")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8 mb-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-start gap-4 mb-6"
+    }, /*#__PURE__*/React.createElement(BookOpen, {
+      className: "w-8 h-8 text-blue-500 flex-shrink-0 mt-1"
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-gray-800 mb-4"
+    }, "\u05DE\u05D4 \u05E0\u05DC\u05DE\u05D3 \u05D1\u05DE\u05E1\u05E2 \u05E9\u05DC\u05E0\u05D5?"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 leading-relaxed mb-4"
+    }, "\u05D1\u05E8\u05D5\u05DB\u05D9\u05DD \u05D4\u05D1\u05D0\u05D9\u05DD \u05DC\u05DE\u05E1\u05E2 \u05DE\u05E8\u05EA\u05E7 \u05D1\u05E2\u05D5\u05DC\u05DE\u05D5 \u05D4\u05DE\u05D5\u05E4\u05DC\u05D0 \u05E9\u05DC \u05D4\u05D7\u05D9\u05D5\u05DA! \uD83D\uDE0A"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 leading-relaxed"
+    }, "\u05D4\u05D9\u05D3\u05E2\u05EA \u05E9\u05D7\u05D9\u05D5\u05DA \u05D4\u05D5\u05D0 \u05D4\u05E8\u05D1\u05D4 \u05D9\u05D5\u05EA\u05E8 \u05DE\u05E1\u05EA\u05DD \u05EA\u05E0\u05D5\u05E2\u05D4 \u05E9\u05DC \u05E9\u05E8\u05D9\u05E8\u05D9 \u05D4\u05E4\u05E0\u05D9\u05DD? \u05D4\u05D5\u05D0 \u05DB\u05DC\u05D9 \u05E8\u05D1-\u05E2\u05D5\u05E6\u05DE\u05D4 \u05E9\u05D9\u05DB\u05D5\u05DC:"))), /*#__PURE__*/React.createElement("div", {
+      className: "grid md:grid-cols-2 gap-6 mb-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-2xl border-2 border-yellow-200"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-3 mb-3"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-8 h-8 text-red-500"
+    }), /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold text-gray-800"
+    }, "\u05DC\u05E8\u05E4\u05D0 \u05D5\u05DC\u05D7\u05D6\u05E7")), /*#__PURE__*/React.createElement("ul", {
+      className: "space-y-2 text-gray-700"
+    }, /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-green-500 mt-1"
+    }, "\u2713"), /*#__PURE__*/React.createElement("span", null, "\u05DC\u05E9\u05E4\u05E8 \u05D0\u05EA \u05D1\u05E8\u05D9\u05D0\u05D5\u05EA \u05D4\u05D2\u05D5\u05E3 \u05D5\u05D4\u05E0\u05E4\u05E9")), /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-green-500 mt-1"
+    }, "\u2713"), /*#__PURE__*/React.createElement("span", null, "\u05DC\u05D4\u05E4\u05D7\u05D9\u05EA \u05E1\u05D8\u05E8\u05E1 \u05D5\u05DC\u05D7\u05E6\u05D9\u05DD")), /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-green-500 mt-1"
+    }, "\u2713"), /*#__PURE__*/React.createElement("span", null, "\u05DC\u05D9\u05E6\u05D5\u05E8 \u05DE\u05E2\u05D2\u05DC \u05D7\u05D9\u05D5\u05D1\u05D9 \u05E9\u05DC \u05E9\u05DE\u05D7\u05D4")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-2xl border-2 border-blue-200"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-3 mb-3"
+    }, /*#__PURE__*/React.createElement(Sparkles, {
+      className: "w-8 h-8 text-purple-500"
+    }), /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold text-gray-800"
+    }, "\u05DC\u05D7\u05D1\u05E8 \u05D5\u05DC\u05E9\u05DE\u05D7")), /*#__PURE__*/React.createElement("ul", {
+      className: "space-y-2 text-gray-700"
+    }, /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-blue-500 mt-1"
+    }, "\u2713"), /*#__PURE__*/React.createElement("span", null, "\u05DC\u05D9\u05E6\u05D5\u05E8 \u05D7\u05D1\u05E8\u05D5\u05D9\u05D5\u05EA \u05D5\u05DC\u05D7\u05D6\u05E7 \u05E7\u05E9\u05E8\u05D9\u05DD")), /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-blue-500 mt-1"
+    }, "\u2713"), /*#__PURE__*/React.createElement("span", null, "\u05DC\u05D1\u05E6\u05E2 \u05D7\u05E1\u05D3 \u05D2\u05D3\u05D5\u05DC \u05D5\u05E0\u05D2\u05D9\u05E9")), /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-blue-500 mt-1"
+    }, "\u2713"), /*#__PURE__*/React.createElement("span", null, "\u05DC\u05D4\u05E4\u05D9\u05E5 \u05D0\u05D5\u05E8 \u05D5\u05D8\u05D5\u05D1 \u05D1\u05E2\u05D5\u05DC\u05DD"))))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-pink-50 to-purple-50 p-6 rounded-2xl border-2 border-pink-200 mb-8"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold text-gray-800 mb-4 text-center"
+    }, "\uD83C\uDFAF \u05DE\u05D1\u05E0\u05D4 \u05D4\u05DE\u05E9\u05D7\u05E7 - 3 \u05E8\u05DE\u05D5\u05EA \u05D4\u05EA\u05E7\u05D3\u05DE\u05D5\u05EA"), /*#__PURE__*/React.createElement("div", {
+      className: "grid md:grid-cols-3 gap-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center p-4 bg-white rounded-xl"
+    }, /*#__PURE__*/React.createElement(Sun, {
+      className: "w-12 h-12 text-yellow-500 mx-auto mb-2"
+    }), /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-lg mb-2"
+    }, "\u05E8\u05DE\u05D4 \u05E7\u05DC\u05D4"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-600"
+    }, "10 \u05E9\u05D0\u05DC\u05D5\u05EA", /*#__PURE__*/React.createElement("br", null), "\u05D3\u05E8\u05D5\u05E9 80% \u05DC\u05DE\u05E2\u05D1\u05E8")), /*#__PURE__*/React.createElement("div", {
+      className: "text-center p-4 bg-white rounded-xl"
+    }, /*#__PURE__*/React.createElement(Brain, {
+      className: "w-12 h-12 text-blue-500 mx-auto mb-2"
+    }), /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-lg mb-2"
+    }, "\u05E8\u05DE\u05D4 \u05D1\u05D9\u05E0\u05D5\u05E0\u05D9\u05EA"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-600"
+    }, "15 \u05E9\u05D0\u05DC\u05D5\u05EA", /*#__PURE__*/React.createElement("br", null), "\u05D3\u05E8\u05D5\u05E9 85% \u05DC\u05DE\u05E2\u05D1\u05E8")), /*#__PURE__*/React.createElement("div", {
+      className: "text-center p-4 bg-white rounded-xl"
+    }, /*#__PURE__*/React.createElement(Lightbulb, {
+      className: "w-12 h-12 text-purple-500 mx-auto mb-2"
+    }), /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-lg mb-2"
+    }, "\u05E8\u05DE\u05D4 \u05E7\u05E9\u05D4"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-600"
+    }, "20 \u05E9\u05D0\u05DC\u05D5\u05EA", /*#__PURE__*/React.createElement("br", null), "\u05D3\u05E8\u05D5\u05E9 90% \u05DC\u05DE\u05E2\u05D1\u05E8")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-green-50 to-teal-50 p-6 rounded-2xl border-2 border-green-200"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold text-gray-800 mb-3 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(Star, {
+      className: "w-6 h-6 text-yellow-500"
+    }), "\u05DE\u05D5\u05DB\u05E0\u05D9\u05DD \u05DC\u05D4\u05EA\u05D7\u05D9\u05DC?"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 mb-4"
+    }, "\u05D1\u05D7\u05E8\u05D5 \u05D0\u05EA \u05D4\u05E8\u05DE\u05D4 \u05E9\u05DC\u05DB\u05DD \u05D5\u05D4\u05EA\u05D7\u05D9\u05DC\u05D5 \u05D0\u05EA \u05D4\u05DE\u05E1\u05E2! \u05DB\u05DC \u05E8\u05DE\u05D4 \u05EA\u05E2\u05E0\u05D9\u05E7 \u05DC\u05DB\u05DD \u05EA\u05D5\u05D1\u05E0\u05D5\u05EA \u05D7\u05D3\u05E9\u05D5\u05EA \u05D5\u05DE\u05E8\u05EA\u05E7\u05D5\u05EA \u05E2\u05DC \u05DB\u05D5\u05D7\u05D5 \u05E9\u05DC \u05D4\u05D7\u05D9\u05D5\u05DA. \u05D6\u05DB\u05E8\u05D5 - \u05D4\u05DE\u05D8\u05E8\u05D4 \u05D4\u05D9\u05D0 \u05DC\u05D0 \u05E8\u05E7 \u05DC\u05E2\u05E0\u05D5\u05EA \u05E0\u05DB\u05D5\u05DF, \u05D0\u05DC\u05D0 \u05DC\u05DC\u05DE\u05D5\u05D3 \u05D5\u05DC\u05E6\u05DE\u05D5\u05D7! \uD83C\uDF31"))), /*#__PURE__*/React.createElement("div", {
+      className: "grid md:grid-cols-3 gap-6 mb-8"
+    }, Object.entries(levelConfig).map(([level, config]) => {
+      const Icon = config.icon;
+      return /*#__PURE__*/React.createElement("button", {
+        key: level,
+        onClick: () => startGame(level),
+        className: `bg-gradient-to-br ${config.color} text-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300`
+      }, /*#__PURE__*/React.createElement(Icon, {
+        className: "w-16 h-16 mx-auto mb-4"
+      }), /*#__PURE__*/React.createElement("h3", {
+        className: "text-2xl font-bold mb-2"
+      }, "\u05E8\u05DE\u05D4 ", config.name), /*#__PURE__*/React.createElement("p", {
+        className: "text-lg opacity-90"
+      }, config.questions, " \u05E9\u05D0\u05DC\u05D5\u05EA"), /*#__PURE__*/React.createElement("p", {
+        className: "text-sm opacity-80 mt-2"
+      }, "\u05D3\u05E8\u05D5\u05E9 ", config.passScore, "% \u05DC\u05DE\u05E2\u05D1\u05E8"));
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6 rounded-2xl text-center shadow-xl"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold mb-2"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-yellow-400 mb-2"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+  }
+
+  // ============= מסך משחק =============
+  if (gameState === 'playing') {
+    const questions = getCurrentQuestions();
+    const currentQuestion = questions[currentQuestionIndex];
+    const config = levelConfig[currentLevel];
+    const Icon = config.icon;
+    const progress = (currentQuestionIndex + 1) / questions.length * 100;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-lg p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between mb-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-3"
+    }, /*#__PURE__*/React.createElement(Icon, {
+      className: "w-8 h-8"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-bold"
+    }, "\u05E8\u05DE\u05D4 ", config.name)), /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-600"
+    }, "\u05E9\u05D0\u05DC\u05D4"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold"
+    }, currentQuestionIndex + 1, "/", questions.length)), /*#__PURE__*/React.createElement("div", {
+      className: "text-center"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-600"
+    }, "\u05E0\u05D9\u05E7\u05D5\u05D3"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-green-600"
+    }, score)))), /*#__PURE__*/React.createElement("div", {
+      className: "w-full bg-gray-200 rounded-full h-3 overflow-hidden"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: `h-full bg-gradient-to-r ${config.color} transition-all duration-500 rounded-full`,
+      style: {
+        width: `${progress}%`
+      }
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-xl p-8 mb-6"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold text-gray-800 mb-8 leading-relaxed"
+    }, currentQuestion.question), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, shuffledOptions.map((option, index) => {
+      const isSelected = selectedAnswer === index;
+      const isCorrect = option.originalIndex === currentQuestion.correct;
+      const showResult = showFeedback && isSelected;
+      let buttonClass = "w-full p-6 text-right rounded-xl border-2 transition-all duration-300 text-lg font-medium ";
+      if (!showFeedback) {
+        buttonClass += "border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50 hover:shadow-lg transform hover:scale-[1.02]";
+      } else if (showResult) {
+        if (isCorrect) {
+          buttonClass += "border-green-500 bg-green-50 shadow-lg";
+        } else {
+          buttonClass += "border-red-500 bg-red-50 shadow-lg";
+        }
+      } else if (showFeedback && isCorrect) {
+        buttonClass += "border-green-500 bg-green-50";
+      } else {
+        buttonClass += "border-gray-300 bg-gray-50";
+      }
+      return /*#__PURE__*/React.createElement("button", {
+        key: index,
+        onClick: () => handleAnswerSelect(index),
+        disabled: showFeedback,
+        className: buttonClass
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex items-center justify-between"
+      }, /*#__PURE__*/React.createElement("span", null, option.text), showFeedback && isCorrect && /*#__PURE__*/React.createElement(CheckCircle, {
+        className: "w-6 h-6 text-green-600"
+      }), showResult && !isCorrect && /*#__PURE__*/React.createElement(XCircle, {
+        className: "w-6 h-6 text-red-600"
+      })));
+    }))), showFeedback && /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-xl p-8 mb-6 animate-fadeIn"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-start gap-4 mb-6"
+    }, shuffledOptions[selectedAnswer].originalIndex === currentQuestion.correct ? /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-3 text-green-600"
+    }, /*#__PURE__*/React.createElement(CheckCircle, {
+      className: "w-12 h-12"
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold"
+    }, "\u05DE\u05E6\u05D5\u05D9\u05DF! \u2B50"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg"
+    }, "\u05EA\u05E9\u05D5\u05D1\u05D4 \u05E0\u05DB\u05D5\u05E0\u05D4!"))) : /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-3 text-red-600"
+    }, /*#__PURE__*/React.createElement(XCircle, {
+      className: "w-12 h-12"
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold"
+    }, "\u05DC\u05D0 \u05D1\u05D3\u05D9\u05D5\u05E7... \uD83E\uDD14"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg"
+    }, "\u05D1\u05D5\u05D0 \u05E0\u05DC\u05DE\u05D3 \u05DE\u05D6\u05D4!")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-50 border-r-4 border-blue-500 p-6 rounded-lg mb-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-semibold text-gray-800 mb-2"
+    }, "\uD83D\uDCA1 \u05D4\u05E1\u05D1\u05E8:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed"
+    }, currentQuestion.explanation)), /*#__PURE__*/React.createElement("div", {
+      className: "bg-yellow-50 border-r-4 border-yellow-500 p-6 rounded-lg mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-semibold text-gray-800 mb-2"
+    }, "\u2728 \u05D8\u05D9\u05E4 \u05DC\u05D4\u05DE\u05E9\u05DA:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed"
+    }, currentQuestion.tip)), /*#__PURE__*/React.createElement("button", {
+      onClick: nextQuestion,
+      className: "w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-4 px-8 rounded-xl font-bold text-xl hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3"
+    }, currentQuestionIndex < questions.length - 1 ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, "\u05E9\u05D0\u05DC\u05D4 \u05D4\u05D1\u05D0\u05D4"), /*#__PURE__*/React.createElement(ArrowRight, {
+      className: "w-6 h-6"
+    })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, "\u05E1\u05D9\u05D9\u05DD \u05E8\u05DE\u05D4"), /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-6 h-6"
+    }))))));
+  }
+
+  // ============= מסך סיום רמה =============
+  if (gameState === 'levelComplete') {
+    const questions = getCurrentQuestions();
+    const percentage = Math.round(score / questions.length * 100);
+    const config = levelConfig[currentLevel];
+    const passed = percentage >= config.passScore;
+    const Icon = config.icon;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-orange-100 p-8 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl w-full"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-12 text-center"
+    }, passed ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-24 h-24 text-yellow-500 mx-auto mb-6 animate-bounce"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-orange-500"
+    }, "\u05DE\u05D3\u05D4\u05D9\u05DD! \uD83C\uDF89"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl mb-8"
+    }, "\u05E2\u05D1\u05E8\u05EA \u05D0\u05EA \u05D4\u05E8\u05DE\u05D4 \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4!")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-24 h-24 text-pink-500 mx-auto mb-6"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold mb-4 text-pink-600"
+    }, "\u05D4\u05EA\u05D7\u05DC\u05D4 \u05D8\u05D5\u05D1\u05D4! \uD83C\uDF31"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl mb-8"
+    }, "\u05D1\u05D5\u05D0 \u05E0\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1!")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 mb-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-2 gap-6 mb-6"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600 mb-2"
+    }, "\u05EA\u05E9\u05D5\u05D1\u05D5\u05EA \u05E0\u05DB\u05D5\u05E0\u05D5\u05EA"), /*#__PURE__*/React.createElement("p", {
+      className: "text-4xl font-bold text-green-600"
+    }, score, "/", questions.length)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600 mb-2"
+    }, "\u05D0\u05D7\u05D5\u05D6 \u05D4\u05E6\u05DC\u05D7\u05D4"), /*#__PURE__*/React.createElement("p", {
+      className: "text-4xl font-bold text-blue-600"
+    }, percentage, "%"))), passed ? /*#__PURE__*/React.createElement("div", {
+      className: "bg-green-100 border-2 border-green-500 rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-green-800 font-bold text-lg"
+    }, percentage >= 95 ? "🏆 מושלם! אתה שולט!" : "💪 כל הכבוד! עוד קצת תרגול ל-95%")) : /*#__PURE__*/React.createElement("div", {
+      className: "bg-yellow-100 border-2 border-yellow-500 rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-yellow-800 font-bold"
+    }, "\u05E0\u05D3\u05E8\u05E9 ", config.passScore, "% \u05DC\u05DE\u05E2\u05D1\u05E8 \u05DC\u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4"), attempts[currentLevel] >= 3 && /*#__PURE__*/React.createElement("p", {
+      className: "text-yellow-700 mt-2"
+    }, "\uD83D\uDCA1 \u05DE\u05D5\u05DE\u05DC\u05E5 \u05DC\u05D7\u05D6\u05D5\u05E8 \u05E2\u05DC \u05D4\u05D7\u05D5\u05DE\u05E8 \u05DC\u05E4\u05E0\u05D9 \u05E0\u05D9\u05E1\u05D9\u05D5\u05DF \u05E0\u05D5\u05E1\u05E3"))), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, passed && currentLevel !== 'hard' && /*#__PURE__*/React.createElement("button", {
+      onClick: goToNextLevel,
+      className: "w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-4 px-8 rounded-xl font-bold text-xl hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+    }, "\uD83D\uDE80 \u05D4\u05DE\u05E9\u05DA \u05DC\u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4"), passed && currentLevel === 'hard' && /*#__PURE__*/React.createElement("button", {
+      onClick: () => setGameState('gameComplete'),
+      className: "w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 px-8 rounded-xl font-bold text-xl hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+    }, "\uD83C\uDF8A \u05E1\u05D9\u05D9\u05DD \u05DE\u05E9\u05D7\u05E7"), /*#__PURE__*/React.createElement("button", {
+      onClick: restartLevel,
+      className: "w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-4 px-8 rounded-xl font-bold text-xl hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+    }, "\uD83D\uDD04 \u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1"), /*#__PURE__*/React.createElement("button", {
+      onClick: backToMenu,
+      className: "w-full bg-gray-200 text-gray-700 py-4 px-8 rounded-xl font-bold text-xl hover:bg-gray-300 transition-all duration-300"
+    }, "\uD83C\uDFE0 \u05D7\u05D6\u05D5\u05E8 \u05DC\u05EA\u05E4\u05E8\u05D9\u05D8")))));
+  }
+
+  // ============= מסך סיום כל המשחק =============
+  if (gameState === 'gameComplete') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 p-8 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-3xl w-full"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-12 text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center gap-4 mb-6"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-20 h-20 text-yellow-500 animate-bounce"
+    }), /*#__PURE__*/React.createElement(Star, {
+      className: "w-20 h-20 text-yellow-400 animate-pulse"
+    }), /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-20 h-20 text-yellow-500 animate-bounce",
+      style: {
+        animationDelay: '0.2s'
+      }
+    })), /*#__PURE__*/React.createElement("h2", {
+      className: "text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 via-pink-500 to-purple-500"
+    }, "\u05DE\u05D6\u05DC \u05D8\u05D5\u05D1! \uD83C\uDF8A"), /*#__PURE__*/React.createElement("p", {
+      className: "text-3xl mb-8 text-gray-700"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05DB\u05DC \u05D4\u05DE\u05E1\u05E2!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 mb-8"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold mb-6 text-gray-800"
+    }, "\u05D0\u05EA\u05D4 \u05E2\u05DB\u05E9\u05D9\u05D5 \"\u05E9\u05D2\u05E8\u05D9\u05E8 \u05D7\u05D9\u05D5\u05DA\" \u05E8\u05E9\u05DE\u05D9! \uD83D\uDE0A"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 leading-relaxed mb-4"
+    }, "\u05E2\u05D1\u05E8\u05EA \u05D0\u05EA \u05DB\u05DC \u05E9\u05DC\u05D5\u05E9\u05EA \u05D4\u05E8\u05DE\u05D5\u05EA \u05D5\u05DC\u05DE\u05D3\u05EA \u05D0\u05EA \u05DB\u05DC \u05D4\u05E1\u05D5\u05D3\u05D5\u05EA \u05E2\u05DC \u05DB\u05D5\u05D7\u05D5 \u05D4\u05DE\u05D5\u05E4\u05DC\u05D0 \u05E9\u05DC \u05D4\u05D7\u05D9\u05D5\u05DA."), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 leading-relaxed"
+    }, "\u05DB\u05E2\u05EA, \u05D4\u05DE\u05E9\u05D9\u05DE\u05D4 \u05E9\u05DC\u05DA \u05D4\u05D9\u05D0 \u05DC\u05E7\u05D7\u05EA \u05D0\u05EA \u05DB\u05DC \u05DE\u05D4 \u05E9\u05DC\u05DE\u05D3\u05EA \u05D5\u05DC\u05E6\u05D0\u05EA \u05DC\u05E2\u05D5\u05DC\u05DD \u05DB\u05D3\u05D9 \u05DC\u05D4\u05D9\u05D5\u05EA \u05E9\u05D2\u05E8\u05D9\u05E8 \u05E9\u05DC \u05E9\u05DE\u05D7\u05D4, \u05D8\u05D5\u05D1 \u05DC\u05D1 \u05D5\u05D7\u05D9\u05D5\u05DA! \u2728")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-6 mb-8"
+    }, /*#__PURE__*/React.createElement("h4", {
+      className: "text-xl font-bold mb-4 text-gray-800"
+    }, "\uD83D\uDCA1 \u05D6\u05DB\u05D5\u05E8 \u05EA\u05DE\u05D9\u05D3:"), /*#__PURE__*/React.createElement("ul", {
+      className: "text-right space-y-3 text-gray-700"
+    }, /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-3"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl"
+    }, "\uD83C\uDF1F"), /*#__PURE__*/React.createElement("span", null, "\u05D7\u05D9\u05D5\u05DA \u05D4\u05D5\u05D0 \u05DE\u05EA\u05E0\u05D4 \u05E9\u05D0\u05E4\u05E9\u05E8 \u05DC\u05EA\u05EA \u05DC\u05DB\u05DC \u05D0\u05D7\u05D3, \u05D1\u05DB\u05DC \u05DE\u05E7\u05D5\u05DD \u05D5\u05D1\u05DB\u05DC \u05D6\u05DE\u05DF")), /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-3"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl"
+    }, "\uD83D\uDCAA"), /*#__PURE__*/React.createElement("span", null, "\u05D7\u05D9\u05D5\u05DA \u05D4\u05D5\u05D0 \u05DB\u05DC\u05D9 \u05DC\u05E8\u05D9\u05E4\u05D5\u05D9 \u05D4\u05D2\u05D5\u05E3 \u05D5\u05D4\u05E0\u05E4\u05E9")), /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-3"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl"
+    }, "\uD83E\uDD1D"), /*#__PURE__*/React.createElement("span", null, "\u05D7\u05D9\u05D5\u05DA \u05D9\u05D5\u05E6\u05E8 \u05D7\u05D1\u05E8\u05D5\u05D9\u05D5\u05EA \u05D5\u05D7\u05D9\u05D6\u05D5\u05E7 \u05E7\u05E9\u05E8\u05D9\u05DD")), /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-3"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl"
+    }, "\u2728"), /*#__PURE__*/React.createElement("span", null, "\u05D7\u05D9\u05D5\u05DA \u05D4\u05D5\u05D0 \u05D1\u05D9\u05D8\u05D5\u05D9 \u05E9\u05DC \u05EA\u05E4\u05D9\u05E1\u05EA \u05E2\u05D5\u05DC\u05DD \u05D0\u05D5\u05E4\u05D8\u05D9\u05DE\u05D9\u05EA \u05D5\u05E8\u05D5\u05D7\u05E0\u05D9\u05EA")))), /*#__PURE__*/React.createElement("button", {
+      onClick: backToMenu,
+      className: "w-full bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 text-white py-5 px-8 rounded-xl font-bold text-2xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 mb-8"
+    }, "\uD83C\uDFE0 \u05D7\u05D6\u05D5\u05E8 \u05DC\u05EA\u05E4\u05E8\u05D9\u05D8 \u05D4\u05E8\u05D0\u05E9\u05D9"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6 rounded-2xl"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold mb-2"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-yellow-400 mb-2"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520")))));
+  }
+  return null;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(SmileGame));
+</script>
+</body>
+</html>

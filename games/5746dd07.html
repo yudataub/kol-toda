@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>משחק סולם החיבה – הקול החמישי</title>
+<meta name="description" content="Learn Jewish traditions through an interactive Hebrew board game about the days between Yom Kippur and Sukkot. Built with Claude">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="משחק סולם החיבה – הקול החמישי">
+<meta property="og:description" content="Learn Jewish traditions through an interactive Hebrew board game about the days between Yom Kippur and Sukkot. Built with Claude">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-5746dd07.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/5746dd07.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const ArrowUp = window.LucideReact["ArrowUp"] || window.LucideReact.Circle;
+const ArrowDown = window.LucideReact["ArrowDown"] || window.LucideReact.Circle;
+const HelpCircle = window.LucideReact["HelpCircle"] || window.LucideReact.Circle;
+const Lightbulb = window.LucideReact["Lightbulb"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const Dice6 = window.LucideReact["Dice6"] || window.LucideReact.Circle;
+const QUESTIONS = [{
+  q: "מתי התחיל חשבון העוונות לדורות, ולמה דווקא אז?",
+  a: "בי\"א בתשרי (למחרת יום כיפור) נצטוו על המשכן, בי\"ב-י\"ג התנדבו, בט\"ו התחילו לבנות. מאז הוקבע לדורות שבימים אלו עוסקים בהוצאת כסף על מצוות."
+}, {
+  q: "חבר אומר לך: 'למה לבזבז כל כך הרבה כסף על אתרוג?' מה תענה לו?",
+  a: "הימים האלו מייצגים את נדבת המשכן, כשכלל ישראל פיזרו מממונם בשמחה. זו ההזדמנות להראות חביבות למצוות."
+}, {
+  q: "מה קרה בימים שבין יום כיפור לסוכות בזמן המדבר?",
+  a: "למחרת יום כיפור התחילו ישראל להתנדב למשכן בשמחה גדולה, והימים האלו נשארו לדורות כימי חביבות מצוות."
+}, {
+  q: "למה אסור להתענות בימים אלו?",
+  a: "כי הם ימי שמחה שהיו מחנכין בהם את המזבח, והם ימים של חביבות למצוות. התענית מנוגדת לשמחה זו."
+}, {
+  q: "מה המשותף בין התקיעות בראש השנה לימים אלו?",
+  a: "בשניהם העיקר להראות חביבות מצוות. תוקעים יותר מהנדרש, ומוציאים כסף יותר מהנדרש – וזה סותם את פי השטן."
+}, {
+  q: "הגר\"א אומר שהימים האלו הם 'יום טוב במקצת'. למה?",
+  a: "הם ראשון לחשבון עוונות – השטן לא יכול לקטרג כי הוא רואה את החביבות של המצוות על ישראל."
+}, {
+  q: "במה שונים הימים האלו מחג הסוכות עצמו?",
+  a: "בימים אלו רואים את כל כלל ישראל ברחובות עוסקים בהכנות שעות על גבי שעות. כשמגיע הסוכות, המועד של ההכנה מסתיים."
+}, {
+  q: "מדוע אין אומרים תחנות בימים אלו?",
+  a: "כי הם יום טוב במקצת, ימים של שמחה וחיבת מצוות. תחנות מתאימות לימי בקשה, לא לימי שמחה."
+}, {
+  q: "איזו מצווה התחילו לקיים בט\"ו בתשרי בזמן המדבר?",
+  a: "בניית המשכן. בט\"ו בתשרי התחילו לבנות את המשכן ובאותו יום חזרו ענני הכבוד."
+}, {
+  q: "מה הקשר בין נדבת המשכן למה שקורה היום?",
+  a: "כמו שאז התנדבו כסף זהב ונחושת בשמחה, כך היום מוציאים כסף רב על מצוות – כולו מתוך חיבת מצוות."
+}, {
+  q: "איך חביבות מצוה הצילה עולם אצל רשב\"י?",
+  a: "רשב\"י רצה להחריב העולם שעוסק בחיי שעה. רק כשראה יהודי שמחבב מצוות (עם שתי אגודות הדסים) הבין שכדאי לחיות."
+}, {
+  q: "מה מצא רשב\"י אצל היהודי עם ההדסים?",
+  a: "חביבות מצוה טהורה – אין חיוב לקחת הדסים בשבת, בטח לא שתיים. אבל הוא עשה מתוך אהבה למצווה."
+}, {
+  q: "למה שתי אגודות הדסים הן דוגמה לחביבות?",
+  a: "אין חיוב לקחת שתי אגודות, אין חיוב לקחת בשבת, ואין חיוב לרוץ איתן. כל זה מתוך חיבה טהורה – וזה סתם את פי השטן."
+}, {
+  q: "מתי חזרו ענני הכבוד?",
+  a: "בט\"ו בתשרי (יום טוב ראשון של סוכות) התחילו לבנות את המשכן וחזרו ענני הכבוד. לכן זה 'ראשון לחשבון עוונות'."
+}, {
+  q: "מה ההבדל בין מעגל פינות להליכה בלי ציצית?",
+  a: "מי שהולך בלי ציצית מבטל עשה. מי שמעגל מראה שהמצוות לא חביבות עליו, ובעידנא דריתחא נענש – כי אין מה שעוצר את השטן."
+}, {
+  q: "איך אבא שמתעסק באתרוג משפיע על הילדים?",
+  a: "הילדים רואים את השמחה האמיתית, איך הוא מתייחס לאתרוג כמו יהלום ונושק אותו. זה מכניס לנשמה שלהם חביבות למצוות."
+}, {
+  q: "למה צריך לנשק את ארבעת המינים?",
+  a: "כדי להראות ולהרגיש חביבות למצוה. והעיקר – הדרך להגיע למדריגה היא על ידי שמתחילים לעשות."
+}, {
+  q: "מהו 'ראשון לחשבון עוונות'?",
+  a: "ביום כיפור נתכפרנו ופותחים דף חדש. אבל רק בסוכות מתחילים את החשבון – כי עד אז השטן סתום מרוב חביבות המצוות."
+}, {
+  q: "איך המאורעות במדבר הוקבעו לדורות?",
+  a: "הארבעים יום בין אלול ליום כיפור, יום הכיפור עצמו, והימים שבין יום כיפור לסוכות – כל מה שקרה נשאר כמשמעות רוחנית."
+}, {
+  q: "איזה פסוק יוצר 'קילומטרים של שוקים'?",
+  a: "ולקחתם לכם ביום הראשון פרי עץ הדר... – פסוק אחד מתוך חמשת אלפי פסוקים, ותראו מה הוא יוצר ברחובות!"
+}];
+const INSIGHTS = ["ימים אלו הם 'מועד של חביבות מצוות' – זמן שכולו הכנה למצוות", "בימים אלו, הפה של השטן סתום – כי הוא רואה כמה המצוות חביבות על ישראל", "כשהשטן רואה שהמצוות חביבות על ישראל, מסתתמות טענותיו", "החתם סופר היה שרוי בימים האלו בשמחה גדולה", "הדרך להגיע למדריגות היא על ידי שמתחילים לעשות", "זה מועד שכולו הכנה למצוות – אין זמן לעשות עבירות", "תפתח את האתרוג כאילו זה יהלום – זה מכניס לנשמה חביבות", "דבר ה' יקום לעולם – קילומטרים של שוקים אחרי אלפי שנים!", "בעולם שבו יהודי רץ עם הדסים מתוך חיבה, כדאי לחיות", "בי\"א-י\"ג בתשרי פיזרו ישראל כסף זהב ונחושת למשכן", "אין מועד שבו אנחנו מוקפים במצוות כמו חג הסוכות", "זה נצחיות כלל ישראל – פסוק אחד יוצר תופעה אחרי אלפי שנים", "המאורעות במדבר הוקבעו לדורות", "בימים אלו כל כלל ישראל עוסק וטורח במצוות", "אברכים מוציאים כסף שלא גומרים את החודש – וזה עוצר את השטן"];
+const BOARD_TILES = [{
+  id: 0,
+  type: 'start',
+  text: 'יום הכיפורים\nסלחתי כדברך'
+}, {
+  id: 1,
+  type: 'normal'
+}, {
+  id: 2,
+  type: 'question'
+}, {
+  id: 3,
+  type: 'normal'
+}, {
+  id: 4,
+  type: 'ladder',
+  to: 12,
+  text: 'הבנת נדבת\nהמשכן'
+}, {
+  id: 5,
+  type: 'normal'
+}, {
+  id: 6,
+  type: 'insight'
+}, {
+  id: 7,
+  type: 'normal'
+}, {
+  id: 8,
+  type: 'slide',
+  to: 3,
+  text: 'מתלונן על\nמחיר הלולב'
+}, {
+  id: 9,
+  type: 'question'
+}, {
+  id: 10,
+  type: 'normal'
+}, {
+  id: 11,
+  type: 'normal'
+}, {
+  id: 12,
+  type: 'normal'
+}, {
+  id: 13,
+  type: 'insight'
+}, {
+  id: 14,
+  type: 'normal'
+}, {
+  id: 15,
+  type: 'ladder',
+  to: 22,
+  text: 'שמחה בהוצאת\nכסף על מצוות'
+}, {
+  id: 16,
+  type: 'normal'
+}, {
+  id: 17,
+  type: 'question'
+}, {
+  id: 18,
+  type: 'slide',
+  to: 11,
+  text: 'מעגל פינות\nבגד'
+}, {
+  id: 19,
+  type: 'normal'
+}, {
+  id: 20,
+  type: 'insight'
+}, {
+  id: 21,
+  type: 'normal'
+}, {
+  id: 22,
+  type: 'normal'
+}, {
+  id: 23,
+  type: 'question'
+}, {
+  id: 24,
+  type: 'normal'
+}, {
+  id: 25,
+  type: 'ladder',
+  to: 31,
+  text: 'מנשק את\nהארבעת המינים'
+}, {
+  id: 26,
+  type: 'normal'
+}, {
+  id: 27,
+  type: 'slide',
+  to: 19,
+  text: 'קונה אתרוג\nמהיר בלי שמחה'
+}, {
+  id: 28,
+  type: 'insight'
+}, {
+  id: 29,
+  type: 'normal'
+}, {
+  id: 30,
+  type: 'question'
+}, {
+  id: 31,
+  type: 'normal'
+}, {
+  id: 32,
+  type: 'ladder',
+  to: 37,
+  text: 'מראה לילדים\nחביבות מצוות'
+}, {
+  id: 33,
+  type: 'normal'
+}, {
+  id: 34,
+  type: 'insight'
+}, {
+  id: 35,
+  type: 'question'
+}, {
+  id: 36,
+  type: 'normal'
+}, {
+  id: 37,
+  type: 'normal'
+}, {
+  id: 38,
+  type: 'ladder',
+  to: 39,
+  text: 'מבין שהשטן\nסתום'
+}, {
+  id: 39,
+  type: 'end',
+  text: 'חג הסוכות\nשמחה במצוות!'
+}];
+const Game = () => {
+  const [players, setPlayers] = useState([{
+    id: 1,
+    name: 'שחקן 1',
+    position: 0,
+    color: 'bg-blue-500'
+  }, {
+    id: 2,
+    name: 'שחקן 2',
+    position: 0,
+    color: 'bg-red-500'
+  }]);
+  const [currentPlayer, setCurrentPlayer] = useState(0);
+  const [diceValue, setDiceValue] = useState(null);
+  const [rolling, setRolling] = useState(false);
+  const [showQuestion, setShowQuestion] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [showInsight, setShowInsight] = useState(false);
+  const [currentInsight, setCurrentInsight] = useState('');
+  const [gameLog, setGameLog] = useState([]);
+  const [winner, setWinner] = useState(null);
+  const [canRoll, setCanRoll] = useState(true);
+  const addLog = message => {
+    setGameLog(prev => [message, ...prev].slice(0, 5));
+  };
+  const rollDice = () => {
+    if (!canRoll || rolling) return;
+    setRolling(true);
+    setDiceValue(null);
+    const roll = Math.floor(Math.random() * 6) + 1;
+    setTimeout(() => {
+      setDiceValue(roll);
+      setRolling(false);
+      movePlayer(roll);
+    }, 600);
+  };
+  const movePlayer = steps => {
+    const player = players[currentPlayer];
+    let newPosition = Math.min(player.position + steps, BOARD_TILES.length - 1);
+    setPlayers(prev => prev.map((p, idx) => idx === currentPlayer ? {
+      ...p,
+      position: newPosition
+    } : p));
+    addLog(`${player.name} הטיל ${steps} והגיע למשבצת ${newPosition}`);
+    setTimeout(() => {
+      handleTile(newPosition);
+    }, 500);
+  };
+  const handleTile = position => {
+    const tile = BOARD_TILES[position];
+    const player = players[currentPlayer];
+    if (tile.type === 'end') {
+      setWinner(player);
+      addLog(`🏆 ${player.name} ניצח במשחק!`);
+      return;
+    }
+    if (tile.type === 'ladder') {
+      setTimeout(() => {
+        setPlayers(prev => prev.map((p, idx) => idx === currentPlayer ? {
+          ...p,
+          position: tile.to
+        } : p));
+        addLog(`🪜 ${player.name} עלה בסולם ל-${tile.to}!`);
+        setCanRoll(false);
+        setTimeout(() => {
+          nextTurn();
+        }, 1500);
+      }, 500);
+    } else if (tile.type === 'slide') {
+      setTimeout(() => {
+        setPlayers(prev => prev.map((p, idx) => idx === currentPlayer ? {
+          ...p,
+          position: tile.to
+        } : p));
+        addLog(`⬇️ ${player.name} ירד ל-${tile.to}`);
+        setCanRoll(false);
+        setTimeout(() => {
+          nextTurn();
+        }, 1500);
+      }, 500);
+    } else if (tile.type === 'question') {
+      const q = QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)];
+      setCurrentQuestion(q);
+      setShowQuestion(true);
+      setShowAnswer(false);
+      setCanRoll(false);
+    } else if (tile.type === 'insight') {
+      const insight = INSIGHTS[Math.floor(Math.random() * INSIGHTS.length)];
+      setCurrentInsight(insight);
+      setShowInsight(true);
+      setCanRoll(false);
+      addLog(`💡 ${player.name} קיבל תובנה!`);
+      setTimeout(() => {
+        setShowInsight(false);
+        rollDice();
+      }, 3000);
+    } else {
+      setCanRoll(false);
+      setTimeout(() => {
+        nextTurn();
+      }, 1000);
+    }
+  };
+  const handleCorrectAnswer = () => {
+    const player = players[currentPlayer];
+    const newPos = Math.min(player.position + 2, BOARD_TILES.length - 1);
+    setPlayers(prev => prev.map((p, idx) => idx === currentPlayer ? {
+      ...p,
+      position: newPos
+    } : p));
+    addLog(`✅ ${player.name} ענה נכון והתקדם 2 צעדים!`);
+    setShowQuestion(false);
+    setTimeout(() => {
+      if (newPos === BOARD_TILES.length - 1) {
+        setWinner(player);
+      } else {
+        nextTurn();
+      }
+    }, 1000);
+  };
+  const handleWrongAnswer = () => {
+    const player = players[currentPlayer];
+    addLog(`❌ ${player.name} ענה שגוי ונשאר במקומו`);
+    setShowQuestion(false);
+    setTimeout(() => {
+      nextTurn();
+    }, 1000);
+  };
+  const nextTurn = () => {
+    setCurrentPlayer(prev => (prev + 1) % players.length);
+    setCanRoll(true);
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-4",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-6xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center mb-6 bg-white rounded-2xl shadow-lg p-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-center gap-3 mb-2"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    className: "text-amber-500",
+    size: 32
+  }), /*#__PURE__*/React.createElement("h1", {
+    className: "text-4xl font-bold text-amber-800"
+  }, "\u05E1\u05D5\u05DC\u05DD \u05D4\u05D7\u05D9\u05D1\u05D4"), /*#__PURE__*/React.createElement(Sparkles, {
+    className: "text-amber-500",
+    size: 32
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-amber-700"
+  }, "\u05D9\u05DE\u05D9\u05DD \u05E9\u05D1\u05D9\u05DF \u05D9\u05D5\u05DD \u05DB\u05D9\u05E4\u05D5\u05E8 \u05DC\u05E1\u05D5\u05DB\u05D5\u05EA")), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 lg:grid-cols-4 gap-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "lg:col-span-3 bg-white rounded-2xl shadow-lg p-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-8 gap-1 mb-6"
+  }, BOARD_TILES.map((tile, idx) => {
+    const playersHere = players.filter(p => p.position === idx);
+    return /*#__PURE__*/React.createElement("div", {
+      key: idx,
+      className: `
+                      aspect-square rounded-lg border-2 relative flex flex-col items-center justify-center text-center p-1
+                      ${tile.type === 'start' ? 'bg-green-100 border-green-400' : ''}
+                      ${tile.type === 'end' ? 'bg-purple-100 border-purple-400' : ''}
+                      ${tile.type === 'normal' ? 'bg-gray-50 border-gray-200' : ''}
+                      ${tile.type === 'ladder' ? 'bg-blue-100 border-blue-400' : ''}
+                      ${tile.type === 'slide' ? 'bg-red-100 border-red-400' : ''}
+                      ${tile.type === 'question' ? 'bg-yellow-100 border-yellow-400' : ''}
+                      ${tile.type === 'insight' ? 'bg-amber-100 border-amber-400' : ''}
+                    `
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-[8px] font-bold text-gray-600"
+    }, idx), tile.type === 'ladder' && /*#__PURE__*/React.createElement(ArrowUp, {
+      size: 14,
+      className: "text-blue-600"
+    }), tile.type === 'slide' && /*#__PURE__*/React.createElement(ArrowDown, {
+      size: 14,
+      className: "text-red-600"
+    }), tile.type === 'question' && /*#__PURE__*/React.createElement(HelpCircle, {
+      size: 14,
+      className: "text-yellow-600"
+    }), tile.type === 'insight' && /*#__PURE__*/React.createElement(Lightbulb, {
+      size: 14,
+      className: "text-amber-600"
+    }), tile.type === 'end' && /*#__PURE__*/React.createElement(Trophy, {
+      size: 14,
+      className: "text-purple-600"
+    }), tile.text && /*#__PURE__*/React.createElement("span", {
+      className: "text-[7px] leading-tight mt-1"
+    }, tile.text), playersHere.length > 0 && /*#__PURE__*/React.createElement("div", {
+      className: "absolute -bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5"
+    }, playersHere.map(p => /*#__PURE__*/React.createElement("div", {
+      key: p.id,
+      className: `w-3 h-3 rounded-full ${p.color} border-2 border-white`
+    }))));
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-xl shadow-lg p-4"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "font-bold text-amber-800 mb-3 flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Trophy, {
+    size: 20
+  }), "\u05E9\u05D7\u05E7\u05E0\u05D9\u05DD"), players.map((player, idx) => /*#__PURE__*/React.createElement("div", {
+    key: player.id,
+    className: `
+                    p-3 rounded-lg mb-2 border-2
+                    ${idx === currentPlayer ? 'border-amber-400 bg-amber-50' : 'border-gray-200'}
+                  `
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: `w-4 h-4 rounded-full ${player.color}`
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "font-bold text-sm"
+  }, player.name), /*#__PURE__*/React.createElement("div", {
+    className: "text-xs text-gray-600"
+  }, "\u05DE\u05E9\u05D1\u05E6\u05EA ", player.position)), idx === currentPlayer && /*#__PURE__*/React.createElement("span", {
+    className: "text-xs bg-amber-400 text-white px-2 py-1 rounded"
+  }, "\u05EA\u05D5\u05E8\u05D5"))))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-xl shadow-lg p-4"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "font-bold text-amber-800 mb-3 text-center"
+  }, "\u05E7\u05D5\u05D1\u05D9\u05D9\u05D4"), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col items-center gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: rollDice,
+    disabled: !canRoll || rolling,
+    className: `
+                    w-20 h-20 rounded-xl flex items-center justify-center text-3xl font-bold
+                    transition-all transform
+                    ${rolling ? 'animate-bounce bg-amber-300' : 'bg-amber-500 hover:bg-amber-600'}
+                    ${!canRoll && !rolling ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                    text-white shadow-lg
+                  `
+  }, rolling ? /*#__PURE__*/React.createElement(Dice6, {
+    size: 40
+  }) : diceValue || /*#__PURE__*/React.createElement(Dice6, {
+    size: 40
+  })), canRoll && !rolling && /*#__PURE__*/React.createElement("span", {
+    className: "text-sm text-amber-700 font-medium"
+  }, "\u05DC\u05D7\u05E5 \u05DC\u05D4\u05D8\u05DC\u05D4"))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-xl shadow-lg p-4"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "font-bold text-amber-800 mb-3"
+  }, "\u05D9\u05D5\u05DE\u05DF \u05DE\u05E9\u05D7\u05E7"), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2 text-xs"
+  }, gameLog.map((log, idx) => /*#__PURE__*/React.createElement("div", {
+    key: idx,
+    className: "p-2 bg-amber-50 rounded text-gray-700"
+  }, log)))))), showQuestion && currentQuestion && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl p-6 max-w-2xl w-full shadow-2xl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-4"
+  }, /*#__PURE__*/React.createElement(HelpCircle, {
+    className: "text-yellow-600",
+    size: 32
+  }), /*#__PURE__*/React.createElement("h3", {
+    className: "text-2xl font-bold text-amber-800"
+  }, "\u05E9\u05D0\u05DC\u05D4")), /*#__PURE__*/React.createElement("div", {
+    className: "bg-yellow-50 p-4 rounded-lg mb-4"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-lg text-gray-800"
+  }, currentQuestion.q)), showAnswer && /*#__PURE__*/React.createElement("div", {
+    className: "bg-green-50 p-4 rounded-lg mb-4 border-2 border-green-200"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "font-bold text-green-800 mb-2"
+  }, "\u05EA\u05E9\u05D5\u05D1\u05D4:"), /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-700"
+  }, currentQuestion.a)), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-3"
+  }, !showAnswer ? /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowAnswer(true),
+    className: "flex-1 bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg font-bold transition"
+  }, "\u05D4\u05E6\u05D2 \u05EA\u05E9\u05D5\u05D1\u05D4") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    onClick: handleCorrectAnswer,
+    className: "flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold transition"
+  }, "\u2705 \u05E2\u05E0\u05D4 \u05E0\u05DB\u05D5\u05DF (+2)"), /*#__PURE__*/React.createElement("button", {
+    onClick: handleWrongAnswer,
+    className: "flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-bold transition"
+  }, "\u274C \u05E2\u05E0\u05D4 \u05E9\u05D2\u05D5\u05D9"))))), showInsight && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-br from-amber-100 to-yellow-100 rounded-2xl p-8 max-w-xl w-full shadow-2xl border-4 border-amber-400"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-4 justify-center"
+  }, /*#__PURE__*/React.createElement(Lightbulb, {
+    className: "text-amber-600",
+    size: 40
+  }), /*#__PURE__*/React.createElement("h3", {
+    className: "text-2xl font-bold text-amber-800"
+  }, "\u05EA\u05D5\u05D1\u05E0\u05D4!"), /*#__PURE__*/React.createElement(Lightbulb, {
+    className: "text-amber-600",
+    size: 40
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white/70 p-6 rounded-lg text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xl text-gray-800 font-medium leading-relaxed"
+  }, currentInsight)), /*#__PURE__*/React.createElement("p", {
+    className: "text-center text-amber-700 mt-4 font-bold"
+  }, "\u05D6\u05DB\u05D9\u05EA \u05D1\u05EA\u05D5\u05E8 \u05E0\u05D5\u05E1\u05E3! \uD83C\uDFB2"))), winner && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-br from-purple-100 via-pink-100 to-yellow-100 rounded-2xl p-8 max-w-xl w-full shadow-2xl border-4 border-purple-400 text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-6"
+  }, /*#__PURE__*/React.createElement(Trophy, {
+    className: "text-yellow-500 mx-auto mb-4",
+    size: 80
+  }), /*#__PURE__*/React.createElement("h2", {
+    className: "text-4xl font-bold text-purple-800 mb-2"
+  }, "\u05DE\u05D6\u05DC \u05D8\u05D5\u05D1!"), /*#__PURE__*/React.createElement("p", {
+    className: "text-2xl text-purple-700"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold"
+  }, winner.name), " \u05E0\u05D9\u05E6\u05D7 \u05D1\u05DE\u05E9\u05D7\u05E7!")), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white/70 p-6 rounded-lg mb-6"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-lg text-gray-800 leading-relaxed"
+  }, "\u05D4\u05D2\u05E2\u05EA \u05DC\u05D7\u05D2 \u05D4\u05E1\u05D5\u05DB\u05D5\u05EA \u05E2\u05DD \u05D7\u05D1\u05D9\u05D1\u05D5\u05EA \u05DE\u05E6\u05D5\u05D5\u05EA \u05D2\u05D3\u05D5\u05DC\u05D4!", /*#__PURE__*/React.createElement("br", null), "\u05D6\u05DB\u05D5\u05E8 \u05EA\u05DE\u05D9\u05D3: \u05D4\u05DE\u05E6\u05D5\u05D5\u05EA \u05D7\u05D1\u05D9\u05D1\u05D5\u05EA \u05E2\u05DC\u05D9\u05E0\u05D5 \u05D5\u05D4\u05DF \u05DE\u05E9\u05DE\u05D7\u05D5\u05EA \u05D0\u05EA \u05DC\u05D1\u05E0\u05D5.")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => window.location.reload(),
+    className: "bg-purple-500 hover:bg-purple-600 text-white py-4 px-8 rounded-xl font-bold text-lg transition transform hover:scale-105"
+  }, "\uD83C\uDFAE \u05DE\u05E9\u05D7\u05E7 \u05D7\u05D3\u05E9")))));
+};
+const __App = Game;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

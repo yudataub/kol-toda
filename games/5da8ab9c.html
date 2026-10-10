@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>torah_ordering_game – הקול החמישי</title>
+<meta name="description" content="Educational drag-and-drop game teaching Torah concepts through interactive ordering challenges. Learn about Isaac's blessings and redemption stages in Hebrew.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="torah_ordering_game – הקול החמישי">
+<meta property="og:description" content="Educational drag-and-drop game teaching Torah concepts through interactive ordering challenges. Learn about Isaac&#x27;s blessings and redemption stages in Hebrew.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-5da8ab9c.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/5da8ab9c.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useRef = window.React.useRef;
+const useEffect = window.React.useEffect;
+const CheckCircle = window.LucideReact["CheckCircle"] || window.LucideReact.Circle;
+const XCircle = window.LucideReact["XCircle"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const ArrowLeft = window.LucideReact["ArrowLeft"] || window.LucideReact.Circle;
+const ArrowRight = window.LucideReact["ArrowRight"] || window.LucideReact.Circle;
+const TorahOrderingGame = () => {
+  const [currentLevel, setCurrentLevel] = useState(0);
+  const [score, setScore] = useState(0);
+  const [gameState, setGameState] = useState('playing'); // playing, correct, wrong, completed
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [items, setItems] = useState([]);
+  const [feedback, setFeedback] = useState('');
+  const levels = [{
+    title: "רמה 1: רצף הברכות של יצחק",
+    description: "סדר את האירועים לפי הסדר הכרונולוגי",
+    difficulty: "קל",
+    items: [{
+      id: 1,
+      text: "יצחק מברך את יעקב (חושב שהוא עשיו)",
+      order: 1
+    }, {
+      id: 2,
+      text: "מתברר שזה יעקב ולא עשיו",
+      order: 2
+    }, {
+      id: 3,
+      text: "יצחק אומר שכבר נתן הכל ליעקב",
+      order: 3
+    }, {
+      id: 4,
+      text: "בסוף יצחק מברך גם את עשיו",
+      order: 4
+    }],
+    explanation: "הרצף מראה כיצד יעקב קיבל את הברכות תחילה, ורק אח\"כ עשיו קיבל ברכה נפרדת"
+  }, {
+    title: "רמה 2: מהות הברכות",
+    description: "סדר את ההסברים לפי עומק ההבנה",
+    difficulty: "בינוני",
+    items: [{
+      id: 1,
+      text: "הברכות נראות כברכות גשמיות - טל, שמן, דגן",
+      order: 1
+    }, {
+      id: 2,
+      text: "הברכות קובעות מי יירש את ארץ ישראל",
+      order: 2
+    }, {
+      id: 3,
+      text: "ירושת הארץ = קשר עם ה' ('ויתן לך אלוקים')",
+      order: 3
+    }, {
+      id: 4,
+      text: "ארץ ישראל מסמלת את העולם הבא",
+      order: 4
+    }],
+    explanation: "ההבנה מתעמקת משכבה גשמית לרוחנית עליונה - הברכות הן בעצם על העולם הבא"
+  }, {
+    title: "רמה 3: אמצעי ותכלית",
+    description: "סדר מהאמצעי לתכלית",
+    difficulty: "מאתגר",
+    items: [{
+      id: 1,
+      text: "לימוד תורה ושמירת מצוות - האמצעים",
+      order: 1
+    }, {
+      id: 2,
+      text: "זכייה לארץ ישראל מבורכת",
+      order: 2
+    }, {
+      id: 3,
+      text: "התענגות רוחנית בארץ ישראל",
+      order: 3
+    }, {
+      id: 4,
+      text: "דבקות בה' וחלק לעולם הבא - התכלית",
+      order: 4
+    }],
+    explanation: "משה מברך על התכלית (ארץ מבורכת = עולם הבא), לא רק על האמצעים (מצוות)"
+  }, {
+    title: "רמה 4: תהליך הגאולה לפי הגר\"א",
+    description: "סדר את שלבי הגאולה הצפויים",
+    difficulty: "מתקדם",
+    items: [{
+      id: 1,
+      text: "אתחלתא דגאולה - רשות מלכי האומות",
+      order: 1
+    }, {
+      id: 2,
+      text: "קיבוץ גלויות - לפחות 600,000 נפש",
+      order: 2
+    }, {
+      id: 3,
+      text: "בניין הארץ - 'גן עדן התחתון'",
+      order: 3
+    }, {
+      id: 4,
+      text: "הגאולה השלמה",
+      order: 4
+    }],
+    explanation: "תלמידי הגר\"א הדגישו את החשיבות של בניין פיזי של הארץ כחלק מהגאולה"
+  }, {
+    title: "רמה 5: שלבי ההבנה העמוקה",
+    description: "מהמסקנה הפשוטה להבנה העמוקה ביותר",
+    difficulty: "מומחה",
+    items: [{
+      id: 1,
+      text: "הברכות נראות גשמיות (פירות, שמן, יין)",
+      order: 1
+    }, {
+      id: 2,
+      text: "רק בארץ ישראל יש השגחה ישירה ('ויתן לך אלוקים')",
+      order: 2
+    }, {
+      id: 3,
+      text: "ארץ ישראל = קשר ישיר עם הקב\"ה (לא דרך מזלות)",
+      order: 3
+    }, {
+      id: 4,
+      text: "שפע בארץ ישראל תלוי בהתנהגות רוחנית",
+      order: 4
+    }, {
+      id: 5,
+      text: "התחברות לארץ = התחברות לשורש הנשמה בעולם הבא",
+      order: 5
+    }, {
+      id: 6,
+      text: "ארץ ישראל היא גוף העולם הבא עצמו",
+      order: 6
+    }],
+    explanation: "ההבנה השלמה: הברכות הגשמיות הן ביטוי חיצוני לקשר העמוק ביותר - 'נצר מטעי'"
+  }];
+  useEffect(() => {
+    shuffleItems();
+  }, [currentLevel]);
+  const shuffleItems = () => {
+    const levelItems = [...levels[currentLevel].items];
+    const shuffled = levelItems.sort(() => Math.random() - 0.5);
+    setItems(shuffled);
+    setGameState('playing');
+    setFeedback('');
+  };
+  const handleDragStart = (e, item) => {
+    setDraggedItem(item);
+    e.currentTarget.style.opacity = '0.5';
+  };
+  const handleDragEnd = e => {
+    e.currentTarget.style.opacity = '1';
+    setDraggedItem(null);
+  };
+  const handleDragOver = e => {
+    e.preventDefault();
+  };
+  const handleDrop = (e, targetItem) => {
+    e.preventDefault();
+    if (!draggedItem || draggedItem.id === targetItem.id) return;
+    const newItems = [...items];
+    const draggedIndex = newItems.findIndex(item => item.id === draggedItem.id);
+    const targetIndex = newItems.findIndex(item => item.id === targetItem.id);
+    newItems.splice(draggedIndex, 1);
+    newItems.splice(targetIndex, 0, draggedItem);
+    setItems(newItems);
+  };
+  const checkOrder = () => {
+    const isCorrect = items.every((item, index) => item.order === index + 1);
+    if (isCorrect) {
+      setGameState('correct');
+      setScore(score + (currentLevel + 1) * 10);
+      setFeedback(levels[currentLevel].explanation);
+    } else {
+      setGameState('wrong');
+      setFeedback('הסדר אינו נכון. נסה שוב!');
+    }
+  };
+  const nextLevel = () => {
+    if (currentLevel < levels.length - 1) {
+      setCurrentLevel(currentLevel + 1);
+    } else {
+      setGameState('completed');
+    }
+  };
+  const resetGame = () => {
+    setCurrentLevel(0);
+    setScore(0);
+    setGameState('playing');
+    shuffleItems();
+  };
+  const currentLevelData = levels[currentLevel];
+  const progress = (currentLevel + 1) / levels.length * 100;
+  if (gameState === 'completed') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 p-4 flex items-center justify-center",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl w-full bg-white rounded-2xl shadow-2xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-24 h-24 text-yellow-500 mx-auto mb-6"
+    }), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold text-amber-900 mb-4"
+    }, "\u05DB\u05DC \u05D4\u05DB\u05D1\u05D5\u05D3! \u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05DB\u05DC \u05D4\u05E8\u05DE\u05D5\u05EA!"), /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl font-bold text-amber-600 mb-6"
+    }, score, " \u05E0\u05E7\u05D5\u05D3\u05D5\u05EA"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700 mb-8"
+    }, "\u05D4\u05E9\u05DC\u05DE\u05EA \u05D0\u05EA \u05DB\u05DC \u05E8\u05DE\u05D5\u05EA \u05D4\u05DE\u05E9\u05D7\u05E7 \u05D5\u05D4\u05D1\u05E0\u05EA \u05D0\u05EA \u05E2\u05D5\u05DE\u05E7 \u05D4\u05D1\u05E8\u05DB\u05D5\u05EA \u05D1\u05E4\u05E8\u05E9\u05EA \u05D5\u05D6\u05D0\u05EA \u05D4\u05D1\u05E8\u05DB\u05D4"), /*#__PURE__*/React.createElement("button", {
+      onClick: resetGame,
+      className: "bg-amber-600 text-white px-8 py-4 rounded-xl text-xl font-bold hover:bg-amber-700 transition-all transform hover:scale-105"
+    }, "\u05E9\u05D7\u05E7 \u05E9\u05D5\u05D1")));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-4"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-3xl font-bold text-purple-900"
+  }, "\u05DE\u05E9\u05D7\u05E7 \u05E1\u05D9\u05D3\u05D5\u05E8 \u05D4\u05D1\u05E8\u05DB\u05D5\u05EA"), /*#__PURE__*/React.createElement("div", {
+    className: "text-2xl font-bold text-amber-600"
+  }, "\uD83C\uDFC6 ", score)), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-3 mb-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500",
+    style: {
+      width: `${progress}%`
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-gray-600 text-center"
+  }, "\u05E8\u05DE\u05D4 ", currentLevel + 1, " \u05DE\u05EA\u05D5\u05DA ", levels.length)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mb-3"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-bold text-purple-800"
+  }, currentLevelData.title), /*#__PURE__*/React.createElement("span", {
+    className: `px-4 py-1 rounded-full text-sm font-bold ${currentLevelData.difficulty === 'קל' ? 'bg-green-100 text-green-800' : currentLevelData.difficulty === 'בינוני' ? 'bg-yellow-100 text-yellow-800' : currentLevelData.difficulty === 'מאתגר' ? 'bg-orange-100 text-orange-800' : currentLevelData.difficulty === 'מתקדם' ? 'bg-red-100 text-red-800' : 'bg-purple-100 text-purple-800'}`
+  }, currentLevelData.difficulty)), /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-700 text-lg"
+  }, currentLevelData.description)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, items.map((item, index) => /*#__PURE__*/React.createElement("div", {
+    key: item.id,
+    draggable: gameState === 'playing',
+    onDragStart: e => handleDragStart(e, item),
+    onDragEnd: handleDragEnd,
+    onDragOver: handleDragOver,
+    onDrop: e => handleDrop(e, item),
+    className: `p-5 rounded-xl cursor-move transition-all duration-300 ${gameState === 'playing' ? 'bg-gradient-to-r from-blue-100 to-purple-100 hover:shadow-lg hover:scale-102 border-2 border-transparent hover:border-purple-300' : gameState === 'correct' && item.order === index + 1 ? 'bg-green-100 border-2 border-green-500' : gameState === 'wrong' && item.order !== index + 1 ? 'bg-red-100 border-2 border-red-500' : 'bg-gray-100'}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-2xl font-bold text-purple-600 min-w-[40px]"
+  }, index + 1), /*#__PURE__*/React.createElement("div", {
+    className: "text-lg font-medium text-gray-800 flex-1"
+  }, item.text), gameState === 'correct' && item.order === index + 1 && /*#__PURE__*/React.createElement(CheckCircle, {
+    className: "w-6 h-6 text-green-600"
+  }), gameState === 'wrong' && item.order !== index + 1 && /*#__PURE__*/React.createElement(XCircle, {
+    className: "w-6 h-6 text-red-600"
+  }))))), feedback && /*#__PURE__*/React.createElement("div", {
+    className: `mt-6 p-5 rounded-xl ${gameState === 'correct' ? 'bg-green-50 border-2 border-green-300' : 'bg-red-50 border-2 border-red-300'}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3"
+  }, gameState === 'correct' ? /*#__PURE__*/React.createElement(CheckCircle, {
+    className: "w-6 h-6 text-green-600 flex-shrink-0 mt-1"
+  }) : /*#__PURE__*/React.createElement(XCircle, {
+    className: "w-6 h-6 text-red-600 flex-shrink-0 mt-1"
+  }), /*#__PURE__*/React.createElement("p", {
+    className: `text-lg ${gameState === 'correct' ? 'text-green-800' : 'text-red-800'}`
+  }, feedback))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 flex gap-3 justify-center"
+  }, gameState === 'playing' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    onClick: checkOrder,
+    className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 shadow-lg"
+  }, "\u05D1\u05D3\u05D5\u05E7 \u05EA\u05E9\u05D5\u05D1\u05D4"), /*#__PURE__*/React.createElement("button", {
+    onClick: shuffleItems,
+    className: "bg-gray-500 text-white px-6 py-3 rounded-xl font-bold text-lg hover:bg-gray-600 transition-all transform hover:scale-105"
+  }, "\u05E2\u05E8\u05D1\u05D1 \u05DE\u05D7\u05D3\u05E9")), gameState === 'correct' && /*#__PURE__*/React.createElement("button", {
+    onClick: nextLevel,
+    className: "bg-gradient-to-r from-green-600 to-teal-600 text-white px-8 py-3 rounded-xl font-bold text-lg hover:from-green-700 hover:to-teal-700 transition-all transform hover:scale-105 shadow-lg flex items-center gap-2"
+  }, currentLevel < levels.length - 1 ? /*#__PURE__*/React.createElement(React.Fragment, null, "\u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4", /*#__PURE__*/React.createElement(ArrowLeft, {
+    className: "w-5 h-5"
+  })) : 'סיים משחק'), gameState === 'wrong' && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setGameState('playing'),
+    className: "bg-orange-500 text-white px-8 py-3 rounded-xl font-bold text-lg hover:bg-orange-600 transition-all transform hover:scale-105"
+  }, "\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1"))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-purple-50 border-2 border-purple-200 rounded-xl p-5 text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-purple-800 font-medium"
+  }, "\uD83D\uDCA1 ", /*#__PURE__*/React.createElement("strong", null, "\u05D4\u05D5\u05E8\u05D0\u05D5\u05EA:"), " \u05D2\u05E8\u05D5\u05E8 \u05D0\u05EA \u05D4\u05E4\u05E8\u05D9\u05D8\u05D9\u05DD \u05DC\u05DE\u05E7\u05D5\u05DD \u05D4\u05E0\u05DB\u05D5\u05DF \u05DC\u05E4\u05D9 \u05D4\u05E1\u05D3\u05E8 \u05D4\u05D4\u05D2\u05D9\u05D5\u05E0\u05D9 \u05D0\u05D5 \u05D4\u05DB\u05E8\u05D5\u05E0\u05D5\u05DC\u05D5\u05D2\u05D9"))));
+};
+const __App = TorahOrderingGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

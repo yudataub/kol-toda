@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🏡 משחק דיני סוכה - חידון אינטראקטיבי – הקול החמישי</title>
+<meta name="description" content="Learn Sukkah laws through an interactive Hebrew quiz game with 20 questions, sound effects, and detailed explanations. Built with Claude">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="🏡 משחק דיני סוכה - חידון אינטראקטיבי – הקול החמישי">
+<meta property="og:description" content="Learn Sukkah laws through an interactive Hebrew quiz game with 20 questions, sound effects, and detailed explanations. Built with Claude">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-84bcc6ce.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/84bcc6ce.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Volume2 = window.LucideReact["Volume2"] || window.LucideReact.Circle;
+const VolumeX = window.LucideReact["VolumeX"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const ChevronRight = window.LucideReact["ChevronRight"] || window.LucideReact.Circle;
+const RotateCcw = window.LucideReact["RotateCcw"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const SukkahQuizGame = () => {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [gameComplete, setGameComplete] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [stars, setStars] = useState([]);
+
+  // בנק שאלות מלא
+  const questions = [{
+    id: 1,
+    question: "יוסי אוכל בבוקר: 🍎 תפוח, 🥛 חלב, 🍞 לחם. מה חייב לאכול בסוכה?",
+    options: ["התפוח", "החלב", "הלחם", "הכל"],
+    correct: 2,
+    explanation: "לחם (מכביצה ומעלה) חייב בסוכה! 🍞",
+    emoji: "🍞"
+  }, {
+    id: 2,
+    question: "שרה מגישה עוגיות קטנות מדגן. צריך לאכול בסוכה?",
+    options: ["כן, תמיד", "לא, אף פעם", "תלוי בכמה אוכלים", "רק בשבת"],
+    correct: 2,
+    explanation: "תלוי בכמות! אם אוכלים כביצה ומעלה - צריך בסוכה 🍪",
+    emoji: "🍪"
+  }, {
+    id: 3,
+    question: "דוד עייף ורוצה לישון שעה. איפה הוא חייב לישון?",
+    options: ["בבית", "בסוכה", "איפה שנוח לו", "בחצר"],
+    correct: 1,
+    explanation: "בסוכה! שינה תמיד חייבת בסוכה - גם קצרה! 😴",
+    emoji: "😴"
+  }, {
+    id: 4,
+    question: "איפה צריך לשטוף כלים?",
+    options: ["בסוכה", "בבית", "בחצר", "בשניהם"],
+    correct: 1,
+    explanation: "בבית! לא עושים דברים מבזים בסוכה הקדושה 🧼",
+    emoji: "🧼"
+  }, {
+    id: 5,
+    question: "למה אסור להכניס דלי אשפה לסוכה?",
+    options: ["כי הוא מסריח", "כי לא מכבד את הסוכה", "כי הוא תופס מקום", "כי זה מסוכן"],
+    correct: 1,
+    explanation: "הסוכה קדושה! צריך לכבד אותה ולהכניס רק דברים יפים ✨",
+    emoji: "🪣"
+  }, {
+    id: 6,
+    question: "לאכול כזית פת בליל הראשון - זה:",
+    options: ["חומרה (יפה)", "חובה!", "רשות", "אסור"],
+    correct: 1,
+    explanation: "חובה מהתורה! בליל הראשון חייבים לאכול פת בסוכה 🍞⭐",
+    emoji: "⭐"
+  }, {
+    id: 7,
+    question: "לשתות מים בסוכה - זה:",
+    options: ["חובה", "אסור", "משובח אבל לא חובה", "רק בשבת"],
+    correct: 2,
+    explanation: "משובח! יפה לשתות בסוכה, אבל לא חובה 💧",
+    emoji: "💧"
+  }, {
+    id: 8,
+    question: "רונן (אשכנזי) ואלי (ספרדי) רבים על בורקס. מי צודק?",
+    options: ["רק רונן", "רק אלי", "שניהם צודקים!", "שניהם טועים"],
+    correct: 2,
+    explanation: "שניהם צודקים! יש הבדלים בין עדות - ושניהם נכונים 🤝",
+    emoji: "🤝"
+  }, {
+    id: 9,
+    question: "מה מיוחד בליל הראשון של סוכות?",
+    options: ["אסור לאכול", "חובה לאכול פת!", "רק שתייה", "שינה בלבד"],
+    correct: 1,
+    explanation: "חובה לאכול כזית פת! כמו מצה בליל הסדר 🌟",
+    emoji: "🌟"
+  }, {
+    id: 10,
+    question: "יצאת לשירותים וחזרת מהר. צריך לברך 'לישב בסוכה' שוב?",
+    options: ["כן", "לא!", "תלוי בזמן", "רק בלילה"],
+    correct: 1,
+    explanation: "לא! יצאת רק לרגע קצר ולא הסחת דעת 🚻",
+    emoji: "✅"
+  }, {
+    id: 11,
+    question: "מה הגן על בני ישראל במדבר?",
+    options: ["עננים רגילים", "ענני כבוד מיוחדים!", "אוהלים", "הרים"],
+    correct: 1,
+    explanation: "ענני כבוד! הקב\"ה הגן עליהם בעננים מיוחדים ☁️✨",
+    emoji: "☁️"
+  }, {
+    id: 12,
+    question: "הסוכה מלמדת אותנו על:",
+    options: ["כוח פיזי", "ביטחון בה' 🛡️", "בנייה", "חקלאות"],
+    correct: 1,
+    explanation: "ביטחון בה'! הסוכה מלמדת שהקב\"ה שומר עלינו 🛡️",
+    emoji: "🛡️"
+  }, {
+    id: 13,
+    question: "לאיזה מקום היו הולכים בסוכות בזמן בית המקדש?",
+    options: ["לים", "לירושלים!", "לשוק", "לנהר"],
+    correct: 1,
+    explanation: "לירושלים! היו עולים לבית המקדש בחג 🏛️",
+    emoji: "🏛️"
+  }, {
+    id: 14,
+    question: "איזה רגש הסוכה אמורה ליצור?",
+    options: ["פחד", "כעס", "ביטחון וענווה! 🙏", "שעמום"],
+    correct: 2,
+    explanation: "ביטחון בה' וענווה! לא להיות גאים במה שיש לנו 🙏",
+    emoji: "🙏"
+  }, {
+    id: 15,
+    question: "חידה: אני פעולה שחייבת תמיד בסוכה, גם קצרה. מי אני?",
+    options: ["אכילה", "שתייה", "שינה! 😴", "קריאה"],
+    correct: 2,
+    explanation: "שינה! כל שינה חייבת בסוכה - גם 5 דקות! 😴",
+    emoji: "😴"
+  }, {
+    id: 16,
+    question: "🍎 תפוח, 🍞 לחם, 🍫 שוקולד. רק אחד חייב בסוכה. מי?",
+    options: ["התפוח", "הלחם!", "השוקולד", "כולם"],
+    correct: 1,
+    explanation: "הלחם! רק דגן בשיעור כביצה חייב בסוכה 🍞",
+    emoji: "🍞"
+  }, {
+    id: 17,
+    question: "🪣 דלי או 🍽️ צלחת יפה. מה אסור בסוכה?",
+    options: ["הצלחת", "הדלי!", "שניהם", "אף אחד"],
+    correct: 1,
+    explanation: "הדלי! דברים מכוערים לא מכבדים את הסוכה 🪣❌",
+    emoji: "🪣"
+  }, {
+    id: 18,
+    question: "בשאר ימי החג (לא ליל ראשון) - אכילת פת זה:",
+    options: ["חובה", "אסור", "רשות!", "רק בשבת"],
+    correct: 2,
+    explanation: "רשות! אפשר לאכול רק פירות ולא להתחייב בסוכה 🍎",
+    emoji: "🍎"
+  }, {
+    id: 19,
+    question: "למה מותר לאכול תפוח מחוץ לסוכה?",
+    options: ["כי הוא קטן", "כי זה אכילת ארעי!", "כי זה פרי", "כי הוא ירוק"],
+    correct: 1,
+    explanation: "כי זה אכילת ארעי! לא דגן ולא סעודה קבועה 🍎",
+    emoji: "🍎"
+  }, {
+    id: 20,
+    question: "מה המשותף בין: דלי אסור, שינה חובה, תפוח מותר בחוץ?",
+    options: ["כולם על מזון", "דירת קבע/ארעי!", "כולם על שינה", "אין קשר"],
+    correct: 1,
+    explanation: "עקרון דירת קבע ודירת ארעי! הסוכה מתנהגת כמו בית רגיל 🏡",
+    emoji: "🏡"
+  }];
+
+  // פונקציית צלילים
+  const playSound = type => {
+    if (!soundEnabled) return;
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    if (type === 'correct') {
+      // צליל הצלחה - מנגינה עולה
+      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    } else if (type === 'wrong') {
+      // צליל טעות - נמוך
+      oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    } else if (type === 'complete') {
+      // צליל סיום משחק - מנגינת ניצחון
+      const notes = [523.25, 587.33, 659.25, 783.99];
+      notes.forEach((freq, i) => {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.frequency.setValueAtTime(freq, audioContext.currentTime + i * 0.15);
+        gain.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.3);
+        osc.start(audioContext.currentTime + i * 0.15);
+        osc.stop(audioContext.currentTime + i * 0.15 + 0.3);
+      });
+      return;
+    }
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+  };
+
+  // יצירת כוכבים מרחפים
+  useEffect(() => {
+    const newStars = Array.from({
+      length: 20
+    }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      animationDelay: Math.random() * 3,
+      size: Math.random() * 20 + 10
+    }));
+    setStars(newStars);
+  }, []);
+  const handleAnswerClick = answerIndex => {
+    if (showResult) return;
+    setSelectedAnswer(answerIndex);
+    setShowResult(true);
+    const isCorrect = answerIndex === questions[currentQuestion].correct;
+    if (isCorrect) {
+      setScore(score + 1);
+      playSound('correct');
+    } else {
+      playSound('wrong');
+    }
+  };
+  const handleNextQuestion = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setShowResult(false);
+    } else {
+      setGameComplete(true);
+      playSound('complete');
+    }
+  };
+  const restartGame = () => {
+    setCurrentQuestion(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setGameComplete(false);
+  };
+  const getScoreMessage = () => {
+    const percentage = score / questions.length * 100;
+    if (percentage >= 90) return {
+      text: "מצוין! אתה מומחה דיני סוכה! 🌟",
+      color: "text-yellow-400"
+    };
+    if (percentage >= 75) return {
+      text: "טוב מאוד! אתה יודע המון! ⭐",
+      color: "text-blue-400"
+    };
+    if (percentage >= 60) return {
+      text: "יפה! כל הכבוד! 👍",
+      color: "text-green-400"
+    };
+    return {
+      text: "יש לך מה ללמוד... נסה שוב! 💪",
+      color: "text-orange-400"
+    };
+  };
+  if (gameComplete) {
+    const scoreMsg = getScoreMessage();
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4 relative overflow-hidden",
+      dir: "rtl"
+    }, stars.map(star => /*#__PURE__*/React.createElement("div", {
+      key: star.id,
+      className: "absolute animate-pulse",
+      style: {
+        left: `${star.left}%`,
+        top: `${Math.random() * 100}%`,
+        animationDelay: `${star.animationDelay}s`,
+        fontSize: `${star.size}px`
+      }
+    }, "\u2B50")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 max-w-2xl w-full text-center relative z-10 border-4 border-yellow-400"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "mb-6"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-24 h-24 mx-auto text-yellow-500 animate-bounce"
+    })), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold mb-4 text-purple-900"
+    }, "\uD83C\uDF89 \u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05D4\u05DE\u05E9\u05D7\u05E7! \uD83C\uDF89"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-100 to-blue-100 rounded-2xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-6xl font-bold mb-2 text-purple-900"
+    }, score, "/", questions.length), /*#__PURE__*/React.createElement("p", {
+      className: `text-2xl font-bold ${scoreMsg.color}`
+    }, scoreMsg.text)), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-2 gap-4 mb-6 text-right"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-green-100 p-4 rounded-xl"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-green-800 font-bold"
+    }, "\u2705 \u05EA\u05E9\u05D5\u05D1\u05D5\u05EA \u05E0\u05DB\u05D5\u05E0\u05D5\u05EA"), /*#__PURE__*/React.createElement("p", {
+      className: "text-3xl font-bold text-green-600"
+    }, score)), /*#__PURE__*/React.createElement("div", {
+      className: "bg-red-100 p-4 rounded-xl"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-red-800 font-bold"
+    }, "\u274C \u05D8\u05E2\u05D5\u05D9\u05D5\u05EA"), /*#__PURE__*/React.createElement("p", {
+      className: "text-3xl font-bold text-red-600"
+    }, questions.length - score))), /*#__PURE__*/React.createElement("button", {
+      onClick: restartGame,
+      className: "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-2xl text-xl transition-all transform hover:scale-105 flex items-center justify-center gap-3 mx-auto shadow-lg"
+    }, /*#__PURE__*/React.createElement(RotateCcw, {
+      className: "w-6 h-6"
+    }), "\u05E9\u05D7\u05E7 \u05E9\u05D5\u05D1!")));
+  }
+  const currentQ = questions[currentQuestion];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-4 relative overflow-hidden",
+    dir: "rtl"
+  }, stars.map(star => /*#__PURE__*/React.createElement("div", {
+    key: star.id,
+    className: "absolute animate-pulse",
+    style: {
+      left: `${star.left}%`,
+      top: `${Math.random() * 100}%`,
+      animationDelay: `${star.animationDelay}s`,
+      fontSize: `${star.size}px`,
+      opacity: 0.6
+    }
+  }, "\u2728")), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-6 max-w-3xl w-full relative z-10 border-4 border-purple-400"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setSoundEnabled(!soundEnabled),
+    className: "absolute top-4 left-4 bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-full transition-all transform hover:scale-110"
+  }, soundEnabled ? /*#__PURE__*/React.createElement(Volume2, {
+    className: "w-5 h-5"
+  }) : /*#__PURE__*/React.createElement(VolumeX, {
+    className: "w-5 h-5"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "text-center mb-6"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-3xl font-bold text-purple-900 mb-2"
+  }, "\uD83C\uDFE1 \u05D7\u05D9\u05D3\u05D5\u05DF \u05D3\u05D9\u05E0\u05D9 \u05E1\u05D5\u05DB\u05D4"), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-center items-center gap-4 text-lg"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-purple-100 px-4 py-2 rounded-full"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-purple-900"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, "/", questions.length)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-green-100 px-4 py-2 rounded-full flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Star, {
+    className: "w-5 h-5 text-yellow-500 fill-yellow-500"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-green-900"
+  }, "\u05E0\u05D9\u05E7\u05D5\u05D3: ", score)))), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-3 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500",
+    style: {
+      width: `${(currentQuestion + 1) / questions.length * 100}%`
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 mb-6 border-2 border-purple-300"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center mb-4"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-6xl"
+  }, currentQ.emoji)), /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-bold text-center text-gray-800 leading-relaxed"
+  }, currentQ.question)), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+  }, currentQ.options.map((option, index) => {
+    const isCorrect = index === currentQ.correct;
+    const isSelected = selectedAnswer === index;
+    let buttonClass = "bg-white hover:bg-purple-50 border-2 border-purple-300 text-gray-800";
+    if (showResult) {
+      if (isCorrect) {
+        buttonClass = "bg-green-500 border-green-600 text-white animate-pulse";
+      } else if (isSelected && !isCorrect) {
+        buttonClass = "bg-red-500 border-red-600 text-white";
+      } else {
+        buttonClass = "bg-gray-200 border-gray-300 text-gray-500";
+      }
+    } else if (isSelected) {
+      buttonClass = "bg-purple-500 border-purple-600 text-white";
+    }
+    return /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => handleAnswerClick(index),
+      disabled: showResult,
+      className: `${buttonClass} font-bold py-4 px-6 rounded-xl text-lg transition-all transform hover:scale-105 disabled:cursor-not-allowed shadow-lg`
+    }, option);
+  })), showResult && /*#__PURE__*/React.createElement("div", {
+    className: `${selectedAnswer === currentQ.correct ? 'bg-green-100 border-green-400' : 'bg-orange-100 border-orange-400'} border-2 rounded-2xl p-6 mb-6 animate-fade-in`
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xl font-bold text-center text-gray-800"
+  }, selectedAnswer === currentQ.correct ? '✅ נכון! כל הכבוד!' : '❌ לא נכון, אבל בסדר!'), /*#__PURE__*/React.createElement("p", {
+    className: "text-lg text-center text-gray-700 mt-2"
+  }, "\uD83D\uDCA1 ", currentQ.explanation)), showResult && /*#__PURE__*/React.createElement("button", {
+    onClick: handleNextQuestion,
+    className: "w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-2xl text-xl transition-all transform hover:scale-105 flex items-center justify-center gap-3 shadow-lg"
+  }, currentQuestion < questions.length - 1 ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, "\u05E9\u05D0\u05DC\u05D4 \u05D4\u05D1\u05D0\u05D4"), /*#__PURE__*/React.createElement(ChevronRight, {
+    className: "w-6 h-6"
+  })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, "\u05E1\u05D9\u05D5\u05DD \u05D4\u05DE\u05E9\u05D7\u05E7"), /*#__PURE__*/React.createElement(Award, {
+    className: "w-6 h-6"
+  })))), /*#__PURE__*/React.createElement("style", {
+    jsx: true
+  }, `
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out;
+        }
+      `));
+};
+const __App = SukkahQuizGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

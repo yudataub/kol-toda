@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎲 משחק ראש השנה: מלך או שופט?</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .game-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            color: #2c3e50;
+        }
+        
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .game-info {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .game-info h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.3em;
+        }
+        
+        .rules {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .rule-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .rule-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        
+        .rule-king {
+            border-color: #ffd700;
+            background: linear-gradient(135deg, #fff7e6 0%, #ffe066 20%);
+        }
+        
+        .rule-judge {
+            border-color: #9b59b6;
+            background: linear-gradient(135deg, #f3e5f5 0%, #d1c4e9 20%);
+        }
+        
+        .rule-both {
+            border-color: #e74c3c;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 20%);
+        }
+        
+        .rule-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .game-board {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .current-question {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.3em;
+            font-weight: bold;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .answer-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .answer-btn {
+            padding: 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            color: white;
+        }
+        
+        .answer-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+        
+        .btn-king {
+            background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
+        }
+        
+        .btn-judge {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        }
+        
+        .btn-both {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+        
+        .feedback {
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .feedback.show {
+            opacity: 1;
+        }
+        
+        .feedback.correct {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+            color: white;
+        }
+        
+        .feedback.incorrect {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            color: white;
+        }
+        
+        .score {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .score-item {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        .control-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        
+        .btn-next {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+        }
+        
+        .btn-reset {
+            background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+        
+        .examples {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-right: 5px solid #3498db;
+        }
+        
+        .examples h4 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .example-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            border-right: 3px solid #e74c3c;
+        }
+        
+        .credits {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 30px;
+            text-align: center;
+        }
+    </style>
+<meta property="og:title" content="🎲 משחק ראש השנה: מלך או שופט?">
+<meta property="og:description" content="🎲 משחק ראש השנה: מלך או שופט?">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-8611ac44.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/8611ac44.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>🎲 משחק ראש השנה</h1>
+            <p>מלך או שופט? - למי שייכת כל הנהגה?</p>
+        </div>
+        
+        <div class="game-info">
+            <h3>🎯 כללי המשחק</h3>
+            <p>בראש השנה יש הרבה הנהגות שמראות על שני צדדים - <strong>מלכות</strong> (שמחה ואהבה) ו<strong>דין</strong> (רצינות ויראה). 
+            תפקידכם לזהות לאיזה צד שייכת כל הנהגה!</p>
+        </div>
+        
+        <div class="rules">
+            <div class="rule-card rule-king">
+                <div class="rule-icon">👑</div>
+                <h4>מלכות - שמחה!</h4>
+                <p>מרימים יד <strong>ימין</strong></p>
+                <p>כשזה קשור לשמחה, אהבה, חגיגה של המלך</p>
+            </div>
+            
+            <div class="rule-card rule-judge">
+                <div class="rule-icon">⚖️</div>
+                <h4>דין - רצינות!</h4>
+                <p>מרימים יד <strong>שמאל</strong></p>
+                <p>כשזה קשור לדין, יראה, רצינות, תשובה</p>
+            </div>
+            
+            <div class="rule-card rule-both">
+                <div class="rule-icon">🤲</div>
+                <h4>שני הצדדים!</h4>
+                <p>מרימים <strong>שתי ידיים</strong></p>
+                <p>כשיש גם מלכות וגם דין ביחד</p>
+            </div>
+        </div>
+        
+        <div class="game-board">
+            <div class="score">
+                <div class="score-item">🏆 נכון: <span id="correct">0</span></div>
+                <div class="score-item">📊 סה"כ: <span id="total">0</span></div>
+                <div class="score-item">⭐ אחוזים: <span id="percentage">0%</span></div>
+            </div>
+            
+            <div class="current-question" id="question">
+                לחצו על "שאלה חדשה" כדי להתחיל!
+            </div>
+            
+            <div class="answer-buttons">
+                <button class="answer-btn btn-king" onclick="checkAnswer('king')">
+                    👑<br>מלכות<br>(יד ימין)
+                </button>
+                <button class="answer-btn btn-judge" onclick="checkAnswer('judge')">
+                    ⚖️<br>דין<br>(יד שמאל)
+                </button>
+                <button class="answer-btn btn-both" onclick="checkAnswer('both')">
+                    🤲<br>שני הצדדים<br>(שתי ידיים)
+                </button>
+            </div>
+            
+            <div class="feedback" id="feedback"></div>
+            
+            <div class="control-buttons">
+                <button class="control-btn btn-next" onclick="nextQuestion()">🎲 שאלה חדשה</button>
+                <button class="control-btn btn-reset" onclick="resetGame()">🔄 איפוס משחק</button>
+            </div>
+        </div>
+        
+        <div class="examples">
+            <h4>💡 דוגמאות לתרגול:</h4>
+            <div class="example-grid">
+                <div class="example-item">• תקיעת שופר → שתי ידיים! (גם מלכות וגם דין)</div>
+                <div class="example-item">• אכילת דבש → יד ימין! (מלכות - שמחה)</div>
+                <div class="example-item">• אמירת "נתנה תוקף" → יד שמאל! (דין)</div>
+                <div class="example-item">• לבישת בגדים יפים → יד ימין! (כבוד למלך)</div>
+                <div class="example-item">• לא לאכול לפני תקיעות → יד שמאל! (אימת יום הדין)</div>
+                <div class="example-item">• זכרונות → יד שמאל! (דין - "להפקד")</div>
+            </div>
+        </div>
+        
+        <div class="credits">
+            <p><strong>📚 נערך מתוך כתביו של הרב יהודה טאוב</strong></p>
+            <p>רב בית הספר "נעם" - קרית אתא</p>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "תקיעת שופר",
+                answer: "both",
+                explanation: "השופר משמש גם לכתרת המלך (מלכות) וגם להזהרה לתשובה (דין)!"
+            },
+            {
+                question: "אכילת דבש ותפוחים",
+                answer: "king",
+                explanation: "אוכלים משמנים ומתוקים לכבוד יום טוב - זו שמחת המלכות!"
+            },
+            {
+                question: 'אמירת "נתנה תוקף"',
+                answer: "judge",
+                explanation: "זו תפילה על יום הדין - כשהקב\"ה יושב על כסא משפט!"
+            },
+            {
+                question: "לבישת בגדים נאים",
+                answer: "king",
+                explanation: "לובשים יפה לכבוד המלך, אבל לא יותר מדי כדי לזכור שזה יום דין!"
+            },
+            {
+                question: "לא לאכול לפני תקיעות",
+                answer: "judge",
+                explanation: "משום אימת יום הדין - רצינות מיוחדת שאין בשאר המצוות!"
+            },
+            {
+                question: "מלכויות בתפילה",
+                answer: "king",
+                explanation: "אומרים מלכויות כדי שנמליך את הקב\"ה עלינו - זו שמחת המלכות!"
+            },
+            {
+                question: "זכרונות בתפילה",
+                answer: "judge",
+                explanation: "זכרונות זה על הדין - 'תביא חוק זכרון להפקד כל רוח ונפש'!"
+            },
+            {
+                question: "תקיעה (קול חזק ויציב)",
+                answer: "king",
+                explanation: "תקיעה מעוררת את הצדיקים העובדים מאהבה - זה קול של שמחה!"
+            },
+            {
+                question: "תרועה ושברים (קול שבור)",
+                answer: "judge",
+                explanation: "תרועה מעוררת לתשובה מיראה - זה קול של חיל ורעדה!"
+            },
+            {
+                question: "עמידה בתקיעות (רכות)",
+                answer: "king",
+                explanation: "רכות מעומד - מלכויות אומרים בעמידה מכבוד למלך!"
+            },
+            {
+                question: "ישיבה בתקיעות (קשות)",
+                answer: "judge",
+                explanation: "קשות מיושב - זכרונות ושופרות דורשים ריכוז עמוק של דין!"
+            },
+            {
+                question: "אם כבנים",
+                answer: "king",
+                explanation: "עובדים מאהבה כבנים - שמחים לפגוש את אבא שבשמים!"
+            },
+            {
+                question: "אם כעבדים",
+                answer: "judge",
+                explanation: "עובדים מיראה כעבדים - זהירים מהעונש של המלך!"
+            },
+            {
+                question: "קריאת התורה ביום ראשון (שרה ויצחק)",
+                answer: "king",
+                explanation: "יום ראשון - שמחת הלידה! 'צחוק עשה לי אלוקים'!"
+            },
+            {
+                question: "קריאת התורה ביום שני (עקידה)",
+                answer: "judge",
+                explanation: "יום שני - מבחן האמונה הקשה! 'עתה ידעתי כי ירא אלוקים אתה'!"
+            },
+            {
+                question: "אין אומרים הלל",
+                answer: "judge",
+                explanation: "לא אומרים הלל כי ספרי חיים ומתים פתוחים - זה יום דין!"
+            },
+            {
+                question: "אוכלים משמנים ממתקים",
+                answer: "king",
+                explanation: "נחמיה אמר: 'אל תעצבו כי חדות ה' היא מעוזכם' - זו שמחת יום טוב!"
+            },
+            {
+                question: "לובשים קיטל לבן",
+                answer: "judge",
+                explanation: "הקיטל הלבן מזכיר את יום כיפור - זה סימן ליום הדין!"
+            },
+            {
+                question: "רחיצה וסיפור לכבוד היום",
+                answer: "king",
+                explanation: "מתכוננים יפה לכבוד יום טוב - זו הכנה לפגישה עם המלך!"
+            },
+            {
+                question: "שופרות בתפילה",
+                answer: "both",
+                explanation: "שופרות כוללים גם תקיעות (מלכות) וגם תרועות (דין) - שני הצדדים!"
+            }
+        ];
+
+        let currentQuestion = -1;
+        let score = { correct: 0, total: 0 };
+        let usedQuestions = new Set();
+
+        // Sound effects
+        function playSound(type) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            if (type === 'correct') {
+                // מנגינה עולה שמחה - דו רה מי פה סול
+                const notes = [261.63, 293.66, 329.63, 349.23, 392.00];
+                notes.forEach((freq, index) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + index * 0.15);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + index * 0.15);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + index * 0.15 + 0.3);
+                    
+                    oscillator.start(audioContext.currentTime + index * 0.15);
+                    oscillator.stop(audioContext.currentTime + index * 0.15 + 0.3);
+                });
+            } else {
+                // צליל "אופס" יורד - סול פה מי
+                const notes = [392.00, 349.23, 329.63];
+                notes.forEach((freq, index) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + index * 0.2);
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime + index * 0.2);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + index * 0.2 + 0.4);
+                    
+                    oscillator.start(audioContext.currentTime + index * 0.2);
+                    oscillator.stop(audioContext.currentTime + index * 0.2 + 0.4);
+                });
+            }
+        }
+
+        function nextQuestion() {
+            // אם נגמרו כל השאלות - איפוס רשימת השאלות שהוצגו
+            if (usedQuestions.size >= questions.length) {
+                usedQuestions.clear();
+            }
+            
+            // בחירת שאלה שעדיין לא הוצגה
+            let availableQuestions = [];
+            for (let i = 0; i < questions.length; i++) {
+                if (!usedQuestions.has(i)) {
+                    availableQuestions.push(i);
+                }
+            }
+            
+            currentQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+            usedQuestions.add(currentQuestion);
+            
+            const question = questions[currentQuestion];
+            
+            document.getElementById('question').textContent = question.question;
+            document.getElementById('feedback').classList.remove('show');
+            
+            // Enable buttons
+            const buttons = document.querySelectorAll('.answer-btn');
+            buttons.forEach(btn => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            });
+        }
+
+        function checkAnswer(userAnswer) {
+            const question = questions[currentQuestion];
+            const feedback = document.getElementById('feedback');
+            const isCorrect = userAnswer === question.answer;
+            
+            score.total++;
+            if (isCorrect) {
+                playSound('correct');
+                score.correct++;
+                feedback.textContent = `✅ נכון מעולה! ${question.explanation}`;
+                feedback.className = 'feedback correct show';
+            } else {
+                playSound('incorrect');
+                const correctAnswerText = {
+                    'king': 'מלכות (יד ימין)',
+                    'judge': 'דין (יד שמאל)', 
+                    'both': 'שני הצדדים (שתי ידיים)'
+                };
+                feedback.textContent = `❌ אופס... התשובה הנכונה: ${correctAnswerText[question.answer]}. ${question.explanation}`;
+                feedback.className = 'feedback incorrect show';
+            }
+            
+            updateScore();
+            
+            // Disable buttons after answer
+            const buttons = document.querySelectorAll('.answer-btn');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = '0.6';
+            });
+        }
+
+        function updateScore() {
+            document.getElementById('correct').textContent = score.correct;
+            document.getElementById('total').textContent = score.total;
+            const percentage = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
+            document.getElementById('percentage').textContent = percentage + '%';
+        }
+
+        function resetGame() {
+            score = { correct: 0, total: 0 };
+            usedQuestions.clear(); // איפוס רשימת השאלות שהוצגו
+            updateScore();
+            document.getElementById('question').textContent = 'לחצו על "שאלה חדשה" כדי להתחיל!';
+            document.getElementById('feedback').classList.remove('show');
+            currentQuestion = -1;
+            
+            // Enable buttons
+            const buttons = document.querySelectorAll('.answer-btn');
+            buttons.forEach(btn => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            });
+        }
+
+        // Initialize
+        updateScore();
+    </script>
+</body>
+</html>

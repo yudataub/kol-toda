@@ -1,0 +1,1263 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>blessings_game_final – הקול החמישי</title>
+<meta name="description" content="Master Jewish blessing laws through an engaging quiz game covering Shehecheyanu rules, danger situations, and proper timing with instant feedback.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="blessings_game_final – הקול החמישי">
+<meta property="og:description" content="Master Jewish blessing laws through an engaging quiz game covering Shehecheyanu rules, danger situations, and proper timing with instant feedback.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-1cae1aa1.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/1cae1aa1.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Target = window.LucideReact["Target"] || window.LucideReact.Circle;
+const Brain = window.LucideReact["Brain"] || window.LucideReact.Circle;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Zap = window.LucideReact["Zap"] || window.LucideReact.Circle;
+const CheckCircle = window.LucideReact["CheckCircle"] || window.LucideReact.Circle;
+const XCircle = window.LucideReact["XCircle"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const BlessingsGame = () => {
+  const [currentWorld, setCurrentWorld] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [worldScores, setWorldScores] = useState([]);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [gamePhase, setGamePhase] = useState('intro'); // intro, playing, worldComplete, gameComplete
+  const [attempts, setAttempts] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+
+  // Audio context for sound effects
+  const playSound = type => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      if (type === 'correct') {
+        // Pleasant ascending notes: C-E-G
+        const notes = [523.25, 659.25, 783.99];
+        notes.forEach((freq, i) => {
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          osc.frequency.value = freq;
+          osc.type = 'sine';
+          gain.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.15);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.2);
+          osc.start(audioContext.currentTime + i * 0.15);
+          osc.stop(audioContext.currentTime + i * 0.15 + 0.2);
+        });
+      } else if (type === 'celebration') {
+        // Celebratory sequence: C5→E5→G5→C6→G5→E5
+        const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25];
+        notes.forEach((freq, i) => {
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          osc.frequency.value = freq;
+          osc.type = 'sine';
+          gain.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.3);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.3 + 0.25);
+          osc.start(audioContext.currentTime + i * 0.3);
+          osc.stop(audioContext.currentTime + i * 0.3 + 0.25);
+        });
+      }
+    } catch (e) {
+      console.log('Audio not supported');
+    }
+  };
+  const worlds = [{
+    id: 1,
+    name: "🌍 עולם 1: הכלל הזהב - 30 יום + סכנה",
+    emoji: "🌱",
+    difficulty: "קל",
+    color: "bg-green-500",
+    questions: [{
+      question: "אבא שלך היה בצבא בעזה 3 חודשים במצב מסוכן. דיברתם בטלפון כל יום! עכשיו הוא חזר. מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש 30 יום ויש סכנה (קשר לא משנה!)",
+      wrongHint: "קשר טלפוני לא משנה! יש 30 יום + סכנה = מברכים!",
+      answers: [{
+        text: "ברכת שהחיינו - יש 30 יום ויש סכנה",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי דיברנו בטלפון כל יום",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה בסכנה",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי חזר בשלום",
+        isCorrect: false
+      }]
+    }, {
+      question: "אחותך נסעה לחו\"ל ללימודים שנה שלמה. לא הייתה בשום סכנה. דיברתם בזום כל שבוע. היא חזרה! מה מברכים?",
+      correctAnswer: "לא מברכים - יש 30 יום אבל אין סכנה",
+      wrongHint: "שנה זמן רב, אבל אין סכנה! צריך שני התנאים",
+      answers: [{
+        text: "לא מברכים - אין סכנה",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי עבר יותר משנה",
+        isCorrect: false
+      }, {
+        text: "לא מברכים - כי דיברנו בזום",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי שמחנו שחזרה",
+        isCorrect: false
+      }]
+    }, {
+      question: "סבא שלך היה בניתוח לב מסוכן מאוד אתמול. ברוך ה' הוא בריא! אתם גרים ביחד. מה מברכים?",
+      correctAnswer: "לא מברכים - יש סכנה אבל לא עברו 30 יום",
+      wrongHint: "ניתוח מסוכן = סכנה כן, אבל רק אתמול! צריך 30 יום",
+      answers: [{
+        text: "לא מברכים - לא עברו 30 יום",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי היה בסכנת חיים",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי הניתוח היה מסוכן",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי הניתוח הצליח",
+        isCorrect: false
+      }]
+    }, {
+      question: "דוד שלך נחטף לעזה שנתיים. המשפחה דיברה איתו פעם אחת בטלפון. עכשיו הוא חזר! מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש 30 יום ויש סכנה",
+      wrongHint: "חטיפה = סכנה! ושנתיים = הרבה יותר מ-30 יום",
+      answers: [{
+        text: "ברכת שהחיינו - יש 30 יום ויש סכנה",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי דיברו איתו פעם אחת",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה בשבי",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי שוחרר",
+        isCorrect: false
+      }]
+    }, {
+      question: "חברה שלך נסעה למחנה קיץ 8 שבועות. לא היה שום סכנה. לא דיברתם בכלל. היא חזרה! מה מברכים?",
+      correctAnswer: "לא מברכים - יש 30 יום אבל אין סכנה",
+      wrongHint: "8 שבועות = הרבה יותר מ-30 יום, אבל מחנה קיץ בטוח!",
+      answers: [{
+        text: "לא מברכים - אין סכנה",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי עבר הרבה זמן",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי לא דיברנו",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי התגעגענו",
+        isCorrect: false
+      }]
+    }, {
+      question: "אמא שלך הייתה בניתוח פשוט ברגל. לא מסוכן בכלל. עברו 3 חודשים, היא בריאה! מה מברכים?",
+      correctAnswer: "לא מברכים - יש 30 יום אבל אין סכנה",
+      wrongHint: "ניתוח לא מסוכן = אין סכנת חיים!",
+      answers: [{
+        text: "לא מברכים - אין סכנה",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי עברו 3 חודשים",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי הייתה בניתוח",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי הניתוח הצליח",
+        isCorrect: false
+      }]
+    }, {
+      question: "אחיך השתתף בקרב מסוכן בעזה. דיברתם בווטסאפ כל שבוע. חזר אחרי 5 חודשים. מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "קרב מסוכן = סכנה! קשר בווטסאפ לא משנה כלום",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי דיברנו בווטסאפ",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה בקרב",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי חזר בשלום",
+        isCorrect: false
+      }]
+    }, {
+      question: "דודה שלך עבדה באפריקה שנה במקום מסוכן. שלחתם מכתבים כל חודש. היא חזרה! מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "מקום מסוכן = סכנה! מכתבים לא משנים",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי שלחנו מכתבים",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי עבדה רחוק",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי חזרה בריאה",
+        isCorrect: false
+      }]
+    }]
+  }, {
+    id: 2,
+    name: "👀 עולם 2: רק ראייה פנים אל פנים!",
+    emoji: "📺",
+    difficulty: "בינוני",
+    color: "bg-blue-500",
+    questions: [{
+      question: "ראית בטלוויזיה שחטופה בשם נועה חזרה למשפחה. אתה לא מכיר אותה אישית. מה מברכים?",
+      correctAnswer: "לא מברכים - ראיית טלוויזיה לא נחשבת",
+      wrongHint: "טלוויזיה = לא ראית באמת! צריך לראות פנים אל פנים",
+      answers: [{
+        text: "לא מברכים - לא ראית פנים אל פנים",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי היא הייתה בסכנה",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי כולם שמחים",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי הייתה בשבי",
+        isCorrect: false
+      }]
+    }, {
+      question: "אבא של חבר שלך נחטף. ראית אותו בחדשות שחזר. אתה לא מכיר אותו אישית. מה מברכים?",
+      correctAnswer: "לא מברכים - לא ראית אותו באמת",
+      wrongHint: "חדשות/טלוויזיה = לא ראייה אמיתית!",
+      answers: [{
+        text: "לא מברכים - לא ראית פנים אל פנים",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי הוא היה בסכנה",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי שמחנו עליו",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה חטוף",
+        isCorrect: false
+      }]
+    }, {
+      question: "דוד שלך גר בעיר אחרת. ראית אותו אתמול. היום הוא נסע לניתוח מסוכן וחזר. מה מברכים?",
+      correctAnswer: "לא מברכים - לא עברו 30 יום",
+      wrongHint: "אתמול + היום = פחות מיומיים! צריך 30 יום",
+      answers: [{
+        text: "לא מברכים - לא עברו 30 יום",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי היה בסכנת חיים",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי הניתוח הצליח",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה בניתוח",
+        isCorrect: false
+      }]
+    }, {
+      question: "סבתא שלך גרה ברחוב הבא. אתה רואה אותה דרך החלון כל יום. היא הייתה בבית חולים חודש. מה מברכים?",
+      correctAnswer: "לא מברכים - ראית אותה כל יום דרך החלון",
+      wrongHint: "ראייה דרך החלון = ראייה! גם אם דרך זכוכית",
+      answers: [{
+        text: "לא מברכים - ראית אותה כל יום",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי עבר חודש",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי הייתה בבית חולים",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי החלימה",
+        isCorrect: false
+      }]
+    }, {
+      question: "אחיך גר איתך בבית. הוא היה בניתוח מסוכן מאוד. הניתוח היה לפני 6 שבועות. מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "גרים ביחד אבל 6 שבועות = יותר מ-30 יום! והיה בסכנה",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי גרים ביחד",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי הניתוח הצליח",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה מסוכן",
+        isCorrect: false
+      }]
+    }, {
+      question: "חבר שלך עבר דירה לעיר רחוקה. לא ראית אותו שנה. לא הייתה סכנה. דיברתם כל שבוע. הוא בא! מה מברכים?",
+      correctAnswer: "לא מברכים - אין סכנה",
+      wrongHint: "שנה בלי לראות כן, אבל אין סכנה!",
+      answers: [{
+        text: "לא מברכים - אין סכנה",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי עברה שנה",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי לא ראינו",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי נפגשנו",
+        isCorrect: false
+      }]
+    }, {
+      question: "אמא שלך גרה איתך. היא הייתה בטיפול נמרץ 2 חודשים. ביקרת אותה שם כל יום דרך החלון. מה מברכים?",
+      correctAnswer: "לא מברכים - ראית אותה כל יום",
+      wrongHint: "ראייה דרך חלון = ראייה! גם בבית חולים",
+      answers: [{
+        text: "לא מברכים - ראית אותה כל יום",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי הייתה בסכנה ועברו 30 יום",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי הייתה קשה",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי החלימה",
+        isCorrect: false
+      }]
+    }, {
+      question: "דודה שלך גרה בארה\"ב 15 שנה. לא ראית אותה מעולם! לא הייתה בסכנה. עכשיו היא באה! מה מברכים?",
+      correctAnswer: "לא מברכים - אין סכנה",
+      wrongHint: "15 שנה זה הרבה, אבל אין סכנה!",
+      answers: [{
+        text: "לא מברכים - אין סכנה",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי עברו 15 שנה",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי לא ראית מעולם",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי סוף סוף נפגשתם",
+        isCorrect: false
+      }]
+    }]
+  }, {
+    id: 3,
+    name: "💪 עולם 3: סכנה אמיתית",
+    emoji: "🛡️",
+    difficulty: "בינוני-מתקדם",
+    color: "bg-purple-500",
+    questions: [{
+      question: "אמא שלך הייתה בניתוח לב מסוכן מאוד. הרופאים דאגו. עברו 7 שבועות, היא בריאה! מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "ניתוח מסוכן בלב = סכנת חיים! ו-7 שבועות = הרבה יותר מ-30 יום",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי גרים ביחד",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי הניתוח הצליח",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה מסוכן מאוד",
+        isCorrect: false
+      }]
+    }, {
+      question: "אבא שלך נקלע לתאונת דרכים קשה. היה בתרדמת שבועיים. אתמול התעורר! אתם גרים ביחד. מה מברכים?",
+      correctAnswer: "לא מברכים - יש סכנה אבל לא עברו 30 יום",
+      wrongHint: "תאונה קשה = סכנה כן, אבל רק שבועיים! צריך 30 יום",
+      answers: [{
+        text: "לא מברכים - לא עברו 30 יום",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי היה בסכנת חיים",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה בתרדמת",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי התעורר",
+        isCorrect: false
+      }]
+    }, {
+      question: "חייל שאתה מכיר נפצע בקרב קשה. לא דיברתם בכלל. עברו 6 חודשים. עכשיו ראית אותו בריא! מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "קרב קשה = סכנה! ו-6 חודשים = הרבה יותר מ-30 יום",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי הוא רק מכר",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי נפצע קשה",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי החלים",
+        isCorrect: false
+      }]
+    }, {
+      question: "סבא שלך היה במצב קשה בקורונה. מחובר למכשירי הנשמה. ברוך ה' החלים! עברו 3 חודשים. מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "מכשירי הנשמה = סכנת חיים גדולה! ו-3 חודשים = יותר מ-30 יום",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי ראינו אותו בחלון",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי החלים מהמחלה",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה קשה מאוד",
+        isCorrect: false
+      }]
+    }, {
+      question: "אחותך נסעה לטיול הרים מסוכן. לא הייתה קליטה 3 שבועות. חזרה בשלום! מה מברכים?",
+      correctAnswer: "לא מברכים - יש סכנה אבל לא עברו 30 יום",
+      wrongHint: "טיול מסוכן = סכנה כן, אבל 3 שבועות = 21 יום בלבד!",
+      answers: [{
+        text: "לא מברכים - לא עברו 30 יום",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי היה מסוכן ולא היה קשר",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה מסוכן",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי חזרה בשלום",
+        isCorrect: false
+      }]
+    }, {
+      question: "דוד שלך עבד באזור מלחמה 5 חודשים. המשפחה דאגה. דיברתם בטלפון כל שבוע. הוא חזר! מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "אזור מלחמה = סכנה! קשר טלפוני לא משנה כלום",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי דיברנו כל שבוע",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי עבד רחוק",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי חזר בשלום",
+        isCorrect: false
+      }]
+    }, {
+      question: "חברה שלך הייתה בתאונה. היא נעלמה ביער 4 ימים. המשטרה חיפשה. מצאו אותה! מה מברכים?",
+      correctAnswer: "לא מברכים - לא עברו 30 יום",
+      wrongHint: "4 ימים זה הרבה פחות מ-30 יום!",
+      answers: [{
+        text: "לא מברכים - לא עברו 30 יום",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי הייתה בסכנה",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי לא ידעו מה מצבה",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי מצאו אותה",
+        isCorrect: false
+      }]
+    }, {
+      question: "אחיך השתתף במבצע צבאי מסוכן. שלחתם הודעות ווטסאפ כל יום. חזר אחרי 4 חודשים. מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "מבצע מסוכן = סכנה! ווטסאפ יומי לא משנה",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי שלחנו הודעות כל יום",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה במבצע",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי חזר בשלום",
+        isCorrect: false
+      }]
+    }]
+  }, {
+    id: 4,
+    name: "🎓 עולם 4: מחיה המתים - לא ידעו אם חי",
+    emoji: "💎",
+    difficulty: "מתקדם",
+    color: "bg-orange-500",
+    questions: [{
+      question: "דוד שלך נחטף לעזה 2 שנים. המשפחה לא ידעה בכלל אם הוא חי או מת. אפס מידע! עכשיו הוא חזר. מה מברכים?",
+      correctAnswer: "ברכת מחיה המתים - לא ידעו אם הוא חי",
+      wrongHint: "המפתח: לא ידעו אם הוא חי או מת! זה מחיה המתים",
+      answers: [{
+        text: "ברכת מחיה המתים - לא ידעו אם חי",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי היה בסכנה ועברו 30 יום",
+        isCorrect: false
+      }, {
+        text: "לא מברכים - כי ראו בטלוויזיה",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי שוחרר",
+        isCorrect: false
+      }]
+    }, {
+      question: "שכן שלך נחטף. הייתה הודעת חיים אחת אחרי חודשיים. עכשיו הוא שוחרר אחרי שנתיים! מה השכנים מברכים?",
+      correctAnswer: "ברכת שהחיינו - ידעו שהוא חי (דרך ההודעה)",
+      wrongHint: "הודעת חיים = ידעו שהוא חי! אז שהחיינו, לא מחיה המתים",
+      answers: [{
+        text: "ברכת שהחיינו - ידעו שהוא חי",
+        isCorrect: true
+      }, {
+        text: "ברכת מחיה המתים - כי לא ידעו מה מצבו",
+        isCorrect: false
+      }, {
+        text: "לא מברכים - כי היה קשר",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי שוחרר",
+        isCorrect: false
+      }]
+    }, {
+      question: "חטופה בשם אורית הייתה בעזה שנה. המשפחה קיבלה 3 סרטונים שהיא חיה. עכשיו היא חזרה! מה המשפחה מברכת?",
+      correctAnswer: "ברכת שהחיינו - ידעו שהיא חיה (דרך הסרטונים)",
+      wrongHint: "סרטונים = ידעו שהיא חיה! זה שהחיינו",
+      answers: [{
+        text: "ברכת שהחיינו - ידעו שהיא חיה",
+        isCorrect: true
+      }, {
+        text: "ברכת מחיה המתים - כי לא ראו פנים אל פנים",
+        isCorrect: false
+      }, {
+        text: "לא מברכים - כי ראו בטלוויזיה",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי כולם שמחים",
+        isCorrect: false
+      }]
+    }, {
+      question: "אבא שלך נחטף. בכלל לא ידעתם אם הוא חי. אחרי 3 שנים הוא חזר! אתה רואה אותו פנים אל פנים. מה מברכים?",
+      correctAnswer: "ברכת מחיה המתים - לא ידעתם אם חי",
+      wrongHint: "אפס מידע על חיים = מחיה המתים!",
+      answers: [{
+        text: "ברכת מחיה המתים - לא ידעתם אם חי",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי עברו 3 שנים",
+        isCorrect: false
+      }, {
+        text: "לא מברכים - כי היום יש תקשורת",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי חזר הביתה",
+        isCorrect: false
+      }]
+    }, {
+      question: "סבתא שלך גרה באפריקה. לא היה קשר בכלל 3 שנים. לא ידעת אם היא חיה או מתה. עכשיו היא באה! מה מברכים?",
+      correctAnswer: "ברכת מחיה המתים - לא ידעת אם חיה",
+      wrongHint: "אפס קשר 3 שנים = לא יודע אם חיה!",
+      answers: [{
+        text: "ברכת מחיה המתים - לא ידעת אם חיה",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי עברו שנתיים",
+        isCorrect: false
+      }, {
+        text: "לא מברכים - כי היום יש אינטרנט",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי היא באה",
+        isCorrect: false
+      }]
+    }, {
+      question: "דוד שלך נחטף. המשפחה קיבלה מכתב ממנו שהוא חי. אחרי שנה הוא שוחרר! מה המשפחה מברכת?",
+      correctAnswer: "ברכת שהחיינו - ידעו שהוא חי (דרך המכתב)",
+      wrongHint: "מכתב = ידעו שהוא חי! זה שהחיינו",
+      answers: [{
+        text: "ברכת שהחיינו - ידעו שהוא חי",
+        isCorrect: true
+      }, {
+        text: "ברכת מחיה המתים - כי היה בשבי",
+        isCorrect: false
+      }, {
+        text: "לא מברכים - כי היה קשר במכתב",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי שוחרר",
+        isCorrect: false
+      }]
+    }, {
+      question: "חברה שלך נעלמה בים. חיפשו אותה 2 שבועות. לא ידעו אם טבעה. מצאו אותה חיה על אי! מה מברכים?",
+      correctAnswer: "לא מברכים - לא עברו 30 יום",
+      wrongHint: "שבועיים = 14 יום בלבד! צריך 30 יום",
+      answers: [{
+        text: "לא מברכים - לא עברו 30 יום",
+        isCorrect: true
+      }, {
+        text: "ברכת מחיה המתים - כי חשבו שמתה",
+        isCorrect: false
+      }, {
+        text: "ברכת שהחיינו - כי הייתה בסכנה",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי מצאו אותה",
+        isCorrect: false
+      }]
+    }, {
+      question: "אחותך נחטפה. המשפחה לא ידעה כלום על מצבה. אחרי 6 שבועות היא שוחררה! מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "6 שבועות = 42 יום! יותר מ-30. והייתה בסכנה",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "ברכת מחיה המתים - כי לא ידעתם מצבה",
+        isCorrect: false
+      }, {
+        text: "לא מברכים - כי פחות מחודש",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי שוחררה",
+        isCorrect: false
+      }]
+    }]
+  }, {
+    id: 5,
+    name: "🏆 עולם 5: מומחים - מצבים מורכבים!",
+    emoji: "💡",
+    difficulty: "מאתגר",
+    color: "bg-red-500",
+    questions: [{
+      question: "אמא שלך גרה איתך בבית. היא הייתה בניתוח לב מסוכן לפני 8 שבועות. היום היא בריאה! מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "8 שבועות = יותר מ-30 יום! והיה ניתוח מסוכן",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי גרים ביחד",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי הניתוח הצליח",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה מסוכן",
+        isCorrect: false
+      }]
+    }, {
+      question: "אבא שלך נסע למשימה צבאית מסוכנת 10 שבועות. שלחתם אימיילים כל שבוע. הוא חזר! מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "משימה מסוכנת = סכנה! אימיילים לא משנים כלום",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי שלחנו אימיילים",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה בסכנה",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי חזר בשלום",
+        isCorrect: false
+      }]
+    }, {
+      question: "דוד שלך גר בארה\"ב 20 שנה. לא ראית אותו מעולם! לא הייתה סכנה. עכשיו הוא בא לביקור. מה מברכים?",
+      correctAnswer: "לא מברכים - אין סכנה",
+      wrongHint: "20 שנה זמן רב מאוד, אבל אין סכנה!",
+      answers: [{
+        text: "לא מברכים - אין סכנה",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי לא ראית מעולם",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי עברו 20 שנה",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי הוא בא",
+        isCorrect: false
+      }]
+    }, {
+      question: "חברה שלך נסעה לשנת שירות במקום מסוכן. דיברתם בטלפון כל חודש. חזרה אחרי שנה! מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "מקום מסוכן = סכנה! שיחות חודשיות לא משנות",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי דיברנו כל חודש",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היא הייתה רחוק",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי חזרה",
+        isCorrect: false
+      }]
+    }, {
+      question: "אחיך השתתף בקרב מסוכן. הקרב נגמר. אחרי הקרב דיברתם בטלפון. חזר הביתה אחרי 3 חודשים. מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "קרב מסוכן = סכנה! גם אם דיברתם אחר כך",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי דיברנו אחרי הקרב",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה בקרב",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי חזר בשלום",
+        isCorrect: false
+      }]
+    }, {
+      question: "סבא שלך היה בטיפול נמרץ 7 שבועות. אבל אתה ביקרת אותו שם כל יום וראית אותו. מה מברכים?",
+      correctAnswer: "לא מברכים - ראית אותו כל יום",
+      wrongHint: "ביקור יומי = ראית אותו! גם בטיפול נמרץ",
+      answers: [{
+        text: "לא מברכים - ראית אותו כל יום",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי היה בסכנה ועברו 30 יום",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי היה בטיפול נמרץ",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי החלים",
+        isCorrect: false
+      }]
+    }, {
+      question: "דודה שלך עבדה באזור מלחמה 6 חודשים. לא דיברתם בגלל תקשורת גרועה. עכשיו היא חזרה! מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "אזור מלחמה = סכנה! ו-6 חודשים = הרבה יותר מ-30 יום",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "ברכת מחיה המתים - כי לא ידעתם מצבה",
+        isCorrect: false
+      }, {
+        text: "לא מברכים - כי לא דיברתם במכוון",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי חזרה בריאה",
+        isCorrect: false
+      }]
+    }, {
+      question: "שמעת בחדשות שהרגו מחבל בכיר מאוד שגרם נזק עצום לישראל (כמו נסראללה). מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - שמועה טובה על מחבל בכיר",
+      wrongHint: "מחבל בכיר שסבלו ממנו מאוד = שהחיינו!",
+      answers: [{
+        text: "ברכת שהחיינו - שמועה טובה משמחת",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי זה על מוות",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי טוב לכולם",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי הציל חיים",
+        isCorrect: false
+      }]
+    }, {
+      question: "אחותך הייתה בבית חולים 5 חודשים. היא לא הייתה בסכנה. אתה ביקרת אותה שם כל שבוע. מה מברכים?",
+      correctAnswer: "לא מברכים - אין סכנה",
+      wrongHint: "5 חודשים כן, אבל אין סכנה!",
+      answers: [{
+        text: "לא מברכים - אין סכנה",
+        isCorrect: true
+      }, {
+        text: "ברכת שהחיינו - כי עברו 5 חודשים",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי הייתה בבית חולים",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי החלימה",
+        isCorrect: false
+      }]
+    }, {
+      question: "חבר שלך עבד בסיני במקום מסוכן שנתיים. דיברתם בווטסאפ כל שבועיים. הוא חזר! מה מברכים?",
+      correctAnswer: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+      wrongHint: "מקום מסוכן = סכנה! ווטסאפ לא משנה",
+      answers: [{
+        text: "ברכת שהחיינו - יש סכנה ויש 30 יום",
+        isCorrect: true
+      }, {
+        text: "לא מברכים - כי דיברנו בווטסאפ",
+        isCorrect: false
+      }, {
+        text: "ברכת מחיה המתים - כי עבד רחוק",
+        isCorrect: false
+      }, {
+        text: "ברכת הטוב והמטיב - כי חזר בשלום",
+        isCorrect: false
+      }]
+    }]
+  }];
+
+  // Shuffle answers when question changes
+  useEffect(() => {
+    if (gamePhase === 'playing') {
+      const currentQ = worlds[currentWorld].questions[currentQuestion];
+      const shuffled = [...currentQ.answers].sort(() => Math.random() - 0.5);
+      setShuffledAnswers(shuffled);
+    }
+  }, [currentQuestion, currentWorld, gamePhase]);
+  const handleAnswerClick = answer => {
+    if (showFeedback) return;
+    setSelectedAnswer(answer);
+    setShowFeedback(true);
+    setAttempts(attempts + 1);
+    setTotalQuestions(totalQuestions + 1);
+    if (answer.isCorrect) {
+      setIsCorrect(true);
+      setScore(score + 1);
+      playSound('correct');
+      setTimeout(() => {
+        moveToNextQuestion();
+      }, 2000);
+    } else {
+      setIsCorrect(false);
+    }
+  };
+  const moveToNextQuestion = () => {
+    const currentWorldData = worlds[currentWorld];
+    if (currentQuestion < currentWorldData.questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+      setIsCorrect(false);
+    } else {
+      completeWorld();
+    }
+  };
+  const completeWorld = () => {
+    const currentWorldData = worlds[currentWorld];
+    const worldScore = Math.round(score / currentWorldData.questions.length * 100);
+    setWorldScores([...worldScores, worldScore]);
+    if (worldScore >= 60) {
+      playSound('celebration');
+      setTimeout(() => {
+        if (currentWorld < worlds.length - 1) {
+          setGamePhase('worldComplete');
+        } else {
+          setGamePhase('gameComplete');
+        }
+      }, 1800);
+    } else {
+      setGamePhase('worldComplete');
+    }
+  };
+  const startNextWorld = () => {
+    setCurrentWorld(currentWorld + 1);
+    setCurrentQuestion(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setIsCorrect(false);
+    setGamePhase('playing');
+  };
+  const retryWorld = () => {
+    setCurrentQuestion(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setIsCorrect(false);
+    setGamePhase('playing');
+  };
+  const startGame = () => {
+    setGamePhase('playing');
+  };
+  if (gamePhase === 'intro') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "mb-6"
+    }, /*#__PURE__*/React.createElement("h1", {
+      className: "text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4"
+    }, "\uD83C\uDFAE \u05DE\u05D4 \u05DE\u05D1\u05E8\u05DB\u05D9\u05DD \u05DB\u05E9\u05E8\u05D5\u05D0\u05D9\u05DD \u05D0\u05EA \u05D4\u05D7\u05D8\u05D5\u05E4\u05D9\u05DD? \u2728"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700 mb-2"
+    }, "\u05DE\u05E9\u05D7\u05E7 \u05DC\u05DE\u05D9\u05D3\u05D4 \u05D0\u05D9\u05E0\u05D8\u05E8\u05D0\u05E7\u05D8\u05D9\u05D1\u05D9"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-600"
+    }, "\u05DC\u05DC\u05DE\u05D5\u05D3 \u05D0\u05EA \u05D4\u05DC\u05DB\u05D5\u05EA \u05D1\u05E8\u05DB\u05EA \u05E9\u05D4\u05D7\u05D9\u05D9\u05E0\u05D5 \u05D5\u05DE\u05D7\u05D9\u05D4 \u05D4\u05DE\u05EA\u05D9\u05DD \u05D1\u05E6\u05D5\u05E8\u05D4 \u05DE\u05D4\u05E0\u05D4!"), /*#__PURE__*/React.createElement("div", {
+      className: "mt-4 bg-yellow-100 border-2 border-yellow-400 rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold text-yellow-800"
+    }, "\u26A0\uFE0F \u05DB\u05DC \u05D4\u05D4\u05DC\u05DB\u05D5\u05EA \u05D1\u05DE\u05E9\u05D7\u05E7 \u05E0\u05D1\u05D3\u05E7\u05D5 \u05D1\u05E7\u05E4\u05D9\u05D3\u05D4!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-yellow-700"
+    }, "\u05DE\u05D1\u05D5\u05E1\u05E1 \u05E2\u05DC \u05E9\u05D9\u05E2\u05D5\u05E8\u05D5 \u05E9\u05DC \u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1"))), /*#__PURE__*/React.createElement("div", {
+      className: "grid md:grid-cols-5 gap-4 mb-8"
+    }, worlds.map((world, idx) => /*#__PURE__*/React.createElement("div", {
+      key: world.id,
+      className: `${world.color} bg-opacity-10 rounded-xl p-4 border-2 ${world.color.replace('bg-', 'border-')}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl mb-2"
+    }, world.emoji), /*#__PURE__*/React.createElement("div", {
+      className: "font-bold text-gray-800 mb-1"
+    }, "\u05E2\u05D5\u05DC\u05DD ", idx + 1), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, world.difficulty), /*#__PURE__*/React.createElement("div", {
+      className: "text-xs text-gray-500 mt-2"
+    }, world.questions.length, " \u05E9\u05D0\u05DC\u05D5\u05EA")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl p-6 mb-8"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-bold text-gray-800 mb-4"
+    }, "\uD83D\uDCDA \u05D4\u05DB\u05DC\u05DC \u05D4\u05D6\u05D4\u05D1:"), /*#__PURE__*/React.createElement("div", {
+      className: "grid md:grid-cols-2 gap-4 text-right"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl mb-2"
+    }, "\u23F0"), /*#__PURE__*/React.createElement("div", {
+      className: "font-bold text-gray-800"
+    }, "\u05EA\u05E0\u05D0\u05D9 1"), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, "30 \u05D9\u05D5\u05DD \u05D1\u05DC\u05D9 \u05DC\u05E8\u05D0\u05D5\u05EA \u05E4\u05E0\u05D9\u05DD \u05D0\u05DC \u05E4\u05E0\u05D9\u05DD")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl mb-2"
+    }, "\u26A0\uFE0F"), /*#__PURE__*/React.createElement("div", {
+      className: "font-bold text-gray-800"
+    }, "\u05EA\u05E0\u05D0\u05D9 2"), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, "\u05E1\u05DB\u05E0\u05EA \u05D7\u05D9\u05D9\u05DD \u05D0\u05DE\u05D9\u05EA\u05D9\u05EA"))), /*#__PURE__*/React.createElement("div", {
+      className: "mt-4 bg-red-50 rounded-xl p-3 border-2 border-red-300"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-red-800"
+    }, "\u274C \u05D7\u05E1\u05E8 \u05D0\u05D7\u05D3 \u05DE\u05D4\u05EA\u05E0\u05D0\u05D9\u05DD = \u05DC\u05D0 \u05DE\u05D1\u05E8\u05DB\u05D9\u05DD!")), /*#__PURE__*/React.createElement("div", {
+      className: "mt-4 bg-green-50 rounded-xl p-3 border-2 border-green-300"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-green-800"
+    }, "\u2705 \u05E7\u05E9\u05E8 \u05D8\u05DC\u05E4\u05D5\u05E0\u05D9/\u05D6\u05D5\u05DD = \u05DC\u05D0 \u05DE\u05E9\u05E0\u05D4 \u05DB\u05DC\u05D5\u05DD!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-green-700"
+    }, "\u05D0\u05DD \u05D9\u05E9 30 \u05D9\u05D5\u05DD + \u05E1\u05DB\u05E0\u05D4 \u2192 \u05DE\u05D1\u05E8\u05DB\u05D9\u05DD \u05D2\u05DD \u05E2\u05DD \u05E7\u05E9\u05E8!"))), /*#__PURE__*/React.createElement("button", {
+      onClick: startGame,
+      className: "bg-gradient-to-r from-blue-500 to-purple-500 text-white text-2xl font-bold py-6 px-12 rounded-full hover:from-blue-600 hover:to-purple-600 transform hover:scale-105 transition-all duration-300 shadow-xl"
+    }, "\uD83D\uDE80 \u05D1\u05D5\u05D0\u05D5 \u05E0\u05EA\u05D7\u05D9\u05DC!"))));
+  }
+  if (gamePhase === 'worldComplete') {
+    const currentWorldData = worlds[currentWorld];
+    const worldScore = Math.round(score / currentWorldData.questions.length * 100);
+    const passed = worldScore >= 60;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8 text-center"
+    }, passed ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl mb-4 animate-bounce"
+    }, "\uD83C\uDF89"), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold text-green-600 mb-4"
+    }, worldScore === 100 ? 'מדהים! מושלם! 🏆' : worldScore >= 80 ? 'כל הכבוד! יפה מאוד! 💪' : 'נהדר! עברת! ⭐'), /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl font-bold text-purple-600 mb-4"
+    }, worldScore, "%"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700 mb-6"
+    }, "\u05E2\u05E0\u05D9\u05EA \u05E0\u05DB\u05D5\u05DF \u05E2\u05DC ", score, " \u05DE\u05EA\u05D5\u05DA ", currentWorldData.questions.length, " \u05E9\u05D0\u05DC\u05D5\u05EA!"), currentWorld < worlds.length - 1 ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-100 rounded-2xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 mb-2"
+    }, "\u2B05\uFE0F \u05E2\u05D5\u05DC\u05DD \u05D4\u05D1\u05D0 \u05DE\u05D7\u05DB\u05D4 \u05DC\u05DA:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-blue-600"
+    }, worlds[currentWorld + 1].name)), /*#__PURE__*/React.createElement("button", {
+      onClick: startNextWorld,
+      className: "bg-gradient-to-r from-green-500 to-blue-500 text-white text-2xl font-bold py-4 px-8 rounded-full hover:from-green-600 hover:to-blue-600 transform hover:scale-105 transition-all duration-300 shadow-xl"
+    }, "\uD83D\uDE80 \u05E7\u05D3\u05D9\u05DE\u05D4 \u05DC\u05E2\u05D5\u05DC\u05DD \u05D4\u05D1\u05D0!")) : /*#__PURE__*/React.createElement("button", {
+      onClick: () => setGamePhase('gameComplete'),
+      className: "bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-2xl font-bold py-4 px-8 rounded-full hover:from-yellow-600 hover:to-orange-600 transform hover:scale-105 transition-all duration-300 shadow-xl"
+    }, "\uD83C\uDFC6 \u05DC\u05E1\u05D9\u05DB\u05D5\u05DD \u05D4\u05DE\u05E9\u05D7\u05E7!")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl mb-4"
+    }, "\uD83C\uDF31"), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold text-orange-600 mb-4"
+    }, "\u05D1\u05D5\u05D0 \u05E0\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1! \uD83D\uDCAA"), /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl font-bold text-gray-600 mb-4"
+    }, worldScore, "%"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700 mb-6"
+    }, "\u05E6\u05E8\u05D9\u05DA \u05DC\u05E4\u05D7\u05D5\u05EA 60% \u05DB\u05D3\u05D9 \u05DC\u05E2\u05D1\u05D5\u05E8 \u05DC\u05E2\u05D5\u05DC\u05DD \u05D4\u05D1\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-600 mb-6"
+    }, "\u05E2\u05E0\u05D9\u05EA \u05E0\u05DB\u05D5\u05DF \u05E2\u05DC ", score, " \u05DE\u05EA\u05D5\u05DA ", currentWorldData.questions.length, " \u05E9\u05D0\u05DC\u05D5\u05EA"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-100 rounded-2xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 mb-2"
+    }, "\uD83D\uDCA1 \u05D6\u05DB\u05D5\u05E8 \u05D0\u05EA \u05D4\u05DB\u05DC\u05DC \u05D4\u05D6\u05D4\u05D1:"), /*#__PURE__*/React.createElement("div", {
+      className: "text-right mr-6 space-y-2"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-blue-800"
+    }, "\u2713 30 \u05D9\u05D5\u05DD + \u05E1\u05DB\u05E0\u05D4 = \u05E9\u05D4\u05D7\u05D9\u05D9\u05E0\u05D5"), /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-blue-800"
+    }, "\u2713 \u05D7\u05E1\u05E8 \u05D0\u05D7\u05D3 = \u05DC\u05D0 \u05DE\u05D1\u05E8\u05DB\u05D9\u05DD"), /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-blue-800"
+    }, "\u2713 \u05E7\u05E9\u05E8 \u05D8\u05DC\u05E4\u05D5\u05E0\u05D9 = \u05DC\u05D0 \u05DE\u05E9\u05E0\u05D4!"))), /*#__PURE__*/React.createElement("button", {
+      onClick: retryWorld,
+      className: "bg-gradient-to-r from-orange-500 to-red-500 text-white text-2xl font-bold py-4 px-8 rounded-full hover:from-orange-600 hover:to-red-600 transform hover:scale-105 transition-all duration-300 shadow-xl"
+    }, "\uD83D\uDD04 \u05D1\u05D5\u05D0 \u05E0\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1!")))));
+  }
+  if (gamePhase === 'gameComplete') {
+    const totalScore = Math.round(worldScores.reduce((a, b) => a + b, 0) / worldScores.length);
+    const allPassed = worldScores.every(s => s >= 60);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 p-4",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-8xl mb-4 animate-bounce"
+    }, "\uD83C\uDFC6"), /*#__PURE__*/React.createElement("h1", {
+      className: "text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-red-600 mb-4"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05D4\u05DE\u05E9\u05D7\u05E7! \uD83C\uDF89"), /*#__PURE__*/React.createElement("div", {
+      className: "text-7xl font-bold text-purple-600 mb-4"
+    }, totalScore, "%"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-gray-700"
+    }, "\u05E6\u05D9\u05D5\u05DF \u05DB\u05D5\u05DC\u05DC \u05D1\u05DE\u05E9\u05D7\u05E7")), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-5 gap-4 mb-8"
+    }, worlds.map((world, idx) => /*#__PURE__*/React.createElement("div", {
+      key: world.id,
+      className: `${world.color} bg-opacity-20 rounded-xl p-4 text-center border-2 ${world.color.replace('bg-', 'border-')}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl mb-2"
+    }, world.emoji), /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl font-bold text-gray-800"
+    }, worldScores[idx], "%"), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600 mt-1"
+    }, worldScores[idx] >= 60 ? '✅ עבר' : '❌ לא עבר')))), allPassed && /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-green-100 to-blue-100 rounded-2xl p-8 mb-8 text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl mb-4"
+    }, "\uD83C\uDF93"), /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-gray-800 mb-4"
+    }, "\u05DE\u05D6\u05DC \u05D8\u05D5\u05D1! \u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05DB\u05DC \u05D4\u05E2\u05D5\u05DC\u05DE\u05D5\u05EA! \uD83C\uDF1F"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700 mb-6"
+    }, "\u05E2\u05DB\u05E9\u05D9\u05D5 \u05D0\u05EA\u05D4 \u05D9\u05D5\u05D3\u05E2 \u05D1\u05D3\u05D9\u05D5\u05E7 \u05DE\u05EA\u05D9 \u05DE\u05D1\u05E8\u05DB\u05D9\u05DD \u05E9\u05D4\u05D7\u05D9\u05D9\u05E0\u05D5!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold text-purple-600 mb-4"
+    }, "\uD83D\uDCDC \u05E7\u05D1\u05DC \u05EA\u05E2\u05D5\u05D3\u05D4 \u05D9\u05E4\u05D4!"), /*#__PURE__*/React.createElement("div", {
+      className: "border-4 border-purple-300 rounded-xl p-6 bg-gradient-to-br from-purple-50 to-pink-50"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-3xl font-bold text-gray-800 mb-2"
+    }, "\u05EA\u05E2\u05D5\u05D3\u05EA \u05D4\u05E6\u05D8\u05D9\u05D9\u05E0\u05D5\u05EA"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700 mb-4"
+    }, "\u05D1\u05D1\u05E8\u05DB\u05D5\u05EA \u05E9\u05D4\u05D7\u05D9\u05D9\u05E0\u05D5 \u05D5\u05DE\u05D7\u05D9\u05D4 \u05D4\u05DE\u05EA\u05D9\u05DD"), /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl mb-4"
+    }, "\uD83C\uDFC6"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-600"
+    }, "\u05E6\u05D9\u05D5\u05DF \u05DB\u05D5\u05DC\u05DC: ", totalScore, "%"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-yellow-100 rounded-2xl p-6 border-2 border-yellow-400"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-yellow-800 mb-4"
+    }, "\uD83C\uDF81 \u05D4\u05D2\u05E8\u05DC\u05D4 \u05E0\u05D5\u05E9\u05D0\u05EA \u05E4\u05E8\u05E1\u05D9\u05DD!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 mb-4"
+    }, "\u05D4\u05E6\u05D8\u05E8\u05E3 \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4 \u05E2\u05DD \u05E4\u05E8\u05E1\u05D9\u05DD \u05DE\u05D3\u05D4\u05D9\u05DE\u05D9\u05DD!"), /*#__PURE__*/React.createElement("a", {
+      href: "https://forms.gle/A66uubei4XSX6SG2A",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: "inline-block bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xl font-bold py-4 px-8 rounded-full hover:from-yellow-600 hover:to-orange-600 transform hover:scale-105 transition-all duration-300 shadow-xl"
+    }, "\uD83C\uDF89 \u05DC\u05D4\u05E8\u05E9\u05DE\u05D4 \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4 - \u05DC\u05D7\u05E5 \u05DB\u05D0\u05DF!"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl p-6 mb-8"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold text-gray-800 mb-4"
+    }, "\uD83D\uDCAD \u05DE\u05D4 \u05DC\u05DE\u05D3\u05E0\u05D5?"), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4 text-right"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-gray-800 mb-2"
+    }, "\u23F0 + \u26A0\uFE0F = \u2705"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600 text-sm"
+    }, "30 \u05D9\u05D5\u05DD + \u05E1\u05DB\u05E0\u05D4 = \u05E9\u05D4\u05D7\u05D9\u05D9\u05E0\u05D5")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-gray-800 mb-2"
+    }, "\uD83D\uDCF1 \u05E7\u05E9\u05E8 = \u05DC\u05D0 \u05DE\u05E9\u05E0\u05D4!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600 text-sm"
+    }, "\u05D8\u05DC\u05E4\u05D5\u05DF/\u05D6\u05D5\u05DD \u05DC\u05D0 \u05DE\u05E9\u05E4\u05D9\u05E2\u05D9\u05DD \u05E2\u05DC \u05D4\u05E9\u05D4\u05D7\u05D9\u05D9\u05E0\u05D5")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-gray-800 mb-2"
+    }, "\uD83D\uDC40 \u05E8\u05E7 \u05E4\u05E0\u05D9\u05DD \u05D0\u05DC \u05E4\u05E0\u05D9\u05DD!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600 text-sm"
+    }, "\u05D8\u05DC\u05D5\u05D5\u05D9\u05D6\u05D9\u05D4 \u05DC\u05D0 \u05E0\u05D7\u05E9\u05D1\u05EA \u05DB\u05E8\u05D0\u05D9\u05D9\u05D4")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-gray-800 mb-2"
+    }, "\uD83D\uDC8E \u05DE\u05D7\u05D9\u05D4 \u05D4\u05DE\u05EA\u05D9\u05DD = \u05DC\u05D0 \u05D9\u05D3\u05E2\u05D5 \u05D0\u05DD \u05D7\u05D9"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600 text-sm"
+    }, "\u05E8\u05E7 \u05D0\u05DD \u05DC\u05D0 \u05D4\u05D9\u05D4 \u05E9\u05D5\u05DD \u05DE\u05D9\u05D3\u05E2 \u05E2\u05DC \u05D7\u05D9\u05D9\u05DD")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gray-100 rounded-2xl p-6 text-center border-t-4 border-blue-500"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-gray-800 mb-2"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-blue-600 mb-2"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520")))));
+  }
+
+  // Playing phase
+  const currentWorldData = worlds[currentWorld];
+  const currentQ = currentWorldData.questions[currentQuestion];
+  const progress = (currentQuestion + 1) / currentWorldData.questions.length * 100;
+  const overallProgress = (currentWorld * 100 + progress) / (worlds.length * 100) * 100;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-4xl"
+  }, currentWorldData.emoji), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-bold text-gray-800"
+  }, currentWorldData.name), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-600"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, " \u05DE\u05EA\u05D5\u05DA ", currentWorldData.questions.length))), /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-3xl font-bold text-purple-600"
+  }, score, "/", currentWorldData.questions.length), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-gray-600"
+  }, "\u05EA\u05E9\u05D5\u05D1\u05D5\u05EA \u05E0\u05DB\u05D5\u05E0\u05D5\u05EA"))), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-3 mb-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: `h-3 rounded-full transition-all duration-500 ${currentWorldData.color}`,
+    style: {
+      width: `${progress}%`
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-gray-500 text-center"
+  }, "\u05D4\u05EA\u05E7\u05D3\u05DE\u05D5\u05EA \u05D1\u05E2\u05D5\u05DC\u05DD \u05D4\u05E0\u05D5\u05DB\u05D7\u05D9"), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-2 mt-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500",
+    style: {
+      width: `${overallProgress}%`
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-gray-500 text-center mt-1"
+  }, "\u05D4\u05EA\u05E7\u05D3\u05DE\u05D5\u05EA \u05DB\u05DC\u05DC\u05D9\u05EA \u05D1\u05DE\u05E9\u05D7\u05E7")), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-xl p-8 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-bold mb-4"
+  }, currentWorldData.difficulty), /*#__PURE__*/React.createElement("h3", {
+    className: "text-2xl font-bold text-gray-800 leading-relaxed"
+  }, currentQ.question)), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4"
+  }, shuffledAnswers.map((answer, idx) => {
+    const isSelected = selectedAnswer === answer;
+    const showCorrect = showFeedback && answer.isCorrect;
+    const showWrong = showFeedback && isSelected && !answer.isCorrect;
+    return /*#__PURE__*/React.createElement("button", {
+      key: idx,
+      onClick: () => handleAnswerClick(answer),
+      disabled: showFeedback,
+      className: `w-full text-right p-6 rounded-xl border-2 transition-all duration-300 ${showCorrect ? 'bg-green-100 border-green-500 shadow-lg transform scale-105' : showWrong ? 'bg-red-100 border-red-500' : isSelected ? 'bg-blue-100 border-blue-500' : 'bg-gray-50 border-gray-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md'} ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-lg text-gray-800 flex-1 pl-4"
+    }, answer.text), showCorrect && /*#__PURE__*/React.createElement(CheckCircle, {
+      className: "w-8 h-8 text-green-600 flex-shrink-0 animate-bounce"
+    }), showWrong && /*#__PURE__*/React.createElement(XCircle, {
+      className: "w-8 h-8 text-red-600 flex-shrink-0"
+    })));
+  })), showFeedback && /*#__PURE__*/React.createElement("div", {
+    className: `mt-6 p-6 rounded-xl ${isCorrect ? 'bg-green-100 border-2 border-green-400' : 'bg-orange-100 border-2 border-orange-400'}`
+  }, isCorrect ? /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-2xl font-bold text-green-700 mb-2"
+  }, ['מצוין! ⭐', 'פצצה! 🎯', 'כל הכבוד! 💪', 'יופי! 🌟', 'מדהים! ✨'][Math.floor(Math.random() * 5)]), /*#__PURE__*/React.createElement("p", {
+    className: "text-lg text-green-600"
+  }, "\u05D4\u05EA\u05E9\u05D5\u05D1\u05D4 \u05E0\u05DB\u05D5\u05E0\u05D4! \uD83C\uDF89")) : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "text-xl font-bold text-orange-700 mb-3"
+  }, "\u05DC\u05D0 \u05D1\u05D3\u05D9\u05D5\u05E7... \uD83E\uDD14"), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-lg p-4 mb-4"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-700 mb-2"
+  }, "\uD83D\uDCA1 ", /*#__PURE__*/React.createElement("strong", null, "\u05E8\u05DE\u05D6:"), " ", currentQ.wrongHint)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-green-50 rounded-lg p-4 border border-green-200"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-700 mb-2"
+  }, /*#__PURE__*/React.createElement("strong", null, "\u2705 \u05D4\u05EA\u05E9\u05D5\u05D1\u05D4 \u05D4\u05E0\u05DB\u05D5\u05E0\u05D4:")), /*#__PURE__*/React.createElement("p", {
+    className: "text-green-700 font-bold"
+  }, currentQ.correctAnswer)), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+      setIsCorrect(false);
+    },
+    className: "mt-4 w-full bg-orange-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-orange-600 transition-colors"
+  }, "\uD83D\uDCAA \u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1!"))))));
+};
+const __App = BlessingsGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

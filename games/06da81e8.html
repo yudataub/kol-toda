@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>לוח ספירת העומר 🌾</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;900&family=Secular+One&display=swap');
+
+  :root {
+    --sky: #1a1a4e;
+    --sky2: #2d2d7e;
+    --gold: #f5c842;
+    --gold2: #ffda6b;
+    --wheat: #e8b86d;
+    --wheat2: #f0d080;
+    --green: #3cb371;
+    --green2: #52c984;
+    --red: #e55353;
+    --purple: #9b59b6;
+    --card-done: #2ecc71;
+    --card-today: #f39c12;
+    --card-future: #34495e;
+    --text-light: #f0e6c8;
+    --white: #fff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Rubik', sans-serif;
+    background: linear-gradient(135deg, #0d0d2b 0%, #1a1a4e 40%, #2a1a5e 70%, #1a2a4e 100%);
+    min-height: 100vh;
+    color: var(--text-light);
+    overflow-x: hidden;
+  }
+
+  /* Stars */
+  .stars {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle linear infinite;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.1; transform: scale(0.8); }
+    50% { opacity: 0.9; transform: scale(1.2); }
+  }
+
+  /* Header */
+  .header {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 28px 20px 10px;
+  }
+  .header h1 {
+    font-family: 'Secular One', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    color: var(--gold);
+    text-shadow: 0 0 30px rgba(245,200,66,0.6), 0 2px 8px #000;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .header .subtitle {
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    color: var(--wheat2);
+    font-weight: 500;
+  }
+  .moon-emoji { font-size: 2.2rem; animation: float 3s ease-in-out infinite; display: inline-block; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+  /* Setup Panel */
+  #setup-panel {
+    position: relative;
+    z-index: 10;
+    max-width: 500px;
+    margin: 20px auto;
+    background: rgba(255,255,255,0.07);
+    border: 2px solid rgba(245,200,66,0.3);
+    border-radius: 20px;
+    padding: 24px;
+    backdrop-filter: blur(10px);
+  }
+  #setup-panel h2 {
+    color: var(--gold);
+    text-align: center;
+    font-size: 1.3rem;
+    margin-bottom: 18px;
+  }
+  .form-row { margin-bottom: 14px; }
+  .form-row label {
+    display: block;
+    color: var(--wheat2);
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .form-row input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 2px solid rgba(245,200,66,0.4);
+    background: rgba(255,255,255,0.1);
+    color: var(--white);
+    font-family: 'Rubik', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border 0.2s;
+  }
+  .form-row input:focus { border-color: var(--gold); }
+  .form-row input::placeholder { color: rgba(255,255,255,0.35); }
+  .btn-start {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, var(--gold), var(--wheat));
+    color: #1a1a4e;
+    font-family: 'Secular One', sans-serif;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 18px rgba(245,200,66,0.4);
+  }
+  .btn-start:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(245,200,66,0.6); }
+
+  /* User info bar */
+  #info-bar {
+    display: none;
+    position: relative;
+    z-index: 10;
+    max-width: 700px;
+    margin: 12px auto;
+    background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.3);
+    border-radius: 14px;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--wheat2);
+  }
+  #info-bar span { color: var(--gold); font-weight: 700; }
+  #info-bar .btn-reset {
+    margin-right: 14px;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: var(--text-light);
+    padding: 4px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: 'Rubik', sans-serif;
+    transition: background 0.2s;
+  }
+  #info-bar .btn-reset:hover { background: rgba(255,255,255,0.1); }
+
+  /* Counter display */
+  #current-count {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    margin: 8px auto 16px;
+  }
+  #count-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(245,200,66,0.2), rgba(155,89,182,0.2));
+    border: 2px solid var(--gold);
+    border-radius: 50px;
+    padding: 8px 28px;
+    font-size: 1.1rem;
+    color: var(--gold2);
+    font-weight: 700;
+    font-family: 'Secular One', sans-serif;
+    box-shadow: 0 0 20px rgba(245,200,66,0.2);
+  }
+
+  /* Grid */
+  #grid-container {
+    position: relative;
+    z-index: 10;
+    max-width: 900px;
+    margin: 0 auto 30px;
+    padding: 0 16px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+  }
+
+  @media (max-width: 700px) {
+    #grid-container { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  }
+  @media (max-width: 480px) {
+    #grid-container { grid-template-columns: repeat(4, 1fr); gap: 5px; }
+  }
+
+  /* Day Card */
+  .day-card {
+    aspect-ratio: 1;
+    border-radius: 14px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+    user-select: none;
+  }
+  .day-card:hover:not(.locked) {
+    transform: scale(1.08);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+    z-index: 2;
+  }
+
+  .day-card.done {
+    background: linear-gradient(135deg, #1a5e3a, #2ecc71 120%);
+    border-color: #2ecc71;
+    box-shadow: 0 0 14px rgba(46,204,113,0.3);
+  }
+  .day-card.today {
+    background: linear-gradient(135deg, #7d3c00, #f39c12 130%);
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(243,156,18,0.5);
+    animation: pulse-today 2s ease-in-out infinite;
+  }
+  @keyframes pulse-today {
+    0%,100%{box-shadow:0 0 16px rgba(243,156,18,0.5)}
+    50%{box-shadow:0 0 32px rgba(243,156,18,0.8)}
+  }
+  .day-card.future {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.1);
+    cursor: default;
+  }
+  .day-card.locked {
+    background: rgba(0,0,0,0.25);
+    border-color: rgba(255,255,255,0.07);
+    cursor: default;
+    opacity: 0.55;
+  }
+
+  .card-emoji { font-size: clamp(1.2rem, 2.5vw, 1.6rem); margin-bottom: 2px; }
+  .card-num {
+    font-family: 'Secular One', sans-serif;
+    font-size: clamp(0.9rem, 2vw, 1.15rem);
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    line-height: 1;
+  }
+  .card-heb {
+    font-size: clamp(0.55rem, 1.2vw, 0.72rem);
+    color: rgba(255,255,255,0.75);
+    margin-top: 1px;
+  }
+  .card-check {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    font-size: 0.85rem;
+  }
+  .today-label {
+    position: absolute;
+    bottom: 3px;
+    font-size: 0.6rem;
+    color: var(--gold2);
+    font-weight: 700;
+  }
+
+  /* MODAL */
+  #modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+  #modal-overlay.open { display: flex; }
+
+  #modal-box {
+    background: linear-gradient(160deg, #1e1e5e 0%, #2d1a4e 60%, #1a2e4e 100%);
+    border: 3px solid var(--gold);
+    border-radius: 24px;
+    max-width: 460px;
+    width: 100%;
+    padding: 30px 28px;
+    text-align: center;
+    position: relative;
+    animation: pop-in 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 60px rgba(245,200,66,0.1);
+  }
+  @keyframes pop-in {
+    from { transform: scale(0.6); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  #modal-close {
+    position: absolute;
+    top: 12px;
+    left: 14px;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  #modal-close:hover { color: var(--gold); }
+
+  #modal-emoji { font-size: 3.5rem; margin-bottom: 8px; display: block; }
+  #modal-day-title {
+    font-family: 'Secular One', sans-serif;
+    font-size: 1.5rem;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+  #modal-hebrew {
+    font-size: 1rem;
+    color: var(--wheat2);
+    margin-bottom: 16px;
+  }
+
+  .modal-sefirah {
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.3);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    font-size: 1.05rem;
+    color: var(--gold2);
+    font-weight: 500;
+    line-height: 1.6;
+  }
+
+  .task-box {
+    background: rgba(255,255,255,0.06);
+    border: 2px dashed rgba(255,255,255,0.2);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+  }
+  .task-box h3 {
+    color: var(--wheat2);
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+  }
+  .task-text {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.6;
+  }
+
+  #btn-count {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--gold), #e8a020);
+    color: #1a1a2e;
+    font-family: 'Secular One', sans-serif;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 18px rgba(245,200,66,0.4);
+  }
+  #btn-count:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(245,200,66,0.6); }
+  #btn-count:disabled {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    cursor: default;
+    transform: none;
+    box-shadow: 0 4px 18px rgba(46,204,113,0.4);
+  }
+
+  #confetti-area {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 200;
+    overflow: hidden;
+  }
+
+  .wheat-row {
+    text-align: center;
+    font-size: 1.6rem;
+    letter-spacing: 4px;
+    margin: 10px 0 18px;
+    opacity: 0.6;
+  }
+
+  .day-card.shavuot-card {
+    grid-column: span 1;
+    border-width: 3px;
+    position: relative;
+  }
+  .day-card.shavuot-card:not(.locked) {
+    background: linear-gradient(135deg, #1a0a3e, #4a1a8e 60%, #2a0a5e 100%);
+    border-color: #cc44ff;
+    box-shadow: 0 0 22px rgba(180,80,255,0.5);
+    animation: pulse-shavuot 2.5s ease-in-out infinite;
+  }
+  @keyframes pulse-shavuot {
+    0%,100%{box-shadow:0 0 18px rgba(180,80,255,0.4)}
+    50%{box-shadow:0 0 36px rgba(180,80,255,0.8), 0 0 60px rgba(245,200,66,0.3)}
+  }
+  .day-card.shavuot-card.done {
+    background: linear-gradient(135deg, #1a3e1a, #7d22dd 120%);
+    border-color: #cc44ff;
+  }
+  .legend {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin: 0 auto 20px;
+    font-size: 0.85rem;
+    color: var(--wheat2);
+    padding: 0 16px;
+  }
+  .leg-item { display: flex; align-items: center; gap: 6px; }
+  .leg-dot {
+    width: 14px; height: 14px; border-radius: 4px;
+  }
+  .leg-done { background: #2ecc71; }
+  .leg-today { background: #f39c12; }
+  .leg-future { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+
+  /* Progress bar */
+  .progress-wrap {
+    position: relative;
+    z-index: 10;
+    max-width: 600px;
+    margin: 0 auto 16px;
+    padding: 0 16px;
+  }
+  .progress-bar-bg {
+    background: rgba(255,255,255,0.08);
+    border-radius: 99px;
+    height: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), var(--gold));
+    border-radius: 99px;
+    transition: width 0.6s ease;
+  }
+  .progress-label {
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--wheat2);
+    margin-top: 5px;
+  }
+</style>
+<meta property="og:title" content="לוח ספירת העומר 🌾">
+<meta property="og:description" content="לוח ספירת העומר 🌾">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-06da81e8.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/06da81e8.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div id="confetti-area"></div>
+
+<div class="header">
+  <span class="moon-emoji">🌾</span>
+  <h1>ספירת העומר</h1>
+  <p class="subtitle">לוח מסע של כבוד — מפסח עד שבועות</p>
+</div>
+
+<!-- Setup Panel -->
+<div id="setup-panel">
+  <h2>✨ ברוכים הבאים!</h2>
+  <div class="form-row">
+    <label>👩‍🏫 שם המורה / המחנך</label>
+    <input type="text" id="input-teacher" placeholder="לדוגמה: מורה רחל" maxlength="40">
+  </div>
+  <div class="form-row">
+    <label>🏫 שם הכיתה</label>
+    <input type="text" id="input-class" placeholder="לדוגמה: כיתה ב'1" maxlength="40">
+  </div>
+  <button class="btn-start" onclick="startBoard()">🌟 בואו נספור!</button>
+</div>
+
+<!-- Info Bar -->
+<div id="info-bar">
+  <span id="bar-teacher"></span> | כיתה: <span id="bar-class"></span>
+  &nbsp;&nbsp;
+  <button class="btn-reset" onclick="resetAll()">🔄 שנה פרטים</button>
+</div>
+
+<!-- Count Badge -->
+<div id="current-count" style="display:none">
+  <div id="count-badge">🌾 ספרנו <span id="count-num">0</span> ימים!</div>
+</div>
+
+<!-- Progress -->
+<div class="progress-wrap" id="progress-wrap" style="display:none">
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="prog-fill" style="width:0%"></div>
+  </div>
+  <div class="progress-label" id="prog-label"></div>
+</div>
+
+<!-- Legend -->
+<div class="legend" id="legend" style="display:none">
+  <div class="leg-item"><div class="leg-dot leg-done"></div> ספרנו ✓</div>
+  <div class="leg-item"><div class="leg-dot leg-today"></div> היום 🔆</div>
+  <div class="leg-item"><div class="leg-dot leg-future"></div> עוד לא הגיע</div>
+</div>
+
+<!-- Grid -->
+<div id="grid-container"></div>
+
+<!-- Modal -->
+<div id="modal-overlay">
+  <div id="modal-box">
+    <button id="modal-close" onclick="closeModal()">✕</button>
+    <span id="modal-emoji"></span>
+    <div id="modal-day-title"></div>
+    <div id="modal-hebrew"></div>
+    <div class="modal-sefirah" id="modal-sefirah"></div>
+    <div class="task-box" id="task-box">
+      <h3>🌟 משימת הכבוד של היום</h3>
+      <div class="task-text" id="modal-task"></div>
+    </div>
+    <button id="btn-count" onclick="countDay()"></button>
+  </div>
+</div>
+
+<div class="wheat-row">🌾 🌾 🌾 🌾 🌾 🌾 🌾</div>
+
+<script>
+// ============ DATA ============
+const STORAGE_KEY = 'omer_board_v2';
+
+// Hebrew numbers for Omer
+function hebrewOmer(n) {
+  const units = ['','אחד','שניים','שלושה','ארבעה','חמישה','שישה','שבעה','שמונה','תשעה',
+    'עשרה','אחד עשר','שניים עשר','שלושה עשר','ארבעה עשר','חמישה עשר','שישה עשר',
+    'שבעה עשר','שמונה עשר','תשעה עשר','עשרים'];
+  if (n <= 20) return units[n];
+  if (n < 30) return 'עשרים ו' + units[n-20];
+  if (n === 30) return 'שלושים';
+  if (n < 40) return 'שלושים ו' + units[n-30];
+  if (n === 40) return 'ארבעים';
+  if (n < 50) return 'ארבעים ו' + units[n-40];
+  return String(n);
+}
+
+function sefirahFormula(n) {
+  const weeks = Math.floor((n-1)/7);
+  const days = (n-1) % 7;
+  const weekNames = ['','שבוע','שבועות','שבועות','שבועות','שבועות','שבועות','שבועות'];
+  const dayNames = ['','יום אחד','שני ימים','שלושה ימים','ארבעה ימים','חמישה ימים','שישה ימים'];
+  
+  let text = 'הַיּוֹם ' + hebrewOmer(n) + ' יוֹם';
+  if (n >= 7) {
+    text += ', שֶׁהֵם ';
+    if (weeks > 0) text += hebrewOmer(weeks) + (weeks===1?' שָׁבוּעַ':' שָׁבוּעוֹת');
+    if (days > 0) {
+      if (weeks > 0) text += ' וְ';
+      text += dayNames[days];
+    }
+  }
+  text += ' לָעֹמֶר';
+  return text;
+}
+
+// 2026: Pesach starts April 1 evening, day 1 omer = April 2
+// 6 Sivan (Shavuot) = June 1, 2026 = day 50
+const OMER_START = new Date(2026, 3, 2); // April 2, 2026
+const SHAVUOT_DATE = new Date(2026, 5, 1); // June 1, 2026
+
+// Tasks from the document (days 8-33 from the doc, starting כג ניסן = day 8)
+const TASKS = {
+  8:  'תן מחמאה ל-3 חברים מכיתתך',
+  9:  'הלווה חפץ מחפציך ל-3 חברים מכיתתך',
+  10: 'בסיום השיעור, גש לחבר שענה תשובה יפה ושבח אותו על כך',
+  11: 'כתוב מכתב תודה להוריך',
+  12: 'שאל 2 חברים "מה שלומך?" והקשב לתשובה',
+  13: 'הימנע היום מלתת ביקורת',
+  14: 'אמור "בוקר טוב" או "שלום" ל-4 מבוגרים',
+  15: 'הגרל שם של חבר וכתוב לו ברכה לכבוד ראש חודש',
+  16: 'ותר על מקומך בתור',
+  17: 'גש למורה בסיום שיעור והודה לו על השיעור',
+  18: 'תן חיבוק חם לאחד מאחיך או לאחד מהוריך',
+  19: 'כתוב פתק או מכתב נחמד לחבר קרוב',
+  20: 'הגרל שם של חבר וכתוב לו בדיחה מצחיקה',
+  21: 'אמור תודה לשני אנשים שעזרו לך במשהו בתקופה האחרונה',
+  22: 'הימנע מלדבר לשון הרע',
+  23: 'קבע להיפגש עם חבר שלא היית אצלו כבר הרבה זמן (או הוא אצלך)',
+  24: 'בקש סליחה ממשהו שלא היית מספיק רגיש אליו',
+  25: 'הכן הפתעה להוריך',
+  26: 'הגש עזרה לתלמיד משכבה נמוכה',
+  27: 'אמור (או כתוב) לאחד מחבריך למה כיף להיות חבר שלו',
+  28: 'התקשר לחבר אחרי הצהריים ושאל לשלומו',
+  29: 'הגרל שם של חבר וכתוב לו שתי תכונות שאתה אוהב אצלו',
+  30: 'הצע עזרה לחבר בזמן עבודת כיתה',
+  31: 'עזור לחבר מבלי שידע על כך',
+  32: 'הימנע היום מויכוחים',
+  33: 'קנה מתנה קטנה לחבר טוב',
+};
+
+// Default tasks for days without specific task
+function getTask(day) {
+  if (TASKS[day]) return TASKS[day];
+  // Generate a generic task based on theme
+  const generic = [
+    'חייך ל-3 אנשים שאתה פוגש היום',
+    'עשה מחווה נחמדה לאחד מחבריך',
+    'עזור למישהו שנראה שצריך עזרה',
+    'כתוב 3 דברים שאתה אוהב בכיתה שלך',
+    'אמור תודה לאמא או לאבא על משהו שעשו בשבילך',
+    'שתף חבר בנשנוש שלך',
+    'הקשב בשקט ובסבלנות לחבר שמדבר אליך',
+  ];
+  return generic[day % generic.length];
+}
+
+const EMOJIS = ['🌾','⭐','🌟','✨','🌸','🌼','🌻','🎯','🎈','🏆','🌈','💫','🔥','🎊','🎁','🌙','☀️','🌺','🦋','🎵','💎','🌿','🍀','🎠','🏅','🎭','🌍','🔆','🎶','🌞','💫','🌟','⭐'];
+
+// Hebrew date labels (simplified — starting from ט"ז ניסן)
+const HEB_MONTHS = {
+  1:'א',2:'ב',3:'ג',4:'ד',5:'ה',6:'ו',7:'ז',8:'ח',9:'ט',
+  10:'י',11:'י"א',12:'י"ב',13:'י"ג',14:'י"ד',15:'ט"ו',
+  16:'ט"ז',17:'י"ז',18:'י"ח',19:'י"ט',20:'כ',21:'כ"א',
+  22:'כ"ב',23:'כ"ג',24:'כ"ד',25:'כ"ה',26:'כ"ו',27:'כ"ז',
+  28:'כ"ח',29:'כ"ט',30:'ל\'',
+};
+// Hebrew months for Omer: Nisan 16-30 = days 1-15, Iyar 1-29 = 16-44, Sivan 1-6 = 45-50+
+function getHebDate(day) {
+  if (day <= 15) return HEB_MONTHS[day+15] + ' ניסן';
+  if (day <= 44) { const d = day-15; return (d<=30?HEB_MONTHS[d]:'?') + ' אייר'; }
+  const d = day-44;
+  return HEB_MONTHS[d] + ' סיוון';
+}
+
+// ============ STATE ============
+let state = {
+  teacher: '',
+  className: '',
+  countedDays: [], // array of day numbers (1-49) that were counted
+  started: false,
+};
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (s) state = s;
+  } catch(e) {}
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+// ============ TODAY ============
+function getTodayOmerDay() {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const start = new Date(OMER_START);
+  start.setHours(0,0,0,0);
+  const shavuot = new Date(SHAVUOT_DATE);
+  shavuot.setHours(0,0,0,0);
+  if (today.getTime() === shavuot.getTime()) return 50;
+  const diff = Math.round((today - start) / 86400000) + 1;
+  if (diff < 1 || diff > 49) return null;
+  return diff;
+}
+
+// ============ UI ============
+let activeDay = null;
+
+function startBoard() {
+  const teacher = document.getElementById('input-teacher').value.trim();
+  const cls = document.getElementById('input-class').value.trim();
+  if (!teacher || !cls) {
+    alert('אנא מלאו את שם המורה ושם הכיתה 😊');
+    return;
+  }
+  state.teacher = teacher;
+  state.className = cls;
+  state.started = true;
+  saveState();
+  showBoard();
+}
+
+function showBoard() {
+  document.getElementById('setup-panel').style.display = 'none';
+  const bar = document.getElementById('info-bar');
+  bar.style.display = 'block';
+  document.getElementById('bar-teacher').textContent = state.teacher;
+  document.getElementById('bar-class').textContent = state.className;
+  document.getElementById('current-count').style.display = 'block';
+  document.getElementById('progress-wrap').style.display = 'block';
+  document.getElementById('legend').style.display = 'flex';
+  renderGrid();
+  updateCounter();
+}
+
+function renderGrid() {
+  const container = document.getElementById('grid-container');
+  container.innerHTML = '';
+  const today = getTodayOmerDay();
+
+  for (let d = 1; d <= 49; d++) {
+    const card = document.createElement('div');
+    card.className = 'day-card';
+    const isDone = state.countedDays.includes(d);
+    const isToday = d === today;
+    // Past days (d < today) are clickable too, only FUTURE days (d > today) are locked
+    const isFutureLocked = (today !== null && d > today) || (today === null);
+
+    if (isDone) card.classList.add('done');
+    else if (isToday) card.classList.add('today');
+    else if (isFutureLocked) card.classList.add('locked');
+    else card.classList.add('future'); // past, not yet marked
+
+    const emoji = isDone ? '✅' : (isToday ? '🔆' : (isFutureLocked ? '🔒' : EMOJIS[d % EMOJIS.length]));
+
+    card.innerHTML = `
+      <div class="card-emoji">${emoji}</div>
+      <div class="card-num">${d}</div>
+      <div class="card-heb">${getHebDate(d).split(' ')[0]}</div>
+      ${isToday && !isDone ? '<div class="today-label">היום!</div>' : ''}
+    `;
+
+    if (!isFutureLocked) {
+      card.addEventListener('click', () => openModal(d));
+    }
+
+    container.appendChild(card);
+  }
+
+  // Day 50 — Shavuot special card
+  const shavuotDone = state.countedDays.includes(50);
+  const shavuotToday = today === 50;
+  const shavuotLocked = today !== null && today < 50 && !shavuotToday;
+
+  const shavCard = document.createElement('div');
+  shavCard.className = 'day-card shavuot-card';
+  if (shavuotDone) shavCard.classList.add('done');
+  else if (shavuotToday) shavCard.classList.add('today');
+  else if (shavuotLocked) shavCard.classList.add('locked');
+  else shavCard.classList.add('future');
+
+  shavCard.innerHTML = `
+    <div class="card-emoji">${shavuotDone ? '✅' : (shavuotToday ? '🔥' : (shavuotLocked ? '🔒' : '📜'))}</div>
+    <div class="card-num" style="font-size:clamp(0.7rem,1.5vw,0.9rem)">שבועות</div>
+    <div class="card-heb">ו' סיוון</div>
+    ${shavuotToday && !shavuotDone ? '<div class="today-label">היום!</div>' : ''}
+  `;
+  if (!shavuotLocked) {
+    shavCard.addEventListener('click', () => openModal(50));
+  }
+  container.appendChild(shavCard);
+}
+
+function updateCounter() {
+  const n = state.countedDays.length;
+  document.getElementById('count-num').textContent = n;
+  const pct = Math.round(n / 50 * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = `${n} מתוך 50 ימים — ${pct}%`;
+}
+
+function openModal(day) {
+  activeDay = day;
+  const today = getTodayOmerDay();
+  const isDone = state.countedDays.includes(day);
+  const isToday = day === today;
+
+  const emojis = ['🌾','⭐','🌟','✨','🌸','🌼','🌻','🎯','🏆','🌈','💫','🎊','🎁','🌙','☀️','🌺','🦋','💎','🌿','🍀','🎵'];
+
+  // Shavuot special
+  if (day === 50) {
+    document.getElementById('modal-emoji').textContent = isDone ? '✅' : '📜';
+    document.getElementById('modal-day-title').textContent = '🎉 חג שבועות — מתן תורה!';
+    document.getElementById('modal-hebrew').textContent = 'ו\' סיוון — סיום ספירת העומר';
+    document.getElementById('modal-sefirah').textContent = 'שֶׁבַע שָׁבוּעוֹת תִּסְפָּר לָךְ... וְעָשִׂיתָ חַג שָׁבֻעוֹת לַה\' אֱלֹהֶיךָ 🌟';
+    document.getElementById('modal-task').textContent = 'חג שמח! 🎉 היום חוגגים את קבלת התורה. ספר למישהו קרוב אחד דבר שלמדת השנה ואתה גאה בו!';
+    const btn = document.getElementById('btn-count');
+    if (isDone) {
+      btn.textContent = '✅ ישר כח גדול! חג שמח!';
+      btn.disabled = true;
+    } else {
+      btn.textContent = '🎉 חג שמח! סמן את החג';
+      btn.disabled = false;
+    }
+    document.getElementById('modal-overlay').classList.add('open');
+    return;
+  }
+
+  document.getElementById('modal-emoji').textContent = isDone ? '✅' : emojis[day % emojis.length];
+  document.getElementById('modal-day-title').textContent = `יום ${hebrewOmer(day)} לעומר`;
+  document.getElementById('modal-hebrew').textContent = getHebDate(day);
+  document.getElementById('modal-sefirah').textContent = sefirahFormula(day);
+  document.getElementById('modal-task').textContent = getTask(day);
+
+  const btn = document.getElementById('btn-count');
+  if (isDone) {
+    btn.textContent = '✅ ישר כח גדול! כבר ספרת יום זה';
+    btn.disabled = true;
+  } else if (isToday) {
+    btn.textContent = '🌟 ספרתי! סמן יום ' + day;
+    btn.disabled = false;
+  } else if (day < (today || 0)) {
+    btn.textContent = '✓ סמן כהושלם';
+    btn.disabled = false;
+  } else {
+    btn.textContent = '🔒 טרם הגיע היום';
+    btn.disabled = true;
+  }
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  activeDay = null;
+}
+
+function countDay() {
+  if (activeDay === null) return;
+  if (state.countedDays.includes(activeDay)) return;
+  state.countedDays.push(activeDay);
+  saveState();
+  renderGrid();
+  updateCounter();
+  closeModal();
+  launchConfetti();
+  // Show success flash
+  setTimeout(() => {
+    const badge = document.getElementById('count-badge');
+    badge.style.background = 'linear-gradient(135deg,rgba(46,204,113,0.4),rgba(46,204,113,0.2))';
+    badge.style.borderColor = '#2ecc71';
+    setTimeout(() => {
+      badge.style.background = '';
+      badge.style.borderColor = '';
+    }, 1200);
+  }, 100);
+}
+
+function resetAll() {
+  if (confirm('למחוק את כל ההתקדמות ולהתחיל מחדש?')) {
+    state = { teacher:'', className:'', countedDays:[], started:false };
+    saveState();
+    location.reload();
+  }
+}
+
+// ============ CONFETTI ============
+function launchConfetti() {
+  const area = document.getElementById('confetti-area');
+  const colors = ['#f5c842','#2ecc71','#9b59b6','#e74c3c','#3498db','#e67e22'];
+  const emojis = ['🌾','⭐','✨','🎉','🌟','💛'];
+  for (let i = 0; i < 40; i++) {
+    const el = document.createElement('div');
+    const useEmoji = Math.random() > 0.5;
+    el.style.cssText = `
+      position:absolute;
+      left:${Math.random()*100}%;
+      top:-30px;
+      font-size:${useEmoji?'1.6rem':'10px'};
+      ${useEmoji?'':'width:10px;height:10px;background:'+colors[Math.floor(Math.random()*colors.length)]+';border-radius:2px;'}
+      animation: fall ${1.5+Math.random()*2}s linear forwards;
+      z-index:9999;
+    `;
+    if (useEmoji) el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    area.appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+  }
+  const style = document.getElementById('confetti-style') || document.createElement('style');
+  style.id = 'confetti-style';
+  style.textContent = `@keyframes fall {
+    to { transform: translateY(110vh) rotate(${Math.random()*720}deg); opacity: 0; }
+  }`;
+  document.head.appendChild(style);
+}
+
+// ============ STARS ============
+function createStars() {
+  const area = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      top:${Math.random()*100}%;
+      left:${Math.random()*100}%;
+      animation-duration:${2+Math.random()*4}s;
+      animation-delay:${Math.random()*4}s;
+    `;
+    area.appendChild(s);
+  }
+}
+
+// ============ INIT ============
+loadState();
+createStars();
+if (state.started && state.teacher && state.className) {
+  document.getElementById('input-teacher').value = state.teacher;
+  document.getElementById('input-class').value = state.className;
+  showBoard();
+}
+
+// Close modal on overlay click
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>

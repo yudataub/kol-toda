@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>משחק הלכות סוכה - 3 רמות – הקול החמישי</title>
+<meta name="description" content="משחק אינטראקטיבי ללימוד הלכות סוכה עם 3 רמות קושי. בדקו את הידע שלכם במקרים שונים של אכילה בסוכה עם הסברים הלכתיים מפורטים.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="משחק הלכות סוכה - 3 רמות – הקול החמישי">
+<meta property="og:description" content="משחק אינטראקטיבי ללימוד הלכות סוכה עם 3 רמות קושי. בדקו את הידע שלכם במקרים שונים של אכילה בסוכה עם הסברים הלכתיים מפורטים.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-39a4071b.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/39a4071b.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const SukkahGame = () => {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [shuffledQuestions, setShuffledQuestions] = useState([]);
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [unlockedLevels, setUnlockedLevels] = useState([1]);
+  const [showLevelSelect, setShowLevelSelect] = useState(false);
+  const levelAQuestions = [{
+    name: 'לחם',
+    emoji: '🍞',
+    answer: 'ברכה',
+    note: '(יותר מכביצה)',
+    reason: ''
+  }, {
+    name: 'חלה',
+    emoji: '🥖',
+    answer: 'ברכה',
+    note: '(יותר מכביצה)',
+    reason: ''
+  }, {
+    name: 'פיתה',
+    emoji: '🫓',
+    answer: 'ברכה',
+    note: '(יותר מכביצה)',
+    reason: ''
+  }, {
+    name: 'פיצה',
+    emoji: '🍕',
+    answer: 'ברכה',
+    note: '(יותר מכביצה)',
+    reason: ''
+  }, {
+    name: 'בורקס',
+    emoji: '🥐',
+    answer: 'ברכה',
+    note: '(יותר מכביצה)',
+    reason: ''
+  }, {
+    name: 'עוגה',
+    emoji: '🍰',
+    answer: 'ברכה',
+    note: '(יותר מכביצה)',
+    reason: ''
+  }, {
+    name: 'עוגיות',
+    emoji: '🍪',
+    answer: 'ברכה',
+    note: '(יותר מכביצה)',
+    reason: ''
+  }, {
+    name: 'פסטה',
+    emoji: '🍝',
+    answer: 'ברכה',
+    note: '(כשקובע עליה)',
+    reason: ''
+  }, {
+    name: 'אטריות',
+    emoji: '🍜',
+    answer: 'ברכה',
+    note: '(כשקובע עליהן)',
+    reason: ''
+  }, {
+    name: 'קוסקוס',
+    emoji: '🍚',
+    answer: 'ברכה',
+    note: '(כשקובע עליו)',
+    reason: ''
+  }, {
+    name: 'יין קידוש',
+    emoji: '🍷',
+    answer: 'ברכה',
+    note: '',
+    reason: ''
+  }, {
+    name: 'בשר',
+    emoji: '🥩',
+    answer: 'ללא',
+    note: '(בקביעות סעודה)',
+    reason: ''
+  }, {
+    name: 'דגים',
+    emoji: '🐟',
+    answer: 'ללא',
+    note: '(בקביעות סעודה)',
+    reason: ''
+  }, {
+    name: 'גבינה',
+    emoji: '🧀',
+    answer: 'ללא',
+    note: '(בקביעות סעודה)',
+    reason: ''
+  }, {
+    name: 'עוף',
+    emoji: '🍗',
+    answer: 'ללא',
+    note: '(בקביעות סעודה)',
+    reason: ''
+  }, {
+    name: 'אורז',
+    emoji: '🍚',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }, {
+    name: 'תפוחי אדמה',
+    emoji: '🥔',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }, {
+    name: 'מים',
+    emoji: '💧',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }, {
+    name: 'קפה',
+    emoji: '☕',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }, {
+    name: 'תה',
+    emoji: '🍵',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }, {
+    name: 'מיץ',
+    emoji: '🧃',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }, {
+    name: 'גלידה',
+    emoji: '🍨',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }, {
+    name: 'שוקולד',
+    emoji: '🍫',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }, {
+    name: 'תפוח',
+    emoji: '🍎',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }, {
+    name: 'בננה',
+    emoji: '🍌',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }, {
+    name: 'מלפפון',
+    emoji: '🥒',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }, {
+    name: 'עגבנייה',
+    emoji: '🍅',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }, {
+    name: 'גזר',
+    emoji: '🥕',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }, {
+    name: 'ביצה',
+    emoji: '🥚',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }, {
+    name: 'חומוס',
+    emoji: '🫘',
+    answer: 'פטור',
+    note: '',
+    reason: ''
+  }];
+  const levelBQuestions = [{
+    name: 'פת פחות מכביצה',
+    emoji: '🥖',
+    answer: 'פטור',
+    note: '(פחות מכביצה)',
+    reason: 'פת פחותה מכביצה פטורה מסוכה, שהרי אין כאן קביעות סעודה'
+  }, {
+    name: 'יין לא בקידוש',
+    emoji: '🍷',
+    answer: 'פטור',
+    note: '(רביעית יין שלא בקידוש)',
+    reason: 'יין שלא בקידוש וגם לא במסגרת סעודה - פטור מסוכה'
+  }, {
+    name: 'מרק תפוחי אדמה',
+    emoji: '🍜',
+    answer: 'פטור',
+    note: '(מעשה קדירה ללא קביעות)',
+    reason: 'מעשה קדירה של תפוחי אדמה או ירקות שלא בקביעות סעודה - פטור מסוכה'
+  }, {
+    name: 'תבשיל אורז',
+    emoji: '🍚',
+    answer: 'פטור',
+    note: '(ללא קביעות סעודה)',
+    reason: 'אורז גם כתבשיל לא מחייב סוכה אלא אם כן קובע עליו סעודה'
+  }, {
+    name: 'מאפה קטן',
+    emoji: '🧁',
+    answer: 'פטור',
+    note: '(פחות מכביצה)',
+    reason: 'מאפה הפחות מכביצה פטור מסוכה גם אם הוא פת הבאה בכיסנין'
+  }, {
+    name: 'לחם עם בשר',
+    emoji: '🥪',
+    answer: 'ברכה',
+    note: '(קביעות סעודה)',
+    reason: 'פת שקובעים עליה סעודה חייבת בסוכה בברכה, גם אם יש עמה בשר'
+  }, {
+    name: 'קוגל לוקשן',
+    emoji: '🍝',
+    answer: 'ברכה',
+    note: '(כשקובע)',
+    reason: 'קוגל מאטריות כשקובע עליו סעודה - חייב בסוכה בברכה'
+  }, {
+    name: 'כוס יין גדולה',
+    emoji: '🍷',
+    answer: 'פטור',
+    note: '(לא בסעודה)',
+    reason: 'אפילו כוס גדולה של יין, שלא בתוך סעודה ושלא לקידוש - פטור'
+  }, {
+    name: 'פירות מיובשים',
+    emoji: '🥭',
+    answer: 'פטור',
+    note: '',
+    reason: 'פירות גם מיובשים אינם מחייבים סוכה'
+  }, {
+    name: 'עוגיות קטנות',
+    emoji: '🍪',
+    answer: 'פטור',
+    note: '(פחות מכביצה)',
+    reason: 'עוגיות בכמות הפחותה מכביצה - פטור מסוכה'
+  }, {
+    name: 'גבינה עם לחם',
+    emoji: '🧀',
+    answer: 'ברכה',
+    note: '(קביעות על הלחם)',
+    reason: 'כשיש לחם מעל כביצה - חייב בסוכה בברכה, והגבינה טפלה'
+  }, {
+    name: 'בשר בלי לחם',
+    emoji: '🥩',
+    answer: 'ללא',
+    note: '(קביעות בלי פת)',
+    reason: 'בשר בקביעות סעודה ללא פת - טוב לאכול בסוכה אך ללא ברכה'
+  }, {
+    name: 'מרק עם קרוטונים',
+    emoji: '🍲',
+    answer: 'פטור',
+    note: '(קרוטונים מועטים)',
+    reason: 'מרק עם קרוטונים בכמות מועטת - פטור. אם הקרוטונים מרובים - דין אחר'
+  }, {
+    name: 'סלט עם קרקרים',
+    emoji: '🥗',
+    answer: 'פטור',
+    note: '(מעט קרקרים)',
+    reason: 'סלט עם קרקרים בכמות שאינה מכביצה - פטור'
+  }, {
+    name: 'עוגת גבינה',
+    emoji: '🍰',
+    answer: 'ברכה',
+    note: '(מעל כביצה)',
+    reason: 'עוגת גבינה עם בצק - אם מעל כביצה חייבת בסוכה'
+  }, {
+    name: 'פופקורן',
+    emoji: '🍿',
+    answer: 'פטור',
+    note: '',
+    reason: 'פופקורן אינו מחמשת מיני דגן ופטור מסוכה'
+  }, {
+    name: 'תפוח אפוי',
+    emoji: '🍎',
+    answer: 'פטור',
+    note: '',
+    reason: 'פירות אפויים נשארים בגדר פירות ופטורים'
+  }, {
+    name: 'יין בסעודה',
+    emoji: '🍷',
+    answer: 'ללא',
+    note: '(במסגרת סעודה)',
+    reason: 'יין שנשתה במהלך סעודה - טוב לשתות בסוכה אך ללא ברכה'
+  }, {
+    name: 'פשטידה קטנה',
+    emoji: '🥧',
+    answer: 'פטור',
+    note: '(פחות מכביצה)',
+    reason: 'פשטידה מקמח אך בכמות פחותה מכביצה - פטור'
+  }, {
+    name: 'שניצל',
+    emoji: '🍗',
+    answer: 'ללא',
+    note: '(לא קביעות על פת)',
+    reason: 'שניצל בציפוי פירורי לחם - הציפוי טפל, דינו כבשר'
+  }];
+  const levelCQuestions = [{
+    name: 'מזונות בסעודה',
+    emoji: '🥧',
+    answer: 'ברכה',
+    note: '(קביעות על המזונות)',
+    reason: 'כשקובעים סעודה על מאכל מזונות - חייב בסוכה בברכה, גם בסעודת חלב'
+  }, {
+    name: 'יין אחרי סעודה',
+    emoji: '🍷',
+    answer: 'ללא',
+    note: '(כוס של ברכה)',
+    reason: 'יין של כוס הברכה או בתוך הסעודה - טוב לשתות בסוכה ללא ברכה'
+  }, {
+    name: 'פת כסנין רביעית',
+    emoji: '🥐',
+    answer: 'ברכה',
+    note: '(מעל רביעית)',
+    reason: 'פת הבאה בכיסנין בשיעור רביעית ומעלה - חייבת בסוכה בברכה'
+  }, {
+    name: 'מרק קובע',
+    emoji: '🍲',
+    answer: 'ללא',
+    note: '(קביעות על המרק)',
+    reason: 'מרק שקובעים עליו סעודה - טוב לאכול בסוכה ללא ברכה (דין קביעות לא על פת)'
+  }, {
+    name: 'לחמניה וקפה',
+    emoji: '☕',
+    answer: 'ברכה',
+    note: '(קביעות על הלחמניה)',
+    reason: 'כשיש לחמניה מעל כביצה - חייב בסוכה בברכה, והקפה פטור'
+  }, {
+    name: 'גרעיני חמניות',
+    emoji: '🌻',
+    answer: 'פטור',
+    note: '',
+    reason: 'גרעינים אינם מחמשת מיני דגן ופטורים מסוכה'
+  }, {
+    name: 'קוואקר מבושל',
+    emoji: '🥣',
+    answer: 'ברכה',
+    note: '(כשקובע)',
+    reason: 'קוואקר (שיבולת שועל) בשיעור כביצה ומעלה כשקובע - חייב בסוכה'
+  }, {
+    name: 'פיצה קטנה',
+    emoji: '🍕',
+    answer: 'פטור',
+    note: '(פחות מכביצה)',
+    reason: 'גם פיצה - אם פחות מכביצה פטורה מסוכה'
+  }, {
+    name: 'בירה',
+    emoji: '🍺',
+    answer: 'פטור',
+    note: '',
+    reason: 'שכר (בירה) שלא בסעודה - פטור מסוכה לרוב הפוסקים'
+  }, {
+    name: 'וויסקי',
+    emoji: '🥃',
+    answer: 'פטור',
+    note: '',
+    reason: 'משקאות חריפים כוויסקי - פטורים מסוכה'
+  }, {
+    name: 'בצק מטוגן',
+    emoji: '🍩',
+    answer: 'ברכה',
+    note: '(מעל כביצה)',
+    reason: 'סופגניה או בצק מטוגן מעל כביצה - חייב בסוכה'
+  }, {
+    name: 'לחם לטעימה',
+    emoji: '🍞',
+    answer: 'פטור',
+    note: '(טעימה בעלמא)',
+    reason: 'טעימה בעלמא של פת - יש מקילים שפטור אם לא אוכל כביצה'
+  }, {
+    name: 'בורקס במלית',
+    emoji: '🥟',
+    answer: 'ברכה',
+    note: '(הבצק עיקר)',
+    reason: 'בורקס - הבצק הוא העיקר ומחייב בסוכה אם מעל כביצה'
+  }, {
+    name: 'אורז בסעודה',
+    emoji: '🍚',
+    answer: 'ללא',
+    note: '(קביעות על אורז)',
+    reason: 'אורז שקובעים עליו סעודה - טוב לאכול בסוכה ללא ברכה'
+  }, {
+    name: 'קינוח',
+    emoji: '🍨',
+    answer: 'פטור',
+    note: '(לא דגן)',
+    reason: 'קינוח שאינו פת ומזונות - פטור גם בסוף הסעודה'
+  }, {
+    name: 'תפוחי אדמה קבועים',
+    emoji: '🥔',
+    answer: 'ללא',
+    note: '(קביעות סעודה)',
+    reason: 'תפוחי אדמה שקובעים עליהם סעודה - טוב לאכול בסוכה ללא ברכה'
+  }, {
+    name: 'חיטה מפולפלת',
+    emoji: '🌾',
+    answer: 'פטור',
+    note: '(לא מבושל)',
+    reason: 'גרגרי חיטה שלא בושלו כראוי - דינם נידון, יש מחלקות'
+  }, {
+    name: 'קפה ארוך',
+    emoji: '☕',
+    answer: 'פטור',
+    note: '',
+    reason: 'קפה גם בזמן ארוך אינו מחייב סוכה'
+  }, {
+    name: 'לחם לפני שינה',
+    emoji: '🌙',
+    answer: 'ברכה',
+    note: '(פת קבוע)',
+    reason: 'אכילת פת גם לפני השינה - חייב בסוכה אם מעל כביצה'
+  }, {
+    name: 'פיתה זעירה',
+    emoji: '🫓',
+    answer: 'פטור',
+    note: '(פחות מכביצה)',
+    reason: 'אפילו פיתה - אם בשיעור קטן מכביצה, פטור'
+  }];
+  useEffect(() => {
+    loadLevel(currentLevel);
+  }, [currentLevel]);
+  const loadLevel = level => {
+    let questions = [];
+    if (level === 1) questions = [...levelAQuestions];else if (level === 2) questions = [...levelBQuestions];else if (level === 3) questions = [...levelCQuestions];
+    const shuffled = questions.sort(() => Math.random() - 0.5);
+    setShuffledQuestions(shuffled);
+    setCurrentQuestion(0);
+    setScore(0);
+    setGameFinished(false);
+    setShowFeedback(false);
+    setShowLevelSelect(false);
+  };
+  const playSound = isCorrect => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    if (isCorrect) {
+      const notes = [523.25, 587.33, 659.25, 783.99];
+      let time = audioContext.currentTime;
+      notes.forEach(freq => {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.2, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+        osc.start(time);
+        osc.stop(time + 0.1);
+        time += 0.08;
+      });
+    } else {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      osc.frequency.value = 200;
+      gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+      osc.start(audioContext.currentTime);
+      osc.stop(audioContext.currentTime + 0.4);
+    }
+  };
+  const playLevelUpSound = () => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const melody = [{
+      freq: 523.25,
+      duration: 0.15
+    }, {
+      freq: 587.33,
+      duration: 0.15
+    }, {
+      freq: 659.25,
+      duration: 0.15
+    }, {
+      freq: 783.99,
+      duration: 0.2
+    }, {
+      freq: 880,
+      duration: 0.3
+    }];
+    let time = audioContext.currentTime;
+    melody.forEach(note => {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      osc.frequency.value = note.freq;
+      gain.gain.setValueAtTime(0.25, time);
+      gain.gain.exponentialRampToValueAtTime(0.01, time + note.duration);
+      osc.start(time);
+      osc.stop(time + note.duration);
+      time += note.duration;
+    });
+  };
+  const handleAnswer = answer => {
+    const correct = shuffledQuestions[currentQuestion].answer === answer;
+    setIsCorrect(correct);
+    setShowFeedback(true);
+    playSound(correct);
+    if (correct) {
+      setScore(score + 1);
+    }
+    setTimeout(() => {
+      setShowFeedback(false);
+      if (currentQuestion < shuffledQuestions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+      } else {
+        setGameFinished(true);
+        checkLevelCompletion();
+      }
+    }, currentLevel >= 2 ? 3000 : 1500);
+  };
+  const checkLevelCompletion = () => {
+    const percentage = (score + (isCorrect ? 1 : 0)) / shuffledQuestions.length * 100;
+    if (percentage >= 95) {
+      if (currentLevel === 1 && !unlockedLevels.includes(2)) {
+        setUnlockedLevels([...unlockedLevels, 2]);
+        playLevelUpSound();
+      } else if (currentLevel === 2 && !unlockedLevels.includes(3)) {
+        setUnlockedLevels([...unlockedLevels, 3]);
+        playLevelUpSound();
+      }
+    }
+  };
+  const resetGame = () => {
+    loadLevel(currentLevel);
+  };
+  const selectLevel = level => {
+    if (unlockedLevels.includes(level)) {
+      setCurrentLevel(level);
+    }
+  };
+  if (shuffledQuestions.length === 0) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-b from-blue-100 to-green-100 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl"
+    }, "\u05D8\u05D5\u05E2\u05DF..."));
+  }
+  if (showLevelSelect) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-green-50 flex items-center justify-center p-4",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl w-full"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-12"
+    }, /*#__PURE__*/React.createElement("h1", {
+      className: "text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-blue-600 mb-4"
+    }, "\uD83D\uDD4C \u05DE\u05E9\u05D7\u05E7 \u05D4\u05DC\u05DB\u05D5\u05EA \u05E1\u05D5\u05DB\u05D4 \uD83D\uDD4C"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-gray-700"
+    }, "\u05D1\u05D7\u05E8 \u05D0\u05EA \u05E8\u05DE\u05EA \u05D4\u05E7\u05D5\u05E9\u05D9")), /*#__PURE__*/React.createElement("div", {
+      className: "grid gap-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      onClick: () => selectLevel(1),
+      className: `bg-white rounded-3xl p-8 cursor-pointer transform transition-all hover:scale-105 shadow-xl border-4 ${currentLevel === 1 ? 'border-green-500 ring-4 ring-green-300' : 'border-gray-300'}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-4"
+    }, /*#__PURE__*/React.createElement(Star, {
+      className: "w-12 h-12 text-yellow-500"
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "text-3xl font-bold text-green-700"
+    }, "\u05E8\u05DE\u05D4 \u05D0 - \u05D1\u05E1\u05D9\u05E1\u05D9"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600"
+    }, "\u05DE\u05E7\u05E8\u05D9\u05DD \u05E4\u05E9\u05D5\u05D8\u05D9\u05DD \u05D5\u05D1\u05E1\u05D9\u05E1\u05D9\u05D9\u05DD"))), /*#__PURE__*/React.createElement("div", {
+      className: "text-green-600 text-2xl"
+    }, "\u2713 \u05E4\u05EA\u05D5\u05D7"))), /*#__PURE__*/React.createElement("div", {
+      onClick: () => selectLevel(2),
+      className: `bg-white rounded-3xl p-8 cursor-pointer transform transition-all ${unlockedLevels.includes(2) ? 'hover:scale-105 opacity-100' : 'opacity-50 cursor-not-allowed'} shadow-xl border-4 ${currentLevel === 2 ? 'border-blue-500 ring-4 ring-blue-300' : 'border-gray-300'}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-4"
+    }, /*#__PURE__*/React.createElement(Award, {
+      className: "w-12 h-12 text-blue-500"
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "text-3xl font-bold text-blue-700"
+    }, "\u05E8\u05DE\u05D4 \u05D1 - \u05D1\u05D9\u05E0\u05D5\u05E0\u05D9"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600"
+    }, "\u05DE\u05E7\u05E8\u05D9\u05DD \u05DE\u05D5\u05E8\u05DB\u05D1\u05D9\u05DD + \u05E0\u05D9\u05DE\u05D5\u05E7\u05D9\u05DD"))), /*#__PURE__*/React.createElement("div", {
+      className: `text-2xl ${unlockedLevels.includes(2) ? 'text-blue-600' : 'text-gray-400'}`
+    }, unlockedLevels.includes(2) ? '✓ פתוח' : '🔒 דרוש 95%'))), /*#__PURE__*/React.createElement("div", {
+      onClick: () => selectLevel(3),
+      className: `bg-white rounded-3xl p-8 cursor-pointer transform transition-all ${unlockedLevels.includes(3) ? 'hover:scale-105 opacity-100' : 'opacity-50 cursor-not-allowed'} shadow-xl border-4 ${currentLevel === 3 ? 'border-purple-500 ring-4 ring-purple-300' : 'border-gray-300'}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-4"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-12 h-12 text-purple-500"
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "text-3xl font-bold text-purple-700"
+    }, "\u05E8\u05DE\u05D4 \u05D2 - \u05DE\u05EA\u05E7\u05D3\u05DD"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600"
+    }, "\u05DE\u05E6\u05D1\u05D9\u05DD \u05DE\u05D5\u05E8\u05DB\u05D1\u05D9\u05DD + \u05E0\u05D9\u05DE\u05D5\u05E7\u05D9\u05DD"))), /*#__PURE__*/React.createElement("div", {
+      className: `text-2xl ${unlockedLevels.includes(3) ? 'text-purple-600' : 'text-gray-400'}`
+    }, unlockedLevels.includes(3) ? '✓ פתוח' : '🔒 דרוש 95%')))), /*#__PURE__*/React.createElement("div", {
+      className: "text-center mt-8"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => setShowLevelSelect(false),
+      className: "bg-gradient-to-r from-green-500 to-blue-500 text-white text-2xl px-12 py-4 rounded-full font-bold hover:scale-110 transition-transform shadow-lg"
+    }, "\u25B6\uFE0F \u05D4\u05EA\u05D7\u05DC \u05DE\u05E9\u05D7\u05E7"))));
+  }
+  if (gameFinished) {
+    const percentage = score / shuffledQuestions.length * 100;
+    let message = '';
+    let emoji = '';
+    let levelUnlocked = false;
+    if (percentage >= 95) {
+      if (currentLevel === 1 && unlockedLevels.includes(2) && unlockedLevels.length === 2) {
+        message = 'מעולה! רמה ב נפתחה! 🎊';
+        emoji = '🔓';
+        levelUnlocked = true;
+      } else if (currentLevel === 2 && unlockedLevels.includes(3) && unlockedLevels.length === 3) {
+        message = 'מדהים! רמה ג נפתחה! 🏆';
+        emoji = '🔓';
+        levelUnlocked = true;
+      } else if (percentage === 100) {
+        message = 'מושלם! אתה מלך הלכות סוכה! 👑';
+        emoji = '🌟';
+      } else {
+        message = 'מצוין! עברת ב-95%+! 🎉';
+        emoji = '⭐';
+      }
+    } else if (percentage >= 90) {
+      message = 'טוב מאוד! עוד קצת ל-95%! 🎉';
+      emoji = '✨';
+    } else if (percentage >= 80) {
+      message = 'יפה! אבל צריך 95% לרמה הבאה 😊';
+      emoji = '💫';
+    } else {
+      message = 'כדאי לחזור על ההלכות... 📖';
+      emoji = '🌱';
+    }
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-green-50 flex items-center justify-center p-4",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full border-8 border-blue-600"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-8xl mb-6 animate-bounce"
+    }, emoji), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold text-blue-700 mb-4"
+    }, "\u05E8\u05DE\u05D4 ", currentLevel === 1 ? 'א' : currentLevel === 2 ? 'ב' : 'ג', " \u05D4\u05E1\u05EA\u05D9\u05D9\u05DE\u05D4!"), /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl font-bold text-blue-600 mb-2"
+    }, score, "/", shuffledQuestions.length), /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl font-bold text-purple-600 mb-4"
+    }, percentage.toFixed(0), "%"), /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl text-gray-700 mb-8"
+    }, message), levelUnlocked && /*#__PURE__*/React.createElement("div", {
+      className: "bg-yellow-100 border-4 border-yellow-400 rounded-2xl p-6 mb-6 animate-pulse"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl mb-2"
+    }, "\uD83C\uDF8A"), /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl font-bold text-yellow-800"
+    }, "\u05E8\u05DE\u05D4 \u05D7\u05D3\u05E9\u05D4 \u05E0\u05E4\u05EA\u05D7\u05D4!")), /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-4 justify-center flex-wrap"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: resetGame,
+      className: "bg-gradient-to-r from-green-500 to-green-600 text-white text-2xl px-8 py-4 rounded-full font-bold hover:scale-110 transition-transform shadow-lg"
+    }, "\uD83D\uDD04 \u05E9\u05D7\u05E7 \u05E9\u05D5\u05D1"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setShowLevelSelect(true),
+      className: "bg-gradient-to-r from-gray-500 to-gray-600 text-white text-2xl px-8 py-4 rounded-full font-bold hover:scale-110 transition-transform shadow-lg"
+    }, "\uD83D\uDCCB \u05D1\u05D7\u05E8 \u05E8\u05DE\u05D4")))));
+  }
+  const currentFood = shuffledQuestions[currentQuestion];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-green-50 p-4",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-4 flex justify-between items-center"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowLevelSelect(true),
+    className: "bg-white hover:bg-gray-50 px-4 py-2 rounded-full shadow-lg text-gray-700 font-bold transition-all"
+  }, "\u25C0 \u05D7\u05D6\u05E8\u05D4"), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white px-6 py-2 rounded-full shadow-lg font-bold text-xl"
+  }, "\u05E8\u05DE\u05D4 ", currentLevel === 1 ? 'א' : currentLevel === 2 ? 'ב' : 'ג')), /*#__PURE__*/React.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-green-700 via-green-600 to-green-700 h-8 rounded-t-3xl border-t-4 border-green-800 shadow-lg"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-around -mt-2"
+  }, [...Array(20)].map((_, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    className: "text-3xl"
+  }, "\uD83C\uDF3F"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-around -mt-3"
+  }, [...Array(15)].map((_, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    className: "text-2xl"
+  }, ['🌺', '🌸', '🌼', '🌻', '🌷'][i % 5]))), /*#__PURE__*/React.createElement("div", {
+    className: "absolute top-0 left-0 right-0 flex justify-around -mt-4"
+  }, [...Array(8)].map((_, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    className: "text-4xl"
+  }, ['🎨', '🎭', '🎪', '🎡'][i % 4])))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-b from-white to-yellow-50 backdrop-blur rounded-b-3xl shadow-2xl border-8 border-yellow-400 p-8 relative"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "absolute top-0 left-0 text-6xl -ml-4 -mt-8 animate-bounce"
+  }, "\uD83C\uDFA8"), /*#__PURE__*/React.createElement("div", {
+    className: "absolute top-0 right-0 text-6xl -mr-4 -mt-8 animate-bounce"
+  }, "\uD83C\uDFA8"), /*#__PURE__*/React.createElement("div", {
+    className: "absolute top-1/2 left-0 text-5xl -ml-3"
+  }, "\uD83C\uDF47"), /*#__PURE__*/React.createElement("div", {
+    className: "absolute top-1/2 right-0 text-5xl -mr-3"
+  }, "\uD83C\uDF4A"), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-8 bg-gradient-to-r from-blue-500 to-purple-500 p-5 rounded-2xl text-white shadow-xl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-2xl font-bold"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, "/", shuffledQuestions.length), /*#__PURE__*/React.createElement("div", {
+    className: "text-3xl font-bold flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    className: "text-yellow-300"
+  }), score, " \u05E0\u05E7\u05D5\u05D3\u05D5\u05EA")), /*#__PURE__*/React.createElement("div", {
+    className: "text-center mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-9xl mb-6 animate-bounce"
+  }, currentFood.emoji), /*#__PURE__*/React.createElement("h2", {
+    className: "text-5xl font-bold text-gray-800 mb-3"
+  }, currentFood.name), currentFood.note && /*#__PURE__*/React.createElement("p", {
+    className: "text-2xl text-gray-600 mb-2"
+  }, currentFood.note), /*#__PURE__*/React.createElement("p", {
+    className: "text-3xl font-bold text-blue-600 mt-4"
+  }, "\u05DE\u05D4 \u05D4\u05D3\u05D9\u05DF?")), /*#__PURE__*/React.createElement("div", {
+    className: "grid gap-4 mb-4"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => handleAnswer('ברכה'),
+    disabled: showFeedback,
+    className: `bg-gradient-to-r from-green-500 to-green-600 text-white text-2xl py-6 rounded-2xl font-bold hover:scale-105 transition-all shadow-lg disabled:opacity-50 ${showFeedback && isCorrect && currentFood.answer === 'ברכה' ? 'ring-4 ring-yellow-400' : ''} ${showFeedback && !isCorrect && currentFood.answer === 'ברכה' ? 'ring-4 ring-green-600' : ''}`
+  }, "\u2705 \u05D7\u05D9\u05D9\u05D1 \u05D1\u05E1\u05D5\u05DB\u05D4 \u05D1\u05D1\u05E8\u05DB\u05D4"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => handleAnswer('ללא'),
+    disabled: showFeedback,
+    className: `bg-gradient-to-r from-blue-500 to-blue-600 text-white text-2xl py-6 rounded-2xl font-bold hover:scale-105 transition-all shadow-lg disabled:opacity-50 ${showFeedback && isCorrect && currentFood.answer === 'ללא' ? 'ring-4 ring-yellow-400' : ''} ${showFeedback && !isCorrect && currentFood.answer === 'ללא' ? 'ring-4 ring-blue-600' : ''}`
+  }, "\u2B50 \u05D8\u05D5\u05D1 \u05DC\u05D0\u05DB\u05D5\u05DC \u05D1\u05E1\u05D5\u05DB\u05D4 \u05DC\u05DC\u05D0 \u05D1\u05E8\u05DB\u05D4"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => handleAnswer('פטור'),
+    disabled: showFeedback,
+    className: `bg-gradient-to-r from-purple-500 to-purple-600 text-white text-2xl py-6 rounded-2xl font-bold hover:scale-105 transition-all shadow-lg disabled:opacity-50 ${showFeedback && isCorrect && currentFood.answer === 'פטור' ? 'ring-4 ring-yellow-400' : ''} ${showFeedback && !isCorrect && currentFood.answer === 'פטור' ? 'ring-4 ring-purple-600' : ''}`
+  }, "\u274C \u05E4\u05D8\u05D5\u05E8 \u05DE\u05E1\u05D5\u05DB\u05D4")), showFeedback && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: `p-6 rounded-2xl text-center text-2xl font-bold ${isCorrect ? 'bg-green-100 text-green-700 border-4 border-green-500' : 'bg-red-100 text-red-700 border-4 border-red-500'}`
+  }, isCorrect ? '🎉 נכון מאוד! כל הכבוד!' : '❌ לא נכון, התשובה הנכונה:', !isCorrect && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 text-xl"
+  }, currentFood.answer === 'ברכה' && '✅ חייב בסוכה בברכה', currentFood.answer === 'ללא' && '⭐ טוב לאכול בסוכה ללא ברכה', currentFood.answer === 'פטור' && '❌ פטור מסוכה')), currentLevel >= 2 && currentFood.reason && /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 bg-blue-50 border-4 border-blue-300 rounded-2xl p-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-xl font-bold text-blue-800 mb-2"
+  }, "\uD83D\uDCA1 \u05E0\u05D9\u05DE\u05D5\u05E7 \u05D4\u05DC\u05DB\u05EA\u05D9:"), /*#__PURE__*/React.createElement("div", {
+    className: "text-lg text-blue-900"
+  }, currentFood.reason)))), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-center gap-6 mt-6 text-5xl"
+  }, ['🍎', '🍇', '🍊', '🍋', '🍑', '🥭', '🍉'].map((fruit, i) => /*#__PURE__*/React.createElement("span", {
+    key: i,
+    className: "animate-bounce",
+    style: {
+      animationDelay: `${i * 0.1}s`
+    }
+  }, fruit)))));
+};
+const __App = SukkahGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

@@ -1,0 +1,1207 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>joy-game-full – הקול החמישי</title>
+<meta name="description" content="Learn gratitude and joy through 8 interactive Hebrew lessons with quizzes, sound effects, and celebration animations. Educational game for positive mindset development.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="joy-game-full – הקול החמישי">
+<meta property="og:description" content="Learn gratitude and joy through 8 interactive Hebrew lessons with quizzes, sound effects, and celebration animations. Educational game for positive mindset development.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-fb281364.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/fb281364.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const JoyGameFull = () => {
+  const [currentLesson, setCurrentLesson] = useState(0);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [feedback, setFeedback] = useState('');
+  const [lessonScores, setLessonScores] = useState([]);
+  const [gameComplete, setGameComplete] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  const [answeredCorrectly, setAnsweredCorrectly] = useState(false);
+
+  // Audio context for sound effects
+  const playSound = (frequencies, durations) => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let startTime = audioContext.currentTime;
+    frequencies.forEach((freq, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = freq;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + durations[index]);
+      oscillator.start(startTime);
+      oscillator.stop(startTime + durations[index]);
+      startTime += durations[index];
+    });
+  };
+  const playCorrectSound = () => {
+    playSound([523.25, 659.25, 783.99], [0.15, 0.15, 0.2]);
+  };
+  const playCelebrationSound = () => {
+    playSound([523.25, 659.25, 783.99, 1046.50, 783.99, 659.25], [0.25, 0.25, 0.3, 0.4, 0.3, 0.3]);
+  };
+  const lessons = [{
+    title: "שיעור 1: כוחו של חיוך",
+    emoji: "😊",
+    content: `
+        <div class="space-y-4">
+          <div class="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-xl border-2 border-yellow-300 shadow-lg">
+            <h3 class="text-2xl font-bold text-orange-600 mb-4 flex items-center gap-2">
+              <span class="text-3xl">😊</span>
+              כוחו המדהים של חיוך
+            </h3>
+            <p class="text-lg leading-relaxed mb-4">
+              צ'ארלס דרווין גילה משהו מרתק: <strong class="text-orange-700">אנחנו לא רק מחייכים כשטוב לנו</strong> - 
+              עצם הפעולה הפיזית של החיוך שולחת משוב למוח!
+            </p>
+            <div class="bg-white p-4 rounded-lg mb-4">
+              <p class="text-lg">🧠 <strong>איך זה עובד?</strong></p>
+              <p class="mt-2">המוח מקבל איתות משרירי הפנים → משחרר אנדורפינים → אנחנו מרגישים טוב יותר!</p>
+            </div>
+            <div class="bg-orange-100 p-4 rounded-lg">
+              <p class="font-bold text-orange-800">✨ בונוס מיוחד: החיוך הוא "מדבק"!</p>
+              <p class="mt-2">כשאתה מחייך לאחרים, אתה לא רק משפר את מצב הרוח שלך, אלא גם מפיץ שמחה בכל הסביבה 🌟</p>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-r from-pink-50 to-red-50 p-5 rounded-xl border-2 border-pink-300">
+            <p class="text-xl font-bold text-pink-700 mb-2">💪 אתגר יומי:</p>
+            <p class="text-lg">חייך היום ל-5 אנשים שונים (מורה, חבר, הורה, נהג אוטובוס) ושים לב איך זה משפיע עליך ועליהם!</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "מה קורה במוח שלנו כשאנחנו מחייכים?",
+      answers: [{
+        text: "המוח משחרר אנדורפינים שגורמים לתחושת שמחה",
+        correct: true
+      }, {
+        text: "המוח מפסיק לחשוב על דברים עצובים לרגע קצר",
+        correct: false
+      }, {
+        text: "המוח שומר את החיוך בזיכרון לטווח ארוך",
+        correct: false
+      }, {
+        text: "המוח שולח איתותים לשרירים אחרים בגוף להירגע",
+        correct: false
+      }],
+      hint: "חשוב על החומרים הכימיים שהמוח משחרר...",
+      explanation: "המוח מקבל איתות משרירי הפנים ומשחרר אנדורפינים - הורמונים שיוצרים תחושת שמחה ואושר!"
+    }, {
+      question: "מי גילה את הקשר בין חיוך למצב רוח?",
+      answers: [{
+        text: "צ'ארלס דרווין, המדען המפורסם",
+        correct: true
+      }, {
+        text: "זיגמונד פרויד, מייסד הפסיכואנליזה",
+        correct: false
+      }, {
+        text: "אלברט איינשטיין, הפיזיקאי הגדול",
+        correct: false
+      }, {
+        text: "הרמב\"ם, הרופא והפילוסוף היהודי",
+        correct: false
+      }],
+      hint: "מדען שהתעניין באבולוציה ובתגובות הגוף...",
+      explanation: "צ'ארלס דרווין, המדען המפורסם שחקר אבולוציה, היה הראשון שהבחין בקשר המיוחד בין חיוך לרגשות!"
+    }, {
+      question: "למה חיוך נקרא 'מדבק'?",
+      answers: [{
+        text: "כי כשאנחנו מחייכים לאחרים, זה מפיץ שמחה גם אליהם",
+        correct: true
+      }, {
+        text: "כי חיוך נשאר על הפנים לזמן רב אחרי שמתחילים",
+        correct: false
+      }, {
+        text: "כי קשה להפסיק לחייך אחרי שמתחילים",
+        correct: false
+      }, {
+        text: "כי חיוך גורם לאנשים להידבק אלינו פיזית",
+        correct: false
+      }],
+      hint: "חשוב על ההשפעה על אנשים אחרים...",
+      explanation: "חיוך הוא מדבק כי הוא מועבר הלאה - כשאנחנו מחייכים, אנשים אחרים 'נדבקים' בשמחה ומחייכים בחזרה!"
+    }]
+  }, {
+    title: "שיעור 2: דקה אחת של תודה",
+    emoji: "🙏",
+    content: `
+        <div class="space-y-4">
+          <div class="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-xl border-2 border-purple-300 shadow-lg">
+            <h3 class="text-2xl font-bold text-purple-600 mb-4 flex items-center gap-2">
+              <span class="text-3xl">🙏</span>
+              דקה אחת שמשנה הכל
+            </h3>
+            <p class="text-lg leading-relaxed mb-4">
+              עומס החיים גורם לנו <strong class="text-purple-700">לשכוח לעצור ולהודות</strong>. 
+              הרעיון מתוך יוזמת "קול תודה" הוא פשוט אך מהפכני!
+            </p>
+            <div class="bg-white p-5 rounded-lg mb-4 border-l-4 border-purple-400">
+              <p class="text-xl font-bold text-purple-700 mb-2">⏰ מה זה "דקת תודה"?</p>
+              <p class="text-lg">להקדיש <strong>לפחות דקה אחת ביום</strong> להודיה ממוקדת ומודעת. דקה שבה אנחנו עוצרים הכל ומתרכזים רק בהכרת הטוב.</p>
+            </div>
+            <div class="bg-purple-100 p-4 rounded-lg">
+              <p class="font-bold text-purple-800 mb-2">🎯 למה זה עובד?</p>
+              <p>ההתמדה היומיומית, גם אם קצרה, <strong>מאמנת את הלב והמוח לראות את הטוב</strong>. זה כמו ללכת לחדר כושר - רק שכאן אנחנו מאמנים את שריר ההודיה שלנו!</p>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-xl border-2 border-green-300">
+            <p class="text-xl font-bold text-green-700 mb-2">🌱 תרגיל יומי:</p>
+            <p class="text-lg">כל בוקר, קבע תזכורת בטלפון ל"דקת תודה". עצור, נשום עמוק, וחשוב על דבר אחד ספציפי שאתה אסיר תודה עליו היום.</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "כמה זמן צריך להקדיש כל יום להודיה לפי השיעור?",
+      answers: [{
+        text: "לפחות דקה אחת ביום",
+        correct: true
+      }, {
+        text: "חמש דקות בבוקר ובערב",
+        correct: false
+      }, {
+        text: "רבע שעה לפני השינה",
+        correct: false
+      }, {
+        text: "כל פעם שקורה משהו טוב",
+        correct: false
+      }],
+      hint: "הרעיון הוא משהו קצר שניתן לקיים כל יום...",
+      explanation: "דקה אחת ביום! זה נשמע קצר, אבל ההתמדה היומיומית היא המפתח להצלחה."
+    }, {
+      question: "למה דקה אחת של תודה יומית משנה את החשיבה שלנו?",
+      answers: [{
+        text: "היא מאמנת את המוח והלב לראות את הטוב באופן קבוע",
+        correct: true
+      }, {
+        text: "היא גורמת לנו לשכוח את הדברים הרעים שקרו",
+        correct: false
+      }, {
+        text: "היא מרגיעה את מערכת העצבים לקראת היום",
+        correct: false
+      }, {
+        text: "היא מזכירה לנו מה עשינו אתמול",
+        correct: false
+      }],
+      hint: "חשוב על זה כמו אימון בחדר כושר...",
+      explanation: "ההתמדה מאמנת את 'שריר ההודיה' שלנו - המוח והלב לומדים להתמקד בטוב!"
+    }, {
+      question: "מהי יוזמת 'קול תודה' שמוזכרת בשיעור?",
+      answers: [{
+        text: "יוזמה שמעודדת להקדיש דקה ממוקדת להודיה מדי יום",
+        correct: true
+      }, {
+        text: "אפליקציה שמתעדת את כל הדברים הטובים שקורים",
+        correct: false
+      }, {
+        text: "קבוצת תמיכה שנפגשת פעם בשבוע",
+        correct: false
+      }, {
+        text: "שיר מיוחד שכתוב על הכרת טוב",
+        correct: false
+      }],
+      hint: "זה לא אפליקציה או קבוצה, אלא רעיון פשוט...",
+      explanation: "קול תודה היא יוזמה המעודדת את הרעיון הפשוט של דקת תודה יומית ממוקדת!"
+    }]
+  }, {
+    title: "שיעור 3: להודות על המובן מאליו",
+    emoji: "✨",
+    content: `
+        <div class="space-y-4">
+          <div class="bg-gradient-to-r from-cyan-50 to-blue-50 p-6 rounded-xl border-2 border-cyan-300 shadow-lg">
+            <h3 class="text-2xl font-bold text-cyan-600 mb-4 flex items-center gap-2">
+              <span class="text-3xl">✨</span>
+              הנס שבדברים הפשוטים
+            </h3>
+            <p class="text-lg leading-relaxed mb-4">
+              בעל <strong class="text-cyan-700">"יסוד ושורש העבודה"</strong> מלמד אותנו עיקרון מהפכני: 
+              להודות על הדברים הקטנים והשגרתיים ביותר!
+            </p>
+            <div class="bg-white p-5 rounded-lg mb-4 border-l-4 border-cyan-400">
+              <p class="text-xl font-bold text-cyan-700 mb-3">⚠️ האויב הגדול: השגרה</p>
+              <p class="text-lg">אנחנו נוטים לקחת דברים כמובנים מאליהם. אבל האמת? <strong>שום דבר לא מובן מאליו!</strong></p>
+              <div class="mt-3 space-y-2 text-base">
+                <p>• התעוררתי הבוקר בריא ושלם? <span class="text-cyan-600">נס! ✨</span></p>
+                <p>• יש לי בגדים נקיים ללבוש? <span class="text-cyan-600">נס! ✨</span></p>
+                <p>• הגוף שלי פועל כשורה? <span class="text-cyan-600">נס! ✨</span></p>
+                <p>• יש לי מה לאכול? <span class="text-cyan-600">נס! ✨</span></p>
+              </div>
+            </div>
+            <div class="bg-cyan-100 p-4 rounded-lg">
+              <p class="font-bold text-cyan-800 mb-2">🎯 המשימה שלנו:</p>
+              <p>לאמן את עצמנו לראות את הנס שבכל רגע - גם בדברים הכי "רגילים" שיש!</p>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-r from-amber-50 to-yellow-50 p-5 rounded-xl border-2 border-amber-300">
+            <p class="text-xl font-bold text-amber-700 mb-2">📝 תרגיל מעשי:</p>
+            <p class="text-lg">כתוב רשימה של 10 דברים "מובנים מאליו" בחייך. כל פעם שאתה נתקל באחד מהם - עצור לשנייה והודה עליו בליבך!</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "מי מלמד אותנו להודות על הדברים השגרתיים?",
+      answers: [{
+        text: "בעל 'יסוד ושורש העבודה'",
+        correct: true
+      }, {
+        text: "הרמב\"ם במשנה תורה",
+        correct: false
+      }, {
+        text: "רבי נחמן מברסלב",
+        correct: false
+      }, {
+        text: "החפץ חיים בספריו",
+        correct: false
+      }],
+      hint: "ספר יסוד בעבודת ה' שעוסק בשורשי המצוות...",
+      explanation: "בעל 'יסוד ושורש העבודה' מלמד אותנו להכיר טובה על כל דבר, גם הכי פשוט!"
+    }, {
+      question: "מה נקרא 'האויב של ההודיה' בשיעור?",
+      answers: [{
+        text: "השגרה - הנטייה לקחת דברים כמובנים מאליהם",
+        correct: true
+      }, {
+        text: "העצלות - חוסר הרצון להשקיע מאמץ",
+        correct: false
+      }, {
+        text: "השכחה - אי הזכירה של דברים טובים",
+        correct: false
+      }, {
+        text: "העצב - המצב רוח השלילי",
+        correct: false
+      }],
+      hint: "מה גורם לנו להפסיק לשים לב לדברים טובים?",
+      explanation: "השגרה היא האויב! היא גורמת לנו לקחת את הדברים הטובים כמובנים מאליהם ולהפסיק להעריך אותם."
+    }, {
+      question: "איזה מהבאים הוא דוגמה נכונה להודיה על 'מובן מאליו'?",
+      answers: [{
+        text: "להודות על כך שהתעוררתי בבוקר בריא ושלם",
+        correct: true
+      }, {
+        text: "להודות רק כשקורה משהו מיוחד במיוחד",
+        correct: false
+      }, {
+        text: "להודות רק על דברים שקשה להשיג",
+        correct: false
+      }, {
+        text: "להודות רק כשזוכרים בסוף היום",
+        correct: false
+      }],
+      hint: "חפש את הדבר הכי 'רגיל' שאנשים לא חושבים עליו...",
+      explanation: "התעוררות בריאה בבוקר נראית 'רגילה', אבל זה נס אמיתי שראוי להודיה!"
+    }]
+  }, {
+    title: "שיעור 4: לשיר שיר של הודיה",
+    emoji: "🎵",
+    content: `
+        <div class="space-y-4">
+          <div class="bg-gradient-to-r from-pink-50 to-rose-50 p-6 rounded-xl border-2 border-pink-300 shadow-lg">
+            <h3 class="text-2xl font-bold text-pink-600 mb-4 flex items-center gap-2">
+              <span class="text-3xl">🎵</span>
+              כשהלב שר, השמחה מתפוצצת
+            </h3>
+            <p class="text-lg leading-relaxed mb-4">
+              שירה היא <strong class="text-pink-700">אחד הביטויים הרגשיים החזקים ביותר</strong> לשמחה והודיה. 
+              כשהלב מלא - הוא מתחיל לזמר! 🎶
+            </p>
+            <div class="bg-white p-5 rounded-lg mb-4 border-l-4 border-pink-400">
+              <p class="text-xl font-bold text-pink-700 mb-3">🎼 כוחה של המוזיקה</p>
+              <p class="text-lg mb-3">המוזיקה יכולה לעורר את רגש ההודיה בתוכנו בצורה עוצמתית! היא חודרת ישירות ללב ומעוררת רגשות עמוקים.</p>
+              <div class="bg-pink-50 p-3 rounded">
+                <p class="font-semibold mb-2">שירים מומלצים:</p>
+                <p>🎵 "מזמור לתודה - כי טוב ה'"</p>
+                <p>🎵 "חסדי ה' כי לא תמנו"</p>
+                <p>🎵 וכל שיר שמעורר בך שמחה!</p>
+              </div>
+            </div>
+            <div class="bg-pink-100 p-4 rounded-lg">
+              <p class="font-bold text-pink-800 mb-2">✨ הסוד:</p>
+              <p>שירה משותפת יוצרת חוויה סוחפת! כשאנחנו שרים ביחד, השמחה מתגברת פי כמה וכמה.</p>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-r from-orange-50 to-red-50 p-5 rounded-xl border-2 border-orange-300">
+            <p class="text-xl font-bold text-orange-700 mb-2">🎤 אתגר השבוע:</p>
+            <p class="text-lg">בחר שיר הודיה אחד ושיר אותו כל יום השבוע - בבוקר, במקלחת, בדרך לבית הספר. שים לב איך זה משפיע על מצב הרוח שלך!</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "למה שירה היא ביטוי חזק במיוחד לשמחה?",
+      answers: [{
+        text: "כי היא חודרת ישירות ללב ומעוררת רגשות עמוקים",
+        correct: true
+      }, {
+        text: "כי היא דורשת מאמץ פיזי רב מהגוף",
+        correct: false
+      }, {
+        text: "כי היא מסייעת לזכור את מילות השיר",
+        correct: false
+      }, {
+        text: "כי היא מראה לאחרים שאנחנו שמחים",
+        correct: false
+      }],
+      hint: "חשוב על איפה המוזיקה 'נוגעת' בנו...",
+      explanation: "המוזיקה חודרת ישירות ללב! היא עוקפת את השכל ומגיעה ישר לרגשות העמוקים שלנו."
+    }, {
+      question: "מתי, לפי השיעור, הלב מתחיל לזמר?",
+      answers: [{
+        text: "כשהלב מלא ברגשות של שמחה והודיה",
+        correct: true
+      }, {
+        text: "כשאנחנו לומדים שיר חדש בבית הספר",
+        correct: false
+      }, {
+        text: "כשאנחנו רוצים לבדר את החברים שלנו",
+        correct: false
+      }, {
+        text: "כשאנחנו צריכים להתרכז במשהו",
+        correct: false
+      }],
+      hint: "זה קורה באופן ספונטני כשאנחנו מרגישים...",
+      explanation: "כשהלב מלא ברגשות חזקים של שמחה, הוא פורץ בשיר באופן טבעי!"
+    }, {
+      question: "מה הסוד של שירה משותפת?",
+      answers: [{
+        text: "היא מגבירה את השמחה פי כמה וכמה וסוחפת את כולם",
+        correct: true
+      }, {
+        text: "היא מאפשרת לכולם לשיר בקול חזק יותר",
+        correct: false
+      }, {
+        text: "היא מסייעת לזכור את המילים טוב יותר",
+        correct: false
+      }, {
+        text: "היא חוסכת זמן כי כולם שרים ביחד",
+        correct: false
+      }],
+      hint: "מה קורה לרגש כשכולם שרים ביחד?",
+      explanation: "שירה משותפת יוצרת אפקט מכפיל! השמחה מתגברת כשכולם שרים ביחד ומרגישים חלק מהחוויה."
+    }]
+  }, {
+    title: "שיעור 5: לראות את הטוב בחבר",
+    emoji: "👀",
+    content: `
+        <div class="space-y-4">
+          <div class="bg-gradient-to-r from-green-50 to-teal-50 p-6 rounded-xl border-2 border-green-300 shadow-lg">
+            <h3 class="text-2xl font-bold text-green-600 mb-4 flex items-center gap-2">
+              <span class="text-3xl">👀</span>
+              כוחה של העין הטובה
+            </h3>
+            <p class="text-lg leading-relaxed mb-4">
+              תפילה מיוחדת של <strong class="text-green-700">רבי אלימלך מליז'נסק</strong> מבקשת: 
+              "ותן בליבנו שנראה כל אחד מעלת חברינו ולא חסרונם"
+            </p>
+            <div class="bg-white p-5 rounded-lg mb-4 border-l-4 border-green-400">
+              <p class="text-xl font-bold text-green-700 mb-3">🎯 למה זה כל כך חשוב?</p>
+              <p class="text-lg mb-3">כשאנחנו מתאמנים לחפש את הנקודות הטובות באנשים, אנחנו:</p>
+              <div class="space-y-2 text-base">
+                <p>✅ <strong>משמחים אותם</strong> - כולם אוהבים להרגיש מוערכים</p>
+                <p>✅ <strong>הופכים את עולמנו לחיובי</strong> - אנחנו רואים יותר טוב</p>
+                <p>✅ <strong>מרוויחים חברים</strong> - אנשים נמשכים למי שרואה בהם טוב</p>
+                <p>✅ <strong>משתפרים בעצמנו</strong> - מה שאנחנו מחפשים, אנחנו הופכים!</p>
+              </div>
+            </div>
+            <div class="bg-green-100 p-4 rounded-lg">
+              <p class="font-bold text-green-800 mb-2">💡 העיקרון:</p>
+              <p>הכרת הטוב מתחילה בסביבה הקרובה. כשאנחנו רואים טוב בחברים שלנו, אנחנו בעצם מכירים טובה על כך שיש לנו אנשים טובים בחיים!</p>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-r from-lime-50 to-green-50 p-5 rounded-xl border-2 border-lime-300">
+            <p class="text-xl font-bold text-lime-700 mb-2">🎁 משימה מיוחדת:</p>
+            <p class="text-lg">בחר חבר אחד. במשך השבוע, שים לב ל-3 דברים טובים בו (תכונה, מעשה, מילה טובה). בסוף השבוע - ספר לו על זה!</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "מה מבקשת התפילה של רבי אלימלך מליז'נסק?",
+      answers: [{
+        text: "שנראה את המעלות של חברינו ולא את החסרונות שלהם",
+        correct: true
+      }, {
+        text: "שנסלח לחברינו על כל הטעויות שלהם",
+        correct: false
+      }, {
+        text: "שנהיה חברים טובים יותר לכל אחד",
+        correct: false
+      }, {
+        text: "שנזכור תמיד את הטוב שחברינו עשו לנו",
+        correct: false
+      }],
+      hint: "התפילה מדברת על מה שאנחנו 'רואים' באחרים...",
+      explanation: "התפילה מבקשת שנתמקד במעלות - הצדדים החיוביים - של חברינו, ולא בחסרונות שלהם!"
+    }, {
+      question: "איזו תועלת אישית יש לנו כשאנחנו רואים טוב בחברים?",
+      answers: [{
+        text: "אנחנו הופכים את עולמנו למקום חיובי ושמח יותר",
+        correct: true
+      }, {
+        text: "החברים שלנו נותנים לנו יותר מתנות",
+        correct: false
+      }, {
+        text: "אנחנו זוכים לציונים טובים יותר בבית הספר",
+        correct: false
+      }, {
+        text: "אנחנו נהיים מפורסמים בקרב החברים",
+        correct: false
+      }],
+      hint: "איך השקפה חיובית משפיעה על האופן שבו אנחנו חווים את העולם?",
+      explanation: "כשאנחנו רואים טוב בחברים, אנחנו בעצם יוצרים לעצמנו מציאות חיובית ושמחה יותר!"
+    }, {
+      question: "מאיפה מתחילה הכרת הטוב לפי השיעור?",
+      answers: [{
+        text: "מהסביבה הקרובה - החברים והמשפחה שלנו",
+        correct: true
+      }, {
+        text: "מלהודות על דברים גדולים ומיוחדים",
+        correct: false
+      }, {
+        text: "ממצבים קשים שעברנו בהצלחה",
+        correct: false
+      }, {
+        text: "מתפילות והודיות רשמיות",
+        correct: false
+      }],
+      hint: "איפה הכי קל להתחיל לתרגל הכרת טובה?",
+      explanation: "הכרת הטוב מתחילה קרוב - עם האנשים הכי קרובים אלינו בחיים היומיומיים!"
+    }]
+  }, {
+    title: "שיעור 6: לשמח אחרים",
+    emoji: "💝",
+    content: `
+        <div class="space-y-4">
+          <div class="bg-gradient-to-r from-rose-50 to-pink-50 p-6 rounded-xl border-2 border-rose-300 shadow-lg">
+            <h3 class="text-2xl font-bold text-rose-600 mb-4 flex items-center gap-2">
+              <span class="text-3xl">💝</span>
+              השמחה האמיתית - לשמח אחרים
+            </h3>
+            <p class="text-lg leading-relaxed mb-4">
+              <strong class="text-rose-700">הרמב"ם</strong> מלמד אותנו יסוד פסיכולוגי עמוק: 
+              "אין שם שמחה גדולה ומפוארה אלא לשמח לב עניים ויתומים ואלמנות וגרים"
+            </p>
+            <div class="bg-white p-5 rounded-lg mb-4 border-l-4 border-rose-400">
+              <p class="text-xl font-bold text-rose-700 mb-3">🎭 שני סוגי שמחה:</p>
+              <div class="space-y-3">
+                <div class="bg-red-50 p-3 rounded">
+                  <p class="font-bold text-red-700">❌ "שמחת כריסו"</p>
+                  <p class="text-base">שמחה אנוכית המתמקדת בהנאה אישית בלבד. היא רדודה וחולפת מהר.</p>
+                </div>
+                <div class="bg-green-50 p-3 rounded">
+                  <p class="font-bold text-green-700">✅ שמחת נתינה</p>
+                  <p class="text-base">שמחה עמוקה הנובעת מעשיית טוב לזולת. היא מתמשכת ומשמעותית!</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-rose-100 p-4 rounded-lg">
+              <p class="font-bold text-rose-800 mb-2">🌟 הסוד הגדול:</p>
+              <p class="text-lg">כשאנו משמחים אחרים, אנו מתחברים לחלק הגבוה והנצחי שבנו. <strong>השמחה שחוזרת אלינו גדולה לאין ערוך</strong> מכל שמחה אנוכית!</p>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-5 rounded-xl border-2 border-purple-300">
+            <p class="text-xl font-bold text-purple-700 mb-2">🎁 פרויקט החודש:</p>
+            <p class="text-lg">בחר מישהו שצריך שמחה (חבר עצוב, קשיש בודד, ילד במצב קשה) ותכנן דרך לשמח אותו - כרטיס, ביקור, מתנה קטנה, או סתם מילה טובה!</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "מהי 'שמחת כריסו' לפי הרמב\"ם?",
+      answers: [{
+        text: "שמחה אנוכית המתמקדת רק בהנאה אישית",
+        correct: true
+      }, {
+        text: "שמחה מאכילה מוגזמת ולא בריאה",
+        correct: false
+      }, {
+        text: "שמחה שנמשכת זמן קצר מאוד",
+        correct: false
+      }, {
+        text: "שמחה שמגיעה רק בחגים ומועדים",
+        correct: false
+      }],
+      hint: "המילה 'כרס' רומזת על משהו אנוכי...",
+      explanation: "'שמחת כריסו' היא שמחה רדודה שמתמקדת רק בהנאה עצמית ואנוכית, בלי מחשבה על אחרים."
+    }, {
+      question: "מה ייחודי בשמחה שנובעת מנתינה לאחרים?",
+      answers: [{
+        text: "היא עמוקה, מתמשכת, ומחברת אותנו לחלק הנצחי שבנו",
+        correct: true
+      }, {
+        text: "היא גורמת לאנשים אחרים לתת לנו בחזרה",
+        correct: false
+      }, {
+        text: "היא מפורסמת יותר ואנשים מכירים אותנו",
+        correct: false
+      }, {
+        text: "היא חוסכת כסף כי לא קונים דברים לעצמנו",
+        correct: false
+      }],
+      hint: "חשוב על האיכות והעומק של השמחה...",
+      explanation: "שמחת הנתינה היא עמוקה ומתמשכת - היא מחברת אותנו למשהו גבוה ונצחי מעבר לעצמנו!"
+    }, {
+      question: "למי הרמב\"ם ממליץ במיוחד לשמח?",
+      answers: [{
+        text: "לעניים, יתומים, אלמנות וגרים - אנשים שזקוקים לשמחה",
+        correct: true
+      }, {
+        text: "רק למשפחה הקרובה שלנו ולחברים הטובים",
+        correct: false
+      }, {
+        text: "לכל מי שנותן לנו מתנה או עוזר לנו",
+        correct: false
+      }, {
+        text: "רק לאנשים שיודעים להעריך את המאמץ שלנו",
+        correct: false
+      }],
+      hint: "הרמב\"ם מדבר על אנשים במצב מיוחד...",
+      explanation: "הרמב\"ם מדגיש במיוחד את השמחה של אנשים הנמצאים במצב קשה או בודדים - שם השמחה הכי משמעותית!"
+    }]
+  }, {
+    title: "שיעור 7: כוחה של הקהילה",
+    emoji: "👥",
+    content: `
+        <div class="space-y-4">
+          <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border-2 border-indigo-300 shadow-lg">
+            <h3 class="text-2xl font-bold text-indigo-600 mb-4 flex items-center gap-2">
+              <span class="text-3xl">👥</span>
+              ביחד - חזקים פי כמה וכמה
+            </h3>
+            <p class="text-lg leading-relaxed mb-4">
+              הפסוק <strong class="text-indigo-700">"בְּרָב עָם הַדְרַת מֶלֶךְ"</strong> מלמד: 
+              יש כוח ועוצמה מיוחדים לשמחה שנעשית בציבור!
+            </p>
+            <div class="bg-white p-5 rounded-lg mb-4 border-l-4 border-indigo-400">
+              <p class="text-xl font-bold text-indigo-700 mb-3">🔥 למה שמחה משותפת כל כך עוצמתית?</p>
+              <div class="space-y-3 text-lg">
+                <div class="flex items-start gap-2">
+                  <span>1️⃣</span>
+                  <p><strong>ההתלהבות הכללית סוחפת</strong> - כשכולם שמחים, אי אפשר שלא להצטרף!</p>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span>2️⃣</span>
+                  <p><strong>תחושת אחדות מעצימה</strong> - אנחנו חלק ממשהו גדול מאיתנו</p>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span>3️⃣</span>
+                  <p><strong>השמחה המשותפת גדולה מסך חלקיה</strong> - 1+1=3!</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-indigo-100 p-4 rounded-lg">
+              <p class="font-bold text-indigo-800 mb-2">✨ הזדמנויות לחוות זאת:</p>
+              <p>תפילות חגיגיות, שמחת בית השואבה, הקפות שניות, חתונות, וכל אירוע קהילתי משותף!</p>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-5 rounded-xl border-2 border-blue-300">
+            <p class="text-xl font-bold text-blue-700 mb-2">🎊 משימת החודש:</p>
+            <p class="text-lg">השתתף באירוע קהילתי (תפילה, ריקודים, חגיגה) ושים לב להבדל בין שמחה לבד לשמחה עם כולם. כתוב את ההבדלים!</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "מה הפסוק 'ברב עם הדרת מלך' מלמד אותנו?",
+      answers: [{
+        text: "שיש כוח וחשיבות מיוחדת לדברים שנעשים בקהילה ובציבור",
+        correct: true
+      }, {
+        text: "שצריך להיות הרבה אנשים כדי לכבד את המלך",
+        correct: false
+      }, {
+        text: "שאנשים רבים יכולים לעשות דברים מהר יותר",
+        correct: false
+      }, {
+        text: "שקל יותר לארגן אירועים כשיש הרבה אנשים",
+        correct: false
+      }],
+      hint: "הפסוק מדבר על 'הדרת' - כבוד ועוצמה...",
+      explanation: "הפסוק מלמד שיש עוצמה מיוחדת ל'רוב עם' - לדברים שנעשים בציבור ובקהילה!"
+    }, {
+      question: "איזו תחושה מיוחדת יש בשמחה קהילתית?",
+      answers: [{
+        text: "תחושת אחדות שמעצימה את השמחה של כל אחד ואחד",
+        correct: true
+      }, {
+        text: "תחושה שאנחנו יכולים לעזוב בכל רגע",
+        correct: false
+      }, {
+        text: "תחושה שאנחנו צריכים להתנהג בצורה מסוימת",
+        correct: false
+      }, {
+        text: "תחושה שאנחנו חייבים להישאר עד הסוף",
+        correct: false
+      }],
+      hint: "מה קורה כשכולם חווים משהו ביחד?",
+      explanation: "תחושת האחדות - להיות חלק ממשהו גדול יותר - היא שמעצימה את השמחה של כולם!"
+    }, {
+      question: "איזה עיקרון מתמטי מוזכר לגבי שמחה משותפת?",
+      answers: [{
+        text: "השמחה המשותפת גדולה מסך חלקיה - 1+1=3",
+        correct: true
+      }, {
+        text: "כל אחד תורם חלק שווה לשמחה הכללית",
+        correct: false
+      }, {
+        text: "ככל שיש יותר אנשים, כך השמחה פוחתת",
+        correct: false
+      }, {
+        text: "השמחה מתחלקת שווה בשווה בין כולם",
+        correct: false
+      }],
+      hint: "זה משהו מפתיע מבחינה מתמטית...",
+      explanation: "בשמחה משותפת יש 'אפקט מכפיל' - הסכום גדול יותר מהחלקים! 1+1 לא שווה 2, אלא 3!"
+    }]
+  }, {
+    title: "שיעור 8: פנקס ההודיה האישי",
+    emoji: "📔",
+    content: `
+        <div class="space-y-4">
+          <div class="bg-gradient-to-r from-amber-50 to-yellow-50 p-6 rounded-xl border-2 border-amber-300 shadow-lg">
+            <h3 class="text-2xl font-bold text-amber-600 mb-4 flex items-center gap-2">
+              <span class="text-3xl">📔</span>
+              הכלי החזק ביותר - היומן שלך
+            </h3>
+            <p class="text-lg leading-relaxed mb-4">
+              <strong class="text-amber-700">פנקס ההודיה</strong> (או "יומן אושר") הוא כלי רב עוצמה, 
+              מוכר גם מהפסיכולוגיה החיובית המודרנית! 📝
+            </p>
+            <div class="bg-white p-5 rounded-lg mb-4 border-l-4 border-amber-400">
+              <p class="text-xl font-bold text-amber-700 mb-3">🧠 איך זה מאמן את המוח?</p>
+              <div class="space-y-3 text-lg">
+                <p>הכתיבה היומיומית של דברים טובים <strong>מאמנת את המוח</strong> להתמקד באופן אקטיבי ב"יש" ולא ב"אין".</p>
+                <div class="bg-amber-50 p-3 rounded mt-3">
+                  <p class="font-semibold">למה כתיבה ולא רק חשיבה?</p>
+                  <p class="mt-2">✍️ הכתיבה הופכת את ההודיה החולפת למשהו <strong>מוחשי וקבוע</strong></p>
+                  <p>📈 היא מעצימה את הרגש לאורך זמן</p>
+                  <p>🔍 אפשר לחזור ולקרוא בימים קשים!</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-amber-100 p-4 rounded-lg">
+              <p class="font-bold text-amber-800 mb-2">🎯 הכלל הזהב:</p>
+              <p class="text-lg">כל ערב, לפני השינה, כתוב <strong>3 דברים טובים</strong> (גם קטנים!) שקרו היום ושאתה אסיר תודה עליהם.</p>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-r from-lime-50 to-green-50 p-5 rounded-xl border-2 border-lime-300">
+            <p class="text-xl font-bold text-lime-700 mb-2">📓 התחל היום:</p>
+            <p class="text-lg">קח מחברת, תן לה שם מיוחד ("פנקס הברכות שלי"), וכתוב את 3 הדברים הטובים מהיום. התחל עכשיו - זה לוקח רק דקה!</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "מה זה 'פנקס הודיה' או 'יומן אושר'?",
+      answers: [{
+        text: "מחברת שבה כותבים בכל יום דברים טובים שקרו ועליהם מודים",
+        correct: true
+      }, {
+        text: "רשימת מטלות יומית של דברים שצריך לעשות",
+        correct: false
+      }, {
+        text: "יומן אישי שבו כותבים את כל מה שקרה באותו יום",
+        correct: false
+      }, {
+        text: "אפליקציה בטלפון שמזכירה להודות",
+        correct: false
+      }],
+      hint: "זה משהו פיזי שכותבים בו...",
+      explanation: "פנקס ההודיה הוא מחברת שבה אנחנו כותבים כל יום את הדברים הטובים שקרו - כלי פשוט אך חזק!"
+    }, {
+      question: "למה כתיבה עדיפה על חשיבה בלבד?",
+      answers: [{
+        text: "כי הכתיבה הופכת את ההודיה למשהו מוחשי, קבוע, וחזק יותר",
+        correct: true
+      }, {
+        text: "כי כתיבה לוקחת יותר זמן ולכן יותר רצינית",
+        correct: false
+      }, {
+        text: "כי קשה לזכור דברים בלי לכתוב אותם",
+        correct: false
+      }, {
+        text: "כי המורים בבית הספר דורשים זאת",
+        correct: false
+      }],
+      hint: "מה היתרון של משהו שכתוב על פני משהו שרק בראש?",
+      explanation: "הכתיבה הופכת רעיון חולף לדבר קבוע ומוחשי - ומעצימה את כוח ההודיה!"
+    }, {
+      question: "כמה דברים מומלץ לכתוב בפנקס ההודיה כל יום?",
+      answers: [{
+        text: "3 דברים טובים, גם אם הם קטנים",
+        correct: true
+      }, {
+        text: "10 דברים כדי לכסות את כל היום",
+        correct: false
+      }, {
+        text: "דבר אחד אבל חשוב מאוד",
+        correct: false
+      }, {
+        text: "כמה שרוצים, אין כלל קבוע",
+        correct: false
+      }],
+      hint: "יש מספר ספציפי שמומלץ...",
+      explanation: "3 דברים - מספר מושלם! לא מעט מדי ולא מעט מידי. גם דברים קטנים נחשבים!"
+    }]
+  }, {
+    title: "שיעור 9: לחוות את ארץ ישראל",
+    emoji: "🏔️",
+    content: `
+        <div class="space-y-4">
+          <div class="bg-gradient-to-r from-sky-50 to-blue-50 p-6 rounded-xl border-2 border-sky-300 shadow-lg">
+            <h3 class="text-2xl font-bold text-sky-600 mb-4 flex items-center gap-2">
+              <span class="text-3xl">🏔️</span>
+              התחברות לארץ - התחברות לשמחה
+            </h3>
+            <p class="text-lg leading-relaxed mb-4">
+              יציאה אל <strong class="text-sky-700">הטבע ונופיה של ארץ ישראל</strong> היא דרך נפלאה 
+              להתחבר באופן ישיר לטוב שה' מרעיף עלינו! 🌄
+            </p>
+            <div class="bg-white p-5 rounded-lg mb-4 border-l-4 border-sky-400">
+              <p class="text-xl font-bold text-sky-700 mb-3">✨ מה כל כך מיוחד בארץ?</p>
+              <div class="space-y-3 text-lg">
+                <p><strong>"מצווה ליהנות בישיבת ארץ ישראל... שתתחדש לאדם שמחה כל הזמן"</strong></p>
+                <div class="bg-sky-50 p-3 rounded mt-3 space-y-2">
+                  <p>🏔️ <strong>החיבור לאדמה</strong> - זו האדמה הקדושה של אבותינו</p>
+                  <p>📜 <strong>הנופים התנ"כיים</strong> - כאן התרחשו כל הסיפורים!</p>
+                  <p>🌿 <strong>הבריאה עצמה</strong> - הטבע מעורר הודיה טבעית</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-sky-100 p-4 rounded-lg">
+              <p class="font-bold text-sky-800 mb-2">🎯 הסוד:</p>
+              <p class="text-lg">החיבור לנופים של ארץ ישראל מעורר באופן טבעי רגשות של <strong>הודיה, יראת כבוד, ושמחה עמוקה</strong>!</p>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-r from-teal-50 to-green-50 p-5 rounded-xl border-2 border-teal-300">
+            <p class="text-xl font-bold text-teal-700 mb-2">🥾 טיול מומלץ:</p>
+            <p class="text-lg">בחר מקום בארץ (הר, נחל, אתר היסטורי). לך לטיול, עצור מול נוף יפה, וקרא פרק תהילים (כמו פרק ק"ד - 'ברכי נפשי').</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "מה מיוחד בחיבור לנופי ארץ ישראל?",
+      answers: [{
+        text: "הוא מעורר באופן טבעי רגשות של הודיה, יראה ושמחה",
+        correct: true
+      }, {
+        text: "הוא מאפשר לנו לצלם תמונות יפות",
+        correct: false
+      }, {
+        text: "הוא נותן לנו אוויר צח וטוב לבריאות",
+        correct: false
+      }, {
+        text: "הוא מזכיר לנו ללמוד יותר היסטוריה",
+        correct: false
+      }],
+      hint: "מה קורה לרגשות שלנו כשאנחנו בטבע של הארץ?",
+      explanation: "הטבע והנופים של ארץ ישראל מעוררים באופן טבעי ובלתי אמצעי רגשות רוחניים עמוקים!"
+    }, {
+      question: "מהו הציטוט שמוזכר בשיעור על ארץ ישראל?",
+      answers: [{
+        text: "'מצווה ליהנות בישיבת ארץ ישראל... שתתחדש שמחה כל הזמן'",
+        correct: true
+      }, {
+        text: "'ארץ זבת חלב ודבש המיוחדת בעולם'",
+        correct: false
+      }, {
+        text: "'הארץ הטובה והמבורכת שנתן לנו ה''",
+        correct: false
+      }, {
+        text: "'נופי ארץ ישראל הם היפים בעולם'",
+        correct: false
+      }],
+      hint: "הציטוט מדבר על 'מצווה' ועל שמחה...",
+      explanation: "הציטוט מדגיש שזו מצווה ליהנות מהישיבה בארץ, ושהשמחה מתחדשת כל הזמן!"
+    }, {
+      question: "איזה פרק תהילים מומלץ לקרוא בטיול בטבע?",
+      answers: [{
+        text: "פרק ק\"ד - 'ברכי נפשי' המתאר את פלאי הבריאה",
+        correct: true
+      }, {
+        text: "פרק כ\"ג - 'מזמור לדוד ה' רועי'",
+        correct: false
+      }, {
+        text: "פרק ק\"ה - הפרק המספר על יציאת מצרים",
+        correct: false
+      }, {
+        text: "פרק ק\"ל - 'שיר המעלות'",
+        correct: false
+      }],
+      hint: "פרק שמדבר על יופי הטבע והבריאה...",
+      explanation: "פרק ק\"ד ('ברכי נפשי') מתאר בצורה נפלאה את הבריאה ופלאי הטבע - מושלם לטיול!"
+    }]
+  }, {
+    title: "שיעור 10: להודות על ההתחלה",
+    emoji: "🌱",
+    content: `
+        <div class="space-y-4">
+          <div class="bg-gradient-to-r from-emerald-50 to-green-50 p-6 rounded-xl border-2 border-emerald-300 shadow-lg">
+            <h3 class="text-2xl font-bold text-emerald-600 mb-4 flex items-center gap-2">
+              <span class="text-3xl">🌱</span>
+              אל תחכה לסוף - הודה עכשיו!
+            </h3>
+            <p class="text-lg leading-relaxed mb-4">
+              <strong class="text-emerald-700">אברהם אבינו ואליעזר עבדו</strong> מלמדים אותנו עיקרון מהפכני: 
+              להודות לה' מיד עם הופעת הסימן הראשון להצלחה! 🎯
+            </p>
+            <div class="bg-white p-5 rounded-lg mb-4 border-l-4 border-emerald-400">
+              <p class="text-xl font-bold text-emerald-700 mb-3">📖 הסיפור של אליעזר:</p>
+              <p class="text-lg mb-3">אליעזר <strong>השתחווה והודה לה' ברגע שפגש את רבקה</strong> - עוד לפני שידע אם משפחתה תסכים! למה?</p>
+              <div class="bg-emerald-50 p-4 rounded space-y-2">
+                <p><strong>הוא הבין:</strong> הקב"ה שולח לנו לעיתים 'נס קטן' כתחילה 🌟</p>
+                <p><strong>ההודיה על ההתחלה:</strong></p>
+                <p>✅ מבטאת אמונה וביטחון</p>
+                <p>✅ 'מכינה את הכלי' לקבלת שפע גדול יותר</p>
+                <p>✅ פותחת את הדלת להמשך הברכה</p>
+              </div>
+            </div>
+            <div class="bg-red-50 p-4 rounded-lg border-2 border-red-200 mb-4">
+              <p class="font-bold text-red-700 mb-2">⚠️ אזהרה:</p>
+              <p class="text-lg">התעלמות מההתחלה הטובה עלולה לעצור את המשך השפע! אל תחכה לסוף - הודה כבר בהתחלה!</p>
+            </div>
+            <div class="bg-emerald-100 p-4 rounded-lg">
+              <p class="font-bold text-emerald-800 mb-2">💎 העיקרון:</p>
+              <p class="text-lg">כל התחלה טובה היא כבר סיבה להודיה. אל תמתין להצלחה המלאה - חגוג כל צעד בדרך!</p>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-r from-yellow-50 to-amber-50 p-5 rounded-xl border-2 border-yellow-300">
+            <p class="text-xl font-bold text-yellow-700 mb-2">🎊 אתגר השבוע:</p>
+            <p class="text-lg">שים לב למשהו שהתחלת השבוע (פרויקט, לימוד, משימה). הודה על ההצלחה הראשונה - גם אם היא קטנה! אל תחכה לסוף.</p>
+          </div>
+        </div>
+      `,
+    questions: [{
+      question: "מתי אליעזר עבד אברהם הודה לה'?",
+      answers: [{
+        text: "מיד כשפגש את רבקה, עוד לפני שידע אם המשימה תצלח",
+        correct: true
+      }, {
+        text: "רק אחרי שמשפחת רבקה הסכימה לשידוך",
+        correct: false
+      }, {
+        text: "כשהגיע בחזרה לאברהם עם רבקה",
+        correct: false
+      }, {
+        text: "לפני שיצא למסע לחפש אישה ליצחק",
+        correct: false
+      }],
+      hint: "התזמון מאוד מוקדם במסע...",
+      explanation: "אליעזר הודה מיד, ברגע שפגש את רבקה - עוד לפני שהיה בטוח שהמשימה תצלח!"
+    }, {
+      question: "מה קורה כשמודים על ההתחלה הטובה?",
+      answers: [{
+        text: "זה 'מכין את הכלי' לקבלת שפע וברכה גדולים יותר",
+        correct: true
+      }, {
+        text: "זה מבטיח שהסוף יהיה טוב בוודאות מוחלטת",
+        correct: false
+      }, {
+        text: "זה גורם לאנשים אחרים לעזור לנו יותר",
+        correct: false
+      }, {
+        text: "זה חוסך לנו זמן בהמשך הדרך",
+        correct: false
+      }],
+      hint: "חשוב על זה כמו להכין 'כלי' או 'מקום' לברכה...",
+      explanation: "ההודיה על ההתחלה יוצרת 'כלי' - פתיחות ומוכנות - לקבל עוד ברכה והצלחה!"
+    }, {
+      question: "מה העיקרון המרכזי של השיעור הזה?",
+      answers: [{
+        text: "להודות על כל צעד בדרך, לא רק על ההצלחה הסופית",
+        correct: true
+      }, {
+        text: "להודות רק כשאנחנו בטוחים שהדברים יצליחו",
+        correct: false
+      }, {
+        text: "להמתין עד סוף התהליך ואז להודות פעם אחת גדולה",
+        correct: false
+      }, {
+        text: "להודות רק על דברים שהשלמנו במלואם",
+        correct: false
+      }],
+      hint: "האם צריך לחכות לסוף או להודות גם בדרך?",
+      explanation: "העיקרון: להודות על כל התקדמות - גם קטנה! כל צעד בדרך ראוי להודיה."
+    }]
+  }];
+
+  // Shuffle answers when starting a new question
+  useEffect(() => {
+    if (showQuiz && lessons[currentLesson]) {
+      const currentQ = lessons[currentLesson].questions[currentQuestion];
+      const shuffled = [...currentQ.answers].map((answer, index) => ({
+        ...answer,
+        originalIndex: index
+      })).sort(() => Math.random() - 0.5);
+      setShuffledAnswers(shuffled);
+    }
+  }, [currentQuestion, showQuiz, currentLesson]);
+  const startQuiz = () => {
+    setShowQuiz(true);
+    setCurrentQuestion(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setFeedback('');
+    setAnsweredCorrectly(false);
+  };
+  const handleAnswer = answer => {
+    if (selectedAnswer !== null) return; // Already answered
+
+    setSelectedAnswer(answer);
+    setAnsweredCorrectly(answer.correct);
+    if (answer.correct) {
+      playCorrectSound();
+      const encouragements = ["מצוין! ⭐", "פצצה! 🎯", "כל הכבוד! 💪", "מדהים! 🌟", "יופי! ✨", "נהדר! 🎉"];
+      const randomEncouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
+      setFeedback(randomEncouragement);
+      setScore(score + 1);
+    } else {
+      const currentQ = lessons[currentLesson].questions[currentQuestion];
+      setFeedback(`לא בדיוק... ${currentQ.hint} 🤔\n\n${currentQ.explanation}\n\nנסה שוב! 💡`);
+    }
+  };
+  const nextQuestion = () => {
+    if (!answeredCorrectly) {
+      // Must answer correctly before moving on
+      setSelectedAnswer(null);
+      setFeedback('');
+      return;
+    }
+    if (currentQuestion < lessons[currentLesson].questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setFeedback('');
+      setAnsweredCorrectly(false);
+    } else {
+      finishQuiz();
+    }
+  };
+  const finishQuiz = () => {
+    const percentage = score / lessons[currentLesson].questions.length * 100;
+    const newLessonScores = [...lessonScores, {
+      lesson: currentLesson,
+      score,
+      percentage
+    }];
+    setLessonScores(newLessonScores);
+    if (percentage >= 66) {
+      setShowCelebration(true);
+      playCelebrationSound();
+      setTimeout(() => {
+        setShowCelebration(false);
+        if (currentLesson < lessons.length - 1) {
+          // Move to next lesson
+          setCurrentLesson(currentLesson + 1);
+          setShowQuiz(false);
+          setCurrentQuestion(0);
+          setScore(0);
+        } else {
+          // Game complete
+          setGameComplete(true);
+        }
+      }, 2500);
+    } else {
+      // Retry lesson
+      alert("בוא ננסה שוב את השיעור 🌱\nצריך לפחות 66% כדי להמשיך הלאה!");
+      setShowQuiz(false);
+      setCurrentQuestion(0);
+      setScore(0);
+    }
+  };
+  const getTotalScore = () => {
+    if (lessonScores.length === 0) return 0;
+    const total = lessonScores.reduce((sum, ls) => sum + ls.percentage, 0);
+    return Math.round(total / lessonScores.length);
+  };
+  if (gameComplete) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8 md:p-12"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-8"
+    }, /*#__PURE__*/React.createElement("h1", {
+      className: "text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-pink-500 mb-4"
+    }, "\uD83C\uDF89 \u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05DB\u05DC \u05D4\u05DE\u05E9\u05D7\u05E7! \uD83C\uDF89"), /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl mb-6"
+    }, "\uD83C\uDFC6"), /*#__PURE__*/React.createElement("p", {
+      className: "text-3xl font-bold text-purple-600 mb-6"
+    }, "\u05D4\u05E6\u05D9\u05D5\u05DF \u05D4\u05DB\u05D5\u05DC\u05DC \u05E9\u05DC\u05DA: ", getTotalScore(), "%")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-2xl mb-8"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-bold text-blue-700 mb-4"
+    }, "\uD83D\uDCCA \u05E1\u05D9\u05DB\u05D5\u05DD \u05D4\u05E9\u05D9\u05E2\u05D5\u05E8\u05D9\u05DD:"), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3"
+    }, lessonScores.map((ls, index) => /*#__PURE__*/React.createElement("div", {
+      key: index,
+      className: "flex items-center justify-between bg-white p-4 rounded-lg"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-semibold"
+    }, lessons[ls.lesson].emoji, " ", lessons[ls.lesson].title), /*#__PURE__*/React.createElement("span", {
+      className: `font-bold ${ls.percentage === 100 ? 'text-green-600' : 'text-blue-600'}`
+    }, ls.score, "/3 (", ls.percentage, "%)"))))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-green-50 to-teal-50 p-6 rounded-2xl mb-8"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-bold text-green-700 mb-4"
+    }, "\uD83D\uDCAD \u05E9\u05D0\u05DC\u05D5\u05EA \u05DC\u05DE\u05D7\u05E9\u05D1\u05D4 \u05E2\u05DE\u05D5\u05E7\u05D4:"), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4 text-lg"
+    }, /*#__PURE__*/React.createElement("p", null, "\uD83E\uDD14 \u05D0\u05D9\u05D6\u05D5 \u05D3\u05E8\u05DA \u05DE\u05EA\u05D5\u05DA 10 \u05D4\u05D3\u05E8\u05DB\u05D9\u05DD \u05D4\u05DB\u05D9 \u05E0\u05D2\u05E2\u05D4 \u05DC\u05DA? \u05DC\u05DE\u05D4?"), /*#__PURE__*/React.createElement("p", null, "\uD83C\uDFAF \u05D0\u05D9\u05D6\u05D5 \u05D3\u05E8\u05DA \u05D0\u05EA\u05D4 \u05DE\u05EA\u05DB\u05D5\u05D5\u05DF \u05DC\u05D9\u05D9\u05E9\u05DD \u05D4\u05D7\u05DC \u05DE\u05DE\u05D7\u05E8 \u05D1\u05D1\u05D5\u05E7\u05E8?"), /*#__PURE__*/React.createElement("p", null, "\uD83D\uDCAA \u05D0\u05D9\u05DA \u05D0\u05EA\u05D4 \u05D7\u05D5\u05E9\u05D1 \u05E9\u05D4\u05DB\u05E8\u05EA \u05D4\u05D8\u05D5\u05D1 \u05EA\u05E9\u05E0\u05D4 \u05D0\u05EA \u05D4\u05D7\u05D9\u05D9\u05DD \u05E9\u05DC\u05DA?"), /*#__PURE__*/React.createElement("p", null, "\uD83C\uDF1F \u05E2\u05DD \u05DE\u05D9 \u05D0\u05EA\u05D4 \u05D9\u05DB\u05D5\u05DC \u05DC\u05E9\u05EA\u05E3 \u05D0\u05EA \u05DE\u05D4 \u05E9\u05DC\u05DE\u05D3\u05EA \u05DB\u05D0\u05DF?"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-2xl mb-8 border-2 border-yellow-300"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-center font-bold text-orange-700 mb-3"
+    }, "\uD83C\uDF08 \u05D6\u05DB\u05D5\u05E8: \u05D4\u05E9\u05DE\u05D7\u05D4 \u05D5\u05D4\u05D4\u05D5\u05D3\u05D9\u05D4 \u05D4\u05DF \u05D1\u05D7\u05D9\u05E8\u05D4!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-center text-gray-700"
+    }, "\u05DB\u05DC \u05D9\u05D5\u05DD \u05D0\u05EA\u05D4 \u05D9\u05DB\u05D5\u05DC \u05DC\u05D1\u05D7\u05D5\u05E8 \u05DC\u05E8\u05D0\u05D5\u05EA \u05D0\u05EA \u05D4\u05D8\u05D5\u05D1, \u05DC\u05D4\u05D5\u05D3\u05D5\u05EA, \u05D5\u05DC\u05D4\u05D9\u05D5\u05EA \u05E9\u05DE\u05D7. \u05D4\u05EA\u05D7\u05DC \u05D4\u05D9\u05D5\u05DD! \uD83D\uDE80")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gray-100 p-6 rounded-xl border-2 border-gray-300 text-center"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold text-gray-800 mb-2"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-blue-700 mb-2"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520")))));
+  }
+  const currentLessonData = lessons[currentLesson];
+  const progress = (currentLesson + (showQuiz ? 0.5 : 0)) / lessons.length * 100;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 p-4 md:p-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-5xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center mb-8"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-4"
+  }, "\uD83C\uDF1F 10 \u05D3\u05E8\u05DB\u05D9\u05DD \u05DC\u05E9\u05DE\u05D7\u05D4 \u05D5\u05D4\u05DB\u05E8\u05EA \u05D4\u05D8\u05D5\u05D1 \uD83C\uDF1F"), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-full p-2 max-w-2xl mx-auto shadow-lg"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gray-200 rounded-full h-4 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-green-400 to-blue-500 h-full transition-all duration-500 rounded-full",
+    style: {
+      width: `${progress}%`
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-semibold text-gray-700 mt-2"
+  }, "\u05E9\u05D9\u05E2\u05D5\u05E8 ", currentLesson + 1, " \u05DE\u05EA\u05D5\u05DA ", lessons.length, " \u2022 ", Math.round(progress), "% \u05D4\u05D5\u05E9\u05DC\u05DD"))), showCelebration && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl p-12 text-center animate-bounceIn"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-8xl mb-6"
+  }, "\uD83C\uDF89"), /*#__PURE__*/React.createElement("h2", {
+    className: "text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-pink-500 mb-4"
+  }, score === 3 ? "מדהים! 🏆" : "כמעט מושלם! 💪"), /*#__PURE__*/React.createElement("p", {
+    className: "text-2xl text-gray-700"
+  }, score === 3 ? "אתה שולט! פותח שיעור הבא 🎉" : "עובר לשיעור הבא!"))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl shadow-2xl p-6 md:p-10"
+  }, !showQuiz ?
+  /*#__PURE__*/
+  // Lesson Content
+  React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "mb-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-center gap-4 mb-6"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-6xl"
+  }, currentLessonData.emoji), /*#__PURE__*/React.createElement("h2", {
+    className: "text-3xl md:text-4xl font-bold text-gray-800"
+  }, currentLessonData.title)), currentLessonData.subtitle && /*#__PURE__*/React.createElement("p", {
+    className: "text-xl text-center text-gray-600 italic"
+  }, currentLessonData.subtitle)), /*#__PURE__*/React.createElement("div", {
+    className: "prose prose-lg max-w-none",
+    dangerouslySetInnerHTML: {
+      __html: currentLessonData.content
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "mt-10 text-center"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: startQuiz,
+    className: "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-2xl font-bold py-4 px-12 rounded-full shadow-lg transform hover:scale-105 transition-all duration-200"
+  }, "\u05D1\u05D5\u05D0\u05D5 \u05E0\u05D1\u05D3\u05D5\u05E7 \u05D0\u05EA \u05D4\u05D9\u05D3\u05E2! \uD83D\uDCDD"))) :
+  /*#__PURE__*/
+  // Quiz Content
+  React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "mb-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-6"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl font-bold text-purple-600"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, "/", currentLessonData.questions.length), /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl font-bold text-green-600"
+  }, "\u05E0\u05D9\u05E7\u05D5\u05D3: ", score, "/", currentLessonData.questions.length)), /*#__PURE__*/React.createElement("h3", {
+    className: "text-2xl md:text-3xl font-bold text-gray-800 mb-8"
+  }, currentLessonData.questions[currentQuestion].question), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4"
+  }, shuffledAnswers.map((answer, index) => /*#__PURE__*/React.createElement("button", {
+    key: index,
+    onClick: () => handleAnswer(answer),
+    disabled: selectedAnswer !== null,
+    className: `w-full text-right p-6 rounded-2xl text-lg font-semibold transition-all duration-200 ${selectedAnswer === null ? 'bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400' : selectedAnswer === answer ? answer.correct ? 'bg-green-100 border-4 border-green-500 animate-pulse' : 'bg-red-100 border-4 border-red-500' : 'bg-gray-100 border-2 border-gray-200 opacity-50'}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("span", null, answer.text), selectedAnswer === answer && /*#__PURE__*/React.createElement("span", {
+    className: "text-3xl"
+  }, answer.correct ? '✅' : '❌'))))), feedback && /*#__PURE__*/React.createElement("div", {
+    className: `mt-6 p-6 rounded-2xl ${answeredCorrectly ? 'bg-green-50 border-2 border-green-300' : 'bg-yellow-50 border-2 border-yellow-300'}`
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xl font-semibold whitespace-pre-line"
+  }, feedback)), selectedAnswer && answeredCorrectly && /*#__PURE__*/React.createElement("div", {
+    className: "mt-8 text-center"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: nextQuestion,
+    className: "bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white text-xl font-bold py-4 px-10 rounded-full shadow-lg transform hover:scale-105 transition-all duration-200"
+  }, currentQuestion < currentLessonData.questions.length - 1 ? 'שאלה הבאה ➡️' : 'סיים שיעור! 🎯')))))), /*#__PURE__*/React.createElement("style", {
+    jsx: true
+  }, `
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes bounceIn {
+          0% { transform: scale(0.3); opacity: 0; }
+          50% { transform: scale(1.05); }
+          70% { transform: scale(0.9); }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+        .animate-bounceIn {
+          animation: bounceIn 0.6s ease-out;
+        }
+      `));
+};
+const __App = JoyGameFull;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

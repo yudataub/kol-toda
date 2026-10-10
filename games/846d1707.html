@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🌧️ משחק שאילת הגשמים - חלק 1 – הקול החמישי</title>
+<meta name="description" content="משחק חינוכי אינטראקטיבי ללימוד הלכות שאילת הגשמים. שאלות רב-ברירה והתאמות עם הסברים מפורטים. מתאים לכל הגילאים!">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="🌧️ משחק שאילת הגשמים - חלק 1 – הקול החמישי">
+<meta property="og:description" content="משחק חינוכי אינטראקטיבי ללימוד הלכות שאילת הגשמים. שאלות רב-ברירה והתאמות עם הסברים מפורטים. מתאים לכל הגילאים!">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-846d1707.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/846d1707.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const BookOpen = window.LucideReact["BookOpen"] || window.LucideReact.Circle;
+const Cloud = window.LucideReact["Cloud"] || window.LucideReact.Circle;
+const Droplets = window.LucideReact["Droplets"] || window.LucideReact.Circle;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const CheckCircle = window.LucideReact["CheckCircle"] || window.LucideReact.Circle;
+const XCircle = window.LucideReact["XCircle"] || window.LucideReact.Circle;
+const SheilatGeshanimGame = () => {
+  const [currentLevel, setCurrentLevel] = useState('easy');
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [gameState, setGameState] = useState('playing');
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  const [selectedTerm, setSelectedTerm] = useState(null);
+  const [selectedDef, setSelectedDef] = useState(null);
+  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [shuffledTerms, setShuffledTerms] = useState([]);
+  const [shuffledDefs, setShuffledDefs] = useState([]);
+  const questions = {
+    easy: [{
+      type: 'multipleChoice',
+      question: 'מה ההבדל בין גבורות גשמים לשאילת גשמים?',
+      answers: [{
+        text: 'גבורות זו הזכרה, שאילה זו בקשה',
+        correct: true,
+        explanation: 'מצוין! גבורות זו תהילה, שאילה זו בקשה ממשית ⭐'
+      }, {
+        text: 'גבורות בחורף, שאילה בקיץ',
+        correct: false,
+        explanation: 'לא נכון, שניהם בחורף 🤔'
+      }, {
+        text: 'אין הבדל ביניהם',
+        correct: false,
+        explanation: 'יש הבדל גדול! 💡'
+      }, {
+        text: 'גבורות רק בארץ, שאילה רק בחול',
+        correct: false,
+        explanation: 'שניהם בכל מקום 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מתי מתחילים לומר ותן טל ומטר בארץ ישראל?',
+      answers: [{
+        text: 'מליל ז חשוון בערבית',
+        correct: true,
+        explanation: 'נכון מאוד! זה המועד שנקבע 🎯'
+      }, {
+        text: 'משמיני עצרת',
+        correct: false,
+        explanation: 'זה בגבורות גשמים, לא בשאילה 🤔'
+      }, {
+        text: 'מראש חודש חשוון',
+        correct: false,
+        explanation: 'מאוחר יותר 💡'
+      }, {
+        text: 'מראש השנה',
+        correct: false,
+        explanation: 'זה מוקדם מדי 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'באיזו ברכה אומרים ותן טל ומטר?',
+      answers: [{
+        text: 'ברכת השנים',
+        correct: true,
+        explanation: 'כל הכבוד! זו הברכה התשיעית בשמונה עשרה 💪'
+      }, {
+        text: 'ברכת אתה חונן',
+        correct: false,
+        explanation: 'זו ברכה אחרת 🤔'
+      }, {
+        text: 'ברכת שמע קולנו',
+        correct: false,
+        explanation: 'לא שם 💡'
+      }, {
+        text: 'ברכת מודים',
+        correct: false,
+        explanation: 'זו ברכת הודיה 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה מתחילים לשאול רק בז חשוון?',
+      answers: [{
+        text: 'כדי שעולי הרגלים יגיעו לנהר פרת',
+        correct: true,
+        explanation: 'מושלם! התקנה נשארה גם אחרי החורבן ⭐'
+      }, {
+        text: 'כי אז מתחיל החורף',
+        correct: false,
+        explanation: 'החורף התחיל קודם 🤔'
+      }, {
+        text: 'כי זה תאריך נח',
+        correct: false,
+        explanation: 'זו לא הסיבה 💡'
+      }, {
+        text: 'כי כך רצו החכמים',
+        correct: false,
+        explanation: 'יש סיבה ספציפית 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל מושג למקום שבו אומרים אותו:',
+      pairs: [{
+        term: 'משיב הרוח ומוריד הגשם',
+        definition: 'במעמד אתה גבור לעולם'
+      }, {
+        term: 'ותן טל ומטר',
+        definition: 'בברכת השנים'
+      }, {
+        term: 'ותן ברכה',
+        definition: 'בברכת השנים בקיץ'
+      }, {
+        term: 'מוריד הטל',
+        definition: 'במעמד אתה גבור בקיץ'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'עד מתי ממשיכים לשאול גשמים?',
+      answers: [{
+        text: 'עד מנחה של ערב פסח',
+        correct: true,
+        explanation: 'נכון! לא מפסיקים עד אז 🎉'
+      }, {
+        text: 'עד פורים',
+        correct: false,
+        explanation: 'זה מוקדם מדי 🤔'
+      }, {
+        text: 'עד ראש חודש ניסן',
+        correct: false,
+        explanation: 'קצת יותר מאוחר 💡'
+      }, {
+        text: 'עד חג המצות',
+        correct: false,
+        explanation: 'לפני זה כבר 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה לא מפסיקים לשאול שבועיים לפני פסח?',
+      answers: [{
+        text: 'כי לא מפסיקים ברכה שכבר התחילה',
+        correct: true,
+        explanation: 'יפה מאוד! זו אחת מהסיבות 💪'
+      }, {
+        text: 'כי עדיין יש גשמים',
+        correct: false,
+        explanation: 'זו לא הסיבה העיקרית 🤔'
+      }, {
+        text: 'כי שכחו לתקן',
+        correct: false,
+        explanation: 'ברור שזה לא 💡'
+      }, {
+        text: 'כי רק בארץ כך',
+        correct: false,
+        explanation: 'גם בחול כך 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל הסבר לסיבה שלא מפסיקים לפני פסח:',
+      pairs: [{
+        term: 'בגדי חורף',
+        definition: 'בפסח כבר מצוידים לחורף'
+      }, {
+        term: 'שפע וברכה',
+        definition: 'לא מפסיקים ברכה שכבר התחילה'
+      }, {
+        term: 'בבית אלקים נהלך ברגש',
+        definition: 'בהליכה לבית ה אפשר בגשם'
+      }, {
+        term: 'שלוחי מצווה',
+        definition: 'בהליכה לא ניזוקים'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מתי מתחילים לומר ותן טל ומטר - ביום או בלילה?',
+      answers: [{
+        text: 'בלילה - מערבית',
+        correct: true,
+        explanation: 'כל הכבוד! בניגוד למשיב הרוח 🎯'
+      }, {
+        text: 'ביום - משחרית',
+        correct: false,
+        explanation: 'זה במשיב הרוח 🤔'
+      }, {
+        text: 'גם וגם',
+        correct: false,
+        explanation: 'רק בלילה 💡'
+      }, {
+        text: 'תלוי במקום',
+        correct: false,
+        explanation: 'בכל מקום בלילה 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מתי מתחילים בחוץ לארץ?',
+      answers: [{
+        text: '60 יום אחרי תקופת תשרי',
+        correct: true,
+        explanation: 'מצוין! בדרך כלל 4 או 5 דצמבר ⭐'
+      }, {
+        text: 'בז חשוון כמו בארץ',
+        correct: false,
+        explanation: 'זה רק בארץ 🤔'
+      }, {
+        text: 'בשמיני עצרת',
+        correct: false,
+        explanation: 'זה מוקדם מדי 💡'
+      }, {
+        text: 'בראש חודש כסלו',
+        correct: false,
+        explanation: 'זה לא מדויק 🌟'
+      }]
+    }],
+    medium: [{
+      type: 'multipleChoice',
+      question: 'שרה התפללה בז חשוון בבוקר ושכחה לומר ותן טל ומטר. מה עליה לעשות?',
+      answers: [{
+        text: 'חוזרת לתחילת ברכת השנים',
+        correct: true,
+        explanation: 'נכון! צריכה לחזור ולתקן 💪'
+      }, {
+        text: 'ממשיכה הלאה',
+        correct: false,
+        explanation: 'לא, זה שינוי חשוב 🤔'
+      }, {
+        text: 'אומרת בסוף התפילה',
+        correct: false,
+        explanation: 'צריך במקום 💡'
+      }, {
+        text: 'מחכה לערבית',
+        correct: false,
+        explanation: 'צריך לתקן עכשיו 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מדוע בזמנינו עדיין דוחים לז חשוון אף שאין עולי רגלים?',
+      answers: [{
+        text: 'יש מחלוקת אם התקנה בתוקף',
+        correct: true,
+        explanation: 'נכון מאוד! חזון איש אומר שחוזר בטעות 🎯'
+      }, {
+        text: 'כי כך התקינו ולא משנים',
+        correct: false,
+        explanation: 'יש יותר ממה שנראה 🤔'
+      }, {
+        text: 'כי עדיין יש עולי רגלים',
+        correct: false,
+        explanation: 'זה לא נכון 💡'
+      }, {
+        text: 'כי אי אפשר לשנות תאריכים',
+        correct: false,
+        explanation: 'לא זו הסיבה 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל דעה למה שהיא אומרת על מי ששאל לפני ז חשוון:',
+      pairs: [{
+        term: 'הגרשז אוירבך והגריש',
+        definition: 'לא חוזר - זה זמן גשמים'
+      }, {
+        term: 'חזון איש והגרחק',
+        definition: 'חוזר - שינוי ממטבע חכמים'
+      }, {
+        term: 'לכולם',
+        definition: 'מתחילים בז חשוון'
+      }, {
+        term: 'המחלוקת',
+        definition: 'רק על מי ששאל בטעות לפני ז חשוון'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה דווקא נהר פרת הוא המרחק המכריע?',
+      answers: [{
+        text: 'כי זה המרחק הכי רחוק מירושלים',
+        correct: true,
+        explanation: 'פצצה! זה המקום הכי מרוחק שישראל היו ⭐'
+      }, {
+        text: 'כי שם היה הגשם',
+        correct: false,
+        explanation: 'לא זו הסיבה 🤔'
+      }, {
+        text: 'כי זה נהר חשוב',
+        correct: false,
+        explanation: 'הסיבה אחרת 💡'
+      }, {
+        text: 'כי כך אמרו חכמים',
+        correct: false,
+        explanation: 'יש סיבה מעשית 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'האם מכריזים ותן טל ומטר בבית הכנסת?',
+      answers: [{
+        text: 'יש מחלוקת - יש אומרים כן ויש אומרים לא',
+        correct: true,
+        explanation: 'כל הכבוד! מחלוקת אם זה הפסק 💪'
+      }, {
+        text: 'בטח שכן',
+        correct: false,
+        explanation: 'לא כולם מסכימים 🤔'
+      }, {
+        text: 'בטח שלא',
+        correct: false,
+        explanation: 'יש שאומרים שכן 💡'
+      }, {
+        text: 'רק בחול',
+        correct: false,
+        explanation: 'גם בארץ יש מחלוקת 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל זמן למה שקורה בו:',
+      pairs: [{
+        term: 'משמיני עצרת',
+        definition: 'מתחילים גבורות גשמים'
+      }, {
+        term: 'מז חשוון',
+        definition: 'מתחילים שאילת גשמים'
+      }, {
+        term: 'עד מנחה ערב פסח',
+        definition: 'מסיימים שאילת גשמים'
+      }, {
+        term: '60 יום אחרי תקופת תשרי',
+        definition: 'מתחילים בחוץ לארץ'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהו העיקרון שלוחי מצווה לא ניזוקין?',
+      answers: [{
+        text: 'בהליכה למצווה יש הגנה, בחזרה אין',
+        correct: true,
+        explanation: 'מצוין! לכן בסוכות אפשר לעכב, בפסח לא 🎉'
+      }, {
+        text: 'תמיד יש הגנה',
+        correct: false,
+        explanation: 'רק בהליכה 🤔'
+      }, {
+        text: 'אין הגנה כלל',
+        correct: false,
+        explanation: 'יש, אבל רק בהליכה 💡'
+      }, {
+        text: 'תלוי במצווה',
+        correct: false,
+        explanation: 'תמיד כך 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהי משמעות ותן טל ומטר על פני האדמה?',
+      answers: [{
+        text: 'בקשה מדויקת לגשמים בזמנם למען פרנסה',
+        correct: true,
+        explanation: 'יפה מאוד! לא סתם תפילה אלא בקשה ממוקדת 🎯'
+      }, {
+        text: 'רק תהילה על הגשם',
+        correct: false,
+        explanation: 'זו בקשה ממשית 🤔'
+      }, {
+        text: 'תפילה כללית',
+        correct: false,
+        explanation: 'זה ספציפי מאוד 💡'
+      }, {
+        text: 'רק למי שזקוק',
+        correct: false,
+        explanation: 'כולם אומרים 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל טעם למה שהוא מסביר:',
+      pairs: [{
+        term: 'בגדי חורף',
+        definition: 'בסוכות לבושים קיץ בפסח חורף'
+      }, {
+        term: 'אין מפסיקים ברכה',
+        definition: 'דוחים התחלה אבל לא מפסיקים'
+      }, {
+        term: 'נהלך ברגש',
+        definition: 'בהליכה לבית ה אפשר בגשם'
+      }, {
+        term: 'שלוחי מצווה',
+        definition: 'בהליכה יש הגנה בחזרה אין'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה משיב הרוח מתחיל ביום ושאילה בלילה?',
+      answers: [{
+        text: 'כי אין הבדל בערבית וזה לא נוגע למועדות בטל',
+        correct: true,
+        explanation: 'כל הכבוד! הירושלמי מסביר 💪'
+      }, {
+        text: 'כי כך התקינו',
+        correct: false,
+        explanation: 'יש סיבה יותר עמוקה 🤔'
+      }, {
+        text: 'כי הלילה חשוב יותר',
+        correct: false,
+        explanation: 'לא זו הסיבה 💡'
+      }, {
+        text: 'כי בלילה יש גשם',
+        correct: false,
+        explanation: 'זה לא הטעם 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מדוע חוץ לארץ מאחרים את התחלת השאילה?',
+      answers: [{
+        text: 'מקומות נמוכים צריכים פחות מים',
+        correct: true,
+        explanation: 'פצצה! זו הסיבה האמיתית ⭐'
+      }, {
+        text: 'כי שם חורף אחר',
+        correct: false,
+        explanation: 'יש סיבה יותר מדויקת 🤔'
+      }, {
+        text: 'כי הם לא בארץ',
+        correct: false,
+        explanation: 'זו לא סיבה 💡'
+      }, {
+        text: 'כי כך נהגו',
+        correct: false,
+        explanation: 'יש טעם גיאוגרפי 🌟'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל מקור למה שהוא אומר:',
+      pairs: [{
+        term: 'גמרא תענית',
+        definition: 'מקור עיקרי לדיני שאילת גשמים'
+      }, {
+        term: 'ירושלמי תענית',
+        definition: 'מסביר את ההבדל בין יום ללילה'
+      }, {
+        term: 'שולחן ערוך',
+        definition: 'פוסק את ההלכה למעשה'
+      }, {
+        term: 'משנה ברורה',
+        definition: 'מבאר את הפרטים'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'אם שכח ותן טל ומטר ועבר לברכה הבאה, מה עושים?',
+      answers: [{
+        text: 'חוזר לתחילת ברכת השנים',
+        correct: true,
+        explanation: 'נכון! חוזר לברכה זו 🎯'
+      }, {
+        text: 'ממשיך ואומר בשמע קולנו',
+        correct: false,
+        explanation: 'צריך במקום הנכון 🤔'
+      }, {
+        text: 'לא צריך כלום',
+        correct: false,
+        explanation: 'צריך לתקן 💡'
+      }, {
+        text: 'מתחיל שמונה עשרה מחדש',
+        correct: false,
+        explanation: 'לא צריך כל כך 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזה עיקרון מסביר שאין מפסיקים לפני פסח?',
+      answers: [{
+        text: 'אין מפסיקים ברכה שכבר התחילה',
+        correct: true,
+        explanation: 'יפה מאוד! אבל דוחים התחלה ⭐'
+      }, {
+        text: 'צריך גשם עד פסח',
+        correct: false,
+        explanation: 'זו לא הסיבה היסודית 🤔'
+      }, {
+        text: 'לא רוצים לשנות',
+        correct: false,
+        explanation: 'יש עיקרון עמוק יותר 💡'
+      }, {
+        text: 'כי כך נהגו אבותינו',
+        correct: false,
+        explanation: 'יש טעם הלכתי 🌟'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה המיוחד בז חשוון לעניין זה?',
+      answers: [{
+        text: 'זה 15 יום אחרי סוכות - זמן הגעה לפרת',
+        correct: true,
+        explanation: 'כל הכבוד! חישוב מדויק 💪'
+      }, {
+        text: 'זה תאריך קדוש',
+        correct: false,
+        explanation: 'זה תאריך טכני 🤔'
+      }, {
+        text: 'זה יום מיוחד בשנה',
+        correct: false,
+        explanation: 'זה רק חישוב זמנים 💡'
+      }, {
+        text: 'זה מנהג קדום',
+        correct: false,
+        explanation: 'יש סיבה ברורה 🌟'
+      }]
+    }]
+  };
+  const levelReqs = {
+    easy: {
+      total: 10,
+      passing: 8,
+      percentage: 80
+    },
+    medium: {
+      total: 15,
+      passing: 13,
+      percentage: 85
+    }
+  };
+  const currentQuestion = questions[currentLevel][currentQuestionIndex];
+  useEffect(() => {
+    if (currentQuestion?.type === 'multipleChoice' && currentQuestion?.answers) {
+      setShuffledAnswers([...currentQuestion.answers].sort(() => Math.random() - 0.5));
+    }
+  }, [currentQuestionIndex, currentLevel]);
+  useEffect(() => {
+    if (currentQuestion?.type === 'matching' && currentQuestion?.pairs) {
+      setShuffledTerms([...currentQuestion.pairs].sort(() => Math.random() - 0.5));
+      setShuffledDefs([...currentQuestion.pairs].map(p => p.definition).sort(() => Math.random() - 0.5));
+      setMatchedPairs([]);
+      setSelectedTerm(null);
+      setSelectedDef(null);
+    }
+  }, [currentQuestionIndex, currentLevel]);
+  const playSuccessSound = () => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [523.25, 659.25, 783.99].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      const start = ctx.currentTime + i * 0.1;
+      gain.gain.setValueAtTime(0.3, start);
+      gain.gain.exponentialRampToValueAtTime(0.01, start + 0.3);
+      osc.start(start);
+      osc.stop(start + 0.3);
+    });
+  };
+  const handleMultipleChoiceAnswer = answer => {
+    setSelectedAnswer(answer);
+    setShowFeedback(true);
+    if (answer.correct) {
+      setScore(score + 1);
+      playSuccessSound();
+    } else {
+      setLives(lives - 1);
+    }
+  };
+  const handleMatchingSelect = (item, type) => {
+    if (type === 'term') {
+      if (selectedTerm?.term === item.term) {
+        setSelectedTerm(null);
+      } else {
+        setSelectedTerm(item);
+        if (selectedDef) {
+          checkMatch(item, selectedDef);
+        }
+      }
+    } else {
+      if (selectedDef === item) {
+        setSelectedDef(null);
+      } else {
+        setSelectedDef(item);
+        if (selectedTerm) {
+          checkMatch(selectedTerm, item);
+        }
+      }
+    }
+  };
+  const checkMatch = (term, def) => {
+    const isCorrect = term.definition === def;
+    if (isCorrect) {
+      setMatchedPairs([...matchedPairs, term.term]);
+      setScore(score + 1);
+      playSuccessSound();
+      setSelectedTerm(null);
+      setSelectedDef(null);
+      if (matchedPairs.length + 1 === currentQuestion.pairs.length) {
+        setTimeout(() => handleNext(), 800);
+      }
+    } else {
+      setLives(lives - 1);
+      setSelectedTerm(null);
+      setSelectedDef(null);
+    }
+  };
+  const handleNext = () => {
+    const currentLevelQuestions = questions[currentLevel];
+    if (lives <= 0) {
+      setGameState('failed');
+      return;
+    }
+    if (currentQuestionIndex < currentLevelQuestions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+    } else {
+      const passedLevel = score >= levelReqs[currentLevel].passing;
+      if (!passedLevel) {
+        setGameState('failed');
+      } else if (currentLevel === 'easy') {
+        setCurrentLevel('medium');
+        setCurrentQuestionIndex(0);
+        setSelectedAnswer(null);
+        setShowFeedback(false);
+      } else {
+        setGameState('part1Complete');
+      }
+    }
+  };
+  if (gameState === 'part1Complete') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 p-8",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement(Cloud, {
+      className: "w-24 h-24 mx-auto text-blue-500 mb-4 animate-bounce"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold text-blue-900 mb-4"
+    }, "\u05DB\u05DC \u05D4\u05DB\u05D1\u05D5\u05D3! \uD83C\uDF89"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-6"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05D7\u05DC\u05E7 1 - \u05E9\u05D0\u05D9\u05DC\u05EA \u05D4\u05D2\u05E9\u05DE\u05D9\u05DD!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-50 p-6 rounded-xl mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-blue-900 mb-2"
+    }, "\u05D4\u05E6\u05D9\u05D5\u05DF \u05E9\u05DC\u05DA: ", score, "/25 (", (score / 25 * 100).toFixed(0), "%)"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, score >= 21 ? 'מושלם! ⭐' : score >= 18 ? 'מצוין! 💪' : 'יפה מאוד! 🌟')), /*#__PURE__*/React.createElement("div", {
+      className: "bg-cyan-50 p-6 rounded-xl mb-6"
+    }, /*#__PURE__*/React.createElement(Droplets, {
+      className: "w-12 h-12 mx-auto text-cyan-600 mb-3"
+    }), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold text-cyan-900 mb-2"
+    }, "\u05DC\u05DE\u05D3\u05EA \u05D0\u05EA \u05D9\u05E1\u05D5\u05D3\u05D5\u05EA \u05E9\u05D0\u05D9\u05DC\u05EA \u05D4\u05D2\u05E9\u05DE\u05D9\u05DD! \uD83C\uDF27\uFE0F"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 text-sm"
+    }, "\u05E2\u05DB\u05E9\u05D9\u05D5 \u05D0\u05EA\u05D4 \u05D9\u05D5\u05D3\u05E2 \u05DE\u05EA\u05D9 \u05D5\u05D0\u05D9\u05DA \u05DC\u05E9\u05D0\u05D5\u05DC \u05D2\u05E9\u05DE\u05D9\u05DD, \u05D5\u05DE\u05D4 \u05D4\u05D4\u05D1\u05D3\u05DC \u05D1\u05D9\u05DF \u05D2\u05D1\u05D5\u05E8\u05D5\u05EA \u05DC\u05E9\u05D0\u05D9\u05DC\u05D4")), /*#__PURE__*/React.createElement("button", {
+      onClick: () => alert('חלק 2 יהיה זמין בקרוב! 🎯'),
+      className: "bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-8 py-4 rounded-lg font-bold text-xl hover:opacity-90 transition-opacity"
+    }, "\u05D4\u05DE\u05E9\u05DA \u05DC\u05D7\u05DC\u05E7 2 \uD83C\uDFAF")), /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 text-center bg-white rounded-xl shadow-lg p-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 font-bold mb-2"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-blue-900 font-bold text-lg"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-blue-600 mt-2"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520")));
+  }
+  if (gameState === 'failed') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-red-50 to-orange-50 p-8 flex items-center justify-center",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-md bg-white rounded-2xl shadow-xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement(XCircle, {
+      className: "w-20 h-20 mx-auto text-red-500 mb-4"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-red-900 mb-4"
+    }, "\u05D0\u05D5\u05E4\u05E1... \uD83D\uDE14"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 mb-6"
+    }, lives <= 0 ? 'נגמרו הלבבות...' : 'לא עברת את הרמה הזו'), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600 mb-6"
+    }, "\u05D4\u05E6\u05D9\u05D5\u05DF \u05E9\u05DC\u05DA: ", score, "/", levelReqs[currentLevel].total), /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setGameState('playing');
+        setCurrentLevel('easy');
+        setCurrentQuestionIndex(0);
+        setScore(0);
+        setLives(3);
+        setSelectedAnswer(null);
+        setShowFeedback(false);
+      },
+      className: "bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90"
+    }, "\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1 \uD83D\uDD04")));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 p-8",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-xl shadow-lg p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement(Cloud, {
+    className: "w-8 h-8 text-blue-600"
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
+    className: "text-2xl font-bold text-blue-900"
+  }, "\u05E9\u05D0\u05D9\u05DC\u05EA \u05D4\u05D2\u05E9\u05DE\u05D9\u05DD - \u05D7\u05DC\u05E7 1"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-600"
+  }, currentLevel === 'easy' ? 'רמה קלה ⭐' : 'רמה בינונית 🎯'))), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, [...Array(3)].map((_, i) => /*#__PURE__*/React.createElement(Heart, {
+    key: i,
+    className: `w-8 h-8 ${i < lives ? 'text-red-500 fill-red-500' : 'text-gray-300'}`
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-3 bg-gray-200 rounded-full overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-full bg-gradient-to-r from-blue-600 to-cyan-600 transition-all duration-300",
+    style: {
+      width: `${(currentQuestionIndex + 1) / questions[currentLevel].length * 100}%`
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-center text-sm text-gray-600 mt-2"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestionIndex + 1, " \u05DE\u05EA\u05D5\u05DA ", questions[currentLevel].length, " | \u05E6\u05D9\u05D5\u05DF: ", score, "/", levelReqs[currentLevel].total))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-xl shadow-lg p-8 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3 mb-4"
+  }, /*#__PURE__*/React.createElement(Droplets, {
+    className: "w-6 h-6 text-blue-600 flex-shrink-0 mt-1"
+  }), /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold text-blue-900"
+  }, currentQuestion.question))), currentQuestion.type === 'multipleChoice' && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, shuffledAnswers.map((answer, index) => {
+    const isSelected = selectedAnswer === answer;
+    const showResult = showFeedback && isSelected;
+    return /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => !showFeedback && handleMultipleChoiceAnswer(answer),
+      disabled: showFeedback,
+      className: `w-full p-4 rounded-lg text-right font-medium transition-all ${showResult ? answer.correct ? 'bg-green-100 border-2 border-green-500 text-green-900' : 'bg-red-100 border-2 border-red-500 text-red-900' : 'bg-blue-50 hover:bg-blue-100 border-2 border-blue-200'} ${showFeedback && !isSelected ? 'opacity-50' : ''}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("span", null, answer.text), showResult && (answer.correct ? /*#__PURE__*/React.createElement(CheckCircle, {
+      className: "w-6 h-6 text-green-600"
+    }) : /*#__PURE__*/React.createElement(XCircle, {
+      className: "w-6 h-6 text-red-600"
+    }))), showResult && /*#__PURE__*/React.createElement("p", {
+      className: "text-sm mt-2 text-right"
+    }, answer.explanation));
+  })), currentQuestion.type === 'matching' && /*#__PURE__*/React.createElement("div", {
+    className: "grid md:grid-cols-2 gap-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold text-blue-900 mb-3"
+  }, "\u05DE\u05D5\u05E9\u05D2\u05D9\u05DD:"), shuffledTerms.map((pair, index) => {
+    const isMatched = matchedPairs.includes(pair.term);
+    const isSelected = selectedTerm?.term === pair.term;
+    return /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => !isMatched && handleMatchingSelect(pair, 'term'),
+      disabled: isMatched,
+      className: `w-full p-4 rounded-lg text-right font-medium transition-all ${isMatched ? 'bg-green-100 border-2 border-green-500 text-green-900 opacity-50' : isSelected ? 'bg-blue-200 border-2 border-blue-600 text-blue-900' : 'bg-blue-50 hover:bg-blue-100 border-2 border-blue-200'}`
+    }, pair.term);
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold text-cyan-900 mb-3"
+  }, "\u05D4\u05D2\u05D3\u05E8\u05D5\u05EA:"), shuffledDefs.map((def, index) => {
+    const matchedPair = currentQuestion.pairs.find(p => p.definition === def);
+    const isMatched = matchedPair && matchedPairs.includes(matchedPair.term);
+    const isSelected = selectedDef === def;
+    return /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => !isMatched && handleMatchingSelect(def, 'def'),
+      disabled: isMatched,
+      className: `w-full p-4 rounded-lg text-right font-medium transition-all ${isMatched ? 'bg-green-100 border-2 border-green-500 text-green-900 opacity-50' : isSelected ? 'bg-cyan-200 border-2 border-cyan-600 text-cyan-900' : 'bg-cyan-50 hover:bg-cyan-100 border-2 border-cyan-200'}`
+    }, def);
+  })))), showFeedback && currentQuestion.type === 'multipleChoice' && /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: handleNext,
+    className: "bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-opacity"
+  }, currentQuestionIndex < questions[currentLevel].length - 1 ? 'המשך ➡️' : 'סיים רמה 🏆'))));
+};
+const __App = SheilatGeshanimGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

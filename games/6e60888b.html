@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 משחק הרצונות - לכיתה ב'</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .scenario-card {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .category-btn {
+            padding: 25px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .category-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .category-btn:active {
+            transform: translateY(-2px);
+        }
+
+        .btn-retzono {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            color: #006400;
+        }
+
+        .btn-retzoncha {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            color: #00008B;
+        }
+
+        .btn-batel {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #8B4513;
+        }
+
+        .btn-acherim {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #8B0000;
+        }
+
+        .feedback {
+            text-align: center;
+            font-size: 2em;
+            font-weight: bold;
+            margin: 20px 0;
+            min-height: 60px;
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .feedback.correct {
+            color: #28a745;
+        }
+
+        .feedback.incorrect {
+            color: #dc3545;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .final-score {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+            margin-top: 30px;
+        }
+
+        .final-score h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .final-score p {
+            font-size: 1.5em;
+            margin: 10px 0;
+        }
+
+        .restart-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .restart-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .explanation {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-right: 5px solid #ffc107;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .level-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #ffd700;
+            color: #333;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .signature {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .signature strong {
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .categories {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .scenario-card {
+                font-size: 1.2em;
+                padding: 20px;
+            }
+        }
+    </style>
+<meta property="og:title" content="🎯 משחק הרצונות - לכיתה ב&#x27;">
+<meta property="og:description" content="🎯 משחק הרצונות - לכיתה ב&#x27;">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-6e60888b.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/6e60888b.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 משחק הרצונות</h1>
+        <div class="subtitle">לאן שייך כל מצב? 💭</div>
+        
+        <div id="game-area">
+            <div class="level-badge" id="level-badge">שלב 1 מתוך 3 🌟</div>
+            
+            <div class="score-board">
+                <div class="score-item">
+                    <div>שאלה</div>
+                    <div id="question-num">1/10</div>
+                </div>
+                <div class="score-item">
+                    <div>נכונות</div>
+                    <div id="correct-count">0</div>
+                </div>
+                <div class="score-item">
+                    <div>ניקוד</div>
+                    <div id="score">0</div>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%">
+                    <span id="progress-text">0%</span>
+                </div>
+            </div>
+
+            <div class="scenario-card" id="scenario"></div>
+
+            <div class="categories">
+                <button class="category-btn btn-retzono" onclick="checkAnswer('retzono')">
+                    💚 רְצוֹנוֹ<br>
+                    <small>מה שה' רוצה</small>
+                </button>
+                <button class="category-btn btn-retzoncha" onclick="checkAnswer('retzoncha')">
+                    💙 רְצוֹנְךָ<br>
+                    <small>מה שאני רוצה</small>
+                </button>
+                <button class="category-btn btn-batel" onclick="checkAnswer('batel')">
+                    🟡 בַּטֵּל רְצוֹנְךָ<br>
+                    <small>רוצה אבל לא טוב</small>
+                </button>
+                <button class="category-btn btn-acherim" onclick="checkAnswer('acherim')">
+                    🔴 רְצוֹן אֲחֵרִים<br>
+                    <small>רע שרוצים לי</small>
+                </button>
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+            <div class="explanation" id="explanation" style="display: none;"></div>
+        </div>
+
+        <div id="final-screen" style="display: none;">
+            <div class="final-score">
+                <h2 id="final-title"></h2>
+                <p id="final-message"></p>
+                <p id="final-stats"></p>
+                <button class="restart-btn" onclick="restartGame()">🔄 התחילי מחדש!</button>
+            </div>
+        </div>
+
+        <div class="signature">
+            <strong>נבנה על ידי:</strong><br>
+            <strong>הרב יהודה טאוב מקרית אתא</strong><br>
+            📞 <strong>לפרטים: 0527139520</strong>
+        </div>
+    </div>
+
+    <script>
+        const scenarios = [
+            // רצונו - מה שה' רוצה (10 דוגמאות)
+            {text: 'אמא אומרת: "בואי נלמד משניות ביחד!"', answer: 'retzono', explanation: 'ללמוד תורה זה מה שהקב"ה רוצה מאיתנו! 💚📚'},
+            {text: 'המורה אומרת: "פתחו את החומש!"', answer: 'retzono', explanation: 'לימוד תורה הוא רְצוֹנוֹ של הקב"ה! 💚✡️'},
+            {text: 'אמא אומרת: "תעזרי לי לסדר את השולחן לשבת"', answer: 'retzono', explanation: 'לעזור לאמא זו מצוות כיבוד הורים - זה רְצוֹנוֹ! 💚👏'},
+            {text: 'יש חברה חדשה בכיתה ואני הולכת לשחק איתה', answer: 'retzono', explanation: 'לעשות חסד ולדאוג לחברה זה רְצוֹנוֹ! 💚🤝'},
+            {text: 'חברה שלי שכחה אוכל, אני נותנת לה מהכריך שלי', answer: 'retzono', explanation: 'לתת ולעזור לאחרים זה רְצוֹנוֹ של הקב"ה! 💚❤️'},
+            {text: 'בשבת אני הולכת לבית הכנסת להתפלל', answer: 'retzono', explanation: 'תפילה זה רְצוֹנוֹ! ה\' שמח כשאנחנו מדברים אליו! 💚🙏'},
+            {text: 'אני עונה אמן בקול רם', answer: 'retzono', explanation: 'לענות אמן זו מצווה - זה רְצוֹנוֹ! 💚✨'},
+            {text: 'חברה שלי עצובה, אני מנחמת אותה', answer: 'retzono', explanation: 'לנחם אבלים ולשמח עצובים זה רְצוֹנוֹ! 💚🌟'},
+            {text: 'אני מתפללת בכוונה', answer: 'retzono', explanation: 'כוונה בתפילה זה בדיוק מה שה\' רוצה! 💚💫'},
+            {text: 'אני נותנת צדקה לעני', answer: 'retzono', explanation: 'צדקה זו מצווה חשובה - זה רְצוֹנוֹ! 💚🪙'},
+
+            // רצונך - מה שאני רוצה (דברים טובים) (10 דוגמאות)
+            {text: 'אני רוצה גלידה שוקולד!', answer: 'retzoncha', explanation: 'זה רְצוֹנִי! זה דבר רגיל שאני רוצה ואין בעיה לרצות! 💙🍦'},
+            {text: 'אני רוצה לשחק עם החברות שלי בהפסקה', answer: 'retzoncha', explanation: 'לשחק עם חברות זה רְצוֹנִי ממש לגיטימי! 💙😊'},
+            {text: 'אני רוצה למצוא חברות טובות שיהיו נחמדות אליי', answer: 'retzoncha', explanation: 'זה רְצוֹנִי הטבעי - לרצות חברות טובות! 💙🫂'},
+            {text: 'אני רוצה לקבל בובה חדשה ביום ההולדת', answer: 'retzoncha', explanation: 'זה רְצוֹנִי ממש בסדר לרצות מתנה! 💙🎁'},
+            {text: 'אני רוצה עוגה טעימה', answer: 'retzoncha', explanation: 'לאכול דברים טעימים זה רְצוֹנִי הטבעי! 💙🍰'},
+            {text: 'אני רוצה לשחק במשחק חדש', answer: 'retzoncha', explanation: 'לרצות לשחק זה רְצוֹנִי ממש רגיל! 💙🎮'},
+            {text: 'אני רוצה שמלה יפה', answer: 'retzoncha', explanation: 'לרצות בגדים יפים זה רְצוֹנִי בסדר גמור! 💙👗'},
+            {text: 'אני רוצה ספר מעניין לקרוא', answer: 'retzoncha', explanation: 'לרצות ספר טוב זה רְצוֹנִי חיובי! 💙📕'},
+            {text: 'אני רוצה לשחק בפארק', answer: 'retzoncha', explanation: 'לרצות לשחק בחוץ זה רְצוֹנִי בריא ונכון! 💙🌳'},
+            {text: 'אני רוצה פיצה לארוחת ערב', answer: 'retzoncha', explanation: 'לרצות אוכל מסוים זה רְצוֹנִי טבעי! 💙🍕'},
+
+            // בטל רצונך - רוצה אבל לא טוב (10 דוגמאות)
+            {text: 'אני רוצה להציק לחברה שישבה במקום שלי', answer: 'batel', explanation: 'אני רוצה - אבל זה בַּטֵּל רְצוֹנְךָ! לא עושים ככה! 🟡❌'},
+            {text: 'אני רוצה להגיד לכולם: "אני הכי טובה!"', answer: 'batel', explanation: 'אני רוצה להתגאות - אבל זה בַּטֵּל רְצוֹנְךָ! גאווה זה לא יפה! 🟡🚫'},
+            {text: 'אני כועסת על חברה ורוצה להרביץ לה', answer: 'batel', explanation: 'אני רוצה - אבל זה בַּטֵּל רְצוֹנְךָ! לא פוגעים באחרים! 🟡✋'},
+            {text: 'אני רוצה לאכול בשר וחלב ביחד', answer: 'batel', explanation: 'אני רוצה - אבל זה בַּטֵּל רְצוֹנְךָ! זה אסור בתורה! 🟡🚷'},
+            {text: 'אני רוצה לדבר עם חברה בשיעור', answer: 'batel', explanation: 'אני רוצה - אבל זה בַּטֵּל רְצוֹנְךָ! המורה מסבירה! 🟡🤫'},
+            {text: 'אני רוצה לקחת עיפרון יפה של חברה', answer: 'batel', explanation: 'אני רוצה - אבל זה בַּטֵּל רְצוֹנְךָ! זה גניבה! 🟡⛔'},
+            {text: 'אני רוצה לספר לכולם משהו רע על חברה', answer: 'batel', explanation: 'אני רוצה - אבל זה בַּטֵּל רְצוֹנְךָ! זה לשון הרע! 🟡🙊'},
+            {text: 'אני רוצה למשוך לחברה את הצמות', answer: 'batel', explanation: 'אני רוצה - אבל זה בַּטֵּל רְצוֹנְךָ! לא מציקים! 🟡💢'},
+            {text: 'אני רוצה לצחוק על חברה שנפלה', answer: 'batel', explanation: 'אני רוצה - אבל זה בַּטֵּל רְצוֹנְךָ! זה לא נחמד! 🟡😞'},
+            {text: 'אני רוצה לקחת מדבקה מהקופסה של חברה בלי רשות', answer: 'batel', explanation: 'אני רוצה - אבל זה בַּטֵּל רְצוֹנְךָ! צריך לבקש! 🟡🙅'},
+
+            // רצון אחרים - רע שרוצים לי (10 דוגמאות)
+            {text: 'יש ילדה רעה שרוצה להרביץ לי בהפסקה', answer: 'acherim', explanation: 'זה רְצוֹן אֲחֵרִים! אני רוצה שה\' יבטל את זה! 🔴🛡️'},
+            {text: 'יש ילדה שרוצה להציק לי כל הזמן', answer: 'acherim', explanation: 'זה רְצוֹן אֲחֵרִים רע! ה\' ישמור עליי! 🔴🙏'},
+            {text: 'יש ילדה שרוצה לגנוב את העיפרון שלי', answer: 'acherim', explanation: 'זה רְצוֹן אֲחֵרִים! אני מתפללת שזה לא יקרה! 🔴✝️'},
+            {text: 'יש ילדה רעה שרוצה לפגוע בי', answer: 'acherim', explanation: 'זה רְצוֹן אֲחֵרִים מזיק! ה\' יגן עליי! 🔴💪'},
+            {text: 'יש ילדה שרוצה לספר עליי דברים לא נכונים', answer: 'acherim', explanation: 'זה רְצוֹן אֲחֵרִים - לשון הרע! ה\' יעזור! 🔴🗣️'},
+            {text: 'יש ילדה שרוצה לצחוק עליי בפני כולם', answer: 'acherim', explanation: 'זה רְצוֹן אֲחֵרִים להשפיל אותי! ה\' איתי! 🔴😤'},
+            {text: 'יש מישהו שרוצה לקחת ממני כסף בכוח', answer: 'acherim', explanation: 'זה רְצוֹן אֲחֵרִים לשדוד! ה\' ישמור! 🔴💰'},
+            {text: 'יש ילדה שרוצה למשוך לי את הצמות', answer: 'acherim', explanation: 'זה רְצוֹן אֲחֵרִים להציק לי! 🔴😠'},
+            {text: 'יש ילדה שרוצה לקלקל לי משהו', answer: 'acherim', explanation: 'זה רְצוֹן אֲחֵרִים להזיק! ה\' יעזור! 🔴⚠️'},
+            {text: 'יש ילדה שרוצה לספר הסוד שלי', answer: 'acherim', explanation: 'זה רְצוֹן אֲחֵרִים לפגוע בי! 🔴🤐'}
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let correctCount = 0;
+        let currentLevel = 1;
+        let questionsPerLevel = 10;
+        let requiredScore = 8; // 80%
+        let levelScenarios = [];
+
+        const levelSettings = {
+            1: { questions: 10, required: 8, percent: 80 },  // קל
+            2: { questions: 15, required: 13, percent: 85 }, // בינוני
+            3: { questions: 20, required: 18, percent: 90 }  // קשה
+        };
+
+        function initLevel() {
+            // ערבוב השאלות
+            levelScenarios = [...scenarios].sort(() => Math.random() - 0.5);
+            questionsPerLevel = levelSettings[currentLevel].questions;
+            requiredScore = levelSettings[currentLevel].required;
+            
+            // לקחת רק את מספר השאלות הנדרש
+            levelScenarios = levelScenarios.slice(0, questionsPerLevel);
+            
+            currentQuestion = 0;
+            score = 0;
+            correctCount = 0;
+            
+            updateDisplay();
+            showQuestion();
+        }
+
+        function updateDisplay() {
+            document.getElementById('level-badge').textContent = `שלב ${currentLevel} מתוך 3 🌟`;
+            document.getElementById('question-num').textContent = `${currentQuestion + 1}/${questionsPerLevel}`;
+            document.getElementById('correct-count').textContent = correctCount;
+            document.getElementById('score').textContent = score;
+            
+            const progress = ((currentQuestion + 1) / questionsPerLevel) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+            document.getElementById('progress-text').textContent = Math.round(progress) + '%';
+        }
+
+        function showQuestion() {
+            if (currentQuestion >= questionsPerLevel) {
+                endLevel();
+                return;
+            }
+
+            document.getElementById('scenario').textContent = levelScenarios[currentQuestion].text;
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('explanation').style.display = 'none';
+            
+            // הפעלת אנימציה
+            document.getElementById('scenario').style.animation = 'none';
+            setTimeout(() => {
+                document.getElementById('scenario').style.animation = 'slideIn 0.5s ease-out';
+            }, 10);
+        }
+
+        function checkAnswer(userAnswer) {
+            const correct = levelScenarios[currentQuestion].answer;
+            const explanation = levelScenarios[currentQuestion].explanation;
+            
+            const feedbackEl = document.getElementById('feedback');
+            const explanationEl = document.getElementById('explanation');
+            
+            if (userAnswer === correct) {
+                correctCount++;
+                score += 10;
+                
+                const messages = ['מצוין! ⭐', 'פצצה! 🎯', 'כל הכבוד! 💪', 'מדהים! 🌟', 'יפה מאוד! ✨'];
+                feedbackEl.textContent = messages[Math.floor(Math.random() * messages.length)];
+                feedbackEl.className = 'feedback correct';
+                
+                // צליל הצלחה
+                playSuccessSound();
+            } else {
+                feedbackEl.textContent = 'לא בדיוק... חשבי שוב! 🤔';
+                feedbackEl.className = 'feedback incorrect';
+            }
+            
+            explanationEl.textContent = explanation;
+            explanationEl.style.display = 'block';
+            
+            updateDisplay();
+            
+            setTimeout(() => {
+                currentQuestion++;
+                showQuestion();
+            }, 3000);
+        }
+
+        function playSuccessSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [261.63, 329.63, 392.00]; // C, E, G
+            
+            notes.forEach((freq, i) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.1);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.1 + 0.3);
+                
+                oscillator.start(audioContext.currentTime + i * 0.1);
+                oscillator.stop(audioContext.currentTime + i * 0.1 + 0.3);
+            });
+        }
+
+        function playCelebrationSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const melody = [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25]; // C5, E5, G5, C6, G5, E5
+            
+            melody.forEach((freq, i) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.3);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.3 + 0.25);
+                
+                oscillator.start(audioContext.currentTime + i * 0.3);
+                oscillator.stop(audioContext.currentTime + i * 0.3 + 0.25);
+            });
+        }
+
+        function endLevel() {
+            const percentage = (correctCount / questionsPerLevel) * 100;
+            const passed = correctCount >= requiredScore;
+            
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('final-screen').style.display = 'block';
+            
+            const finalTitle = document.getElementById('final-title');
+            const finalMessage = document.getElementById('final-message');
+            const finalStats = document.getElementById('final-stats');
+            
+            if (passed) {
+                if (currentLevel < 3) {
+                    playCelebrationSound();
+                    finalTitle.textContent = 'כל הכבוד! עברת לשלב הבא! 🎉';
+                    finalMessage.textContent = `השגת ${correctCount} תשובות נכונות מתוך ${questionsPerLevel}!`;
+                    finalStats.textContent = `ציון: ${Math.round(percentage)}% | ניקוד: ${score}`;
+                    
+                    setTimeout(() => {
+                        currentLevel++;
+                        document.getElementById('final-screen').style.display = 'none';
+                        document.getElementById('game-area').style.display = 'block';
+                        initLevel();
+                    }, 4000);
+                } else {
+                    // סיים את כל 3 השלבים
+                    playCelebrationSound();
+                    finalTitle.textContent = 'מדהים! סיימת את כל המשחק! 🏆👑';
+                    finalMessage.textContent = 'את באמת שולטת בכל סוגי הרצונות!';
+                    finalStats.textContent = `ציון סופי: ${Math.round(percentage)}% | ניקוד כולל: ${score}`;
+                }
+            } else {
+                finalTitle.textContent = 'התחלה טובה! 🌱';
+                finalMessage.textContent = `עוד קצת תרגול ותצליחי!`;
+                finalStats.textContent = `השגת ${correctCount} מתוך ${questionsPerLevel} (צריך ${requiredScore})`;
+            }
+        }
+
+        function restartGame() {
+            currentLevel = 1;
+            document.getElementById('final-screen').style.display = 'none';
+            document.getElementById('game-area').style.display = 'block';
+            initLevel();
+        }
+
+        // התחלת המשחק
+        initLevel();
+    </script>
+</body>
+</html>

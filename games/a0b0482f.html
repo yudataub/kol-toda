@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לומדה אינטראקטיבית - חג הסיגד</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f3e8ff 50%, #fce7f3 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+            text-center;
+        }
+
+        .main-title {
+            font-size: 48px;
+            font-weight: bold;
+            background: linear-gradient(to right, #2563eb, #9333ea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            font-size: 24px;
+            color: #374151;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            padding: 15px 25px;
+            border-radius: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .score-box {
+            background: #fef3c7;
+        }
+
+        .progress-box {
+            background: #d1fae5;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            border-radius: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            color: #374151;
+        }
+
+        .tab:hover {
+            background: #f3f4f6;
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: linear-gradient(to right, #3b82f6, #9333ea);
+            color: white;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .content {
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            min-height: 500px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .info-box {
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            font-size: 20px;
+            line-height: 1.8;
+        }
+
+        .gradient-blue {
+            background: linear-gradient(to right, #dbeafe, #e9d5ff);
+        }
+
+        .box-yellow {
+            background: #fef3c7;
+            border: 4px solid #fbbf24;
+        }
+
+        .box-green {
+            background: #d1fae5;
+            border: 4px solid #34d399;
+        }
+
+        .box-pink {
+            background: #fce7f3;
+            border: 4px solid #f472b6;
+        }
+
+        .box-purple {
+            background: #f3e8ff;
+            border: 4px solid #a855f7;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-purple {
+            background: linear-gradient(to right, #9333ea, #ec4899);
+            color: white;
+        }
+
+        .btn-green {
+            background: linear-gradient(to right, #10b981, #3b82f6);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .quiz-question {
+            background: linear-gradient(to right, #d1fae5, #dbeafe);
+            border: 4px solid #34d399;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .quiz-option {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 15px;
+            border: 3px solid #d1d5db;
+            background: white;
+            font-size: 20px;
+            cursor: pointer;
+            text-align: right;
+            transition: all 0.3s;
+        }
+
+        .quiz-option:hover {
+            background: #dbeafe;
+        }
+
+        .quiz-option.selected {
+            background: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+            font-weight: bold;
+        }
+
+        .quiz-option.correct {
+            background: #10b981;
+            color: white;
+            border-color: #059669;
+        }
+
+        .quiz-option.wrong {
+            background: #fca5a5;
+            border-color: #ef4444;
+        }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .memory-card {
+            aspect-ratio: 1;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .memory-card:hover {
+            transform: scale(1.05);
+        }
+
+        .memory-card.hidden {
+            background: linear-gradient(to right, #d1d5db, #9ca3af);
+            color: #374151;
+        }
+
+        .memory-card.flipped {
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            color: white;
+        }
+
+        .memory-card.matched {
+            background: linear-gradient(to right, #34d399, #10b981);
+            color: white;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            border: 4px solid #d1d5db;
+            font-size: 18px;
+            font-family: 'Arial', sans-serif;
+            resize: vertical;
+            margin-top: 10px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .success-banner {
+            background: linear-gradient(to right, #34d399, #10b981);
+            color: white;
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            margin-top: 30px;
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+        }
+
+        ul {
+            margin-right: 30px;
+        }
+
+        li {
+            margin: 15px 0;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 32px;
+            }
+            
+            .subtitle {
+                font-size: 18px;
+            }
+            
+            .tab {
+                font-size: 16px;
+                padding: 10px 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .memory-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+<meta property="og:title" content="לומדה אינטראקטיבית - חג הסיגד">
+<meta property="og:description" content="לומדה אינטראקטיבית - חג הסיגד">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-a0b0482f.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/a0b0482f.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="main-title">🎉 חג הסיגד 🎉</h1>
+            <p class="subtitle">לומדה אינטראקטיבית</p>
+            <div class="stats">
+                <div class="stat-box score-box">⭐ ניקוד: <span id="score">0</span></div>
+                <div class="stat-box progress-box">✅ הושלמו: <span id="completed">0</span>/4</div>
+            </div>
+        </div>
+
+        <!-- Teacher Info -->
+        <div style="background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <button onclick="toggleTeacherInfo()" style="width: 100%; background: linear-gradient(to right, #8b5cf6, #6366f1); color: white; border: none; padding: 15px; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <span id="teacherInfoIcon">▼</span>
+                👨‍🏫 מידע למורה - איך נוצרה הלומדה?
+            </button>
+            <div id="teacherInfo" style="display: none; margin-top: 20px; padding: 20px; background: #f9fafb; border-radius: 15px; border-right: 4px solid #8b5cf6;">
+                <h3 style="font-size: 22px; color: #8b5cf6; margin-bottom: 15px;">💡 תהליך היצירה</h3>
+                <p style="font-size: 18px; line-height: 1.8; color: #374151; margin-bottom: 15px;">
+                    <strong>הפקודה שניתנה ל-Claude AI:</strong>
+                </p>
+                <div style="background: white; padding: 15px; border-radius: 10px; border: 2px solid #e5e7eb; margin-bottom: 15px;">
+                    <p style="font-size: 17px; line-height: 1.7; color: #1f2937; font-style: italic;">
+                        "תסרוק בבקשה את כל הדרייב שלי ותמצא חומרים על חג הסיגד. 
+                        מהחומרים תיצור לומדה אינטראקטיבית בעלת חווית משתמש מעולה על הנושא. 
+                        הלומדה תתאים לתלמידי חטיבה ותיכון עם לקויות למידה ותכלול מעבר לפן האינפורמטיבי גם פעילויות שונות."
+                    </p>
+                </div>
+                <p style="font-size: 18px; line-height: 1.8; color: #374151;">
+                    <strong>התוצאה:</strong> Claude סרק את Google Drive, מצא את כל החומרים על חג הסיגד, 
+                    וייצר לומדה אינטראקטיבית המותאמת במיוחד לתלמידים עם לקויות למידה - עם טקסט גדול, 
+                    צבעים בולטים, פעילויות מגוונות ומשחקים חינוכיים.
+                </p>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('intro')">📚 מבוא</button>
+            <button class="tab" onclick="showTab('story')">⭐ הסיפור</button>
+            <button class="tab" onclick="showTab('quiz')">🎯 חידון</button>
+            <button class="tab" onclick="showTab('memory')">🎮 זיכרון</button>
+            <button class="tab" onclick="showTab('creative')">💖 יצירה</button>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Intro Tab -->
+            <div id="intro" class="tab-content active">
+                <h2 class="section-title" style="color: #2563eb;">👋 ברוכים הבאים!</h2>
+                
+                <div class="info-box gradient-blue">
+                    <p style="margin-bottom: 15px;">
+                        <strong style="font-size: 24px;">חג הסיגד</strong> הוא חג מיוחד שחוגגים בני העדה האתיופית 
+                        בכל שנה ב<strong>כ"ט בחשוון</strong>, 50 ימים אחרי יום כיפור.
+                    </p>
+                    <p>זהו יום של תפילה, תשובה וחידוש הברית עם ה'.</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="info-box box-yellow">
+                        <h3 style="font-size: 24px; margin-bottom: 15px;">📅 מתי חוגגים?</h3>
+                        <ul>
+                            <li>• <strong>כ"ט בחשוון</strong></li>
+                            <li>• <strong>50 ימים</strong> אחרי יום כיפור</li>
+                            <li>• כל שנה באותו תאריך</li>
+                        </ul>
+                    </div>
+
+                    <div class="info-box box-green">
+                        <h3 style="font-size: 24px; margin-bottom: 15px;">❓ מה משמעות השם?</h3>
+                        <p><strong>"סיגד"</strong> פירושו <strong>סגידה</strong> - כלומר השתחוויה והערצה לה'. זהו יום של קדושה ותפילה.</p>
+                    </div>
+
+                    <div class="info-box box-pink">
+                        <h3 style="font-size: 24px; margin-bottom: 15px;">🎯 מה עושים בחג?</h3>
+                        <ul>
+                            <li>• צמים עד הצהריים</li>
+                            <li>• לובשים בגדים לבנים</li>
+                            <li>• מתפללים על הר גבוה</li>
+                            <li>• קוראים מהתורה</li>
+                        </ul>
+                    </div>
+
+                    <div class="info-box box-purple">
+                        <h3 style="font-size: 24px; margin-bottom: 15px;">🕊️ סמל החג - החסידה</h3>
+                        <p><strong>החסידה</strong> מסמלת את הכמיהה לירושלים. היא עפה מאתיופיה לארץ ישראל - בדיוק כמו שחלמו היהודים!</p>
+                    </div>
+                </div>
+
+                <div class="info-box" style="background: linear-gradient(to right, #fed7aa, #fca5a5); margin-top: 20px;">
+                    <h3 style="font-size: 24px; margin-bottom: 15px;">🌟 עובדות מעניינות</h3>
+                    <ul>
+                        <li>✨ החג נחגג כבר אלפי שנים!</li>
+                        <li>✨ יהודי אתיופיה נקראו "ביתא ישראל"</li>
+                        <li>✨ בשנת 2008 החג הפך לחג רשמי במדינת ישראל</li>
+                        <li>✨ היום חוגגים בטיילת ארמון הנציב בירושלים</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Story Tab -->
+            <div id="story" class="tab-content">
+                <h2 class="section-title" style="color: #9333ea;">📖 סיפורים מיוחדים</h2>
+
+                <div class="info-box" style="background: linear-gradient(to right, #f3e8ff, #fce7f3);">
+                    <h3 style="font-size: 28px; color: #9333ea; margin-bottom: 15px;">🏔️ על ההר הגבוה</h3>
+                    <p style="margin-bottom: 15px;">
+                        באתיופיה, לפני מאות שנים, היו היהודים צועדים ימים שלמים כדי להגיע להר הגבוה ביותר באזור.
+                        למה על הר? כי רצו להיות קרובים לשמיים, כמו במעמד הר סיני!
+                    </p>
+                    <p style="margin-bottom: 15px;">
+                        בבוקר המוקדם, כולם טבלו בנהר ולבשו בגדים לבנים נקיים. 
+                        אחר כך התחילו לטפס על ההר בשירה ובתפילה.
+                    </p>
+                    <p>
+                        <strong>הקסים</strong> (הכהנים) קראו מתוך <strong>האורית</strong> (התורה) 
+                        בשפה הקדושה, ותרגמו לכולם בשפה הרגילה כדי שכולם יבינו.
+                    </p>
+                </div>
+
+                <div class="info-box" style="background: linear-gradient(to right, #dbeafe, #cffafe); margin-top: 20px;">
+                    <h3 style="font-size: 28px; color: #0284c7; margin-bottom: 15px;">🕊️ שיר החסידה</h3>
+                    <div style="background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px;">
+                        <p style="margin-bottom: 10px;">ילדי יהודי אתיופיה היו רצים אחרי החסידות וקוראים:</p>
+                        <p style="text-align: center; font-size: 26px; color: #0284c7; font-weight: bold; font-style: italic;">
+                            "חסידה, חסידה!<br/>
+                            קחי אותנו לירושלים!"
+                        </p>
+                    </div>
+                    <p>
+                        החסידות עפות מאתיופיה לארץ ישראל כל שנה. 
+                        הילדים ראו אותן ואמרו: "אם החסידה יכולה להגיע - גם אנחנו נגיע יום אחד!"
+                    </p>
+                </div>
+
+                <div class="info-box" style="background: linear-gradient(to right, #d1fae5, #a7f3d0); margin-top: 20px;">
+                    <h3 style="font-size: 28px; color: #059669; margin-bottom: 15px;">💪 סיפור אומץ</h3>
+                    <p style="margin-bottom: 15px;">
+                        היו תקופות קשות שבהן ניסו מלכים רשעים להכריח את היהודים להתנצר ולעזוב את דתם.
+                        אבל היהודים לא ויתרו! הם היו מוכנים למסור את נפשם רק כדי לשמור על התורה והמצוות.
+                    </p>
+                    <p>
+                        <strong>אבא וודג'</strong>, מנהיג קדוש, עמד בפני המלך ואמר בגאווה: 
+                        "את גופי אתה יכול לקחת, אבל את נפשי לעולם לא תשיג!"
+                        המלך התרשם כל כך מהאומץ שלו, ששלח אותו הביתה בכבוד גדול.
+                    </p>
+                </div>
+
+                <div class="info-box" style="background: linear-gradient(to right, #fef3c7, #fed7aa); margin-top: 20px;">
+                    <h3 style="font-size: 28px; color: #d97706; margin-bottom: 15px;">🎊 החלום שהתגשם</h3>
+                    <p style="margin-bottom: 15px;">
+                        במשך אלפי שנים התפללו יהודי אתיופיה לחזור לירושלים.
+                        וביום הסיגד היו תמיד מסיימים בברכה: <strong>"בשנה הבאה בירושלים!"</strong>
+                    </p>
+                    <p>
+                        והחלום התגשם! בשנות ה-80 וה-90, בפעולות מבצע משה ומבצע שלמה, 
+                        עלו עשרות אלפי יהודים מאתיופיה לישראל. 
+                        היום הם חוגגים את חג הסיגד בירושלים האמיתית! 🎉
+                    </p>
+                </div>
+
+                <button class="btn btn-purple" onclick="completeStory()">✅ סיימתי לקרוא את הסיפורים!</button>
+            </div>
+
+            <!-- Quiz Tab -->
+            <div id="quiz" class="tab-content">
+                <h2 class="section-title" style="color: #10b981;">🎯 חידון אינטראקטיבי</h2>
+
+                <div class="quiz-question">
+                    <h3 style="font-size: 24px; color: #059669; margin-bottom: 20px;">שאלה 1: מתי חוגגים את חג הסיגד?</h3>
+                    <button class="quiz-option" onclick="selectAnswer(1, 0, 'כ\"ט בחשוון')">כ"ט בחשוון</button>
+                    <button class="quiz-option" onclick="selectAnswer(1, 1, 'י\"ז בתמוז')">י"ז בתמוז</button>
+                    <button class="quiz-option" onclick="selectAnswer(1, 2, 'ט\"ו בשבט')">ט"ו בשבט</button>
+                    <button class="quiz-option" onclick="selectAnswer(1, 3, 'כ\"א בניסן')">כ"א בניסן</button>
+                </div>
+
+                <div class="quiz-question">
+                    <h3 style="font-size: 24px; color: #059669; margin-bottom: 20px;">שאלה 2: כמה ימים אחרי יום כיפור חוגגים את הסיגד?</h3>
+                    <button class="quiz-option" onclick="selectAnswer(2, 0, '30 ימים')">30 ימים</button>
+                    <button class="quiz-option" onclick="selectAnswer(2, 1, '40 ימים')">40 ימים</button>
+                    <button class="quiz-option" onclick="selectAnswer(2, 2, '50 ימים')">50 ימים</button>
+                    <button class="quiz-option" onclick="selectAnswer(2, 3, '60 ימים')">60 ימים</button>
+                </div>
+
+                <div class="quiz-question">
+                    <h3 style="font-size: 24px; color: #059669; margin-bottom: 20px;">שאלה 3: מה פירוש המילה "סיגד"?</h3>
+                    <button class="quiz-option" onclick="selectAnswer(3, 0, 'שמחה')">שמחה</button>
+                    <button class="quiz-option" onclick="selectAnswer(3, 1, 'סגידה (השתחוויה)')">סגידה (השתחוויה)</button>
+                    <button class="quiz-option" onclick="selectAnswer(3, 2, 'צום')">צום</button>
+                    <button class="quiz-option" onclick="selectAnswer(3, 3, 'תפילה')">תפילה</button>
+                </div>
+
+                <div class="quiz-question">
+                    <h3 style="font-size: 24px; color: #059669; margin-bottom: 20px;">שאלה 4: איזה ציפור מסמלת את הכמיהה לירושלים?</h3>
+                    <button class="quiz-option" onclick="selectAnswer(4, 0, 'היונה')">היונה</button>
+                    <button class="quiz-option" onclick="selectAnswer(4, 1, 'החסידה')">החסידה</button>
+                    <button class="quiz-option" onclick="selectAnswer(4, 2, 'הנשר')">הנשר</button>
+                    <button class="quiz-option" onclick="selectAnswer(4, 3, 'התור')">התור</button>
+                </div>
+
+                <button id="checkQuizBtn" class="btn btn-green" onclick="checkQuiz()" disabled>✔️ בדוק תשובות</button>
+                <div id="quizResult" style="display: none; background: linear-gradient(to right, #fef3c7, #fed7aa); border-radius: 20px; padding: 25px; text-align: center; margin-top: 20px;">
+                    <p style="font-size: 24px; font-weight: bold;">כל הכבוד! סיימת את החידון! 🎉<br/>המשך לפעילות הבאה</p>
+                </div>
+            </div>
+
+            <!-- Memory Tab -->
+            <div id="memory" class="tab-content">
+                <h2 class="section-title" style="color: #f97316;">🎮 משחק זיכרון</h2>
+
+                <div class="info-box" style="background: linear-gradient(to right, #fed7aa, #fef3c7); text-align: center;">
+                    <p style="font-size: 24px; margin-bottom: 15px;">מצא את הזוגות התואמים!</p>
+                    <button class="btn" style="width: auto; display: inline-block; background: linear-gradient(to right, #f97316, #ef4444);" onclick="initMemoryGame()">🔄 התחל משחק חדש</button>
+                </div>
+
+                <div id="memoryGrid" class="memory-grid"></div>
+
+                <div id="memorySuccess" style="display: none; background: linear-gradient(to right, #d1fae5, #a7f3d0); border-radius: 20px; padding: 25px; text-align: center; margin-top: 20px;">
+                    <h3 style="font-size: 28px; color: #059669; margin-bottom: 15px;">🎊 כל הכבוד! סיימת!</h3>
+                    <p style="font-size: 24px; margin-bottom: 15px;">מצאת את כל הזוגות! 🌟</p>
+                    <button class="btn" style="width: auto; display: inline-block; background: linear-gradient(to right, #10b981, #059669);" onclick="completeMemory()">✅ סיימתי את המשחק!</button>
+                </div>
+            </div>
+
+            <!-- Creative Tab -->
+            <div id="creative" class="tab-content">
+                <h2 class="section-title" style="color: #ec4899;">🎨 פעילות יצירתית</h2>
+
+                <div class="info-box" style="background: linear-gradient(to right, #fce7f3, #f3e8ff);">
+                    <h3 style="font-size: 28px; color: #ec4899; margin-bottom: 20px;">✍️ כתיבה יצירתית</h3>
+                    <p style="font-size: 20px; margin-bottom: 20px;">בחר אחת מהפעילויות הבאות:</p>
+
+                    <div class="info-box box-pink" style="margin-bottom: 20px;">
+                        <h4 style="font-size: 24px; color: #ec4899; margin-bottom: 15px;">1. מכתב לחסידה 🕊️</h4>
+                        <p style="margin-bottom: 10px;">תאר את הכמיהה לירושלים. מה היית אומר לחסידה? מה היית מבקש ממנה להעביר לירושלים?</p>
+                        <textarea rows="6" placeholder="כתוב כאן את המכתב שלך..."></textarea>
+                    </div>
+
+                    <div class="info-box box-purple" style="margin-bottom: 20px;">
+                        <h4 style="font-size: 24px; color: #9333ea; margin-bottom: 15px;">2. סיפור אישי 📖</h4>
+                        <p style="margin-bottom: 10px;">אם היית יהודי באתיופיה לפני 100 שנה, איך היית חוגג את חג הסיגד? תאר את היום שלך מהבוקר עד הערב.</p>
+                        <textarea rows="6" placeholder="כתוב כאן את הסיפור שלך..."></textarea>
+                    </div>
+
+                    <div class="info-box" style="background: #dbeafe; border: 4px solid #3b82f6; margin-bottom: 20px;">
+                        <h4 style="font-size: 24px; color: #2563eb; margin-bottom: 15px;">3. שיר או פזמון 🎵</h4>
+                        <p style="margin-bottom: 10px;">כתוב שיר קצר או פזמון על חג הסיגד. אפשר להשתמש במילים: ירושלים, תפילה, חסידה, הר, תקווה...</p>
+                        <textarea rows="6" placeholder="כתוב כאן את השיר שלך..."></textarea>
+                    </div>
+
+                    <div class="info-box box-green">
+                        <h4 style="font-size: 24px; color: #059669; margin-bottom: 15px;">4. רעיונות לחגיגה 🎉</h4>
+                        <p style="margin-bottom: 10px;">איך אתה חושב שאפשר לחגוג את חג הסיגד בבית הספר שלך? הצע 5 רעיונות מעניינים!</p>
+                        <textarea rows="6" placeholder="רשום כאן את הרעיונות שלך..."></textarea>
+                    </div>
+
+                    <button class="btn btn-purple" onclick="completeCreative()">✅ סיימתי את הפעילות היצירתית!</button>
+                </div>
+
+                <div class="info-box" style="background: linear-gradient(to right, #fef3c7, #fed7aa); margin-top: 20px;">
+                    <h3 style="font-size: 28px; color: #d97706; margin-bottom: 20px;">🎨 ציור ואומנות</h3>
+                    <p style="font-size: 20px; margin-bottom: 15px;">רעיונות לציורים:</p>
+                    <ul>
+                        <li>🕊️ צייר חסידה עפה לירושלים</li>
+                        <li>🏔️ צייר את יהודי אתיופיה עולים על ההר</li>
+                        <li>👥 צייר משפחה חוגגת את חג הסיגד</li>
+                        <li>🌆 צייר את ירושלים מהטיילת</li>
+                        <li>📖 צייר את הכהנים קוראים מהתורה</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Banner -->
+        <div id="successBanner" class="success-banner" style="display: none;">
+            <h2 style="font-size: 36px; margin-bottom: 20px;">🏆 כל הכבוד!</h2>
+            <p style="font-size: 24px; margin-bottom: 20px;">סיימת את כל הפעילויות על חג הסיגד!</p>
+            <p style="font-size: 32px; font-weight: bold; margin-bottom: 30px;">הניקוד הסופי שלך: <span id="finalScore">0</span> נקודות! 🌟</p>
+            <div style="font-size: 20px;">
+                <p style="margin-bottom: 15px;">עכשיו אתה יודע הרבה על:</p>
+                <ul style="text-align: right; display: inline-block;">
+                    <li>📅 מתי ואיך חוגגים את חג הסיגד</li>
+                    <li>🕊️ הסמלים והמשמעות של החג</li>
+                    <li>📖 הסיפורים והמסורות של יהודי אתיופיה</li>
+                    <li>🎊 החגיגות של היום בירושלים</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Credit Footer -->
+        <div style="text-align: center; padding: 20px; margin-top: 30px; color: #6b7280; font-size: 14px;">
+            ממעבדת הניסויים של מרי גרבי
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let score = 0;
+        let completedActivities = new Set();
+        let quizAnswers = {};
+        let correctAnswers = {
+            1: 0,  // כ"ט בחשוון
+            2: 2,  // 50 ימים
+            3: 1,  // סגידה
+            4: 1   // החסידה
+        };
+        let memoryCards = [];
+        let flippedCards = [];
+        let matchedPairs = [];
+
+        // Toggle Teacher Info
+        function toggleTeacherInfo() {
+            const info = document.getElementById('teacherInfo');
+            const icon = document.getElementById('teacherInfoIcon');
+            
+            if (info.style.display === 'none') {
+                info.style.display = 'block';
+                icon.textContent = '▲';
+            } else {
+                info.style.display = 'none';
+                icon.textContent = '▼';
+            }
+        }
+
+        // Tab Navigation
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Update tab buttons
+            const tabButtons = document.querySelectorAll('.tab');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Update Score Display
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('completed').textContent = completedActivities.size;
+            
+            if (completedActivities.size === 4) {
+                document.getElementById('finalScore').textContent = score;
+                document.getElementById('successBanner').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('successBanner').scrollIntoView({ behavior: 'smooth' });
+                }, 300);
+            }
+        }
+
+        // Story Completion
+        function completeStory() {
+            if (!completedActivities.has('story')) {
+                completedActivities.add('story');
+                score += 25;
+                updateScore();
+                alert('🎉 כל הכבוד! קיבלת 25 נקודות!');
+            }
+        }
+
+        // Quiz Functions
+        function selectAnswer(question, optionIndex, answerText) {
+            quizAnswers[question] = optionIndex;
+            
+            // Update UI
+            const questionDiv = event.target.closest('.quiz-question');
+            const options = questionDiv.querySelectorAll('.quiz-option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            // Enable check button if all answered
+            if (Object.keys(quizAnswers).length === 4) {
+                document.getElementById('checkQuizBtn').disabled = false;
+            }
+        }
+
+        function checkQuiz() {
+            let correct = 0;
+            
+            // Check answers and update UI
+            for (let q = 1; q <= 4; q++) {
+                const questionDiv = document.querySelectorAll('.quiz-question')[q - 1];
+                const options = questionDiv.querySelectorAll('.quiz-option');
+                
+                options.forEach((opt, idx) => {
+                    if (idx === correctAnswers[q]) {
+                        opt.classList.add('correct');
+                        opt.innerHTML += ' ✅';
+                    } else if (idx === quizAnswers[q] && idx !== correctAnswers[q]) {
+                        opt.classList.add('wrong');
+                        opt.innerHTML += ' ❌';
+                    }
+                    opt.disabled = true;
+                });
+                
+                if (quizAnswers[q] === correctAnswers[q]) {
+                    correct++;
+                }
+            }
+            
+            // Update score
+            if (!completedActivities.has('quiz')) {
+                completedActivities.add('quiz');
+                score += correct * 25;
+                updateScore();
+            }
+            
+            // Show result
+            document.getElementById('checkQuizBtn').style.display = 'none';
+            document.getElementById('quizResult').style.display = 'block';
+        }
+
+        // Memory Game Functions
+        function initMemoryGame() {
+            const pairs = [
+                { id: 1, text: 'כ"ט חשוון', match: 'תאריך החג' },
+                { id: 2, text: '50 ימים', match: 'אחרי יום כיפור' },
+                { id: 3, text: 'ביתא ישראל', match: 'יהודי אתיופיה' },
+                { id: 4, text: 'ירושלים', match: 'עיר הקודש' },
+                { id: 5, text: 'סגידה', match: 'השתחוויה לה׳' },
+                { id: 6, text: 'החסידה', match: 'סמל הכמיהה' }
+            ];
+            
+            memoryCards = [];
+            pairs.forEach(pair => {
+                memoryCards.push({ id: `${pair.id}-a`, content: pair.text, pairId: pair.id });
+                memoryCards.push({ id: `${pair.id}-b`, content: pair.match, pairId: pair.id });
+            });
+            
+            // Shuffle
+            memoryCards.sort(() => Math.random() - 0.5);
+            
+            flippedCards = [];
+            matchedPairs = [];
+            
+            // Render cards
+            const grid = document.getElementById('memoryGrid');
+            grid.innerHTML = '';
+            
+            memoryCards.forEach(card => {
+                const cardBtn = document.createElement('button');
+                cardBtn.className = 'memory-card hidden';
+                cardBtn.textContent = '?';
+                cardBtn.dataset.cardId = card.id;
+                cardBtn.onclick = () => handleCardClick(card.id);
+                grid.appendChild(cardBtn);
+            });
+            
+            document.getElementById('memorySuccess').style.display = 'none';
+        }
+
+        function handleCardClick(cardId) {
+            const cardBtn = document.querySelector(`[data-card-id="${cardId}"]`);
+            
+            if (flippedCards.length === 2 || flippedCards.includes(cardId) || matchedPairs.includes(cardId)) {
+                return;
+            }
+            
+            const card = memoryCards.find(c => c.id === cardId);
+            cardBtn.textContent = card.content;
+            cardBtn.classList.remove('hidden');
+            cardBtn.classList.add('flipped');
+            
+            flippedCards.push(cardId);
+            
+            if (flippedCards.length === 2) {
+                const card1 = memoryCards.find(c => c.id === flippedCards[0]);
+                const card2 = memoryCards.find(c => c.id === flippedCards[1]);
+                
+                if (card1.pairId === card2.pairId) {
+                    setTimeout(() => {
+                        matchedPairs.push(...flippedCards);
+                        flippedCards.forEach(id => {
+                            const btn = document.querySelector(`[data-card-id="${id}"]`);
+                            btn.classList.remove('flipped');
+                            btn.classList.add('matched');
+                        });
+                        flippedCards = [];
+                        score += 10;
+                        updateScore();
+                        
+                        // Check if game complete
+                        if (matchedPairs.length === memoryCards.length) {
+                            setTimeout(() => {
+                                document.getElementById('memorySuccess').style.display = 'block';
+                            }, 500);
+                        }
+                    }, 600);
+                } else {
+                    setTimeout(() => {
+                        flippedCards.forEach(id => {
+                            const btn = document.querySelector(`[data-card-id="${id}"]`);
+                            btn.textContent = '?';
+                            btn.classList.remove('flipped');
+                            btn.classList.add('hidden');
+                        });
+                        flippedCards = [];
+                    }, 1200);
+                }
+            }
+        }
+
+        function completeMemory() {
+            if (!completedActivities.has('memory')) {
+                completedActivities.add('memory');
+                score += 25;
+                updateScore();
+                alert('🎉 כל הכבוד! קיבלת 25 נקודות!');
+            }
+        }
+
+        // Creative Completion
+        function completeCreative() {
+            if (!completedActivities.has('creative')) {
+                completedActivities.add('creative');
+                score += 25;
+                updateScore();
+                alert('🎉 כל הכבוד! קיבלת 25 נקודות!');
+            }
+        }
+    </script>
+</body>
+</html>

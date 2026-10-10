@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>torah-books-game – הקול החמישי</title>
+<meta name="description" content="Master the Torah's five books with this engaging Hebrew quiz game. Learn which stories, commandments, and portions belong to each book through interactive lessons.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="torah-books-game – הקול החמישי">
+<meta property="og:description" content="Master the Torah&#x27;s five books with this engaging Hebrew quiz game. Learn which stories, commandments, and portions belong to each book through interactive lessons.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-b0744a99.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/b0744a99.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+
+
+<script>
+const __ui = n => {
+  const cls = {
+    Card: "rounded-lg border bg-white text-gray-900 shadow-sm",
+    CardHeader: "flex flex-col space-y-1.5 p-6",
+    CardTitle: "text-2xl font-semibold leading-none tracking-tight",
+    CardDescription: "text-sm text-gray-500",
+    CardContent: "p-6 pt-0",
+    CardFooter: "flex items-center p-6 pt-0",
+    Button: "inline-flex items-center justify-center rounded-md px-4 py-2 font-medium bg-gray-900 text-white",
+    Badge: "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold"
+  }[n] || "";
+  const tag = {
+    CardTitle: "h3",
+    CardDescription: "p",
+    Button: "button",
+    Badge: "span"
+  }[n] || "div";
+  return ({
+    className = "",
+    ...p
+  }) => React.createElement(tag, {
+    ...p,
+    className: cls + " " + className
+  });
+};
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Card = __ui("Card");
+const CardContent = __ui("CardContent");
+const TorahBooksGame = () => {
+  const [currentLesson, setCurrentLesson] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [lessonScores, setLessonScores] = useState([]);
+  const [gameComplete, setGameComplete] = useState(false);
+  const [showLessonContent, setShowLessonContent] = useState(true);
+  const [audioContext, setAudioContext] = useState(null);
+
+  // Initialize AudioContext
+  useEffect(() => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    setAudioContext(ctx);
+    return () => ctx.close();
+  }, []);
+
+  // Sound functions
+  const playCorrectSound = () => {
+    if (!audioContext) return;
+    const notes = [261.63, 329.63, 392.00]; // C-E-G
+    notes.forEach((freq, i) => {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.1 + 0.2);
+      osc.start(audioContext.currentTime + i * 0.1);
+      osc.stop(audioContext.currentTime + i * 0.1 + 0.2);
+    });
+  };
+  const playCelebrationSound = () => {
+    if (!audioContext) return;
+    const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25]; // C5-E5-G5-C6-G5-E5
+    notes.forEach((freq, i) => {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.3 + 0.25);
+      osc.start(audioContext.currentTime + i * 0.3);
+      osc.stop(audioContext.currentTime + i * 0.3 + 0.25);
+    });
+  };
+  const lessons = [{
+    title: "שיעור 1: מה יש בכל חומש? 📖",
+    content: /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4 text-lg leading-relaxed"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-blue-700"
+    }, "\u05D7\u05DE\u05E9\u05EA \u05D7\u05D5\u05DE\u05E9\u05D9 \u05D4\u05EA\u05D5\u05E8\u05D4 - \u05D4\u05D9\u05DB\u05E8\u05D5\u05EA \u05E8\u05D0\u05E9\u05D5\u05E0\u05D9\u05EA"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border-r-4 border-green-500"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-green-800 mb-2"
+    }, "\uD83D\uDCD7 \u05D1\u05E8\u05D0\u05E9\u05D9\u05EA - \u05E1\u05E4\u05E8 \u05D4\u05D4\u05EA\u05D7\u05DC\u05D5\u05EA"), /*#__PURE__*/React.createElement("p", null, "\u05D1\u05E8\u05D9\u05D0\u05EA \u05D4\u05E2\u05D5\u05DC\u05DD, \u05D4\u05D0\u05D1\u05D5\u05EA \u05D5\u05D4\u05D0\u05DE\u05D4\u05D5\u05EA, \u05D9\u05D5\u05E1\u05E3 \u05D5\u05D0\u05D7\u05D9\u05D5 \u05D1\u05DE\u05E6\u05E8\u05D9\u05DD")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border-r-4 border-blue-500"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-blue-800 mb-2"
+    }, "\uD83D\uDCD8 \u05E9\u05DE\u05D5\u05EA - \u05E1\u05E4\u05E8 \u05D4\u05D2\u05D0\u05D5\u05DC\u05D4"), /*#__PURE__*/React.createElement("p", null, "\u05D9\u05E6\u05D9\u05D0\u05EA \u05DE\u05E6\u05E8\u05D9\u05DD, \u05E7\u05E8\u05D9\u05E2\u05EA \u05D9\u05DD \u05E1\u05D5\u05E3, \u05DE\u05EA\u05DF \u05EA\u05D5\u05E8\u05D4, \u05D1\u05E0\u05D9\u05D9\u05EA \u05D4\u05DE\u05E9\u05DB\u05DF")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg border-r-4 border-purple-500"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-purple-800 mb-2"
+    }, "\uD83D\uDCD9 \u05D5\u05D9\u05E7\u05E8\u05D0 - \u05E1\u05E4\u05E8 \u05D4\u05E7\u05D3\u05D5\u05E9\u05D4"), /*#__PURE__*/React.createElement("p", null, "\u05E2\u05D1\u05D5\u05D3\u05EA \u05D4\u05DB\u05D4\u05E0\u05D9\u05DD \u05D1\u05DE\u05E9\u05DB\u05DF, \u05E7\u05E8\u05D1\u05E0\u05D5\u05EA, \u05D8\u05D5\u05DE\u05D0\u05D4 \u05D5\u05D8\u05D4\u05E8\u05D4")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-lg border-r-4 border-orange-500"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-orange-800 mb-2"
+    }, "\uD83D\uDCD5 \u05D1\u05DE\u05D3\u05D1\u05E8 - \u05E1\u05E4\u05E8 \u05D4\u05DE\u05E1\u05E2\u05D5\u05EA"), /*#__PURE__*/React.createElement("p", null, "\u05DE\u05E1\u05E2\u05D5\u05EA \u05E2\u05DD \u05D9\u05E9\u05E8\u05D0\u05DC \u05D1\u05DE\u05D3\u05D1\u05E8, \u05D4\u05DE\u05E8\u05D2\u05DC\u05D9\u05DD, \u05E7\u05D5\u05E8\u05D7")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg border-r-4 border-red-500"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-red-800 mb-2"
+    }, "\uD83D\uDCD4 \u05D3\u05D1\u05E8\u05D9\u05DD - \u05E1\u05E4\u05E8 \u05D4\u05D7\u05D6\u05E8\u05D4"), /*#__PURE__*/React.createElement("p", null, "\u05E0\u05D0\u05D5\u05DE\u05D9 \u05DE\u05E9\u05D4, \u05D7\u05D6\u05E8\u05D4 \u05E2\u05DC \u05D4\u05DE\u05E6\u05D5\u05D5\u05EA, \u05D4\u05DB\u05E0\u05D4 \u05DC\u05DB\u05E0\u05D9\u05E1\u05D4 \u05DC\u05D0\u05E8\u05E5")), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-center font-bold text-yellow-800"
+    }, "\uD83D\uDCA1 \u05E2\u05DB\u05E9\u05D9\u05D5 \u05D1\u05D5\u05D0 \u05E0\u05D1\u05D3\u05D5\u05E7 \u05D0\u05DD \u05D4\u05D1\u05E0\u05EA - \u05D0\u05D9\u05D6\u05D4 \u05D0\u05D9\u05E8\u05D5\u05E2 \u05E9\u05D9\u05D9\u05DA \u05DC\u05D0\u05D9\u05D6\u05D4 \u05D7\u05D5\u05DE\u05E9!"))),
+    questions: [{
+      question: "באיזה חומש מסופר על המרגלים שנשלחו לארץ ישראל?",
+      options: ["שמות", "במדבר", "ויקרא", "דברים"],
+      correct: 1,
+      explanation: "סיפור המרגלים מופיע בחומש במדבר במהלך המסעות"
+    }, {
+      question: "באיזה חומש מסופר על בריאת אדם וחוה?",
+      options: ["בראשית", "שמות", "ויקרא", "במדבר"],
+      correct: 0,
+      explanation: "בריאת אדם וחוה מופיעה בחומש בראשית, בתחילת התורה"
+    }, {
+      question: "באיזה חומש משה חוזר על המצוות לפני הכניסה לארץ?",
+      options: ["דברים", "שמות", "במדבר", "בראשית"],
+      correct: 0,
+      explanation: "חומש דברים מכיל את נאומי משה ואת חזרת המצוות"
+    }, {
+      question: "באיזה חומש מדובר על קרבנות ועבודת הכהנים?",
+      options: ["במדבר", "דברים", "ויקרא", "בראשית"],
+      correct: 2,
+      explanation: "חומש ויקרא עוסק בעיקר בקרבנות ועבודת המשכן"
+    }, {
+      question: "באיזה חומש ניתנו עשרת הדיברות בהר סיני?",
+      options: ["במדבר", "דברים", "שמות", "ויקרא"],
+      correct: 2,
+      explanation: "מתן תורה והדיברות מופיעים בחומש שמות בפרשת יתרו"
+    }, {
+      question: "באיזה חומש מסופר על יוסף ואחיו?",
+      options: ["בראשית", "שמות", "ויקרא", "דברים"],
+      correct: 0,
+      explanation: "סיפור יוסף מופיע בסוף חומש בראשית"
+    }, {
+      question: "באיזה חומש מסופר על קריעת ים סוף?",
+      options: ["דברים", "שמות", "בראשית", "במדבר"],
+      correct: 1,
+      explanation: "קריעת ים סוף מופיעה בחומש שמות, אחרי יציאת מצרים"
+    }]
+  }, {
+    title: "שיעור 2: פרשיות מפורסמות 🎓",
+    content: /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4 text-lg leading-relaxed"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-blue-700"
+    }, "\u05D6\u05D9\u05D4\u05D5\u05D9 \u05E4\u05E8\u05E9\u05D9\u05D5\u05EA \u05DC\u05E4\u05D9 \u05D7\u05D5\u05DE\u05E9"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-50 p-4 rounded-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "mb-3 font-semibold"
+    }, "\u05DB\u05DC \u05D7\u05D5\u05DE\u05E9 \u05DE\u05D7\u05D5\u05DC\u05E7 \u05DC\u05E4\u05E8\u05E9\u05D9\u05D5\u05EA \u05E9\u05D1\u05D5\u05E2\u05D9\u05D5\u05EA. \u05D4\u05E0\u05D4 \u05DB\u05DE\u05D4 \u05E4\u05E8\u05E9\u05D9\u05D5\u05EA \u05DE\u05E4\u05D5\u05E8\u05E1\u05DE\u05D5\u05EA:"), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-3 rounded shadow-sm"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-green-700"
+    }, "\u05D1\u05E8\u05D0\u05E9\u05D9\u05EA:"), " \u05E0\u05D7, \u05DC\u05DA \u05DC\u05DA, \u05D5\u05D9\u05E9\u05D1, \u05DE\u05E7\u05E5, \u05D5\u05D9\u05D7\u05D9"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-3 rounded shadow-sm"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-blue-700"
+    }, "\u05E9\u05DE\u05D5\u05EA:"), " \u05E9\u05DE\u05D5\u05EA, \u05D1\u05D0, \u05D1\u05E9\u05DC\u05D7, \u05D9\u05EA\u05E8\u05D5, \u05EA\u05E8\u05D5\u05DE\u05D4"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-3 rounded shadow-sm"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-purple-700"
+    }, "\u05D5\u05D9\u05E7\u05E8\u05D0:"), " \u05D5\u05D9\u05E7\u05E8\u05D0, \u05E9\u05DE\u05D9\u05E0\u05D9, \u05D0\u05D7\u05E8\u05D9 \u05DE\u05D5\u05EA, \u05E7\u05D3\u05D5\u05E9\u05D9\u05DD"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-3 rounded shadow-sm"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-orange-700"
+    }, "\u05D1\u05DE\u05D3\u05D1\u05E8:"), " \u05D1\u05DE\u05D3\u05D1\u05E8, \u05D1\u05D4\u05E2\u05DC\u05D5\u05EA\u05DA, \u05E9\u05DC\u05D7, \u05E7\u05D5\u05E8\u05D7, \u05D1\u05DC\u05E7"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-3 rounded shadow-sm"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-red-700"
+    }, "\u05D3\u05D1\u05E8\u05D9\u05DD:"), " \u05D3\u05D1\u05E8\u05D9\u05DD, \u05D5\u05D0\u05EA\u05D7\u05E0\u05DF, \u05E2\u05E7\u05D1, \u05E9\u05D5\u05E4\u05D8\u05D9\u05DD, \u05D5\u05D9\u05DC\u05DA"))), /*#__PURE__*/React.createElement("div", {
+      className: "mt-4 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-center font-bold text-yellow-800"
+    }, "\uD83C\uDFAF \u05D1\u05D5\u05D0 \u05E0\u05E8\u05D0\u05D4 \u05D0\u05DD \u05D0\u05EA\u05D4 \u05DE\u05D6\u05D4\u05D4 \u05DC\u05D0\u05D9\u05D6\u05D4 \u05D7\u05D5\u05DE\u05E9 \u05E9\u05D9\u05D9\u05DB\u05EA \u05DB\u05DC \u05E4\u05E8\u05E9\u05D4!"))),
+    questions: [{
+      question: "לאיזה חומש שייכת פרשת 'קורח' (המחלוקת)?",
+      options: ["במדבר", "שמות", "דברים", "ויקרא"],
+      correct: 0,
+      explanation: "פרשת קורח בחומש במדבר מספרת על מחלוקת קורח"
+    }, {
+      question: "לאיזה חומש שייכת פרשת 'ואתחנן' (קריאת שמע)?",
+      options: ["שמות", "במדבר", "דברים", "בראשית"],
+      correct: 2,
+      explanation: "פרשת ואתחנן בחומש דברים מכילה את קריאת שמע"
+    }, {
+      question: "לאיזה חומש שייכת פרשת 'נח' (המבול)?",
+      options: ["בראשית", "שמות", "במדבר", "ויקרא"],
+      correct: 0,
+      explanation: "פרשת נח בחומש בראשית מספרת על המבול ונח"
+    }, {
+      question: "לאיזה חומש שייכת פרשת 'קדושים'?",
+      options: ["דברים", "במדבר", "ויקרא", "שמות"],
+      correct: 2,
+      explanation: "פרשת קדושים היא פרשה בחומש ויקרא, עוסקת במצוות רבות"
+    }, {
+      question: "לאיזה חומש שייכת פרשת 'בשלח' (קריעת הים)?",
+      options: ["במדבר", "שמות", "בראשית", "ויקרא"],
+      correct: 1,
+      explanation: "פרשת בשלח בחומש שמות מספרת על קריעת ים סוף"
+    }, {
+      question: "לאיזה חומש שייכת פרשת 'בלק' (בלעם)?",
+      options: ["דברים", "ויקרא", "במדבר", "שמות"],
+      correct: 2,
+      explanation: "פרשת בלק בחומש במדבר מספרת על בלק ובלעם"
+    }, {
+      question: "לאיזה חומש שייכת פרשת 'לך לך' (אברהם)?",
+      options: ["בראשית", "שמות", "דברים", "במדבר"],
+      correct: 0,
+      explanation: "פרשת לך לך היא פרשה בחומש בראשית, מספרת על אברהם אבינו"
+    }]
+  }, {
+    title: "שיעור 3: מצוות ונושאים 🏆",
+    content: /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4 text-lg leading-relaxed"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-blue-700"
+    }, "\u05D4\u05DE\u05E6\u05D5\u05D5\u05EA \u05D5\u05D4\u05E0\u05D5\u05E9\u05D0\u05D9\u05DD \u05D4\u05D7\u05E9\u05D5\u05D1\u05D9\u05DD \u05D1\u05DB\u05DC \u05D7\u05D5\u05DE\u05E9"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-indigo-50 to-indigo-100 p-4 rounded-lg border-r-4 border-indigo-500"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-indigo-800 mb-2"
+    }, "\uD83D\uDCD7 \u05D1\u05E8\u05D0\u05E9\u05D9\u05EA"), /*#__PURE__*/React.createElement("p", null, "\u05D1\u05E8\u05D9\u05EA \u05DE\u05D9\u05DC\u05D4, \u05DB\u05D9\u05D1\u05D5\u05D3 \u05D4\u05D5\u05E8\u05D9\u05DD, \u05D0\u05D9\u05E1\u05D5\u05E8 \u05E8\u05E6\u05D9\u05D7\u05D4 \u05D5\u05D2\u05D6\u05DC")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-cyan-50 to-cyan-100 p-4 rounded-lg border-r-4 border-cyan-500"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-cyan-800 mb-2"
+    }, "\uD83D\uDCD8 \u05E9\u05DE\u05D5\u05EA"), /*#__PURE__*/React.createElement("p", null, "\u05E2\u05E9\u05E8\u05EA \u05D4\u05D3\u05D9\u05D1\u05E8\u05D5\u05EA, \u05E9\u05D1\u05EA, \u05E4\u05E1\u05D7, \u05EA\u05E4\u05D9\u05DC\u05D9\u05DF, \u05D1\u05E0\u05D9\u05D9\u05EA \u05DE\u05E9\u05DB\u05DF")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-pink-50 to-pink-100 p-4 rounded-lg border-r-4 border-pink-500"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-pink-800 mb-2"
+    }, "\uD83D\uDCD9 \u05D5\u05D9\u05E7\u05E8\u05D0"), /*#__PURE__*/React.createElement("p", null, "\u05E7\u05E8\u05D1\u05E0\u05D5\u05EA, \u05DB\u05E9\u05E8\u05D5\u05EA, \u05D8\u05D5\u05DE\u05D0\u05D4 \u05D5\u05D8\u05D4\u05E8\u05D4, \u05D9\u05D5\u05DD \u05DB\u05D9\u05E4\u05D5\u05E8, \u05E9\u05DE\u05D9\u05D8\u05D4")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-lg border-r-4 border-amber-500"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-amber-800 mb-2"
+    }, "\uD83D\uDCD5 \u05D1\u05DE\u05D3\u05D1\u05E8"), /*#__PURE__*/React.createElement("p", null, "\u05D1\u05E8\u05DB\u05EA \u05DB\u05D4\u05E0\u05D9\u05DD, \u05E6\u05D9\u05E6\u05D9\u05EA, \u05D7\u05DC\u05D4, \u05E0\u05D3\u05E8\u05D9\u05DD")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-rose-50 to-rose-100 p-4 rounded-lg border-r-4 border-rose-500"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-rose-800 mb-2"
+    }, "\uD83D\uDCD4 \u05D3\u05D1\u05E8\u05D9\u05DD"), /*#__PURE__*/React.createElement("p", null, "\u05E7\u05E8\u05D9\u05D0\u05EA \u05E9\u05DE\u05E2, \u05D1\u05E8\u05DB\u05EA \u05D4\u05DE\u05D6\u05D5\u05DF, \u05E6\u05D3\u05E7\u05D4, \u05E2\u05D3\u05D5\u05EA \u05D1\u05D1\u05D9\u05EA \u05D3\u05D9\u05DF")), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-500 rounded-lg"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-center font-bold text-yellow-900"
+    }, "\uD83C\uDFAF \u05D4\u05E9\u05D9\u05E2\u05D5\u05E8 \u05D4\u05D0\u05D7\u05E8\u05D5\u05DF - \u05D1\u05D5\u05D0 \u05E0\u05D1\u05D3\u05D5\u05E7 \u05D0\u05DD \u05D0\u05EA\u05D4 \u05D9\u05D5\u05D3\u05E2 \u05D0\u05D9\u05E4\u05D4 \u05DB\u05DC \u05DE\u05E6\u05D5\u05D5\u05D4!"))),
+    questions: [{
+      question: "באיזה חומש מופיעה ברכת הכהנים?",
+      options: ["במדבר", "ויקרא", "דברים", "שמות"],
+      correct: 0,
+      explanation: "ברכת הכהנים מופיעה בחומש במדבר בפרשת נשא"
+    }, {
+      question: "באיזה חומש מופיעה מצוות קריאת שמע?",
+      options: ["במדבר", "שמות", "דברים", "ויקרא"],
+      correct: 2,
+      explanation: "קריאת שמע מופיעה בפרשת ואתחנן בחומש דברים"
+    }, {
+      question: "באיזה חומש מופיעה מצוות ברית מילה?",
+      options: ["בראשית", "שמות", "ויקרא", "דברים"],
+      correct: 0,
+      explanation: "ברית מילה נצטוותה לאברהם בחומש בראשית"
+    }, {
+      question: "באיזה חומש מדובר על מצוות הקרבנות?",
+      options: ["דברים", "ויקרא", "שמות", "במדבר"],
+      correct: 1,
+      explanation: "חומש ויקרא עוסק בפירוט בדיני הקרבנות"
+    }, {
+      question: "באיזה חומש מסופר על בניית המשכן?",
+      options: ["שמות", "ויקרא", "במדבר", "דברים"],
+      correct: 0,
+      explanation: "בניית המשכן מתוארת בפירוט בחומש שמות"
+    }, {
+      question: "באיזה חומש מופיעה מצוות ציצית?",
+      options: ["ויקרא", "דברים", "במדבר", "שמות"],
+      correct: 2,
+      explanation: "מצוות ציצית מופיעה בפרשת שלח בחומש במדבר"
+    }, {
+      question: "באיזה חומש נאמרו עשרת הדיברות בפעם הראשונה?",
+      options: ["שמות", "דברים", "ויקרא", "במדבר"],
+      correct: 0,
+      explanation: "עשרת הדיברות ניתנו במתן תורה בחומש שמות"
+    }, {
+      question: "באיזה חומש מופיעות מצוות שמיטה ויובל?",
+      options: ["דברים", "במדבר", "ויקרא", "שמות"],
+      correct: 2,
+      explanation: "מצוות שמיטה ויובל מפורטות בחומש ויקרא"
+    }]
+  }];
+  const shuffleArray = array => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
+  const [shuffledQuestions, setShuffledQuestions] = useState([]);
+  useEffect(() => {
+    if (lessons[currentLesson]) {
+      const questions = lessons[currentLesson].questions.map(q => {
+        const optionsWithIndex = q.options.map((opt, idx) => ({
+          text: opt,
+          originalIndex: idx
+        }));
+        const shuffled = shuffleArray(optionsWithIndex);
+        return {
+          ...q,
+          shuffledOptions: shuffled,
+          correctIndex: shuffled.findIndex(opt => opt.originalIndex === q.correct)
+        };
+      });
+      setShuffledQuestions(questions);
+    }
+  }, [currentLesson]);
+  const handleAnswer = answerIndex => {
+    if (selectedAnswer !== null) return;
+    setSelectedAnswer(answerIndex);
+    setShowFeedback(true);
+    const isCorrect = answerIndex === shuffledQuestions[currentQuestion].correctIndex;
+    if (isCorrect) {
+      setScore(score + 1);
+      playCorrectSound();
+    }
+  };
+  const handleNext = () => {
+    if (currentQuestion < shuffledQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+    } else {
+      finishLesson();
+    }
+  };
+  const finishLesson = () => {
+    const totalQuestions = shuffledQuestions.length;
+    const percentage = score / totalQuestions * 100;
+    const newLessonScores = [...lessonScores, {
+      lesson: currentLesson,
+      score,
+      total: totalQuestions,
+      percentage
+    }];
+    setLessonScores(newLessonScores);
+    if (percentage >= 66) {
+      playCelebrationSound();
+      setTimeout(() => {
+        if (currentLesson < lessons.length - 1) {
+          setCurrentLesson(currentLesson + 1);
+          setCurrentQuestion(0);
+          setScore(0);
+          setSelectedAnswer(null);
+          setShowFeedback(false);
+          setShowLessonContent(true);
+        } else {
+          setGameComplete(true);
+        }
+      }, 2000);
+    } else {
+      setTimeout(() => {
+        setCurrentQuestion(0);
+        setScore(0);
+        setSelectedAnswer(null);
+        setShowFeedback(false);
+        setShowLessonContent(true);
+      }, 2000);
+    }
+  };
+  const startQuiz = () => {
+    setShowLessonContent(false);
+  };
+  const correctMessages = ["מצוין! ⭐", "פצצה! 🎯", "כל הכבוד! 💪", "מושלם! 🌟", "יפה מאוד! ✨"];
+  const getRandomCorrectMessage = () => correctMessages[Math.floor(Math.random() * correctMessages.length)];
+  if (gameComplete) {
+    const totalScore = lessonScores.reduce((sum, ls) => sum + ls.score, 0);
+    const totalQuestions = lessonScores.reduce((sum, ls) => sum + ls.total, 0);
+    const finalPercentage = Math.round(totalScore / totalQuestions * 100);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4"
+    }, /*#__PURE__*/React.createElement(Card, {
+      className: "max-w-4xl mx-auto shadow-2xl"
+    }, /*#__PURE__*/React.createElement(CardContent, {
+      className: "p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center space-y-6"
+    }, /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600"
+    }, "\uD83C\uDF89 \u05DB\u05DC \u05D4\u05DB\u05D1\u05D5\u05D3! \u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05D4\u05DE\u05E9\u05D7\u05E7! \uD83C\uDF89"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-100 to-orange-100 p-6 rounded-xl border-4 border-yellow-400"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-3xl font-bold text-orange-700"
+    }, "\u05D4\u05E6\u05D9\u05D5\u05DF \u05D4\u05DB\u05D5\u05DC\u05DC \u05E9\u05DC\u05DA:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-6xl font-bold text-orange-800 mt-2"
+    }, totalScore, "/", totalQuestions), /*#__PURE__*/React.createElement("p", {
+      className: "text-4xl font-bold text-orange-600 mt-2"
+    }, finalPercentage, "% \uD83C\uDFC6")), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3"
+    }, lessonScores.map((ls, idx) => /*#__PURE__*/React.createElement("div", {
+      key: idx,
+      className: "bg-white p-4 rounded-lg shadow"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-lg"
+    }, lessons[ls.lesson].title), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-blue-600"
+    }, ls.score, "/", ls.total, " (", Math.round(ls.percentage), "%)")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-50 p-6 rounded-xl border-2 border-blue-300 mt-6"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold text-blue-800 mb-4"
+    }, "\uD83D\uDCAD \u05E9\u05D0\u05DC\u05D5\u05EA \u05DC\u05DE\u05D7\u05E9\u05D1\u05D4:"), /*#__PURE__*/React.createElement("div", {
+      className: "text-right space-y-3 text-lg"
+    }, /*#__PURE__*/React.createElement("p", null, "\uD83E\uDD14 \u05DE\u05D4 \u05D4\u05E7\u05E9\u05E8 \u05D1\u05D9\u05DF \u05E1\u05D3\u05E8 \u05D4\u05D7\u05D5\u05DE\u05E9\u05D9\u05DD \u05DC\u05E1\u05D9\u05E4\u05D5\u05E8 \u05E2\u05DD \u05D9\u05E9\u05E8\u05D0\u05DC?"), /*#__PURE__*/React.createElement("p", null, "\uD83E\uDD14 \u05DC\u05DE\u05D4 \u05D7\u05D5\u05DE\u05E9 \u05D5\u05D9\u05E7\u05E8\u05D0 \u05E0\u05DE\u05E6\u05D0 \u05D1\u05D0\u05DE\u05E6\u05E2?"), /*#__PURE__*/React.createElement("p", null, "\uD83E\uDD14 \u05D0\u05D9\u05D6\u05D4 \u05D7\u05D5\u05DE\u05E9 \u05D4\u05DB\u05D9 \u05DE\u05E2\u05E0\u05D9\u05D9\u05DF \u05D0\u05D5\u05EA\u05DA \u05D5\u05DC\u05DE\u05D4?"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-green-100 to-teal-100 p-6 rounded-xl border-4 border-green-400 mt-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-green-800 mb-3"
+    }, "\uD83C\uDF8A \u05DE\u05D6\u05DC \u05D8\u05D5\u05D1! \uD83C\uDF8A"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-green-700 mb-4"
+    }, "\u05D4\u05E6\u05DC\u05D7\u05EA \u05D1\u05DB\u05DC \u05D4\u05E9\u05D9\u05E2\u05D5\u05E8\u05D9\u05DD!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-green-600 mb-4"
+    }, "\uD83C\uDF81 \u05D0\u05EA\u05D4 \u05E0\u05DB\u05E0\u05E1 \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4 \u05E0\u05D5\u05E9\u05D0\u05EA \u05E4\u05E8\u05E1\u05D9\u05DD! \uD83C\uDF81"), /*#__PURE__*/React.createElement("a", {
+      href: "https://forms.gle/A66uubei4XSX6SG2A",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: "inline-block bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg"
+    }, "\uD83D\uDC49 \u05DC\u05D7\u05E5 \u05DB\u05D0\u05DF \u05DC\u05E8\u05D9\u05E9\u05D5\u05DD \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4! \uD83D\uDC48")), /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 pt-6 border-t-2 border-gray-300"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold text-gray-700"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-blue-700"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-blue-600 mt-2"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))))));
+  }
+  if (showLessonContent) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4"
+    }, /*#__PURE__*/React.createElement(Card, {
+      className: "max-w-4xl mx-auto shadow-2xl"
+    }, /*#__PURE__*/React.createElement(CardContent, {
+      className: "p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "mb-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between items-center mb-4"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-blue-700"
+    }, lessons[currentLesson].title), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-gray-600"
+    }, "\u05E9\u05D9\u05E2\u05D5\u05E8 ", currentLesson + 1, " \u05DE\u05EA\u05D5\u05DA ", lessons.length)), /*#__PURE__*/React.createElement("div", {
+      className: "w-full bg-gray-200 rounded-full h-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500",
+      style: {
+        width: `${currentLesson / lessons.length * 100}%`
+      }
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "prose max-w-none mb-8"
+    }, lessons[currentLesson].content), /*#__PURE__*/React.createElement("button", {
+      onClick: startQuiz,
+      className: "w-full bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white font-bold py-4 px-6 rounded-xl text-xl transition-all transform hover:scale-105 shadow-lg"
+    }, "\u05D1\u05D5\u05D0 \u05E0\u05EA\u05D7\u05D9\u05DC \u05D0\u05EA \u05D4\u05D7\u05D9\u05D3\u05D5\u05DF! \uD83D\uDE80"))));
+  }
+  const currentQ = shuffledQuestions[currentQuestion];
+  if (!currentQ) return null;
+  const isCorrect = selectedAnswer === currentQ.correctIndex;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4"
+  }, /*#__PURE__*/React.createElement(Card, {
+    className: "max-w-4xl mx-auto shadow-2xl"
+  }, /*#__PURE__*/React.createElement(CardContent, {
+    className: "p-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-4"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-bold text-blue-700"
+  }, lessons[currentLesson].title), /*#__PURE__*/React.createElement("div", {
+    className: "text-xl font-bold text-purple-600"
+  }, "\u05E0\u05D9\u05E7\u05D5\u05D3: ", score, "/", currentQuestion + (selectedAnswer !== null ? 1 : 0), " \u2B50")), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between text-sm text-gray-600 mb-2"
+  }, /*#__PURE__*/React.createElement("span", null, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, " \u05DE\u05EA\u05D5\u05DA ", shuffledQuestions.length), /*#__PURE__*/React.createElement("span", null, "\u05E9\u05D9\u05E2\u05D5\u05E8 ", currentLesson + 1, "/", lessons.length)), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500",
+    style: {
+      width: `${(currentQuestion + (selectedAnswer !== null ? 1 : 0)) / shuffledQuestions.length * 100}%`
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "mb-8"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-2xl font-bold text-gray-800 mb-6 text-center bg-gradient-to-r from-blue-100 to-purple-100 p-4 rounded-lg"
+  }, currentQ.question), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, currentQ.shuffledOptions.map((option, index) => {
+    let buttonClass = "w-full p-4 text-right text-lg font-semibold rounded-xl transition-all transform hover:scale-102 ";
+    if (selectedAnswer === null) {
+      buttonClass += "bg-white hover:bg-blue-50 border-2 border-blue-200 hover:border-blue-400 text-gray-800";
+    } else if (index === currentQ.correctIndex) {
+      buttonClass += "bg-gradient-to-r from-green-400 to-green-500 text-white border-2 border-green-600 shadow-lg scale-105";
+    } else if (index === selectedAnswer) {
+      buttonClass += "bg-gradient-to-r from-red-300 to-red-400 text-white border-2 border-red-500";
+    } else {
+      buttonClass += "bg-gray-100 text-gray-500 border-2 border-gray-200";
+    }
+    return /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => handleAnswer(index),
+      disabled: selectedAnswer !== null,
+      className: buttonClass
+    }, option.text);
+  }))), showFeedback && /*#__PURE__*/React.createElement("div", {
+    className: `p-6 rounded-xl mb-6 ${isCorrect ? 'bg-gradient-to-r from-green-100 to-teal-100 border-2 border-green-400' : 'bg-gradient-to-r from-orange-100 to-yellow-100 border-2 border-orange-400'}`
+  }, /*#__PURE__*/React.createElement("p", {
+    className: `text-2xl font-bold mb-2 ${isCorrect ? 'text-green-700' : 'text-orange-700'}`
+  }, isCorrect ? getRandomCorrectMessage() : 'לא בדיוק... 🤔'), /*#__PURE__*/React.createElement("p", {
+    className: `text-lg ${isCorrect ? 'text-green-600' : 'text-orange-600'}`
+  }, currentQ.explanation), !isCorrect && /*#__PURE__*/React.createElement("p", {
+    className: "text-lg text-orange-600 mt-2 font-semibold"
+  }, "\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1! \uD83D\uDCA1")), showFeedback && /*#__PURE__*/React.createElement("button", {
+    onClick: handleNext,
+    className: "w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-xl text-xl transition-all transform hover:scale-105 shadow-lg"
+  }, currentQuestion < shuffledQuestions.length - 1 ? 'שאלה הבאה ➡️' : 'סיים שיעור 🎯'), showFeedback && currentQuestion === shuffledQuestions.length - 1 && /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-lg text-gray-600"
+  }, score === shuffledQuestions.length ? /*#__PURE__*/React.createElement("span", {
+    className: "text-green-600 font-bold"
+  }, "\uD83C\uDFC6 \u05DE\u05D3\u05D4\u05D9\u05DD! 100%! \u05E2\u05D5\u05D1\u05E8 \u05DC\u05E9\u05D9\u05E2\u05D5\u05E8 \u05D4\u05D1\u05D0! \uD83C\uDF89") : score >= Math.ceil(shuffledQuestions.length * 0.66) ? /*#__PURE__*/React.createElement("span", {
+    className: "text-blue-600 font-bold"
+  }, "\uD83D\uDCAA \u05DB\u05DE\u05E2\u05D8 \u05DE\u05D5\u05E9\u05DC\u05DD! \u05E2\u05D5\u05D1\u05E8 \u05DC\u05E9\u05D9\u05E2\u05D5\u05E8 \u05D4\u05D1\u05D0!") : /*#__PURE__*/React.createElement("span", {
+    className: "text-orange-600 font-bold"
+  }, "\uD83C\uDF31 \u05D1\u05D5\u05D0 \u05E0\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1 \u05D0\u05EA \u05D4\u05E9\u05D9\u05E2\u05D5\u05E8!"))))));
+};
+const __App = TorahBooksGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

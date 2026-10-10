@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מסע אל השמחה - משחק דיגיטלי – הקול החמישי</title>
+<meta name="description" content="משחק לוח דיגיטלי אינטראקטיבי המלמד ערכים יהודיים של שמחה, הכרת הטוב ואהבת ישראל. עד 6 שחקנים, שאלות ואתגרים מעשיים לכל המשפחה.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="מסע אל השמחה - משחק דיגיטלי – הקול החמישי">
+<meta property="og:description" content="משחק לוח דיגיטלי אינטראקטיבי המלמד ערכים יהודיים של שמחה, הכרת הטוב ואהבת ישראל. עד 6 שחקנים, שאלות ואתגרים מעשיים לכל המשפחה.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-a11d1507.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/a11d1507.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const ArrowRight = window.LucideReact["ArrowRight"] || window.LucideReact.Circle;
+const ArrowLeft = window.LucideReact["ArrowLeft"] || window.LucideReact.Circle;
+const Users = window.LucideReact["Users"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const SimchaGame = () => {
+  const [gameStarted, setGameStarted] = useState(false);
+  const [numPlayers, setNumPlayers] = useState(2);
+  const [players, setPlayers] = useState([]);
+  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [lastResult, setLastResult] = useState(null);
+  const [gameWinner, setGameWinner] = useState(null);
+
+  // פונקציה לערבוב אופציות
+  const shuffleOptions = question => {
+    const correctAnswer = question.options[question.correct];
+    const shuffled = [...question.options].sort(() => Math.random() - 0.5);
+    const newCorrectIndex = shuffled.indexOf(correctAnswer);
+    return {
+      ...question,
+      options: shuffled,
+      correct: newCorrectIndex
+    };
+  };
+
+  // קלפים - השאלות עם תשובות רב-בררתי
+  const cards = {
+    concept: [{
+      q: '"עבדו את ה\' בשמחה" - מה המשמעות?',
+      options: ['לעשות מצוות בכעס', 'לעשות מצוות בשמחה ובהתלהבות', 'לעשות רק מצוות קלות', 'לא לעשות מצוות כלל'],
+      correct: 1
+    }, {
+      q: '"טוב ה\' לכל" - מה הכוונה?',
+      options: ['הקב"ה רק טוב לצדיקים', 'הקב"ה טוב לכל הבריאה ולכל אדם', 'הקב"ה לא משגיח על בני אדם', 'רק טוב למי שעושה מצוות'],
+      correct: 1
+    }, {
+      q: '"שמחה פורצת גדר" - מה המשמעות?',
+      options: ['שמחה הורסת דברים', 'שמחה יכולה לפרוץ מחסומים ולהביא ישועות', 'אסור להיות שמח', 'שמחה היא מצווה קלה'],
+      correct: 1
+    }, {
+      q: '"מצווה גדולה להיות בשמחה תמיד" - מי אמר זאת?',
+      options: ['הרמב"ם', 'רבי עקיבא', 'רבי נחמן מברסלב', 'הבעל שם טוב'],
+      correct: 2
+    }, {
+      q: 'מהי "שנאת חינם"?',
+      options: ['שנאה ללא סיבה מוצדקת', 'שנאה לרשעים', 'אהבת חינם', 'מצווה לשנוא'],
+      correct: 0
+    }, {
+      q: 'מהי "הכרת הטוב"?',
+      options: ['להכיר רק טוב', 'להודות ולהעריך טובות שמקבלים', 'לא להודות לאף אחד', 'להכיר רע'],
+      correct: 1
+    }, {
+      q: 'מה ההבדל בין שמחה לעצבות?',
+      options: ['אין הבדל', 'שמחה מחברת לה\', עצבות מרחיקה', 'עצבות טובה יותר', 'שניהם אותו דבר'],
+      correct: 1
+    }, {
+      q: 'מהו "שלום בית"?',
+      options: ['בית שקט', 'שלום ואהבה בין בני הזוג והמשפחה', 'בית גדול', 'בית יפה'],
+      correct: 1
+    }, {
+      q: '"שמחה בחלקו" - מה הפירוש?',
+      options: ['להיות עצוב', 'להיות מרוצה וטוב לב עם מה שיש לו', 'לרצות עוד', 'להיות קמצן'],
+      correct: 1
+    }, {
+      q: 'מהי "כפיות טובה"?',
+      options: ['להודות על הכל', 'אי-הכרה בטובה שעשו לנו', 'מצווה גדולה', 'מידה טובה'],
+      correct: 1
+    }, {
+      q: '"פיקודי ה\' ישרים, משמחי לב" - מהי המשמעות?',
+      options: ['מצוות מעציבות', 'מצוות ה\' מביאות שמחה ללב', 'מצוות קשות', 'אין קשר בין מצוות לשמחה'],
+      correct: 1
+    }, {
+      q: '"תחשוב טוב, יהיה טוב" - מה העיקרון?',
+      options: ['חשיבה חיובית משפיעה על המציאות', 'חשיבה לא משנה', 'רק חשיבה רעה עוזרת', 'אין קשר בין מחשבה למציאות'],
+      correct: 0
+    }, {
+      q: 'מהי "הצדקת הדין"?',
+      options: ['לקבל בשמחה גם דברים קשים כרצון ה\'', 'להתלונן על הכל', 'לכעוס על ה\'', 'להתייאש'],
+      correct: 0
+    }, {
+      q: 'מהו הקשר בין הודיה לגאולה?',
+      options: ['אין קשר', 'הודיה מביאה לגאולה ("מודים" לשון "גאולה")', 'גאולה מביאה הודיה', 'הודיה מונעת גאולה'],
+      correct: 1
+    }, {
+      q: 'מהו חטא המרגלים?',
+      options: ['ראו רק טוב', 'ראו רק רע ודיברו לשון הרע על הארץ', 'לא חטאו', 'דיברו אמת'],
+      correct: 1
+    }],
+    story: [{
+      q: 'ר\' זלמן הודה לה\' שהתעורר במיטתו ולא בבית חולים - מה הלקח?',
+      options: ['תמיד להתלונן', 'להודות על הדברים הפשוטים שנראים מובנים מאליהם', 'רק להודות על ניסים', 'לא להודות כלל'],
+      correct: 1
+    }, {
+      q: 'האישה החולה שראתה רק טוב חיה 18 פעמים יותר - מה הלקח?',
+      options: ['ראיית הטוב מאריכה חיים', 'מחלה מאריכה חיים', 'אין קשר', 'עצבות מאריכה חיים'],
+      correct: 0
+    }, {
+      q: 'רשב"י אמר לזוג שרוצה להתגרש לערוך מסיבה - מה הלקח?',
+      options: ['להתגרש בשמחה', 'שמחה יכולה לרפא מערכות יחסים', 'להתגרש תמיד', 'עצבות מחזקת זוגות'],
+      correct: 1
+    }, {
+      q: 'האדמו"ר הזקן רקד בהתלהבות עם ילד קטן - מה הלקח?',
+      options: ['אסור לרקוד', 'שמחה של מצווה צריכה להיות בהתלהבות מלאה', 'רק ילדים רוקדים', 'רק מבוגרים רוקדים'],
+      correct: 1
+    }, {
+      q: 'המרגלים ראו רק רע בארץ ונענשו - מה הלקח?',
+      options: ['ראיית הרע גורמת לעונשים ולצרות', 'אין עונש', 'ראיית רע היא מצווה', 'לא ראו רע'],
+      correct: 0
+    }, {
+      q: 'המשרת של החפץ חיים רק קרא הוראות ולא ביצע - מה הלקח?',
+      options: ['מספיק לקרוא', 'צריך לבצע מצוות בפועל, לא רק לדעת', 'לא לעשות מצוות', 'רק לדבר על מצוות'],
+      correct: 1
+    }, {
+      q: 'הגר"א שמח עם זוג עניים עם קמח מהרצפה - מה הלקח?',
+      options: ['עוני הוא רע', 'שמחה בחלק היא המידה הכי גדולה', 'רק עשירים שמחים', 'עניים תמיד עצובים'],
+      correct: 1
+    }, {
+      q: 'יהודי בלע סיגריה בוערת כדי לא לצער את ר\' אריה לוין - מה הלקח?',
+      options: ['אהבת ישראל עד כדי מסירות נפש', 'אסור לעשן', 'לא אכפת לנו מאחרים', 'רק אש חשובה'],
+      correct: 0
+    }, {
+      q: 'ר\' מאיר שמח על חידוש תורה - מה הלקח?',
+      options: ['תורה מעציבה', 'שמחה של תורה היא השמחה הגדולה ביותר', 'רק שמחות גשמיות חשובות', 'אסור לשמוח'],
+      correct: 1
+    }, {
+      q: 'האישה הצדיקה לא ראתה רע באף אדם - מה הלקח?',
+      options: ['צריך לראות רע', 'ראיית הטוב בכל אדם היא מידה קדושה', 'כולם רעים', 'לשפוט את כולם'],
+      correct: 1
+    }],
+    source: [{
+      q: '"תחת אשר לא עבדת את ה\' בשמחה" - מה הפירוש?',
+      options: ['גלות באה בגלל חוסר שמחה בעבודת ה\'', 'אין קשר לשמחה', 'שמחה לא חשובה', 'רק עצבות טובה'],
+      correct: 0
+    }, {
+      q: 'רבי נחמן: "מצווה גדולה להיות בשמחה תמיד" - למה?',
+      options: ['כי שמחה היא יסוד החיים והעבודה', 'לא אמר כך', 'עצבות עדיפה', 'אין צורך בשמחה'],
+      correct: 0
+    }, {
+      q: '"ושמחת בחגך... והיית אך שמח" - מה מלמד הכפל?',
+      options: ['שמחה אחת', 'שמחה כפולה - גם פנימית וגם חיצונית', 'עצבות', 'אין שמחה'],
+      correct: 1
+    }, {
+      q: '"כי הם חיינו ואורך ימינו" - על מה נאמר?',
+      options: ['על כסף', 'על התורה והמצוות', 'על אוכל', 'על בית'],
+      correct: 1
+    }, {
+      q: '"טעמו וראו כי טוב ה\'" - מה הכוונה?',
+      options: ['אוכל טעים', 'התנסות אישית בטובת ה\'', 'ה\' לא טוב', 'אין צורך לטעום'],
+      correct: 1
+    }, {
+      q: '"באור פני מלך חיים" - מה המשמעות?',
+      options: ['כעס המלך', 'שמחת המלך מביאה חיים', 'המלך עצוב', 'אין חיים'],
+      correct: 1
+    }, {
+      q: '"כל הנשמה תהלל יה" - מה מלמד?',
+      options: ['רק חלק יהלל', 'כל נשימה צריכה להיות הודיה לה\'', 'לא להודות', 'רק פעם אחת'],
+      correct: 1
+    }, {
+      q: '"מי האיש החפץ חיים... נצור לשונך מרע" - מה הקשר?',
+      options: ['אין קשר', 'שמירת הלשון מביאה חיים טובים', 'לשון הרע מביאה חיים', 'מותר לדבר לשון הרע'],
+      correct: 1
+    }, {
+      q: '"וכל החיים יודוך סלה" - מה הפירוש?',
+      options: ['רק חלק מהחיים', 'כל החיים הם הזדמנות להודות', 'לא להודות', 'רק פעם אחת'],
+      correct: 1
+    }, {
+      q: '"אין השכינה שורה אלא מתוך שמחה" - מה לומדים?',
+      options: ['השכינה בעצבות', 'שמחה מושכת קדושה והשראה', 'אין צורך בשמחה', 'עצבות טובה יותר'],
+      correct: 1
+    }],
+    challenge: [{
+      q: 'אתגר: אמור 3 דברים שאתה מודה עליהם היום!',
+      options: ['סיימתי את האתגר', 'דלג על האתגר'],
+      correct: 0,
+      isChallenge: true
+    }, {
+      q: 'אתגר: ספר על מצווה שעשית לאחרונה ששימחה אותך!',
+      options: ['סיימתי את האתגר', 'דלג על האתגר'],
+      correct: 0,
+      isChallenge: true
+    }, {
+      q: 'אתגר: חשוב על דרך מעשית אחת להוסיף שמחה בשבוע הקרוב!',
+      options: ['סיימתי את האתגר', 'דלג על האתגר'],
+      correct: 0,
+      isChallenge: true
+    }, {
+      q: 'אתגר: חשוב על מילת תודה למישהו שעזר לך לאחרונה!',
+      options: ['סיימתי את האתגר', 'דלג על האתגר'],
+      correct: 0,
+      isChallenge: true
+    }, {
+      q: 'אתגר: תכנן דבר טוב אחד שתעשה למישהו השבוע!',
+      options: ['סיימתי את האתגר', 'דלג על האתגר'],
+      correct: 0,
+      isChallenge: true
+    }]
+  };
+  const boardSpaces = [{
+    id: 0,
+    type: 'start',
+    label: 'התחלה'
+  }, {
+    id: 1,
+    type: 'concept'
+  }, {
+    id: 2,
+    type: 'story'
+  }, {
+    id: 3,
+    type: 'source'
+  }, {
+    id: 4,
+    type: 'concept'
+  }, {
+    id: 5,
+    type: 'mitzvah',
+    label: 'שמחה של מצווה'
+  }, {
+    id: 6,
+    type: 'story'
+  }, {
+    id: 7,
+    type: 'gratitude',
+    label: 'הכרת הטוב'
+  }, {
+    id: 8,
+    type: 'source'
+  }, {
+    id: 9,
+    type: 'concept'
+  }, {
+    id: 10,
+    type: 'story'
+  }, {
+    id: 11,
+    type: 'source'
+  }, {
+    id: 12,
+    type: 'negative',
+    label: 'ראיית הרע'
+  }, {
+    id: 13,
+    type: 'concept'
+  }, {
+    id: 14,
+    type: 'story'
+  }, {
+    id: 15,
+    type: 'mitzvah',
+    label: 'שמחה של מצווה'
+  }, {
+    id: 16,
+    type: 'source'
+  }, {
+    id: 17,
+    type: 'gratitude',
+    label: 'הכרת הטוב'
+  }, {
+    id: 18,
+    type: 'concept'
+  }, {
+    id: 19,
+    type: 'story'
+  }, {
+    id: 20,
+    type: 'source'
+  }, {
+    id: 21,
+    type: 'concept'
+  }, {
+    id: 22,
+    type: 'negative',
+    label: 'ראיית הרע'
+  }, {
+    id: 23,
+    type: 'story'
+  }, {
+    id: 24,
+    type: 'source'
+  }, {
+    id: 25,
+    type: 'mitzvah',
+    label: 'שמחה של מצווה'
+  }, {
+    id: 26,
+    type: 'concept'
+  }, {
+    id: 27,
+    type: 'gratitude',
+    label: 'הכרת הטוב'
+  }, {
+    id: 28,
+    type: 'story'
+  }, {
+    id: 29,
+    type: 'source'
+  }, {
+    id: 30,
+    type: 'end',
+    label: 'שמחה תמידית!'
+  }];
+  const initGame = () => {
+    const playerColors = ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500'];
+    const newPlayers = Array(numPlayers).fill(0).map((_, i) => ({
+      id: i,
+      name: `שחקן ${i + 1}`,
+      position: 0,
+      keys: {
+        concept: 0,
+        story: 0,
+        source: 0
+      },
+      color: playerColors[i]
+    }));
+    setPlayers(newPlayers);
+    setGameStarted(true);
+    setCurrentPlayerIndex(0);
+  };
+  const rollDice = () => {
+    const roll = Math.floor(Math.random() * 6) + 1;
+    const newPosition = Math.min(players[currentPlayerIndex].position + roll, 30);
+    const updatedPlayers = [...players];
+    updatedPlayers[currentPlayerIndex].position = newPosition;
+    setPlayers(updatedPlayers);
+    setTimeout(() => {
+      handleSpace(newPosition);
+    }, 500);
+  };
+  const handleSpace = position => {
+    const space = boardSpaces[position];
+    if (space.type === 'gratitude') {
+      setLastResult({
+        type: 'gratitude',
+        message: '🙏 הכרת הטוב! קיבלת תור נוסף!'
+      });
+      setShowResult(true);
+      return;
+    }
+    if (space.type === 'negative') {
+      const updatedPlayers = [...players];
+      updatedPlayers[currentPlayerIndex].position = Math.max(0, position - 3);
+      setPlayers(updatedPlayers);
+      setLastResult({
+        type: 'negative',
+        message: '😔 ראיית הרע - חזרת 3 צעדים אחורה'
+      });
+      setShowResult(true);
+      setTimeout(() => nextPlayer(), 2000);
+      return;
+    }
+    if (space.type === 'mitzvah') {
+      const updatedPlayers = [...players];
+      updatedPlayers[currentPlayerIndex].position = Math.min(30, position + 2);
+      setPlayers(updatedPlayers);
+      setLastResult({
+        type: 'mitzvah',
+        message: '✨ שמחה של מצווה! התקדמת 2 צעדים!'
+      });
+      setShowResult(true);
+      setTimeout(() => nextPlayer(), 2000);
+      return;
+    }
+    if (space.type === 'end') {
+      checkWinner();
+      return;
+    }
+    if (['concept', 'story', 'source', 'challenge'].includes(space.type)) {
+      showQuestion(space.type);
+    }
+  };
+  const showQuestion = type => {
+    let cardType = type === 'challenge' ? 'challenge' : type;
+    const availableCards = cards[cardType];
+    const randomCard = availableCards[Math.floor(Math.random() * availableCards.length)];
+
+    // ערבוב האופציות לפני הצגת השאלה
+    const shuffledQuestion = shuffleOptions({
+      ...randomCard,
+      type: cardType
+    });
+    setCurrentQuestion(shuffledQuestion);
+  };
+  const answerQuestion = selectedIndex => {
+    const isCorrect = selectedIndex === currentQuestion.correct;
+    if (isCorrect) {
+      const updatedPlayers = [...players];
+      if (currentQuestion.type !== 'challenge') {
+        updatedPlayers[currentPlayerIndex].keys[currentQuestion.type]++;
+      }
+      setPlayers(updatedPlayers);
+      setLastResult({
+        type: 'correct',
+        message: '🎉 תשובה נכונה! קיבלת מפתח!'
+      });
+    } else {
+      setLastResult({
+        type: 'incorrect',
+        message: '❌ תשובה שגויה. נסה בפעם הבאה!'
+      });
+    }
+    setShowResult(true);
+    setCurrentQuestion(null);
+    if (players[currentPlayerIndex].position === 30) {
+      setTimeout(() => checkWinner(), 1500);
+    } else {
+      setTimeout(() => nextPlayer(), 1500);
+    }
+  };
+  const nextPlayer = () => {
+    setShowResult(false);
+    setLastResult(null);
+    const lastAction = lastResult?.type;
+    if (lastAction === 'gratitude') {
+      // אותו שחקן משחק שוב
+      return;
+    }
+    setCurrentPlayerIndex((currentPlayerIndex + 1) % players.length);
+  };
+  const checkWinner = () => {
+    const player = players[currentPlayerIndex];
+    const hasAllKeys = player.keys.concept >= 2 && player.keys.story >= 2 && player.keys.source >= 2;
+    if (hasAllKeys && player.position === 30) {
+      setGameWinner(player);
+    } else {
+      setLastResult({
+        type: 'needKeys',
+        message: `חסרים מפתחות! צריך: ${2 - player.keys.concept} מושגים, ${2 - player.keys.story} סיפורים, ${2 - player.keys.source} מקורות`
+      });
+      setShowResult(true);
+      const updatedPlayers = [...players];
+      updatedPlayers[currentPlayerIndex].position = 29;
+      setPlayers(updatedPlayers);
+      setTimeout(() => nextPlayer(), 3000);
+    }
+  };
+  const getSpaceColor = type => {
+    const colors = {
+      start: 'bg-gradient-to-br from-green-400 to-green-600',
+      concept: 'bg-blue-400',
+      story: 'bg-green-400',
+      source: 'bg-yellow-400',
+      gratitude: 'bg-gradient-to-br from-pink-400 to-pink-600',
+      negative: 'bg-gradient-to-br from-gray-400 to-gray-600',
+      mitzvah: 'bg-gradient-to-br from-purple-400 to-purple-600',
+      end: 'bg-gradient-to-br from-yellow-400 to-orange-500'
+    };
+    return colors[type] || 'bg-gray-300';
+  };
+  const getSpaceIcon = type => {
+    if (type === 'gratitude') return /*#__PURE__*/React.createElement(Heart, {
+      className: "w-4 h-4"
+    });
+    if (type === 'mitzvah') return /*#__PURE__*/React.createElement(Sparkles, {
+      className: "w-4 h-4"
+    });
+    if (type === 'end') return /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-4 h-4"
+    });
+    return null;
+  };
+
+  // Start Screen
+  if (!gameStarted) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-8 flex items-center justify-center",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-12 max-w-md w-full text-center"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-20 h-20 mx-auto mb-6 text-yellow-500"
+    }), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold mb-4 text-blue-600"
+    }, "\u05DE\u05E1\u05E2 \u05D0\u05DC \u05D4\u05E9\u05DE\u05D7\u05D4"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600 mb-8"
+    }, "\u05DE\u05E9\u05D7\u05E7 \u05DC\u05D5\u05D7 \u05D3\u05D9\u05D2\u05D9\u05D8\u05DC\u05D9 - \u05D0\u05E1\u05D5\u05E3 \u05DE\u05E4\u05EA\u05D7\u05D5\u05EA \u05D5\u05D4\u05D2\u05E2 \u05DC\u05E9\u05DE\u05D7\u05D4 \u05EA\u05DE\u05D9\u05D3\u05D9\u05EA!"), /*#__PURE__*/React.createElement("div", {
+      className: "mb-8"
+    }, /*#__PURE__*/React.createElement("label", {
+      className: "block text-lg font-semibold mb-3"
+    }, "\u05DB\u05DE\u05D4 \u05E9\u05D7\u05E7\u05E0\u05D9\u05DD?"), /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center gap-3"
+    }, [2, 3, 4, 5, 6].map(num => /*#__PURE__*/React.createElement("button", {
+      key: num,
+      onClick: () => setNumPlayers(num),
+      className: `w-12 h-12 rounded-full font-bold transition-all ${numPlayers === num ? 'bg-blue-500 text-white scale-110' : 'bg-gray-200 hover:bg-gray-300'}`
+    }, num)))), /*#__PURE__*/React.createElement("button", {
+      onClick: initGame,
+      className: "bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform shadow-lg"
+    }, "\u05D4\u05EA\u05D7\u05DC \u05DE\u05E9\u05D7\u05E7! \uD83C\uDFAE")));
+  }
+
+  // Winner Screen
+  if (gameWinner) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 p-8 flex items-center justify-center",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-12 max-w-md w-full text-center"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-32 h-32 mx-auto mb-6 text-yellow-500 animate-bounce"
+    }), /*#__PURE__*/React.createElement("h1", {
+      className: "text-5xl font-bold mb-4 text-yellow-600"
+    }, "\u05DE\u05D6\u05DC \u05D8\u05D5\u05D1! \uD83C\uDF89"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl mb-6"
+    }, gameWinner.name, " \u05D4\u05D2\u05D9\u05E2 \u05DC\u05E9\u05DE\u05D7\u05D4 \u05EA\u05DE\u05D9\u05D3\u05D9\u05EA!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-yellow-50 p-6 rounded-2xl mb-8"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-semibold mb-2"
+    }, "\u05DE\u05E4\u05EA\u05D7\u05D5\u05EA \u05E9\u05E0\u05D0\u05E1\u05E4\u05D5:"), /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center gap-4 text-3xl"
+    }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDD35 ", gameWinner.keys.concept), /*#__PURE__*/React.createElement("span", null, "\uD83D\uDFE2 ", gameWinner.keys.story), /*#__PURE__*/React.createElement("span", null, "\uD83D\uDFE1 ", gameWinner.keys.source))), /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setGameStarted(false);
+        setGameWinner(null);
+        setPlayers([]);
+        setCurrentPlayerIndex(0);
+      },
+      className: "bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform"
+    }, "\u05DE\u05E9\u05D7\u05E7 \u05D7\u05D3\u05E9")));
+  }
+  const currentPlayer = players[currentPlayerIndex];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-7xl mx-auto mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-4"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-3xl font-bold text-blue-600"
+  }, "\u05DE\u05E1\u05E2 \u05D0\u05DC \u05D4\u05E9\u05DE\u05D7\u05D4"), /*#__PURE__*/React.createElement("div", {
+    className: "text-right"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-600"
+  }, "\u05EA\u05D5\u05E8 \u05E9\u05DC:"), /*#__PURE__*/React.createElement("p", {
+    className: `text-2xl font-bold px-4 py-2 rounded-lg text-white ${currentPlayer.color}`
+  }, currentPlayer.name))), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
+  }, players.map(player => /*#__PURE__*/React.createElement("div", {
+    key: player.id,
+    className: `p-4 rounded-xl border-2 ${player.id === currentPlayerIndex ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200'}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: `w-8 h-8 rounded-full ${player.color} mx-auto mb-2`
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "text-center font-semibold text-sm mb-2"
+  }, player.name), /*#__PURE__*/React.createElement("div", {
+    className: "text-xs text-center space-y-1"
+  }, /*#__PURE__*/React.createElement("p", null, "\u05DE\u05E9\u05D1\u05E6\u05EA: ", player.position, "/30"), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-center gap-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    title: "\u05DE\u05D5\u05E9\u05D2\u05D9\u05DD"
+  }, "\uD83D\uDD35", player.keys.concept), /*#__PURE__*/React.createElement("span", {
+    title: "\u05E1\u05D9\u05E4\u05D5\u05E8\u05D9\u05DD"
+  }, "\uD83D\uDFE2", player.keys.story), /*#__PURE__*/React.createElement("span", {
+    title: "\u05DE\u05E7\u05D5\u05E8\u05D5\u05EA"
+  }, "\uD83D\uDFE1", player.keys.source)))))))), /*#__PURE__*/React.createElement("div", {
+    className: "max-w-7xl mx-auto mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-6 gap-2"
+  }, boardSpaces.map((space, index) => {
+    const playersOnSpace = players.filter(p => p.position === index);
+    return /*#__PURE__*/React.createElement("div", {
+      key: space.id,
+      className: `${getSpaceColor(space.type)} rounded-lg p-2 min-h-[80px] flex flex-col items-center justify-center text-white text-center relative transition-all hover:scale-105`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-xs font-bold mb-1"
+    }, "#", space.id), getSpaceIcon(space.type), space.label && /*#__PURE__*/React.createElement("div", {
+      className: "text-xs mt-1 font-semibold"
+    }, space.label), playersOnSpace.length > 0 && /*#__PURE__*/React.createElement("div", {
+      className: "absolute -top-2 -right-2 flex gap-1"
+    }, playersOnSpace.map(p => /*#__PURE__*/React.createElement("div", {
+      key: p.id,
+      className: `w-6 h-6 rounded-full ${p.color} border-2 border-white`
+    }))));
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "max-w-2xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-8"
+  }, !currentQuestion && !showResult && /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: rollDice,
+    className: "bg-gradient-to-r from-green-500 to-blue-500 text-white px-12 py-6 rounded-full text-2xl font-bold hover:scale-105 transition-transform shadow-lg"
+  }, "\uD83C\uDFB2 \u05D4\u05D8\u05DC \u05E7\u05D5\u05D1\u05D9\u05D9\u05D4")), showResult && lastResult && /*#__PURE__*/React.createElement("div", {
+    className: `text-center p-8 rounded-2xl ${lastResult.type === 'correct' ? 'bg-green-50' : lastResult.type === 'incorrect' ? 'bg-red-50' : lastResult.type === 'gratitude' ? 'bg-pink-50' : lastResult.type === 'mitzvah' ? 'bg-purple-50' : lastResult.type === 'negative' ? 'bg-gray-50' : 'bg-yellow-50'}`
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-2xl font-bold mb-4"
+  }, lastResult.message), lastResult.type === 'gratitude' && /*#__PURE__*/React.createElement("button", {
+    onClick: nextPlayer,
+    className: "bg-blue-500 text-white px-6 py-3 rounded-full font-bold hover:scale-105 transition-transform"
+  }, "\u05D4\u05DE\u05E9\u05DA")), currentQuestion && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: `mb-6 p-4 rounded-xl text-white text-center font-bold ${currentQuestion.type === 'concept' ? 'bg-blue-500' : currentQuestion.type === 'story' ? 'bg-green-500' : currentQuestion.type === 'source' ? 'bg-yellow-500' : 'bg-red-500'}`
+  }, currentQuestion.type === 'concept' ? '🔵 שאלת מושג' : currentQuestion.type === 'story' ? '🟢 שאלת סיפור' : currentQuestion.type === 'source' ? '🟡 שאלת מקור' : '🔴 אתגר'), /*#__PURE__*/React.createElement("p", {
+    className: "text-xl font-bold mb-6 text-center"
+  }, currentQuestion.q), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, currentQuestion.options.map((option, index) => /*#__PURE__*/React.createElement("button", {
+    key: index,
+    onClick: () => answerQuestion(index),
+    className: "w-full p-4 bg-gray-100 hover:bg-blue-100 rounded-xl text-right font-semibold transition-colors border-2 border-transparent hover:border-blue-300"
+  }, option)))))), /*#__PURE__*/React.createElement("div", {
+    className: "max-w-7xl mx-auto mt-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "font-bold mb-3 text-center"
+  }, "\u05DE\u05E7\u05E8\u05D0:"), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap justify-center gap-4 text-sm"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-4 h-4 bg-blue-400 rounded"
+  }), "\uD83D\uDD35 \u05DE\u05D5\u05E9\u05D2"), /*#__PURE__*/React.createElement("span", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-4 h-4 bg-green-400 rounded"
+  }), "\uD83D\uDFE2 \u05E1\u05D9\u05E4\u05D5\u05E8"), /*#__PURE__*/React.createElement("span", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-4 h-4 bg-yellow-400 rounded"
+  }), "\uD83D\uDFE1 \u05DE\u05E7\u05D5\u05E8"), /*#__PURE__*/React.createElement("span", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Heart, {
+    className: "w-4 h-4"
+  }), "\uD83D\uDE4F \u05D4\u05DB\u05E8\u05EA \u05D4\u05D8\u05D5\u05D1 (\u05EA\u05D5\u05E8 \u05E0\u05D5\u05E1\u05E3)"), /*#__PURE__*/React.createElement("span", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    className: "w-4 h-4"
+  }), "\u2728 \u05E9\u05DE\u05D7\u05D4 \u05E9\u05DC \u05DE\u05E6\u05D5\u05D5\u05D4 (+2)"), /*#__PURE__*/React.createElement("span", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-4 h-4 bg-gray-400 rounded"
+  }), "\uD83D\uDE14 \u05E8\u05D0\u05D9\u05D9\u05EA \u05D4\u05E8\u05E2 (-3)")), /*#__PURE__*/React.createElement("p", {
+    className: "text-center mt-4 text-sm text-gray-600 font-semibold"
+  }, "\uD83C\uDFAF \u05DE\u05D8\u05E8\u05D4: \u05DC\u05D4\u05D2\u05D9\u05E2 \u05DC\u05DE\u05E9\u05D1\u05E6\u05EA 30 \u05E2\u05DD \u05DC\u05E4\u05D7\u05D5\u05EA 2 \u05DE\u05E4\u05EA\u05D7\u05D5\u05EA \u05DE\u05DB\u05DC \u05E1\u05D5\u05D2!"))));
+};
+const __App = SimchaGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

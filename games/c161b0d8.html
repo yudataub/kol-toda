@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>חידון מצוות החיוך - 3 רמות – הקול החמישי</title>
+<meta name="description" content="משחק חידון אינטראקטיבי על חשיבות החיוך ביהדות. 3 רמות קושי, שאלות מגוונות עם הסברים, ממשק ידידותי בעברית. למד תוך כדי משחק!">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="חידון מצוות החיוך - 3 רמות – הקול החמישי">
+<meta property="og:description" content="משחק חידון אינטראקטיבי על חשיבות החיוך ביהדות. 3 רמות קושי, שאלות מגוונות עם הסברים, ממשק ידידותי בעברית. למד תוך כדי משחק!">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-c161b0d8.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/c161b0d8.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Smile = window.LucideReact["Smile"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const SmileQuizGame = () => {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [shuffledQuestions, setShuffledQuestions] = useState([]);
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [unlockedLevels, setUnlockedLevels] = useState([1]);
+  const [showLevelSelect, setShowLevelSelect] = useState(false);
+  const levelAQuestions = [{
+    question: 'מה עולה חיוך לנותן?',
+    emoji: '😊',
+    options: ['הרבה כסף', 'כלום - אפס פרוטה!', 'זמן יקר', 'הרבה מאמץ'],
+    correct: 1,
+    explanation: 'חיוך אינו עולה פרוטה לנותנו! זה לגמרי חינם!'
+  }, {
+    question: 'כמה שרירים צריך להפעיל כדי לחייך?',
+    emoji: '💪',
+    options: ['100 שרירים', '5 שרירים', '26 שרירים', '50 שרירים'],
+    correct: 2,
+    explanation: 'חיוך דורש רק 26 שרירים - הרבה פחות מלהיות עצוב או כועס!'
+  }, {
+    question: 'איך צריך לקבל כל אדם?',
+    emoji: '🤝',
+    options: ['בשתיקה', 'בסבר פנים יפות!', 'בפנים זעופות', 'לפעמים כך ולפעמים כך'],
+    correct: 1,
+    explanation: 'שמאי אמר: "הוי מקבל את כל האדם בסבר פנים יפות"'
+  }, {
+    question: 'מה גורם חיוך למוח שלנו?',
+    emoji: '🧠',
+    options: ['כאב ראש', 'עייפות', 'אנדורפינים - הורמוני שמחה!', 'רעב'],
+    correct: 2,
+    explanation: 'חיוך גורם למוח לייצר אנדורפינים - הורמונים שגורמים לנו להרגיש טוב!'
+  }, {
+    question: 'מה טוב יותר - לתת לעני כסף בפנים זעופות, או לחייך אליו בלי לתת?',
+    emoji: '💰',
+    options: ['לתת כסף בפנים זעופות', 'לחייך בלי לתת!', 'שניהם רעים', 'אין הבדל'],
+    correct: 1,
+    explanation: 'המקבל אדם בסבר פנים יפות, אפילו לא נתן לו דבר - כאילו נתן לו כל המתנות!'
+  }, {
+    question: 'מתי תינוק מתחיל לחייך?',
+    emoji: '👶',
+    options: ['רק בגיל 5', 'רק אחרי שלומדים אותו', 'כבר ברחם ומלידה!', 'רק בגיל שנה'],
+    correct: 2,
+    explanation: 'חיוך הוא טבעי! עוברים מחייכים ברחם, ותינוקות עיוורים מחייכים מלידה!'
+  }, {
+    question: 'איך חיוך משפיע על הלב שלנו?',
+    emoji: '❤️',
+    options: ['מעלה לחץ דם', 'מוריד לחץ דם!', 'לא משפיע כלל', 'גורם למחלות'],
+    correct: 1,
+    explanation: 'חיוך מוריד לחץ דם ומחזור הלב - זה בריא לגוף!'
+  }, {
+    question: 'למה חיוך נקרא "השפה האוניברסלית"?',
+    emoji: '🌍',
+    options: ['כי רק ילדים מבינים אותו', 'כי כולם בעולם מבינים אותו!', 'כי קשה להבין אותו', 'כי צריך ללמוד אותו'],
+    correct: 1,
+    explanation: 'חיוך הוא שפה שכל בני האדם בכל העולם מבינים - בלי מילים!'
+  }, {
+    question: 'מה קורה כשאתה רואה מישהו מחייך?',
+    emoji: '😄',
+    options: ['נעשה לי עצוב', 'אני מחייך חזרה!', 'לא קורה כלום', 'אני נעשה כועס'],
+    correct: 1,
+    explanation: 'חיוך מדבק! כשרואים חיוך, המוח שלנו מחייך בחזרה אוטומטית!'
+  }, {
+    question: 'איך נקרא אדם עם פנים זעופות?',
+    emoji: '😠',
+    options: ['גיבור', 'חכם', 'בור ברשות הרבים!', 'צדיק'],
+    correct: 2,
+    explanation: 'מי שמהלך בפנים זעופות נחשב "בור ברשות הרבים" - הוא מזיק לאחרים!'
+  }, {
+    question: 'מה צריך לעשות לפני שהילד יוצא לבית הספר?',
+    emoji: '🎒',
+    options: ['לצעוק עליו', 'לשלוח אותו במהירות', 'לחייך ולאחל לו יום טוב!', 'להתעלם ממנו'],
+    correct: 2,
+    explanation: 'חשוב שהילד יצא לדרכו במצב רוח טוב - עם חיוך ומילה טובה!'
+  }, {
+    question: 'מה חשוב לעשות לפני השינה?',
+    emoji: '🌙',
+    options: ['לריב', '10 דקות של חיבוק ושיחה!', 'לצעוק', 'שלא לדבר'],
+    correct: 1,
+    explanation: 'לפני השינה חשוב להקדיש זמן חם ואוהב - ליטוף, שיחה וחיוך!'
+  }, {
+    question: 'איך קוראים לחיוך שלא אמיתי?',
+    emoji: '🎭',
+    options: ['חיוך מושלם', 'חיוך מאולץ', 'חיוך יפה', 'חיוך נכון'],
+    correct: 1,
+    explanation: 'חיוך מאולץ - זה חיוך שלא נובע מהלב. אבל גם הוא עוזר קצת!'
+  }, {
+    question: 'מה יותר חזק - חיוך או כסף?',
+    emoji: '💎',
+    options: ['כסף', 'חיוך!', 'שניהם שווים', 'תלוי בכמות'],
+    correct: 1,
+    explanation: 'חיוך יכול להציל נפשות ולבנות דורות שלמים - הוא חזק מאוד!'
+  }, {
+    question: 'איך צריך להגיד "בוקר טוב" בבית המדרש?',
+    emoji: '📚',
+    options: ['בלי לחייך', 'בכעס', 'עם חיוך גדול!', 'בלחש'],
+    correct: 2,
+    explanation: 'חיוך ו"בוקר טוב" בבית המדרש נותנים לחבר חשק ללמוד!'
+  }, {
+    question: 'מה ההשפעה של חיוך על מתחים?',
+    emoji: '😌',
+    options: ['מגביר מתחים', 'מפיג מתחים!', 'לא משפיע', 'גורם למתחים'],
+    correct: 1,
+    explanation: 'חיוך מפיג מתחים, משבית ריבים ומשחרר לחוצים!'
+  }, {
+    question: 'מה חיוך עושה למצב הרוח?',
+    emoji: '🌈',
+    options: ['מוריד אותו', 'משפר אותו!', 'לא משפיע', 'הורס אותו'],
+    correct: 1,
+    explanation: 'חיוך משפר את המצב הנפשי ומעודד חשיבה חיובית!'
+  }, {
+    question: 'למי צריך לחייך?',
+    emoji: '👥',
+    options: ['רק לחברים', 'רק למשפחה', 'לכל אדם!', 'רק למורים'],
+    correct: 2,
+    explanation: 'צריך לקבל את כל האדם בסבר פנים יפות - כל אחד ואחד!'
+  }, {
+    question: 'מה קורה כשמחייכים לאדם חדש בישיבה?',
+    emoji: '🏫',
+    options: ['הוא בורח', 'זה לא משנה', 'הוא מרגיש מוזמן ורצוי!', 'הוא כועס'],
+    correct: 2,
+    explanation: 'חיוך לבחור חדש, בבחינת "ואהבתם את הגר", חיוני לקיומו הרוחני!'
+  }, {
+    question: 'איך הקב"ה מתנהג איתנו?',
+    emoji: '✨',
+    options: ['אחרת מאיתנו', 'בדיוק כמו שאנחנו עם אחרים!', 'לא קשור', 'אין קשר'],
+    correct: 1,
+    explanation: 'מידה כנגד מידה - כשאנחנו מאירים פנים לזולת, גם הקב"ה מאיר לנו!'
+  }];
+  const levelBQuestions = [{
+    question: 'למה חיוך נמשל למזון?',
+    emoji: '🍞',
+    options: ['כי צריך לאכול אותו', 'כי הוא מרווה את הנפש!', 'כי הוא טעים', 'אין קשר'],
+    correct: 1,
+    explanation: 'חיוך מעניק רוויה לנפש, כשם שהחלב מרווה ומזין את הגוף!'
+  }, {
+    question: 'מה אומרים חז"ל על הלבנת שיניים (חיוך)?',
+    emoji: '😁',
+    options: ['זה פחות חשוב', 'טוב מלתת חלב לשתות!', 'זה לא חשוב', 'זה אסור'],
+    correct: 1,
+    explanation: '"טוב המלבין שיניים לחברו יותר ממשקהו חלב" - זה החסד הגדול ביותר!'
+  }, {
+    question: 'איזה חיוך נחשב לחיוך אמיתי?',
+    emoji: '💝',
+    options: ['חיוך מהיר', 'חיוך שנובע מהלב!', 'חיוך קטן', 'חיוך בלי שיניים'],
+    correct: 1,
+    explanation: 'חיוך אמיתי נובע מהלב ומתוך הערכה, עד שלובן השיניים נראה!'
+  }, {
+    question: 'מה קורה למי שנותן צדקה בפנים זעופות?',
+    emoji: '😟',
+    options: ['מקבל שכר כפול', 'מאבד את שכרו!', 'שווה לחיוך', 'זה לא משנה'],
+    correct: 1,
+    explanation: 'מי שנותן צדקה בפנים זעופות - הרי הוא מאבד את זכותו, אף אם נתן סכום גדול!'
+  }, {
+    question: 'כמה שרירים נדרשים כדי להיות עצוב או כועס?',
+    emoji: '😤',
+    options: ['10 שרירים', '26 שרירים', '62-96 שרירים!', '5 שרירים'],
+    correct: 2,
+    explanation: 'להיות עצוב או כועס דורש 62 עד 96 שרירים - הרבה יותר מחיוך!'
+  }, {
+    question: 'מה צריך לעשות כשרואים חבר עם פנים זעופות?',
+    emoji: '🤔',
+    options: ['להתעלם ממנו', 'לשאול ולהראות אכפתיות!', 'לברוח ממנו', 'לצחוק עליו'],
+    correct: 1,
+    explanation: 'צריך לשאול "מדוע פניך רעים היום?" ולהראות אכפתיות - זה יכול להציל!'
+  }, {
+    question: 'מה המשמעות של "חיוך מדבק"?',
+    emoji: '🔄',
+    options: ['חיוך שדבוק לפנים', 'כשרואים חיוך - מחייכים בחזרה!', 'חיוך מזויף', 'חיוך קבוע'],
+    correct: 1,
+    explanation: 'כשאחד מחייך, השני נוטה להחזיר חיוך - המוח מגיב אוטומטית!'
+  }, {
+    question: 'מתי חשוב במיוחד לחייך לילד?',
+    emoji: '👦',
+    options: ['רק בשבת', 'רק כשהוא טוב', 'בבוקר, אחה"צ ולפני שינה!', 'רק בחג'],
+    correct: 2,
+    explanation: 'שלושה זמנים קריטיים: בבוקר לפני יציאה, בחזרה הביתה, ולפני השינה!'
+  }, {
+    question: 'למה חיוך נקרא "הקו העקום שמיישר הכל"?',
+    emoji: '〰️',
+    options: ['כי הוא עקום', 'כי הוא מסדר ומתקן מצבים!', 'כי הוא מעוות', 'אין סיבה'],
+    correct: 1,
+    explanation: 'חיוך מיישר כל דבר - הוא מתקן מצבים, מפיג ריבים ומביא שלום!'
+  }, {
+    question: 'מה ההורמונים שחיוך מפחית?',
+    emoji: '🧪',
+    options: ['הורמוני שמחה', 'קורטיזול ואדרנלין - הורמוני לחץ!', 'אנדורפינים', 'דופמין'],
+    correct: 1,
+    explanation: 'חיוך מפחית קורטיזול ואדרנלין - הורמוני הסטרס והלחץ!'
+  }, {
+    question: 'מה עדיף - חיוך מאולץ או בכלל לא לחייך?',
+    emoji: '🎪',
+    options: ['בכלל לא לחייך', 'גם חיוך מאולץ עוזר!', 'אין הבדל', 'שניהם רעים'],
+    correct: 1,
+    explanation: 'אפילו חיוך מאולץ גורם למוח לייצר אנדורפינים ולהרגיש טוב יותר!'
+  }, {
+    question: 'מה חיוך עושה לאדם שמקבל אותו?',
+    emoji: '🎁',
+    options: ['כלום', 'שווה כל המתנות בעולם!', 'קצת שמחה', 'זה לא משפיע'],
+    correct: 1,
+    explanation: 'המקבל אדם בסבר פנים יפות - כאילו נתן לו כל מתנות שבעולם!'
+  }, {
+    question: 'איך חיוך קשור לקידוש השם?',
+    emoji: '✡️',
+    options: ['לא קשור', 'דיבור בנחת וחיוך מקדשים את השם!', 'רק תורה מקדשת', 'זה אסור'],
+    correct: 1,
+    explanation: 'כשמדברים בנחת ומקבלים בסבר פנים יפות - זה קידוש השם הגדול ביותר!'
+  }, {
+    question: 'מה חום ואהבה בבית מונעים?',
+    emoji: '🏠',
+    options: ['כלום', 'נשירת ילדים לרחוב!', 'רק עצבות', 'זה לא משנה'],
+    correct: 1,
+    explanation: 'היעדר חום ואהבה הוא גורם מרכזי לנשירת ילדים - חיוך מציל!'
+  }, {
+    question: 'מה המשמעות של "ה\' צלך"?',
+    emoji: '🪞',
+    options: ['הקב"ה רואה הכל', 'הקב"ה מתנהג כמונו - מידה כנגד מידה!', 'הקב"ה עוזר תמיד', 'אין משמעות'],
+    correct: 1,
+    explanation: 'כשאנחנו מאירים פנים לזולת, גם הקב"ה מאיר לנו פנים - מידה כנגד מידה!'
+  }, {
+    question: 'למה חשוב לחייך לגר (אדם חדש)?',
+    emoji: '🤝',
+    options: ['זה לא חשוב', 'בגלל "ואהבתם את הגר"!', 'רק פעם אחת', 'זה מספיק לדבר'],
+    correct: 1,
+    explanation: 'חיוך למי שחדש, בבחינת "ואהבתם את הגר", חיוני לקיומו הרוחני!'
+  }, {
+    question: 'מה נחשב "צורך נפשי בסיסי"?',
+    emoji: '🫂',
+    options: ['רק אוכל', 'רק שינה', 'חום ואהבה כמו לחם!', 'רק תורה'],
+    correct: 2,
+    explanation: 'חום ואהבה הם צורך נפשי בסיסי כמו הצורך בלחם או אוויר לנשימה!'
+  }, {
+    question: 'מה חיוך עושה לאדם שנותן אותו?',
+    emoji: '😊',
+    options: ['מעייף אותו', 'שכר עצום בעולם הזה והבא!', 'כלום', 'רק מעט שמחה'],
+    correct: 1,
+    explanation: 'חיוך מעניק שכר עצום לנותן בעולם הזה ובעולם הבא - זה ההשקעה הכי משתלמת!'
+  }, {
+    question: 'מה צריך לעשות כשהילד חוזר הביתה?',
+    emoji: '🚪',
+    options: ['לחקור אותו מיד', 'לקבל בחיבוק וחיוך!', 'להתעלם ממנו', 'לבקר אותו'],
+    correct: 1,
+    explanation: 'חשוב לקבל את הילד בחיבוק, חיוך ושמחה - לא בחקירות וביקורת!'
+  }, {
+    question: 'כמה עולה חיוך למקבל?',
+    emoji: '💰',
+    options: ['כלום', 'מיליונים ומיליארדים בערך!', 'מעט', 'תלוי'],
+    correct: 1,
+    explanation: 'חיוך אינו עולה פרוטה לנותן, אך ערכו למקבל מוערך במיליונים ואף מיליארדים!'
+  }];
+  const levelCQuestions = [{
+    question: 'למה חיוך נחשב למרפא של הנפש?',
+    emoji: '💊',
+    options: ['כי הוא כמו תרופה', 'הוא מרפא את כל צרכי הנפש!', 'זה לא נכון', 'רק לפעמים'],
+    correct: 1,
+    explanation: 'חיוך מהווה מרפא לכל צרכי הנפש - הוא מחזיר כוח, משחרר מתחים ומביא רוגע!'
+  }, {
+    question: 'מה חומרת מלבין פני חברו ברבים?',
+    emoji: '😳',
+    options: ['לא כל כך חמור', 'חמור כגילוי עריות!', 'קל מאוד', 'אין בעיה'],
+    correct: 1,
+    explanation: 'מלבין פני חברו ברבים חמור כל כך - חמור אף יותר מגילוי עריות! הוא מן השלושה היורדים לגיהנם!'
+  }, {
+    question: 'איזה סוג חיוך יש לחייך כשנותנים צדקה?',
+    emoji: '💝',
+    options: ['חיוך קטן', 'חיוך בשמחה ובטוב לבב!', 'לא חשוב איך', 'חיוך מאולץ'],
+    correct: 1,
+    explanation: 'חובת הצדקה דורשת נתינה "בסבר פנים יפות, בשמחה ובטוב לבב" - זה חלק מהמצווה!'
+  }, {
+    question: 'מה המשמעות של "חיוך כמשכך כאבים טבעי"?',
+    emoji: '🩹',
+    options: ['זה לא נכון', 'האנדורפינים פועלים כמו תרופה!', 'רק דימוי', 'זה חלש'],
+    correct: 1,
+    explanation: 'האנדורפינים שחיוך מייצר פועלים כמשככי כאבים טבעיים במוח - זה ממש כמו תרופה!'
+  }, {
+    question: 'איך ילד שמקבל חום ואהבה משתנה?',
+    emoji: '🌱',
+    options: ['לא משתנה', 'מ"בינוני מינוס" ל"מצויין"!', 'רק קצת', 'נשאר אותו דבר'],
+    correct: 1,
+    explanation: 'מילה טובה בחיוך מלב כנה יכולה להפוך בחור "בינוני מינוס" ל"מצויין פלוס"!'
+  }, {
+    question: 'מתי אסור להתנות אהבה וחיוך?',
+    emoji: '❌',
+    options: ['תמיד מותר', 'אסור להתנות בהישגים!', 'רק בשבת', 'לפעמים מותר'],
+    correct: 1,
+    explanation: 'אסור לחלוטין להתנות אהבה בהישגים או בהתנהגות - אהבה צריכה להיות ללא תנאי!'
+  }, {
+    question: 'איזה כוח יש לחיוך ומילה טובה אחת?',
+    emoji: '🦸',
+    options: ['כוח קטן', 'יכולים להציל נפשות!', 'כוח רגיל', 'אין כוח'],
+    correct: 1,
+    explanation: 'חיוך ומילה טובה מכל הלב יכולים להציל נפשות - למנוע ייאוש והזקה עצמית!'
+  }, {
+    question: 'מה ההבדל בין חיוך אמיתי למזויף מבחינת המקבל?',
+    emoji: '🔍',
+    options: ['אין הבדל', 'המקבל מרגיש אם זה לא אמיתי!', 'אי אפשר לדעת', 'זה לא משנה'],
+    correct: 1,
+    explanation: 'לרוב חש המקבל כי חיוך מזויף אינו אמיתי - חשוב לחייך מהלב!'
+  }, {
+    question: 'איך חיוך יכול "לבנות דורות שלמים"?',
+    emoji: '🏗️',
+    options: ['זה לא אפשרי', 'חיוך אמיתי משפיע לדורות!', 'רק במשפחה', 'רק בבית הכנסת'],
+    correct: 1,
+    explanation: 'חיוך אמיתי יכול לבנות דורות שלמים - להפוך אדם לתלמיד חכם ומרביץ תורה!'
+  }, {
+    question: 'מה הקשר בין חיוך לביטחון בה\'?',
+    emoji: '🙏',
+    options: ['אין קשר', 'אמונה שהכל מה\' מחזקת את החיוך!', 'רק ביום כיפור', 'זה הפוך'],
+    correct: 1,
+    explanation: 'כשמתחזקים באמונה ובביטחון שהכול מאת ה\' ולטובה - זה עוזר לחייך!'
+  }, {
+    question: 'איך מתרגלים לחייך כשקשה?',
+    emoji: '🪞',
+    options: ['אי אפשר', 'לחייך בפני המראה!', 'רק לחשוב', 'לא עוזר'],
+    correct: 1,
+    explanation: 'מועיל להרגיל את עצמו לחייך אפילו בפני המראה - זה מרפא את הנפש ומעורר שמחה!'
+  }, {
+    question: 'מה המשמעות של "חיוך משחרר לחוצים"?',
+    emoji: '😮‍💨',
+    options: ['זה לא עוזר', 'חיוך מפחית לחץ ומרגיע!', 'רק מעט', 'זה גורם ללחץ'],
+    correct: 1,
+    explanation: 'חיוך מפיג מתחים, משחרר לחוצים ומחזיר כוח למנוצחים - הוא מרפא אמיתי!'
+  }, {
+    question: 'מדוע חשוב במיוחד לחייך לתלמיד חדש בישיבה?',
+    emoji: '🆕',
+    options: ['לא חשוב', 'זה קובע אם הוא יישאר!', 'רק פעם אחת', 'זה לא משפיע'],
+    correct: 1,
+    explanation: 'חיוך ומאור פנים לבחור חדש חיוניים לקיומו הרוחני - זה יכול להציל אותו!'
+  }, {
+    question: 'איך חיוך משפיע על "חשבונות" לפני השינה?',
+    emoji: '🌜',
+    options: ['לא משפיע', 'עוזר לסגור חשבונות ברוגע!', 'מגביר ריבים', 'גורם לבעיות'],
+    correct: 1,
+    explanation: 'חשוב לסגור את כל "החשבונות" לפני השינה בחיוך ושלום - זה משפיע על השינה והנפש!'
+  }, {
+    question: 'מה קורה כשמתעלמים מילד עם פנים זעופות?',
+    emoji: '🚨',
+    options: ['הוא משתפר', 'זה יכול לגרום לפרישה!', 'לא קורה כלום', 'זה עוזר לו'],
+    correct: 1,
+    explanation: 'חוסר אכפתיות למי שמתקשה עלול להיות רגע מכריע שגורם לו לפרוש או להידרדר!'
+  }, {
+    question: 'מה המשמעות של חיוך כ"כלי רוחני ופיזי"?',
+    emoji: '⚖️',
+    options: ['אין משמעות', 'הוא משפיע על הנפש והגוף!', 'רק על הגוף', 'רק על הנפש'],
+    correct: 1,
+    explanation: 'חיוך הוא כלי רוחני שמרפא את הנפש, ופיזי שמשפיע על הורמונים והבריאות!'
+  }, {
+    question: 'למה חיוך נחשב ל"חסד הגדול ביותר"?',
+    emoji: '👑',
+    options: ['זה לא נכון', 'כי הוא טוב יותר מכל חסד!', 'רק לפעמים', 'זה קטן'],
+    correct: 1,
+    explanation: 'חז"ל קבעו שהלבנת שיניים (חיוך) היא החסד הגדול ביותר - יותר מכל מעשה טוב אחר!'
+  }, {
+    question: 'איך חיוך משפיע על הדמיון העצמי?',
+    emoji: '🌟',
+    options: ['מוריד אותו', 'משפר אותו ומחזק את האדם!', 'לא משפיע', 'הורס אותו'],
+    correct: 1,
+    explanation: 'חיוך גורם לאדם להרגיש טוב יותר עם עצמו, מחזק את הביטחון ואת הדמיון העצמי!'
+  }, {
+    question: 'מה ההבדל בין סתם קבלה לקבלה בסבר פנים יפות?',
+    emoji: '🎭',
+    options: ['אין הבדל', 'חיוך מונע זלזול ומביא שמחה!', 'רק במילים', 'לא חשוב'],
+    correct: 1,
+    explanation: 'קבלת אדם בסבר פנים יפות מונעת תחושת זלזול ומביאה שמחה - זו חובת יסוד!'
+  }, {
+    question: 'מה "השכר העצום" שמקבל מי שמחייך?',
+    emoji: '💎',
+    options: ['רק כסף', 'שכר בעולם הזה והבא!', 'רק כבוד', 'שום דבר'],
+    correct: 1,
+    explanation: 'מי שמחייך מקבל שכר עצום בעולם הזה ובעולם הבא - השקעה של אפס שמביאה אינסוף!'
+  }];
+  useEffect(() => {
+    loadLevel(currentLevel);
+  }, [currentLevel]);
+  const loadLevel = level => {
+    let questions = [];
+    if (level === 1) questions = [...levelAQuestions];else if (level === 2) questions = [...levelBQuestions];else if (level === 3) questions = [...levelCQuestions];
+    const shuffled = questions.sort(() => Math.random() - 0.5);
+    setShuffledQuestions(shuffled);
+    setCurrentQuestion(0);
+    setScore(0);
+    setGameFinished(false);
+    setShowFeedback(false);
+    setShowLevelSelect(false);
+  };
+  const playSound = isCorrect => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    if (isCorrect) {
+      const notes = [523.25, 587.33, 659.25, 783.99];
+      let time = audioContext.currentTime;
+      notes.forEach(freq => {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.2, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+        osc.start(time);
+        osc.stop(time + 0.1);
+        time += 0.08;
+      });
+    } else {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      osc.frequency.value = 200;
+      gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+      osc.start(audioContext.currentTime);
+      osc.stop(audioContext.currentTime + 0.4);
+    }
+  };
+  const playLevelUpSound = () => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const melody = [{
+      freq: 523.25,
+      duration: 0.15
+    }, {
+      freq: 587.33,
+      duration: 0.15
+    }, {
+      freq: 659.25,
+      duration: 0.15
+    }, {
+      freq: 783.99,
+      duration: 0.2
+    }, {
+      freq: 880,
+      duration: 0.3
+    }];
+    let time = audioContext.currentTime;
+    melody.forEach(note => {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      osc.frequency.value = note.freq;
+      gain.gain.setValueAtTime(0.25, time);
+      gain.gain.exponentialRampToValueAtTime(0.01, time + note.duration);
+      osc.start(time);
+      osc.stop(time + note.duration);
+      time += note.duration;
+    });
+  };
+  const handleAnswer = answerIndex => {
+    const correct = shuffledQuestions[currentQuestion].correct === answerIndex;
+    setIsCorrect(correct);
+    setShowFeedback(true);
+    playSound(correct);
+    if (correct) {
+      setScore(score + 1);
+    }
+    setTimeout(() => {
+      setShowFeedback(false);
+      if (currentQuestion < shuffledQuestions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+      } else {
+        setGameFinished(true);
+        checkLevelCompletion();
+      }
+    }, currentLevel >= 2 ? 3500 : 2000);
+  };
+  const checkLevelCompletion = () => {
+    const percentage = (score + (isCorrect ? 1 : 0)) / shuffledQuestions.length * 100;
+    if (percentage >= 95) {
+      if (currentLevel === 1 && !unlockedLevels.includes(2)) {
+        setUnlockedLevels([...unlockedLevels, 2]);
+        playLevelUpSound();
+      } else if (currentLevel === 2 && !unlockedLevels.includes(3)) {
+        setUnlockedLevels([...unlockedLevels, 3]);
+        playLevelUpSound();
+      }
+    }
+  };
+  const resetGame = () => {
+    loadLevel(currentLevel);
+  };
+  const selectLevel = level => {
+    if (unlockedLevels.includes(level)) {
+      setCurrentLevel(level);
+    }
+  };
+  if (shuffledQuestions.length === 0) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-b from-yellow-100 to-pink-100 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl"
+    }, "\u05D8\u05D5\u05E2\u05DF..."));
+  }
+  if (showLevelSelect) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-yellow-50 via-pink-50 to-orange-50 flex items-center justify-center p-4",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl w-full"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-12"
+    }, /*#__PURE__*/React.createElement("h1", {
+      className: "text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-yellow-600 mb-4"
+    }, "\uD83D\uDE0A \u05D7\u05D9\u05D3\u05D5\u05DF \u05DE\u05E6\u05D5\u05D5\u05EA \u05D4\u05D7\u05D9\u05D5\u05DA \uD83D\uDE0A"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-gray-700"
+    }, "\u05D1\u05D7\u05E8 \u05D0\u05EA \u05E8\u05DE\u05EA \u05D4\u05E7\u05D5\u05E9\u05D9")), /*#__PURE__*/React.createElement("div", {
+      className: "grid gap-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      onClick: () => selectLevel(1),
+      className: `bg-white rounded-3xl p-8 cursor-pointer transform transition-all hover:scale-105 shadow-xl border-4 ${currentLevel === 1 ? 'border-yellow-500 ring-4 ring-yellow-300' : 'border-gray-300'}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-4"
+    }, /*#__PURE__*/React.createElement(Star, {
+      className: "w-12 h-12 text-yellow-500"
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "text-3xl font-bold text-yellow-700"
+    }, "\u05E8\u05DE\u05D4 \u05D0 - \u05D1\u05E1\u05D9\u05E1\u05D9"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600"
+    }, "\u05E9\u05D0\u05DC\u05D5\u05EA \u05E4\u05E9\u05D5\u05D8\u05D5\u05EA \u05E2\u05DC \u05D7\u05E9\u05D9\u05D1\u05D5\u05EA \u05D4\u05D7\u05D9\u05D5\u05DA"))), /*#__PURE__*/React.createElement("div", {
+      className: "text-yellow-600 text-2xl"
+    }, "\u2713 \u05E4\u05EA\u05D5\u05D7"))), /*#__PURE__*/React.createElement("div", {
+      onClick: () => selectLevel(2),
+      className: `bg-white rounded-3xl p-8 cursor-pointer transform transition-all ${unlockedLevels.includes(2) ? 'hover:scale-105 opacity-100' : 'opacity-50 cursor-not-allowed'} shadow-xl border-4 ${currentLevel === 2 ? 'border-pink-500 ring-4 ring-pink-300' : 'border-gray-300'}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-4"
+    }, /*#__PURE__*/React.createElement(Award, {
+      className: "w-12 h-12 text-pink-500"
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "text-3xl font-bold text-pink-700"
+    }, "\u05E8\u05DE\u05D4 \u05D1 - \u05D1\u05D9\u05E0\u05D5\u05E0\u05D9"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600"
+    }, "\u05DE\u05E7\u05E8\u05D9\u05DD \u05DE\u05D5\u05E8\u05DB\u05D1\u05D9\u05DD + \u05D4\u05E1\u05D1\u05E8\u05D9\u05DD"))), /*#__PURE__*/React.createElement("div", {
+      className: `text-2xl ${unlockedLevels.includes(2) ? 'text-pink-600' : 'text-gray-400'}`
+    }, unlockedLevels.includes(2) ? '✓ פתוח' : '🔒 דרוש 95%'))), /*#__PURE__*/React.createElement("div", {
+      onClick: () => selectLevel(3),
+      className: `bg-white rounded-3xl p-8 cursor-pointer transform transition-all ${unlockedLevels.includes(3) ? 'hover:scale-105 opacity-100' : 'opacity-50 cursor-not-allowed'} shadow-xl border-4 ${currentLevel === 3 ? 'border-orange-500 ring-4 ring-orange-300' : 'border-gray-300'}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-4"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-12 h-12 text-orange-500"
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "text-3xl font-bold text-orange-700"
+    }, "\u05E8\u05DE\u05D4 \u05D2 - \u05DE\u05EA\u05E7\u05D3\u05DD"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600"
+    }, "\u05E9\u05D0\u05DC\u05D5\u05EA \u05E2\u05DE\u05D5\u05E7\u05D5\u05EA + \u05E0\u05D9\u05DE\u05D5\u05E7\u05D9\u05DD \u05D4\u05DC\u05DB\u05EA\u05D9\u05D9\u05DD"))), /*#__PURE__*/React.createElement("div", {
+      className: `text-2xl ${unlockedLevels.includes(3) ? 'text-orange-600' : 'text-gray-400'}`
+    }, unlockedLevels.includes(3) ? '✓ פתוח' : '🔒 דרוש 95%')))), /*#__PURE__*/React.createElement("div", {
+      className: "text-center mt-8"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => setShowLevelSelect(false),
+      className: "bg-gradient-to-r from-yellow-500 to-pink-500 text-white text-2xl px-12 py-4 rounded-full font-bold hover:scale-110 transition-transform shadow-lg"
+    }, "\u25B6\uFE0F \u05D4\u05EA\u05D7\u05DC \u05D7\u05D9\u05D3\u05D5\u05DF"))));
+  }
+  if (gameFinished) {
+    const percentage = score / shuffledQuestions.length * 100;
+    let message = '';
+    let emoji = '';
+    let levelUnlocked = false;
+    if (percentage >= 95) {
+      if (currentLevel === 1 && unlockedLevels.includes(2) && unlockedLevels.length === 2) {
+        message = 'מעולה! רמה ב נפתחה! 🎊';
+        emoji = '🔓';
+        levelUnlocked = true;
+      } else if (currentLevel === 2 && unlockedLevels.includes(3) && unlockedLevels.length === 3) {
+        message = 'מדהים! רמה ג נפתחה! 🏆';
+        emoji = '🔓';
+        levelUnlocked = true;
+      } else if (percentage === 100) {
+        message = 'מושלם! אתה מלך החיוכים! 👑';
+        emoji = '😄';
+      } else {
+        message = 'מצוין! עברת ב-95%+! 🎉';
+        emoji = '😊';
+      }
+    } else if (percentage >= 90) {
+      message = 'טוב מאוד! עוד קצת ל-95%! 🎉';
+      emoji = '🙂';
+    } else if (percentage >= 80) {
+      message = 'יפה! אבל צריך 95% לרמה הבאה 😊';
+      emoji = '😌';
+    } else {
+      message = 'כדאי לחזור על החומר... תחייך! 📖';
+      emoji = '😅';
+    }
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-yellow-50 via-pink-50 to-orange-50 flex items-center justify-center p-4",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full border-8 border-pink-600"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-8xl mb-6 animate-bounce"
+    }, emoji), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold text-pink-700 mb-4"
+    }, "\u05E8\u05DE\u05D4 ", currentLevel === 1 ? 'א' : currentLevel === 2 ? 'ב' : 'ג', " \u05D4\u05E1\u05EA\u05D9\u05D9\u05DE\u05D4!"), /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl font-bold text-pink-600 mb-2"
+    }, score, "/", shuffledQuestions.length), /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl font-bold text-orange-600 mb-4"
+    }, percentage.toFixed(0), "%"), /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl text-gray-700 mb-8"
+    }, message), levelUnlocked && /*#__PURE__*/React.createElement("div", {
+      className: "bg-yellow-100 border-4 border-yellow-400 rounded-2xl p-6 mb-6 animate-pulse"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl mb-2"
+    }, "\uD83C\uDF8A"), /*#__PURE__*/React.createElement("div", {
+      className: "text-2xl font-bold text-yellow-800"
+    }, "\u05E8\u05DE\u05D4 \u05D7\u05D3\u05E9\u05D4 \u05E0\u05E4\u05EA\u05D7\u05D4!")), /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-4 justify-center flex-wrap"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: resetGame,
+      className: "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white text-2xl px-8 py-4 rounded-full font-bold hover:scale-110 transition-transform shadow-lg"
+    }, "\uD83D\uDD04 \u05E9\u05D7\u05E7 \u05E9\u05D5\u05D1"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setShowLevelSelect(true),
+      className: "bg-gradient-to-r from-gray-500 to-gray-600 text-white text-2xl px-8 py-4 rounded-full font-bold hover:scale-110 transition-transform shadow-lg"
+    }, "\uD83D\uDCCB \u05D1\u05D7\u05E8 \u05E8\u05DE\u05D4")))));
+  }
+  const currentQ = shuffledQuestions[currentQuestion];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-yellow-50 via-pink-50 to-orange-50 p-4",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-4 flex justify-between items-center"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowLevelSelect(true),
+    className: "bg-white hover:bg-gray-50 px-4 py-2 rounded-full shadow-lg text-gray-700 font-bold transition-all"
+  }, "\u25C0 \u05D7\u05D6\u05E8\u05D4"), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white px-6 py-2 rounded-full shadow-lg font-bold text-xl"
+  }, "\u05E8\u05DE\u05D4 ", currentLevel === 1 ? 'א' : currentLevel === 2 ? 'ב' : 'ג')), /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-b from-white to-yellow-50 rounded-3xl shadow-2xl border-8 border-yellow-400 p-8 relative"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "absolute top-0 left-0 text-6xl -ml-4 -mt-8 animate-bounce"
+  }, "\uD83D\uDE0A"), /*#__PURE__*/React.createElement("div", {
+    className: "absolute top-0 right-0 text-6xl -mr-4 -mt-8 animate-bounce"
+  }, "\u2764\uFE0F"), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-8 bg-gradient-to-r from-pink-500 to-orange-500 p-5 rounded-2xl text-white shadow-xl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-2xl font-bold"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, "/", shuffledQuestions.length), /*#__PURE__*/React.createElement("div", {
+    className: "text-3xl font-bold flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Heart, {
+    className: "text-yellow-300"
+  }), score, " \u05E0\u05E7\u05D5\u05D3\u05D5\u05EA")), /*#__PURE__*/React.createElement("div", {
+    className: "text-center mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-9xl mb-6 animate-bounce"
+  }, currentQ.emoji), /*#__PURE__*/React.createElement("h2", {
+    className: "text-4xl font-bold text-gray-800 mb-6"
+  }, currentQ.question)), /*#__PURE__*/React.createElement("div", {
+    className: "grid gap-4 mb-4"
+  }, currentQ.options.map((option, index) => /*#__PURE__*/React.createElement("button", {
+    key: index,
+    onClick: () => handleAnswer(index),
+    disabled: showFeedback,
+    className: `bg-gradient-to-r ${index === 0 ? 'from-yellow-400 to-yellow-500' : index === 1 ? 'from-pink-400 to-pink-500' : index === 2 ? 'from-orange-400 to-orange-500' : 'from-purple-400 to-purple-500'} text-white text-xl py-5 rounded-2xl font-bold hover:scale-105 transition-all shadow-lg disabled:opacity-50 ${showFeedback && isCorrect && currentQ.correct === index ? 'ring-4 ring-green-400' : ''} ${showFeedback && !isCorrect && currentQ.correct === index ? 'ring-4 ring-green-600' : ''}`
+  }, option))), showFeedback && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: `p-6 rounded-2xl text-center text-2xl font-bold ${isCorrect ? 'bg-green-100 text-green-700 border-4 border-green-500' : 'bg-red-100 text-red-700 border-4 border-red-500'}`
+  }, isCorrect ? '😊 נכון מאוד! כל הכבוד!' : '😔 לא נכון'), currentQ.explanation && /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 bg-blue-50 border-4 border-blue-300 rounded-2xl p-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-xl font-bold text-blue-800 mb-2"
+  }, "\uD83D\uDCA1 \u05D4\u05E1\u05D1\u05E8:"), /*#__PURE__*/React.createElement("div", {
+    className: "text-lg text-blue-900"
+  }, currentQ.explanation)))), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-center gap-6 mt-6 text-5xl"
+  }, ['😊', '😄', '😁', '🥰', '😍', '🤗', '☺️'].map((emoji, i) => /*#__PURE__*/React.createElement("span", {
+    key: i,
+    className: "animate-bounce",
+    style: {
+      animationDelay: `${i * 0.1}s`
+    }
+  }, emoji)))));
+};
+const __App = SmileQuizGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

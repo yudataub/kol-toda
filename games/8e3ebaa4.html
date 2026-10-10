@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>משחק אבות פרק ב' משנה א - חלק 2 מתקדם – הקול החמישי</title>
+<meta name="description" content="משחק לימוד מתקדם על משנת אבות פרק ב' משנה א'. 20 שאלות מאתגרות עם הסברים מפורטים, תעודת הצלחה והגרלה על פרסים. מתאים לתלמידות מתקדמות.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="משחק אבות פרק ב&#x27; משנה א - חלק 2 מתקדם – הקול החמישי">
+<meta property="og:description" content="משחק לימוד מתקדם על משנת אבות פרק ב&#x27; משנה א&#x27;. 20 שאלות מאתגרות עם הסברים מפורטים, תעודת הצלחה והגרלה על פרסים. מתאים לתלמידות מתקדמות.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-8e3ebaa4.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/8e3ebaa4.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Check = window.LucideReact["Check"] || window.LucideReact.Circle;
+const X = window.LucideReact["X"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const GamePart2 = () => {
+  // State - הכל למעלה!
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [gameState, setGameState] = useState('nameEntry');
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  const [playerName, setPlayerName] = useState('');
+  const [gameStarted, setGameStarted] = useState(false);
+  const questions = [
+  // תרחישים (8 שאלות - 40%)
+  {
+    type: 'scenario',
+    question: 'חברה שלך מבקשה ממך להעתיק לה את שיעורי הבית. את יודעת שזה לא נכון, אבל היא באמת צריכה. מה תעשי?',
+    answers: [{
+      text: 'אסביר לה את השיעורים ואעזור לها להבין, אבל לא אתן להעתיק',
+      correct: true,
+      explanation: 'מצוין! זו "דרך ישרה" - עוזרת לה (תפארת מן האדם) אבל גם שומרת על העקרונות שלך (תפארת לעושה) ⭐'
+    }, {
+      text: 'אתן לה להעתיק כי היא חברה שלי',
+      correct: false,
+      explanation: 'לא... זה לא עוזר לה באמת וגם לא נכון מבחינתך 🤔'
+    }, {
+      text: 'אגיד לה "לא" בלי להסביר',
+      correct: false,
+      explanation: 'יש דרך טובה יותר - לעזור לה ללמוד 💡'
+    }, {
+      text: 'אתעלם ממנה לגמרי',
+      correct: false,
+      explanation: 'זה לא "דרך ישרה" - אפשר למצוא איזון 🌟'
+    }]
+  }, {
+    type: 'scenario',
+    question: 'יש לך 50 שקל. חברה שלך צריכה כסף לאוטובוס, ואת רוצה לקנות חטיף. מה תעשי?',
+    answers: [{
+      text: 'אתן לה כסף לאוטובוס ואוותר על החטיף',
+      correct: true,
+      explanation: 'כל הכבוד! זו מידת הנדיבות (אמצעי) - נותנת כשצריך אבל לא מבזבזת הכל 🎯'
+    }, {
+      text: 'אתן לה הכל ואשאר בלי כלום',
+      correct: false,
+      explanation: 'זה "מפזר" יותר מדי - צריך גם לשמור על עצמך 🤔'
+    }, {
+      text: 'לא אתן כלום ואקנה את החטיף',
+      correct: false,
+      explanation: 'זה "כילי" (קמצן) - לא מאוזן 💡'
+    }, {
+      text: 'אבקש ממישהו אחר לתת לה',
+      correct: false,
+      explanation: 'זה לא לוקח אחריות - צריך להחליט בעצמך 🌟'
+    }]
+  }, {
+    type: 'scenario',
+    question: 'יש הזדמנות לעשות מצווה גדולה, אבל זה יעלה לך 2 שעות של משחק עם חברות. מה תעשי?',
+    answers: [{
+      text: 'אעשה את המצווה כי השכר שלה שווה יותר מהזמן שאפסיד',
+      correct: true,
+      explanation: 'מעולה! זה "מחשב הפסד מצווה כנגד שכרה" - חושבת מה יותר כדאי 💪'
+    }, {
+      text: 'אוותר על המצווה כי אני רוצה לשחק',
+      correct: false,
+      explanation: 'לא חישבת את החשבון הנכון - השכר גדול יותר 🤔'
+    }, {
+      text: 'אעשה חצי מצווה',
+      correct: false,
+      explanation: 'המצווה צריכה להיעשות במלואה 💡'
+    }, {
+      text: 'אבקש ממישהו אחר לעשות',
+      correct: false,
+      explanation: 'זו ההזדמנות שלך לעשות מצווה 🌟'
+    }]
+  }, {
+    type: 'scenario',
+    question: 'את לבד בחדר ויש אפשרות לעשות משהו לא נכון בלי שאף אחד יראה. מה תעשי?',
+    answers: [{
+      text: 'לא אעשה כי הקב"ה רואה - "עין רואה"',
+      correct: true,
+      explanation: 'פצצה! זכרת את המשנה - גם כשאף אחד לא רואה, הקב"ה רואה ⭐'
+    }, {
+      text: 'אעשה כי אף אחד לא יראה',
+      correct: false,
+      explanation: 'טעות! "עין רואה" - הקב"ה תמיד רואה 🤔'
+    }, {
+      text: 'זה תלוי באיזה דבר',
+      correct: false,
+      explanation: 'העיקרון הוא אותו דבר - עין רואה תמיד 💡'
+    }, {
+      text: 'אבדוק אם באמת אף אחד לא רואה',
+      correct: false,
+      explanation: 'גם אם אנשים לא רואים, הקב"ה רואה 🌟'
+    }]
+  }, {
+    type: 'scenario',
+    question: 'חברה שלך אמרה לך סוד. מישהי אחרת שואלת אותך עליו. מה תעשי?',
+    answers: [{
+      text: 'לא אספר - הקב"ה "שומע" ויודע שנתתי הבטחה',
+      correct: true,
+      explanation: 'נכון! "אוזן שומעת" - כל דיבור חשוב והקב"ה שומע 🎯'
+    }, {
+      text: 'אספר כי היא חברה טובה',
+      correct: false,
+      explanation: 'לא - נתת הבטחה, והקב"ה שומע הכל 🤔'
+    }, {
+      text: 'אספר חצי מהסוד',
+      correct: false,
+      explanation: 'גם חצי זה לשון הרע ושבירת הבטחה 💡'
+    }, {
+      text: 'אשקר ואגיד שאני לא יודעת',
+      correct: false,
+      explanation: 'שקר זה עבירה - אפשר לומר "אני לא יכולה לספר" 🌟'
+    }]
+  }, {
+    type: 'scenario',
+    question: 'את יכולה לעשות מצווה קלה עכשיו או מצווה חשובה יותר מאוחר. מה תעשי?',
+    answers: [{
+      text: 'אעשה את המצווה הקלה עכשיו - "זהיר במצווה קלה כבחמורה"',
+      correct: true,
+      explanation: 'מצוין! המשנה אומרת להיזהר במצווה קלה כמו בחמורה 💪'
+    }, {
+      text: 'אחכה למצווה החשובה',
+      correct: false,
+      explanation: 'לא - צריך לעשות כל מצווה כשהיא באה 🤔'
+    }, {
+      text: 'אוותר על המצווה הקלה',
+      correct: false,
+      explanation: 'כל מצווה חשובה - אין להפסיד אף אחת 💡'
+    }, {
+      text: 'זה לא משנה',
+      correct: false,
+      explanation: 'המשנה אומרת שזה כן משנה - כל מצווה חשובה 🌟'
+    }]
+  }, {
+    type: 'scenario',
+    question: 'יש לך הזדמנות לעבירה קטנה שתיתן לך הנאה גדולה. מה תעשי?',
+    answers: [{
+      text: 'לא אעשה - אחשב "שכר עבירה כנגד הפסדה"',
+      correct: true,
+      explanation: 'כל הכבוד! חישבת את העונש לעומת ההנאה הזמנית ⭐'
+    }, {
+      text: 'אעשה כי ההנאה גדולה',
+      correct: false,
+      explanation: 'לא חישבת את ההפסד הגדול שיבוא אחר כך 🤔'
+    }, {
+      text: 'זה תלוי כמה הנאה',
+      correct: false,
+      explanation: 'גם הנאה גדולה לא שווה את העונש 💡'
+    }, {
+      text: 'אעשה אבל ארגיש רע',
+      correct: false,
+      explanation: 'טוב שיש לך מצפון, אבל צריך לא לעשות מלכתחילה 🌟'
+    }]
+  }, {
+    type: 'scenario',
+    question: 'את צריכה לבחור בין לעזור לאמא (מצווה) לבין ללמוד למבחן חשוב. מה תעשי?',
+    answers: [{
+      text: 'אעזור לאמא אבל אסביר שאני צריכה גם ללמוד - מצא איזון',
+      correct: true,
+      explanation: 'מעולה! זו "דרך ישרה" - מצא דרך לעשות את שניהם 🎯'
+    }, {
+      text: 'אעזור לאמא ולא אלמד בכלל',
+      correct: false,
+      explanation: 'זה "מפזר" - צריך גם לדאוג ללימודים 🤔'
+    }, {
+      text: 'אלמד ולא אעזור לאמא',
+      correct: false,
+      explanation: 'כיבוד אם זו מצווה חשובה - צריך למצוא איזון 💡'
+    }, {
+      text: 'אחכה שאמא תגיד לי מה לעשות',
+      correct: false,
+      explanation: 'טוב לשאול, אבל גם את צריכה לחשוב ולהציע פתרון 🌟'
+    }]
+  },
+  // "מה ההבדל?" (6 שאלות - 30%)
+  {
+    type: 'difference',
+    question: 'מה ההבדל בין "תפארת לעושה" ל"תפארת מן האדם"?',
+    answers: [{
+      text: '"תפארת לעושה" = טוב לי שעשיתי, "תפארת מן האדם" = אנשים מכבדים אותי',
+      correct: true,
+      explanation: 'מדויק! הראשון זה תועלת אישית, השני זה כבוד חברתי 🎯'
+    }, {
+      text: 'זה אותו דבר',
+      correct: false,
+      explanation: 'יש הבדל גדול - אחד אישי ואחד חברתי 🤔'
+    }, {
+      text: '"תפארת לעושה" יותר חשוב',
+      correct: false,
+      explanation: 'המשנה אומרת שצריך את שניהם 💡'
+    }, {
+      text: 'רק "תפארת מן האדם" חשובה',
+      correct: false,
+      explanation: 'גם תפארת לעושה חשובה - צריך איזון 🌟'
+    }]
+  }, {
+    type: 'difference',
+    question: 'מה ההבדל בין מצווה קלה למצווה חמורה לפי המשנה?',
+    answers: [{
+      text: 'אין הבדל - צריך להיזהר בשתיהן באותה מידה',
+      correct: true,
+      explanation: 'בדיוק! "זהיר במצווה קלה כבחמורה" 💪'
+    }, {
+      text: 'מצווה חמורה יותר חשובה',
+      correct: false,
+      explanation: 'המשנה אומרת להיזהר בשתיהן באותו אופן 🤔'
+    }, {
+      text: 'מצווה קלה קלה יותר לעשות',
+      correct: false,
+      explanation: 'הכוונה היא לחשיבות, לא לקושי 💡'
+    }, {
+      text: 'רק מצוות חמורות נספרות',
+      correct: false,
+      explanation: 'כל המצוות נספרות ונרשמות 🌟'
+    }]
+  }, {
+    type: 'difference',
+    question: 'מה ההבדל בין "הפסד מצווה" ל"שכר מצווה"?',
+    answers: [{
+      text: '"הפסד מצווה" = מה שאני מפסידה בשביל המצווה, "שכר מצווה" = מה שאני מקבלת עליה',
+      correct: true,
+      explanation: 'נכון! וצריך לחשב שהשכר תמיד גדול יותר ⭐'
+    }, {
+      text: 'זה אותו דבר',
+      correct: false,
+      explanation: 'הפסד זה מה שמשקיעים, שכר זה מה שמקבלים 🤔'
+    }, {
+      text: 'הפסד זה גדול יותר',
+      correct: false,
+      explanation: 'להפך - השכר תמיד גדול יותר מההפסד 💡'
+    }, {
+      text: 'אין הפסד במצוות',
+      correct: false,
+      explanation: 'יש הפסד זמני (זמן/כסף) אבל השכר גדול יותר 🌟'
+    }]
+  }, {
+    type: 'difference',
+    question: 'מה ההבדל בין "שכר עבירה" ל"הפסד עבירה"?',
+    answers: [{
+      text: '"שכר עבירה" = ההנאה הזמנית, "הפסד עבירה" = העונש וההשלכות',
+      correct: true,
+      explanation: 'מעולה! וההפסד תמיד גדול יותר מהשכר 🎯'
+    }, {
+      text: 'אין שכר בעבירה',
+      correct: false,
+      explanation: 'יש הנאה זמנית (המשנה קוראת לזה "שכר") אבל יש עונש גדול יותר 🤔'
+    }, {
+      text: 'השכר גדול יותר',
+      correct: false,
+      explanation: 'בעבירה ההפסד תמיד גדול יותר 💡'
+    }, {
+      text: 'זה תלוי באיזו עבירה',
+      correct: false,
+      explanation: 'בכל עבירה ההפסד גדול מההנאה 🌟'
+    }]
+  }, {
+    type: 'difference',
+    question: 'מה ההבדל בין "עין רואה" ל"אוזן שומעת"?',
+    answers: [{
+      text: '"עין רואה" = הקב"ה רואה מעשים, "אוזן שומעת" = הקב"ה שומע דיבורים',
+      correct: true,
+      explanation: 'מדויק! הקב"ה רואה ושומע הכל 💪'
+    }, {
+      text: 'זה אותו דבר בדיוק',
+      correct: false,
+      explanation: 'דומה אבל אחד על מעשים ואחד על דיבורים 🤔'
+    }, {
+      text: '"עין רואה" יותר חשובה',
+      correct: false,
+      explanation: 'שניהם חשובים באותה מידה 💡'
+    }, {
+      text: 'רק עין רואה רלוונטית',
+      correct: false,
+      explanation: 'גם אוזן שומעת חשובה - דיבורים חשובים 🌟'
+    }]
+  }, {
+    type: 'difference',
+    question: 'מה ההבדל בין "כילי" (קמצן) ל"מפזר" (מבזבז)?',
+    answers: [{
+      text: '"כילי" = שומר יותר מדי כסף, "מפזר" = נותן יותר מדי',
+      correct: true,
+      explanation: 'נכון! שניהם קיצוניים, צריך להיות באמצע (נדיב) ⭐'
+    }, {
+      text: 'כילי זה טוב ומפזר זה רע',
+      correct: false,
+      explanation: 'שניהם לא טובים - צריך איזון 🤔'
+    }, {
+      text: 'מפזר זה טוב וכילי זה רע',
+      correct: false,
+      explanation: 'שניהם בעייתיים - צריך דרך אמצעית 💡'
+    }, {
+      text: 'אין הבדל ביניהם',
+      correct: false,
+      explanation: 'יש הבדל גדול - אחד קמצן ואחד מבזבז 🌟'
+    }]
+  },
+  // רב-בחירה מורכבת (6 שאלות - 30%)
+  {
+    type: 'multipleChoice',
+    question: 'למה החכמים לא כתבו בדיוק כמה שכר יש לכל מצווה?',
+    answers: [{
+      text: 'כדי שנעשה כל מצווה בלי לבחור רק את אלו עם שכר גדול',
+      correct: true,
+      explanation: 'מצוין! אם נדע, נתמקד רק במצוות "כדאיות" 🎯'
+    }, {
+      text: 'כי השכר משתנה לכל אדם',
+      correct: false,
+      explanation: 'קרוב, אבל הסיבה העיקרית היא שלא נבחר מצוות 🤔'
+    }, {
+      text: 'כי זה סוד',
+      correct: false,
+      explanation: 'לא סוד - זה עיקרון חינוכי 💡'
+    }, {
+      text: 'כי החכמים עצמם לא ידעו',
+      correct: false,
+      explanation: 'הם ידעו, אבל בחרו לא לכתוב מסיבה חשובה 🌟'
+    }]
+  }, {
+    type: 'multipleChoice',
+    question: 'איזו מידה היא הדרך הנכונה לפי המשנה ולמה?',
+    answers: [{
+      text: 'מידה אמצעית (בין שני קצוות) כי היא תפארת לעושה ומן האדם',
+      correct: true,
+      explanation: 'פצצה! המידה האמצעית משרתת גם אותי וגם אחרים 💪'
+    }, {
+      text: 'להיות קיצוני כי זה יותר טוב',
+      correct: false,
+      explanation: 'קיצוניות היא בעיה - המשנה מדברת על איזון 🤔'
+    }, {
+      text: 'כל אחד לפי מה שהוא רוצה',
+      correct: false,
+      explanation: 'יש דרך נכונה - המידה האמצעית 💡'
+    }, {
+      text: 'לעשות רק מה שטוב לאחרים',
+      correct: false,
+      explanation: 'צריך גם "תפארת לעושה" - איזון 🌟'
+    }]
+  }, {
+    type: 'multipleChoice',
+    question: 'מדוע המשנה אומרת "הסתכל בשלושה דברים" ולא "זכור" או "תדע"?',
+    answers: [{
+      text: 'כי צריך להסתכל ולחשוב בהם תמיד, לא רק לדעת',
+      correct: true,
+      explanation: 'נכון! "הסתכל" זו פעולה מתמשכת של מודעות ⭐'
+    }, {
+      text: 'כי זה יותר קל',
+      correct: false,
+      explanation: 'להפך - הסתכלות דורשת יותר מאמץ 🤔'
+    }, {
+      text: 'כי זה אותו דבר',
+      correct: false,
+      explanation: '"הסתכל" זה יותר עמוק מסתם ידיעה 💡'
+    }, {
+      text: 'כי המילה יפה יותר',
+      correct: false,
+      explanation: 'יש סיבה עמוקה - מודעות מתמשכת 🌟'
+    }]
+  }, {
+    type: 'multipleChoice',
+    question: 'איזו מידה נותנת "תפארת לעושה" בלבד ולא "תפארת מן האדם"?',
+    answers: [{
+      text: 'כילות (קמצנות) - יש לו כסף אבל אנשים לא מכבדים אותו',
+      correct: true,
+      explanation: 'בדיוק! הוא מרוויח (תפארת לעושה) אבל אין כבוד חברתי 🎯'
+    }, {
+      text: 'נדיבות - כי זה טוב',
+      correct: false,
+      explanation: 'נדיבות נותנת את שני הסוגים של תפארת 🤔'
+    }, {
+      text: 'פיזור (בזבוז)',
+      correct: false,
+      explanation: 'פיזור נותן תפארת מן האדם אבל לא לעושה 💡'
+    }, {
+      text: 'אין מידה כזו',
+      correct: false,
+      explanation: 'כילות היא הדוגמה 🌟'
+    }]
+  }, {
+    type: 'multipleChoice',
+    question: 'למה המשנה אומרת "כל מעשיך בספר נכתבים" ולא "הקב"ה זוכר"?',
+    answers: [{
+      text: 'כדי להדגיש שהכל נשמר ולא נשכח - כמו רישום בספר',
+      correct: true,
+      explanation: 'מעולה! "בספר" מדגיש שזה קבוע ולא נמחק 💪'
+    }, {
+      text: 'כי יש ספר אמיתי בשמיים',
+      correct: false,
+      explanation: 'זו דרך דיבור להדגיש שהכל נשמר 🤔'
+    }, {
+      text: 'כי זה יותר מפחיד',
+      correct: false,
+      explanation: 'המטרה היא להדגיש שהכל נרשם, לא להפחיד 💡'
+    }, {
+      text: 'אין הבדל בין הביטויים',
+      correct: false,
+      explanation: '"בספר" מדגיש קביעות ואי-שכחה 🌟'
+    }]
+  }, {
+    type: 'multipleChoice',
+    question: 'מה הקשר בין "דרך ישרה" לבין שאר חלקי המשנה?',
+    answers: [{
+      text: 'דרך ישרה זו ההתחלה, ושאר המשנה מלמדת איך לשמור עליה',
+      correct: true,
+      explanation: 'כל הכבוד! המשנה נותנת כלים לשמור על הדרך הנכונה ⭐'
+    }, {
+      text: 'אין קשר ביניהם',
+      correct: false,
+      explanation: 'יש קשר הדוק - הכל חלק מאותו מסר 🤔'
+    }, {
+      text: 'זה רק סיכום',
+      correct: false,
+      explanation: 'דרך ישרה היא הבסיס, והיתר הוא הכלים 💡'
+    }, {
+      text: 'רק דרך ישרה חשובה',
+      correct: false,
+      explanation: 'כל חלקי המשנה חשובים וקשורים 🌟'
+    }]
+  }];
+  const currentQuestion = questions[currentQuestionIndex];
+
+  // Shuffle תשובות
+  useEffect(() => {
+    if (currentQuestion?.answers) {
+      setShuffledAnswers([...currentQuestion.answers].sort(() => Math.random() - 0.5));
+    }
+  }, [currentQuestionIndex]);
+  const playSuccessSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [523.25, 659.25, 783.99].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        const start = ctx.currentTime + i * 0.1;
+        gain.gain.setValueAtTime(0.3, start);
+        gain.gain.exponentialRampToValueAtTime(0.01, start + 0.3);
+        osc.start(start);
+        osc.stop(start + 0.3);
+      });
+    } catch (e) {
+      console.log('Audio not supported');
+    }
+  };
+  const handleAnswer = answer => {
+    setSelectedAnswer(answer);
+    setShowFeedback(true);
+    if (answer.correct) {
+      setScore(score + 1);
+      playSuccessSound();
+    } else {
+      setLives(lives - 1);
+    }
+  };
+  const handleNext = () => {
+    setShowFeedback(false);
+    setSelectedAnswer(null);
+    if (lives <= 0) {
+      setGameState('gameOver');
+      return;
+    }
+    if (currentQuestionIndex === questions.length - 1) {
+      if (score >= 18) {
+        setGameState('gameComplete');
+      } else {
+        setGameState('failed');
+      }
+    } else {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
+  };
+
+  // מסך הזנת שם
+  if (!gameStarted) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-8 flex items-center justify-center",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-20 h-20 mx-auto text-yellow-500 mb-4"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-purple-900 mb-6"
+    }, "\u05D1\u05E8\u05D5\u05DB\u05D4 \u05D4\u05D1\u05D0\u05D4 \u05DC\u05D7\u05DC\u05E7 2! \uD83C\uDF89"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 mb-2 text-lg"
+    }, "\u05D6\u05D5 \u05D4\u05E8\u05DE\u05D4 \u05D4\u05DE\u05EA\u05E7\u05D3\u05DE\u05EA! \uD83D\uDE80"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600 mb-6"
+    }, "\u05DE\u05D4 \u05E9\u05DE\u05DA? (\u05DC\u05EA\u05E2\u05D5\u05D3\u05D4 \u05D1\u05E1\u05D5\u05E3)"), /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      value: playerName,
+      onChange: e => setPlayerName(e.target.value),
+      placeholder: "\u05D4\u05DB\u05E0\u05D9\u05E1\u05D9 \u05D0\u05EA \u05E9\u05DE\u05DA \u05DB\u05D0\u05DF",
+      className: "w-full p-3 border-2 border-purple-300 rounded-lg text-center text-lg mb-6 focus:outline-none focus:border-purple-500",
+      dir: "rtl"
+    }), /*#__PURE__*/React.createElement("button", {
+      onClick: () => playerName.trim() && setGameStarted(true),
+      disabled: !playerName.trim(),
+      className: `w-full text-white px-6 py-3 rounded-lg font-bold text-lg transition-all ${playerName.trim() ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`
+    }, playerName.trim() ? `בואי נתחיל, ${playerName}!` : 'התחילי משחק', " \uD83D\uDE80"), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 p-4 bg-yellow-50 rounded-xl border-2 border-yellow-300"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-700"
+    }, /*#__PURE__*/React.createElement("strong", null, "\u05D0\u05EA\u05D2\u05E8:"), " 20 \u05E9\u05D0\u05DC\u05D5\u05EA \u05E7\u05E9\u05D5\u05EA", /*#__PURE__*/React.createElement("br", null), "\u05E6\u05E8\u05D9\u05DA 18/20 (90%) \u05DB\u05D3\u05D9 \u05DC\u05E2\u05D1\u05D5\u05E8! \uD83D\uDCAA"))));
+  }
+
+  // תעודת הצלחה
+  if (gameState === 'gameComplete') {
+    const finalScore = (score / 20 * 100).toFixed(0);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 p-4 sm:p-8",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-4xl w-full mx-auto bg-white rounded-3xl shadow-2xl p-8 sm:p-12 border-8 border-yellow-400 relative"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-8"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-20 h-20 sm:w-24 sm:h-24 mx-auto text-yellow-500 mb-4 animate-bounce"
+    }), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-2"
+    }, "\u05EA\u05E2\u05D5\u05D3\u05EA \u05D4\u05E6\u05D8\u05D9\u05D9\u05E0\u05D5\u05EA"), /*#__PURE__*/React.createElement("div", {
+      className: "w-32 h-1 bg-gradient-to-r from-purple-600 to-pink-600 mx-auto rounded-full"
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "text-center space-y-6 mb-8"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-gray-700"
+    }, "\u05DE\u05D5\u05E2\u05E0\u05E7\u05EA \u05D1\u05D6\u05D0\u05EA \u05DC:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-3xl sm:text-4xl font-bold text-purple-900 border-b-4 border-purple-300 inline-block pb-2"
+    }, playerName), /*#__PURE__*/React.createElement("div", {
+      className: "bg-purple-50 rounded-xl p-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg sm:text-xl text-gray-800"
+    }, "\u05E9\u05D4\u05E9\u05DC\u05D9\u05DE\u05D4 \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4 \u05D0\u05EA \u05DE\u05E9\u05D7\u05E7 \u05D4\u05DC\u05DE\u05D9\u05D3\u05D4", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-purple-900 text-xl sm:text-2xl"
+    }, "\"\u05D0\u05D1\u05D5\u05EA \u05E4\u05E8\u05E7 \u05D1\u05F3 \u05DE\u05E9\u05E0\u05D4 \u05D0\u05F3\""), /*#__PURE__*/React.createElement("br", null), "\u05D5\u05E2\u05D1\u05E8\u05D4 \u05D0\u05EA \u05DB\u05DC \u05D4\u05E8\u05DE\u05D5\u05EA \u05D1\u05DE\u05E6\u05D5\u05D9\u05E0\u05D5\u05EA!")), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-3 gap-3 sm:gap-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-green-100 p-3 sm:p-4 rounded-xl border-2 border-green-300"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-green-800 font-bold text-sm sm:text-base"
+    }, "\u05E6\u05D9\u05D5\u05DF \u05E1\u05D5\u05E4\u05D9"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl sm:text-3xl font-bold text-green-900"
+    }, finalScore, "%")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-100 p-3 sm:p-4 rounded-xl border-2 border-blue-300"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-blue-800 font-bold text-sm sm:text-base"
+    }, "\u05E8\u05DE\u05D5\u05EA"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl sm:text-3xl font-bold text-blue-900"
+    }, "3/3 \u2B50")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-purple-100 p-3 sm:p-4 rounded-xl border-2 border-purple-300"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-purple-800 font-bold text-sm sm:text-base"
+    }, "\u05E9\u05D0\u05DC\u05D5\u05EA"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl sm:text-3xl font-bold text-purple-900"
+    }, "45 \uD83C\uDFAF")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 rounded-2xl p-6 sm:p-8 mb-6 border-4 border-purple-300 animate-pulse"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-center gap-2 sm:gap-4 mb-4"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-3xl sm:text-4xl"
+    }, "\uD83C\uDF81"), /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl sm:text-3xl font-bold text-purple-900"
+    }, "\u05DE\u05D6\u05DC \u05D8\u05D5\u05D1! \u05E0\u05DB\u05E0\u05E1\u05EA \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4!"), /*#__PURE__*/React.createElement("span", {
+      className: "text-3xl sm:text-4xl"
+    }, "\uD83C\uDF89")), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg sm:text-xl text-gray-800 mb-6 text-center"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-purple-900"
+    }, "\u05D4\u05E6\u05DC\u05D7\u05EA \u05D1\u05D2\u05D3\u05D5\u05DC!"), /*#__PURE__*/React.createElement("br", null), "\u05E0\u05DB\u05E0\u05E1\u05EA \u05D0\u05D5\u05D8\u05D5\u05DE\u05D8\u05D9\u05EA \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4 \u05E2\u05DC", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+      className: "text-xl sm:text-2xl font-bold text-pink-600"
+    }, "\u05E4\u05E8\u05E1\u05D9\u05DD \u05E0\u05E4\u05DC\u05D0\u05D9\u05DD! \uD83C\uDFC6")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl p-4 sm:p-6 text-center"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-base sm:text-lg mb-4"
+    }, "\uD83D\uDCDD ", /*#__PURE__*/React.createElement("strong", null, "\u05D7\u05E9\u05D5\u05D1!"), " \u05E8\u05E9\u05DE\u05D9 \u05D0\u05EA \u05E4\u05E8\u05D8\u05D9\u05D9\u05DA:"), /*#__PURE__*/React.createElement("a", {
+      href: "https://forms.gle/A66uubei4XSX6SG2A",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: "inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-bold text-lg sm:text-xl hover:scale-105 transform transition-all"
+    }, "\uD83D\uDC49 \u05DC\u05D7\u05E6\u05D9 \u05DB\u05D0\u05DF \u05DC\u05E8\u05D9\u05E9\u05D5\u05DD \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4! \uD83C\uDFAF"))), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-col sm:flex-row gap-4 justify-center mb-6"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => window.print(),
+      className: "bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors"
+    }, "\uD83D\uDDA8\uFE0F \u05D4\u05D3\u05E4\u05D9\u05E1\u05D9 \u05EA\u05E2\u05D5\u05D3\u05D4"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setGameState('playing');
+        setCurrentQuestionIndex(0);
+        setScore(0);
+        setLives(3);
+        setShowFeedback(false);
+      },
+      className: "bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700 transition-colors"
+    }, "\uD83D\uDD04 \u05E9\u05D7\u05E7\u05D9 \u05E9\u05D5\u05D1")), /*#__PURE__*/React.createElement("div", {
+      className: "text-center pt-8 border-t-2"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 font-bold mb-2"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05D5\u05DE\u05E2\u05D5\u05E6\u05D1 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-purple-900 font-bold text-xl sm:text-2xl"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-purple-600 mt-2 text-base sm:text-lg"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520")), /*#__PURE__*/React.createElement("div", {
+      className: "absolute top-4 left-4 text-4xl sm:text-6xl opacity-20"
+    }, "\uD83C\uDF1F"), /*#__PURE__*/React.createElement("div", {
+      className: "absolute top-4 right-4 text-4xl sm:text-6xl opacity-20"
+    }, "\u2728"), /*#__PURE__*/React.createElement("div", {
+      className: "absolute bottom-4 left-4 text-4xl sm:text-6xl opacity-20"
+    }, "\uD83C\uDFC6"), /*#__PURE__*/React.createElement("div", {
+      className: "absolute bottom-4 right-4 text-4xl sm:text-6xl opacity-20"
+    }, "\uD83D\uDC8E")));
+  }
+
+  // מסך נכשל
+  if (gameState === 'failed') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-red-50 to-orange-50 p-8 flex items-center justify-center",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-xl p-8 max-w-md text-center"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-red-600 mb-4"
+    }, "\u05DB\u05DE\u05E2\u05D8 \u05D4\u05E6\u05DC\u05D7\u05EA! \uD83D\uDCAA"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-6"
+    }, "\u05D4\u05E9\u05D2\u05EA ", score, "/20 (", (score / 20 * 100).toFixed(0), "%)"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 mb-6"
+    }, "\u05E6\u05E8\u05D9\u05DA \u05DC\u05E4\u05D7\u05D5\u05EA 18/20 (90%) \u05DB\u05D3\u05D9 \u05DC\u05E2\u05D1\u05D5\u05E8 \u05D0\u05EA \u05D4\u05D7\u05DC\u05E7 \u05D4\u05DE\u05EA\u05E7\u05D3\u05DD"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setGameState('playing');
+        setCurrentQuestionIndex(0);
+        setScore(0);
+        setLives(3);
+        setShowFeedback(false);
+      },
+      className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity"
+    }, "\u05E0\u05E1\u05D9 \u05E9\u05D5\u05D1! \uD83D\uDD04")));
+  }
+
+  // מסך גמר - נגמרו חיים
+  if (gameState === 'gameOver') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-red-50 to-orange-50 p-8 flex items-center justify-center",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-xl p-8 max-w-md text-center"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-red-600 mb-4"
+    }, "\u05E0\u05D2\u05DE\u05E8\u05D5 \u05D4\u05D7\u05D9\u05D9\u05DD \uD83D\uDC94"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-6"
+    }, "\u05D4\u05E9\u05D2\u05EA ", score, " \u05E0\u05E7\u05D5\u05D3\u05D5\u05EA"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setGameState('playing');
+        setCurrentQuestionIndex(0);
+        setScore(0);
+        setLives(3);
+        setShowFeedback(false);
+      },
+      className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity"
+    }, "\u05D4\u05EA\u05D7\u05D9\u05DC\u05D9 \u05DE\u05D7\u05D3\u05E9 \uD83D\uDD04")));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-4 sm:p-8",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-xl p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-2xl sm:text-3xl font-bold text-center text-purple-900 mb-2"
+  }, "\u05DE\u05E9\u05D7\u05E7 \u05D0\u05D1\u05D5\u05EA - \u05E4\u05E8\u05E7 \u05D1\u05F3 \u05DE\u05E9\u05E0\u05D4 \u05D0\u05F3"), /*#__PURE__*/React.createElement("p", {
+    className: "text-center text-gray-600 mb-4"
+  }, "\u05D7\u05DC\u05E7 2: \u05DE\u05EA\u05E7\u05D3\u05DE\u05D9\u05DD \uD83C\uDFC6"), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, [...Array(3)].map((_, i) => /*#__PURE__*/React.createElement(Heart, {
+    key: i,
+    className: `w-6 h-6 sm:w-8 sm:h-8 ${i < lives ? 'text-red-500 fill-red-500' : 'text-gray-300'}`
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs sm:text-sm text-gray-600"
+  }, "\u05E9\u05DC\u05D5\u05DD"), /*#__PURE__*/React.createElement("p", {
+    className: "text-base sm:text-xl font-bold text-purple-900"
+  }, playerName, " \uD83D\uDC4B")), /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs sm:text-sm text-gray-600"
+  }, "\u05E6\u05D9\u05D5\u05DF"), /*#__PURE__*/React.createElement("p", {
+    className: "text-base sm:text-xl font-bold text-purple-900"
+  }, score, "/20"))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between text-xs sm:text-sm text-gray-600 mb-2"
+  }, /*#__PURE__*/React.createElement("span", null, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestionIndex + 1, "/20"), /*#__PURE__*/React.createElement("span", null, "90% \u05DC\u05E2\u05D1\u05D5\u05E8 (18/20)")), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-purple-600 to-pink-600 h-3 rounded-full transition-all duration-300",
+    style: {
+      width: `${(currentQuestionIndex + 1) / 20 * 100}%`
+    }
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-xl p-6 sm:p-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-4"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "inline-block bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-bold"
+  }, currentQuestion.type === 'scenario' ? '🎭 תרחיש' : currentQuestion.type === 'difference' ? '🔍 מה ההבדל?' : '💭 חשיבה מורכבת')), /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl sm:text-2xl font-bold text-purple-900 mb-6"
+  }, currentQuestion.question), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4"
+  }, shuffledAnswers.map((answer, index) => /*#__PURE__*/React.createElement("button", {
+    key: index,
+    onClick: () => !showFeedback && handleAnswer(answer),
+    disabled: showFeedback,
+    className: `w-full p-4 rounded-xl text-right transition-all ${showFeedback ? answer.correct ? 'bg-green-100 border-2 border-green-500' : selectedAnswer === answer ? 'bg-red-100 border-2 border-red-500' : 'bg-gray-100' : 'bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 hover:border-purple-400'} ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-base sm:text-lg"
+  }, answer.text), showFeedback && answer.correct && /*#__PURE__*/React.createElement(Check, {
+    className: "text-green-600 flex-shrink-0"
+  }), showFeedback && selectedAnswer === answer && !answer.correct && /*#__PURE__*/React.createElement(X, {
+    className: "text-red-600 flex-shrink-0"
+  }))))), showFeedback && selectedAnswer && /*#__PURE__*/React.createElement("div", {
+    className: `mt-6 p-4 rounded-xl ${selectedAnswer.correct ? 'bg-green-50 border-2 border-green-300' : 'bg-red-50 border-2 border-red-300'}`
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-lg font-bold mb-2"
+  }, selectedAnswer.correct ? '✓ נכון!' : '✗ לא נכון'), /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-700"
+  }, selectedAnswer.explanation)), showFeedback && /*#__PURE__*/React.createElement("button", {
+    onClick: handleNext,
+    className: "mt-6 w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:opacity-90 transition-opacity"
+  }, currentQuestionIndex === 19 ? 'סיימי ותקבלי תעודה! 🏆' : 'שאלה הבאה ←')), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 text-center bg-white rounded-xl shadow-lg p-4"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-600 text-sm"
+  }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9: ", /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-purple-900"
+  }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0")), /*#__PURE__*/React.createElement("p", {
+    className: "text-purple-600 text-sm mt-1"
+  }, "\uD83D\uDCDE 0527139520"))));
+};
+const __App = GamePart2;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

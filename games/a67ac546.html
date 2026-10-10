@@ -1,0 +1,1200 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ahava-learning-game – הקול החמישי</title>
+<meta name="description" content="Learn Hebrew concepts of love through an interactive quiz game with multiple difficulty levels, instant feedback, and progress tracking for students.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="ahava-learning-game – הקול החמישי">
+<meta property="og:description" content="Learn Hebrew concepts of love through an interactive quiz game with multiple difficulty levels, instant feedback, and progress tracking for students.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-a67ac546.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/a67ac546.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Shuffle = window.LucideReact["Shuffle"] || window.LucideReact.Circle;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const ArrowRight = window.LucideReact["ArrowRight"] || window.LucideReact.Circle;
+const RotateCcw = window.LucideReact["RotateCcw"] || window.LucideReact.Circle;
+const CheckCircle = window.LucideReact["CheckCircle"] || window.LucideReact.Circle;
+const XCircle = window.LucideReact["XCircle"] || window.LucideReact.Circle;
+const AhavaLearningGame = () => {
+  const [currentLevel, setCurrentLevel] = useState('easy');
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [gameState, setGameState] = useState('playing'); // playing, levelComplete, gameOver
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  const [attempts, setAttempts] = useState(0);
+  const questions = {
+    easy: [{
+      type: 'multipleChoice',
+      question: 'מהי "אהבה" לפי המקורות שלמדנו?',
+      answers: [{
+        text: 'רגש פתאומי וחזק שמופיע ברגע אחד',
+        correct: false,
+        explanation: 'זו טעות נפוצה - אהבה כזו היא רק "בגד חיצוני"'
+      }, {
+        text: 'מיומנות נרכשת המבוססת על דעת ומודעות',
+        correct: true,
+        explanation: 'מצוין! זו בדיוק המהות - אהבה היא דעת, לא רק רגש חולף'
+      }, {
+        text: 'תחושה חולפת שתלויה במזל ובזמן',
+        correct: false,
+        explanation: 'אהבה אמיתית איננה תלויה במזל אלא בבחירה ובעבודה'
+      }, {
+        text: 'רצון לקבל הנאה ותועלת מהזולת',
+        correct: false,
+        explanation: 'זו דווקא אהבת חשק מותנית, לא אהבה אמיתית'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהן שתי השכבות של האהבה?',
+      answers: [{
+        text: 'הדעת (המהות) והרגש (הבגד)',
+        correct: true,
+        explanation: 'בול! הדעת היא המהות הפנימית, והרגש הוא הבגד החיצוני'
+      }, {
+        text: 'האהבה והשנאה',
+        correct: false,
+        explanation: 'אלו לא שכבות של אותו רגש אלא שני רגשות הפוכים'
+      }, {
+        text: 'האהבה למעלה והאהבה למטה',
+        correct: false,
+        explanation: 'זה לא הבחנה של שכבות אלא של כיוונים'
+      }, {
+        text: 'האהבה הרציונלית והאהבה הרגשית',
+        correct: false,
+        explanation: 'קרוב אבל לא מדויק - המושגים המדויקים הם דעת ורגש'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהי הגימטריה של המילה "אהבה" ומה היא מלמדת אותנו?',
+      answers: [{
+        text: 'שבע - מספר ימי השבוע',
+        correct: false,
+        explanation: 'לא נכון, הגימטריה שונה'
+      }, {
+        text: 'אחד - האהבה היא רצון להתאחד',
+        correct: true,
+        explanation: 'פצצה! 🎯 הגימטריה מגלה שאהבה = רצון לאיחוד'
+      }, {
+        text: 'שלושה - המשולש של הקשר',
+        correct: false,
+        explanation: 'לא מדויק, זו לא הגימטריה'
+      }, {
+        text: 'חמש - חמש דרגות האהבה',
+        correct: false,
+        explanation: 'לא נכון, יש 4 שורשים של אהבה, לא 5'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם בין המושג להגדרה הנכונה:',
+      pairs: [{
+        term: 'דעת',
+        definition: 'מודעות למציאות והרצון להתאחד עם האחר'
+      }, {
+        term: 'רגש',
+        definition: 'התחושה החיצונית של אהבה שאנו חווים'
+      }, {
+        term: 'דמיון',
+        definition: 'המקור לכל הרגשות השליליים והשטחיים'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהו המקור לכל הרגשות הרעים והשליליים?',
+      answers: [{
+        text: 'המציאות הקשה שבעולם',
+        correct: false,
+        explanation: 'המציאות איננה המקור לרגשות שליליים'
+      }, {
+        text: 'כוח הדמיון שמטעה אותנו',
+        correct: true,
+        explanation: 'נכון מאוד! 💪 כל הרגשות הרעים נובעים מדמיון, לא ממציאות'
+      }, {
+        text: 'הרצון הרע שבאדם',
+        correct: false,
+        explanation: 'זו תשובה חלקית - הדמיון הוא המנגנון המדויק'
+      }, {
+        text: 'חוסר הידע שלנו',
+        correct: false,
+        explanation: 'קרוב, אבל המושג המדויק הוא "דמיון" שגורם לחוסר דעת'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה אי אפשר לשנוא יהודי אחר במציאות?',
+      answers: [{
+        text: 'כי זה נגד ההלכה',
+        correct: false,
+        explanation: 'זו תשובה חלקית - יש סיבה עמוקה יותר'
+      }, {
+        text: 'כי העם היהודי הוא יחידה אחת',
+        correct: true,
+        explanation: 'מדויק! ✨ במציאות כולנו אחד, שנאה היא רק דמיון'
+      }, {
+        text: 'כי כולנו בני אברהם אבינו',
+        correct: false,
+        explanation: 'זו נקודה נכונה אבל לא המהות העמוקה של התשובה'
+      }, {
+        text: 'כי השנאה גורמת סבל רק לשונא',
+        correct: false,
+        explanation: 'זה נכון אבל לא מסביר למה אי אפשר לשנוא במציאות'
+      }]
+    }, {
+      type: 'difference',
+      question: 'מה ההבדל בין אהבה שנובעת מ"דעת" לבין אהבה שנובעת מ"רגש"?',
+      answers: [{
+        text: 'אהבה מדעת יציבה וקבועה, אהבה מרגש חולפת ותלויה',
+        correct: true,
+        explanation: 'בול! 🎯 דעת היא המהות היציבה, רגש הוא הבגד החיצוני'
+      }, {
+        text: 'אהבה מדעת קרה ורציונלית, אהבה מרגש חמה',
+        correct: false,
+        explanation: 'לא נכון - גם דעת כוללת רגש אמיתי ועמוק'
+      }, {
+        text: 'אהבה מדעת מיועדת רק לצדיקים גדולים',
+        correct: false,
+        explanation: 'כל אדם יכול להגיע לאהבה מדעת - זו מיומנות נרכשת'
+      }, {
+        text: 'אין הבדל אמיתי - שניהם רגשות',
+        correct: false,
+        explanation: 'יש הבדל עצום - דעת היא המהות, רגש הוא רק החיצוניות'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהי "אהבת דגים" ומה הבעיה שבה?',
+      answers: [{
+        text: 'אהבה לדגים - אין בעיה בכך',
+        correct: false,
+        explanation: 'זו דוגמה למשהו עמוק יותר'
+      }, {
+        text: 'אהבה מותנית בהנאה שבטלה כשההנאה נעלמת',
+        correct: true,
+        explanation: 'מצוין! זוהי אהבת החשק - תלויה בגורם חיצוני'
+      }, {
+        text: 'אהבה לא מתאימה ליהודי',
+        correct: false,
+        explanation: 'זו לא הנקודה - הדוגמה מלמדת על סוג האהבה'
+      }, {
+        text: 'אהבה שדורשת הרבה עבודה',
+        correct: false,
+        explanation: 'דווקא להיפך - היא קלה מדי ולכן רדודה'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'כמה סוגי אהבה יש לפי המקורות?',
+      answers: [{
+        text: 'שני סוגים: אהבה אמיתית ואהבה מותנית',
+        correct: false,
+        explanation: 'זו אמנם הבחנה חשובה, אבל יש פירוט מדויק יותר'
+      }, {
+        text: 'שלושה סוגים: לה\', לזולת, לעצמי',
+        correct: false,
+        explanation: 'זו אמנם חלוקה נכונה, אבל לא הנושא כאן'
+      }, {
+        text: 'ארבעה שורשים שגורמים לאהבה',
+        correct: true,
+        explanation: 'נכון! 🌟 יש 4 שורשים: הערב, המועיל, הטוב, והאחדות'
+      }, {
+        text: 'שבעה סוגים: אחד לכל מידה',
+        correct: false,
+        explanation: 'לא מדויק - המספר הוא 4'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איך ניתן להפוך רגש חולף לדעת יציבה?',
+      answers: [{
+        text: 'לחכות שהרגש יתחזק מעצמו',
+        correct: false,
+        explanation: 'רגשות כהים מהר - המתנה פאסיבית לא תעזור'
+      }, {
+        text: 'לרצות לאהוב ולעשות מעשים מתוך האהבה',
+        correct: true,
+        explanation: 'מעולה! 💪 רצון (המסמר) + מעשים (הפטיש) = אהבה קבועה'
+      }, {
+        text: 'לנסות לשכוח מהרגש ולהתמקד בשכל',
+        correct: false,
+        explanation: 'לא נכון - המטרה לחבר את הרגש לדעת, לא לנתק'
+      }, {
+        text: 'להתפלל שהרגש לא יעלם',
+        correct: false,
+        explanation: 'תפילה חשובה אבל צריך גם פעולה אקטיבית'
+      }]
+    }],
+    medium: [{
+      type: 'multipleChoice',
+      question: 'מהי "אהבת הערב" (אחד מ-4 השורשים)?',
+      answers: [{
+        text: 'אהבה שמתעוררת בשעות הערב',
+        correct: false,
+        explanation: 'זה לא קשור לזמן - "ערב" כאן הוא מושג של נעימות'
+      }, {
+        text: 'הנאה מדבר נעים וערב לנפש',
+        correct: true,
+        explanation: 'נכון לגמרי! 🎯 זוהי אהבה שנובעת מהנעימות'
+      }, {
+        text: 'אהבה שמעורבת עם רגשות שליליים',
+        correct: false,
+        explanation: 'להיפך - זו אהבה לנעימות ולא לשליליות'
+      }, {
+        text: 'אהבה למזון ולשתייה בלבד',
+        correct: false,
+        explanation: 'זו רק דוגמה, אבל המושג רחב יותר - כל נעימות'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל שורש אהבה למקור הנפשי שלו:',
+      pairs: [{
+        term: 'אהבת הערב',
+        definition: 'הנאה המורגשת בנפש מדבר נעים'
+      }, {
+        term: 'אהבת המועיל',
+        definition: 'הנאה בנפש החיונית ממה שמשלים חסר'
+      }, {
+        term: 'אהבת הטוב',
+        definition: 'התפעלות והערכה המורגשת בשכל'
+      }, {
+        term: 'אהבת האחדות',
+        definition: 'רגש הנובע מהרגשת האחדות עצמה'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהי "אהבת המועיל"?',
+      answers: [{
+        text: 'אהבה למי שמועיל לי בעבודה',
+        correct: false,
+        explanation: 'זו דוגמה חלקית, אבל ההגדרה רחבה יותר'
+      }, {
+        text: 'הנאה ממי או ממה שמשלים חסר בנפש החיונית',
+        correct: true,
+        explanation: 'מעולה! כשציפיות מתמלאות, זו אהבת המועיל'
+      }, {
+        text: 'אהבה שמועילה לעולם',
+        correct: false,
+        explanation: 'לא זה הכוונה - זה שם של סוג ספציפי של אהבה'
+      }, {
+        text: 'אהבה למי שהכי שימושי',
+        correct: false,
+        explanation: 'זו גישה מצמצמת - ההגדרה עמוקה יותר'
+      }]
+    }, {
+      type: 'difference',
+      question: 'מה ההבדל בין "אהבת הטוב" ל"אהבת האחדות"?',
+      answers: [{
+        text: 'אהבת הטוב נובעת מהשכל, אהבת האחדות נובעת מהנשמה',
+        correct: true,
+        explanation: 'בול! 🏆 אהבת הטוב = התפעלות שכלית, אהבת האחדות = הרגשת האחדות עצמה'
+      }, {
+        text: 'אהבת הטוב לאנשים טובים, אהבת האחדות לכולם',
+        correct: false,
+        explanation: 'לא מדויק - ההבדל הוא במקור הרגש, לא במושא האהבה'
+      }, {
+        text: 'אהבת הטוב קלה יותר להשגה',
+        correct: false,
+        explanation: 'דווקא אהבת האחדות היא הדרגה הגבוהה ביותר'
+      }, {
+        text: 'אין הבדל אמיתי ביניהן',
+        correct: false,
+        explanation: 'יש הבדל עצום - אלו שני שורשים שונים לגמרי'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'ראובן אוהב את שמעון כי שמעון עזר לו בעבר וסיפק לו צורך חשוב. איזה סוג אהבה זו?',
+      answers: [{
+        text: 'אהבת הערב',
+        correct: false,
+        explanation: 'לא - זה לא רק על נעימות אלא על השלמת צורך'
+      }, {
+        text: 'אהבת המועיל',
+        correct: true,
+        explanation: 'מצוין! 💡 שמעון משלים חסר אצל ראובן - זו אהבת המועיל'
+      }, {
+        text: 'אהבת הטוב',
+        correct: false,
+        explanation: 'לא בדיוק - אם ראובן מעריך את האיכויות של שמעון זו אהבת הטוב, אבל כאן הדגש על התועלת'
+      }, {
+        text: 'אהבת האחדות',
+        correct: false,
+        explanation: 'לא - זו אהבה מותנית בתועלת, לא אהבה בעצם'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איך מגיעים לאהבת ה\' דרך "אהבת הטוב"?',
+      answers: [{
+        text: 'על ידי לימוד תורה בלבד',
+        correct: false,
+        explanation: 'לימוד תורה חשוב אבל זו לא התשובה המדויקת כאן'
+      }, {
+        text: 'על ידי התבוננות במצוותיו ופעולותיו',
+        correct: true,
+        explanation: 'נכון! ⭐ התבוננות מביאה להערכה והתפעלות - זו אהבת הטוב'
+      }, {
+        text: 'על ידי קבלת שפע רב',
+        correct: false,
+        explanation: 'זו יותר דרך של אהבת המועיל, לא אהבת הטוב'
+      }, {
+        text: 'על ידי רגש פתאומי של התעוררות',
+        correct: false,
+        explanation: 'זה לא מסלול יציב - אהבת הטוב דורשת עבודה שכלית'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהי הדרגה הנפלאה ביותר של אהבה?',
+      answers: [{
+        text: 'אהבת הערב - הנאה מנעימות',
+        correct: false,
+        explanation: 'זו הדרגה הראשונה והבסיסית ביותר'
+      }, {
+        text: 'אהבת המועיל - אהבה מתועלת',
+        correct: false,
+        explanation: 'זו דרגה גבוהה יותר אבל לא הגבוהה ביותר'
+      }, {
+        text: 'אהבת הטוב - התפעלות שכלית',
+        correct: false,
+        explanation: 'זו דרגה גבוהה מאוד אבל יש דרגה עליונה'
+      }, {
+        text: 'אהבת האחדות - אהבה בעצם',
+        correct: true,
+        explanation: 'מדהים! 🏆 זוהי הדרגה הנפלאה ביותר - אהבה "בעצם", לא מסיבה'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'לאה מתבוננת בטבע ומתפעלת מהחכמה האלוקית שבו. איזה סוג אהבה מתעורר בה?',
+      answers: [{
+        text: 'אהבת הערב',
+        correct: false,
+        explanation: 'לא - זו לא רק הנאה אלא התפעלות שכלית'
+      }, {
+        text: 'אהבת המועיל',
+        correct: false,
+        explanation: 'לא - היא לא מקבלת תועלת ישירה אלא מתפעלת'
+      }, {
+        text: 'אהבת הטוב',
+        correct: true,
+        explanation: 'בול! 🎯 התבוננות והתפעלות = אהבת הטוב'
+      }, {
+        text: 'אהבת האחדות',
+        correct: false,
+        explanation: 'קרוב, אבל אהבת האחדות היא הרגשת האחדות עצמה, לא התפעלות מחכמה'
+      }]
+    }, {
+      type: 'difference',
+      question: 'מה ההבדל בין "אהבת חשק" (מותנית) ל"אהבת אמת"?',
+      answers: [{
+        text: 'אהבת חשק תלויה בגורם חיצוני ובטלה כשהוא נעלם, אהבת אמת יציבה',
+        correct: true,
+        explanation: 'מושלם! 💪 אהבת חשק = תנאי חיצוני, אהבת אמת = דעת פנימית'
+      }, {
+        text: 'אהבת חשק חזקה יותר מאהבת אמת',
+        correct: false,
+        explanation: 'להיפך - אהבת חשק חולפת, אהבת אמת יציבה'
+      }, {
+        text: 'אהבת חשק לזולת, אהבת אמת לה\'',
+        correct: false,
+        explanation: 'לא - שניהם יכולים להיות לה\' או לזולת'
+      }, {
+        text: 'אין הבדל - שניהם סוגי אהבה',
+        correct: false,
+        explanation: 'יש הבדל מהותי - אחת תלויה, השנייה עצמאית'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איך נדע שעברנו מ"אהבה על מה שקיבלתי" ל"אהבת המיטיב"?',
+      answers: [{
+        text: 'כשאני מפסיק להודות',
+        correct: false,
+        explanation: 'להיפך - ההודיה נשארת אבל משתנה'
+      }, {
+        text: 'כשאני רואה בטובה הוכחה לאהבת הנותן אליי',
+        correct: true,
+        explanation: 'מצוין! ✨ השאלה היא "עד כמה זה מוכיח שהוא אוהב אותי?"'
+      }, {
+        text: 'כשאני שוכח מהטובה שקיבלתי',
+        correct: false,
+        explanation: 'לא - המטרה לא לשכוח אלא להתרומם דרך הטובה'
+      }, {
+        text: 'כשאני מקבל טובות גדולות יותר',
+        correct: false,
+        explanation: 'לא - זה לא תלוי בגודל הטובה אלא בתפיסה שלי'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה חכמים קוראים לרגשות "הלכות דעה"?',
+      answers: [{
+        text: 'כי יש הלכות רבות על רגשות',
+        correct: false,
+        explanation: 'לא זה הפירוש - זה שם עמוק יותר'
+      }, {
+        text: 'כי הרובד הפנימי של הרגש הוא דעת',
+        correct: true,
+        explanation: 'נכון לגמרי! 🌟 הרגש איננו רק תחושה אלא דעת'
+      }, {
+        text: 'כי רק חכמים מבינים רגשות',
+        correct: false,
+        explanation: 'לא נכון - כל אדם יכול להבין'
+      }, {
+        text: 'כי צריך דעה על איך להרגיש',
+        correct: false,
+        explanation: 'לא מדויק - זה לא על דעה חיצונית אלא על מהות הרגש'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'דוד מרגיש אהבה עזה לידידו אבל אינו יודע למה. הוא פשוט מרגיש שהם אחד. איזו אהבה זו?',
+      answers: [{
+        text: 'אהבת הערב',
+        correct: false,
+        explanation: 'לא - זה לא רק על נעימות'
+      }, {
+        text: 'אהבת המועיל',
+        correct: false,
+        explanation: 'לא - אין כאן תועלת ספציפית'
+      }, {
+        text: 'אהבת הטוב',
+        correct: false,
+        explanation: 'לא - אין כאן התפעלות שכלית מאיכויות'
+      }, {
+        text: 'אהבת האחדות',
+        correct: true,
+        explanation: 'פצצה! 🎉 זו אהבה "בעצם" - הרגשת האחדות ממש'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איך מחזקים רגש שכהה מהר?',
+      answers: [{
+        text: 'לחכות שיחזור מעצמו',
+        correct: false,
+        explanation: 'רגשות לא חוזרים מעצמם - צריך פעולה'
+      }, {
+        text: 'לרצות לאהוב (מסמר) ולעשות מעשים (פטיש)',
+        correct: true,
+        explanation: 'מעולה! 💪 רצון + מעשה = קביעות הרגש'
+      }, {
+        text: 'להתעלם מהרגש ולהמשיך הלאה',
+        correct: false,
+        explanation: 'זה בזבוז - הרגש הוא הזדמנות'
+      }, {
+        text: 'לדבר על הרגש עם אחרים',
+        correct: false,
+        explanation: 'זה יכול לעזור אבל לא המהות'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהו "תענוג הדבקות"?',
+      answers: [{
+        text: 'הנאה מאוכל וממזון',
+        correct: false,
+        explanation: 'זו הנאה גשמית, לא תענוג הדבקות'
+      }, {
+        text: 'הנאת ההשגה - "ליהנות מזיו השכינה"',
+        correct: true,
+        explanation: 'מדהים! 🏆 זהו התענוג האמיתי של הצדיקים'
+      }, {
+        text: 'הנאה מקיום מצוות',
+        correct: false,
+        explanation: 'זו הנאה חשובה אבל לא ההגדרה של תענוג הדבקות'
+      }, {
+        text: 'הנאה מלימוד תורה',
+        correct: false,
+        explanation: 'זו דרך להגיע, אבל התענוג עצמו הוא הדבקות'
+      }]
+    }, {
+      type: 'difference',
+      question: 'מה ההבדל בין "אהבה על הטובה שקיבלתי" ל"אהבת המיטיב"?',
+      answers: [{
+        text: 'אהבה על הטובה מתמקדת במתנה, אהבת המיטיב מתמקדת בנותן',
+        correct: true,
+        explanation: 'בול! 🎯 ההתרוממות היא מהמתנה לנותן'
+      }, {
+        text: 'אהבה על הטובה חלשה יותר',
+        correct: false,
+        explanation: 'לא מדויק - ההבדל הוא במוקד, לא בעוצמה'
+      }, {
+        text: 'אהבה על הטובה פחות אותנטית',
+        correct: false,
+        explanation: 'שתיהן אותנטיות, אבל ברמות שונות'
+      }, {
+        text: 'אין הבדל ממשי',
+        correct: false,
+        explanation: 'יש הבדל עצום - זה התהליך של התרוממות'
+      }]
+    }],
+    hard: [{
+      type: 'multipleChoice',
+      question: 'מדוע "הבזק הפתאומי" של אהבה עלול להוביל לטרגדיה?',
+      answers: [{
+        text: 'כי הרגש חזק מדי ומסוכן',
+        correct: false,
+        explanation: 'לא - הבעיה איננה בעוצמה אלא בחוסר יציבות'
+      }, {
+        text: 'כי חיי האדם נמשכים מעבר לרגע הראשוני ודורשים דעת',
+        correct: true,
+        explanation: 'מושלם! 🏆 זהו בדיוק העיקרון - אהבה צריכה להיות יציבה לאורך זמן'
+      }, {
+        text: 'כי הבזק פתאומי הוא תמיד דמיון',
+        correct: false,
+        explanation: 'לא תמיד - הבזק יכול להיות אמיתי, אבל צריך להמיר אותו לדעת'
+      }, {
+        text: 'כי זה סימן לאהבת חשק',
+        correct: false,
+        explanation: 'לא בהכרח - גם אהבה אמיתית יכולה להתחיל בהבזק, אבל צריכה להתפתח'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'שרה מרגישה אהבה עזה לבעלה כשהוא קונה לה מתנות, אבל כשאין מתנות היא מרגישה ריחוק. מה הבעיה?',
+      answers: [{
+        text: 'היא לא באמת אוהבת אותו',
+        correct: false,
+        explanation: 'לא נכון לומר כך - יש לה אהבה, אבל היא צריכה להתרומם'
+      }, {
+        text: 'האהבה שלה תלויה בגורם חיצוני (מתנות), לא בדעת',
+        correct: true,
+        explanation: 'מדויק! 💡 זו אהבת חשק מותנית - צריך להתרומם לאהבת המיטיב'
+      }, {
+        text: 'היא אנוכית ולא יודעת לתת',
+        correct: false,
+        explanation: 'זו מסקנה שיפוטית - הבעיה טכנית: האהבה תלויה בחיצוניות'
+      }, {
+        text: 'זוהי אהבה רגילה ובריאה',
+        correct: false,
+        explanation: 'לא - אהבה בריאה איננה תלויה במתנות'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'נניח שאדם עובר תהליך של התרוממות מאהבת הערב לאהבת האחדות. איזה סימנים יעידו על כך?',
+      answers: [{
+        text: 'הוא יפסיק ליהנות מדברים נעימים',
+        correct: false,
+        explanation: 'לא - התרוממות לא אומרת ויתור על הנאה אלא שינוי מוקד'
+      }, {
+        text: 'הוא יאהב גם כשאין נעימות, תועלת, או הערכה - אהבה "בעצם"',
+        correct: true,
+        explanation: 'מושלם! 🌟 זהו הסימן המובהק - אהבה לא מותנית'
+      }, {
+        text: 'הוא יהיה אדיש רגשית',
+        correct: false,
+        explanation: 'להיפך - אהבת האחדות היא רגש עז מאוד, רק שהוא לא תלוי'
+      }, {
+        text: 'הוא יעדיף בדידות על חברה',
+        correct: false,
+        explanation: 'זה לא נכון - אהבת האחדות היא דווקא חיבור עמוק'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם כל מצב לסוג האהבה שמתבטא בו:',
+      pairs: [{
+        term: 'נהנה מצחוק של חבר',
+        definition: 'אהבת הערב - הנאה מנעימות'
+      }, {
+        term: 'אוהב חבר שסייע לו בקושי',
+        definition: 'אהבת המועיל - הנאה ממי שמשלים חסר'
+      }, {
+        term: 'מתפעל מחוכמת חבר',
+        definition: 'אהבת הטוב - התפעלות והערכה'
+      }, {
+        term: 'מרגיש שהוא וחברו אחד ממש',
+        definition: 'אהבת האחדות - הרגשת האיחוד'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איך ניתן להבחין אם רגש נובע מ"דמיון" או מ"מציאות"?',
+      answers: [{
+        text: 'לבדוק אם הרגש נעים או לא',
+        correct: false,
+        explanation: 'זה לא קריטריון - גם רגשות שליליים יכולים להיות ממציאות'
+      }, {
+        text: 'לשאול: האם יש בסיס אמיתי לרגש או שזה רק תפיסה סובייקטיבית?',
+        correct: true,
+        explanation: 'מעולה! 🎯 דמיון = תפיסה סובייקטיבית, מציאות = בסיס אובייקטיבי'
+      }, {
+        text: 'רגשות חזקים תמיד נובעים ממציאות',
+        correct: false,
+        explanation: 'לא נכון - גם דמיון יכול ליצור רגשות עזים'
+      }, {
+        text: 'אי אפשר להבחין - זה תמיד סובייקטיבי',
+        correct: false,
+        explanation: 'אפשר להבחין - על ידי בדיקת הבסיס האמיתי'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'יעקב מרגיש כעס עז על שכנו שהקפיץ לו את המחיר בעסקה. איך נבחן אם הכעס נובע מדמיון או מציאות?',
+      answers: [{
+        text: 'אם יעקב צודק שהמחיר גבוה - זו מציאות',
+        correct: false,
+        explanation: 'לא - גם אם המחיר גבוה, הכעס יכול להיות דמיון'
+      }, {
+        text: 'נשאל: האם באמת השכן ניסה לפגוע או רק רצה רווח? האם יעקב רואה אותו כנפרד?',
+        correct: true,
+        explanation: 'מצוין! 💪 אם יעקב רואה אותו כנפרד ולא כחלק מיחידה אחת - זה דמיון'
+      }, {
+        text: 'כל כעס הוא תמיד דמיון',
+        correct: false,
+        explanation: 'לא נכון - יש כעס מוצדק שנובע ממציאות'
+      }, {
+        text: 'אם יעקב מרגיש את הכעס חזק - זו מציאות',
+        correct: false,
+        explanation: 'עוצמת הרגש לא מעידה על המקור שלו'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'אדם מרגיש אהבה לה\' כשהוא מקבל ברכה, אבל מרגיש ריחוק בקושי. איך לעזור לו להגיע לאהבה יציבה?',
+      answers: [{
+        text: 'להסביר לו שזו חולשה והוא צריך להתגבר',
+        correct: false,
+        explanation: 'זו גישה שיפוטית שלא עוזרת באמת'
+      }, {
+        text: 'לעזור לו לראות שגם בקושי יש אהבה, ולהתבונן בטוב כהוכחה לאהבת ה\'',
+        correct: true,
+        explanation: 'נכון! ✨ זה בדיוק התהליך של התרוממות - מהברכה לאהבת המברך'
+      }, {
+        text: 'לומר לו לוותר על תחושות ולהתמקד בשכל',
+        correct: false,
+        explanation: 'לא - המטרה לא לוותר על רגש אלא להעמיק אותו'
+      }, {
+        text: 'להמתין שתבוא ברכה ואז הרגש יחזור',
+        correct: false,
+        explanation: 'זה ישאיר את האהבה תלויה וחולפת'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהי המשמעות של "הנאת ההשגה" בדבקות?',
+      answers: [{
+        text: 'השגת ידע תורני רב',
+        correct: false,
+        explanation: 'ידע תורני הוא אמצעי, לא המטרה'
+      }, {
+        text: 'התענוג מהרגשת האיחוד עם ה\' עצמו',
+        correct: true,
+        explanation: 'מדהים! 🏆 זהו התענוג האמיתי - "ליהנות מזיו השכינה"'
+      }, {
+        text: 'הנאה מקיום מצוות רבות',
+        correct: false,
+        explanation: 'מצוות הן דרך, לא התענוג עצמו'
+      }, {
+        text: 'הנאה מהצלחות בחיים',
+        correct: false,
+        explanation: 'זו הנאה חומרית, לא הנאת ההשגה'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'מרים רואה שכולם אוהבים את רחל, ולכן גם היא מתחילה "לאהוב" אותה. מה הבעיה?',
+      answers: [{
+        text: 'אין בעיה - זו השפעה חברתית חיובית',
+        correct: false,
+        explanation: 'יש בעיה - זו לא אהבה אמיתית'
+      }, {
+        text: 'האהבה שלה נובעת מדמיון (דעת הרבים) ולא ממציאות פנימית',
+        correct: true,
+        explanation: 'בול! 💡 אהבה אמיתית נובעת מדעת פנימית, לא מלחץ חברתי'
+      }, {
+        text: 'מרים מזויפת ולא כנה',
+        correct: false,
+        explanation: 'לא שיפוטי - היא פשוט צריכה לפתח דעת עצמאית'
+      }, {
+        text: 'זוהי אהבת חשק',
+        correct: false,
+        explanation: 'לא מדויק - זה יותר דמיון מאשר אהבת חשק'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'מדוע לפי המקורות "כל הסבל בגיהינום הוא רק בדמיונו של האדם"?',
+      answers: [{
+        text: 'כי גיהינום לא באמת קיים',
+        correct: false,
+        explanation: 'לא זו הכוונה - גיהינום קיים אבל מקורו הוא הדמיון'
+      }, {
+        text: 'כי במציאות האמיתית אין ריחוק מה\', רק הדמיון יוצר הפרדה וסבל',
+        correct: true,
+        explanation: 'מושלם! 🌟 הסבל נובע מתחושת הפרדה מדומיינת, לא ממציאות'
+      }, {
+        text: 'כי האדם מדמיין שהעונש קשה יותר ממה שהוא',
+        correct: false,
+        explanation: 'לא זה העיקרון - זה לא על גודל העונש'
+      }, {
+        text: 'כי הכל סובייקטיבי ותלוי בראייה',
+        correct: false,
+        explanation: 'קרוב אבל לא מדויק - העיקרון עמוק יותר: הדמיון יוצר הפרדה שאינה קיימת'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהי המשמעות של "נתינה לזולת מתוך כוונה לשמח את המלך"?',
+      answers: [{
+        text: 'לתת מתנות לאנשים כדי להיראות טוב',
+        correct: false,
+        explanation: 'לא - זו נתינה למראית עין, לא נתינה אמיתית'
+      }, {
+        text: 'לתת מאהבה לזולת כדי לשמח את ה\' שאוהב את כולנו',
+        correct: true,
+        explanation: 'מעולה! 💪 זוהי נתינה מתוך הכרת האחדות - שמחת המלך היא המטרה'
+      }, {
+        text: 'לתת רק למי שמגיע לו',
+        correct: false,
+        explanation: 'זו גישה מצמצמת - אהבת אמת נותנת לכולם'
+      }, {
+        text: 'לתת כדי לקבל שכר',
+        correct: false,
+        explanation: 'זו נתינה מותנית, לא נתינה מאהבה'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'אברהם לומד תורה ומתפעל מחכמת ה\'. איזה תהליך נוסף עליו לעבור כדי להגיע לאהבת האחדות?',
+      answers: [{
+        text: 'ללמוד עוד ועוד עד שיגיע',
+        correct: false,
+        explanation: 'לימוד הוא אמצעי אבל לא מספיק'
+      }, {
+        text: 'להפנים את ההתפעלות ולהרגיש את האיחוד עצמו, לא רק את החכמה',
+        correct: true,
+        explanation: 'בול! 🎯 מאהבת הטוב (התפעלות) לאהבת האחדות (הרגשת האיחוד)'
+      }, {
+        text: 'לקיים יותר מצוות',
+        correct: false,
+        explanation: 'מצוות חשובות אבל זה לא המעבר הספציפי'
+      }, {
+        text: 'כבר הגיע - התפעלות זו אהבת האחדות',
+        correct: false,
+        explanation: 'לא - התפעלות היא אהבת הטוב, צריך להמשיך להרגשת האחדות'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'כיצד "רצון" ו"מעשים" מקבעים רגש לדעת?',
+      answers: [{
+        text: 'הרצון הוא הכוונה והמעשים הם הביצוע שמחזק את הרצון',
+        correct: true,
+        explanation: 'מושלם! 💪 רצון = המסמר, מעשים = הפטיש שמקבע אותו'
+      }, {
+        text: 'רק מעשים חשובים, רצון לא משנה',
+        correct: false,
+        explanation: 'שניהם חיוניים - רצון בלי מעשה כהה, מעשה בלי רצון ריק'
+      }, {
+        text: 'רק רצון חזק מספיק, מעשים לא נדרשים',
+        correct: false,
+        explanation: 'רצון צריך ביטוי במעשה כדי להתקבע'
+      }, {
+        text: 'זו גישה מיושנת שאינה רלוונטית היום',
+        correct: false,
+        explanation: 'להיפך - זה עיקרון נצחי של פסיכולוגיה אנושית'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מדוע חכמים אומרים שבמציאות "אי אפשר לשנוא יהודי אחר"?',
+      answers: [{
+        text: 'כי זה אסור בהלכה',
+        correct: false,
+        explanation: 'זו תשובה חלקית - יש סיבה עמוקה יותר'
+      }, {
+        text: 'כי העם היהודי הוא יחידה אחת במציאות, שנאה היא דמיון של הפרדה',
+        correct: true,
+        explanation: 'מדהים! 🏆 במציאות האמיתית כולנו אחד - הפרדה היא רק דמיון'
+      }, {
+        text: 'כי כל יהודי טוב בפנים',
+        correct: false,
+        explanation: 'לא זה העיקרון - זה לא על טוב או רע אלא על אחדות'
+      }, {
+        text: 'כי זה פוגע בשונא יותר מאשר בנשנא',
+        correct: false,
+        explanation: 'זה נכון אבל לא העיקרון המרכזי כאן'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'דינה מרגישה אהבה לה\' רק כשהיא בבית הכנסת, אבל לא בבית. מה זה מעיד?',
+      answers: [{
+        text: 'זה תקין - בית כנסת הוא מקום קדוש',
+        correct: false,
+        explanation: 'אמנם נכון, אבל זה מעיד על בעיה באהבה'
+      }, {
+        text: 'האהבה שלה תלויה בסביבה חיצונית, לא בדעת פנימית',
+        correct: true,
+        explanation: 'נכון! 💡 אהבה אמיתית איננה תלויה במקום - היא פנימית'
+      }, {
+        text: 'אין בעיה - כל אדם מרגיש יותר בבית כנסת',
+        correct: false,
+        explanation: 'זו תירוץ - המטרה להגיע לאהבה פנימית תמידית'
+      }, {
+        text: 'זוהי אהבת האחדות',
+        correct: false,
+        explanation: 'להיפך - אהבת האחדות היא פנימית ותמידית'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'איך מסבירים שאהבה היא ה"שלמות האמיתי"?',
+      answers: [{
+        text: 'כי אהבה גורמת לאושר',
+        correct: false,
+        explanation: 'זו תופעת לוואי, לא המהות'
+      }, {
+        text: 'כי אהבה היא איחוד, והאיחוד הוא השלמות (גימטריה: אהבה=אחד)',
+        correct: true,
+        explanation: 'מושלם! 🌟 השלמות היא האיחוד, לא השלמה חיצונית'
+      }, {
+        text: 'כי אהבה ממלאת את כל הצרכים',
+        correct: false,
+        explanation: 'זו תפיסה שטחית - השלמות היא במהות, לא במילוי צרכים'
+      }, {
+        text: 'כי בלי אהבה החיים ריקים',
+        correct: false,
+        explanation: 'נכון אבל לא מסביר למה אהבה היא השלמות עצמו'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה הקשר בין "הודיה" ל"אהבת המיטיב"?',
+      answers: [{
+        text: 'אין קשר - אלו שני מושגים נפרדים',
+        correct: false,
+        explanation: 'יש קשר הדוק - ההודיה היא השער'
+      }, {
+        text: 'ההודיה על הטובה היא השער להגיע לאהבת נותן הטובה',
+        correct: true,
+        explanation: 'מעולה! ✨ ההודיה מתחילה על המתנה ומתרוממת לנותן'
+      }, {
+        text: 'הודיה מיותרת אם יש אהבת מיטיב',
+        correct: false,
+        explanation: 'להיפך - ההודיה היא הדרך להגיע'
+      }, {
+        text: 'הודיה היא רק למי שאין לו אהבה',
+        correct: false,
+        explanation: 'לא נכון - הודיה היא חלק מהתהליך לכולם'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'חיים מרגיש שהאהבה שלו לאשתו "כהתה". מה עליו לעשות?',
+      answers: [{
+        text: 'להמתין שהרגש יחזור מעצמו',
+        correct: false,
+        explanation: 'רגשות לא חוזרים מעצמם'
+      }, {
+        text: 'לרצות לאהוב (להחליט שהוא רוצה) ולעשות מעשים של אהבה',
+        correct: true,
+        explanation: 'מצוין! 💪 רצון + מעשה = קביעות מחודשת של הרגש'
+      }, {
+        text: 'להתייעץ עם מטפל מיד',
+        correct: false,
+        explanation: 'אולי יעזור, אבל קודם כל צריך לעשות את העבודה הפנימית'
+      }, {
+        text: 'להבין שהאהבה נגמרה והזוגיות נכשלה',
+        correct: false,
+        explanation: 'לא! זה בדיוק הרגע לעבודה - אהבה היא מיומנות נרכשת'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'למה אהבת האחדות נקראת "אהבת תמתי"?',
+      answers: [{
+        text: 'כי היא ממתקת את החיים',
+        correct: false,
+        explanation: 'לא - זה לא קשור להמתקה'
+      }, {
+        text: 'כי היא תמימה ופשוטה',
+        correct: false,
+        explanation: 'קרוב אבל לא מדויק'
+      }, {
+        text: 'כי היא אהבה בעצם, שלמה ומושלמת, ללא סיבה חיצונית',
+        correct: true,
+        explanation: 'מדהים! 🏆 "תמתי" = תמימה, שלמה, מושלמת - אהבה בעצם'
+      }, {
+        text: 'כי רק תמימים יכולים להגיע אליה',
+        correct: false,
+        explanation: 'לא - כל אדם יכול להגיע, זה שם של סוג האהבה'
+      }]
+    }]
+  };
+  const levelRequirements = {
+    easy: {
+      total: 10,
+      passing: 8,
+      percentage: 80
+    },
+    medium: {
+      total: 15,
+      passing: 13,
+      percentage: 85
+    },
+    hard: {
+      total: 20,
+      passing: 18,
+      percentage: 90
+    }
+  };
+  const currentLevelQuestions = questions[currentLevel];
+  const currentQuestion = currentLevelQuestions[currentQuestionIndex];
+  const requirement = levelRequirements[currentLevel];
+
+  // Shuffle answers when question changes
+  useEffect(() => {
+    if (currentQuestion && currentQuestion.type === 'multipleChoice') {
+      const shuffled = [...currentQuestion.answers].sort(() => Math.random() - 0.5);
+      setShuffledAnswers(shuffled);
+    } else if (currentQuestion && currentQuestion.type === 'matching') {
+      const shuffledTerms = [...currentQuestion.pairs].sort(() => Math.random() - 0.5);
+      const shuffledDefs = [...currentQuestion.pairs].sort(() => Math.random() - 0.5);
+      setShuffledAnswers({
+        terms: shuffledTerms,
+        definitions: shuffledDefs
+      });
+    }
+  }, [currentQuestionIndex, currentLevel]);
+  const handleAnswer = (answer, isCorrect) => {
+    setSelectedAnswer(answer);
+    setShowFeedback(true);
+    if (isCorrect) {
+      setScore(score + 1);
+    } else {
+      setLives(lives - 1);
+      if (lives - 1 === 0) {
+        setAttempts(attempts + 1);
+        if (attempts + 1 >= 3) {
+          setGameState('gameOver');
+          return;
+        }
+      }
+    }
+  };
+  const nextQuestion = () => {
+    setShowFeedback(false);
+    setSelectedAnswer(null);
+    if (currentQuestionIndex + 1 < currentLevelQuestions.length) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      // Level complete
+      const percentage = score / requirement.total * 100;
+      if (percentage >= requirement.percentage) {
+        setGameState('levelComplete');
+      } else {
+        setGameState('levelFailed');
+      }
+    }
+  };
+  const nextLevel = () => {
+    if (currentLevel === 'easy') {
+      setCurrentLevel('medium');
+    } else if (currentLevel === 'medium') {
+      setCurrentLevel('hard');
+    }
+    setScore(0);
+    setLives(3);
+    setCurrentQuestionIndex(0);
+    setGameState('playing');
+    setAttempts(0);
+  };
+  const restart = () => {
+    setCurrentLevel('easy');
+    setScore(0);
+    setLives(3);
+    setCurrentQuestionIndex(0);
+    setGameState('playing');
+    setAttempts(0);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+  };
+  const renderQuestion = () => {
+    if (!currentQuestion) return null;
+    if (currentQuestion.type === 'multipleChoice' || currentQuestion.type === 'difference' || currentQuestion.type === 'scenario' || currentQuestion.type === 'deepAnalysis') {
+      return /*#__PURE__*/React.createElement("div", {
+        className: "space-y-4"
+      }, /*#__PURE__*/React.createElement("h3", {
+        className: "text-xl font-bold text-purple-900 mb-6"
+      }, currentQuestion.question), /*#__PURE__*/React.createElement("div", {
+        className: "space-y-3"
+      }, shuffledAnswers.map((answer, index) => /*#__PURE__*/React.createElement("button", {
+        key: index,
+        onClick: () => !showFeedback && handleAnswer(answer, answer.correct),
+        disabled: showFeedback,
+        className: `w-full p-4 text-right rounded-lg border-2 transition-all ${showFeedback ? answer === selectedAnswer ? answer.correct ? 'bg-green-100 border-green-500' : 'bg-red-100 border-red-500' : 'bg-gray-50 border-gray-200' : 'bg-white border-purple-200 hover:border-purple-400 hover:bg-purple-50'}`
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "font-medium"
+      }, answer.text), showFeedback && answer === selectedAnswer && /*#__PURE__*/React.createElement("div", {
+        className: "mt-2 text-sm"
+      }, answer.correct ? /*#__PURE__*/React.createElement(CheckCircle, {
+        className: "inline mr-2 text-green-600",
+        size: 16
+      }) : /*#__PURE__*/React.createElement(XCircle, {
+        className: "inline mr-2 text-red-600",
+        size: 16
+      }), answer.explanation)))));
+    }
+    if (currentQuestion.type === 'matching') {
+      const [matches, setMatches] = useState({});
+      const [showMatchFeedback, setShowMatchFeedback] = useState(false);
+      const handleMatch = () => {
+        let correct = 0;
+        currentQuestion.pairs.forEach(pair => {
+          if (matches[pair.term] === pair.definition) {
+            correct++;
+          }
+        });
+        const isCorrect = correct === currentQuestion.pairs.length;
+        setShowMatchFeedback(true);
+        handleAnswer(matches, isCorrect);
+      };
+      return /*#__PURE__*/React.createElement("div", {
+        className: "space-y-4"
+      }, /*#__PURE__*/React.createElement("h3", {
+        className: "text-xl font-bold text-purple-900 mb-6"
+      }, currentQuestion.question), /*#__PURE__*/React.createElement("div", {
+        className: "grid grid-cols-2 gap-4"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "space-y-2"
+      }, /*#__PURE__*/React.createElement("h4", {
+        className: "font-bold text-purple-800"
+      }, "\u05DE\u05D5\u05E9\u05D2\u05D9\u05DD:"), shuffledAnswers.terms && shuffledAnswers.terms.map((pair, index) => /*#__PURE__*/React.createElement("div", {
+        key: index,
+        className: "p-3 bg-purple-100 rounded-lg border border-purple-300"
+      }, pair.term))), /*#__PURE__*/React.createElement("div", {
+        className: "space-y-2"
+      }, /*#__PURE__*/React.createElement("h4", {
+        className: "font-bold text-purple-800"
+      }, "\u05D4\u05D2\u05D3\u05E8\u05D5\u05EA:"), shuffledAnswers.definitions && shuffledAnswers.definitions.map((pair, index) => /*#__PURE__*/React.createElement("button", {
+        key: index,
+        onClick: () => !showFeedback && setMatches({
+          ...matches,
+          [Object.keys(matches).length === 0 ? shuffledAnswers.terms[0].term : Object.keys(matches)[Object.keys(matches).length]]: pair.definition
+        }),
+        disabled: showFeedback,
+        className: `w-full p-3 text-right rounded-lg border-2 transition-all ${showFeedback ? 'bg-gray-50 border-gray-200' : 'bg-white border-purple-200 hover:border-purple-400 hover:bg-purple-50'}`
+      }, pair.definition)))), !showFeedback && Object.keys(matches).length === currentQuestion.pairs.length && /*#__PURE__*/React.createElement("button", {
+        onClick: handleMatch,
+        className: "w-full mt-4 bg-purple-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-purple-700"
+      }, "\u05D1\u05D3\u05D5\u05E7 \u05D4\u05EA\u05D0\u05DE\u05D5\u05EA \u2713"));
+    }
+  };
+  if (gameState === 'levelComplete') {
+    const percentage = score / requirement.total * 100;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-8 font-['Assistant']",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-24 h-24 mx-auto text-yellow-500 mb-4"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-purple-900 mb-4"
+    }, percentage >= 95 ? 'מדהים! 🏆' : 'כל הכבוד! 💪'), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-6"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05E8\u05DE\u05EA ", currentLevel === 'easy' ? 'קל' : currentLevel === 'medium' ? 'בינוני' : 'קשה', "!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-purple-50 p-6 rounded-lg mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-purple-900 mb-2"
+    }, score, " / ", requirement.total, " (", percentage.toFixed(0), "%)"), percentage >= 95 ? /*#__PURE__*/React.createElement("p", {
+      className: "text-green-700"
+    }, "\u05D0\u05EA\u05D4 \u05E9\u05D5\u05DC\u05D8 \u05D1\u05D7\u05D5\u05DE\u05E8! \uD83C\uDF89") : /*#__PURE__*/React.createElement("p", {
+      className: "text-blue-700"
+    }, "\u05E2\u05D5\u05D3 \u05E7\u05E6\u05EA \u05EA\u05E8\u05D2\u05D5\u05DC \u05DC-95% \uD83D\uDCDA")), currentLevel !== 'hard' ? /*#__PURE__*/React.createElement("button", {
+      onClick: nextLevel,
+      className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:opacity-90 mb-4"
+    }, "\u05D4\u05DE\u05E9\u05DA \u05DC\u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4 ", /*#__PURE__*/React.createElement(ArrowRight, {
+      className: "inline mr-2"
+    })) : /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-purple-900"
+    }, "\uD83C\uDF1F \u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05DB\u05DC \u05D4\u05E8\u05DE\u05D5\u05EA! \uD83C\uDF1F"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, "\u05D4\u05E9\u05D2\u05EA \u05D4\u05D1\u05E0\u05D4 \u05E2\u05DE\u05D5\u05E7\u05D4 \u05E9\u05DC \u05DE\u05D4\u05D5\u05EA \u05D4\u05D0\u05D4\u05D1\u05D4!")), /*#__PURE__*/React.createElement("button", {
+      onClick: restart,
+      className: "block mx-auto mt-4 text-purple-600 hover:text-purple-800"
+    }, "\u05D4\u05EA\u05D7\u05DC \u05DE\u05D7\u05D3\u05E9 ", /*#__PURE__*/React.createElement(RotateCcw, {
+      className: "inline mr-2",
+      size: 16
+    }))));
+  }
+  if (gameState === 'levelFailed' || gameState === 'gameOver') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-8 font-['Assistant']",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-purple-900 mb-4"
+    }, gameState === 'gameOver' ? 'צריך לחזור על החומר 🌱' : 'התחלה טובה! 🌱'), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-6"
+    }, gameState === 'gameOver' ? 'נכשלת 3 פעמים ברמה זו. מומלץ לחזור על החומר לפני שתמשיך.' : 'השגת פחות מ-' + requirement.percentage + '% ברמה זו.'), /*#__PURE__*/React.createElement("div", {
+      className: "bg-purple-50 p-6 rounded-lg mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-purple-900 mb-2"
+    }, score, " / ", requirement.total, " (", (score / requirement.total * 100).toFixed(0), "%)"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, "\u05D1\u05D5\u05D0 \u05E0\u05D7\u05D6\u05D5\u05E8 \u05E2\u05DC \u05D4\u05D7\u05D5\u05DE\u05E8 \u05D5\u05E0\u05E9\u05E4\u05E8! \uD83D\uDCAA")), /*#__PURE__*/React.createElement("button", {
+      onClick: restart,
+      className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:opacity-90"
+    }, "\u05D4\u05EA\u05D7\u05DC \u05DE\u05D7\u05D3\u05E9 ", /*#__PURE__*/React.createElement(RotateCcw, {
+      className: "inline mr-2"
+    }))));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-8 font-['Assistant']",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-xl p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-4"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
+    className: "text-3xl font-bold text-purple-900 mb-2"
+  }, "\u05DE\u05D4\u05D5\u05EA \u05D4\u05D0\u05D4\u05D1\u05D4 \u05DB\u05D3\u05E2\u05EA \u2665\uFE0F"), /*#__PURE__*/React.createElement("p", {
+    className: "text-purple-600"
+  }, "\u05E8\u05DE\u05D4: ", currentLevel === 'easy' ? 'קל ⭐' : currentLevel === 'medium' ? 'בינוני 🎯' : 'קשה 🏆')), /*#__PURE__*/React.createElement("div", {
+    className: "text-left"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl font-bold text-purple-900"
+  }, score), /*#__PURE__*/React.createElement(Star, {
+    className: "text-yellow-500"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-1"
+  }, [...Array(3)].map((_, i) => /*#__PURE__*/React.createElement(Heart, {
+    key: i,
+    className: i < lives ? 'text-red-500 fill-red-500' : 'text-gray-300',
+    size: 20
+  }))))), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-3 mb-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-purple-600 to-pink-600 h-3 rounded-full transition-all duration-500",
+    style: {
+      width: `${(currentQuestionIndex + 1) / requirement.total * 100}%`
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-600 text-center"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestionIndex + 1, " \u05DE\u05EA\u05D5\u05DA ", requirement.total)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-xl p-8"
+  }, renderQuestion(), showFeedback && /*#__PURE__*/React.createElement("div", {
+    className: "mt-6"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: nextQuestion,
+    className: "w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90"
+  }, currentQuestionIndex + 1 < requirement.total ? 'שאלה הבאה' : 'סיים רמה', " ", /*#__PURE__*/React.createElement(ArrowRight, {
+    className: "inline mr-2"
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-8 text-center bg-white rounded-xl shadow-lg p-6"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-700 font-bold mb-2"
+  }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+    className: "text-purple-900 font-bold text-lg"
+  }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+    className: "text-purple-600 mt-2"
+  }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+};
+const __App = AhavaLearningGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>

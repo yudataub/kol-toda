@@ -1,0 +1,1216 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rabbi-ovadia-trivia – הקול החמישי</title>
+<meta name="description" content="Interactive Hebrew trivia game about Rabbi Ovadia Yosef's life with 3 difficulty levels, scoring system, and detailed explanations for each answer.">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="rabbi-ovadia-trivia – הקול החמישי">
+<meta property="og:description" content="Interactive Hebrew trivia game about Rabbi Ovadia Yosef&#x27;s life with 3 difficulty levels, scoring system, and detailed explanations for each answer.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-7a91b794.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/7a91b794.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const BookOpen = window.LucideReact["BookOpen"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const ArrowRight = window.LucideReact["ArrowRight"] || window.LucideReact.Circle;
+const RotateCcw = window.LucideReact["RotateCcw"] || window.LucideReact.Circle;
+const CheckCircle = window.LucideReact["CheckCircle"] || window.LucideReact.Circle;
+const XCircle = window.LucideReact["XCircle"] || window.LucideReact.Circle;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const RabbiOvadiaTrivia = () => {
+  const [currentLevel, setCurrentLevel] = useState('easy');
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [gameState, setGameState] = useState('playing');
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  const [attempts, setAttempts] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
+  const questions = {
+    easy: [{
+      type: 'multipleChoice',
+      question: 'באיזו עיר נולד הרב עובדיה יוסף זצ"ל?',
+      answers: [{
+        text: 'ירושלים',
+        correct: false,
+        explanation: 'לא - הוא נולד בבגדד ועלה לירושלים בגיל 4'
+      }, {
+        text: 'בגדאד שבעיראק',
+        correct: true,
+        explanation: 'מצוין! 🎯 נולד בבגדאד ב-1920 ועלה לא"י בגיל 4'
+      }, {
+        text: 'תל אביב',
+        correct: false,
+        explanation: 'לא - הוא כיהן שם כרב ראשי, אבל לא נולד שם'
+      }, {
+        text: 'קהיר שבמצרים',
+        correct: false,
+        explanation: 'לא - הוא כיהן שם כרב, אבל לא נולד שם'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'על שם מי קיבל הרב עובדיה את השם "יוסף"?',
+      answers: [{
+        text: 'על שם אביו',
+        correct: false,
+        explanation: 'לא - אביו נקרא יעקב'
+      }, {
+        text: 'על שם ה"בן איש חי" (רבי יוסף חיים)',
+        correct: true,
+        explanation: 'בול! ✨ נקרא על שם הבן איש חי מבגדאד'
+      }, {
+        text: 'על שם יוסף הצדיק',
+        correct: false,
+        explanation: 'קרוב - הברית היתה ביום האושפיזין של יוסף הצדיק, אבל השם ע"ש הבן איש חי'
+      }, {
+        text: 'על שם סבו יוסף',
+        correct: false,
+        explanation: 'סבו נקרא עובדיה, לא יוסף'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'בכמה שנים כיהן הרב כ"ראשון לציון" והרב הראשי לישראל?',
+      answers: [{
+        text: '5 שנים (1973-1978)',
+        correct: false,
+        explanation: 'לא מספיק - כיהן יותר זמן'
+      }, {
+        text: '10 שנים (1973-1983)',
+        correct: true,
+        explanation: 'נכון לגמרי! 💪 עשור שלם של הנהגה'
+      }, {
+        text: '15 שנים (1973-1988)',
+        correct: false,
+        explanation: 'יותר מדי - כהונתו הסתיימה ב-1983'
+      }, {
+        text: '7 שנים (1973-1980)',
+        correct: false,
+        explanation: 'לא מדויק - כיהן 10 שנים'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהו שם הספר המרכזי שכתב הרב עובדיה?',
+      answers: [{
+        text: 'משנה ברורה',
+        correct: false,
+        explanation: 'זה ספר חשוב אבל של החפץ חיים, לא של הרב עובדיה'
+      }, {
+        text: 'יביע אומר',
+        correct: true,
+        explanation: 'מושלם! 🌟 זוהי יצירתו המרכזית - שו"ת יביע אומר'
+      }, {
+        text: 'שולחן ערוך',
+        correct: false,
+        explanation: 'זה ספר ההלכה של מרן רבי יוסף קארו, לא של הרב עובדיה'
+      }, {
+        text: 'בן איש חי',
+        correct: false,
+        explanation: 'זה ספר של רבי יוסף חיים, ע"ש הרב נקרא "יוסף"'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'בן כמה היה הרב כשעלה לארץ ישראל?',
+      answers: [{
+        text: 'תינוק (פחות משנה)',
+        correct: false,
+        explanation: 'צעיר מדי - הוא היה מעט גדול יותר'
+      }, {
+        text: '4 שנים',
+        correct: true,
+        explanation: 'נכון! ⭐ עלה עם המשפחה בשנת 1924 בגיל 4'
+      }, {
+        text: '10 שנים',
+        correct: false,
+        explanation: 'מבוגר מדי - הוא עלה צעיר יותר'
+      }, {
+        text: '7 שנים',
+        correct: false,
+        explanation: 'לא מדויק - היה צעיר יותר'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מי היה רבו המובהק של הרב עובדיה?',
+      answers: [{
+        text: 'הבן איש חי',
+        correct: false,
+        explanation: 'הבן איש חי נפטר לפני שהרב נולד'
+      }, {
+        text: 'הרב עזרא עטייה',
+        correct: true,
+        explanation: 'מעולה! 💡 ראש ישיבת פורת יוסף, רבו המובהק'
+      }, {
+        text: 'הרב בן ציון עוזיאל',
+        correct: false,
+        explanation: 'הוא הסמיך אותו לרבנות, אבל לא היה רבו המובהק'
+      }, {
+        text: 'הרב יצחק נסים',
+        correct: false,
+        explanation: 'לא - הרב עובדיה הצליח אותו כראשון לציון'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'באיזו שכונה בירושלים התגוררה משפחתו?',
+      answers: [{
+        text: 'מאה שערים',
+        correct: false,
+        explanation: 'לא - זו שכונה חרדית אחרת'
+      }, {
+        text: 'בית ישראל',
+        correct: true,
+        explanation: 'בול! 🎯 משפחתו התגוררה בבית ישראל'
+      }, {
+        text: 'גאולה',
+        correct: false,
+        explanation: 'לא - שכונה אחרת בירושלים'
+      }, {
+        text: 'בוכרים',
+        correct: false,
+        explanation: 'קרוב - הוא למד שם בת"ת, אבל לא גר שם'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה היה שמו המקורי המלא של הרב?',
+      answers: [{
+        text: 'עובדיה בן יוסף',
+        correct: false,
+        explanation: 'הפוך! השם השני היה יוסף, לא המשפחה'
+      }, {
+        text: 'עובדיה יוסף עובדיה',
+        correct: true,
+        explanation: 'נכון! ✨ עובדיה היה שם המשפחה, ואימץ "יוסף" כשם משפחה'
+      }, {
+        text: 'עובדיה עובדיה יוסף',
+        correct: false,
+        explanation: 'לא מדויק - הסדר שונה'
+      }, {
+        text: 'יוסף עובדיה בן יעקב',
+        correct: false,
+        explanation: 'לא נכון - זה לא המבנה'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'בן כמה היה הרב כשנפטר?',
+      answers: [{
+        text: '85 שנה',
+        correct: false,
+        explanation: 'צעיר מדי - הוא חי יותר'
+      }, {
+        text: '93 שנה',
+        correct: true,
+        explanation: 'מדויק! 🏆 נפטר בגיל 93 בשנת 2013'
+      }, {
+        text: '100 שנה',
+        correct: false,
+        explanation: 'כמעט, אבל לא בדיוק - 93 שנה'
+      }, {
+        text: '88 שנה',
+        correct: false,
+        explanation: 'לא מדויק - הוא חי עוד כמה שנים'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'כמה ילדים היו להרב עובדיה ולרבנית מרגלית?',
+      answers: [{
+        text: '6 ילדים',
+        correct: false,
+        explanation: 'מעט מדי - היו יותר'
+      }, {
+        text: '11 ילדים',
+        correct: true,
+        explanation: 'נכון! 💪 משפחה גדולה ומבורכת'
+      }, {
+        text: '8 ילדים',
+        correct: false,
+        explanation: 'לא מספיק - היו יותר'
+      }, {
+        text: '12 ילדים',
+        correct: false,
+        explanation: 'קרוב מאוד, אבל 11 בדיוק'
+      }]
+    }],
+    medium: [{
+      type: 'multipleChoice',
+      question: 'בן כמה היה הרב כשכתב את חיבורו הראשון?',
+      answers: [{
+        text: '6 שנים',
+        correct: false,
+        explanation: 'צעיר מדי - קצת מאוחר יותר'
+      }, {
+        text: '9 שנים',
+        correct: true,
+        explanation: 'מצוין! 💎 בגיל 9 כתב הערות על ספר "ראשית חכמה"'
+      }, {
+        text: '12 שנים',
+        correct: false,
+        explanation: 'בגיל זה הוא כבר למד בישיבת פורת יוסף'
+      }, {
+        text: '15 שנים',
+        correct: false,
+        explanation: 'מבוגר מדי - הוא כתב הרבה יותר מוקדם'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'לאיזו מדינה נסע הרב לכהן כרב בגיל 27?',
+      answers: [{
+        text: 'מרוקו',
+        correct: false,
+        explanation: 'לא - מדינה אחרת'
+      }, {
+        text: 'מצרים',
+        correct: true,
+        explanation: 'נכון לגמרי! 🌟 כיהן בקהיר כאב בית דין 1947-1950'
+      }, {
+        text: 'טורקיה',
+        correct: false,
+        explanation: 'לא - למרות שהיתה קהילה יהודית גדולה שם'
+      }, {
+        text: 'לבנון',
+        correct: false,
+        explanation: 'לא - מדינה אחרת'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מי היה הרב הראשי של מצרים שהרב עובדיה כיהן כסגנו?',
+      answers: [{
+        text: 'הרב בן ציון עוזיאל',
+        correct: false,
+        explanation: 'הוא היה הראשון לציון בארץ ישראל, לא במצרים'
+      }, {
+        text: 'חיים נחום אפנדי',
+        correct: true,
+        explanation: 'בול! 🎯 הרב הראשי של מצרים מטעם המלך'
+      }, {
+        text: 'הרב יצחק נסים',
+        correct: false,
+        explanation: 'הוא היה ראשון לציון מאוחר יותר'
+      }, {
+        text: 'הרב עזרא עטייה',
+        correct: false,
+        explanation: 'הוא היה ראש ישיבה בירושלים'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה קרה לרב במצרים במהלך מלחמת העצמאות?',
+      answers: [{
+        text: 'הוא ברח בחשאי',
+        correct: false,
+        explanation: 'לא - הוא נשאר והמשיך לכהן'
+      }, {
+        text: 'נעצר בחשד לריגול לטובת ישראל',
+        correct: true,
+        explanation: 'נכון! 💪 בלשים פרצו לביתו וחיפשו "נשק" - הוא הראה להם את ארון הספרים'
+      }, {
+        text: 'מונה לרב ראשי של כל מצרים',
+        correct: false,
+        explanation: 'לא - הוא היה סגן הרב הראשי'
+      }, {
+        text: 'שלחו אותו בשליחות לארץ',
+        correct: false,
+        explanation: 'לא נכון'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'באיזו שנה זכה הרב בפרס ישראל לספרות תורנית?',
+      answers: [{
+        text: '1965',
+        correct: false,
+        explanation: 'מוקדם מדי'
+      }, {
+        text: '1970 (תש"ל)',
+        correct: true,
+        explanation: 'מושלם! ✨ זכה בפרס ישראל לפני שהיה רב ראשי'
+      }, {
+        text: '1975',
+        correct: false,
+        explanation: 'כבר היה רב ראשי אז'
+      }, {
+        text: '1980',
+        correct: false,
+        explanation: 'מאוחר מדי'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה היה שמו של אביו של הרב?',
+      answers: [{
+        text: 'עובדיה',
+        correct: false,
+        explanation: 'זה היה שם המשפחה, אבל לא השם הפרטי'
+      }, {
+        text: 'יעקב',
+        correct: true,
+        explanation: 'נכון! 🎯 אביו נקרא יעקב בן עובדיה'
+      }, {
+        text: 'יוסף',
+        correct: false,
+        explanation: 'זה השם השני של הרב עצמו'
+      }, {
+        text: 'משה',
+        correct: false,
+        explanation: 'לא - אחד מבניו נקרא משה'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'באיזו ישיבה למד הרב מגיל 12?',
+      answers: [{
+        text: 'פורת יוסף',
+        correct: true,
+        explanation: 'מעולה! 💡 ישיבת פורת יוסף ברובע היהודי בעיר העתיקה'
+      }, {
+        text: 'מרכז הרב',
+        correct: false,
+        explanation: 'זו ישיבה אשכנזית מפורסמת אחרת'
+      }, {
+        text: 'חברון',
+        correct: false,
+        explanation: 'ישיבה חשובה אחרת'
+      }, {
+        text: 'בית זליכה',
+        correct: false,
+        explanation: 'שם למד זמן קצר בביקור בבגדאד'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'בן כמה היה הרב כשהוסמך לרבנות?',
+      answers: [{
+        text: '18 שנה',
+        correct: false,
+        explanation: 'צעיר מדי - הסמכה בדרך כלל יותר מאוחר'
+      }, {
+        text: '20 שנה',
+        correct: true,
+        explanation: 'בול! 🌟 הוסמך בשנת 1940 על ידי הרב בן ציון עוזיאל'
+      }, {
+        text: '25 שנה',
+        correct: false,
+        explanation: 'מבוגר מדי - הוא כבר היה דיין בגיל זה'
+      }, {
+        text: '23 שנה',
+        correct: false,
+        explanation: 'קרוב אבל לא מדויק'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מתי נישא הרב לרבנית מרגלית?',
+      answers: [{
+        text: 'בגיל 20',
+        correct: false,
+        explanation: 'מוקדם מדי'
+      }, {
+        text: 'בגיל 24 (שנת 1944)',
+        correct: true,
+        explanation: 'נכון! 💪 נישא לבת הרב אברהם הלוי פטאל'
+      }, {
+        text: 'בגיל 27',
+        correct: false,
+        explanation: 'מאוחר מדי - הוא כבר היה נשוי כשנסע למצרים'
+      }, {
+        text: 'בגיל 18',
+        correct: false,
+        explanation: 'צעיר מדי'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מתי נפטרה הרבנית מרגלית ע"ה?',
+      answers: [{
+        text: '1990',
+        correct: false,
+        explanation: 'מוקדם מדי'
+      }, {
+        text: '1994',
+        correct: true,
+        explanation: 'נכון! ✨ לאחר מכן סעדו אותו בנו משה וכלתו'
+      }, {
+        text: '2000',
+        correct: false,
+        explanation: 'מאוחר מדי'
+      }, {
+        text: '1985',
+        correct: false,
+        explanation: 'מוקדם מדי'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מי מבניו של הרב הוא הראשון לציון כיום?',
+      answers: [{
+        text: 'הרב יעקב יוסף',
+        correct: false,
+        explanation: 'הוא נפטר בשנת 2013'
+      }, {
+        text: 'הרב יצחק יוסף',
+        correct: true,
+        explanation: 'מצוין! 🏆 משמש כראשון לציון והרב הראשי'
+      }, {
+        text: 'הרב דוד יוסף',
+        correct: false,
+        explanation: 'הוא שימש כראשון לציון בעבר, אבל לא כיום'
+      }, {
+        text: 'הרב משה יוסף',
+        correct: false,
+        explanation: 'הוא ראש בד"צ בית יוסף'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהו שם הספר השני המפורסם של הרב (מלבד יביע אומר)?',
+      answers: [{
+        text: 'משנה ברורה',
+        correct: false,
+        explanation: 'זה ספר של החפץ חיים'
+      }, {
+        text: 'יחווה דעת',
+        correct: true,
+        explanation: 'נכון! 💎 עוד ספר שו"ת מפורסם שלו'
+      }, {
+        text: 'אור החיים',
+        correct: false,
+        explanation: 'זה ספר של רבי חיים בן עטר'
+      }, {
+        text: 'תורה תמימה',
+        correct: false,
+        explanation: 'זה ספר של הרב ברוך הלוי עפשטיין'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'באיזו שנה הקים את מפלגת ש"ס?',
+      answers: [{
+        text: '1980',
+        correct: false,
+        explanation: 'מוקדם קצת'
+      }, {
+        text: '1984 (תשמ"ד)',
+        correct: true,
+        explanation: 'בול! 🎯 הקים את ש"ס אחרי שהפסיקו את כהונתו כרב ראשי'
+      }, {
+        text: '1988',
+        correct: false,
+        explanation: 'מאוחר מדי - זו הכנסת השנייה של ש"ס'
+      }, {
+        text: '1977',
+        correct: false,
+        explanation: 'מוקדם מדי'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'לאיזו מדינה נסע הרב בשנת 1976?',
+      answers: [{
+        text: 'ארצות הברית',
+        correct: false,
+        explanation: 'לא נכון'
+      }, {
+        text: 'איראן',
+        correct: true,
+        explanation: 'נכון! ✨ ביקר באיראן כ-10 ימים לפני המהפכה האסלאמית'
+      }, {
+        text: 'צרפת',
+        correct: false,
+        explanation: 'לא נכון'
+      }, {
+        text: 'אנגליה',
+        correct: false,
+        explanation: 'לא נכון'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזה אירוע טבע שרד הרב בילדותו בירושלים?',
+      answers: [{
+        text: 'שיטפון',
+        correct: false,
+        explanation: 'לא זה האירוע'
+      }, {
+        text: 'רעידת אדמה (1927)',
+        correct: true,
+        explanation: 'מושלם! 💪 רעידת האדמה הגדולה בשנת 1927'
+      }, {
+        text: 'שרפה גדולה',
+        correct: false,
+        explanation: 'לא נכון'
+      }, {
+        text: 'סופת שלג',
+        correct: false,
+        explanation: 'לא זה האירוע'
+      }]
+    }],
+    hard: [{
+      type: 'multipleChoice',
+      question: 'מהו המשמעות של ראשי התיבות "יבי"ע" בספר "יביע אומר"?',
+      answers: [{
+        text: 'יהודים בני ישראל עם',
+        correct: false,
+        explanation: 'לא - זה קשור לשמו'
+      }, {
+        text: 'עובדיה יוסף בן יעקב',
+        correct: true,
+        explanation: 'מדהים! 🏆 ראשי התיבות של שמו המלא'
+      }, {
+        text: 'ישראל בית יוסף עולם',
+        correct: false,
+        explanation: 'לא נכון'
+      }, {
+        text: 'יביע אומר - בלי ראשי תיבות',
+        correct: false,
+        explanation: 'לא - יש משמעות לראשי התיבות'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה רבו הרב עזרא עטייה אסר על הרב להדפיס את ספרו הראשון?',
+      answers: [{
+        text: 'כי הספר היה חלש',
+        correct: false,
+        explanation: 'להיפך - הספר היה מבריק!'
+      }, {
+        text: 'מחשש לעין הרע',
+        correct: true,
+        explanation: 'נכון! 💎 הרב כתב בגיל 18 ורבו חשש שזה מוקדם מדי'
+      }, {
+        text: 'כי לא היה כסף להדפסה',
+        correct: false,
+        explanation: 'זו לא הסיבה'
+      }, {
+        text: 'כי רצה לבדוק אותו יותר',
+        correct: false,
+        explanation: 'לא זו הסיבה העיקרית'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'כמה משתתפים היו בהלוויה של הרב לפי ההערכות?',
+      answers: [{
+        text: '100,000-200,000',
+        correct: false,
+        explanation: 'הרבה פחות - זו היתה הלוויה הגדולה בישראל!'
+      }, {
+        text: '275,000-850,000',
+        correct: true,
+        explanation: 'מושלם! 🌟 ההלוויה הגדולה ביותר בתולדות ישראל'
+      }, {
+        text: '50,000-100,000',
+        correct: false,
+        explanation: 'הרבה פחות ממה שהיה'
+      }, {
+        text: '1,000,000+',
+        correct: false,
+        explanation: 'מעט יותר מההערכות'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מתי הופסקה כהונתו כרב ראשי?',
+      answers: [{
+        text: '1980',
+        correct: false,
+        explanation: 'מוקדם מדי'
+      }, {
+        text: '1983 (תשמ"ג)',
+        correct: true,
+        explanation: 'בול! 💪 אז הוחלט על הקמת מפלגת ש"ס'
+      }, {
+        text: '1985',
+        correct: false,
+        explanation: 'מאוחר מדי - ש"ס כבר הוקמה'
+      }, {
+        text: '1988',
+        correct: false,
+        explanation: 'מאוחר יותר'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מי המליץ על הרב לתפקיד אב בית דין במצרים?',
+      answers: [{
+        text: 'הרב עזרא עטייה',
+        correct: false,
+        explanation: 'קרוב - הוא היה רבו, אבל לא המליץ לתפקיד הזה'
+      }, {
+        text: 'הרב בן ציון מאיר חי עוזיאל',
+        correct: true,
+        explanation: 'מצוין! 🎯 הראשון לציון דאז ביקש ממנו לכהן במצרים'
+      }, {
+        text: 'הרב יצחק נסים',
+        correct: false,
+        explanation: 'לא - הוא היה ראשון לציון מאוחר יותר'
+      }, {
+        text: 'המלך פארוק',
+        correct: false,
+        explanation: 'לא - זה היה הרב עוזיאל'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזה ספר החל הרב להשלים את כתיבתו?',
+      answers: [{
+        text: 'משנה ברורה',
+        correct: false,
+        explanation: 'זה ספר של החפץ חיים'
+      }, {
+        text: 'כף החיים',
+        correct: true,
+        explanation: 'נכון! ✨ השלים את כף החיים (יו"ד סימן קיז-קיט)'
+      }, {
+        text: 'שולחן ערוך',
+        correct: false,
+        explanation: 'זה ספר של מרן רבי יוסף קארו'
+      }, {
+        text: 'טור',
+        correct: false,
+        explanation: 'זה ספר עתיק יותר'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'כמה שנים כיהן הרב כרב ראשי לתל אביב-יפו?',
+      answers: [{
+        text: '2 שנים (1969-1971)',
+        correct: false,
+        explanation: 'קצר מדי'
+      }, {
+        text: '3 שנים (1969-1972)',
+        correct: true,
+        explanation: 'בול! 💡 עד שנבחר לראשון לציון'
+      }, {
+        text: '5 שנים',
+        correct: false,
+        explanation: 'יותר מדי'
+      }, {
+        text: '4 שנים',
+        correct: false,
+        explanation: 'קרוב אבל לא מדויק'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מי היה הרב הראשי האשכנזי בתקופת כהונתו?',
+      answers: [{
+        text: 'הרב אברהם שפירא',
+        correct: false,
+        explanation: 'לא - הוא כיהן מאוחר יותר'
+      }, {
+        text: 'הרב שלמה גורן',
+        correct: true,
+        explanation: 'נכון! 🎯 היחסים ביניהם היו מורכבים'
+      }, {
+        text: 'הרב יצחק הלוי הרצוג',
+        correct: false,
+        explanation: 'הוא כיהן לפני תקופתו'
+      }, {
+        text: 'הרב מרדכי אליהו',
+        correct: false,
+        explanation: 'הוא היה ראשון לציון מאוחר יותר'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה קרה כשהרב יצא למצרים?',
+      answers: [{
+        text: 'התלמידים חסמו את הכביש בגופם',
+        correct: true,
+        explanation: 'מדהים! 💪 התשטחו על הכביש ולא רצו לתת לו לנסוע'
+      }, {
+        text: 'ערכו לו מסיבת פרידה בלבד',
+        correct: false,
+        explanation: 'גם, אבל עשו יותר מזה'
+      }, {
+        text: 'נסעו איתו עד הנמל',
+        correct: false,
+        explanation: 'לא נכון'
+      }, {
+        text: 'לא ידעו שהוא נוסע',
+        correct: false,
+        explanation: 'ידעו, ולכן התנגדו'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזו ועידה היסטורית ביקש הרב להתיר?',
+      answers: [{
+        text: 'נישואין עם קראים אחרי שלמדו תורה שבעל פה',
+        correct: true,
+        explanation: 'מושלם! 🌟 פסק היסטורי מרחיק לכת'
+      }, {
+        text: 'עלייה לכותל בזמן שבת',
+        correct: false,
+        explanation: 'זה לא היה בעיה הלכתית'
+      }, {
+        text: 'אכילת קטניות בפסח לאשכנזים',
+        correct: false,
+        explanation: 'זה לא נושא שטיפל בו'
+      }, {
+        text: 'שימוש בחשמל בשבת',
+        correct: false,
+        explanation: 'לא זו הייתה הפסיקה המרכזית'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'על איזו עדה פסק הרב שהם יהודים לכל דבר?',
+      answers: [{
+        text: 'בני מנשה',
+        correct: false,
+        explanation: 'לא זו העדה'
+      }, {
+        text: 'ביתא ישראל (יהודי אתיופיה)',
+        correct: true,
+        explanation: 'נכון לגמרי! 🏆 פסיקה היסטורית שהובילה להחלת חוק השבות'
+      }, {
+        text: 'הקראים',
+        correct: false,
+        explanation: 'עליהם פסק בנושא נישואין, לא על היותם יהודים'
+      }, {
+        text: 'הלמבה',
+        correct: false,
+        explanation: 'לא זו העדה'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'באיזו שנה התחיל להעביר שיעורים שבועיים ב"יזדים"?',
+      answers: [{
+        text: 'משנות ה-50',
+        correct: false,
+        explanation: 'מוקדם מדי'
+      }, {
+        text: 'משנות ה-60',
+        correct: true,
+        explanation: 'נכון! ✨ למעלה מ-50 שנה של שיעורים שבועיים'
+      }, {
+        text: 'משנות ה-70',
+        correct: false,
+        explanation: 'כבר היה רב ראשי אז'
+      }, {
+        text: 'משנות ה-80',
+        correct: false,
+        explanation: 'מאוחר מדי'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהו שם הסדרה שבנו הרב יצחק חיבר על פסקיו?',
+      answers: [{
+        text: 'חזון עובדיה',
+        correct: false,
+        explanation: 'זו סדרת הספרים של הרב עצמו'
+      }, {
+        text: 'ילקוט יוסף',
+        correct: true,
+        explanation: 'מעולה! 💎 למעלה מ-30 כרכים על פסקי אביו'
+      }, {
+        text: 'הליכות עולם',
+        correct: false,
+        explanation: 'זה ספר של הרב עובדיה עצמו'
+      }, {
+        text: 'מאור ישראל',
+        correct: false,
+        explanation: 'זה שם הכולל של הרב משה יוסף'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'באיזו ישיבה ביקר הרב בילדותו בבגדאד?',
+      answers: [{
+        text: 'מדרש בית זליכה',
+        correct: true,
+        explanation: 'בול! 🎯 בגיל 11 במהלך ביקור בבגדאד'
+      }, {
+        text: 'פורת יוסף',
+        correct: false,
+        explanation: 'זו הישיבה בירושלים'
+      }, {
+        text: 'בית יוסף',
+        correct: false,
+        explanation: 'לא שם הישיבה'
+      }, {
+        text: 'אוהל יעקב',
+        correct: false,
+        explanation: 'לא נכון'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזה שם הוסיפו להרב בבית החולים לפני פטירתו?',
+      answers: [{
+        text: 'רפאל',
+        correct: false,
+        explanation: 'לא - שם אחר'
+      }, {
+        text: 'חיים',
+        correct: true,
+        explanation: 'נכון! 💪 כסגולה לאריכות ימים'
+      }, {
+        text: 'שמואל',
+        correct: false,
+        explanation: 'לא נכון'
+      }, {
+        text: 'אברהם',
+        correct: false,
+        explanation: 'לא נכון'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'במה התפרנסה משפחתו בירושלים?',
+      answers: [{
+        text: 'צורפות',
+        correct: false,
+        explanation: 'זה היה המקצוע בעיראק, לא בירושלים'
+      }, {
+        text: 'חנות מכולת של האב',
+        correct: true,
+        explanation: 'נכון! ✨ חנות המכולת - והבן עובדיה עבד שם בצעירותו'
+      }, {
+        text: 'סחר בבדים',
+        correct: false,
+        explanation: 'לא זה המקצוע'
+      }, {
+        text: 'נגרות',
+        correct: false,
+        explanation: 'לא נכון'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'כמה מבניו של הרב שימשו כראשון לציון?',
+      answers: [{
+        text: 'אחד בלבד',
+        correct: false,
+        explanation: 'יותר מזה'
+      }, {
+        text: 'שניים',
+        correct: true,
+        explanation: 'מדויק! 🏆 הרב יצחק והרב דוד'
+      }, {
+        text: 'שלושה',
+        correct: false,
+        explanation: 'רק שניים'
+      }, {
+        text: 'אף אחד',
+        correct: false,
+        explanation: 'לא נכון - שניים כיהנו'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהו שם בתו הבכורה שזכתה בפרס ישראל?',
+      answers: [{
+        text: 'רות',
+        correct: false,
+        explanation: 'לא נכון'
+      }, {
+        text: 'עדינה בר שלום',
+        correct: true,
+        explanation: 'מושלם! 💎 ייסדה מכללה אקדמית חרדית'
+      }, {
+        text: 'מרגלית',
+        correct: false,
+        explanation: 'זה שם אמם'
+      }, {
+        text: 'רחל',
+        correct: false,
+        explanation: 'לא נכון'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה אמר רבי סלמן חוגי עבודי לרב בגיל 11?',
+      answers: [{
+        text: 'אתה תלמיד מצוין',
+        correct: false,
+        explanation: 'הוא אמר משהו הרבה יותר חזק'
+      }, {
+        text: 'אתה תהיה לאחד מפוסקי ישראל, גדול הדור',
+        correct: true,
+        explanation: 'מדהים! 🌟 נבואה שהתגשמה במלואה!'
+      }, {
+        text: 'אתה צריך ללמוד יותר',
+        correct: false,
+        explanation: 'להיפך - הוא התפעל מאוד'
+      }, {
+        text: 'אתה צעיר מדי ללימוד זה',
+        correct: false,
+        explanation: 'להיפך - התפעל מהבשלות'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזה תואר נתן לו הרב עזרא עטייה?',
+      answers: [{
+        text: 'חכם גדול',
+        correct: false,
+        explanation: 'אמר משהו חזק יותר'
+      }, {
+        text: 'אילו לא קמה ישיבת פורת יוסף אלא כדי להוציא את הרב עובדיה, כדאי',
+        correct: true,
+        explanation: 'מושלם! 💪 ביטוי עצום לגדלותו כבר בצעירותו'
+      }, {
+        text: 'תלמיד חכם מופלא',
+        correct: false,
+        explanation: 'אמר משהו מיוחד יותר'
+      }, {
+        text: 'עתיד גדול לישראל',
+        correct: false,
+        explanation: 'לא הביטוי המדויק'
+      }]
+    }]
+  };
+  const levelRequirements = {
+    easy: {
+      total: 10,
+      passing: 8,
+      percentage: 80
+    },
+    medium: {
+      total: 15,
+      passing: 13,
+      percentage: 85
+    },
+    hard: {
+      total: 20,
+      passing: 18,
+      percentage: 90
+    }
+  };
+  const currentLevelQuestions = questions[currentLevel];
+  const currentQuestion = currentLevelQuestions[currentQuestionIndex];
+  const requirement = levelRequirements[currentLevel];
+  useEffect(() => {
+    if (currentQuestion && currentQuestion.answers) {
+      const shuffled = [...currentQuestion.answers].sort(() => Math.random() - 0.5);
+      setShuffledAnswers(shuffled);
+    }
+  }, [currentQuestionIndex, currentLevel]);
+  const handleAnswer = (answer, isCorrect) => {
+    setSelectedAnswer(answer);
+    setShowFeedback(true);
+    if (isCorrect) {
+      setScore(score + 1);
+      setStreak(streak + 1);
+      if (streak + 1 > bestStreak) {
+        setBestStreak(streak + 1);
+      }
+    } else {
+      setStreak(0);
+      setLives(lives - 1);
+      if (lives - 1 === 0) {
+        setAttempts(attempts + 1);
+        if (attempts + 1 >= 3) {
+          setGameState('gameOver');
+          return;
+        }
+        setLives(3);
+      }
+    }
+  };
+  const nextQuestion = () => {
+    setShowFeedback(false);
+    setSelectedAnswer(null);
+    if (currentQuestionIndex + 1 < currentLevelQuestions.length) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      const percentage = score / requirement.total * 100;
+      if (percentage >= requirement.percentage) {
+        setGameState('levelComplete');
+      } else {
+        setGameState('levelFailed');
+      }
+    }
+  };
+  const nextLevel = () => {
+    if (currentLevel === 'easy') {
+      setCurrentLevel('medium');
+    } else if (currentLevel === 'medium') {
+      setCurrentLevel('hard');
+    }
+    setScore(0);
+    setLives(3);
+    setCurrentQuestionIndex(0);
+    setGameState('playing');
+    setAttempts(0);
+    setStreak(0);
+  };
+  const restart = () => {
+    setCurrentLevel('easy');
+    setScore(0);
+    setLives(3);
+    setCurrentQuestionIndex(0);
+    setGameState('playing');
+    setAttempts(0);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setStreak(0);
+  };
+  const renderQuestion = () => {
+    if (!currentQuestion) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold text-blue-900 mb-6"
+    }, currentQuestion.question), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3"
+    }, shuffledAnswers.map((answer, index) => /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => !showFeedback && handleAnswer(answer, answer.correct),
+      disabled: showFeedback,
+      className: `w-full p-4 text-right rounded-lg border-2 transition-all ${showFeedback ? answer === selectedAnswer ? answer.correct ? 'bg-green-100 border-green-500' : 'bg-red-100 border-red-500' : 'bg-gray-50 border-gray-200' : 'bg-white border-blue-200 hover:border-blue-400 hover:bg-blue-50'}`
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-medium"
+    }, answer.text), showFeedback && answer === selectedAnswer && /*#__PURE__*/React.createElement("div", {
+      className: "mt-2 text-sm"
+    }, answer.correct ? /*#__PURE__*/React.createElement(CheckCircle, {
+      className: "inline ml-2 text-green-600",
+      size: 16
+    }) : /*#__PURE__*/React.createElement(XCircle, {
+      className: "inline ml-2 text-red-600",
+      size: 16
+    }), answer.explanation)))));
+  };
+  if (gameState === 'levelComplete') {
+    const percentage = score / requirement.total * 100;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-8 font-['Assistant']",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-24 h-24 mx-auto text-yellow-500 mb-4"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-blue-900 mb-4"
+    }, percentage >= 95 ? 'מדהים! 🏆' : 'כל הכבוד! 💪'), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-6"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05E8\u05DE\u05EA ", currentLevel === 'easy' ? 'קל' : currentLevel === 'medium' ? 'בינוני' : 'קשה', "!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-50 p-6 rounded-lg mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-blue-900 mb-2"
+    }, score, " / ", requirement.total, " (", percentage.toFixed(0), "%)"), bestStreak >= 5 && /*#__PURE__*/React.createElement("p", {
+      className: "text-purple-700 mb-2"
+    }, "\uD83D\uDD25 \u05E8\u05E6\u05E3 \u05DE\u05D3\u05D4\u05D9\u05DD: ", bestStreak, " \u05EA\u05E9\u05D5\u05D1\u05D5\u05EA \u05E0\u05DB\u05D5\u05E0\u05D5\u05EA \u05D1\u05E8\u05E6\u05E3!"), percentage >= 95 ? /*#__PURE__*/React.createElement("p", {
+      className: "text-green-700"
+    }, "\u05D0\u05EA\u05D4 \u05DE\u05D5\u05DE\u05D7\u05D4 \u05D0\u05DE\u05D9\u05EA\u05D9 \u05DC\u05D7\u05D9\u05D9 \u05DE\u05E8\u05DF! \uD83C\uDF89") : /*#__PURE__*/React.createElement("p", {
+      className: "text-blue-700"
+    }, "\u05D9\u05D3\u05E2 \u05DE\u05E8\u05E9\u05D9\u05DD! \u05E2\u05D5\u05D3 \u05E7\u05E6\u05EA \u05DC-95% \uD83D\uDCDA")), currentLevel !== 'hard' ? /*#__PURE__*/React.createElement("button", {
+      onClick: nextLevel,
+      className: "bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:opacity-90 mb-4"
+    }, "\u05D4\u05DE\u05E9\u05DA \u05DC\u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4 ", /*#__PURE__*/React.createElement(ArrowRight, {
+      className: "inline mr-2"
+    })) : /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-blue-900"
+    }, "\uD83C\uDF1F \u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05DB\u05DC \u05D4\u05E8\u05DE\u05D5\u05EA! \uD83C\uDF1F"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, "\u05D4\u05E4\u05DB\u05EA \u05DC\u05DE\u05D5\u05DE\u05D7\u05D4 \u05DC\u05EA\u05D5\u05DC\u05D3\u05D5\u05EA \u05D7\u05D9\u05D9\u05D5 \u05E9\u05DC \u05DE\u05E8\u05DF!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-yellow-50 p-4 rounded-lg mt-4"
+    }, /*#__PURE__*/React.createElement(Award, {
+      className: "w-12 h-12 mx-auto text-yellow-600 mb-2"
+    }), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold text-blue-900"
+    }, "\uD83C\uDFC6 \u05EA\u05E2\u05D5\u05D3\u05EA \u05DE\u05D5\u05DE\u05D7\u05D4 \uD83C\uDFC6"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-800"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4 \u05D0\u05EA \u05DB\u05DC \u05E9\u05DC\u05D1\u05D9 \u05D4\u05D7\u05D9\u05D3\u05D5\u05DF \u05E2\u05DC \u05D7\u05D9\u05D9 \u05DE\u05E8\u05DF \u05D4\u05E8\u05D1 \u05E2\u05D5\u05D1\u05D3\u05D9\u05D4 \u05D9\u05D5\u05E1\u05E3 \u05D6\u05E6\"\u05DC"))), /*#__PURE__*/React.createElement("button", {
+      onClick: restart,
+      className: "block mx-auto mt-4 text-blue-600 hover:text-blue-800"
+    }, "\u05D4\u05EA\u05D7\u05DC \u05DE\u05D7\u05D3\u05E9 ", /*#__PURE__*/React.createElement(RotateCcw, {
+      className: "inline mr-2",
+      size: 16
+    }))));
+  }
+  if (gameState === 'levelFailed' || gameState === 'gameOver') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-8 font-['Assistant']",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-blue-900 mb-4"
+    }, gameState === 'gameOver' ? 'צריך לחזור על החומר 🌱' : 'התחלה טובה! 🌱'), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-6"
+    }, gameState === 'gameOver' ? 'נכשלת 3 פעמים ברמה זו. מומלץ לקרוא עוד על חיי מרן.' : 'השגת פחות מ-' + requirement.percentage + '% ברמה זו.'), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-50 p-6 rounded-lg mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-blue-900 mb-2"
+    }, score, " / ", requirement.total, " (", (score / requirement.total * 100).toFixed(0), "%)"), bestStreak >= 3 && /*#__PURE__*/React.createElement("p", {
+      className: "text-purple-700 mb-2"
+    }, "\u05D4\u05E8\u05E6\u05E3 \u05D4\u05D8\u05D5\u05D1 \u05D1\u05D9\u05D5\u05EA\u05E8 \u05E9\u05DC\u05DA: ", bestStreak, " \uD83D\uDD25"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, "\u05D1\u05D5\u05D0 \u05E0\u05DC\u05DE\u05D3 \u05E2\u05D5\u05D3 \u05D5\u05E0\u05E9\u05E4\u05E8! \uD83D\uDCAA")), /*#__PURE__*/React.createElement("button", {
+      onClick: restart,
+      className: "bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:opacity-90"
+    }, "\u05D4\u05EA\u05D7\u05DC \u05DE\u05D7\u05D3\u05E9 ", /*#__PURE__*/React.createElement(RotateCcw, {
+      className: "inline mr-2"
+    }))));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-8 font-['Assistant']",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-2xl shadow-xl p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-3"
+  }, /*#__PURE__*/React.createElement(BookOpen, {
+    className: "w-10 h-10"
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
+    className: "text-3xl font-bold"
+  }, "\u05D7\u05D9\u05D3\u05D5\u05DF \u05E2\u05DC \u05D7\u05D9\u05D9 \u05DE\u05E8\u05DF"), /*#__PURE__*/React.createElement("p", {
+    className: "text-blue-100"
+  }, "\u05D4\u05E8\u05D1 \u05E2\u05D5\u05D1\u05D3\u05D9\u05D4 \u05D9\u05D5\u05E1\u05E3 \u05D6\u05E6\u05D5\u05E7\"\u05DC"))), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-blue-100"
+  }, "\u05EA\u05E8\u05E4\"\u05D0 - \u05EA\u05E9\u05E2\"\u05D3 | 1920 - 2013")), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-xl p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-4"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "text-blue-600 font-bold text-lg"
+  }, "\u05E8\u05DE\u05D4: ", currentLevel === 'easy' ? 'קל ⭐' : currentLevel === 'medium' ? 'בינוני 🎯' : 'קשה 🏆'), streak >= 3 && /*#__PURE__*/React.createElement("p", {
+    className: "text-purple-600 text-sm"
+  }, "\uD83D\uDD25 \u05E8\u05E6\u05E3: ", streak, " \u05E0\u05DB\u05D5\u05E0\u05D5\u05EA \u05D1\u05E8\u05E6\u05E3!")), /*#__PURE__*/React.createElement("div", {
+    className: "text-left"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl font-bold text-blue-900"
+  }, score), /*#__PURE__*/React.createElement(Star, {
+    className: "text-yellow-500"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-1"
+  }, [...Array(3)].map((_, i) => /*#__PURE__*/React.createElement(Heart, {
+    key: i,
+    className: i < lives ? 'text-red-500 fill-red-500' : 'text-gray-300',
+    size: 20
+  }))))), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-3 mb-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-blue-600 to-indigo-600 h-3 rounded-full transition-all duration-500",
+    style: {
+      width: `${(currentQuestionIndex + 1) / requirement.total * 100}%`
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-600 text-center"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestionIndex + 1, " \u05DE\u05EA\u05D5\u05DA ", requirement.total)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-xl p-8"
+  }, renderQuestion(), showFeedback && /*#__PURE__*/React.createElement("div", {
+    className: "mt-6"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: nextQuestion,
+    className: "w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90"
+  }, currentQuestionIndex + 1 < requirement.total ? 'שאלה הבאה' : 'סיים רמה', " ", /*#__PURE__*/React.createElement(ArrowRight, {
+    className: "inline mr-2"
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-8 text-center bg-white rounded-xl shadow-lg p-6"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-700 font-bold mb-2"
+  }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+    className: "text-blue-900 font-bold text-lg"
+  }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+    className: "text-blue-600 mt-2"
+  }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"), /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-500 text-sm mt-4"
+  }, "\u05D6\u05DB\u05E8\u05D5\u05E0\u05D5 \u05DC\u05D1\u05E8\u05DB\u05D4 \uD83D\uDD6F\uFE0F \u05D6\u05DB\u05D5\u05EA\u05D5 \u05EA\u05D2\u05DF \u05E2\u05DC\u05D9\u05E0\u05D5"))));
+};
+const __App = RabbiOvadiaTrivia;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+</script>
+</body>
+</html>
