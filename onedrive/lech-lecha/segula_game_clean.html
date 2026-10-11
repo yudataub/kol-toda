@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>סגולה למציאת זיווג – משחק לימודי</title>
+<style>
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:linear-gradient(135deg,#f093fb,#f5576c);min-height:100vh}
+  .wrap{max-width:900px;margin:24px auto;background:#fff;border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.25);overflow:hidden}
+  header{background:linear-gradient(135deg,#fa709a,#fee140);color:#fff;padding:28px;text-align:center}
+  h1{margin:.2em 0}
+  .content{padding:28px}
+  .btn{background:linear-gradient(135deg,#fa709a,#fee140);color:#fff;border:0;border-radius:12px;cursor:pointer;padding:14px 24px;font-size:18px;box-shadow:0 8px 20px rgba(250,112,154,.4)}
+  .btn:hover{transform:translateY(-2px)}
+  .card{background:#f8f9fa;border:3px solid #fa709a;border-radius:14px;padding:20px;margin:18px 0}
+  .answer{display:block;width:100%;text-align:right;margin:10px 0;padding:12px;border:2px solid #ddd;border-radius:10px;background:#fff;font-size:16px;cursor:pointer}
+  .answer:hover{border-color:#fa709a;background:#fff0f5}
+  .answer.correct{background:#d4edda;border-color:#28a745}
+  .answer.wrong{background:#f8d7da;border-color:#dc3545}
+  .score{background:linear-gradient(135deg,#fa709a,#fee140);color:#fff;border-radius:12px;padding:14px;text-align:center;margin:12px 0}
+  .verse{background:linear-gradient(135deg,#a8edea,#fed6e3);border:3px solid #667eea;border-radius:12px;padding:18px;margin:14px 0;text-align:center;font-weight:700}
+</style>
+<meta property="og:title" content="סגולה למציאת זיווג – משחק לימודי">
+<meta property="og:description" content="סגולה למציאת זיווג – משחק לימודי">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-onedrive-lech-lecha-segula_game_clean.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/onedrive/lech-lecha/segula_game_clean.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>💑 סגולה למציאת זיווג</h1>
+    <div>מסע קצר על הודיה → בקשה</div>
+  </header>
+  <div id="app" class="content"></div>
+</div>
+<script>
+const state = {step:'intro', q:0, score:0};
+
+const lesson = {
+  title: "שיעור: באר לחי רואי ותפילת המנחה",
+  html: `
+    <p>לפני שמבקשים – מודים. הגר פגשה מלאך, הודתה: <b>"אתה אל רואי"</b>, והמקום נקרא <b>באר לחי רואי</b>.</p>
+    <div class="verse">ויצחק בא מבוא באר לחי רואי … ויצא לשוח בשדה לפנות ערב</div>
+    <p>חז״ל: "לשוח" = תפילה; יצחק תיקן <b>תפילת המנחה</b>. ההיגיון: בסוף היום – <b>מודים</b> על מה שהיה, ואז מבקשים.</p>
+  `,
+  questions: [
+    {
+      t: "מה הסדר לפי השיעור?",
+      a: ["קודם הודיה, אחר כך בקשה","קודם בקשה, אחר כך הודיה","רק בקשה","לא זה ולא זה"],
+      i: 0,
+      exp: "הודיה פותחת שערי ברכה; אחריה הבקשה חזקה ומתקבלת יותר."
+    },
+    {
+      t: "למה יצחק הלך ל'באר לחי רואי'?",
+      a: ["להתפלל במקום של הודיה","לבקר את אברהם","לחפור באר חדשה","ללמד תורה לרועים"],
+      i: 0,
+      exp: "זה המקום שבו נשמעה הודיה ('אתה אל רואי'), ולכן בחר בו לתפילה."
+    }
+  ]
+};
+
+const app = document.getElementById('app');
+
+function viewIntro(){
+  app.innerHTML = `
+    <div class="card">
+      <h2>ברוכים הבאים</h2>
+      <p>נלמד בקצרה: הודיה → בקשה. נענה על 2 שאלות, ובסוף תקבלו ציון.</p>
+      <button class="btn" onclick="startLesson()">התחלה</button>
+    </div>
+  `;
+}
+
+function startLesson(){
+  state.step='lesson';
+  app.innerHTML = `
+    <h2>${lesson.title}</h2>
+    <div class="card">${lesson.html}</div>
+    <div style="text-align:center"><button class="btn" onclick="showQuestion()">בדיקת הבנה</button></div>
+  `;
+}
+
+function showQuestion(){
+  const q = lesson.questions[state.q];
+  app.innerHTML = `
+    <div class="score">שאלה ${state.q+1} מתוך ${lesson.questions.length} | ניקוד: ${state.score}</div>
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:12px">${q.t}</div>
+      ${q.a.map((txt,idx)=>`<button class="answer" onclick="answer(${idx})">${txt}</button>`).join("")}
+    </div>
+  `;
+}
+
+function answer(idx){
+  const q = lesson.questions[state.q];
+  const buttons = [...document.querySelectorAll('.answer')];
+  buttons.forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.i) b.classList.add('correct');
+    if(i===idx && i!==q.i) b.classList.add('wrong');
+  });
+  if(idx===q.i){ state.score++; }
+  const exp = document.createElement('div');
+  exp.className='card';
+  exp.innerHTML = `<b>הסבר:</b> ${q.exp} <div style="text-align:center;margin-top:10px"><button class="btn" onclick="next()">המשך</button></div>`;
+  app.appendChild(exp);
+}
+
+function next(){
+  state.q++;
+  if(state.q<lesson.questions.length){
+    showQuestion();
+  }else{
+    finish();
+  }
+}
+
+function finish(){
+  state.step='done';
+  app.innerHTML = `
+    <div class="score">ציון: ${state.score} / ${lesson.questions.length}</div>
+    <div class="card">כל הכבוד! זכרו: <b>קודם הודיה – אחר כך בקשה.</b></div>
+    <div style="text-align:center"><button class="btn" onclick="viewIntro()">שוב</button></div>
+  `;
+}
+
+document.addEventListener('DOMContentLoaded', viewIntro);
+</script>
+</body>
+</html>

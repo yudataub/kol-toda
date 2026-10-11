@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>סגולה נסתרת למציאת זיווג – משחק למידה 💑</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);min-height:100vh;direction:rtl}
+    .container{max-width:960px;margin:18px auto;background:#fff;border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.28);overflow:hidden}
+    header{background:linear-gradient(135deg,#fa709a 0%,#fee140 100%);color:#fff;padding:36px;position:relative;text-align:center}
+    header h1{margin:0 0 6px 0}
+    header p{margin:6px 0 0 0;opacity:.95}
+    .progress{height:10px;background:#e6e6e6}
+    .bar{height:100%;width:0;background:linear-gradient(90deg,#fa709a,#fee140);transition:width .5s}
+    .content{padding:36px}
+    .card{background:#f8f9fa;border:3px solid #fa709a;border-radius:16px;padding:22px;margin:18px 0}
+    .heart{background:linear-gradient(135deg,#ffecd2,#fcb69f);border:3px solid #fa709a;border-radius:16px;padding:22px;margin:18px 0;text-align:center;font-weight:700}
+    .verse{background:linear-gradient(135deg,#a8edea,#fed6e3);border:3px solid #667eea;border-radius:16px;padding:22px;margin:18px 0;text-align:center;font-weight:700}
+    .reflect{background:#fff3cd;border-right:6px solid #ffc107;border-radius:14px;padding:18px;margin:16px 0}
+    .action{background:linear-gradient(135deg,#84fab0,#8fd3f4);border:3px solid #667eea;border-radius:16px;padding:22px;margin:18px 0}
+    .btn{background:linear-gradient(135deg,#fa709a,#fee140);color:#fff;border:0;border-radius:14px;cursor:pointer;padding:14px 28px;font-size:18px;box-shadow:0 10px 24px rgba(250,112,154,.4);display:inline-block}
+    .btn:hover{transform:translateY(-3px)}
+    .qwrap{background:#fff;border:3px solid #fa709a;border-radius:16px;padding:22px;margin:18px 0}
+    .qtext{font-size:20px;font-weight:700;margin-bottom:16px;text-align:center}
+    .answer{display:block;width:100%;text-align:right;margin:10px 0;padding:14px;border:2px solid #ddd;border-radius:12px;background:#fff;font-size:16px;cursor:pointer;transition:.25s}
+    .answer:hover{border-color:#fa709a;background:#fff0f5}
+    .answer.correct{background:#d4edda;border-color:#28a745}
+    .answer.incorrect{background:#f8d7da;border-color:#dc3545}
+    .feedback{display:none;margin-top:14px}
+    .feedback.show{display:block}
+    .feedback.ok{background:#d4edda;color:#155724;border:3px solid #28a745;border-radius:12px;padding:16px}
+    .feedback.no{background:#f8d7da;color:#721c24;border:3px solid #dc3545;border-radius:12px;padding:16px}
+    .score{background:linear-gradient(135deg,#fa709a,#fee140);color:#fff;border-radius:14px;padding:14px;text-align:center;margin:10px 0;font-size:18px}
+    footer{background:#2d3748;color:#fff;text-align:center;padding:22px}
+    footer a{color:#fa709a;text-decoration:none;font-weight:700}
+    footer a:hover{color:#fee140}
+    input.name{padding:14px;font-size:18px;border:3px solid #ddd;border-radius:12px;width:100%;max-width:420px;text-align:center;margin:10px auto;display:block}
+    @media (max-width:768px){.content{padding:24px}}
+  </style>
+<meta property="og:title" content="סגולה נסתרת למציאת זיווג – משחק למידה 💑">
+<meta property="og:description" content="סגולה נסתרת למציאת זיווג – משחק למידה 💑">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-onedrive-lech-lecha-segula_zivug_full.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/onedrive/lech-lecha/segula_zivug_full.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>💑 סגולה נסתרת למציאת זיווג</h1>
+      <p>סוד ההודיה והתפילה – בעקבות הגר, באר לחי רואי ויצחק אבינו</p>
+    </header>
+    <div class="progress"><div id="bar" class="bar"></div></div>
+    <div id="root" class="content"></div>
+    <footer>
+      <div><strong>נבנה באהבה:</strong> הרב יהודה טאוב מקרית אתא 💖</div>
+      <div>📞 <a href="tel:0527139520">052-713-9520</a> | 📺 <a target="_blank" href="https://youtube.com/@RabbiYehudaTaub">ערוץ היוטיוב</a></div>
+    </footer>
+  </div>
+
+<script>
+// ---------- State ----------
+const S = {lesson:0, q:0, score:0, lessonScore:0, total:0, name:''};
+
+// ---------- Data (4 Lessons) ----------
+const lessons = [
+  {
+    title:"שיעור 1: סיפור הגר – באר לחי רואי",
+    html:`
+      <div class="card">
+        <p>אחת הדרכים החזקות לפתוח שערי ברכה: <b>להודות לפני שמבקשים</b>.</p>
+        <div class="heart">💎 המפתח: לפני בקשה – הודיה על העבר.</div>
+        <p>בפרשת לך־לך הגר פוגשת מלאך במדבר. היא חווה השגחה מיוחדת ומגיבה ב<b>הודיה</b>:</p>
+        <div class="verse">"ותקרא שם ה' הדובר אליה – אתה א-ל רואי"</div>
+        <p>חז"ל: <b>"והודית קדם ה'"</b>. המקום נקרא <b>באר לחי רואי</b> – אתר של הודיה ותודעה שה' רואה ודואג.</p>
+        <div class="reflect">💭 מתי הרגשת שה' רואה אותך? נסה לנסח רגע כזה.</div>
+      </div>`,
+    q:[
+      {t:"מה המפתח המרכזי בשיעור?", a:["להודות לפני שמבקשים","להרבות בבקשות","סגולה בנרות","צדקה בלבד"], i:0,
+       exp:"הודיה פותחת את הלב ואת השערים – אחריה באה הבקשה."},
+      {t:"מה שם המקום שבו הודתה הגר?", a:["באר לחי רואי","באר שבע","הר המוריה","באר מרים"], i:0,
+       exp:"'באר לחי רואי' – זיכרון להודיה ולאמונה 'א-ל רואי'."},
+      {t:"כיצד פירשו חז\"ל את תגובת הגר?", a:["והודית קדם ה'","התפללה על עתיד","ברחה","שתקה"], i:0,
+       exp:"עיקר הדגש – הכרת הטוב והודיה."}
+    ]
+  },
+  {
+    title:"שיעור 2: יצחק – למקום של הודיה ותפילת המנחה",
+    html:`
+      <div class="card">
+        <p>כאשר רבקה ואליעזר בדרכם, התורה מספרת:</p>
+        <div class="verse">"ויצחק בא מבוא באר לחי רואי" (בר' כד, סב)</div>
+        <p>הרמב\"ן/ספורנו: יצחק הלך <b>להתפלל</b> במקום שנשמעו שם דברי הודיה.</p>
+        <div class="reflect">✨ יצחק בוחר במכוון <b>מקום של הודיה</b> כדי שעצם המקום יעזור לתפילה.</div>
+        <div class="verse">"ויצא יצחק לשוח בשדה לפנות ערב" – חז\"ל: לשון תפילה; יצחק תיקן <b>תפילת המנחה</b>.</div>
+        <div class="action">
+          <b>למה מנחה?</b> בבוקר מבקשים על היום; לפנות ערב – <b>מודים</b> על מה שהיה, ואז מבקשים – בסדר הנכון.
+        </div>
+      </div>`,
+    q:[
+      {t:"לאן הלך יצחק להתפלל?", a:["באר לחי רואי","חברון","באר שבע","הר המוריה"], i:0,
+       exp:"מקום של הודיה – לעורר זכויות ותודעת תודה."},
+      {t:"איזו תפילה תיקן יצחק?", a:["מנחה","שחרית","ערבית","מוסף"], i:0,
+       exp:"'לשוח' = תפילה; מסורת חז\"ל: יצחק – מנחה."},
+      {t:"מהו הסדר הנכון?", a:["קודם הודיה, אחר כך בקשה","קודם בקשה","רק בקשה","רק הודיה"], i:0,
+       exp:"הסדר קריטי; הוא הופך את הבקשה לאותנטית ומקבלת."}
+    ]
+  },
+  {
+    title:"שיעור 3: צעד ראשון – מחברת הודיה",
+    html:`
+      <div class="card">
+        <p>הופכים את הרעיון למעשה.</p>
+        <div class="action">
+          <b>משימה:</b> כתבו <b>לפחות 20</b> דברים ספציפיים שאתם מודים עליהם (בריאות, משפחה, חושים, חברים, הזדמנויות...).<br>
+          פירוט מפעיל את הלב ומגדיל את השמחה.
+        </div>
+        <div class="heart">אתגר: להגיע ל־<b>50</b> סעיפי הודיה.</div>
+        <div class="reflect">💡 ככל שמפרטים – כך חשים עמוק יותר את אהבת ה'.</div>
+      </div>
+      <div class="card">
+        <b>סיפור מעודד:</b> אדם שרשם עשרות חסדים, התפלל מנחה מהלב – ומצא זיווג בזמן קצר.
+      </div>`,
+    q:[
+      {t:"כמה סעיפים לפחות?", a:["20 לפחות","5","3","1"], i:0, exp:"פירוט רחב מעורר הכרת טוב עמוקה."},
+      {t:"מה לכלול ברשימה?", a:["דברים ספציפיים – בריאות, חושים, חברים וכו'","רק גשמיות","רק רוחניות","כללי בלבד"], i:0,
+       exp:"גם 'קטנים' וגם 'גדולים' – כולם מתנות."},
+      {t:"מה קרה לאדם בסיפור?", a:["מצא זיווגו זמן קצר לאחר תפילה עם הודיה","עבר דירה","נסע לחו\"ל","שום דבר"], i:0,
+       exp:"הודיה אותנטית פותחת שערים."}
+    ]
+  },
+  {
+    title:"שיעור 4: צעד שני ושלישי – מנחה ממוקדת ואז בקשה",
+    html:`
+      <div class="card">
+        <div class="action">
+          <b>צעד 2 – תפילת מנחה:</b> לפנות ערב, עברו בראש על מחברת ההודיה ו<strong>הרגישו</strong> את "מודים אנחנו לך".
+        </div>
+        <div class="heart">
+          <b>צעד 3 – הבקשה לאחר ההודיה:</b><br>
+          "ריבונו של עולם, כמו שעזרת עד כה – המשך להיטיב. שלח את הזיווג הראוי בעתו ובשמחה."
+        </div>
+        <div class="reflect">הילד שמודה תחילה – הבקשה שלו מתקבלת בנועם.</div>
+        <div class="action">
+          <b>תכנית שבועית קצרה:</b>
+          <ul>
+            <li>א'–ב': התחלת/הרחבת רשימת הודיה (20+).</li>
+            <li>ג': מנחה בכוונה מיוחדת.</li>
+            <li>ד': הוספה על 'דברים קטנים'.</li>
+            <li>ה': מנחה שוב.</li>
+            <li>ו': ניסוח בקשה אישית.</li>
+            <li>שבת: קריאה שמחה במחברת.</li>
+          </ul>
+        </div>
+      </div>`,
+    q:[
+      {t:"מתי מתפללים מנחה ממוקדת?", a:["לפנות ערב תוך חשיבה על רשימת ההודיה","בבוקר","רק בלילה","מתי שיוצא"], i:0,
+       exp:"זה הזמן שיצחק בחר; ההודיה של סוף יום."},
+      {t:"מתי מבקשים את הזיווג?", a:["אחרי ההודיה והתפילה","לפני ההודיה","במקום ההודיה","לא מבקשים כלל"], i:0,
+       exp:"הסדר – התנאי האיכותי של הבקשה."},
+      {t:"המסר המרכזי:", a:["קודם הודיה, אחר כך בקשה","רק בקשה","רק הודיה","אין סדר קבוע"], i:0,
+       exp:"'לפני שמבקשים – להודות'."}
+    ]
+  }
+];
+
+// ---------- Audio (simple beeps) ----------
+let audioCtx=null;
+function initAudio(){ if(!audioCtx){ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); } }
+function beep(freq=600,duration=0.12){
+  if(!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.type='sine'; osc.frequency.value=freq;
+  gain.gain.setValueAtTime(0.25,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+duration);
+  osc.start(); osc.stop(audioCtx.currentTime+duration);
+}
+function okSound(){ initAudio(); beep(700,.12); setTimeout(()=>beep(900,.12),120); }
+function noSound(){ initAudio(); beep(300,.18); }
+
+// ---------- Helpers ----------
+const root = document.getElementById('root');
+const bar  = document.getElementById('bar');
+function totalSteps(){ return lessons.reduce((s,l)=>s + 1 + l.q.length, 0); }
+function stepsBeforeLesson(i){ return lessons.slice(0,i).reduce((s,l)=>s + 1 + l.q.length, 0); }
+function setProgress(stage){
+  const total = totalSteps();
+  let done=0;
+  if(stage==='intro') done=0;
+  if(stage==='lesson') done=stepsBeforeLesson(S.lesson)+1;
+  if(stage==='q') done=stepsBeforeLesson(S.lesson)+1+(S.q+1);
+  if(stage==='post') done=stepsBeforeLesson(S.lesson)+1+lessons[S.lesson].q.length;
+  if(stage==='final') done=total;
+  bar.style.width = Math.round((done/total)*100) + '%';
+}
+
+// ---------- Views ----------
+function viewIntro(){
+  root.innerHTML = `
+    <div class="card" style="text-align:center">
+      <h2>ברוכים הבאים למסע 💖</h2>
+      <p>נלמד את סודו של יצחק: <b>הודיה → בקשה</b>. 4 שיעורים, 12 שאלות, ותעודה אישית בסוף.</p>
+      <div class="heart">הסוד: להודות על העבר, ואז לבקש על העתיד.</div>
+      <button class="btn" onclick="start()">התחל/י</button>
+      <div style="margin-top:10px;font-size:14px;opacity:.8">לטובת צלילים, יש ללחוץ קליק אחד בעמוד.</div>
+    </div>`;
+  setProgress('intro');
+}
+function start(){
+  S.lesson=0; S.q=0; S.score=0; S.lessonScore=0; S.total=0; S.name='';
+  showLesson();
+}
+function showLesson(){
+  const L = lessons[S.lesson];
+  root.innerHTML = `
+    <h2 style="color:#fa709a;text-align:center">${L.title}</h2>
+    ${L.html}
+    <div style="text-align:center"><button class="btn" onclick="startQuiz()">בדיקת הבנה</button></div>`;
+  setProgress('lesson');
+  window.scrollTo(0,0);
+}
+function startQuiz(){ S.q=0; S.lessonScore=0; showQ(); }
+function showQ(){
+  const L = lessons[S.lesson];
+  const Q = L.q[S.q];
+  const answers = Q.a.map((txt,i)=>({txt,i,ok:i===Q.i})).sort(()=>Math.random()-0.5);
+  root.innerHTML = `
+    <div class="score">שאלה ${S.q+1}/${L.q.length} | נקודות שיעור: ${S.lessonScore} | סה\"כ: ${S.score}/${S.total}</div>
+    <div class="qwrap">
+      <div class="qtext">${Q.t}</div>
+      ${answers.map((o,idx)=>`<button class="answer" data-ok="${o.ok}" onclick="checkAns(${o.ok},${idx})" id="ans${idx}">${o.txt}</button>`).join('')}
+      <div class="feedback" id="fb"></div>
+    </div>`;
+  setProgress('q');
+  window.scrollTo(0,0);
+}
+function checkAns(ok, idx){
+  initAudio();
+  const L = lessons[S.lesson];
+  const Q = L.q[S.q];
+  document.querySelectorAll('.answer').forEach(b=>{
+    b.disabled=true; if(b.dataset.ok==='true'){ b.classList.add('correct'); }
+  });
+  const fb = document.getElementById('fb'); S.total++;
+  if(ok){ okSound(); S.score++; S.lessonScore++; fb.className='feedback show ok'; fb.innerHTML = `<b>מצוין!</b><br>${Q.exp}`; }
+  else{ noSound(); fb.className='feedback show no'; fb.innerHTML = `<b>כמעט…</b><br>${Q.exp}`; }
+  const btn = document.createElement('button');
+  btn.className='btn'; btn.style.marginTop='12px';
+  btn.textContent = (S.q < L.q.length-1) ? 'לשאלה הבאה' : 'סיום שיעור';
+  btn.onclick = nextQ; fb.appendChild(btn);
+}
+function nextQ(){ const L = lessons[S.lesson]; if(S.q < L.q.length-1){ S.q++; showQ(); } else { endLesson(); } }
+function endLesson(){
+  const L = lessons[S.lesson];
+  const pass = S.lessonScore >= Math.ceil(L.q.length*0.5);
+  setProgress('post');
+  root.innerHTML = `
+    <div class="card" style="text-align:center">
+      <h3>${pass ? 'כל הכבוד!' : 'בואו נתחזק וננסה שוב'}</h3>
+      <div class="score">תוצאה בשיעור: ${S.lessonScore}/${L.q.length}</div>
+      ${ pass
+        ? (S.lesson < lessons.length-1
+            ? `<button class="btn" onclick="nextLesson()">לשיעור הבא</button>`
+            : `<button class="btn" onclick="finalView()">לתעודה</button>` )
+        : `<button class="btn" onclick="showLesson()">חזרה על השיעור</button>` }
+    </div>`;
+  window.scrollTo(0,0);
+}
+function nextLesson(){ S.lesson++; S.q=0; S.lessonScore=0; showLesson(); }
+function finalView(){
+  const pct = S.total ? Math.round((S.score/S.total)*100) : 0;
+  setProgress('final');
+  root.innerHTML = `
+    <div class="card" style="text-align:center">
+      <h2>🎉 סיום המסע!</h2>
+      <div class="score">ציון כולל: ${S.score}/${S.total} (${pct}%)</div>
+      <div class="reflect">"לפני שמבקשים – להודות" • זה היה סודו של יצחק, וזה כלי לחיים שלמים.</div>
+      <p>הכנס/י שם לתעודה האישית:</p>
+      <input class="name" id="name" placeholder="השם שלך…">
+      <button class="btn" onclick="makeCert()">יצירת תעודה</button>
+    </div>`;
+  window.scrollTo(0,0);
+}
+function makeCert(){
+  S.name = (document.getElementById('name').value||'תלמיד/ה יקר/ה').trim();
+  const pct = S.total ? Math.round((S.score/S.total)*100) : 0;
+  root.innerHTML = `
+    <div class="card" style="text-align:center">
+      <h2>🎓 תעודת הצטיינות</h2>
+      <div class="heart" style="font-size:22px">מוענקת ל-<br><span style="font-size:30px;color:#fa709a">${S.name}</span></div>
+      <div class="verse">"קודם הודיה – אחר כך בקשה"</div>
+      <div class="score">ציון: ${S.score}/${S.total} (${pct}%)</div>
+      <div class="action"><b>שלושת הצעדים:</b><br>1) מחברת הודיה 20+ • 2) מנחה עם "מודים" מהלב • 3) בקשה אישית לאחר ההודיה.</div>
+      <div style="margin-top:10px;color:#666">תאריך: ${new Date().toLocaleDateString('he-IL')}</div>
+      <div style="margin-top:16px"><button class="btn" onclick="viewIntro()">שוב</button></div>
+    </div>`;
+  window.scrollTo(0,0);
+}
+
+// ---------- Init ----------
+document.addEventListener('DOMContentLoaded', viewIntro);
+</script>
+</body>
+</html>
