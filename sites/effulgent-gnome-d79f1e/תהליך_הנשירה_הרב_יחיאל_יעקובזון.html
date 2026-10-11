@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>תהליך הנשירה</title>
+<style>
+/* =============================================================================
+   קול תודה — סגנון בית למאמרים תורניים   |   base.css   v2.0
+   העתק כמות שהוא לתוך <style>. מותר להוסיף אחריו כללים ייחודיים למאמר,
+   אסור לשנות את הקיים.
+   ============================================================================= */
+
+:root {
+    --purple: #7e22ce;  --blue: #2563eb;   --green: #059669;
+    --gold:   #f59e0b;  --pink: #ec4899;   --ink:   #1f2937;
+    --paper:  #ffffff;  --muted: #6b7280;  --line:  rgba(0,0,0,.08);
+    --g-page:      linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    --g-verse:     linear-gradient(135deg, #e0e7ff 0%, #fce7f3 100%);
+    --g-highlight: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+    --g-quote:     linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    --g-story:     linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
+    --g-divider:   linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #ec4899 100%);
+    --g-title:     linear-gradient(135deg, #7e22ce 0%, #ec4899 50%, #f59e0b 100%);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0; padding: 40px 20px;
+    font-family: 'Segoe UI', 'Assistant', 'Noto Sans Hebrew', Arial, sans-serif;
+    background: var(--g-page);
+    color: var(--ink);
+    line-height: 1.8;
+}
+
+.container {
+    max-width: 900px; margin: 0 auto;
+    padding: 60px 80px;
+    background: var(--paper);
+    border-radius: 18px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.1);
+}
+
+/* ---------- כותרות ---------- */
+.main-title {
+    font-size: 3em; font-weight: bold; text-align: center; margin: 0 0 10px;
+    background: var(--g-title); -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: var(--purple);
+}
+.subtitle { text-align: center; font-size: 1.25em; color: var(--muted); margin-bottom: 8px; }
+.author   { text-align: center; font-size: 1.05em; color: var(--purple); font-weight: bold; margin-bottom: 10px; }
+
+h2 { font-size: 2.2em; color: var(--purple); border-right: 6px solid var(--purple);
+     padding-right: 20px; margin: 50px 0 20px; }
+h3 { font-size: 1.8em; color: var(--blue);  margin: 35px 0 15px; }
+h4 { font-size: 1.5em; color: var(--green); margin: 25px 0 12px; }
+/* יישור לשני הצדדים — חובה בסגנון הבית, נותן מראה של ספר מודפס. */
+p, li { font-size: 1.15em; line-height: 1.8; margin: 0 0 20px; text-align: justify; text-justify: inter-word; }
+li { margin-bottom: 10px; }
+.verse-box p, .section-divider, .chapter-card p, .footer p { text-align: center; }
+.toc li, .listen-bar p { text-align: right; }
+
+.emphasis { color: var(--purple); font-weight: bold; }
+em { color: var(--blue); font-style: italic; }
+
+/* ---------- מעבר בין פרקים ---------- */
+/* כרטיס הפרק מחליף על המסך את תחושת "הדף החדש" שיש בספר מודפס.
+   בהדפסה הוא מיותר — שם יש מעבר עמוד אמיתי — ולכן הוא מוסתר. */
+.chapter-card {
+    min-height: 55vh; margin: 60px -80px 0; padding: 40px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: var(--g-title); color: #fff; text-align: center;
+}
+.chapter-card .num { font-size: 5.5em; font-weight: bold; line-height: 1; opacity: .85; }
+.chapter-card .name { font-size: 2.2em; font-weight: bold; margin-top: 18px; max-width: 18ch; }
+.chapter-divider {
+    display: flex; align-items: center; gap: 15px; margin: 45px 0;
+    color: var(--gold); font-size: 1.4em;
+}
+.chapter-divider::before, .chapter-divider::after {
+    content: ''; flex: 1; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.chapter-label {
+    display: inline-block; margin-bottom: 6px; padding: 3px 14px;
+    background: var(--purple); color: #fff; border-radius: 20px;
+    font-size: .55em; font-weight: bold; letter-spacing: .5px; vertical-align: middle;
+}
+.in-this-chapter {
+    background: var(--g-highlight); border-right: 6px solid var(--blue);
+    border-radius: 12px; padding: 22px 26px; margin: 22px 0 32px;
+}
+.in-this-chapter h4 { margin: 0 0 10px; font-size: 1.1em; color: var(--blue); }
+.in-this-chapter ul { margin: 0; padding-right: 20px; }
+.in-this-chapter li { font-size: 1em; margin-bottom: 6px; text-align: right; }
+
+.story-title { display: block; font-size: 1.25em; font-weight: bold; color: var(--green); margin-bottom: 12px; }
+
+/* ---------- קופסאות תוכן ---------- */
+.verse-box, .highlight-box, .quote-box, .story-box, .qa-box {
+    padding: 28px; margin: 30px 0; border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,.1);
+}
+.verse-box     { background: var(--g-verse); border: 2px solid var(--purple);
+                 text-align: center; font-size: 1.3em; font-weight: 600; color: var(--purple); }
+.verse-box p   { font-size: 1em; margin: 0; }
+.highlight-box { background: var(--g-highlight); border-right: 6px solid var(--blue);
+                 box-shadow: 0 5px 15px rgba(126,34,206,.15); }
+.quote-box     { background: var(--g-quote); border-right: 6px solid var(--gold); font-style: italic; }
+.story-box     { background: var(--g-story); border-right: 6px solid var(--green); }
+.qa-box        { background: #fff; border: 2px dashed var(--pink); }
+.verse-box p:last-child, .highlight-box p:last-child, .quote-box p:last-child,
+.story-box p:last-child, .qa-box p:last-child { margin-bottom: 0; }
+
+.source-tag { display: block; margin-top: 12px; font-size: .9em; font-style: normal;
+              color: var(--muted); font-weight: bold; }
+
+.section-divider {
+    background: var(--g-divider); color: #fff; text-align: center;
+    padding: 18px 25px; margin: 45px 0; border-radius: 10px;
+    font-size: 1.3em; font-weight: bold; letter-spacing: .5px;
+}
+
+.two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin: 30px 0; }
+.two-columns > div { padding: 25px; border-radius: 12px; box-shadow: 0 3px 10px rgba(0,0,0,.1); }
+.col-purple { background: var(--g-verse);  border-top: 5px solid var(--purple); }
+.col-gold   { background: var(--g-quote);  border-top: 5px solid var(--gold); }
+
+/* ---------- תוכן עניינים / מקורות / חתימה ---------- */
+.toc { background: #faf5ff; border: 2px solid #e9d5ff; border-radius: 12px; padding: 25px 30px; margin: 30px 0; }
+.toc h3 { margin-top: 0; color: var(--purple); }
+.toc ul { list-style: none; padding: 0; margin: 0; }
+.toc li { margin-bottom: 8px; }
+.toc a { color: var(--blue); text-decoration: none; font-size: 1.05em; }
+.toc a:hover { text-decoration: underline; color: var(--purple); }
+/* מפתח עניינים היררכי: כותרת הפרק בבולד, ומתחתיה שורה מעומעמת של תתי-הסעיפים,
+   כשכל אחד מהם קישור עצמאי. */
+.toc > ul > li { margin-bottom: 14px; }
+.toc-chapter { font-weight: bold; font-size: 1.1em; color: var(--purple); }
+.toc-subs { display: block; margin-top: 3px; font-size: .9em; color: var(--muted); line-height: 1.7; }
+.toc-subs a { font-size: 1em; color: var(--muted); }
+.toc-subs a:hover { color: var(--blue); }
+.toc-subs span { margin: 0 6px; opacity: .5; }
+
+/* ---------- מבט-על: רשת הפרקים ----------
+   בא *לפני* מפתח העניינים המפורט. תפקידו שונה: לא ניווט מדויק אלא תחושה
+   מיידית של היקף הספר — כמה פרקים יש ומה מכסה כל אחד. */
+.chapter-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 22px;
+    background: linear-gradient(160deg, #fffdf7 0%, #fdf8ee 100%);
+    border: 1px solid #efe4cd; border-radius: 18px;
+    padding: 34px 30px; margin: 30px 0;
+}
+.chapter-grid .grid-title {
+    grid-column: 1 / -1; text-align: center; margin: 0 0 14px;
+    font-size: 1.6em; color: var(--purple); letter-spacing: 1px;
+    border: none; padding: 0;   /* מבטל את הפס הסגול שיורש מ-h2 */
+}
+.chapter-chip {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--ink); text-decoration: none; font-size: 1.02em; line-height: 1.45;
+    padding: 6px 8px; border-radius: 10px; transition: background .18s, transform .18s;
+}
+.chapter-chip:hover { background: rgba(245,158,11,.12); transform: translateX(-3px); }
+.chapter-chip .n {
+    flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: #c9982f; color: #fff; font-size: .82em; font-weight: bold;
+}
+/* הקדמה, מבוא, נספחים — לא ממוספרים, ומסומנים אחרת */
+.chapter-chip.is-front .n { background: #1e2a5a; font-size: .7em; }
+
+@media (max-width: 900px) { .chapter-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .chapter-grid { grid-template-columns: 1fr; padding: 24px 18px; } }
+
+.sources { background: #f9fafb; border-radius: 12px; padding: 25px 30px; margin-top: 50px; border: 1px solid var(--line); }
+.sources h3 { margin-top: 0; }
+.sources li { font-size: 1em; }
+
+.footer { margin-top: 55px; padding-top: 30px; border-top: 3px solid var(--gold);
+          text-align: center; font-size: 1.05em; }
+.footer a { color: var(--blue); }
+
+.scroll-top {
+    position: fixed; bottom: 30px; left: 30px; z-index: 50;
+    width: 50px; height: 50px; border-radius: 50%;
+    background: var(--g-title); color: #fff; text-decoration: none;
+    display: none; align-items: center; justify-content: center;
+    font-size: 1.3em; box-shadow: 0 5px 15px rgba(0,0,0,.25);
+}
+.scroll-top.visible { display: flex; }
+
+/* ---------- סרגל ההאזנה ---------- */
+.listen-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 15px;
+    margin: 25px 0; padding: 18px 25px;
+    background: var(--g-quote); border-radius: 12px;
+    border-right: 6px solid var(--gold);
+    box-shadow: 0 3px 10px rgba(0,0,0,.1);
+}
+.listen-btn-group { display: flex; gap: 8px; align-items: center; }
+.listen-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
+    color: #fff; border: none; border-radius: 30px; padding: 10px 22px;
+    font-size: 1em; font-weight: bold; font-family: inherit; cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+}
+.listen-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(126,34,206,.3); }
+.listen-btn:active { transform: translateY(0); }
+.listen-stop-btn, .listen-skip-btn {
+    background: #fff; color: var(--purple); border: 2px solid var(--purple);
+    border-radius: 30px; padding: 8px 16px; font-size: .95em; font-weight: bold;
+    font-family: inherit; cursor: pointer; transition: transform .15s, background .15s;
+}
+.listen-skip-btn { padding: 8px 12px; }
+.listen-stop-btn:hover, .listen-skip-btn:hover { transform: translateY(-2px); background: #f3e8ff; }
+
+/* מתג "לחיצה על פסקה מקריאה". כשהוא כבוי הוא נראה כבוי — אפור ודהוי — כדי
+   שיהיה ברור במבט אחד למה נגיעה בטקסט לא עושה כלום. */
+.listen-toggle-btn {
+    background: #fff; color: var(--purple); border: 2px solid var(--purple);
+    border-radius: 30px; padding: 8px 14px; font-size: .88em; font-weight: bold;
+    font-family: inherit; cursor: pointer; white-space: nowrap;
+    transition: transform .15s, background .15s, opacity .15s;
+}
+.listen-toggle-btn:hover { transform: translateY(-2px); background: #f3e8ff; }
+.listen-toggle-btn[aria-pressed="false"] {
+    color: var(--muted); border-color: #d1d5db; background: #f9fafb; opacity: .8;
+}
+.listen-toggle-btn:focus-visible { outline: 3px solid var(--purple); outline-offset: 2px; }
+.listen-btn:focus-visible, .listen-stop-btn:focus-visible,
+.listen-skip-btn:focus-visible, .listen-voice select:focus-visible,
+.listen-rate input:focus-visible { outline: 3px solid var(--purple); outline-offset: 2px; }
+
+.listen-status   { font-size: .95em; color: #78350f; flex: 1 1 200px; }
+.listen-progress { font-size: .9em; color: #78350f; font-weight: bold; white-space: nowrap; }
+.listen-rate, .listen-voice { display: flex; align-items: center; gap: 6px; font-size: .9em; color: #78350f; }
+.listen-rate input { accent-color: var(--purple); }
+.listen-rate output { font-weight: bold; min-width: 2.6em; }
+.listen-voice select {
+    border-radius: 20px; border: 1px solid var(--gold); padding: 4px 10px;
+    font-family: inherit; background: #fff; color: var(--ink); max-width: 190px;
+}
+
+.tts-clickable { cursor: pointer; transition: background .2s; border-radius: 6px; }
+.tts-clickable:hover { background: rgba(245,158,11,.10); }
+.reading-highlight {
+    background: var(--g-verse); border-radius: 6px;
+    box-shadow: 0 0 0 3px var(--pink) inset; transition: background .3s;
+}
+
+/* ---------- נייד ---------- */
+@media (max-width: 768px) {
+    body { padding: 15px 10px; }
+    .container { padding: 30px 22px; border-radius: 12px; }
+    .main-title { font-size: 2em; }
+    h2 { font-size: 1.6em; padding-right: 14px; margin-top: 35px; }
+    h3 { font-size: 1.35em; } h4 { font-size: 1.15em; }
+    p, li { font-size: 1.08em; }
+    .two-columns { grid-template-columns: 1fr; }
+    .verse-box, .highlight-box, .quote-box, .story-box, .qa-box { padding: 20px; }
+    .listen-bar { padding: 15px; gap: 10px; }
+    .listen-status { flex: 1 1 100%; }
+    .listen-voice select { max-width: 140px; }
+    .scroll-top { bottom: 18px; left: 18px; width: 44px; height: 44px; }
+    .chapter-card { margin-left: -22px; margin-right: -22px; min-height: 42vh; padding: 30px 20px; }
+    .chapter-card .num { font-size: 3.8em; }
+    .chapter-card .name { font-size: 1.5em; }
+}
+
+/* ---------- העדפת תנועה מופחתת ---------- */
+@media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important; scroll-behavior: auto !important; }
+    .listen-btn:hover, .listen-stop-btn:hover, .listen-skip-btn:hover { transform: none; }
+}
+
+/* ---------- מצב כהה (קריאה בטלפון בלילה) ---------- */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --paper: #1c1b22; --ink: #e8e6ef; --muted: #a8a4b8; --line: rgba(255,255,255,.10);
+        --purple: #c084fc; --blue: #7dd3fc; --green: #4ade80; --gold: #fbbf24; --pink: #f9a8d4;
+        --g-page:      linear-gradient(135deg, #14131a 0%, #221f2e 100%);
+        --g-verse:     linear-gradient(135deg, #2a2440 0%, #3a2436 100%);
+        --g-highlight: linear-gradient(135deg, #1e2c44 0%, #262244 100%);
+        --g-quote:     linear-gradient(135deg, #3a2f16 0%, #4a3a18 100%);
+        --g-story:     linear-gradient(135deg, #16332a 0%, #14291f 100%);
+    }
+    .container { box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+    .toc     { background: #241f33; border-color: #3d2f57; }
+    .chapter-grid { background: linear-gradient(160deg, #262133 0%, #201c2b 100%); border-color: #3d3350; }
+    .chapter-chip { color: var(--ink); }
+    .chapter-chip .n { background: #b08a2e; }
+    .chapter-chip.is-front .n { background: #3b4a86; }
+    .sources { background: #201f28; }
+    .qa-box  { background: #201f28; }
+    .listen-status, .listen-progress, .listen-rate, .listen-voice { color: #fde68a; }
+    .listen-stop-btn, .listen-skip-btn, .listen-toggle-btn { background: #2a2438; color: #e9d5ff; border-color: #c084fc; }
+    .listen-toggle-btn[aria-pressed="false"] { background: #232029; color: #8b8698; border-color: #3f3b4a; }
+    .listen-stop-btn:hover, .listen-skip-btn:hover { background: #3a3050; }
+    .listen-voice select { background: #2a2438; color: var(--ink); }
+    .tts-clickable:hover { background: rgba(251,191,36,.12); }
+}
+
+/* ---------- הדפסה A4 ---------- */
+@media print {
+    @page { size: A4 portrait; margin: 20mm 18mm; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { background: #fff !important; color: #000 !important; padding: 0 !important; font-size: 11pt; }
+    .container { max-width: 100% !important; padding: 0 !important;
+                 box-shadow: none !important; border-radius: 0 !important; background: #fff !important; }
+    /* כרטיס הפרק והמפריד קיימים כדי לדמות "דף חדש" על המסך.
+       בנייר יש מעבר עמוד אמיתי, ולכן הם רק היו מבזבזים עמוד שלם. */
+    .scroll-top, .listen-bar, .chapter-card, .chapter-divider, .chapter-grid { display: none !important; }
+    .chapter-label { background: none !important; color: #4a0080 !important; padding: 0 !important; }
+    .in-this-chapter { page-break-inside: avoid; break-inside: avoid; }
+    p, li { text-align: justify; }
+    .reading-highlight { box-shadow: none !important; background: none !important; }
+    .tts-clickable { cursor: auto; }
+    h2 { page-break-before: always; break-before: page; font-size: 16pt !important; }
+    h2:first-of-type { page-break-before: avoid; break-before: avoid; }
+    h3, h4 { page-break-after: avoid; break-after: avoid; }
+    h3 { font-size: 13pt !important; } h4 { font-size: 12pt !important; }
+    p, li { font-size: 11pt !important; orphans: 3; widows: 3; }
+    .verse-box, .highlight-box, .quote-box, .story-box, .two-columns, .qa-box, .section-divider {
+        page-break-inside: avoid; break-inside: avoid;
+    }
+    .toc { page-break-after: always; break-after: page; }
+    .main-title { font-size: 26pt !important; background: none !important;
+                  -webkit-text-fill-color: #4a0080 !important; color: #4a0080 !important; }
+    .footer { page-break-before: always; break-before: page; }
+    a { color: #000 !important; text-decoration: none; }
+    a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #444; }
+    [style*="display: flex"], [style*="display: grid"] { display: block !important; }
+}
+
+</style>
+<meta property="og:title" content="תהליך הנשירה">
+<meta property="og:description" content="תהליך הנשירה">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-sites-effulgent-gnome-d79f1e-תהליך_הנשירה_הרב_יחיאל_יעקובזון.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/sites/effulgent-gnome-d79f1e/תהליך_הנשירה_הרב_יחיאל_יעקובזון.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="container">
+
+    <h1 class="main-title" id="top">תהליך הנשירה</h1>
+    <div class="subtitle">איך נוצרת תחושת הניכור אצל ילדים, ולמה בתים אוהבים ותקינים אינם חסינים מפניה</div>
+    <div class="author">מאת: הרב יחיאל יעקובזון</div>
+
+    <!-- ===== סרגל האזנה — חובה. מבנה מדויק, אל תשנה id-ים ===== -->
+    <div class="listen-bar">
+        <div class="listen-btn-group">
+            <button class="listen-btn" id="listenBtn" onclick="toggleListen()"
+                    aria-pressed="false" aria-label="הפעל או השהה הקראה">🔊 האזן למאמר</button>
+            <button class="listen-skip-btn" onclick="skipChapter(-1)" aria-label="פרק קודם" title="פרק קודם">⏪</button>
+            <button class="listen-skip-btn" onclick="skipListen(-1)" aria-label="פסקה קודמת" title="פסקה קודמת">⏮</button>
+            <button class="listen-skip-btn" onclick="skipListen(1)"  aria-label="פסקה הבאה"  title="פסקה הבאה">⏭</button>
+            <button class="listen-skip-btn" onclick="skipChapter(1)"  aria-label="פרק הבא"   title="פרק הבא">⏩</button>
+            <button class="listen-stop-btn" onclick="stopListen()"   aria-label="עצור הקראה">⏹ עצור</button>
+            <button class="listen-toggle-btn" id="clickReadBtn" onclick="toggleClickRead()"
+                    aria-pressed="true" aria-label="לחיצה על פסקה מתחילה הקראה">👆 לחיצה: פעילה</button>
+        </div>
+        <span class="listen-status" id="listenStatus" role="status" aria-live="polite">לחץ כדי להתחיל האזנה, או לחץ על כל פסקה כדי להתחיל להקריא ממנה</span>
+        <span class="listen-progress" id="listenProgress"></span>
+        <div class="listen-rate">
+            <label for="rateRange">מהירות:</label>
+            <input type="range" id="rateRange" min="0.5" max="1.6" step="0.1" value="1"
+                   oninput="setListenRate(this.value)" onchange="applyListenRate(this.value)"
+                   aria-label="מהירות הקראה">
+            <output id="rateValue" for="rateRange">1.0×</output>
+        </div>
+        <div class="listen-voice">
+            <label for="voiceSelect">קול:</label>
+            <select id="voiceSelect" onchange="setListenVoice(this.value)" aria-label="בחירת קול"></select>
+        </div>
+    </div>
+
+    <!-- מבט-על על הספר -->
+    <nav class="chapter-grid" aria-label="מבט על פרקי הספר">
+        <h2 class="grid-title">תּוֹכֶן הָעִנְיָנִים</h2>
+        <a class="chapter-chip" href="#section1"><span class="n">1</span>הגיבור האמיתי – יסוד הכוח הפנימי</a>
+        <a class="chapter-chip" href="#section2"><span class="n">2</span>שני צדדים לאותה אמת</a>
+        <a class="chapter-chip" href="#section3"><span class="n">3</span>שלבי הנשירה</a>
+        <a class="chapter-chip" href="#section4"><span class="n">4</span>הווידוי במשרד</a>
+        <a class="chapter-chip" href="#section5"><span class="n">5</span>מי צריך את מי יותר</a>
+        <a class="chapter-chip" href="#section6"><span class="n">6</span>מדוע דווקא בדורנו</a>
+    </nav>
+
+    <div class="toc">
+        <h3>📑 תוכן העניינים</h3>
+        <ul>
+            <li>
+                <a class="toc-chapter" href="#section1">פרק א – הגיבור האמיתי: יסוד הכוח הפנימי</a>
+                <span class="toc-subs"><a href="#section1a">"איזהו גיבור הכובש את יצרו"</a><span>·</span><a href="#section1b">כשאין עבודה על המידות – יש צורך בשליטה</a></span>
+            </li>
+            <li>
+                <a class="toc-chapter" href="#section2">פרק ב – שני צדדים לאותה אמת</a>
+                <span class="toc-subs"><a href="#section2a">תרגיל ההכשרה</a><span>·</span><a href="#section2b">מכתבו של הבן מאילת</a></span>
+            </li>
+            <li>
+                <a class="toc-chapter" href="#section3">פרק ג – שלבי הנשירה</a>
+                <span class="toc-subs"><a href="#section3a">שלב א: שוטטות ברחוב</a><span>·</span><a href="#section3b">שלב ב: חברים לא טובים</a></span>
+            </li>
+            <li><a class="toc-chapter" href="#section4">פרק ד – הווידוי במשרד</a></li>
+            <li>
+                <a class="toc-chapter" href="#section5">פרק ה – מי צריך את מי יותר</a>
+                <span class="toc-subs"><a href="#section5a">שני צדי אותו מטבע</a><span>·</span><a href="#section5b">ללמד לאהוב</a></span>
+            </li>
+            <li><a class="toc-chapter" href="#section6">פרק ו – מדוע דווקא בדורנו</a></li>
+        </ul>
+    </div>
+
+    <!-- ===== גוף הספר ===== -->
+
+    <div class="chapter-card">
+        <div class="num">1</div>
+        <div class="name">הגיבור האמיתי – יסוד הכוח הפנימי</div>
+    </div>
+    <div class="chapter-divider">✡</div>
+    <span class="chapter-label">פרק א</span>
+    <h2 id="section1">הגיבור האמיתי – יסוד הכוח הפנימי</h2>
+    <div class="in-this-chapter">
+        📖 <strong>בפרק זה:</strong> משנה תמוהה במסכת אבות על מהותה של גבורה אמיתית, ולמה אדם שאינו עובד על מידותיו נזקק תמיד להרגיש שליטה וכוח ביחס לסביבתו – עד כדי אכזריות שמוסווית מאחורי מראה תורני.
+    </div>
+
+    <h3 id="section1a">"איזהו גיבור הכובש את יצרו"</h3>
+    <p>הקדוש ברוך הוא הביט בתורה וברא את העולם, ולכן ברור שהוא ברא את האדם עם נטייה טבעית פנימית לעובדו. וממילא ברור שהוא ברא באדם גם את כל הכוחות, הכלים והמידות הנדרשים לעבודת הבורא. הקדוש ברוך הוא נתן לאדם בחירה – אבל לא נתן לו בחירה להיברא מחדש, לשנות את הבריאה שלו. הבחירה היחידה של אדם היא איך הוא מבטא את הכוחות שכבר יש בו, ואיך הוא מכוון אותם.</p>
+    <p>יש באדם, בין השאר, תאוות שלטון וכוח – אחת משלוש התאוות היסודיות שמונים חז"ל: "הקנאה והתאווה והכבוד מוציאין את האדם מן העולם". יש באדם תשוקה טבעית לתחושת עוצמה, וזו מתחילה בתחושה בסיסית של חולשה שמלווה כל אדם מרגע לידתו. הוא משתוקק להרגיע את הפחד הלא-מודע הזה, ובמידה שהוא מצליח – הוא חש תענוג של כוח. זו התאווה "להיות גיבור".</p>
+    <div class="verse-box">"טוֹב אֶרֶךְ אַפַּיִם מִגִּבּוֹר, וּמֹשֵׁל בְּרוּחוֹ מִלֹּכֵד עִיר." (משלי טז, לב)</div>
+    <div class="quote-box">
+        אֵיזֶהוּ גִבּוֹר? הַכּוֹבֵשׁ אֶת יִצְרוֹ, שֶׁנֶּאֱמַר: "טוֹב אֶרֶךְ אַפַּיִם מִגִּבּוֹר, וּמֹשֵׁל בְּרוּחוֹ מִלֹּכֵד עִיר."
+        <div class="source-tag">משנה, מסכת אבות פרק ד</div>
+    </div>
+    <p>המשנה הזאת מפתיעה מאוד במבט ראשון. היא מביאה פסוק שכביכול סותר את עצמה. לשון "איזהו גיבור" בלשון חז"ל פירושה בדרך כלל "אין גיבור אחר" – זהו הגיבור, ותו לא. אבל בפסוק עצמו לא כתוב כך: כתוב "טוב ערך אפיים מגיבור" – כלומר, יש גיבור אחר, גיבור פיזי ממש, וארך האפיים רק טוב יותר ממנו. זה סותר לכאורה את פשט המשנה, שרוצה להגיד שרק זה הגיבור.</p>
+    <p>יש כאן קושי נוסף: איך בכלל אפשר להשוות שני מושגים כה שונים – גבורה רוחנית וגבורה פיזית? הן שני מישורים נפרדים לגמרי. התשובה היא שהמישור היחיד שבו אפשר להשוות שני סוגי פעילות כה שונים זה על פי הצורך הפנימי שהם באים למלא. האדם עצמו חי עם תחושת חולשה, ולוחץ למלא אותה. גם הגיבור הפיזי וגם הגיבור הרוחני מונעים על ידי אותה תחושה בדיוק, וכשהם מצליחים – הם נהנים מתחושת העוצמה.</p>
+    <p>לכן אומר הפסוק: גם הגיבור הפיזי, בשעה שהוא מתגבר, מרוויח תחושה של סיפוק בעולם הזה. אבל הוא לא באמת ממלא את הצורך, כי החולשה נמצאת בו עצמו, לא במי שהוא ניצח. כל פעם שהוא נלחם ומנצח, יש לו רגע קצר של הקלה – ומיד אחר כך התחושה חוזרת. לעומתו, מי שכובש את יצרו באמת ממלא את הצורך הפנימי, כי הוא נותן מענה אמיתי לחולשה הפנימית עצמה, לא רק לתסמין החיצוני שלה.</p>
+
+    <h3 id="section1b">כשאין עבודה על המידות – יש צורך בשליטה</h3>
+    <p>מכאן יסוד מאוד חשוב, שנשמע פשוט אך הוא עמוק מאוד: אדם שלא עובד על מידותיו הוא, בדרך כלל, אדם שמתעלל בסביבתו – לא בהכרח בצורה גלויה. בלי קשר לתכונות שאיתן נולד, יש תכונה יסודית אחת: אדם חש חולשה כל הזמן, וצריך למלא אותה, ואפילו להפיק ממנה באופן חיובי תחושת עוצמה. אדם שעובד על מידותיו בצורה נכונה, לא מתוך פחדים ולחצים נפשיים, רוכש תחושה אמיתית של יכולת והתמודדות. אבל אדם שאינו עובד על מידותיו – יהיה זה באיזו מידה שתהיה – חייב לחוש תחושת שליטה, עוצמה וכוח ביחס לאחרים. וככל שהוא עלוב יותר בעיני עצמו, כך הוא מפעיל את זה כלפי מי שקרוב אליו יותר – ולעיתים קרובות בצורה של אכזריות. וככל שהאכזרות גדולה יותר, כך ההשליה של כוח גדולה יותר: "אני יכול לעשות כך וכך וכלום לא קורה."</p>
+    <div class="highlight-box">
+        זה עצוב, אבל לרמות כאלה אנחנו עדיין מצליחים למצוא, כביכול, "צדיקים" תורניים. וזה קורה רק משום שהתורה, אצל אנשים כאלה, לא מחוברת מספיק פנימה – היא נשארת רק במילים. יש הורים אנושיים וטובים מאוד שהצליחו, בלי כוונה, לגדל ילדים עם תחושה עמוקה של ניכור. אבל יש גם, לצערנו, מי שהצליח לכסות רשעות ואכזריות ממש מאחורי מסך של דקדוק במצוות.
+    </div>
+    <p>אחד מרבותינו אמר לנו פעם שאחד הפשעים החמורים ביותר של החברה שלנו הוא פשע השתיקה וההשלמה עם רשעות שכזאת – ההשלמה עם נבזות, מתוך ניסיון לשמור על הרושם החיצוני של חברה איכותית, ולטשטש דברים מחרידים שנעשים בתוכנו. זה כל מה שיש לנו להעיר על הנקודה הזאת. עכשיו נחזור לקו העיקרי שלנו.</p>
+    <p>אנחנו לא מדברים כאן על המקרים הקיצוניים האלה כשמדובר בבעיה הרחבה של בנים ובנות שגדלים עם תחושת ניכור ודחייה, חסך של חום ואהבה. אלה מקרי קיצון. חובתו של כל אחד מאיתנו להבין שהוא עצמו יכול, חלילה, להיות אותו הורה בלי לדעת זאת – כי כשמישהו מסביר לנו על בעיה, הנטייה הטבעית היא להשליך אותה על מישהו אחר. הציור המצטייר בינינו הוא של אנשים מעוותים, מסובכים, "מטוסבכים" – ולא כך. חלק גדול מאוד מההורים שגידלו ילדים אומללים הם הורים טובים, אנושיים ואוהבים, אנשים חיוביים ולא שלמים – ואף על פי כן ילדיהם גדלו עם תחושת ניכור.</p>
+
+    <div class="chapter-card">
+        <div class="num">2</div>
+        <div class="name">שני צדדים לאותה אמת</div>
+    </div>
+    <div class="chapter-divider">📖</div>
+    <span class="chapter-label">פרק ב</span>
+    <h2 id="section2">שני צדדים לאותה אמת</h2>
+    <div class="in-this-chapter">
+        📖 <strong>בפרק זה:</strong> תרגיל הכשרה שלימד דור שלם של פעילי קירוב שאין "אמת" יחידה ביחסים בין בני אדם – ומכתב קורע לב שכתב נער שברח מהבית, ומגלה בדיוק איך נראית "אהבה מותנית" מנקודת מבטו של ילד.
+    </div>
+
+    <h3 id="section2a">תרגיל ההכשרה</h3>
+    <p>כדי להבין למה זה יכול לקרות אצלנו, כדאי לספר איך היינו מכשירים פעילים חדשים בארגון שבו עבדתי. לקחנו תקופה ארוכה במין תרגיל – אם אפשר לקרוא לו כך – כדי להעמיד אותם בפני אחד השיעורים המאלפים ביותר בתחום העזרה. הייתי מפגיש את הפעיל, בזמן שהוא נפגש עם חונך, עם בחור שסבל מסוג קשה של חסך, שהרגיש תחת התעללות מתמדת. באופן טבעי, כשאתה שומע בן אדם – אתה מזדהה איתו וחש את הרגשותיו. וכמעט תמיד, בפגישה הראשונה שיוצא ממנה, הפעיל רותח כולו: "הייתי תופס את האבא הזה!"</p>
+    <p>אחרי שלושה־ארבעה ימים, בלי שהוא יודע, היינו מפגישים אותו עם האבא עצמו – שבא לתאר את המצוקה שיש לו עם הבן. הפעיל הולך לבכות יחד עם האבא, ורואה שהלב שלו נשבר. ורק אז, כשמגלים לו שהאבא והבן זו אותה פרשה בדיוק – זה היה הלם. היו כאלה שהתקשו לעמוד בזה.</p>
+    <div class="highlight-box">
+        זה לא שאחד מהם שיקר. מנקודת מבטו של הבן – זו האמת, הוא סבל נורא. מנקודת מבטו של האב הנורמלי, האנושי והאוהב, שלא הצליח לבטא את רגשותיו, שהיו לו עכבות והצורך שלו בקשר לא בא לידי ביטוי – אנחנו רואים בדיוק אותו סבל ואותה חוסר אונים. הקושי לתווך ביניהם הוא הקושי האמיתי.
+    </div>
+    <p>אני חושב שאם נבין את זה, נוכל להבין גם איך זה יכול, חלילה, לקרות לנו. אין לי סטטיסטיקה מדויקת, אבל אנחנו חושבים שאולי אפילו רוב לא בולט מההורים שגידלו ילדים אומללים – בנים או בנות – הם הורים טובים, אנושיים ואוהבים. הסיבה העיקרית היא, בדרך כלל, מניעת גילוי חיבה מפורש, או התניית גילוי החיבה.</p>
+
+    <h3 id="section2b">מכתבו של הבן מאילת</h3>
+    <p>כדי להמחיש את שתי נקודות המבט – זו של הבן וזו של האב – אביא מכתב אמיתי. חשוב לי לומר: זה לא סיפור "מוזמן"; אני מקבל לפעמים ביקורת שאני מספר סיפורים קיצוניים כדי שכל אחד יגיד "זה לא אני, לא מתאים לי". הסיפור הזה אמיתי, וטוב להמחשה, כדי לזכור שמשני צדי המתרס עומדים לעיתים קרובות אנשים בעלי שכל חיובי מאוד לעצמם – ואף על פי כן הטרגדיה חלה על שניהם.</p>
+    <p>היה לי קשר עם בחור אחד שהיה שוטט קצת ברחובות בתקופה שגם אנחנו שוטטנו. לא הכרתי כלל את אביו. אחרי תקופה הוא ברח מהבית לכמה ימים לאילת, שם הייתה אז קבוצה גדולה של נוער מרוחק מיהדות – והוא, לצערי, הצטרף אליהם. כתב לי משם מכתב, בעיקר בתגובה למה שדיברתי איתו.</p>
+    <div class="story-box">
+        <div class="story-title">"רק אז הוא היה מחייך אליי"</div>
+        <p>"אני לא מאמין למה שאבא שלי כתב לי, שהוא אוהב אותי," כתב הנער. "אני כותב לך על זה כי אני רוצה שלפחות אתה תדע את האמת. קודם כל, אני לא טיפש, ואני מבין שאתה אמרת לו שיכתוב לי את זה, ולא הוא כתב כך מעצמו – אולי במקרה זה נכון. אבל חוץ מזה, זה לא יכול להיות שכל השנים הוא לא אהב אותי ופתאום כן. עכשיו הוא אומר כך בגלל שברחתי לו. הוא רוצה שאני אחזור הביתה, בגלל הבושה או סיבות אחרות – אבל לא אכפת לי ממנו, כי גם לו לא באמת אכפת ממני.</p>
+        <p>"רק שהייתי מביא לו כבוד, או ציונים טובים, או שהייתי עוזר לו הרבה – רק אז הוא היה מחייך עליי, ופעם או פעמיים אפילו חיבק אותי. רוב הזמן הוא היה מתנהג כאילו אני סתם אחד, לא הבן שלו. היה מתעצבן כשהייתי הולך לדודה שלי, כי הם לא כל כך דתיים – אבל אני דווקא כן הלכתי, כי הדודה שלי הייתה תמיד מחייכת אליי. רק הייתי פותח את הדלת, כבר הייתה מחייכת עליי ושמחה שבאתי, ומחבקת אותי כאילו אני הבן שלה – בלי שעשיתי שום דבר טוב בשביל זה.</p>
+        <p>"אחר כך עברנו דירה לירושלים, וכבר לא הייתה לי דודה, והייתי בוכה הרבה. לפני זה הייתי בוכה בלילה, כדי שלא יראו, כי אבא שלי היה מתרגז שאני בוכה סתם. פעם אמרתי לאמא שלי שאני בוכה כי לאף אחד לא אכפת ממני, והלוואי שאמות – כדי שלפחות אם יבכו עליי, יצטערו שמתתי. אמא שלי אמרה את זה לאבא, והוא קרא לי ואמר שאם אני רוצה שיאהבו אותי, אני צריך להיות תמיד בסדר וילד טוב. אני לא יכולתי להיות כל הזמן בסדר, וגם לפחד כל הזמן שאם אני לא בסדר – לא יאהבו אותי.</p>
+        <p>"וזה מה שהכי חשוב: אפילו כשהייתי בסדר, הוא היה מחבק אותי ונותן לי דברים – אבל אני לא האמנתי שהוא באמת אוהב אותי, כי ראיתי אצל החברים שלי ואצל הדודה שלי שאם אוהבים מישהו, הוא לא צריך כל הזמן להיות צדיק בשביל זה. אני לא מרחם עליו בכלל, להפך – אני כל הזמן כועס עליו. את אמא שלי אני קצת מרחם, כי אני חושב שהיא כן אוהבת אותי, רק בגלל אבא שלי לא הייתה מעיזה להראות את זה."</p>
+    </div>
+    <p>יש בתיאור הזה, למרות המילים הפשוטות והלא מרשימות, תמצית גאונית של כל פרשת הנשירה: לא רק ההבנה השכלית, שהרבה ילדים לא מגיעים אליה בכלל – אלא ההבנה הרגשית שאהבה מותנית איננה אהבה. אנחנו צריכים לעורר אצל ילדינו את ההבנה הזאת, כי הרבה פעמים אין להם מילים לתאר את זה בעצמם.</p>
+
+    <div class="chapter-card">
+        <div class="num">3</div>
+        <div class="name">שלבי הנשירה</div>
+    </div>
+    <div class="chapter-divider">✡</div>
+    <span class="chapter-label">פרק ג</span>
+    <h2 id="section3">שלבי הנשירה</h2>
+    <div class="in-this-chapter">
+        📖 <strong>בפרק זה:</strong> שני השלבים הראשונים בדרך הנשירה – שוטטות ברחוב, ואחר כך חיפוש חברים "לא טובים" – ולמה אי אפשר, וגם לא כדאי, לנסות למנוע את השני בכוח. וסיפור מסקרן על שני אחים "ונדליסטים" בפנימייה סגורה.
+    </div>
+
+    <h3 id="section3a">שלב א: שוטטות ברחוב</h3>
+    <p>יש מיתוס רווח בציבור, כאילו יש היום יותר נשירה מבעבר. יש לכך גם סיבה: הרחוב החומרי היום מפתה מאוד, ואפילו הרחוב החרדי, עם כל ההכשרים שבו, שקוע בתרבות של "לזלול", לחטוף מהעולם הזה. אבל האמת היא שזאת לא הסיבה העיקרית, וסדר הנשירה הוא האחרון בשרשרת ארוכה.</p>
+    <p>התהליך הולך כך: שלב ראשון של הנשירה הוא שהילד או הילדה, ולפעמים כבר בגיל רך מאוד, שבע־שמונה, מתחילים לשוטט ברחובות סתם – בשביל לא להיות בבית. כאן מתחילה הבעיה ברוב המקרים – ואת זה אני אומר מתוך בדיקה מתודית ולא רק תחושה. הרקע לכך פשוט: ילד שלא זכה לגילוי חיבה מרגיש מצוקה, לרוב בלי שהוא מסוגל אפילו להגדיר אותה. הוא גדל בבית הזה, וזו הנורמה בעיניו; הוא לא מצפה שיהיה אחרת ולא קולט שיש בעיה. אבל זה לא עוזר: הקדוש ברוך הוא ברא אותו כמו שברא אותו, לא כמו שאבא ואמא, בשיטת פעולה מסוימת, קבעו את אווירת הבית.</p>
+    <div class="highlight-box">
+        עם הזמן, לרוב שלא במודע, הילד מגלה שכשהוא ברחוב הוא לא חש את המצוקה – פשוט משום שברחוב אין לו ציפיות, ולכן המצוקה לא בולטת. הוא מתחיל לשוטט פשוט בשביל לא להיות בבית. זו זעקה שצריכה להדהד אצלנו כהורים.
+    </div>
+    <p>חשוב להדגיש: איננו מדברים על ילד שהלך עם אופניים חדשים לחברים, או הלך למקומות מסוימים באופן טבעי. אנחנו מדברים על שוטטות סתמית. אם יש לנו תחושה שהילד או הילדה כל הזמן רוצים לצאת, כי לא נעים בבית – זה צריך להדאיג אותנו מאוד. גם אם הייתה תקופה כזאת ונרגעה, הניסיון מלמד שהתופעה חוזרת בגלים, ועם הזמן התנודות בין הגלים מתקצרות, עד שזה נהיה נורח פחות או יותר קבוע.</p>
+
+    <h3 id="section3b">שלב ב: חברים לא טובים</h3>
+    <p>השלב השני הוא שהבן או הבת מוצאים חברים "לא טובים". כנגד זה ההורים מנסים בדרך כלל אמצעים טכניים: לאסור להתחבר עם חברים מסוימים, ואולי אפילו להעדיף חברים אחרים. הפתרון הזה אינו יעיל כלל, ואין לו שמץ סיכוי, משלוש סיבות.</p>
+    <p><strong>ראשית:</strong> הילד בוחר בחברים "לא טובים" כי שם הקשר הרגשי בטוח. ככל שהחברים פחות טובים, כך הוא מרגיש פחות מוערך לפי הישגים – הוא לא צריך להתנהג טוב, אין שום דרישה כדי לחזק את הקשר, חוץ מהדרישה הגלובלית "להיות לא בסדר" – וזה לא דורש ממנו מאמצים יוצאי דופן. <strong>שנית:</strong> גם אם סוגרים אותו פיזית בבית, ההתחברות הרגשית קיימת גם בלי מגע פיזי. <strong>שלישית:</strong> אף אחד מאיתנו לא באמת יודע מי הם "החברים הלא טובים". זו יכולה להיות הילדה הכי מקסימה של הרבנית הכי חשובה בשכונה, או הילד שנראה הכי תמים אצל השכנים הכי טובים. אף אחד מאיתנו לא יודע – והם כן יודעים, כמו שהגמרא אומרת "גירים אוהבים זה את זה" – יש להם חוש פנימי לזהות זה את זה.</p>
+    <div class="story-box">
+        <div class="story-title">איך מזהים את ה"ונדליסט" הנעלם</div>
+        <p>ניהלתי פעם מוסד סגור לנוער עברייני, שנשלחו אליו נערים על פי צו בית משפט. יום אחד הגיעו אלינו שני אחים, נערים מסכנים מאוד, שעברו מגיל צעיר מאוד ממשפחה למשפחה, ולא היה איפה לשים אותם. פקידת סעד ביקשה בדחיפות שנשכן אותם אצלנו לשלושה שבועות בלבד, עד שימצא להם מקום. סירבתי בהתחלה: כל תלמיד חדש שנכנס לכיתה שלנו זעזע את המערכת, ולקבל מישהו לשלושה שבועות בלבד ולהוציא אותו שוב, בלי שהוא ייקלט, לא היה מוצדק. אבל בסופו של דבר נכנעתי, כי קיבלנו תקציבים ממשרד הסעד.</p>
+        <p>הבעיה המרכזית של שני האחים הייתה דחף עז לוונדליזם והשחתה שאף אחד לא הצליח למתן. כשהייתי צריך לשכנע את הצוות לקבל אותם, אמרתי משהו שהאמנתי בו רק בחצי: "אנחנו נשתמש בהם כדי לזהות את הוונדליסט הנעלם שלנו." הייתה לנו אז בכיתה בעיה: מישהו היה משחית רכוש, קורע סידורים בסכין, בצורה שהראתה שזה חולני – ולא הצלחנו לזהות אותו בשום דרך, למרות שהיינו די מיומנים בזה.</p>
+        <p>אמרתי לצוות: "נכניס את שני האחים לאותה כיתה, ונראה מי מתחבר איתם – ונזהה דרך זה." כולם צחקו עליי, וגם אני צחקתי על עצמי בפנים, אבל זה היה מספיק כדי לשכנע את הצוות. ובסוף, מה שאמרתי התממש. בדקתי מי התחבר אליהם ראשון – ואחד מהם היה דווקא התלמיד הכי "טוב" בכיתה, זה שהכי לא התאים. קראתי לו למשרד וזרקתי לו: "תגיד לי, מה הכיף בלהשחית סידור?" הוא נדהם: "מי אמר לך?" אמרתי לו: "אתה עכשיו אמרת לי."</p>
+        <p>מדהים לראות איך הם מזהים אחד את השני. בהרבה מקרים הם עצמם לא ידעו זה על זה בבירור – זה משהו אחר, בתנועות פנים, במימיקה, בסגנון. גם במקרה הזה היה ברור שהוא לא ידע עליהם באופן מודע, והם לא ידעו עליו. גם הסגנון היה שונה: הוא היה משחית בסתר, ומחצית ההנאה שלו הייתה בכך שלא יתפסו אותו – לפעול במחתרת, בסתר. שני האחים, לעומתו, עשו את זה בגלוי ובפרהסיה. אבל משהו עמוק חיבר ביניהם, ומשך אותם זה אל זה מיד.</p>
+    </div>
+
+    <div class="chapter-card">
+        <div class="num">4</div>
+        <div class="name">הווידוי במשרד</div>
+    </div>
+    <div class="chapter-divider">📖</div>
+    <span class="chapter-label">פרק ד</span>
+    <h2 id="section4">הווידוי במשרד</h2>
+    <div class="in-this-chapter">
+        📖 <strong>בפרק זה:</strong> סיפור קשה, אמיתי ומזעזע – על אב מכובד שפרץ למשרד באמצע הלילה כדי לבקש סליחה מבנו שברח מהבית, על התוודות שהוקלטה בלי כוונה, ועל מה שקורה כשנער סרבן פוגש את דמעות אביו.
+    </div>
+    <p>עד כה תיארנו את הצד האחד של המטבע – נקודת המבט של הבן. עכשיו אני רוצה להקריא סיפור מהצד השני, נקודת מבטו של אב. זה לא סיפור רגיל, לא סטנדרטי מבין הסיפורים שאני נוהג להביא כדי להסביר למה הורים מונעים מילדיהם גילוי חיבה – אבל יש בו המחשה עוצמתית לכך שגם אב שאהב מאוד את בנו יכול, מתוך פחד ועיוותים אישיים, לגרום לו את אותו נזק בדיוק.</p>
+    <p>הילד הזה, שכתב לי בזמנו את המכתב מאילת, התבגר. יום אחד עזב את הבית ובא למוסד שני, ישיבה טיפולית, שבה טיפלתי אז. אחרי שדיברתי איתו כמה שעות וסידרתי לו מקום זמני בפנימייה, הגיע אליי בערב אביו. הוא נכנס למשרד שלי בלי תיאום, כמעט בלי לדפוק, ופתח בלי שנתתי לו רשות – והתחיל לדבר. הוא היה לבוש מכובד, נראה מרשים מאוד. הייתי בטוח שנכנס בטעות, אבל הוא היה נסער מכדי לעצור.</p>
+    <div class="story-box">
+        <div class="story-title">"הבן שלי בא אליי ואמר: אני עוזב את הבית"</div>
+        <p>לא ידעתי מי הוא, ומסיבות שלי אני מקליט תמיד מכשיר הקלטה במשרד כשיש שיחה שדורשת ריכוז וניתוח מאוחר יותר. הפעלתי אותו בלי שהוא ידע. עד סוף השיחה לא הבנתי שזה אביו של אותו בחור, למרות שהוא הזכיר שהבן ברח באותו יום ואמרו לו שהוא בא אליי. הזדהיתי כל כך עם שני הצדדים, שלא עלה בדעתי לחבר ביניהם עד שהוא הזכיר במפורש את שם הבן.</p>
+        <p>הוא סיפר: "חזרתי הביתה מהתפילה, ומצאתי את בני עומד בפרוזדור, מחזיק מזוודה גדולה בידו. אשתי עמדה לידו. לא הבנתי מה קורה. שאלתי אותו: 'לאן אתה נוסע?' הוא לא ענה, שתק. הסתכלתי על אשתי – היא בכתה. הסתכלתי שוב על הבן, אבל הוא לא הביט בי. הוא ניגש לאמו ונישק אותה, והבכי שלה גבר. שאלתי בכעס: 'מה קורה כאן?' לא קיבלתי תשובה. אז פנה אליי הבן, ניגש קרוב מאוד, כאילו רצה להראות שהוא כבר לא פוחד ממני, ואמר בשקט ובקור: 'אני עוזב את הבית.' סתם, ככה, עוזב את הבית וזהו. לאן? למה? מה פתאום? אין תשובה. פתח את הדלת ויצא. אפילו שלום לא אמר לי."</p>
+        <p>"תאר לך," המשיך האב, "הבן שלך, הילד שלך, בא אליך פתאום ואומר בשקט – אני עוזב. מרוב בלבול לא ידעתי מה להגיד. הסתכלתי בו ולא אמרתי כלום. הוא יצא. הבן היחיד שלי הולך מהבית, עוזב אותי, לא רוצה בי, אפילו לא אומר לי שלום. אשתי הביטה בי, עיניה עצובות כל כך שבא לי לבכות. ידעתי שהיא מאשימה אותי, למרות שלא אמרה מילה. היא אישה טובה באמת. רק אני – הרע והטיפש. אבל אני יכול להגיד לזכותי שאני יותר טיפש ממה שאני רע.</p>
+        <p>"הלכתי לחדר שלו. המיטה לא הייתה מסודרת, אבל הפעם, לראשונה, לא היה אכפת לי מזה. על המיטה מוטלים חפצים שלו: מכוניות צעצוע שקניתי לו כשהיה קטן, בולים, מחברות ישנות, תמונות של רבנים – אף פעם לא ידעתי שיש לבני תמונות של רבנים. באותו רגע תפסתי שלמעשה לא הכרתי את בני, בן יחידי, בכלל. מעולם לא התעניינתי במה שמעניין אותו. הייתי כמו זר בשבילו.</p>
+        <p>"אני משוכנע שגם הוא רצה שיהיה לו אבא שיודע להיות גם חבר, שיודע להגיד מילה טובה, לחבק, לנשק. מעולם לא נישקתי אותו. אפילו כשהיה קטן פחדתי לפנק אותו. הוא בן יחידי – בצרפת, לפני המלחמה, היו לי שני תינוקות. הנאצים רצחו אותם. רציתי שהוא לא יהיה כמוהם. רציתי שיהיה חזק, קשוח, שיצליח להתמודד עם החיים. טיפש, טיפש שכמוני. ילד קטן שאבא שלו לא מחבק אותו – מה אתה רוצה ממנו? הוא היה בן שלוש בערך, ביקש ממני: 'אבאל'ה, תיתן לי נשיקה', ובכה. לא נתתי לו. אמרתי לו: 'אל תתפנק'. זה כל מה שהיה לי להגיד לו. מעולם לא זכה לשמוע ממני מילה טובה. רק ביקורת, רק ביקורת. תמיד ציפיתי ממנו להיות טוב יותר, חזק יותר, מוצלח יותר. אף פעם לא אמרתי לו שאני נהנה ממנו.</p>
+        <p>"ישבתי על מיטתו, והמחשבות התרוצצו במוחי. החזקתי בידי תמונה שלו, שמצאתי מושלכת על הרצפה ליד נעליו – תמונה מגיל שנתיים. טלית קטן שחורה וגדולה, עיניים חומות עצובות. מבט כזה עצוב אצל ילד בן שנתיים. הלב שלי נצבט. דימיתי לעצמי שהתינוק האומלל שבתמונה מדבר אליי, שואל: 'למה לא אהבת אותי? למה?' הייתי מוכן לצאת מהעולם כדי לדבר איתו באותו רגע. משתוקק ממש – אתה יודע מה זה צמאון? להרגיש צמאון כאילו אתה צמא באמת. רציתי לגלות לו כמה אני אוהב אותו, כמה אני קשור אליו, שאין לי שום דבר בעולם חוץ ממנו. רציתי לבקש ממנו סליחה, כמעט להתחנן שיחזור אליי ויסלח לי.</p>
+        <p>"ואז תפסתי שכבר מאוחר. הוא כבר ילד גדול, בן שבע עשרה. התינוק האומלל שביקש נשיקה – פתאום הוא בן שבע עשרה, ועכשיו הוא שונא אותי, לא רוצה בי. והוא צודק. כן, הוא צודק. במו ידיי איבדתי את בני היחיד." הוא ליטף את הסדין שעליו שכב הבן, והתחיל לבכות. בכה כמו ילד קטן, כמו שבכה כשאיבד את ילדיו במלחמה – אבל אז בכה על מה שאחרים עוללו לו, והפעם על מה שהוא עולל לעצמו.</p>
+        <p>אחרי שנרגע קצת, הוא אמר לי שהגיע אליי כי אמרו לו שבנו בטח אצלי, ושאני מטפל בו כבר זמן מה. "רציתי רק לבקש ממנו סליחה, לגלות לו שאני אוהב אותו, אבל הוא ברח ממני, התחמק מעיניי ונעלם. אני מבקש ממך שתעשה את זה במקומי. תסביר לו את הכול. תגיד לו שאני אוהב אותו ושאני מבקש את סליחתו." אמר לי: "אני רואה שגם אתה כבר לא סובל אותי, אבל אין דבר – לפחות תחבק אותו במקומי." וכמו שנכנס בצורה מוזרה, כך יצא.</p>
+    </div>
+    <p>הבאתי את הסיפור הזה משום שהוא ממחיש בעוצמה רבה מה שרציתי, וגם משום שהוא קיצוני מספיק כדי שאף אחד לא יחשוב שאני מתכוון אליו אישית. אחרי שהאב יצא, כתבתי את הנוסח מהזיכרון, בתיקונים קלים של מילים לא ברורות, וקראתי לבחור. אמרתי לו: "תקרא." הוא הלך לחדר צדדי, קרא, וכשחזר אמר: "אתה סופר מעולה, ושקרן באותה מידה." אמרתי לו: "לפני שהכרתי אותך – בינתיים לא אמרתי כלום. יש לך לקרוא." הוא אמר: "אני מכיר את כל הנתונים – צרפת, וכל הסיפורים. זה מה שאבא שלי אמר. גם אם הוא בא לכאן, דיברת איתו חצי שעה. אני מכיר אותו שבע עשרה שנה."</p>
+    <p>הרגשתי שאני מוכרח. אמרתי לו: "יש לי הקלטה של הכול. תשמע – אתה תזהה." נתתי לו לשמוע, פעמיים. אחרי זה הוא לקח את ההקלטה ונעלם. ברח, ירד לכביש, נסע בטרמפים. נסעתי אחריו, הגעתי הביתה שלו בשתים עשרה בלילה, והוא עמד ליד הבית – חזר הביתה, לא מצא בעצמו את האומץ לפתוח את הדלת. חיבקתי אותו והכנסתי אותו הביתה. זה היה קטע מרגש – אבל החלק החשוב ביותר הוא שגם אחרי כל זה, הסיפור לא נגמר בבת אחת. לקח חודשים של מאמץ שקשה לתאר לגשר על הקיר שנוצר. גם לאחר מכן, הקשר בין השניים לא היה שוטף וזורם, אבל היה בר תיקון.</p>
+
+    <div class="chapter-card">
+        <div class="num">5</div>
+        <div class="name">מי צריך את מי יותר</div>
+    </div>
+    <div class="chapter-divider">✡</div>
+    <span class="chapter-label">פרק ה</span>
+    <h2 id="section5">מי צריך את מי יותר</h2>
+    <div class="in-this-chapter">
+        📖 <strong>בפרק זה:</strong> האמת המפתיעה שאנחנו, ההורים, זקוקים לקשר הרגשי עם ילדינו הרבה יותר משהם זקוקים לנו – ולמה זה בעצם חדשות טובות. וכן פרויקט מיוחד שהצליח ללמד בנות "מלאות חסך" לאהוב, על ידי כך שלימד אותן לתת.
+    </div>
+
+    <h3 id="section5a">שני צדי אותו מטבע</h3>
+    <p>האמת הפשוטה, שאם היינו חיים חיים טבעיים ולא מלאכותיים היינו יודעים בעצמנו בלי שום הרצאה, היא זו: אנחנו זקוקים לקשר הרגשי עם ילדינו הרבה יותר משהם זקוקים לו מאיתנו. כשילדים גדלים קטנים, חסרי אונים ופסיביים, הם כל כך תלויים בנו, כל כך "חלק מאיתנו", שאנחנו בכלל לא יכולים לדמיין שכשיגדלו זה לא יהיה כך. אבל פתאום, כשהילד או הילדה מתחילים לגדול ולהיות עצמאיים, אנחנו מרגישים שהקשר מתרופף. הורים שלא מצליחים להתמודד עם השלב הזה מנסים בכוח להראות לילד שהוא עדיין תינוק, שהוא לא מבין – לא בכוונה רעה, אלא מתוך פחד לא מודע לאבד את הקשר. הם קוראים לקשר הזה "תלות", ומפריעה להם העצמאות של הילד – אף שבשכלם הם רוצים מאוד שהוא יהיה עצמאי. אם ההורים לא מצליחים לתרגם את הקשר, מקשר של תלות לקשר של ידידות, ומשם להעמיק אותו עוד יותר – הם נמצאים בטרגדיה על שני הצדדים.</p>
+    <p>לרוב, הבעיות של קשרים רגשיים אינן נמצאות בגיל שלוש. יש כמעט "נס משמיים" בעובדה שעד גיל שלוש כל הילדים חמודים, ומחבקים אותם ואוהבים אותם בקלות. אבל בחוגים שלנו, הבעיות של קשרים רגשיים נמצאות יותר במרכז בגילאי תשע עד אחת עשרה בערך, ואילך.</p>
+    <div class="highlight-box">
+        אדם לא זקוק רק "להיות אהוב" – זו אינה הגדרה מדויקת של הצורך. אדם זקוק לקשר עמוק של אהבה, לא מותנה. וכשילד נגזלת ממנו התחושה שהוא אהוב, נגזל ממנו גם הכלי לאהוב אחרים. זו הבעיה העמוקה ביותר. שני צדי אותו מטבע: להיות אהוב, ולאהוב.
+    </div>
+
+    <h3 id="section5b">ללמד לאהוב</h3>
+    <p>הפתרון היחיד למי שהצלקת הזאת נמצאת בליבו הוא ללמד אותו לאהוב. זה קשה, כמובן: מי שהרגיש חסך בחייו כל דעתו נתונה לקבל את מה שחסר לו, ולא מסוגל לתת. יכול לשמוע הרצאות, לקרוא ספרים, ובכל זאת לא לפתור את הבעיה – כי הבעיה אינה בעיה של ידע, אלא בעיה נפשית.</p>
+    <div class="story-box">
+        <div class="story-title">בנות שלימדו לתת</div>
+        <p>עשינו פעם מיזם: ריכזנו קבוצה של בנות שסבלו מאוד מחסך בילדותן, ושילבנו אותן בפעילות התנדבותית עם ילדים חריגים שאפילו אינם יכולים להביע הכרת תודה, וגם עם קשישים שכמעט מנותקים מהסביבה. אמרנו להן: "אתם לא יכולות לתקן את העבר, ואפשר וצריך לבכות אותו ולהכיר בו – אבל זה לא סותר את זה שאפשר להיות מאושרות. אם תלמדו שאת הצורך לקבל אפשר למלא גם על ידי לתת ולהעניק, ותלמדו ליהנות מזה לא בגלל שיחזירו לכן – תיצרו קשר אמיתי." קשר כזה, דרך אגב, ממלא את הצורך הנפשי הרבה יותר, כי אתה מרגיש שהוא תלוי בך – ובטוח. כשאתה מקבל, אתה תמיד תלוי בחסדי אחרים. כשאתה נותן ולומד ליהנות מהנתינה, זה לא מרגיש כמו התגברות על יצר – זה ממלא אפילו יותר טוב.</p>
+        <p>ההצלחה שם הייתה ממש מפתיעה. עקבנו אחריהן גם אחר כך, אחרי חתונתן – ולעומת כל הסטטיסטיקה שהייתה אפשר לצפות לה, ההצלחה שלהן הייתה יוצאת דופן. מי שסבל מסוגל, דווקא בזכות זה, להשקיע הרבה יותר, ומוכן להשקיע הרבה יותר – ומפיק יותר. הצלקת של ילדות עצובה לא נעלמת לגמרי, וכל פעם שנוגעים בה היא עדיין מעוררת דמעות – אבל זה לא מונע מהאדם להיות מאושר, שלם ומלא, לא פחות ולעיתים אף יותר מאחרים.</p>
+    </div>
+
+    <div class="chapter-card">
+        <div class="num">6</div>
+        <div class="name">מדוע דווקא בדורנו</div>
+    </div>
+    <div class="chapter-divider">📖</div>
+    <span class="chapter-label">פרק ו</span>
+    <h2 id="section6">מדוע דווקא בדורנו</h2>
+    <div class="in-this-chapter">
+        📖 <strong>בפרק זה:</strong> הסבר בגובה העיניים לשאלה מדוע תחושת הניכור נפוצה כל כך היום דווקא, ולמה המיתוס הרווח על "מלמדים אכזריים" בדורות הקודמים הוא בעצם תעמולה שאולה – לא עובדה היסטורית.
+    </div>
+    <p>נשאר לנו לעלות מהרמה הרגשית לרמה העקרונית יותר, ולהסביר מבחינה עניינית על מה מתבססת הטענה שלנו: שצורת החיים בחברה המודרנית גורמת באופן טבעי לילדים תחושת ניכור. התשובה הכללית, שברורה לנו במגבלות מדעי ההתנהגות, היא זו: לפני מאתיים שנה, כל ילד גדל באופן טבעי עם תחושה שהוא אהוב, בלי שהוריו השקיעו שום מאמץ מיוחד בשביל זה – אם לא קלקלו את זה בפועל. היום, לצערנו, ילד יכול לגדול, כמעט באופן אוטומטי, עם תחושת ניכור ודחייה, שהוא לא אהוב. כל מה שאנחנו מבקשים – לחבק, לנשק, "לשטוף את המוח" בחיבה – זה לתקן נזקים, למזער את הבעיה, ולא להוסיף משהו על מה שהיה בעבר באופן טבעי. זהו עיקר השינוי.</p>
+    <p>חשוב להדגיש: איננו מדברים על תקופת ההשכלה. באותה תקופה כמעט לא הייתה נשירה מסיבות של קשרים רגשיים בבית. בשנות החמישים, כשפרצה המדינה ותקופת המחתרות, הייתה נשירה עצומה בירושלים – אבל היא הייתה נשירה אידיאולוגית, בעקבות תנועות כמו אצ"ל, ולא קשורה לחום הבית. גם תקופת ההשכלה עצמה – זו תנועה שמקורה במלחמה של אירופאים נוצרים בין הזרם הקתולי לפרוטסטנטי. חלק גדול מאוד מהספרות הארסית של ההשכלה, שמתארת רבנים מדקדקים על "קוצו של יוד" ומתעללים בנשים, הוא בפשטות תרגום של סיפורים שכתבה הכנסייה הנוצרית נגד הכמורה הקתולית שלה עצמה. תעמולת ההשכלה הייתה תנועה נוצרית ביסודה, שהעתיקה סיפורים מוכנים, בעוד שהבריחה בפועל של הנוער היהודי הייתה נעוצה בעיקר במצוקה חומרית ובשפלות, לא בבעיות של קשרים רגשיים בבית.</p>
+    <div class="highlight-box">
+        פעם, לצורך בירור נושא צדדי, עשינו סקר מהיר בכנס של כשלוש מאות מלמדים ומשגיחים ותיקים, ושאלנו: האם נכון שלפני מאה וחמישים שנה רוב הרבנים היו מרביצים באכזריות? רוב הציבור חשב שכן – אבל זו אגדה ששאולה מהספרות הנוצרית, ותורגמה על ידי ההשכלה ליהדות. עובדתית זה לא נכון. בספרות השו"ת אפשר לראות שדיני תורה נעשו נגד מלמדים שהרביצו, מה שמוכיח שזה לא היה סטנדרט מקובל.
+    </div>
+    <p>יש בכך גם עניין של הטיית זיכרון: אם מישהו מספר על בית ספר יסודי או חדר, מה שהוא זוכר הוא בדרך כלל את הרגעים החריגים – שהשפילו אותו, שהכו אותו – ולא את שאר הימים הרגילים. זה כמו מי שקורא תנ"ך וחושב שכל תולדות מלכי ישראל היו רציחות, בגלל שהתורה מספרת דווקא על הדרמות. אם היום ידווח עיתון "יהודי רצח יהודי" בכותרת ראשית של עמוד שלם, כפי שהיה פעם, זה יהיה בגלל שזה אירוע נדיר ומזעזע – בדיוק כמו שאנחנו לא מדווחים היום על כל תאונת דרכים בכותרות ראשיות, אף שבפועל מתים בה הרבה יותר אנשים.</p>
+    <p>המסקנה החשובה מכל זה: הבעיה של תחושת הניכור אצל ילדינו אינה תוצאה של דור מקולקל יותר מבחינה מוסרית, אלא תוצאה של שינוי אמיתי בתנאי החיים – בתי מגורים צפופים, לחץ זמן, עומס. וכיוון שהיא נובעת מתנאי חיים ולא מרשעות, יש לנו גם דרך אמיתית לתקן אותה: לא בהאשמה עצמית, אלא בהשקעה מודעת של תשומת לב וגילוי חיבה, כדי לפצות על מה שהטבע כבר לא נותן לנו בחינם.</p>
+    <p>בפעם הבאה, בעזרת השם, נעבור לדבר על נושא האגוצנטריות ועל פתרונות מעשיים שכל אחד מאיתנו יכול ליישם.</p>
+
+    <div class="sources">
+        <h3>📚 מקורות ומראי מקומות</h3>
+        <ol>
+            <li>משנה, מסכת אבות פרק ד, משנה א – "איזהו גיבור הכובש את יצרו..."</li>
+            <li>משלי טז, לב – "טוב ארך אפים מגיבור, ומושל ברוחו מלוכד עיר."</li>
+            <li>מסכת סנהדרין (העיקרון "גירים אוהבים זה את זה" – כעין הנאמר במסכת יבמות ס"א ואבות דרבי נתן).</li>
+            <li>עקרונות חינוכיים על גילוי חיבה, קשר לא מותנה ומשמעות הנשירה – מתורתו שבעל פה של הרב המחבר.</li>
+            <li>עדויות והשוואה היסטורית באשר למקור המיתוס על אכזריות מלמדים – מתוך תיאורו של הרב המחבר, בהתבסס על סקר בעל פה בקרב מלמדים ומשגיחים ותיקים.</li>
+        </ol>
+    </div>
+
+    <!-- ===== חתימה — חובה, מבנה קבוע, לא לשנות ===== -->
+    <div class="footer">
+        <strong>נכתב ונערך על ידי:</strong><br>
+        <strong>הרב יהודה טאוב</strong><br>
+        קרית אתא<br>
+        📞 <strong>ליצירת קשר:</strong> 0527139520<br><br>
+
+        <div style="margin-top: 30px; padding: 25px; background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%); border-radius: 10px; color: #1f2937;">
+            <h4>🎧 שיעורים נוספים של הרב</h4>
+            <p><strong>ניתן לשמוע עוד שיעורים נפלאים:</strong></p>
+            <p>📻 <strong>קול הלשון - קול תודה:</strong> 03-6171190</p>
+            <p>🌐 <strong>באתר:</strong> <a href="https://www.kol-toda.co.il/">www.kol-toda.co.il</a></p>
+        </div>
+    </div>
+
+</div>
+
+<a href="#top" class="scroll-top" id="scrollTop" aria-label="חזרה לראש העמוד">▲</a>
+
+<script>
+/* ===== גלילה חלקה + כפתור חזרה למעלה ===== */
+document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+        var t = document.querySelector(this.getAttribute('href'));
+        if (!t) return;
+        e.preventDefault();
+        t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+});
+window.addEventListener('scroll', function () {
+    document.getElementById('scrollTop').classList.toggle('visible', window.scrollY > 400);
+});
+</script>
+
+<script>
+/* =============================================================================
+   קול תודה — מנוע הקראה למאמרים תורניים   |   tts.js   v2.0
+   -----------------------------------------------------------------------------
+   העתק את הקובץ הזה כמות שהוא לתוך תגית <script> בסוף ה-HTML.
+   אין לכתוב אותו מחדש, לקצר או "לשפר" תוך כדי יצירת מאמר — הוא נבדק כך.
+   Web Speech API בלבד: בלי API חיצוני, בלי מפתח, בלי רשת, בלי עלות.
+   ============================================================================= */
+(function () {
+    'use strict';
+
+    var bar = document.querySelector('.listen-bar');
+    if (!('speechSynthesis' in window)) {
+        if (bar) bar.innerHTML = '<span class="listen-status">הדפדפן שלך אינו תומך בהקראה קולית. נסה Chrome, Edge או Safari.</span>';
+        return;
+    }
+    var synth = window.speechSynthesis;
+
+    /* ---------- הגדרות ---------- */
+    var NS       = 'koltoda.tts.';                 // מרחב שמות ב-localStorage, משותף לכל המאמרים
+    var POS_KEY  = NS + 'pos.' + (document.title || location.pathname);
+    var MAX_CHUNK = 180;                           // תווים לכל אמירה — מתחת לסף הקטיעה של Chrome
+    // כל אלה הם ניווט או מטא-מידע, לא גוף המאמר. מי שמאזין לא רוצה לשמוע
+    // את מפתח העניינים, את רשימת המקורות או את "בפרק זה" לפני כל פרק.
+    var SKIP     = '.footer, .toc, .sources, .listen-bar, .book-nav, .in-this-chapter, .chapter-card, .chapter-grid, .no-tts';
+
+    /* ---------- מצב ---------- */
+    var chunks = [], elCount = 0, idx = 0, built = false, selfAdvancing = false;
+    var isOn = false, paused = false, autoPaused = false;
+    var token = 0, watchdog = null;
+    var rate = 1, voices = [], voice = null, userPickedVoice = false;
+    var clickToRead = true;          // נטען מ-localStorage ב-init
+
+    /* ---------- אלמנטים ---------- */
+    var $btn    = document.getElementById('listenBtn');
+    var $status = document.getElementById('listenStatus');
+    var $rate   = document.getElementById('rateRange');
+    var $rateVal= document.getElementById('rateValue');
+    var $voice  = document.getElementById('voiceSelect');
+    var $prog   = document.getElementById('listenProgress');
+    // התווית ההתחלתית נלקחת מה-HTML ולא מקובעת בקוד, כדי שתבניות שונות
+    // (למשל "האזן" בספר מול "האזן למאמר" במאמר) יחזרו לטקסט הנכון שלהן.
+    var BTN_LABEL = ($btn && $btn.textContent.trim()) || '🔊 האזן למאמר';
+
+    function store(k, v) { try { if (v === undefined) return localStorage.getItem(NS + k); localStorage.setItem(NS + k, v); } catch (e) { return null; } }
+
+    /* =========================================================================
+       1. עיבוד הטקסט להקראה
+       ========================================================================= */
+
+    var G = '["\\u05f4\\u201d\\u2033]';        // גרשיים על כל וריאציותיהם
+    var R = "['\\u05f3\\u2019]";               // גרש
+
+    // מילון ראשי תיבות. חל *רק* על הטקסט שנשלח למנוע הדיבור —
+    // הטקסט שעל המסך נשאר בדיוק כפי שנכתב.
+    // ה-([ובלכמשהד]{0,2}) הוא קריטי בעברית: ראשי תיבות כמעט תמיד מופיעים עם
+    // אות שימוש דבוקה — "בשו״ע", "ובמשנ״ב", "כשו״ת". בלי זה הכלל פשוט לא נורה
+    // ברוב המופעים האמיתיים. האות נשמרת ומוצמדת חזרה למילה המלאה.
+    function ab(pattern, replacement) {
+        return [new RegExp('(^|[^\\u05d0-\\u05ea])([ובלכמשהד]{0,2})' + pattern + '(?![\\u05d0-\\u05ea])', 'g'),
+                '$1$2' + replacement];
+    }
+    var ABBREV = [
+        ab('זצוק' + G + 'ל', 'זכר צדיק וקדוש לברכה'),
+        ab('זצ' + G + 'ל', 'זכר צדיק לברכה'),
+        ab('ז' + G + 'ל', 'זכרונו לברכה'),
+        ab('ע' + G + 'ה', 'עליו השלום'),
+        ab('שליט' + G + 'א', 'שליטא'),
+        ab('הקב' + G + 'ה', 'הקדוש ברוך הוא'),
+        ab('בס' + G + 'ד', 'בסייעתא דשמיא'),
+        ab('בעז' + G + 'ה', 'בעזרת השם'),
+        ab('ב' + G + 'ה', 'ברוך השם'),
+        ab('אע' + G + 'פ', 'אף על פי'),
+        ab('אע' + G + 'ג', 'אף על גב'),
+        ab('עפ' + G + 'י', 'על פי'),
+        ab('ע' + G + 'פ', 'על פי'),
+        ab('ע' + G + 'י', 'על ידי'),
+        ab('עפ' + G + 'ר', 'על פי רוב'),
+        ab('כמו' + G + 'כ', 'כמו כן'),
+        ab('א' + G + 'כ', 'אם כן'),
+        ab('מ' + G + 'מ', 'מכל מקום'),
+        ab('כ' + G + 'ש', 'כל שכן'),
+        ab('ק' + G + 'ו', 'קל וחומר'),
+        ab('י' + G + 'ל', 'יש לומר'),
+        ab('צ' + G + 'ל', 'צריך לומר'),
+        ab('צ' + G + 'ע', 'צריך עיון'),
+        ab('עיי' + G + 'ש', 'עיין שם'),
+        ab('וע' + G + 'ע', 'ועיין עוד'),
+        ab('ד' + G + 'ה', 'דיבור המתחיל'),
+        ab('ס' + G + 'ק', 'סעיף קטן'),
+        ab('שו' + G + 'ע', 'שולחן ערוך'),
+        ab('שו' + G + 'ת', 'שאלות ותשובות'),
+        ab('או' + G + 'ח', 'אורח חיים'),
+        ab('יו' + G + 'ד', 'יורה דעה'),
+        ab('אה' + G + 'ע', 'אבן העזר'),
+        ab('חו' + G + 'מ', 'חושן משפט'),
+        ab('משנ' + G + 'ב', 'משנה ברורה'),
+        ab('ע' + G + 'א', 'עמוד א'),
+        ab('ע' + G + 'ב', 'עמוד ב'),
+        ab('וכו' + R, 'וכולי'),
+        ab('וכד' + R, 'וכדומה'),
+        ab('וגו' + R, 'וגומר'),
+        ab('עמ' + R, 'עמוד'),
+        ab('סי' + R, 'סימן'),
+        ab('סע' + R, 'סעיף'),
+        ab('הל' + R, 'הלכות'),
+        ab('ר' + R, 'רבי')
+    ];
+
+    // מנועי TTS עבריים נתקעים על גרשיים בתוך מילה — לפעמים מאייתים אות-אות.
+    // הסרתם הופכת את המילה לקריאה רציפה (רמב"ם → רמבם) וזה נשמע נכון בהרבה.
+    var INWORD_G = /([א-ת])["״”″]([א-ת])/g;
+
+    // "ה'" — מנוע ההקראה מבטא את זה כאות בודדת ("הא"), ולא כשמו של הקב"ה.
+    // מחליפים ל"השם". על המסך זה נשאר "ה'" כמובן — ההחלפה היא רק במה שנשלח
+    // למנוע הדיבור.
+    // המלכודת: אותו "ה'" הוא גם מספר — "פרק ה'", "יום ה'", "סימן ה'" — ושם
+    // דווקא נכון לקרוא "ה". לכן ההקשרים המספריים מוחרגים.
+    var NUM_CTX = /(?:פרק|פרקים|יום|בימי|סימן|סעיף|עמוד|דף|אות|שנת|שנה|כרך|חלק|שער|מזמור|פסוק|הלכה|משנה|מספר|סי|עמ)\s*$/;
+    var HASHEM = /(^|[^א-ת])([ובלכמש]?)ה['׳’](?![א-ת])/g;
+
+    function hashem(t) {
+        return t.replace(HASHEM, function (m, pre, prefix, off, str) {
+            if (NUM_CTX.test(str.slice(0, off + pre.length))) return m;
+            return pre + prefix + 'השם';
+        }).replace(/יקוו?ק/g, 'השם');
+    }
+
+    function forSpeech(text) {
+        var t = text;
+        for (var i = 0; i < ABBREV.length; i++) t = t.replace(ABBREV[i][0], ABBREV[i][1]);
+        t = hashem(t);
+        t = t.replace(INWORD_G, '$1$2').replace(INWORD_G, '$1$2');   // פעמיים, לרצפים כמו תשע"ג-תשע"ד
+        t = t.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, ' ');       // אימוג'י (זוגות surrogate)
+        t = t.replace(/[←-⇿⌀-➿⬀-⯿️‍⃣]/g, ' '); // סמלים ודינגבטים
+        t = t.replace(/־/g, ' ');                               // מקף עברי → רווח
+        t = t.replace(/\s*[–—]\s*/g, ', ');                // מקף ארוך → פסיק (הפוגה טבעית)
+        t = t.replace(/([.,!?:;])(?=\S)/g, '$1 ');                   // רווח אחרי סימן פיסוק
+        return t.replace(/\s+/g, ' ').trim();
+    }
+
+    /* ---------- פיצול לאמירות קצרות ----------
+       זה הלב של התיקון: Chrome/Edge קוטעים אמירה שנמשכת יותר מ~15 שניות,
+       ולעיתים אף לא יורים onend — ההקראה פשוט מתה באמצע פסקה. פסקה תורנית
+       רגילה היא 400-800 תווים, הרבה מעל הסף. פיצול למשפטים של עד 180 תווים
+       מבטיח שאף אמירה לא מתקרבת לגבול.                                       */
+
+    function splitSentences(text) {
+        var out = [], re = /[^.!?…׃]*[.!?…׃]+\s*|[^.!?…׃]+$/g, m;
+        while ((m = re.exec(text)) !== null) {
+            if (m[0] === '') { re.lastIndex++; continue; }
+            out.push(m[0]);
+        }
+        return out.length ? out : [text];
+    }
+
+    function splitLong(s) {
+        var out = [], cur = '';
+        function pushWord(w) {
+            // מילה בודדת ארוכה מהמכסה (כתובת אינטרנט, מחרוזת בלי רווחים) —
+            // חיתוך קשיח, אחרת הייתה חוזרת אמירה ענקית והבאג היה חוזר מהדלת האחורית.
+            while (w.length > MAX_CHUNK) {
+                if (cur) { out.push(cur); cur = ''; }
+                out.push(w.slice(0, MAX_CHUNK));
+                w = w.slice(MAX_CHUNK);
+            }
+            if (cur && (cur + ' ' + w).length > MAX_CHUNK) { out.push(cur); cur = ''; }
+            cur += (cur ? ' ' : '') + w;
+        }
+        s.split(/([,;])/).forEach(function (b) {
+            if (b.length > MAX_CHUNK) b.split(' ').forEach(pushWord);
+            else {
+                if (cur && (cur + b).length > MAX_CHUNK) { out.push(cur); cur = ''; }
+                cur += b;
+            }
+        });
+        if (cur) out.push(cur);
+        return out;
+    }
+
+    function chunkText(text) {
+        var out = [], cur = '';
+        splitSentences(text).forEach(function (s) {
+            if (s.length > MAX_CHUNK) {
+                if (cur) { out.push(cur); cur = ''; }
+                splitLong(s).forEach(function (p) { out.push(p); });
+            } else if (cur && (cur + s).length > MAX_CHUNK) { out.push(cur); cur = s; }
+            else cur += s;
+        });
+        if (cur) out.push(cur);
+        return out.map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 0; });
+    }
+
+    /* =========================================================================
+       2. בניית תור ההקראה
+       ========================================================================= */
+
+    // בספר מתחלף מקריאים רק את העמוד המוצג. בגלילה רציפה — את כל המאמר.
+    function isBook() { return !!document.getElementById('book'); }
+    function scopeRoot() {
+        return document.querySelector('#book .page.active') || document.querySelector('.container') || document.body;
+    }
+    function invalidate() { built = false; }
+    window.ttsRebuild = function () {
+        invalidate();
+        // המשתמש הפך עמוד ידנית תוך כדי האזנה — עוברים להקריא את העמוד החדש.
+        if (selfAdvancing) return;
+        if (isOn && !paused) { build(); if (chunks.length) startFrom(0); else stopListen(); }
+    };
+
+    function build() {
+        if (built) return;
+        var nodes = scopeRoot().querySelectorAll('h1, h2, h3, h4, p, li');
+        chunks = []; elCount = 0; built = true;
+        Array.prototype.forEach.call(nodes, function (n) {
+            // תוכן העניינים, רשימת המקורות, סרגל ההאזנה והחתימה אינם חלק מהמאמר המדובר.
+            if (n.closest(SKIP)) return;
+            // רשימה מקוננת כבר נקראת כחלק מה-li שמעליה — לא לקרוא פעמיים.
+            if (n.tagName === 'LI' && n.parentElement && n.parentElement.closest('li')) return;
+            var raw = n.textContent.replace(/\s+/g, ' ').trim();
+            if (!raw) return;
+            var spoken = forSpeech(raw);
+            if (!spoken) return;
+            var e = elCount++;
+            chunkText(spoken).forEach(function (t) { chunks.push({ el: n, e: e, text: t }); });
+        });
+    }
+
+    function firstChunkOfEl(e) {
+        for (var i = 0; i < chunks.length; i++) if (chunks[i].e === e) return i;
+        return -1;
+    }
+
+    /* =========================================================================
+       3. ממשק
+       ========================================================================= */
+
+    function hint() {
+        return clickToRead
+            ? 'לחץ כדי להתחיל האזנה, או לחץ על כל פסקה כדי להתחיל להקריא ממנה'
+            : 'לחץ כדי להתחיל האזנה. לחיצה על הטקסט לא תפעיל הקראה.';
+    }
+
+    function say(msg) { if ($status) $status.textContent = msg; }
+
+    function setBtn(label, pressed) {
+        if (!$btn) return;
+        $btn.textContent = label;
+        $btn.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+    }
+
+    function progress() {
+        if (!$prog) return;
+        if (!isOn || !chunks.length) { $prog.textContent = ''; return; }
+        var cur = chunks[Math.min(idx, chunks.length - 1)];
+        $prog.textContent = 'פסקה ' + (cur.e + 1) + ' מתוך ' + elCount;
+    }
+
+    function highlight(el) {
+        var prev = document.querySelector('.reading-highlight');
+        if (prev === el) return;
+        if (prev) prev.classList.remove('reading-highlight');
+        if (!el) return;
+        el.classList.add('reading-highlight');
+        // גוללים רק אם הפסקה באמת מחוץ למסך. אחרת ההקראה "חוטפת" את הדף
+        // מתחת לידיים של מי שקורא קצת קדימה בעצמו.
+        var r = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+        var h = window.innerHeight || 800;
+        if (!r || r.top < 60 || r.bottom > h - 60) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    function clearHighlight() {
+        var prev = document.querySelector('.reading-highlight');
+        if (prev) prev.classList.remove('reading-highlight');
+    }
+
+    function reset(keepBookmark) {
+        stopWatchdog();
+        isOn = false; paused = false; autoPaused = false; idx = 0;
+        setBtn(BTN_LABEL, false);
+        clearHighlight();
+        if (!keepBookmark) { try { localStorage.removeItem(POS_KEY); } catch (e) {} }
+        say(hint());
+        if ($prog) $prog.textContent = '';
+    }
+
+    // בספר מתחלף העמוד עצמו הוא הסימנייה (paginated.js שומר אותו), אין טעם
+    // לשמור אינדקס פסקה שמתאפס בכל הפיכת עמוד.
+    function savePos() { if (isBook()) return; try { localStorage.setItem(POS_KEY, String(idx)); } catch (e) {} }
+
+    /* =========================================================================
+       4. הקראה
+       ========================================================================= */
+
+    function speak() {
+        stopWatchdog();
+        if (idx >= chunks.length) {
+            // סוף העמוד בספר מתחלף — הופכים לעמוד הבא וממשיכים ברצף.
+            // עמודים בלי תוכן להקראה (מקורות, חתימה) מדולגים במקום לעצור עליהם.
+            if (isOn && typeof window.bookNext === 'function') {
+                selfAdvancing = true;
+                var found = false, tries = 0;
+                while (tries++ < 200 && window.bookNext()) {
+                    invalidate(); build();
+                    if (chunks.length) { found = true; break; }
+                }
+                selfAdvancing = false;
+                if (found) { idx = 0; speak(); return; }
+            }
+            reset(false); say('ההקראה הסתיימה. 🎉'); return;
+        }
+        var item = chunks[idx], my = token, advanced = false;
+        highlight(item.el);
+        progress();
+
+        var u = new SpeechSynthesisUtterance(item.text);
+        u.lang = 'he-IL';
+        if (voice) u.voice = voice;
+        u.rate = rate;
+
+        function advance() {
+            if (my !== token || advanced) return;
+            advanced = true;
+            stopWatchdog();
+            idx++; savePos();
+            if (!paused) speak();
+        }
+        u.onend = advance;
+        u.onerror = function (ev) {
+            if (my !== token) return;
+            // 'canceled'/'interrupted' = אנחנו עצרנו בכוונה (מעבר לשונית, נעילת מסך,
+            // לחיצה על פסקה אחרת). אסור להתקדם — זה בדיוק מה שגרם ל"קפיצה לעמוד האחרון":
+            // כל הפסקאות הנותרות נכשלות ברצף תוך שברירי שנייה בזמן שהמסך כבוי.
+            if (ev && (ev.error === 'canceled' || ev.error === 'interrupted')) return;
+            advance();
+        };
+
+        synth.speak(u);
+        startWatchdog(my);
+    }
+
+    /* ---------- שומר ראש ----------
+       גם עם פיצול לאמירות קצרות, Chrome מסוגל "למות" בשקט: לא מדבר, לא ממתין,
+       ו-onend לא נורה לעולם. הכפתור נשאר על "מקריא..." ואין קול. הבדיקה הזו
+       מזהה שתי שניות של שקט אמיתי ומקדמת הלאה במקום להיתקע.                  */
+    function startWatchdog(my) {
+        stopWatchdog();
+        var silent = 0;
+        watchdog = setInterval(function () {
+            if (my !== token) { stopWatchdog(); return; }
+            if (!isOn || paused) return;
+            if (synth.speaking || synth.pending || synth.paused) { silent = 0; return; }
+            if (++silent >= 2) { stopWatchdog(); idx++; savePos(); speak(); }
+        }, 1000);
+    }
+    function stopWatchdog() { if (watchdog) { clearInterval(watchdog); watchdog = null; } }
+
+    function startFrom(i) {
+        token++;
+        stopWatchdog();
+        synth.cancel();
+        build();
+        idx = Math.max(0, Math.min(i, chunks.length - 1));
+        isOn = true; paused = false; autoPaused = false;
+        setBtn('⏸ השהה', true);
+        say('מקריא...');
+        savePos();
+        speak();
+    }
+
+    /* =========================================================================
+       5. פקדים
+       ========================================================================= */
+
+    window.toggleListen = function () {
+        if (!isOn && !synth.speaking && !synth.paused) {
+            build();
+            var saved = parseInt(localStorage.getItem(POS_KEY) || '0', 10);
+            startFrom(saved > 0 && saved < chunks.length ? saved : 0);
+            return;
+        }
+        // בדיקת המצב האמיתי של המנוע (ולא רק הדגלים הפנימיים) היא מה שמונע
+        // כפתור "מת" אחרי מעבר לשונית וחזרה.
+        if (paused || synth.paused) {
+            paused = false; isOn = true;
+            setBtn('⏸ השהה', true);
+            say('מקריא...');
+            if (synth.paused) {
+                synth.resume();
+                // באג ידוע: resume() נכשל לפעמים בשקט אחרי השהיה ארוכה.
+                setTimeout(function () { if (isOn && !paused && !synth.speaking && !synth.pending) { token++; speak(); } }, 350);
+            } else {
+                // אין אמירה מושהית להחיות (למשל אחרי נעילת מסך שביטלה אותה).
+                // מדברים כאן ועכשיו, בתוך אירוע הלחיצה — ב-iOS הקראה שנדחית
+                // ל-setTimeout כבר לא נחשבת "מתוך מגע משתמש" ונחסמת בשקט.
+                token++; speak();
+            }
+        } else {
+            paused = true;
+            synth.pause();
+            setBtn('▶ המשך', false);
+            say('בהשהיה');
+        }
+    };
+
+    window.stopListen = function () { token++; stopWatchdog(); synth.cancel(); reset(false); };
+
+    window.skipListen = function (dir) {
+        build();
+        if (!chunks.length) return;
+        var cur = chunks[Math.min(idx, chunks.length - 1)];
+        var target = cur.e + dir;
+        // לחיצה ראשונה על "אחורה" מחזירה לתחילת הפסקה הנוכחית, כמו בכל נגן.
+        if (dir < 0 && idx > firstChunkOfEl(cur.e)) target = cur.e;
+        target = Math.max(0, Math.min(elCount - 1, target));
+        startFrom(firstChunkOfEl(target));
+    };
+
+    // דילוג לפרק הבא/הקודם — ב-h2 בלבד. בספר של מאות פסקאות, ⏮/⏭ לבד לא מספיקים.
+    window.skipChapter = function (dir) {
+        build();
+        if (!chunks.length) return;
+        var cur = chunks[Math.min(idx, chunks.length - 1)];
+        var best = -1;
+        for (var i = 0; i < chunks.length; i++) {
+            if (chunks[i].el.tagName !== 'H2') continue;
+            if (dir > 0 && chunks[i].e > cur.e) { best = i; break; }
+            if (dir < 0 && chunks[i].e < cur.e) best = i;   // האחרון שלפנינו
+        }
+        if (best < 0) { if (typeof window.bookJump === 'function') window.bookJump(dir); return; }
+        startFrom(best);
+    };
+
+    // שינוי המחוון יורה עשרות אירועי input בזמן גרירה. הערך מתעדכן מיד,
+    // אבל ההקראה מופעלת מחדש רק כשמשחררים (onchange) — אחרת זה גמגום רצוף.
+    window.setListenRate = function (val) {
+        rate = parseFloat(val);
+        store('rate', String(rate));
+        if ($rateVal) $rateVal.textContent = rate.toFixed(1) + '×';
+        if ($rate) $rate.setAttribute('aria-valuetext', 'מהירות ' + rate.toFixed(1));
+    };
+    window.applyListenRate = function (val) {
+        window.setListenRate(val);
+        if (isOn && !paused) { token++; synth.cancel(); speak(); }
+    };
+
+    window.setListenVoice = function (name) {
+        var found = voices.filter(function (v) { return v.name === name; })[0];
+        if (!found) return;
+        voice = found; userPickedVoice = true;
+        store('voice', name);
+        if (isOn && !paused) { token++; synth.cancel(); speak(); }
+    };
+
+    /* =========================================================================
+       6. קולות
+       ========================================================================= */
+
+    var FEMALE = ['female', 'hila', 'naayah', 'carmit', 'zira', 'noa', 'sharon', 'ivy', 'nicole'];
+    function isHe(v) { return v.lang && v.lang.toLowerCase().indexOf('he') === 0; }
+    function isFemale(v) {
+        var n = v.name.toLowerCase();
+        return FEMALE.some(function (h) { return n.indexOf(h) !== -1; });
+    }
+
+    function populate() {
+        if (!$voice) return;
+        $voice.innerHTML = '';
+        var he = voices.filter(isHe), other = voices.filter(function (v) { return !isHe(v); });
+        function group(label, list) {
+            if (!list.length) return;
+            var g = document.createElement('optgroup');
+            g.setAttribute('label', label);
+            list.forEach(function (v) {
+                var o = document.createElement('option');
+                o.value = v.name;
+                o.textContent = v.name.replace(/^Microsoft\s+/, '').replace(/\s*-\s*Hebrew.*$/i, '');
+                g.appendChild(o);
+            });
+            $voice.appendChild(g);
+        }
+        group('עברית', he);
+        group('שפות אחרות', other);   // נשמרות בכוונה — קול רב-לשוני לפעמים נשמע טוב יותר
+        if (voice) $voice.value = voice.name;
+    }
+
+    function loadVoices() {
+        var all = synth.getVoices();
+        if (!all.length) return;
+        var he = all.filter(isHe);
+        voices = he.concat(all.filter(function (v) { return !isHe(v); }));
+        // onvoiceschanged יורה יותר מפעם אחת (במיוחד ב-Edge, כשקולות הענן נטענים
+        // באיחור). בלי הדגל הזה כל ירייה כזו הייתה דורסת את בחירת המשתמש.
+        if (!userPickedVoice) {
+            var saved = store('voice');
+            voice = (saved && voices.filter(function (v) { return v.name === saved; })[0])
+                 || he.filter(isFemale)[0] || he[0] || all[0] || null;
+        }
+        populate();
+    }
+    synth.onvoiceschanged = loadVoices;
+    loadVoices();
+
+    /* =========================================================================
+       7. לחיצה על פסקה = התחל להקריא מכאן
+       ========================================================================= */
+
+    function readableNodes() {
+        var nodes = document.querySelectorAll(
+            '.container h1, .container h2, .container h3, .container h4, .container p, .container li');
+        return Array.prototype.filter.call(nodes, function (el) { return !el.closest(SKIP); });
+    }
+
+    // מי שקורא בשקט לא רוצה שנגיעה מקרית תתחיל פתאום לדבר. המתג נשמר
+    // ב-localStorage המשותף, כך שכיבוי אחד תופס לכל המאמרים והספרים.
+    function applyClickMode() {
+        readableNodes().forEach(function (el) { el.classList.toggle('tts-clickable', clickToRead); });
+        var b = document.getElementById('clickReadBtn');
+        if (!b) return;
+        b.textContent = clickToRead ? '👆 לחיצה: פעילה' : '👆 לחיצה: כבויה';
+        b.setAttribute('aria-pressed', clickToRead ? 'true' : 'false');
+        b.title = clickToRead
+            ? 'לחיצה על פסקה מתחילה להקריא ממנה. לחץ כאן כדי לכבות.'
+            : 'לחיצה על פסקה לא תפעיל הקראה. לחץ כאן כדי להפעיל.';
+    }
+
+    window.toggleClickRead = function () {
+        clickToRead = !clickToRead;
+        store('clickRead', clickToRead ? '1' : '0');
+        applyClickMode();
+        if (!isOn) say(hint());
+    };
+
+    function attachClicks() {
+        readableNodes().forEach(function (el) {
+            el.addEventListener('click', function (e) {
+                if (!clickToRead) return;                                             // המתג כבוי
+                if (e.target.closest('a')) return;                                    // קישורים עובדים כרגיל
+                if (window.getSelection && String(window.getSelection()).length) return; // סימון להעתקה עובד כרגיל
+                build();
+                var i = -1;
+                for (var k = 0; k < chunks.length; k++) if (chunks[k].el === el) { i = k; break; }
+                if (i >= 0) startFrom(i);
+            });
+        });
+        applyClickMode();
+    }
+
+    /* =========================================================================
+       8. מעבר לשונית / נעילת מסך
+       ========================================================================= */
+
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+            if (isOn && !paused) {
+                autoPaused = true; token++; stopWatchdog(); synth.cancel();
+            }
+        } else if (autoPaused) {
+            autoPaused = false; token++;
+            setBtn('⏸ השהה', true);
+            say('מקריא...');
+            speak();
+            // iOS חוסם הקראה שלא נולדה מתוך מגע של המשתמש. אם אחרי כשנייה עדיין
+            // אין קול — נעבור למצב מושהה גלוי, כדי שהקורא יקיש פעם אחת במקום
+            // לבהות בכפתור שכתוב עליו "מקריא..." בזמן שקט מוחלט.
+            setTimeout(function () {
+                if (isOn && !paused && !synth.speaking && !synth.pending && !synth.paused) {
+                    token++; stopWatchdog(); synth.cancel();
+                    paused = true;
+                    setBtn('▶ המשך', false);
+                    say('ההקראה הופסקה כשהמסך ננעל — הקש ▶ המשך');
+                }
+            }, 1000);
+        } else if (isOn && !paused && !synth.speaking && !synth.pending && !synth.paused) {
+            token++; speak();
+        }
+    });
+
+    // חזרה מ-bfcache: מאפסים לגמרי (כולל autoPaused — אחרת ה-visibilitychange
+    // שמגיע מיד אחרי היה מתחיל להקריא את המאמר מההתחלה מעצמו).
+    window.addEventListener('pageshow', function (e) {
+        if (e.persisted) { token++; stopWatchdog(); synth.cancel(); reset(true); }
+    });
+    // pagehide ולא beforeunload — beforeunload מבטל את ה-bfcache ודווקא מחמיר
+    // את הבעיה של חזרה ללשונית.
+    window.addEventListener('pagehide', function () { token++; stopWatchdog(); synth.cancel(); });
+
+    /* =========================================================================
+       9. אתחול
+       ========================================================================= */
+
+    function init() {
+        clickToRead = store('clickRead') !== '0';   // ברירת מחדל: פעילה
+        attachClicks();
+        var savedRate = parseFloat(store('rate') || '1');
+        if (savedRate >= 0.5 && savedRate <= 2) rate = savedRate;
+        if ($rate) { $rate.value = rate; $rate.setAttribute('aria-valuetext', 'מהירות ' + rate.toFixed(1)); }
+        if ($rateVal) $rateVal.textContent = rate.toFixed(1) + '×';
+        var saved = parseInt(localStorage.getItem(POS_KEY) || '0', 10);
+        if (saved > 0) say('יש סימנייה שמורה — לחיצה על "האזן" תמשיך מהמקום שבו הפסקת');
+        else say(hint());
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+})();
+
+</script>
+
+</body>
+</html>
