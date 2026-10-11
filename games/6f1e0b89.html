@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>הדרך הקצרה שהיא ארוכה</title>
+<style>
+  :root{
+    --gold:#c9a227;
+    --cream:#fdf6e3;
+    --navy:#1f2a44;
+    --pathc:#7c8c3a;
+    --pathc-light:#e2e8c0;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:var(--navy);
+    color:var(--cream);
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .top-title{
+    font-size:1.1rem;
+    font-weight:bold;
+    color:var(--gold);
+  }
+  .mem-btn{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:0.9rem;
+  }
+  .stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .visual{
+    height:45%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    transition:background 0.6s ease;
+    text-align:center;
+    padding:10px;
+  }
+  .emoji-scene{
+    font-size:4rem;
+    margin-bottom:10px;
+    letter-spacing:10px;
+  }
+  .onscreen-text{
+    font-size:1.4rem;
+    font-weight:bold;
+    color:var(--cream);
+    background:rgba(0,0,0,0.35);
+    padding:10px 20px;
+    border-radius:10px;
+    max-width:85%;
+    line-height:1.6;
+  }
+  .panel{
+    flex:1;
+    background:var(--cream);
+    color:var(--navy);
+    padding:18px 24px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .slide-counter{
+    font-size:0.85rem;
+    color:var(--pathc);
+    font-weight:bold;
+  }
+  .say-label, .cue-label{
+    font-weight:bold;
+    font-size:0.95rem;
+    color:var(--pathc);
+  }
+  .say-text{
+    white-space:pre-line;
+    font-size:1.05rem;
+    line-height:1.7;
+    background:var(--pathc-light);
+    padding:12px 16px;
+    border-radius:10px;
+  }
+  .cue-text{
+    white-space:pre-line;
+    font-size:0.95rem;
+    line-height:1.6;
+    font-style:italic;
+    color:#444;
+  }
+  .peda-note{
+    background:#fff3cd;
+    border-right:4px solid #e0a800;
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .link-note{
+    background:#fdeecb;
+    border-right:4px solid var(--gold);
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .nav button{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:10px 18px;
+    font-weight:bold;
+    font-size:1rem;
+    cursor:pointer;
+  }
+  .nav button:disabled{
+    opacity:0.35;
+    cursor:default;
+  }
+  .dots{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:center;
+    max-width:50%;
+  }
+  .dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.3);
+    cursor:pointer;
+  }
+  .dot.active{
+    background:var(--gold);
+  }
+  .mem-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    z-index:10;
+    align-items:center;
+    justify-content:center;
+  }
+  .mem-overlay.show{display:flex;}
+  .mem-box{
+    background:var(--cream);
+    color:var(--navy);
+    max-width:600px;
+    width:90%;
+    max-height:80vh;
+    overflow-y:auto;
+    border-radius:14px;
+    padding:24px;
+  }
+  .mem-box h2{
+    color:var(--pathc);
+    margin-bottom:14px;
+  }
+  .mem-box table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:16px;
+  }
+  .mem-box th, .mem-box td{
+    border:1px solid #ccc;
+    padding:6px 10px;
+    text-align:right;
+    font-size:0.9rem;
+  }
+  .mem-box th{
+    background:var(--pathc-light);
+  }
+  .close-mem{
+    background:var(--pathc);
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-weight:bold;
+  }
+</style>
+<meta property="og:title" content="הדרך הקצרה שהיא ארוכה">
+<meta property="og:description" content="הדרך הקצרה שהיא ארוכה">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-6f1e0b89.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/6f1e0b89.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-title">הדרך הקצרה שהיא ארוכה</div>
+  <button class="mem-btn" onclick="toggleMem(true)">🎯 טבלת זיכרון מהירה</button>
+</div>
+
+<div class="stage">
+  <div class="visual" id="visual">
+    <div class="emoji-scene" id="emojiScene"></div>
+    <div class="onscreen-text" id="onscreenText"></div>
+  </div>
+  <div class="panel">
+    <div class="slide-counter" id="slideCounter"></div>
+    <div class="say-label">🗣️ אתה אומר</div>
+    <div class="say-text" id="sayText"></div>
+    <div class="cue-label">🎭 כיווני ביצוע</div>
+    <div class="cue-text" id="cueText"></div>
+    <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    <div class="link-note" id="linkNote" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="go(current-1)">◀ הקודם</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn" onclick="go(current+1)">הבא ▶</button>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>3-5</td><td>הצומת והחידה</td><td>"קצרה וארוכה"</td></tr>
+      <tr><td>6</td><td>הבחירה הפזיזה</td><td>מיהור</td></tr>
+      <tr><td>7-8</td><td>המחסום</td><td>שתיקה / כרטיס שיא</td></tr>
+      <tr><td>9-10</td><td>החזרה והפגישה השנייה</td><td>תסכול</td></tr>
+      <tr><td>11</td><td>פתרון החידה</td><td>"המחסומים בסוף"</td></tr>
+      <tr><td>12</td><td>ההתפעלות</td><td>ענווה מחכם</td></tr>
+    </table>
+    <p style="margin-bottom:10px;"><b>💬 הערה פדגוגית:</b> תנו לילדים לנסות לפתור את החידה בעצמם (כרטיס 5) לפני שממשיכים — מחזק את החוויה ההתגלותית.</p>
+    <p style="margin-bottom:14px;"><b>🔗 חיבור לסיפורים קודמים:</b> כמו ב"הסוד שבתוך הארון" — אותה דמות (רבי יהושע), חוכמה ממקום בלתי צפוי.</p>
+    <p style="margin-bottom:14px; font-size:0.85rem; color:#666;"><b>✅ מקור:</b> עירובין נג ע"ב — סיפור מאומת ונאמן למקור.</p>
+    <button class="close-mem" onclick="toggleMem(false)">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg:"radial-gradient(circle at 50% 35%, #e2e8c0, #7c8c3a)",
+    emoji:"🧔📖👨‍🎓",
+    onscreen:"",
+    say:`רבי יהושע בן חנניה היה אדם חכם מאוד. הוא ידע לפתור חידות קשות ולהשיב לכל שאלה, וכולם כיבדו את חוכמתו הנפלאה.`,
+    cue:"קול מכובד ומרשים — תארו את רבי יהושע כדמות חכמה שכולם מעריכים."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #e2e8c0, #7c8c3a)",
+    emoji:"😊📖",
+    onscreen:"",
+    say:`אך רבי יהושע היה גם אדם ענו ומתוק. הוא אהב לספר לתלמידיו כיצד למד שיעור חשוב לחיים דווקא מילד קטן ופיקח.`,
+    cue:"קול חם וצנוע — תנו לניגוד בין החוכמה הגדולה לענווה להישמע יפה."
+  },
+  {
+    bg:"linear-gradient(180deg, #8c8c3a, #4a4a1c)",
+    emoji:"🚶‍♂️🛤️🛤️",
+    onscreen:"",
+    say:`יום אחד, היה רבי יהושע מהלך בדרך וממהר להגיע אל העיר הגדולה. לפתע הגיע אל פרשת דרכים — מקום שבו הדרך מתפצלת לשני נתיבים שונים.`,
+    cue:"קול נמרץ וממהר — תארו את הלחץ של הזמן כרקע לסיפור."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #e2e8c0, #7c8c3a)",
+    emoji:"🧒🪨❓",
+    onscreen:"",
+    say:`על אבן קטנה בצומת ישב ילד חמוד והביט בשמיים.
+נגש אליו רבי יהושע, פנה אליו בחיוך ושאל: "בני היקר, באיזו דרך משתי אלה נלך כדי להגיע אל העיר במהירות הגדולה ביותר?"`,
+    cue:"קול נעים וידידותי לרבי יהושע — הוא פונה לילד כמו לכל אדם, בכבוד."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #e2e8c0, #7c8c3a)",
+    emoji:"🧒😏",
+    onscreen:"\"קְצָרָה וַאֲרֻכָּה הִיא\"",
+    say:`הביט בו הילד בעיניים בורקות וענה בחיוך: "אדון נכבד! דרך זו שמימין — קצרה וארוכה היא. ודרך זו שמשמאל — ארוכה וקצרה היא!"
+מה אתם חושבים הילד התכוון להגיד? (עצירה)`,
+    cue:"קול מסתורי ומשעשע לילד. השאלה בטון סקרן, מזמינה ניחוש."
+  },
+  {
+    bg:"linear-gradient(180deg, #8c8c3a, #4a4a1c)",
+    emoji:"🤔➡️🏃‍♂️",
+    onscreen:"",
+    say:`רבי יהושע חשב לעצמו: מהי השטות הזו? אך מכיוון שמיהר מאוד, החליט לבחור בדרך שמימין, כי הילד אמר שהיא "קצרה".
+הוא פנה ימינה והלך בזריזות.`,
+    cue:"קול מהיר ונחפז — תארו את ההחלטה כמבוססת על מחצית מהמידע."
+  },
+  {
+    bg:"#0d1526",
+    emoji:"🏘️😊",
+    onscreen:"",
+    say:`ואכן, תוך דקות מעטות ראה ממול את בתי העיר ואת החומות הגבוהות. הלב שלו שמח. הנה הוא כבר מגיע!
+אך לפתע... הוא נעצר.
+(עצירה של 2–3 שניות)`,
+    cue:"שתיקה קצרה — תנו לרגע התקווה-שנשברת להישמע פתאומי ומפתיע."
+  },
+  {
+    bg:"linear-gradient(180deg, #4a5a2c, #2a2a1c)",
+    emoji:"🌿🚫🚪",
+    onscreen:"",
+    say:`הדלת והשערים של העיר היו חסומים לגמרי! הדרך הייתה מלאה בגינות, בפרדסים ענקיים, בגדרות עץ ובשיחים מלאי קוצים שחסמו את הפתח. אי אפשר היה לעבור בהם אפילו צעד אחד נוסף!`,
+    cue:"קול מאוכזב ותקוע — תארו את החסימה כמכשול מוחלט."
+  },
+  {
+    bg:"linear-gradient(180deg, #8c8c3a, #4a4a1c)",
+    emoji:"😮‍💨🚶‍♂️⬅️",
+    onscreen:"",
+    say:`בלית ברירה — כשאין ברירה אחרת — נאלץ רבי יהושע לסבב על עקביו ולחזור את כל הדרך הארוכה אחורה, כשהוא עייף, מזיע ומתנשף מן הקושי.`,
+    cue:"קול עייף ומתוסכל — תארו את המסע חזרה כבזבוז זמן כואב."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #e2e8c0, #7c8c3a)",
+    emoji:"🧒🪨❓",
+    onscreen:"",
+    say:`כאשר חזר אל פרשת הדרכים, מצא שוב את הילד הקטן יושב בשלווה על האבן.
+שאל אותו רבי יהושע בפליאה: "בני היקר, מדוע אמרת לי שדרך זו קצרה היא? הרי היא חסומה ואי אפשר להיכנס בה!"`,
+    cue:"קול מופתע ותוהה — לא כועס, אלא באמת רוצה להבין."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #e2e8c0, #7c8c3a)",
+    emoji:"🧒😊",
+    onscreen:"\"בִּגְלַל הַמַּחְסוֹמִים... נַעֲשֵׂית אֲרֻכָּה\"",
+    say:`חייך הילד חיוך מתוק וענה: "רבי היקר! וכי לא אמרתי לך מראש שהיא גם 'ארוכה'? היא קצרה במרחק, אך בגלל המחסומים שבסוף היא הולכת ונעשית ארוכה מאוד!"`,
+    cue:"משפט-המפתח המרכזי — קול פשוט ומתוק, כמו דבר מובן מאליו."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #e2e8c0, #7c8c3a)",
+    emoji:"😍🧒🛤️",
+    onscreen:"",
+    say:`התפעל רבי יהושע מחוכמתו של הילד, נישק אותו על ראשו ואמר: "אשריכם ישראל, שאפילו הילדים הקטנים שבכם חכמים הם מאוד!"
+הוא פנה לדרך השנייה, שהייתה ישרה, פתוחה ונקייה מכל מחסום, ובזכותה הגיע בשלום.`,
+    cue:"קול חם ומלא הערכה — תנו לסיום להישמע כלקח שהתקבל בענווה ובשמחה."
+  },
+  {
+    bg:"linear-gradient(180deg, #1f2a44, #14203a)",
+    emoji:"💭🛤️🛤️",
+    onscreen:"",
+    say:`בואו נחשוב יחד:
+הילד אמר בדיוק את האמת מלכתחילה ("קצרה וארוכה") — למה רבי יהושע לא הבין את זה בפעם הראשונה?
+מה זה אומר שדרך שנראית מהירה בהתחלה, לפעמים דווקא לוקחת יותר זמן בסוף?`,
+    cue:"שאלות פתוחות בלבד. יש כאן גם משל לחיים, לא רק סיפור על דרכים.",
+    peda:true
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #e2e8c0, #7c8c3a)",
+    emoji:"🧒🤔",
+    onscreen:"",
+    say:`אפשר גם אנחנו, כשיש לנו "קיצור דרך" מפתה, לעצור רגע ולחשוב: האם זה באמת יחסוך לי זמן, או שבסוף זה ייקח יותר?`,
+    cue:"קול רגוע ומזמין, לא מטיף."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #e2e8c0, #7c8c3a)",
+    emoji:"🧔😊👨‍🎓",
+    onscreen:"",
+    say:`זוכרים את רבי יהושע החכם מתחילת הסיפור, שידע לפתור כל חידה?
+מסתבר שהוא היה מספיק חכם כדי להודות שהוא למד את השיעור הכי חשוב שלו מילד קטן על אבן בצומת דרכים.
+מה הפעם האחרונה שלמדתם משהו חשוב ממישהו קטן או צעיר מכם?`,
+    cue:"קול חם וסוגר, מוריד טון בהדרגה. תנו לשאלה האחרונה לרחף.",
+    link:true
+  }
+];
+
+let current = 0;
+
+function render(){
+  const s = slides[current];
+  document.getElementById('visual').style.background = s.bg;
+  document.getElementById('emojiScene').textContent = s.emoji;
+  document.getElementById('onscreenText').textContent = s.onscreen;
+  document.getElementById('onscreenText').style.display = s.onscreen ? 'block' : 'none';
+  document.getElementById('sayText').textContent = s.say;
+  document.getElementById('cueText').textContent = s.cue;
+  document.getElementById('slideCounter').textContent = `כרטיס ${current+1} מתוך ${slides.length}`;
+
+  const peda = document.getElementById('pedaNote');
+  if(current === 12){
+    peda.style.display = 'block';
+    peda.textContent = '💬 הערה פדגוגית: תנו לילדים לנסות לפתור את החידה בעצמם קודם.';
+  } else {
+    peda.style.display = 'none';
+  }
+
+  const link = document.getElementById('linkNote');
+  if(current === 14){
+    link.style.display = 'block';
+    link.textContent = '🔗 חיבור: כמו ב"הסוד שבתוך הארון" — אותה דמות, חוכמה ממקום בלתי צפוי.';
+  } else {
+    link.style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.onclick = () => go(i);
+    dots.appendChild(d);
+  });
+}
+
+function go(i){
+  if(i < 0 || i >= slides.length) return;
+  current = i;
+  render();
+}
+
+function toggleMem(show){
+  document.getElementById('memOverlay').classList.toggle('show', show);
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft') go(current + 1);
+  if(e.key === 'ArrowRight') go(current - 1);
+});
+
+render();
+</script>
+</body>
+</html>

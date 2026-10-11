@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>המפתח שמתחת לכר של אבא</title>
+<style>
+  :root{
+    --gold:#c9a227;
+    --cream:#fdf6e3;
+    --navy:#1f2a44;
+    --emerald:#2e8c6a;
+    --emerald-light:#c0e8d5;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:var(--navy);
+    color:var(--cream);
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .top-title{
+    font-size:1.1rem;
+    font-weight:bold;
+    color:var(--gold);
+  }
+  .mem-btn{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:0.9rem;
+  }
+  .stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .visual{
+    height:45%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    transition:background 0.6s ease;
+    text-align:center;
+    padding:10px;
+  }
+  .emoji-scene{
+    font-size:4rem;
+    margin-bottom:10px;
+    letter-spacing:10px;
+  }
+  .onscreen-text{
+    font-size:1.4rem;
+    font-weight:bold;
+    color:var(--cream);
+    background:rgba(0,0,0,0.35);
+    padding:10px 20px;
+    border-radius:10px;
+    max-width:85%;
+    line-height:1.6;
+  }
+  .panel{
+    flex:1;
+    background:var(--cream);
+    color:var(--navy);
+    padding:18px 24px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .slide-counter{
+    font-size:0.85rem;
+    color:var(--emerald);
+    font-weight:bold;
+  }
+  .say-label, .cue-label{
+    font-weight:bold;
+    font-size:0.95rem;
+    color:var(--emerald);
+  }
+  .say-text{
+    white-space:pre-line;
+    font-size:1.05rem;
+    line-height:1.7;
+    background:var(--emerald-light);
+    padding:12px 16px;
+    border-radius:10px;
+  }
+  .cue-text{
+    white-space:pre-line;
+    font-size:0.95rem;
+    line-height:1.6;
+    font-style:italic;
+    color:#444;
+  }
+  .peda-note{
+    background:#fff3cd;
+    border-right:4px solid #e0a800;
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .link-note{
+    background:#fdeecb;
+    border-right:4px solid var(--gold);
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .nav button{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:10px 18px;
+    font-weight:bold;
+    font-size:1rem;
+    cursor:pointer;
+  }
+  .nav button:disabled{
+    opacity:0.35;
+    cursor:default;
+  }
+  .dots{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:center;
+    max-width:50%;
+  }
+  .dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.3);
+    cursor:pointer;
+  }
+  .dot.active{
+    background:var(--gold);
+  }
+  .mem-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    z-index:10;
+    align-items:center;
+    justify-content:center;
+  }
+  .mem-overlay.show{display:flex;}
+  .mem-box{
+    background:var(--cream);
+    color:var(--navy);
+    max-width:600px;
+    width:90%;
+    max-height:80vh;
+    overflow-y:auto;
+    border-radius:14px;
+    padding:24px;
+  }
+  .mem-box h2{
+    color:var(--emerald);
+    margin-bottom:14px;
+  }
+  .mem-box table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:16px;
+  }
+  .mem-box th, .mem-box td{
+    border:1px solid #ccc;
+    padding:6px 10px;
+    text-align:right;
+    font-size:0.9rem;
+  }
+  .mem-box th{
+    background:var(--emerald-light);
+  }
+  .close-mem{
+    background:var(--emerald);
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-weight:bold;
+  }
+</style>
+<meta property="og:title" content="המפתח שמתחת לכר של אבא">
+<meta property="og:description" content="המפתח שמתחת לכר של אבא">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-ba9f7163.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/ba9f7163.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-title">המפתח שמתחת לכר של אבא</div>
+  <button class="mem-btn" onclick="toggleMem(true)">🎯 טבלת זיכרון מהירה</button>
+</div>
+
+<div class="stage">
+  <div class="visual" id="visual">
+    <div class="emoji-scene" id="emojiScene"></div>
+    <div class="onscreen-text" id="onscreenText"></div>
+  </div>
+  <div class="panel">
+    <div class="slide-counter" id="slideCounter"></div>
+    <div class="say-label">🗣️ אתה אומר</div>
+    <div class="say-text" id="sayText"></div>
+    <div class="cue-label">🎭 כיווני ביצוע</div>
+    <div class="cue-text" id="cueText"></div>
+    <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    <div class="link-note" id="linkNote" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="go(current-1)">◀ הקודם</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn" onclick="go(current+1)">הבא ▶</button>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>3</td><td>האבן החסרה בחושן</td><td>בית המקדש</td></tr>
+      <tr><td>4</td><td>ההצעה הכספית</td><td>שישים ריבוא דינרים</td></tr>
+      <tr><td>6</td><td>האב ישן, המפתח תחת הכר</td><td>שינה</td></tr>
+      <tr><td>7-8</td><td>הפיתוי וההחלטה</td><td>שתיקה / כרטיס שיא</td></tr>
+      <tr><td>9</td><td>משפט המפתח</td><td>"לא אעיר אותו"</td></tr>
+      <tr><td>10-11</td><td>הסירוב לחכמים</td><td>כיבוד הורים</td></tr>
+      <tr><td>14</td><td>הפרה האדומה</td><td>גמול</td></tr>
+    </table>
+    <p style="margin-bottom:10px;"><b>💬 הערה פדגוגית:</b> כדאי להסביר בקצרה מהי "פרה אדומה" ולמה הייתה נדירה וחשובה — עוזר להבין את משמעות הגמול.</p>
+    <p style="margin-bottom:14px;"><b>🔗 חיבור לסיפורים קודמים:</b> כמו שרבי טרפון בחר לכבד את אמו במו ידיו — כאן דמא, שאפילו לא היה יהודי, כיבד את אביו למרות ההפסד.</p>
+    <button class="close-mem" onclick="toggleMem(false)">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg:"linear-gradient(180deg, #4a90a4, #1f2a44)",
+    emoji:"🏘️🌊🧔",
+    onscreen:"",
+    say:`בעיר אשקלון היפהפייה שלחוף הים, חי איש עשיר ומכובד מאוד ששמו דמא בן נתינה. דמא לא היה יהודי, אך כל בני העיר — יהודים ונוכרים כאחד — העריכו אותו מאוד בגלל דרכו הישרה ויושרו המופלא.`,
+    cue:"קול מכובד ורחב — תארו את דמא כדמות של יושר, שראויה להערכה מכל."
+  },
+  {
+    bg:"linear-gradient(180deg, #1a2438, #0d1526)",
+    emoji:"💚📦✨",
+    onscreen:"",
+    say:`לדמא היה עדר בקר גדול, ובתוך קופסת האוצרות הסודית שלו שמר אבנים טובות וירוקות שזהרו בחושך.`,
+    cue:"קול מסתורי וקסום — תארו את זוהר האבנים בהתפעלות."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #e8c99a, #8a5a2b)",
+    emoji:"🏛️💎❓",
+    onscreen:"",
+    say:`באותו הזמן, בבית המקדש בירושלים, אבדה אחת מאבני הישפה שהיו קבועות בחושן המשפט של הכהן הגדול. החכמים שמעו כי בביתו של דמא בן נתינה יש אבן מושלמת ומתאימה בדיוק, ומשלחת מיוחדת של רבנים יצאה אל אשקלון.`,
+    cue:"קול חשוב ורציני — עניין דחוף שנוגע לבית המקדש עצמו."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #c9a227, #6b4a12)",
+    emoji:"👨‍🏫💰💎",
+    onscreen:"",
+    say:`"אנחנו מוכנים לקנות ממך את האבן היקרה," אמרו לו החכמים, והציעו לו סכום עצום של שישים ריבוא דינרי זהב — הון עתיק שיכול לקנות בתים ושדות ענק לכל החיים.
+מה אתם הייתם עושים אם היה לכם סכום כזה גדול מוצע לכם? (עצירה)`,
+    cue:"קול מרשים ומתפעל בציטוט הסכום — תנו לגודל הסכום להישמע עצום."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f0dbb0, #c78a3d)",
+    emoji:"😊🔑🚶",
+    onscreen:"",
+    say:`אורו פניו של דמא. "המתינו כאן רגע אחד," אמר בשמחה, "אלך להביא את המפתח לתבה שבה אגור את האוצרות."
+הוא נכנס בצעדים חרישיים אל חדרו של אביו הזקן.`,
+    cue:"קול שמח וקל — לפני שהמתח יגיע. תארו את הצעדים החרישיים בזהירות."
+  },
+  {
+    bg:"linear-gradient(180deg, #3a3a4a, #1a1a2a)",
+    emoji:"😴🛏️🔑",
+    onscreen:"",
+    say:`אך כאשר פתח את הדלת, נעצר על עמדו.
+אביו נתינה ישב על הכיסא ונרדם שנה עמוקה ומתוקה. רגליו היו מונחות על השרפרף, והמפתח לתבה הנעולה שכב בדיוק מתחת לכר — כרית הראש שעליה נח ראשו הקדוש של האב.`,
+    cue:"האטה משמעותית — הורידו את הקצב לגמרי. תארו את השינה השקטה בפירוט."
+  },
+  {
+    bg:"linear-gradient(180deg, #3a3a4a, #1a1a2a)",
+    emoji:"🤔😴",
+    onscreen:"",
+    say:`דמא עמד במבוכה.
+האם להושיט יד ולהעיר את אביו? הרי מדובר בסכום עצום של זהב! שום אדם בעולם לא יכעס על בן שמעיר את אביו עבור עסק משובח כזה!`,
+    cue:"קול מתלבט, כמעט משכנע את עצמו — תנו לפיתוי להישמע הגיוני."
+  },
+  {
+    bg:"#0d1526",
+    emoji:"🚪🤫",
+    onscreen:"",
+    say:`אך דמא הביט בפני אביו הישנים. הוא חש אחריות עמוקה ורוך עצום בלבו.
+(עצירה של 2–3 שניות)`,
+    cue:"שתיקה מלאה — תנו לרגע ההכרעה הפנימי של דמא להישמע חשוב וכבד משקל."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #c0e8d5, #2e8c6a)",
+    emoji:"🚪🤫😴",
+    onscreen:"\"לֹא אָעִיר אוֹתוֹ מִשְּׁנָתוֹ הַנְּעִימָה\"",
+    say:`"לא," לחש לעצמו בהחלטה נחושה, "אני לא אעיר את אבא. אני לא אעיר אותו משנתו הנעימה אפילו עבור כל הקופות והאוצרות של קיסר רומי!"`,
+    cue:"משפט-המפתח המרכזי — קול נחוש ושקט, כמעט לחישה נחרצת."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #e8c99a, #8a5a2b)",
+    emoji:"🙅‍♂️👨‍🏫",
+    onscreen:"",
+    say:`הוא חזר אל החכמים בידיים ריקות וקולו היה שקט: "סליחו לי, רבותי. אינני יכול למכור לכם את האבן כעת. המפתח מונח תחת ראשו של אבי הישן, ואינני מוכן לצער אותו ולהעיר אותו בשום אופן."`,
+    cue:"קול פשוט וברור, ללא היסוס — למרות ההפסד הכספי, הקול נשמע רגוע ובטוח."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #c9a227, #6b4a12)",
+    emoji:"💰🙅‍♂️",
+    onscreen:"",
+    say:`החכמים חשבו שהוא רוצה יותר כסף. "הנה, נוסיף לך עוד עשרים ריבוא דינרי זהב!" הפצירו בו, אך דמא עמד בסירובו. כשראו שאין סיכוי, פנו והלכו לדרכם בבושת פנים.`,
+    cue:"קול מפתה ומתחנן של החכמים, מול נחישות שקטה של דמא."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f0dbb0, #c78a3d)",
+    emoji:"😲🔑🏃",
+    onscreen:"",
+    say:`כעבור שעה קלה התעורר האב. דמא לקח את המפתח במהירות, פתח את התבה ורץ אחרי חכמי ישראל כדי למסור להם את האבן.`,
+    cue:"קול נמרץ ומהיר — תנו לתחושת ההתלהבות לחזור לאחר הזמן שחיכה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #c0e8d5, #2e8c6a)",
+    emoji:"💎🙅‍♂️💰",
+    onscreen:"",
+    say:`החכמים רצו לתת לו את הסכום הגבוה שהציעו בסוף, אך דמא סירב: "חלילה לי! קחו את האבן בסכום הראשון שקבענו. אינני מוכן להרוויח אפילו פרוטה אחת מכך שכיבדתי את אבי!"`,
+    cue:"קול נחוש שוב — עיקרון של דמא נשמע יציב וברור."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #ff9a8a, #c9a227)",
+    emoji:"🐄✨🎁",
+    onscreen:"",
+    say:`ומה עשה הקדוש ברוך הוא כגמול על המעשה הקדוש הזה?
+בשנה שלאחר מכן, נולדה בעדרו של דמא בן נתינה פרה אדומה ותמימה — פרה נדירה מאוד שבני ישראל נזקקו לה כדי לטהר את עם ישראל. חכמי ישראל חזרו אליו וקנו אותה בסכום עצום, שפיצה אותו על כל מה שהפסיד ועוד הרבה יותר.`,
+    cue:"קול חם ומשמח — סיום מלא סיפוק, כמעט כמו נס קטן שמגיע במפתיע."
+  },
+  {
+    bg:"linear-gradient(180deg, #1f2a44, #14203a)",
+    emoji:"💭🔑🛏️",
+    onscreen:"",
+    say:`בואו נחשוב יחד:
+דמא הפסיד כסף גדול כדי לא להעיר את אביו — למה לדעתכם זה היה כל כך חשוב לו?
+האם קרה לכם פעם שבחרתם לא לעשות משהו כדאי, כי זה היה פוגע במישהו אחר?`,
+    cue:"שאלות פתוחות בלבד. תנו זמן אמיתי למחשבה.",
+    peda:true
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #c0e8d5, #2e8c6a)",
+    emoji:"🧒⏳👨‍👩‍👧",
+    onscreen:"",
+    say:`אפשר גם אנחנו, לפעמים, לחכות בסבלנות במקום להפריע למישהו, גם כשזה נראה לנו דחוף.
+אפשר גם לזכור שכיבוד הורים חשוב יותר מכל דבר אחר, גם כשזה "מפסיד" לנו משהו.`,
+    cue:"קול רגוע ומזמין, לא מטיף."
+  },
+  {
+    bg:"linear-gradient(180deg, #4a90a4, #1f2a44)",
+    emoji:"🏘️🔑💛",
+    onscreen:"",
+    say:`זוכרים איך פתחנו — דמא בן נתינה, המכובד ביותר באשקלון?
+מסתבר שהמעשה שהפך אותו לגדול באמת לא היה עסק הזהב, אלא רגע שקט אחד ליד כרית ישנה.
+מה הדבר שאתם מוכנים "להפסיד" עליו כדי לכבד מישהו שאתם אוהבים?`,
+    cue:"קול חם וסוגר, מוריד טון בהדרגה. תנו לשאלה האחרונה לרחף.",
+    link:true
+  }
+];
+
+let current = 0;
+
+function render(){
+  const s = slides[current];
+  document.getElementById('visual').style.background = s.bg;
+  document.getElementById('emojiScene').textContent = s.emoji;
+  document.getElementById('onscreenText').textContent = s.onscreen;
+  document.getElementById('onscreenText').style.display = s.onscreen ? 'block' : 'none';
+  document.getElementById('sayText').textContent = s.say;
+  document.getElementById('cueText').textContent = s.cue;
+  document.getElementById('slideCounter').textContent = `כרטיס ${current+1} מתוך ${slides.length}`;
+
+  const peda = document.getElementById('pedaNote');
+  if(current === 14){
+    peda.style.display = 'block';
+    peda.textContent = '💬 הערה פדגוגית: כדאי להסביר בקצרה מהי "פרה אדומה" ולמה הייתה נדירה וחשובה.';
+  } else {
+    peda.style.display = 'none';
+  }
+
+  const link = document.getElementById('linkNote');
+  if(current === 16){
+    link.style.display = 'block';
+    link.textContent = '🔗 חיבור: כמו שרבי טרפון כיבד את אמו במו ידיו — כאן דמא, שלא היה יהודי, כיבד את אביו למרות ההפסד.';
+  } else {
+    link.style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.onclick = () => go(i);
+    dots.appendChild(d);
+  });
+}
+
+function go(i){
+  if(i < 0 || i >= slides.length) return;
+  current = i;
+  render();
+}
+
+function toggleMem(show){
+  document.getElementById('memOverlay').classList.toggle('show', show);
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft') go(current + 1);
+  if(e.key === 'ArrowRight') go(current - 1);
+});
+
+render();
+</script>
+</body>
+</html>

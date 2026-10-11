@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>הסוד שבתוך הארון</title>
+<style>
+  :root{
+    --gold:#c9a227;
+    --cream:#fdf6e3;
+    --navy:#1f2a44;
+    --stone:#6a6a5a;
+    --stone-light:#d8d8c8;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:var(--navy);
+    color:var(--cream);
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .top-title{
+    font-size:1.1rem;
+    font-weight:bold;
+    color:var(--gold);
+  }
+  .mem-btn{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:0.9rem;
+  }
+  .stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .visual{
+    height:45%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    transition:background 0.6s ease;
+    text-align:center;
+    padding:10px;
+  }
+  .emoji-scene{
+    font-size:4rem;
+    margin-bottom:10px;
+    letter-spacing:10px;
+  }
+  .onscreen-text{
+    font-size:1.4rem;
+    font-weight:bold;
+    color:var(--cream);
+    background:rgba(0,0,0,0.35);
+    padding:10px 20px;
+    border-radius:10px;
+    max-width:85%;
+    line-height:1.6;
+  }
+  .panel{
+    flex:1;
+    background:var(--cream);
+    color:var(--navy);
+    padding:18px 24px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .slide-counter{
+    font-size:0.85rem;
+    color:var(--stone);
+    font-weight:bold;
+  }
+  .say-label, .cue-label{
+    font-weight:bold;
+    font-size:0.95rem;
+    color:var(--stone);
+  }
+  .say-text{
+    white-space:pre-line;
+    font-size:1.05rem;
+    line-height:1.7;
+    background:var(--stone-light);
+    padding:12px 16px;
+    border-radius:10px;
+  }
+  .cue-text{
+    white-space:pre-line;
+    font-size:0.95rem;
+    line-height:1.6;
+    font-style:italic;
+    color:#444;
+  }
+  .peda-note{
+    background:#fff3cd;
+    border-right:4px solid #e0a800;
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .link-note{
+    background:#fdeecb;
+    border-right:4px solid var(--gold);
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .nav button{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:10px 18px;
+    font-weight:bold;
+    font-size:1rem;
+    cursor:pointer;
+  }
+  .nav button:disabled{
+    opacity:0.35;
+    cursor:default;
+  }
+  .dots{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:center;
+    max-width:50%;
+  }
+  .dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.3);
+    cursor:pointer;
+  }
+  .dot.active{
+    background:var(--gold);
+  }
+  .mem-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    z-index:10;
+    align-items:center;
+    justify-content:center;
+  }
+  .mem-overlay.show{display:flex;}
+  .mem-box{
+    background:var(--cream);
+    color:var(--navy);
+    max-width:600px;
+    width:90%;
+    max-height:80vh;
+    overflow-y:auto;
+    border-radius:14px;
+    padding:24px;
+  }
+  .mem-box h2{
+    color:var(--stone);
+    margin-bottom:14px;
+  }
+  .mem-box table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:16px;
+  }
+  .mem-box th, .mem-box td{
+    border:1px solid #ccc;
+    padding:6px 10px;
+    text-align:right;
+    font-size:0.9rem;
+  }
+  .mem-box th{
+    background:var(--stone-light);
+  }
+  .close-mem{
+    background:var(--stone);
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-weight:bold;
+  }
+</style>
+<meta property="og:title" content="הסוד שבתוך הארון">
+<meta property="og:description" content="הסוד שבתוך הארון">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-4e4044de.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/4e4044de.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-title">הסוד שבתוך הארון</div>
+  <button class="mem-btn" onclick="toggleMem(true)">🎯 טבלת זיכרון מהירה</button>
+</div>
+
+<div class="stage">
+  <div class="visual" id="visual">
+    <div class="emoji-scene" id="emojiScene"></div>
+    <div class="onscreen-text" id="onscreenText"></div>
+  </div>
+  <div class="panel">
+    <div class="slide-counter" id="slideCounter"></div>
+    <div class="say-label">🗣️ אתה אומר</div>
+    <div class="say-text" id="sayText"></div>
+    <div class="cue-label">🎭 כיווני ביצוע</div>
+    <div class="cue-text" id="cueText"></div>
+    <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    <div class="link-note" id="linkNote" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="go(current-1)">◀ הקודם</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn" onclick="go(current+1)">הבא ▶</button>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>1</td><td>ירושלים הנצורה</td><td>מצור</td></tr>
+      <tr><td>3</td><td>התכנית הסודית</td><td>ארון מתים</td></tr>
+      <tr><td>5-6</td><td>עצירת השומר</td><td>שתיקה / כרטיס שיא</td></tr>
+      <tr><td>8-10</td><td>הפגישה עם אספסיינוס</td><td>"שלום עליך המלך"</td></tr>
+      <tr><td>12</td><td>שלוש הבקשות</td><td>יבנה וחכמיה</td></tr>
+      <tr><td>13</td><td>ההצלה</td><td>התורה לא נשכחה</td></tr>
+    </table>
+    <p style="margin-bottom:10px;"><b>💬 הערה פדגוגית:</b> הסבירו את ההקשר ההיסטורי (חורבן בית המקדש השני) בפשטות, בלי להיכנס לפרטים קשים — הדגש הוא על התושייה של רבן יוחנן.</p>
+    <p style="margin-bottom:14px;"><b>🔗 חיבור לסיפורים קודמים:</b> כמו ב"רבי מאיר והשומר בבית הכלא" — תושייה ומסירות נפש להצלת יהודים ותורה.</p>
+    <p style="margin-bottom:14px; font-size:0.85rem; color:#666;"><b>✅ מקור:</b> גיטין נו ע"א — סיפור מאומת ונאמן למקור.</p>
+    <button class="close-mem" onclick="toggleMem(false)">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg:"linear-gradient(180deg, #6a6a5a, #2a2a1e)",
+    emoji:"🏰⚔️😟",
+    onscreen:"",
+    say:`חומות האבן של ירושלים היו מוקפות באלפי חיילים רומאים. בתוך העיר הסגורה היה רעב כבד ודאגה גדולה, כי הבריונים — האנשים הקשים והאלימים — שרפו את מחסני המזון וחסמו את השערים.`,
+    cue:"קול כבד ומתוח — תארו את המצור כאיום ממשי, בלי להפחיד יתר על המידה."
+  },
+  {
+    bg:"linear-gradient(180deg, #3a3a4c, #1f2a44)",
+    emoji:"🧔💭",
+    onscreen:"",
+    say:`רבן יוחנן בן זכאי, גדול הדור, הבין שאם ירושלים תיחרב והחכמים ייהרגו, חלילה תשתכח התורה מישראל. הוא החליט לעשות מעשה גבורה נועז כדי להציל את האור של עם ישראל.
+מה אתם חושבים רבן יוחנן יכול לעשות במצב כזה קשה? (עצירה)`,
+    cue:"קול רציני ונחוש — תארו את המשקל הכבד של ההחלטה."
+  },
+  {
+    bg:"#0d1526",
+    emoji:"⚰️🤫",
+    onscreen:"",
+    say:`הוא קרא לשני תלמידיו הצדיקים, רבי אליעזר ורבי יהושע, ולחש להם בסוד:
+"הביאו אלי ארון מתים... וסחבתם אותי מחוץ לשערי ירושלים. זוהי הדרך היחידה לעבור את השומרים!"`,
+    cue:"לחישה דרמטית — קול נמוך ומתוח, תנו לתכנית להישמע נועזת ומסוכנת."
+  },
+  {
+    bg:"#0d1526",
+    emoji:"🌙⚰️",
+    onscreen:"",
+    say:`באישון לילה נשאו התלמידים את הארון הכבד אל שער העיר.`,
+    cue:"קול מתוח ושקט — תארו את המשקל הפיזי והרגשי של הארון."
+  },
+  {
+    bg:"linear-gradient(180deg, #4a3a3a, #1a1414)",
+    emoji:"⚔️😠🚪",
+    onscreen:"",
+    say:`"עצרו מיד!" קרא השומר הבריון ושלף את חרבו המבריקה. "מי נמצא בארון?"
+"רבנו רבן יוחנן בן זכאי נפטר," ענו התלמידים בבכי ובמבוכה, "ואנו מובילים אותו לקבורה מחוץ לחומות."`,
+    cue:"קול מאיים ותקיף לשומר. קול נשבר ומתחזה לבכי אמיתי לתלמידים."
+  },
+  {
+    bg:"#0d1526",
+    emoji:"⚔️⚰️",
+    onscreen:"",
+    say:`השומר רצה לנעוץ את חרבו בארון כדי לוודא שהוא אכן מת.
+(עצירה של 2–3 שניות)`,
+    cue:"שתיקה מלאה — הרגע המסוכן ביותר בסיפור, חיים ומוות ממש."
+  },
+  {
+    bg:"linear-gradient(180deg, #4a4a3a, #2a2a1c)",
+    emoji:"🚪✅",
+    onscreen:"",
+    say:`אך מפקד השמירה, שהיה בסוד, גער בו: "וכי יגידו הרומאים שיהודים מדקרים את המורה הקדוש שלהם במותו?!"
+השומר נסוג, והשער נפתח. הארון יצא אל השדה הפתוח.`,
+    cue:"קול תקיף מהמפקד, ואז רווחה — תנו לרגע השחרור להישמע כמו נשימה עמוקה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #d8d8c8, #6a6a5a)",
+    emoji:"🧔🎪👑",
+    onscreen:"\"שָׁלוֹם עָלֶיךָ הַמֶּלֶךְ!\"",
+    say:`ברגע שהגיעו למקום בטוח, קם רבן יוחנן מן הארון, בריא וחזק, וצעד ישר אל מחנה הצבא של המנהיג הרומאי, אספסיינוס.
+"שלום עליך המלך! שלום עליך המלך!" קרא רבן יוחנן בכבוד.`,
+    cue:"קול נמרץ ובטוח — תנו לביטחון של רבן יוחנן להישמע חכם ומחושב."
+  },
+  {
+    bg:"linear-gradient(180deg, #6a5a3a, #2a2a1c)",
+    emoji:"😠🧔",
+    onscreen:"",
+    say:`אספסיינוס כעס מאוד: "מדוע קראת לי מלך? הרי אני רק שר צבא, ואם ישמע הקיסר ברומא — יהרוג אותי מיד על מרידה!"
+השיב לו הרב בשכל עמוק: "אתה ודאי תמלוך, שהרי בית המקדש יכול ליחרב רק בידי מלך חזק וחשוב, כפי שכתוב בנביאים."`,
+    cue:"קול כועס ומאיים לאספסיינוס, קול רגוע ובטוח לרבן יוחנן."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #d8d8c8, #6a6a5a)",
+    emoji:"🐎📜💨",
+    onscreen:"",
+    say:`עוד הם מדברים, ולפתע נשמע רעש של פרסות סוסים. שליח בהול הגיע מכללי רומא ובידו איגרת רשמית: "הקיסר הזקן מת, וגדולי רומא החליטו למנות אותך לקיסר ולמלך החדש!"`,
+    cue:"קול מהיר ודרמטי — תנו להפתעה להישמע כאילו נבואת רבן יוחנן התגשמה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #d8d8c8, #6a6a5a)",
+    emoji:"👑🧔🎁",
+    onscreen:"",
+    say:`אספסיינוס התפעל כל כך מחכמתו של הרב ואמר: "רבן יוחנן, הנני חייב לעזוב לרומא, אך מתוך כבוד לחכמתך, בקש ממני שלוש בקשות ואתן לך!"
+רבן יוחנן ידע שאם יבקש להציל את ירושלים, המלך יסרב. לכן ביקש בחכמה עצומה.`,
+    cue:"קול נדיב מאספסיינוס, קול חכם ומחושב לרבן יוחנן."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #d8d8c8, #6a6a5a)",
+    emoji:"🏛️📖🩺",
+    onscreen:"\"תֶּן לִי אֶת יַבְנֶה\"",
+    say:`"תן לי את העיר יבנה ואת החכמים שלה, כדי שנוכל להקים שם ישיבה והתורה לא תישכח; שמור על משפחתו של רבן גמליאל; ושלח רופאים לרפא את רבי צדוק הצדיק."`,
+    cue:"משפט-המפתח המרכזי — קול בהיר ומדויק, כל בקשה נאמרת בנפרד ובמשקל."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f0dbb0, #c78a3d)",
+    emoji:"✅📖✨",
+    onscreen:"",
+    say:`המלך הסכים לכל הבקשות. ובזכות חכמתו המופלאה של רבן יוחנן, הלימוד והתורה שלנו הוצלו וממשיכים לחיות בתוך כל אחד מאיתנו עד היום.`,
+    cue:"קול חם ומסכם — תנו לחיבור בין העבר להווה להישמע אמיתי ומרגש."
+  },
+  {
+    bg:"linear-gradient(180deg, #1f2a44, #14203a)",
+    emoji:"💭⚰️🏛️",
+    onscreen:"",
+    say:`בואו נחשוב יחד:
+רבן יוחנן ביקש דווקא "עיר קטנה ליישיבה" ולא "הצלת כל ירושלים" — למה לדעתכם זו הייתה הבקשה החכמה ביותר?
+מה זה אומר שלפעמים, כדי להציל דבר גדול, צריך להתחיל מדבר קטן?`,
+    cue:"שאלות פתוחות בלבד. תנו זמן אמיתי למחשבה — אלו שאלות עמוקות.",
+    peda:true
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #d8d8c8, #6a6a5a)",
+    emoji:"🧒📖✨",
+    onscreen:"",
+    say:`אפשר גם אנחנו להבין שכשאנחנו לומדים תורה היום, אנחנו ממשיכים ישירות את מה שרבן יוחנן בן זכאי הציל באותו יום קשה בהיסטוריה שלנו.`,
+    cue:"קול רגוע ומחבר, לא מטיף."
+  },
+  {
+    bg:"linear-gradient(180deg, #6a6a5a, #2a2a1e)",
+    emoji:"🏰✨📖",
+    onscreen:"",
+    say:`זוכרים את חומות ירושלים המוקפות ואת המצור הקשה מתחילת הסיפור?
+מסתבר שמתוך הארון החשוך והמפחיד ביותר, יצא האור שממשיך להאיר לנו עד היום — התורה שנלמדת בכל בית ספר ובית כנסת.
+מה הדבר שאתם לומדים היום, שממשיך אור מדורות רבים?`,
+    cue:"קול חם וסוגר, מוריד טון בהדרגה. תנו לשאלה האחרונה לרחף.",
+    link:true
+  }
+];
+
+let current = 0;
+
+function render(){
+  const s = slides[current];
+  document.getElementById('visual').style.background = s.bg;
+  document.getElementById('emojiScene').textContent = s.emoji;
+  document.getElementById('onscreenText').textContent = s.onscreen;
+  document.getElementById('onscreenText').style.display = s.onscreen ? 'block' : 'none';
+  document.getElementById('sayText').textContent = s.say;
+  document.getElementById('cueText').textContent = s.cue;
+  document.getElementById('slideCounter').textContent = `כרטיס ${current+1} מתוך ${slides.length}`;
+
+  const peda = document.getElementById('pedaNote');
+  if(current === 13){
+    peda.style.display = 'block';
+    peda.textContent = '💬 הערה פדגוגית: הסבירו את ההקשר ההיסטורי בפשטות — הדגש הוא על התושייה, לא על זוועות המצור.';
+  } else {
+    peda.style.display = 'none';
+  }
+
+  const link = document.getElementById('linkNote');
+  if(current === 15){
+    link.style.display = 'block';
+    link.textContent = '🔗 חיבור: כמו ב"רבי מאיר והשומר בבית הכלא" — תושייה ומסירות נפש להצלת יהודים ותורה.';
+  } else {
+    link.style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.onclick = () => go(i);
+    dots.appendChild(d);
+  });
+}
+
+function go(i){
+  if(i < 0 || i >= slides.length) return;
+  current = i;
+  render();
+}
+
+function toggleMem(show){
+  document.getElementById('memOverlay').classList.toggle('show', show);
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft') go(current + 1);
+  if(e.key === 'ArrowRight') go(current - 1);
+});
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>בארות המים והשמש שעצרה</title>
+<style>
+  :root{
+    --gold:#c9a227;
+    --cream:#fdf6e3;
+    --navy:#1f2a44;
+    --water:#2e6a9c;
+    --water-light:#c0dcf0;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:var(--navy);
+    color:var(--cream);
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .top-title{
+    font-size:1.1rem;
+    font-weight:bold;
+    color:var(--gold);
+  }
+  .mem-btn{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:0.9rem;
+  }
+  .stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .visual{
+    height:45%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    transition:background 0.6s ease;
+    text-align:center;
+    padding:10px;
+  }
+  .emoji-scene{
+    font-size:4rem;
+    margin-bottom:10px;
+    letter-spacing:10px;
+  }
+  .onscreen-text{
+    font-size:1.4rem;
+    font-weight:bold;
+    color:var(--cream);
+    background:rgba(0,0,0,0.35);
+    padding:10px 20px;
+    border-radius:10px;
+    max-width:85%;
+    line-height:1.6;
+  }
+  .panel{
+    flex:1;
+    background:var(--cream);
+    color:var(--navy);
+    padding:18px 24px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .slide-counter{
+    font-size:0.85rem;
+    color:var(--water);
+    font-weight:bold;
+  }
+  .say-label, .cue-label{
+    font-weight:bold;
+    font-size:0.95rem;
+    color:var(--water);
+  }
+  .say-text{
+    white-space:pre-line;
+    font-size:1.05rem;
+    line-height:1.7;
+    background:var(--water-light);
+    padding:12px 16px;
+    border-radius:10px;
+  }
+  .cue-text{
+    white-space:pre-line;
+    font-size:0.95rem;
+    line-height:1.6;
+    font-style:italic;
+    color:#444;
+  }
+  .peda-note{
+    background:#fff3cd;
+    border-right:4px solid #e0a800;
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .link-note{
+    background:#fdeecb;
+    border-right:4px solid var(--gold);
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .nav button{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:10px 18px;
+    font-weight:bold;
+    font-size:1rem;
+    cursor:pointer;
+  }
+  .nav button:disabled{
+    opacity:0.35;
+    cursor:default;
+  }
+  .dots{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:center;
+    max-width:50%;
+  }
+  .dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.3);
+    cursor:pointer;
+  }
+  .dot.active{
+    background:var(--gold);
+  }
+  .mem-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    z-index:10;
+    align-items:center;
+    justify-content:center;
+  }
+  .mem-overlay.show{display:flex;}
+  .mem-box{
+    background:var(--cream);
+    color:var(--navy);
+    max-width:600px;
+    width:90%;
+    max-height:80vh;
+    overflow-y:auto;
+    border-radius:14px;
+    padding:24px;
+  }
+  .mem-box h2{
+    color:var(--water);
+    margin-bottom:14px;
+  }
+  .mem-box table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:16px;
+  }
+  .mem-box th, .mem-box td{
+    border:1px solid #ccc;
+    padding:6px 10px;
+    text-align:right;
+    font-size:0.9rem;
+  }
+  .mem-box th{
+    background:var(--water-light);
+  }
+  .close-mem{
+    background:var(--water);
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-weight:bold;
+  }
+</style>
+<meta property="og:title" content="בארות המים והשמש שעצרה">
+<meta property="og:description" content="בארות המים והשמש שעצרה">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-47395799.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/47395799.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-title">בארות המים והשמש שעצרה</div>
+  <button class="mem-btn" onclick="toggleMem(true)">🎯 טבלת זיכרון מהירה</button>
+</div>
+
+<div class="stage">
+  <div class="visual" id="visual">
+    <div class="emoji-scene" id="emojiScene"></div>
+    <div class="onscreen-text" id="onscreenText"></div>
+  </div>
+  <div class="panel">
+    <div class="slide-counter" id="slideCounter"></div>
+    <div class="say-label">🗣️ אתה אומר</div>
+    <div class="say-text" id="sayText"></div>
+    <div class="cue-label">🎭 כיווני ביצוע</div>
+    <div class="cue-text" id="cueText"></div>
+    <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    <div class="link-note" id="linkNote" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="go(current-1)">◀ הקודם</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn" onclick="go(current+1)">הבא ▶</button>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>2</td><td>ההתחייבות הגדולה</td><td>שתים עשרה בארות</td></tr>
+      <tr><td>4-5</td><td>הימים חולפים, הלחץ</td><td>ביטחון יציב</td></tr>
+      <tr><td>6-7</td><td>התפילה הראשונה והגשם</td><td>שתיקה / כרטיס שיא</td></tr>
+      <tr><td>8</td><td>תירוץ השר</td><td>"היום עבר"</td></tr>
+      <tr><td>9-10</td><td>התפילה השנייה, השמש חוזרת</td><td>נס כפול</td></tr>
+      <tr><td>11</td><td>הודאת השר</td><td>"אוהבים בעולם"</td></tr>
+    </table>
+    <p style="margin-bottom:10px;"><b>💬 הערה פדגוגית:</b> הנס הכפול (גשם ואז שמש) מדגיש שני דברים: גם התפילה הראשונה נענתה, וגם שהזמן לא עבר — כדי שאף אחד לא יוכל להתווכח.</p>
+    <p style="margin-bottom:14px;"><b>🔗 חיבור לסיפורים קודמים:</b> כמו ב"אבא יודן והאוצר בבור" — ביטחון בה' שלא מתערער כשנראה שהזמן אוזל.</p>
+    <p style="margin-bottom:14px; font-size:0.85rem; color:#666;"><b>✅ מקור:</b> תענית יט ע"ב – כ ע"א — סיפור מאומת ונאמן למקור.</p>
+    <button class="close-mem" onclick="toggleMem(false)">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f5d98a, #8a5a2b)",
+    emoji:"🏛️👥🥵",
+    onscreen:"",
+    say:`השמש בירושלים הייתה יבשה וחמה מאוד. נקדימון בן גוריון, מעשירי ירושלים הגדולים, עמד מודאג מאוד עבור עלי הרגל. מאות אלפי יהודים עלו למקדש, ולא היה להם מים לשתות כי הגשמים איחרו לרדת וכל הבורות היו יבשים.`,
+    cue:"קול חם ומודאג — תארו את הצמא כבעיה אמיתית וקשה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #c0dcf0, #2e6a9c)",
+    emoji:"🧔💧🤝",
+    onscreen:"",
+    say:`מה עשה נקדימון? הוא הלך אל שר רומאי עשיר, שהיו לו שתים עשרה בארות מים מתוקים.
+"השאל לי את שתים עשרה הבארות עבור עלי הרגל," ביקש נקדימון. "ואני מבטיח לך שעד יום פלוני, אחזיר לך שתים עשרה בארות מלאות מים שירדו מן השמים. ואם לא — אשלם לך סכום עתק!"`,
+    cue:"קול נחוש ובטוח — תנו להתחייבות הגדולה להישמע אמיצה, כמעט נועזת."
+  },
+  {
+    bg:"linear-gradient(180deg, #8a5a2b, #4a3a1c)",
+    emoji:"😏💰",
+    onscreen:"",
+    say:`השר הרומאי החמדן, שרצה רק כסף, שמח מאוד. הוא היה בטוח שבעונה הזו השמיים יישארו יבשים והוא יקבל את כל כספו של נקדימון.
+מה אתם חושבים יקרה בסוף? (עצירה)`,
+    cue:"קול מלגלג ובטוח לשר. השאלה בטון סקרן, מזמין ניחוש."
+  },
+  {
+    bg:"linear-gradient(180deg, #a68a5a, #6b5a3a)",
+    emoji:"📅☁️❌",
+    onscreen:"",
+    say:`הימים חלפו. ערב חג הסוכות הגיע, והשמיים נשארו אפורים, יבשים וללא ענן אחד.`,
+    cue:"קול מתוח והולך ומחמיר — תארו את המתח העולה עם הזמן."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f5d98a, #8a5a2b)",
+    emoji:"🏃‍♂️😏🧔",
+    onscreen:"\"הַמְתֵּן, עֲדַיִן יֵשׁ זְמַן\"",
+    say:`בבוקר של היום האחרון, שלח השר הרומאי שליח בחיוך מלגלג: "נקדימון, היום הוא היום האחרון! הבא לי את המים או את הכסף הרב!"
+נקדימון השיב ברוגע: "המתן, בני, עדיין יש זמן עד סוף היום."
+בצהריים, השמש דלקה בחוזק. השר שלח שוב שליח, ונקדימון שוב ענה: "המתן, עדיין היום לא הסתיים."`,
+    cue:"קול מלגלג ולוחץ לשליחים, קול רגוע ובטוח לנקדימון בכל פעם."
+  },
+  {
+    bg:"#0d1526",
+    emoji:"🌅🧎‍♂️",
+    onscreen:"",
+    say:`לפנות ערב, השמש כמעט נגעה בהרים והתחילה לשקוע. השר הרומאי רץ מהר אל בית המרחץ בשמחה עצומה, בטוח שניצח.
+אך נקדימון בן גוריון לא התייאש. הוא נכנס אל בית המקדש, נפל על פניו על הרצפה ובכה מעומק הלב.
+(עצירה של 2–3 שניות)`,
+    cue:"שתיקה קצרה — תנו לרגע היאוש-לכאורה של השר להישמע כמעט מנצח, לפני המפנה."
+  },
+  {
+    bg:"linear-gradient(180deg, #2a3a5c, #14203a)",
+    emoji:"⛈️💧🙏",
+    onscreen:"",
+    say:`"ריבונו של עולם!" התחנן נקדימון בדמעות. "גלוי וידוע לפניך שלא עשיתי זאת עבור כבודי, אלא רק עבור כבודך ועבור עלי הרגל!"
+ולפתע, קרה נס עצום! השמיים התכסו בעננים שחורים וכבדים. גשם שוטף ומבורך החל לרדת. הבארות התמלאו עד שנשפכו המים החוצה לשדות.`,
+    cue:"רגע השיא הראשון — קול נרגש והולך וגובר, תארו את הגשם בעוצמה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #c0dcf0, #2e6a9c)",
+    emoji:"💧😏🙄",
+    onscreen:"",
+    say:`נקדימון יצא מבית המקדש, ופגש את השר הרומאי שיצא מבית המרחץ מופתע ומהוסס.
+"הנה המים שלך," אמר נקדימון בחיוך. "הבארות מלאות לגמרי!"
+אך השר הרע הביט בשמיים ואמר ברמאות: "נכון, ירד גשם, אך השמש כבר שקעה והיום עבר! לכן אתה עדיין חייב לי את הכסף!"`,
+    cue:"קול שמח לנקדימון, ואז קול מתחמק ורמאי לשר."
+  },
+  {
+    bg:"linear-gradient(180deg, #2a3a5c, #14203a)",
+    emoji:"🙏🏛️",
+    onscreen:"",
+    say:`נקדימון לא התווכח. הוא חזר אל קודש הקודשים, נשא את כפיו לשמיים והתפלל שוב מעומק נשמתו: "אנא ה', הוכח לכולם שיש לך אוהבים בעולם והנס היה עבורך!"`,
+    cue:"קול נחוש שוב, אך מתחנן יותר — תנו לתפילה השנייה להישמע כמו שלב חדש."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #ffe9a8, #c0dcf0)",
+    emoji:"☀️✨⛰️",
+    onscreen:"",
+    say:`ובאותו רגע ממש, הרוח פיזרה את העננים הכבדים. השמש המאירה והחמה הניצה שוב באופק. האור מילא את כל ההרים, והוכיח לקיסר ולשר שעדיין היום לא עבר והמים הוחזרו במועדם.`,
+    cue:"קול מלא פליאה — תארו את חזרת השמש כמו הוכחה ויזואלית וברורה."
+  },
+  {
+    bg:"linear-gradient(180deg, #6a5a4a, #2a2a1c)",
+    emoji:"🙇‍♂️💧",
+    onscreen:"\"יֵשׁ לְךָ אוֹהֲבִים בָּעוֹלָם\"",
+    say:`השר הרומאי השפיל את מבטו בבושה ואמר ברעדה: "יודע אני שרק בזכות צדקתך ואמונתך הגדולה בה', קרע הקדוש ברוך הוא את השמיים ועצר את גלגל החמה עבורך!"`,
+    cue:"קול נמוך ומודה — תנו להודאה של השר להישמע כנה, לא רק מובסת."
+  },
+  {
+    bg:"linear-gradient(180deg, #1f2a44, #14203a)",
+    emoji:"💭☀️💧",
+    onscreen:"",
+    say:`בואו נחשוב יחד:
+נקדימון אמר שהוא עשה זאת "לא עבור כבודו, אלא עבור כבוד ה'" — למה זה שינה את התוצאה?
+מה ההבדל בין לבקש עזרה עבור עצמנו לבין לבקש עזרה עבור מטרה גדולה יותר?`,
+    cue:"שאלות פתוחות בלבד. תנו זמן אמיתי למחשבה.",
+    peda:true
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #c0dcf0, #2e6a9c)",
+    emoji:"🧒🤝👥",
+    onscreen:"",
+    say:`אפשר גם אנחנו, כשאנחנו רוצים משהו, לשאול את עצמנו: האם זה רק בשבילי, או שזה יעזור גם לאחרים?`,
+    cue:"קול רגוע ומזמין, לא מטיף."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f5d98a, #c0dcf0)",
+    emoji:"🏛️💧😊",
+    onscreen:"",
+    say:`זוכרים את הצמא הגדול של עלי הרגל מתחילת הסיפור?
+מסתבר שהתפילה שהצילה אותם לא הייתה תפילה על מים סתם, אלא תפילה על כבוד שמים — וזו הייתה התפילה שהתקבלה פעמיים.
+מה הדבר שאתם תתפללו עליו היום, לא רק בשביל עצמכם?`,
+    cue:"קול חם וסוגר, מוריד טון בהדרגה. תנו לשאלה האחרונה לרחף.",
+    link:true
+  }
+];
+
+let current = 0;
+
+function render(){
+  const s = slides[current];
+  document.getElementById('visual').style.background = s.bg;
+  document.getElementById('emojiScene').textContent = s.emoji;
+  document.getElementById('onscreenText').textContent = s.onscreen;
+  document.getElementById('onscreenText').style.display = s.onscreen ? 'block' : 'none';
+  document.getElementById('sayText').textContent = s.say;
+  document.getElementById('cueText').textContent = s.cue;
+  document.getElementById('slideCounter').textContent = `כרטיס ${current+1} מתוך ${slides.length}`;
+
+  const peda = document.getElementById('pedaNote');
+  if(current === 11){
+    peda.style.display = 'block';
+    peda.textContent = '💬 הערה פדגוגית: הנס הכפול מדגיש ששתי הבקשות נענו — גשם וגם השמש שהוכיחה שהזמן לא עבר.';
+  } else {
+    peda.style.display = 'none';
+  }
+
+  const link = document.getElementById('linkNote');
+  if(current === 13){
+    link.style.display = 'block';
+    link.textContent = '🔗 חיבור: כמו ב"אבא יודן והאוצר בבור" — ביטחון בה\' שלא מתערער.';
+  } else {
+    link.style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.onclick = () => go(i);
+    dots.appendChild(d);
+  });
+}
+
+function go(i){
+  if(i < 0 || i >= slides.length) return;
+  current = i;
+  render();
+}
+
+function toggleMem(show){
+  document.getElementById('memOverlay').classList.toggle('show', show);
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft') go(current + 1);
+  if(e.key === 'ArrowRight') go(current - 1);
+});
+
+render();
+</script>
+</body>
+</html>

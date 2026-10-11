@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>המים שחצבו בסלע</title>
+<style>
+  :root{
+    --gold:#c9a227;
+    --cream:#fdf6e3;
+    --navy:#1f2a44;
+    --rockc:#5a7a8c;
+    --rockc-light:#d0e0e8;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:var(--navy);
+    color:var(--cream);
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .top-title{
+    font-size:1.1rem;
+    font-weight:bold;
+    color:var(--gold);
+  }
+  .mem-btn{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:0.9rem;
+  }
+  .stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .visual{
+    height:45%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    transition:background 0.6s ease;
+    text-align:center;
+    padding:10px;
+  }
+  .emoji-scene{
+    font-size:4rem;
+    margin-bottom:10px;
+    letter-spacing:10px;
+  }
+  .onscreen-text{
+    font-size:1.4rem;
+    font-weight:bold;
+    color:var(--cream);
+    background:rgba(0,0,0,0.35);
+    padding:10px 20px;
+    border-radius:10px;
+    max-width:85%;
+    line-height:1.6;
+  }
+  .panel{
+    flex:1;
+    background:var(--cream);
+    color:var(--navy);
+    padding:18px 24px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .slide-counter{
+    font-size:0.85rem;
+    color:var(--rockc);
+    font-weight:bold;
+  }
+  .say-label, .cue-label{
+    font-weight:bold;
+    font-size:0.95rem;
+    color:var(--rockc);
+  }
+  .say-text{
+    white-space:pre-line;
+    font-size:1.05rem;
+    line-height:1.7;
+    background:var(--rockc-light);
+    padding:12px 16px;
+    border-radius:10px;
+  }
+  .cue-text{
+    white-space:pre-line;
+    font-size:0.95rem;
+    line-height:1.6;
+    font-style:italic;
+    color:#444;
+  }
+  .peda-note{
+    background:#fff3cd;
+    border-right:4px solid #e0a800;
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .link-note{
+    background:#fdeecb;
+    border-right:4px solid var(--gold);
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .nav button{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:10px 18px;
+    font-weight:bold;
+    font-size:1rem;
+    cursor:pointer;
+  }
+  .nav button:disabled{
+    opacity:0.35;
+    cursor:default;
+  }
+  .dots{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:center;
+    max-width:50%;
+  }
+  .dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.3);
+    cursor:pointer;
+  }
+  .dot.active{
+    background:var(--gold);
+  }
+  .mem-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    z-index:10;
+    align-items:center;
+    justify-content:center;
+  }
+  .mem-overlay.show{display:flex;}
+  .mem-box{
+    background:var(--cream);
+    color:var(--navy);
+    max-width:600px;
+    width:90%;
+    max-height:80vh;
+    overflow-y:auto;
+    border-radius:14px;
+    padding:24px;
+  }
+  .mem-box h2{
+    color:var(--rockc);
+    margin-bottom:14px;
+  }
+  .mem-box table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:16px;
+  }
+  .mem-box th, .mem-box td{
+    border:1px solid #ccc;
+    padding:6px 10px;
+    text-align:right;
+    font-size:0.9rem;
+  }
+  .mem-box th{
+    background:var(--rockc-light);
+  }
+  .close-mem{
+    background:var(--rockc);
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-weight:bold;
+  }
+</style>
+<meta property="og:title" content="המים שחצבו בסלע">
+<meta property="og:description" content="המים שחצבו בסלע">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-35d9c102.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/35d9c102.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-title">המים שחצבו בסלע</div>
+  <button class="mem-btn" onclick="toggleMem(true)">🎯 טבלת זיכרון מהירה</button>
+</div>
+
+<div class="stage">
+  <div class="visual" id="visual">
+    <div class="emoji-scene" id="emojiScene"></div>
+    <div class="onscreen-text" id="onscreenText"></div>
+  </div>
+  <div class="panel">
+    <div class="slide-counter" id="slideCounter"></div>
+    <div class="say-label">🗣️ אתה אומר</div>
+    <div class="say-text" id="sayText"></div>
+    <div class="cue-label">🎭 כיווני ביצוע</div>
+    <div class="cue-text" id="cueText"></div>
+    <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    <div class="link-note" id="linkNote" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="go(current-1)">◀ הקודם</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn" onclick="go(current+1)">הבא ▶</button>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>1-2</td><td>עקיבא הרועה בגיל 40</td><td>"מאוחר מדי"</td></tr>
+      <tr><td>4-5</td><td>החור בסלע</td><td>תעלומה</td></tr>
+      <tr><td>6</td><td>הסבר המים</td><td>שתיקה / כרטיס שיא — "טיפה אחר טיפה"</td></tr>
+      <tr><td>7</td><td>ההבנה</td><td>משל לתורה</td></tr>
+      <tr><td>8-9</td><td>הצעד הראשון וההתגשמות</td><td>רבי עקיבא</td></tr>
+    </table>
+    <p style="margin-bottom:10px;"><b>💬 הערה פדגוגית:</b> סיפור מעודד במיוחד לילדים שמתקשים בלימוד — הדגישו שההתמדה חשובה יותר מהכישרון הראשוני.</p>
+    <p style="margin-bottom:14px;"><b>🔗 חיבור לסיפורים קודמים:</b> כמו "רבי עקיבא והמים הטהורים בכלא" ו"הסיכה והנחש" — מסע מרגש מהתחלה צנועה לגדולה.</p>
+    <p style="margin-bottom:14px; font-size:0.85rem; color:#666;"><b>✅ מקור:</b> אבות דרבי נתן א, ו — סיפור מאומת ונאמן למקור.</p>
+    <button class="close-mem" onclick="toggleMem(false)">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg:"radial-gradient(circle at 50% 35%, #c8e8ce, #4a8c5c)",
+    emoji:"🐑🐑🧑‍🌾",
+    onscreen:"",
+    say:`עקיבא היה אדם פשוט ועני. הוא לא ישב בבתי מדרש ולא הכיר את חכמי ישראל. בכל יום הוא היה יוצא אל השדות הירוקים, רועה את הכבשים הלבנות, ודואג שלא תאכלנה משדות זרים.`,
+    cue:"קול פשוט ורגוע — תארו את עקיבא כאדם רגיל לגמרי."
+  },
+  {
+    bg:"linear-gradient(180deg, #4a4a5c, #1f2a44)",
+    emoji:"📖😔",
+    onscreen:"",
+    say:`עקיבא כבר הגיע לגיל ארבעים שנים, ולא ידע לקרוא אפילו אות אחת מן התורה! ליבו היה עצוב, הוא חשב שכבר מאוחר מדי עבורו ללמוד.
+מה אתם חושבים על המחשבה של עקיבא, שזה "כבר מאוחר מדי"? (עצירה)`,
+    cue:"קול עצוב וכנוע — תארו את התחושה כדבר אמיתי וכואב. השאלה בטון תוהה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #c0dcf0, #5a7a8c)",
+    emoji:"🐑💧🪨",
+    onscreen:"",
+    say:`ביום חם אחד, הוביל עקיבא את עדר הצאן שלו לשתות מים מן הבאר.`,
+    cue:"קול שגרתי ופשוט — תארו את הרגע כיום עבודה רגיל, לפני הגילוי."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #d0e0e8, #5a7a8c)",
+    emoji:"🪨🕳️❓",
+    onscreen:"",
+    say:`בצד הבאר עמד סלע ענק, קשה וחזק משיש. עקיבא הביט בסלע, ולפתע הבחין בדבר מוזר מאוד: בדיוק במרכז הסלע הקשה היה חצוב חור עמוק ומדויק.`,
+    cue:"קול תוהה ומתפלא — תארו את החור כתעלומה מוזרה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f0dbb0, #c78a3d)",
+    emoji:"🤔👥😄",
+    onscreen:"",
+    say:`התפלא עקיבא, פנה אל עוברי האורח ושאל: "מי הוא הגיבור החזק שחצב חור כה עמוק באבן הקשה הזו?"
+צחקו האנשים וענו: "עקיבא, וכי אינך יודע? אין זה פטיש שחצב, אלא... המים!"`,
+    cue:"קול תוהה לעקיבא, קול צוחק ומתפלא לאנשים — לא לגלגני, תמים."
+  },
+  {
+    bg:"#0d1526",
+    emoji:"💧🪨💧",
+    onscreen:"",
+    say:`"המים?!" תמה עקיבא. "כיצד מים רכים יכולים לחצוב בתוך קרן האבן הקשה הזו?"
+הסבירו האנשים: "בכל יום, טיפה אחר טיפה, נוטפים המים ונופלים בדיוק על אותו מקום. הטיפה הראשונה אינה עושה דבר, אך מכיוון שהן נוטפות שוב ושוב, יום אחר יום — אפילו המים הרכים מנצחים את הסלע הקשה!"
+(עצירה של 2–3 שניות)`,
+    cue:"שתיקה קצרה אחרי ההסבר — דברו לאט, זהו לב הסיפור."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #ffe9a8, #5a7a8c)",
+    emoji:"✨💧📖",
+    onscreen:"\"טִפָּה אַחַר טִפָּה, הַתּוֹרָה תִּפָּתַח\"",
+    say:`שמע עקיבא את הדברים, והלב שלו התמלא בהתרגשות עצומה.
+הוא עשה חשבון פשוט: "אם המים הרכים יכולים לחצוב חור בסלע קשה, הרי שדברי התורה יכולים על אחת כמה וכמה להיכנס ללב שלי! אם אתמיד ואלמד בכל יום, טיפה אחר טיפה, התורה תיפתח בתוכי!"`,
+    cue:"משפט-המפתח המרכזי — קול נרגש ומתעצם, כמו רגע של החלטה גדולה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f0dbb0, #c78a3d)",
+    emoji:"👨‍👦📝",
+    onscreen:"",
+    say:`ללא שום פחד ובושה, הלך עקיבא יחד עם בנו הקטן אל בית הספר לילדים. הם התיישבו ליד השולחן, והתחילו ללמוד מההתחלה: קראו את האות אל"ף, ואת האות בי"ת.`,
+    cue:"קול צנוע ונחוש — תארו את איש מבוגר לומד עם ילד בלי מבוכה, כמעשה אמיץ."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f0dbb0, #c9a227)",
+    emoji:"🧔📖✨",
+    onscreen:"",
+    say:`בזכות ההתמדה והקביעות הזו, טיפה אחר טיפה, הפך הרועה הפשוט להיות הגאון הקדוש — רבי עקיבא, גדול חכמי ישראל, שהאיר את העולם כולו באור תורתו.`,
+    cue:"קול חם ומלא גאווה — תנו לניגוד 'רועה פשוט' ל'גדול חכמי ישראל' להישמע כמסע מרגש."
+  },
+  {
+    bg:"linear-gradient(180deg, #1f2a44, #14203a)",
+    emoji:"💭💧🪨",
+    onscreen:"",
+    say:`בואו נחשוב יחד:
+המים לא חצבו את הסלע ביום אחד — למה זה כל כך חשוב להבנת הסיפור?
+האם יש משהו שאתם חושבים שקשה מדי בשבילכם ללמוד? מה יקרה אם תנסו "טיפה אחר טיפה"?`,
+    cue:"שאלות פתוחות בלבד. תנו זמן אמיתי — השאלה השנייה אישית.",
+    peda:true
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #d0e0e8, #5a7a8c)",
+    emoji:"🧒💪",
+    onscreen:"",
+    say:`אפשר גם אנחנו לזכור שאין צורך להצליח בבת אחת — אפשר להתקדם קצת בכל יום, כמו טיפה אחר טיפה, עד שמגיעים רחוק.`,
+    cue:"קול רגוע ומזמין, לא מטיף."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #c8e8ce, #4a8c5c)",
+    emoji:"🐑📖😊",
+    onscreen:"",
+    say:`זוכרים את עקיבא הרועה הפשוט מתחילת הסיפור, שחשב שכבר מאוחר מדי בשבילו?
+מסתבר שהוא היה צריך רק לראות סלע אחד עם חור אחד, כדי להבין שאף פעם לא מאוחר מדי להתחיל.
+מה הדבר הקטן שאתם תתחילו ללמוד היום, טיפה אחר טיפה?`,
+    cue:"קול חם וסוגר, מוריד טון בהדרגה. תנו לשאלה האחרונה לרחף.",
+    link:true
+  }
+];
+
+let current = 0;
+
+function render(){
+  const s = slides[current];
+  document.getElementById('visual').style.background = s.bg;
+  document.getElementById('emojiScene').textContent = s.emoji;
+  document.getElementById('onscreenText').textContent = s.onscreen;
+  document.getElementById('onscreenText').style.display = s.onscreen ? 'block' : 'none';
+  document.getElementById('sayText').textContent = s.say;
+  document.getElementById('cueText').textContent = s.cue;
+  document.getElementById('slideCounter').textContent = `כרטיס ${current+1} מתוך ${slides.length}`;
+
+  const peda = document.getElementById('pedaNote');
+  if(current === 10){
+    peda.style.display = 'block';
+    peda.textContent = '💬 הערה פדגוגית: הדגישו שההתמדה חשובה יותר מהכישרון הראשוני.';
+  } else {
+    peda.style.display = 'none';
+  }
+
+  const link = document.getElementById('linkNote');
+  if(current === 12){
+    link.style.display = 'block';
+    link.textContent = '🔗 חיבור: כמו סיפורי רבי עקיבא הקודמים — מסע מהתחלה צנועה לגדולה.';
+  } else {
+    link.style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.onclick = () => go(i);
+    dots.appendChild(d);
+  });
+}
+
+function go(i){
+  if(i < 0 || i >= slides.length) return;
+  current = i;
+  render();
+}
+
+function toggleMem(show){
+  document.getElementById('memOverlay').classList.toggle('show', show);
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft') go(current + 1);
+  if(e.key === 'ArrowRight') go(current - 1);
+});
+
+render();
+</script>
+</body>
+</html>

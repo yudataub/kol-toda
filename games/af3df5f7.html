@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>היהלום בצוואר החמור</title>
+<style>
+  :root{
+    --gold:#c9a227;
+    --cream:#fdf6e3;
+    --navy:#1f2a44;
+    --diamond:#4a7c9c;
+    --diamond-light:#cfe4f0;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:var(--navy);
+    color:var(--cream);
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .top-title{
+    font-size:1.1rem;
+    font-weight:bold;
+    color:var(--gold);
+  }
+  .mem-btn{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:0.9rem;
+  }
+  .stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .visual{
+    height:45%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    transition:background 0.6s ease;
+    text-align:center;
+    padding:10px;
+  }
+  .emoji-scene{
+    font-size:4rem;
+    margin-bottom:10px;
+    letter-spacing:10px;
+  }
+  .onscreen-text{
+    font-size:1.4rem;
+    font-weight:bold;
+    color:var(--cream);
+    background:rgba(0,0,0,0.35);
+    padding:10px 20px;
+    border-radius:10px;
+    max-width:85%;
+    line-height:1.6;
+  }
+  .panel{
+    flex:1;
+    background:var(--cream);
+    color:var(--navy);
+    padding:18px 24px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .slide-counter{
+    font-size:0.85rem;
+    color:var(--diamond);
+    font-weight:bold;
+  }
+  .say-label, .cue-label{
+    font-weight:bold;
+    font-size:0.95rem;
+    color:var(--diamond);
+  }
+  .say-text{
+    white-space:pre-line;
+    font-size:1.05rem;
+    line-height:1.7;
+    background:var(--diamond-light);
+    padding:12px 16px;
+    border-radius:10px;
+  }
+  .cue-text{
+    white-space:pre-line;
+    font-size:0.95rem;
+    line-height:1.6;
+    font-style:italic;
+    color:#444;
+  }
+  .peda-note{
+    background:#fff3cd;
+    border-right:4px solid #e0a800;
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .link-note{
+    background:#fdeecb;
+    border-right:4px solid var(--gold);
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .nav button{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:10px 18px;
+    font-weight:bold;
+    font-size:1rem;
+    cursor:pointer;
+  }
+  .nav button:disabled{
+    opacity:0.35;
+    cursor:default;
+  }
+  .dots{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:center;
+    max-width:50%;
+  }
+  .dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.3);
+    cursor:pointer;
+  }
+  .dot.active{
+    background:var(--gold);
+  }
+  .mem-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    z-index:10;
+    align-items:center;
+    justify-content:center;
+  }
+  .mem-overlay.show{display:flex;}
+  .mem-box{
+    background:var(--cream);
+    color:var(--navy);
+    max-width:600px;
+    width:90%;
+    max-height:80vh;
+    overflow-y:auto;
+    border-radius:14px;
+    padding:24px;
+  }
+  .mem-box h2{
+    color:var(--diamond);
+    margin-bottom:14px;
+  }
+  .mem-box table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:16px;
+  }
+  .mem-box th, .mem-box td{
+    border:1px solid #ccc;
+    padding:6px 10px;
+    text-align:right;
+    font-size:0.9rem;
+  }
+  .mem-box th{
+    background:var(--diamond-light);
+  }
+  .close-mem{
+    background:var(--diamond);
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-weight:bold;
+  }
+</style>
+<meta property="og:title" content="היהלום בצוואר החמור">
+<meta property="og:description" content="היהלום בצוואר החמור">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-af3df5f7.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/af3df5f7.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-title">היהלום בצוואר החמור</div>
+  <button class="mem-btn" onclick="toggleMem(true)">🎯 טבלת זיכרון מהירה</button>
+</div>
+
+<div class="stage">
+  <div class="visual" id="visual">
+    <div class="emoji-scene" id="emojiScene"></div>
+    <div class="onscreen-text" id="onscreenText"></div>
+  </div>
+  <div class="panel">
+    <div class="slide-counter" id="slideCounter"></div>
+    <div class="say-label">🗣️ אתה אומר</div>
+    <div class="say-text" id="sayText"></div>
+    <div class="cue-label">🎭 כיווני ביצוע</div>
+    <div class="cue-text" id="cueText"></div>
+    <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    <div class="link-note" id="linkNote" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="go(current-1)">◀ הקודם</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn" onclick="go(current+1)">הבא ▶</button>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>1</td><td>רבי שמעון לא רוצה כסף</td><td>לימוד בחינם</td></tr>
+      <tr><td>3</td><td>דאגת התלמידים</td><td>חמור מתנה</td></tr>
+      <tr><td>5</td><td>גילוי היהלום</td><td>הפתעה</td></tr>
+      <tr><td>7</td><td>פני רבי שמעון הרציניות</td><td>שתיקה / כרטיס שיא</td></tr>
+      <tr><td>9</td><td>משפט המפתח</td><td>"היושר והאמת חשובים מכל הזהב"</td></tr>
+      <tr><td>11</td><td>תדהמת הסוחר</td><td>קידוש השם</td></tr>
+    </table>
+    <p style="margin-bottom:10px;"><b>💬 הערה פדגוגית:</b> הסבירו את ההבדל בין "מה שמותר על פי החוק" (מציאת אבדת נוכרי) לבין המידה הגבוהה יותר של רבי שמעון.</p>
+    <p style="margin-bottom:14px;"><b>🔗 חיבור לסיפורים קודמים:</b> כמו שלמדנו שהתורה היא הרכוש האמיתי — כאן היושר עצמו מוכח כאוצר שאין כמותו.</p>
+    <p style="margin-bottom:14px; font-size:0.85rem; color:#666;"><b>✅ מקור:</b> ירושלמי בבא מציעא ב, ה; דברים רבה ג, ג — סיפור מאומת ונאמן למקור.</p>
+    <button class="close-mem" onclick="toggleMem(false)">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f0dbb0, #8a6a2e)",
+    emoji:"📖🧔🤲",
+    onscreen:"",
+    say:`רבי שמעון בן שטח היה חכם גדול, אבל הוא היה גם אדם פשוט ועני מאוד. הוא לא רצה לקבל כסף מהתלמידים שלו עבור לימוד התורה.
+"הקדוש ברוך הוא נתן לנו את התורה בחינם, בלי לבקש תשלום," היה אומר תמיד, "ולכן גם אני רוצה ללמד אתכם בלי לקבל שום פרוטה."`,
+    cue:"קול חם ועקרוני — תנו למשפט המפתח הראשוני להישמע כמו אמונה עמוקה, לא סיסמה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #d9a94a, #6b4a12)",
+    emoji:"🚶‍♂️🌾☀️",
+    onscreen:"",
+    say:`כדי להרוויח כסף לקמחה וללחם עבור משפחתו, עבד רבי שמעון בעבודה קשה ומעייפת. הוא קנה פשתן — צמח שממנו מכינים חוטים לבגדים — סחב את השקים הכבדים על גבו הדק, והלך ברגל שעות ארוכות אל השוק הגדול כדי למכור אותו.`,
+    cue:"קול מאמץ, נשימה כבדה מדומה — תארו את הקושי הפיזי בלי להגזים."
+  },
+  {
+    bg:"linear-gradient(180deg, #4a5a3a, #1f2a44)",
+    emoji:"😟🫏🎁",
+    onscreen:"",
+    say:`התלמידים האהובים שלו ראו אותו חוזר בערב עייף ותשוש — כשהוא חלש ובלי כוח — והצטערו מאוד.
+"רבנו הקדוש!" קראו התלמידים בדאגה, "אתה מתאמץ כל כך קשה בסחיבת שקים! אנחנו רוצים לקנות לך חמור חזק ובריא."
+מה אתם חושבים על הרעיון של התלמידים? (עצירה)`,
+    cue:"קול דואג ואוהב מהתלמידים. השאלה בטון חם, מזמין מעורבות."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #e8c99a, #8a5a2b)",
+    emoji:"🫏💰😊",
+    onscreen:"",
+    say:`רבי שמעון חייך בתודה והסכים. התלמידים השמחים רצו מיד אל השוק וחיפשו חמור מושלם. בדרך פגשו סוחר ישמעאלי, אדם נוכרי, שהוביל חמור יפה, חסון וחזק. הם שילמו לו את מחיר החמור, קשרו את החבל ומיהרו לחזור אל ביתו של רבם.`,
+    cue:"קול נמרץ ושמח — תנו לשמחת התלמידים על המתנה הטובה להישמע כנה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #cfe4f0, #4a7c9c)",
+    emoji:"🫏💎✨",
+    onscreen:"",
+    say:`בדרך, הביטו התלמידים בחמור החדש. פתאום, אחד מהם שם לב למשהו מוזר. בתוך החבל שהיה קשור לצוואר החמור, הייתה מוסתרת אבן קטנה.
+הוא נגע בה, ואורו עיניו. זו לא הייתה סתם אבן פשוטה מהשדה. זו הייתה אבן טובה ומזהירה — יהלום ענק ויקר שמפיץ אור נוצץ ומדהים!`,
+    cue:"עצרו רגע לפני 'יהלום' — יצרו הפתעה. קול נרגש והולך וגובר."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #cfe4f0, #4a7c9c)",
+    emoji:"🕺💃💎",
+    onscreen:"",
+    say:`הסוחר כנראה קשר את היהלום שם ושכח ממנו לגמרי.
+התלמידים התחילו לרקוד ולפזם בשמחה עצומה.
+"אוי, איזה נס מופלא!" קראו בהתרגשות, "הקדוש ברוך הוא שלח לנו אוצר! עכשיו נביא את היהלום לרבי שמעון. הוא ימכור אותו ויהיה עשיר גדול, ולא יצטרך לעבוד בשקי הפשתן אפילו דקה אחת!"`,
+    cue:"קול נרגש ומהיר — תנו לתקווה של התלמידים להישמע כנה ומרגשת."
+  },
+  {
+    bg:"#0d1526",
+    emoji:"🧔💎",
+    onscreen:"",
+    say:`הם רצו לביתו של רבי שמעון בן שטח, הניחו לפניו את היהלום הנוצץ וסיפרו לו את כל מה שקרה. הם חיכו לראות חיוך של שמחה על פניו, אך להפתעתם רבי שמעון הביט באבן היקרה בעצב וברצינות.
+(עצירה של 2–3 שניות)`,
+    cue:"שתיקה מלאה — תנו לניגוד בין ציפיית התלמידים לתגובה הרצינית להישמע."
+  },
+  {
+    bg:"linear-gradient(180deg, #3a4a5c, #1f2a44)",
+    emoji:"❓🤔",
+    onscreen:"",
+    say:`"תלמידי היקרים," שאל בנועם, "האם הסוחר הישמעאלי ידע שהיהלום הזה קשור לחמור?"
+"לא," ענו התלמידים בפליאה, "הוא בוודאי שכח אותו שם. אבל הרי מצאנו את זה בחוץ, ומותר מן הדין לשמור את האבדה של נוכרי!"`,
+    cue:"רבי שמעון בקול חוקר ורגוע. התלמידים מגנים על עצמם בתמימות."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #cfe4f0, #4a7c9c)",
+    emoji:"🧔✨",
+    onscreen:"\"הַיֹּשֶׁר וְהָאֱמֶת חֲשׁוּבִים יוֹתֵר מִכָּל הַזָּהָב\"",
+    say:`הביט בהם הצדיק בעיניים אציליות ואמר בקול שקט ובטוח: "חמור — קניתי ממנו. אבל יהלום — לא קניתי ממנו. אסור לנו לנגוע במה שלא שייך לנו, ואפילו אם מותר מן החוק היבש. הישר והאמת חשובים יותר מכל הזהב שבעולם!"`,
+    cue:"משפט-המפתח המרכזי — קול בטוח, שקט, ללא היסוס."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #e8c99a, #8a5a2b)",
+    emoji:"🧔💎🤝",
+    onscreen:"",
+    say:`ללא דיחוי, נטל רבי שמעון בן שטח את היהלום, הלך אל השוק ומצא את הסוחר הישמעאלי. הוא הושיט לו את האבן היקרה ואמר: "קח, בני. מצאנו את היהלום הזה קשור לצוואר החמור שמכרת לנו. היהלום שייך לך, ואני מחזיר לך את אבדתך."`,
+    cue:"קול פשוט וישיר, כמו עשיית דבר מובן מאליו."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f0dbb0, #c78a3d)",
+    emoji:"😲🙌✨",
+    onscreen:"\"בָּרוּךְ אֱלֹקֵי הַיְּהוּדִים!\"",
+    say:`הסוחר הישמעאלי הביט ביהלום, ואז הביט בפני הצדיק הקדוש. הוא נדהם מיושרו המופלא — מההתנהגות ההוגנת והטובה שלו. דמעות של התרגשות עלו בעיניו, הוא הרים את ידיו אל השמיים וקרא בקול גדול:
+"ברוך השם, אלוקי שמעון בן שטח! ברוך אלוקי היהודים, שנתן לכם תורה כל כך יפה ומלאה ביושר ובחסד!"`,
+    cue:"קול נרגש ומופתע, גובר לכדי קריאה מלאה הכרת תודה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f0dbb0, #8a6a2e)",
+    emoji:"😊👨‍🎓👨‍🎓",
+    onscreen:"",
+    say:`חזר רבי שמעון אל תלמידיו כשחיוך רחב ומלא אור על שפתיו. הוא הביט בהם ואמר: "ראיתם, בני? חפצתם לעשות אותי עשיר בכסף, אבל אני זכיתי לעושר גדול הרבה יותר — זכיתי לקדש שם שמיים בעולם!"`,
+    cue:"קול חם ומלא סיפוק — סוף שמח שאינו נובע מרווח כספי."
+  },
+  {
+    bg:"linear-gradient(180deg, #1f2a44, #14203a)",
+    emoji:"💭💎🫏",
+    onscreen:"",
+    say:`בואו נחשוב יחד:
+התלמידים חשבו שמותר לשמור את היהלום כי "מצאנו אבדה של נוכרי" — למה בכל זאת רבי שמעון החזיר אותו?
+מה ההבדל בין "מה שמותר לי לפי החוק" לבין "מה שנכון לעשות"?`,
+    cue:"שאלות פתוחות בלבד. תנו זמן אמיתי למחשבה — זו שאלה עמוקה יחסית.",
+    peda:true
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #cfe4f0, #4a7c9c)",
+    emoji:"🧒🔍🤲",
+    onscreen:"",
+    say:`אפשר גם אנחנו, כשאנחנו מוצאים משהו שלא שלנו — גם אם קשה לדעת בוודאות למי זה שייך — לנסות להחזיר אותו, כי היושר חשוב לנו יותר מהרווח.`,
+    cue:"קול רגוע ומזמין, לא מטיף."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f0dbb0, #8a6a2e)",
+    emoji:"📖🧔🤲",
+    onscreen:"",
+    say:`זוכרים איך פתחנו — רבי שמעון שלא רצה לקחת אפילו פרוטה מתלמידיו על לימוד תורה?
+מסתבר שאותה מידה בדיוק — לא לקחת מה שלא שייך לך — היא זו שהובילה אותו להחזיר יהלום שלם.
+מה הדבר הקטן שאתם תעשו היום כדי לנהוג ביושר, גם כשאף אחד לא בודק?`,
+    cue:"קול חם וסוגר, מוריד טון בהדרגה. תנו לשאלה האחרונה לרחף.",
+    link:true
+  }
+];
+
+let current = 0;
+
+function render(){
+  const s = slides[current];
+  document.getElementById('visual').style.background = s.bg;
+  document.getElementById('emojiScene').textContent = s.emoji;
+  document.getElementById('onscreenText').textContent = s.onscreen;
+  document.getElementById('onscreenText').style.display = s.onscreen ? 'block' : 'none';
+  document.getElementById('sayText').textContent = s.say;
+  document.getElementById('cueText').textContent = s.cue;
+  document.getElementById('slideCounter').textContent = `כרטיס ${current+1} מתוך ${slides.length}`;
+
+  const peda = document.getElementById('pedaNote');
+  if(current === 12){
+    peda.style.display = 'block';
+    peda.textContent = '💬 הערה פדגוגית: הסבירו את ההבדל בין "מה שמותר על פי החוק" לבין המידה הגבוהה יותר.';
+  } else {
+    peda.style.display = 'none';
+  }
+
+  const link = document.getElementById('linkNote');
+  if(current === 14){
+    link.style.display = 'block';
+    link.textContent = '🔗 חיבור: כמו שלמדנו שהתורה היא הרכוש האמיתי — כאן היושר עצמו מוכח כאוצר שאין כמותו.';
+  } else {
+    link.style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.onclick = () => go(i);
+    dots.appendChild(d);
+  });
+}
+
+function go(i){
+  if(i < 0 || i >= slides.length) return;
+  current = i;
+  render();
+}
+
+function toggleMem(show){
+  document.getElementById('memOverlay').classList.toggle('show', show);
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft') go(current + 1);
+  if(e.key === 'ArrowRight') go(current - 1);
+});
+
+render();
+</script>
+</body>
+</html>

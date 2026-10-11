@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>העיזים, הדובים ורבי חנינא</title>
+<style>
+  :root{
+    --gold:#caa14a;
+    --cream:#fdf6e3;
+    --navy:#2e1f14;
+    --dunec:#7d5a30;
+    --dunec-light:#f0e6d4;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Segoe UI', Arial, sans-serif; background:var(--navy); color:var(--cream); height:100vh; overflow:hidden; display:flex; flex-direction:column;}
+  .top-bar{display:flex; justify-content:space-between; align-items:center; padding:10px 18px; background:rgba(0,0,0,0.25);}
+  .top-title{font-size:1.1rem; font-weight:bold; color:var(--gold);}
+  .mem-btn{background:var(--gold); color:var(--navy); border:none; border-radius:8px; padding:8px 14px; font-weight:bold; cursor:pointer; font-size:0.9rem;}
+  .warn-banner{background:#e3efe9; color:#1f5c4a; font-size:0.75rem; padding:4px 18px; text-align:center;}
+  .stage{flex:1; display:flex; flex-direction:column; overflow:hidden;}
+  .visual{height:43%; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; transition:background 0.6s ease; text-align:center; padding:10px;}
+  .emoji-scene{font-size:4rem; margin-bottom:10px; letter-spacing:10px;}
+  .onscreen-text{font-size:1.4rem; font-weight:bold; color:var(--cream); background:rgba(0,0,0,0.35); padding:10px 20px; border-radius:10px; max-width:85%; line-height:1.6;}
+  .panel{flex:1; background:var(--cream); color:var(--navy); padding:18px 24px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;}
+  .slide-counter{font-size:0.85rem; color:var(--dunec); font-weight:bold;}
+  .say-label, .cue-label{font-weight:bold; font-size:0.95rem; color:var(--dunec);}
+  .say-text{white-space:pre-line; font-size:1.05rem; line-height:1.7; background:var(--dunec-light); padding:12px 16px; border-radius:10px;}
+  .cue-text{white-space:pre-line; font-size:0.95rem; line-height:1.6; font-style:italic; color:#444;}
+  .peda-note{background:#fff3cd; border-right:4px solid #e0a800; padding:10px 14px; border-radius:6px; font-size:0.9rem;}
+  .link-note{background:#fdeecb; border-right:4px solid var(--gold); padding:10px 14px; border-radius:6px; font-size:0.9rem;}
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:10px 18px; background:rgba(0,0,0,0.25);}
+  .nav button{background:var(--gold); color:var(--navy); border:none; border-radius:8px; padding:10px 18px; font-weight:bold; font-size:1rem; cursor:pointer;}
+  .nav button:disabled{opacity:0.35; cursor:default;}
+  .dots{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; max-width:50%;}
+  .dot{width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.3); cursor:pointer;}
+  .dot.active{background:var(--gold);}
+  .mem-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:10; align-items:center; justify-content:center;}
+  .mem-overlay.show{display:flex;}
+  .mem-box{background:var(--cream); color:var(--navy); max-width:600px; width:90%; max-height:80vh; overflow-y:auto; border-radius:14px; padding:24px;}
+  .mem-box h2{color:var(--dunec); margin-bottom:14px;}
+  .mem-box table{width:100%; border-collapse:collapse; margin-bottom:16px;}
+  .mem-box th, .mem-box td{border:1px solid #ccc; padding:6px 10px; text-align:right; font-size:0.9rem;}
+  .mem-box th{background:var(--dunec-light);}
+  .close-mem{background:var(--dunec); color:white; border:none; border-radius:8px; padding:8px 16px; cursor:pointer; font-weight:bold;}
+</style>
+<meta property="og:title" content="העיזים, הדובים ורבי חנינא">
+<meta property="og:description" content="העיזים, הדובים ורבי חנינא">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-bac41088.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/bac41088.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-title">העיזים, הדובים ורבי חנינא</div>
+  <button class="mem-btn" onclick="toggleMem(true)">🎯 טבלת זיכרון מהירה</button>
+</div>
+<div class="warn-banner">✅ מקור מאומת — מסכת תענית כה ע"א.</div>
+
+<div class="stage">
+  <div class="visual" id="visual">
+    <div class="emoji-scene" id="emojiScene"></div>
+    <div class="onscreen-text" id="onscreenText"></div>
+  </div>
+  <div class="panel">
+    <div class="slide-counter" id="slideCounter"></div>
+    <div class="say-label">🗣️ אתה אומר</div>
+    <div class="say-text" id="sayText"></div>
+    <div class="cue-label">🎭 כיווני ביצוע</div>
+    <div class="cue-text" id="cueText"></div>
+    <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    <div class="link-note" id="linkNote" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="go(current-1)">◀ הקודם</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn" onclick="go(current+1)">הבא ▶</button>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>2-3</td><td>תרנגולות אבודות מתרבות</td><td>אבידה בשמירה</td></tr>
+      <tr><td>5</td><td>תלונת השכנים על העיזים</td><td>חשד</td></tr>
+      <tr><td>6-8</td><td>השבועה והדובים על הקרניים</td><td>כרטיס שיא</td></tr>
+      <tr><td>10</td><td>בעל התרנגולות מקבל את העדר</td><td>נאמנות מתגמלת</td></tr>
+    </table>
+    <p style="margin-bottom:10px; background:#e3efe9; padding:8px; border-radius:6px;"><b>✅ הערת מקור:</b> הסיפור מובא בגמרא תענית כה ע"א, על רבי חנינא בן דוסא.</p>
+    <p style="margin-bottom:14px;"><b>🔗 חיבור לסיפורים קודמים:</b> חלק מקבוצת סיפורי רבי חנינא בן דוסא בקטלוג — יחד עם "החמור הצדיק" ו"הפועלים הסודיים".</p>
+    <button class="close-mem" onclick="toggleMem(false)">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f0e0c0, #7d5a30)",
+    emoji:"🏚️🎵📖",
+    onscreen:"",
+    say:`רבי חנינא בן דוסא ואשתו הצדקת גרו בבית קטן ודל. הם היו עניים מאוד — לפעמים לא היה להם אפילו לחם לאכול, אך הבית שלהם היה תמיד מלא בקול שירה של תורה ובתפילה שקטה.`,
+    cue:"קול חם ופשוט — תארו את העוני בלי עצב, כרקע רגיל לחיים מלאי תוכן."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f0e0c0, #7d5a30)",
+    emoji:"🐔🐔🏠",
+    onscreen:"",
+    say:`יום אחד שמעה אשתו של רבי חנינא קול קרקורים בחצר — כמה תרנגולות קטנות שכנראה אבדו לאיש שעבר ברחוב. כששמע רבי חנינא, אמר בזהירות: "חלילה לנו מלגעת בהן או בביצים שלהן! זוהי אבדה, ועלינו לשמור עליה בקדושה עד שיבוא הבעלים."`,
+    cue:"קול זהיר ורציני — הדגישו שהוא מקבל אחריות מיד, על דעת עצמו."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f0e0c0, #7d5a30)",
+    emoji:"🐣🐔🔊",
+    onscreen:"",
+    say:`אך התרנגולות הטילו ביצים, ומהן בקעו עוד ועוד אפרוחים. בתוך זמן קצר, הבית הקטן התמלא בקרקורים ורעש כל כך גדול, עד שאי אפשר היה לישון או ללמוד בו!`,
+    cue:"קול קליל ומשועשע — תארו את הכאוס בחיוך."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f0e0c0, #7d5a30)",
+    emoji:"🐐🐐🌿",
+    onscreen:"",
+    say:`"נמכור את התרנגולות בשוק, ובכסף נקנה עיזים," אמר רבי חנינא. "העיזים יהיו בחצר, ואנחנו נמשיך לשמור על האוצר עבור מי שאיבד אותו." כך עשו, וטיפל בעיזים באהבה רבה, וזהר שלא יאכלו משדות השכנים.`,
+    cue:"קול פתרון פרקטי — עדיין שמירה על האחריות המקורית."
+  },
+  {
+    bg:"linear-gradient(180deg, #6a4020, #2e1f14)",
+    emoji:"😠🌾🐐",
+    onscreen:"",
+    say:`יום אחד הגיעו השכנים בכעס: "רבי חנינא! העיזים שלך נכנסו לשדה שלנו ואכלו את העשב!" רבי חנינא היה בטוח שהעיזים שלו שומרות חוק ואינן גוזלות.`,
+    cue:"קול כועס לשכנים — חשד אמיתי, לא עוינות."
+  },
+  {
+    bg:"#1a1208",
+    emoji:"🐐🐻❓",
+    onscreen:"",
+    say:`הוא הביט בהם ברוגע ואמר: "אם העיזים שלנו גנבו ואכלו משלכם — שיאכלו אותן דובי היער! אבל אם הן ישרות ולא נגעו בדבר שלא שייך להן — שתחזורנה הערב כשהן נושאות דובים על קרניהן!"
+מה אתם חושבים יקרה בערב? (עצירה)`,
+    cue:"זהו כרטיס השיא — משפט מוזר ומפתיע, אמור בבטחון מלא."
+  },
+  {
+    bg:"#1a1208",
+    emoji:"😂🤷",
+    onscreen:"",
+    say:`השכנים צחקו: "מי שמע על עיזים שמביאות דובים?"`,
+    cue:"קול לועג לשכנים — יוצר ניגוד לרגע שמגיע מיד אחר כך."
+  },
+  {
+    bg:"linear-gradient(180deg, #4a3420, #1a1208)",
+    emoji:"🌆👀🐐",
+    onscreen:"",
+    say:`הערב ירד. השמש שקעה. כולם עמדו ברחוב הכפר והביטו אל ההר. פתאום... קלאק... קלאק... קול פסיעות של עיזים נשמע. מבין הצללים צעדו העיזים בגאווה של צדיקים — ולתדהמת כל השכנים, על קרנה של כל עז ועז ישב דוב יער גדול, כאילו היה בובה קטנה!`,
+    cue:"רגע השיא הוויזואלי — תנו לתמונה המוזרה להישמע מפתיעה ומדויקת."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 30%, #f0e0a0, #caa14a)",
+    emoji:"😲🙇",
+    onscreen:"",
+    say:`השכנים נבהלו והבינו שהעיזים היו ישרות ונקיות לגמרי מגזל. הם התנצלו בפני רבי חנינא.`,
+    cue:"קול נבוך אך כן — ההתנצלות אמיתית."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 30%, #f0e0a0, #caa14a)",
+    emoji:"👨‍🌾🐐🎁",
+    onscreen:"",
+    say:`כעבור זמן, עבר ברחוב איש אחד שאמר לחברו: "פה, לפני שנים, איבדתי תרנגולות קטנות..." רבי חנינא שמע אותו, שאל לסימנים המדויקים, וחייך: "בוא איתי." הוא הראה לו עדר ענק ומפואר של עיזים חזקות. "כל העדר הזה שלך הוא! התרנגולות שלך גדלו, מכרנו אותן, ובכסף קנינו את העיזים האלה."`,
+    cue:"זהו משפט-המפתח — קול חם ושמח, סוגר את המעגל של השמירה."
+  },
+  {
+    bg:"linear-gradient(180deg, #2e1f14, #1a1208)",
+    emoji:"💭🐐🐻",
+    onscreen:"",
+    say:`בואו נחשוב יחד:
+רבי חנינא היה יכול פשוט לקחת את התרנגולות לעצמו כשאף אחד לא בא לחפש אותן — למה לדעתכם הוא לא עשה זאת, גם כשעברו שנים?
+מה זה אומר "יושר וזהירות מגזל" גם כשקשה — למשל כשמישהו מאשים אותנו בטעות?`,
+    cue:"שאלות פתוחות בלבד. תנו זמן אמיתי למחשבה.",
+    peda:true
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f0e0c0, #7d5a30)",
+    emoji:"🧒🤲",
+    onscreen:"",
+    say:`אפשר גם אנחנו לתרגל את זה — כשמוצאים משהו שלא שייך לנו, לשמור עליו בזהירות ולנסות למצוא את מי שאיבד אותו, גם אם זה לוקח זמן.`,
+    cue:"קול רגוע ומזמין, לא מטיף."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f0e0c0, #7d5a30)",
+    emoji:"🐔🐐✨",
+    onscreen:"",
+    say:`זוכרים את התרנגולות הקטנות שהגיעו לחצר בתחילת הסיפור?
+מסתבר שכל מה שנדרש כדי לגדל עדר שלם של עיזים היה מעשה אחד קטן של יושר.
+מה הדבר הקטן שאתם יכולים לעשות היום כדי לשמור על משהו שלא שייך לכם?`,
+    cue:"קול חם וסוגר, מוריד טון בהדרגה. תנו לשאלה האחרונה לרחף.",
+    link:true
+  }
+];
+
+let current = 0;
+
+function render(){
+  const s = slides[current];
+  document.getElementById('visual').style.background = s.bg;
+  document.getElementById('emojiScene').textContent = s.emoji;
+  document.getElementById('onscreenText').textContent = s.onscreen;
+  document.getElementById('onscreenText').style.display = s.onscreen ? 'block' : 'none';
+  document.getElementById('sayText').textContent = s.say;
+  document.getElementById('cueText').textContent = s.cue;
+  document.getElementById('slideCounter').textContent = `כרטיס ${current+1} מתוך ${slides.length}`;
+
+  const peda = document.getElementById('pedaNote');
+  if(s.peda){
+    peda.style.display = 'block';
+    peda.textContent = '💬 הערה פדגוגית: הדגישו שהנס בא כתוצאה מיושר עקבי, לא כתגובה חד-פעמית — רבי חנינא שמר גם לפני שידע שיהיה נס.';
+  } else {
+    peda.style.display = 'none';
+  }
+
+  const link = document.getElementById('linkNote');
+  if(s.link){
+    link.style.display = 'block';
+    link.textContent = '🔗 חיבור: חלק מקבוצת סיפורי רבי חנינא בן דוסא בקטלוג — יחד עם "החמור הצדיק" ו"הפועלים הסודיים".';
+  } else {
+    link.style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.onclick = () => go(i);
+    dots.appendChild(d);
+  });
+}
+
+function go(i){
+  if(i < 0 || i >= slides.length) return;
+  current = i;
+  render();
+}
+
+function toggleMem(show){
+  document.getElementById('memOverlay').classList.toggle('show', show);
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft') go(current + 1);
+  if(e.key === 'ArrowRight') go(current - 1);
+});
+
+render();
+</script>
+</body>
+</html>

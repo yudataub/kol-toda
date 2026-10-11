@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>התינוק שהוחלף בלילה</title>
+<style>
+  :root{
+    --gold:#c9a227;
+    --cream:#fdf6e3;
+    --navy:#1f2a44;
+    --babyc:#5a8c6a;
+    --babyc-light:#d0e8d4;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:var(--navy);
+    color:var(--cream);
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .top-title{
+    font-size:1.1rem;
+    font-weight:bold;
+    color:var(--gold);
+  }
+  .mem-btn{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:0.9rem;
+  }
+  .warn-banner{
+    background:#fff3cd;
+    color:#5a4200;
+    font-size:0.75rem;
+    padding:4px 18px;
+    text-align:center;
+  }
+  .stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .visual{
+    height:43%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    transition:background 0.6s ease;
+    text-align:center;
+    padding:10px;
+  }
+  .emoji-scene{
+    font-size:4rem;
+    margin-bottom:10px;
+    letter-spacing:10px;
+  }
+  .onscreen-text{
+    font-size:1.4rem;
+    font-weight:bold;
+    color:var(--cream);
+    background:rgba(0,0,0,0.35);
+    padding:10px 20px;
+    border-radius:10px;
+    max-width:85%;
+    line-height:1.6;
+  }
+  .panel{
+    flex:1;
+    background:var(--cream);
+    color:var(--navy);
+    padding:18px 24px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .slide-counter{
+    font-size:0.85rem;
+    color:var(--babyc);
+    font-weight:bold;
+  }
+  .say-label, .cue-label{
+    font-weight:bold;
+    font-size:0.95rem;
+    color:var(--babyc);
+  }
+  .say-text{
+    white-space:pre-line;
+    font-size:1.05rem;
+    line-height:1.7;
+    background:var(--babyc-light);
+    padding:12px 16px;
+    border-radius:10px;
+  }
+  .cue-text{
+    white-space:pre-line;
+    font-size:0.95rem;
+    line-height:1.6;
+    font-style:italic;
+    color:#444;
+  }
+  .peda-note{
+    background:#fff3cd;
+    border-right:4px solid #e0a800;
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .link-note{
+    background:#fdeecb;
+    border-right:4px solid var(--gold);
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .nav button{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:10px 18px;
+    font-weight:bold;
+    font-size:1rem;
+    cursor:pointer;
+  }
+  .nav button:disabled{
+    opacity:0.35;
+    cursor:default;
+  }
+  .dots{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:center;
+    max-width:50%;
+  }
+  .dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.3);
+    cursor:pointer;
+  }
+  .dot.active{
+    background:var(--gold);
+  }
+  .mem-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    z-index:10;
+    align-items:center;
+    justify-content:center;
+  }
+  .mem-overlay.show{display:flex;}
+  .mem-box{
+    background:var(--cream);
+    color:var(--navy);
+    max-width:600px;
+    width:90%;
+    max-height:80vh;
+    overflow-y:auto;
+    border-radius:14px;
+    padding:24px;
+  }
+  .mem-box h2{
+    color:var(--babyc);
+    margin-bottom:14px;
+  }
+  .mem-box table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:16px;
+  }
+  .mem-box th, .mem-box td{
+    border:1px solid #ccc;
+    padding:6px 10px;
+    text-align:right;
+    font-size:0.9rem;
+  }
+  .mem-box th{
+    background:var(--babyc-light);
+  }
+  .close-mem{
+    background:var(--babyc);
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-weight:bold;
+  }
+</style>
+<meta property="og:title" content="התינוק שהוחלף בלילה">
+<meta property="og:description" content="התינוק שהוחלף בלילה">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-99915526.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/99915526.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-title">התינוק שהוחלף בלילה</div>
+  <button class="mem-btn" onclick="toggleMem(true)">🎯 טבלת זיכרון מהירה</button>
+</div>
+<div class="warn-banner">⚠️ הידידות רבי-אנטונינוס מתועדת בחז"ל; סיפור ההחלפה עצמו נראה כעיבוד עממי.</div>
+
+<div class="stage">
+  <div class="visual" id="visual">
+    <div class="emoji-scene" id="emojiScene"></div>
+    <div class="onscreen-text" id="onscreenText"></div>
+  </div>
+  <div class="panel">
+    <div class="slide-counter" id="slideCounter"></div>
+    <div class="say-label">🗣️ אתה אומר</div>
+    <div class="say-text" id="sayText"></div>
+    <div class="cue-label">🎭 כיווני ביצוע</div>
+    <div class="cue-text" id="cueText"></div>
+    <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    <div class="link-note" id="linkNote" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="go(current-1)">◀ הקודם</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn" onclick="go(current+1)">הבא ▶</button>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>1-2</td><td>הגזירה והברית בסתר</td><td>סכנה</td></tr>
+      <tr><td>4-5</td><td>הפונדק והאישה הרומאית</td><td>רחמים</td></tr>
+      <tr><td>6</td><td>הצעת ההחלפה</td><td>חכמה ואומץ</td></tr>
+      <tr><td>7-8</td><td>הבדיקה מול הקיסר</td><td>שתיקה / כרטיס שיא</td></tr>
+      <tr><td>10</td><td>הידידות שנולדה</td><td>רבי ואנטונינוס</td></tr>
+    </table>
+    <p style="margin-bottom:10px; background:#fff3cd; padding:8px; border-radius:6px;"><b>⚠️ הערת מקור:</b> הידידות ההיסטורית בין רבי לאנטונינוס מתועדת בחז"ל, אך סיפור ההחלפה הספציפי הוא כנראה עיבוד עממי. הציגו כ"כך מספרים שהתחילה הידידות".</p>
+    <p style="margin-bottom:14px;"><b>🔗 חיבור לסיפורים קודמים:</b> עוסק בהצלת חיים בזמן גזירות רומאיות, כמו סיפורים נוספים בסדרה.</p>
+    <button class="close-mem" onclick="toggleMem(false)">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg:"linear-gradient(180deg, #4a4a5c, #1f2a44)",
+    emoji:"🏠😟",
+    onscreen:"",
+    say:`השקט בביתו של נשיא ישראל, רבן שמעון בן גמליאל, היה מלא בדאגה עמוקה. השלטון הרומאי הקשה גזר גזירה איומה: אסור לשום אב יהודי לעשות ברית מילה לבנו הקטן! מי שיעבור על הגזירה, דינו מוות.`,
+    cue:"קול כבד ורציני — תארו את הגזירה כאיום ממשי ומפחיד."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #d0e8d4, #5a8c6a)",
+    emoji:"👶🤫💛",
+    onscreen:"",
+    say:`אך רבן שמעון ואשתו הצדקת לא הססו אפילו לרגע. כאשר נולד להם בנם הקטן והחמוד, הם חגגו את ברית המילה בלאט וקראו את שמו יהודה. הם שמחו מאוד, אך השמחה לא ארכה זמן רב.`,
+    cue:"קול שמח אך זהיר — תנו לניגוד בין השמחה לסכנה להישמע ברור."
+  },
+  {
+    bg:"linear-gradient(180deg, #6a3a3a, #2a1414)",
+    emoji:"😠⚔️",
+    onscreen:"",
+    say:`שר העיר הרומאי גילה את הסוד. הוא כעס מאוד, אסר את ההורים הקדושים, וציווה לשלוח אותם יחד עם התינוק אל הקיסר ברומא, כדי שיגזור עליהם עונש מוות.`,
+    cue:"קול כועס ומאיים — תארו את הגזירה החדשה כמפחידה ביותר."
+  },
+  {
+    bg:"linear-gradient(180deg, #8a6a5a, #4a3a2c)",
+    emoji:"🏨🚶‍♂️🚶‍♀️",
+    onscreen:"",
+    say:`הדרך לרומא הייתה ארוכה ומעייפת. בסוף יום הליכה מפרך, הגיעה המשפחה יחד עם השומרים אל פונדק דרכים קטן ונעים כדי ללון בו.`,
+    cue:"קול עייף ומדוד — תארו את המסע הקשה בקצב איטי."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #d0e8d4, #5a8c6a)",
+    emoji:"👩‍🍼😢💛",
+    onscreen:"",
+    say:`בפונדק ישבה אישה רומאית צעירה וטובת לב שילדה גם היא תינוק באותו שבוע. כאשר ראתה את אם התינוק היהודי בוכה בדמעות שליש, נכמרו רחמיה.
+מה אתם חושבים האישה הרומאית תעשה? (עצירה)`,
+    cue:"קול חם ואמפתי — תנו לרחמים שלה להישמע אמיתיים וחוצי-גבולות."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f0dbb0, #c78a3d)",
+    emoji:"🤫👶👶",
+    onscreen:"",
+    say:`חשבה האישה הרומאית ומצאה פתרון מדהים: "שמעי נא לי! התינוק שלי לא עבר ברית מילה. בואי נחליף בין התינוקות ללילה! קחי את בני אנטונינוס אל הקיסר, ואני אשמור על בנך יהודה אצלי."`,
+    cue:"קול נדיב ומלא רעיון פתאומי — תנו לחכמת ההצעה להישמע כתגלית מרגשת."
+  },
+  {
+    bg:"#0d1526",
+    emoji:"👑👶",
+    onscreen:"",
+    say:`כך היה. בבוקר, יצאה המשפחה לרומא כשבידם התינוק הרומאי הקטן.
+כאשר עמדו לפני הקיסר, קרא בכעס: "האם מלתם את בנכם?"
+"לא ולא!" ענה רבן שמעון בביטחון, "התינוק איננו מהול!"
+(עצירה של 2–3 שניות)`,
+    cue:"שתיקה קצרה לפני הבדיקה — תנו לרגע המתח להישמע אמיתי."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #d0e8d4, #5a8c6a)",
+    emoji:"😲👨‍⚖️",
+    onscreen:"",
+    say:`הקיסר ציווה לבדוק את הילד מיד. השופטים הביטו, ולתדהמתם ראו תינוק רגיל לגמרי. הקיסר כעס על שר העיר ששיקר לו, שחרר את רבן שמעון ואשתו לשלום, וביטל את הגזירה בכל המלכות.`,
+    cue:"קול נדהם ואז כעס מוצדק כלפי השר — הקלה שקטה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #d0e8d4, #5a8c6a)",
+    emoji:"🤗👶👶",
+    onscreen:"",
+    say:`ההורים המאושרים חזרו במהירות אל הפונדק, החזירו את אנטונינוס לאמו הטובה וקיבלו בחיבוק ובנשיקות את בנם יהודה.`,
+    cue:"קול חם ומרגש — תנו לרגע ההחזרה ההדדית להישמע כסגירת מעגל."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f0dbb0, #c78a3d)",
+    emoji:"👑📖🤝",
+    onscreen:"",
+    say:`מאותו הלילה נקשר קשר אמיץ של אהבה וידידות בין שני התינוקות. כאשר גדלו, הפך יהודה לרבי יהודה הנשיא הקדוש, ואנטונינוס הפך לקיסר רומא. אנטונינוס אהב וכיבד את רבי כל חייו.`,
+    cue:"קול חם ומספר-סיפור, כמו סיכום היסטורי מרתק."
+  },
+  {
+    bg:"linear-gradient(180deg, #1f2a44, #14203a)",
+    emoji:"💭👶👶",
+    onscreen:"",
+    say:`בואו נחשוב יחד:
+האישה הרומאית סיכנה משהו כדי לעזור למשפחה יהודית זרה — למה זה מלמד אותנו שחסד יכול לחצות גבולות בין עמים?
+מה זה אומר שידידות גדולה יכולה להתחיל ממעשה חסד קטן וסודי?`,
+    cue:"שאלות פתוחות בלבד. תנו זמן אמיתי למחשבה.",
+    peda:true
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #d0e8d4, #5a8c6a)",
+    emoji:"🧒🌍🤝",
+    onscreen:"",
+    say:`אפשר גם אנחנו לזכור שחסד ואדיבות יכולים ליצור חברות אמיתית, גם עם מי ששונה מאיתנו לגמרי.`,
+    cue:"קול רגוע ומזמין, לא מטיף."
+  },
+  {
+    bg:"linear-gradient(180deg, #4a4a5c, #1f2a44)",
+    emoji:"🏠👶😊",
+    onscreen:"",
+    say:`זוכרים את הדאגה הכבדה שמילאה את הבית בתחילת הסיפור?
+מסתבר שההצלה הגיעה ממקום הכי לא צפוי — מאישה זרה שהחליטה לעזור, פשוט כי היא ראתה מישהי בוכה.
+מה הדבר הקטן שאתם יכולים לעשות היום כדי לעזור למישהו, גם אם הוא שונה מכם?`,
+    cue:"קול חם וסוגר, מוריד טון בהדרגה. תנו לשאלה האחרונה לרחף.",
+    link:true
+  }
+];
+
+let current = 0;
+
+function render(){
+  const s = slides[current];
+  document.getElementById('visual').style.background = s.bg;
+  document.getElementById('emojiScene').textContent = s.emoji;
+  document.getElementById('onscreenText').textContent = s.onscreen;
+  document.getElementById('onscreenText').style.display = s.onscreen ? 'block' : 'none';
+  document.getElementById('sayText').textContent = s.say;
+  document.getElementById('cueText').textContent = s.cue;
+  document.getElementById('slideCounter').textContent = `כרטיס ${current+1} מתוך ${slides.length}`;
+
+  const peda = document.getElementById('pedaNote');
+  if(current === 10){
+    peda.style.display = 'block';
+    peda.textContent = '💬 הערה פדגוגית: הציגו כ"כך מספרים שהתחילה הידידות" — לא כעובדה תלמודית מוכחת.';
+  } else {
+    peda.style.display = 'none';
+  }
+
+  const link = document.getElementById('linkNote');
+  if(current === 12){
+    link.style.display = 'block';
+    link.textContent = '🔗 חיבור: הצלת חיים בזמן גזירות רומאיות, כמו סיפורים נוספים בסדרה.';
+  } else {
+    link.style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.onclick = () => go(i);
+    dots.appendChild(d);
+  });
+}
+
+function go(i){
+  if(i < 0 || i >= slides.length) return;
+  current = i;
+  render();
+}
+
+function toggleMem(show){
+  document.getElementById('memOverlay').classList.toggle('show', show);
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft') go(current + 1);
+  if(e.key === 'ArrowRight') go(current - 1);
+});
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>הסחורה הזולה של אונקלוס</title>
+<style>
+  :root{
+    --gold:#c9a227;
+    --cream:#fdf6e3;
+    --navy:#1f2a44;
+    --royalp:#7a4a8c;
+    --royalp-light:#e5d0ec;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:var(--navy);
+    color:var(--cream);
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .top-title{
+    font-size:1.1rem;
+    font-weight:bold;
+    color:var(--gold);
+  }
+  .mem-btn{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:0.9rem;
+  }
+  .stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .visual{
+    height:45%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    transition:background 0.6s ease;
+    text-align:center;
+    padding:10px;
+  }
+  .emoji-scene{
+    font-size:4rem;
+    margin-bottom:10px;
+    letter-spacing:10px;
+  }
+  .onscreen-text{
+    font-size:1.4rem;
+    font-weight:bold;
+    color:var(--cream);
+    background:rgba(0,0,0,0.35);
+    padding:10px 20px;
+    border-radius:10px;
+    max-width:85%;
+    line-height:1.6;
+  }
+  .panel{
+    flex:1;
+    background:var(--cream);
+    color:var(--navy);
+    padding:18px 24px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .slide-counter{
+    font-size:0.85rem;
+    color:var(--royalp);
+    font-weight:bold;
+  }
+  .say-label, .cue-label{
+    font-weight:bold;
+    font-size:0.95rem;
+    color:var(--royalp);
+  }
+  .say-text{
+    white-space:pre-line;
+    font-size:1.05rem;
+    line-height:1.7;
+    background:var(--royalp-light);
+    padding:12px 16px;
+    border-radius:10px;
+  }
+  .cue-text{
+    white-space:pre-line;
+    font-size:0.95rem;
+    line-height:1.6;
+    font-style:italic;
+    color:#444;
+  }
+  .peda-note{
+    background:#fff3cd;
+    border-right:4px solid #e0a800;
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .link-note{
+    background:#fdeecb;
+    border-right:4px solid var(--gold);
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .nav button{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:10px 18px;
+    font-weight:bold;
+    font-size:1rem;
+    cursor:pointer;
+  }
+  .nav button:disabled{
+    opacity:0.35;
+    cursor:default;
+  }
+  .dots{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:center;
+    max-width:50%;
+  }
+  .dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.3);
+    cursor:pointer;
+  }
+  .dot.active{
+    background:var(--gold);
+  }
+  .mem-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    z-index:10;
+    align-items:center;
+    justify-content:center;
+  }
+  .mem-overlay.show{display:flex;}
+  .mem-box{
+    background:var(--cream);
+    color:var(--navy);
+    max-width:600px;
+    width:90%;
+    max-height:80vh;
+    overflow-y:auto;
+    border-radius:14px;
+    padding:24px;
+  }
+  .mem-box h2{
+    color:var(--royalp);
+    margin-bottom:14px;
+  }
+  .mem-box table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:16px;
+  }
+  .mem-box th, .mem-box td{
+    border:1px solid #ccc;
+    padding:6px 10px;
+    text-align:right;
+    font-size:0.9rem;
+  }
+  .mem-box th{
+    background:var(--royalp-light);
+  }
+  .close-mem{
+    background:var(--royalp);
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-weight:bold;
+  }
+</style>
+<meta property="og:title" content="הסחורה הזולה של אונקלוס">
+<meta property="og:description" content="הסחורה הזולה של אונקלוס">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-4c960b66.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/4c960b66.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-title">הסחורה הזולה של אונקלוס</div>
+  <button class="mem-btn" onclick="toggleMem(true)">🎯 טבלת זיכרון מהירה</button>
+</div>
+
+<div class="stage">
+  <div class="visual" id="visual">
+    <div class="emoji-scene" id="emojiScene"></div>
+    <div class="onscreen-text" id="onscreenText"></div>
+  </div>
+  <div class="panel">
+    <div class="slide-counter" id="slideCounter"></div>
+    <div class="say-label">🗣️ אתה אומר</div>
+    <div class="say-text" id="sayText"></div>
+    <div class="cue-label">🎭 כיווני ביצוע</div>
+    <div class="cue-text" id="cueText"></div>
+    <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    <div class="link-note" id="linkNote" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="go(current-1)">◀ הקודם</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn" onclick="go(current+1)">הבא ▶</button>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>2-3</td><td>עצת הקיסר</td><td>"סחורה זולה שתעלה בערכה"</td></tr>
+      <tr><td>5</td><td>הגילוי בירושלים</td><td>תורה ואמונה</td></tr>
+      <tr><td>6</td><td>הגיור והלימוד</td><td>תרגום אונקלוס</td></tr>
+      <tr><td>7-8</td><td>זעם הקיסר</td><td>שתיקה / כרטיס שיא</td></tr>
+      <tr><td>9</td><td>משפט המפתח</td><td>"העסק הטוב ביותר בחיי"</td></tr>
+    </table>
+    <p style="margin-bottom:10px;"><b>💬 הערה פדגוגית:</b> אונקלוס הוא מחבר "תרגום אונקלוס" — התרגום הארמי המפורסם לתורה, שנלמד עד היום. זה מחבר את הסיפור להיבט מוחשי בחיי הלימוד.</p>
+    <p style="margin-bottom:14px;"><b>🔗 חיבור לסיפורים קודמים:</b> כמו ב"הסחורה הטובה ביותר" — אותה מטאפורה בדיוק: תורה כ"סחורה" שערכה מתגלה בעתיד.</p>
+    <p style="margin-bottom:14px; font-size:0.85rem; color:#666;"><b>✅ מקור:</b> עבודה זרה יא ע"א — סיפור מאומת ונאמן למקור.</p>
+    <button class="close-mem" onclick="toggleMem(false)">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg:"radial-gradient(circle at 50% 35%, #e5d0ec, #7a4a8c)",
+    emoji:"🏛️👑💰",
+    onscreen:"",
+    say:`אונקלוס היה נסיך רומאי עשיר מאוד, בן אחותו של הקיסר אדריאנוס. הוא גדל בתוך ארמון מפואר ומלא משרתים וזהב, אך נשמתו הגבוהה תמיד חיפשה את האמת הקדושה והפשוטה של הבורא.`,
+    cue:"קול מרשים לתיאור הארמון, ואז רך יותר כשמדובר בחיפוש הפנימי."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #e5d0ec, #7a4a8c)",
+    emoji:"🗣️👑",
+    onscreen:"",
+    say:`יום אחד, נכנס אונקלוס אל דודו הקיסר.
+"דודי המלך," פנה אליו בנעימות, "למדתי שפות ומדעים, אך כעת אני רוצה לצאת אל העולם ולעסוק במסחר. תן לי עצה טובה: איזו סחורה כדאי לי לקנות כדי להצליח ולהרוויח?"`,
+    cue:"קול מנומס וסקרן — תארו את אונקלוס כצעיר רציני שרוצה עצה אמיתית."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #c9a227, #6b4a12)",
+    emoji:"👑😏💡",
+    onscreen:"",
+    say:`הקיסר חייך בהנאה והשיב: "בני, קח זהב ככל שתרצה מאוצרותי. אך אם את עצתי אתה מבקש — חפש תמיד סחורה זולה מאוד, שכעת אנשים אינם מכירים בערכה. קנה אותה בזיל הזול, ובעתיד הבריות יבינו כמה היא יקרה!"
+מה אתם חושבים אונקלוס יבחר לקנות? (עצירה)`,
+    cue:"קול חכם ומרוצה מעצמו לקיסר. השאלה בטון סקרן."
+  },
+  {
+    bg:"linear-gradient(180deg, #7a4a8c, #2a1c3a)",
+    emoji:"🚶‍♂️🛤️",
+    onscreen:"",
+    say:`אונקלוס הודה לו, נפרד ממנו ויצא לדרך.`,
+    cue:"קול קצר וממוקד — תנו לתחושת ההחלטה הפנימית להישמע ברורה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #e8c99a, #8a5a2b)",
+    emoji:"🏛️📖💛",
+    onscreen:"",
+    say:`אך אונקלוס לא חיפש בגדים יקרים או כלי נחושת. הוא נסע ישר אל ירושלים החרבה. שם, הוא פגש את עם ישראל העני, הסובל והמושפל תחת עול המלכות. הוא ראה שלמרות הקושי הגשמי, יש להם את האוצר הגדול והנצחי מכל — את התורה והאמונה בה'.`,
+    cue:"קול נוגע ומתפעל — תארו את הגילוי כמו רגע של תובנה עמוקה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #e5d0ec, #7a4a8c)",
+    emoji:"📚🧔✍️",
+    onscreen:"",
+    say:`אונקלוס גמל בלבו להתגייר. הוא הלך אל התנאים הקדושים, רבי אליעזר ורבי יהושע, והפך ליהודי בשמחה עצומה ובדבקות. הוא שקד על הלימוד יומם ולילה בענווה, עד שנהיה בקיא וחכם עצום, ואף כתב את התרגום המפורסם שלו לתורה.`,
+    cue:"קול חם ומתמסר — תנו למאמץ של השקידה להישמע כמו מסירות אמיתית."
+  },
+  {
+    bg:"#0d1526",
+    emoji:"😠👑",
+    onscreen:"",
+    say:`כשהקיסר אדריאנוס שמע שבן אחותו הפך ליהודי, הוא נתמלא חמה וזעם, וקרא לו למשפט ברומא.
+(עצירה של 2–3 שניות)`,
+    cue:"שתיקה קצרה — תנו לרגע הזעם להישמע כאיום ממשי."
+  },
+  {
+    bg:"linear-gradient(180deg, #6a3a4a, #2a1414)",
+    emoji:"😡👑👉",
+    onscreen:"",
+    say:`"מדוע עשית זאת?!" כעס הקיסר. "עזבת את מלכות רומא ודבקת בעם היהודי המושפל והעני הזה, שסובל ייסורים מכל העמים?!"`,
+    cue:"קול זועם וסוער — תנו לכעס להישמע אמיתי, מלכותי ומאיים."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #e5d0ec, #7a4a8c)",
+    emoji:"😌🧔💎",
+    onscreen:"\"עָשִׂיתִי אֶת הָעֵסֶק הַטּוֹב בְּיוֹתֵר בְּחַיַּי!\"",
+    say:`הביט בו אונקלוס בשלווה ובחיוך מאיר, וענה:
+"דודי היקר, אני עשיתי בדיוק כפי העצה החכמה שנתת לי! אתה אמרת לי לקנות סחורה זולה שכעת אף אחד לא רוצה בה — וזהו עם ישראל. אך נביאי האמת הבטיחו שבעתיד כל העולם יבין את קדושתם, ואז הסחורה הזו תעלה לגדולה ולעושר נצחי! עשיתי את העסק הטוב ביותר בחיי!"`,
+    cue:"משפט-המפתח המרכזי — קול בטוח, חכם ומלא סיפוק."
+  },
+  {
+    bg:"linear-gradient(180deg, #1f2a44, #14203a)",
+    emoji:"💭🏛️📖",
+    onscreen:"",
+    say:`בואו נחשוב יחד:
+אונקלוס ראה בעם ישראל "סחורה זולה שאף אחד לא רוצה בה" — למה זו הייתה בעיניו סחורה כל כך יקרה?
+מה זה אומר להשקיע בדבר שאחרים לא מעריכים, כי אתה יודע את הערך האמיתי שלו?`,
+    cue:"שאלות פתוחות בלבד. תנו זמן אמיתי למחשבה.",
+    peda:true
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #e5d0ec, #7a4a8c)",
+    emoji:"🧒💛",
+    onscreen:"",
+    say:`אפשר גם אנחנו, לפעמים, לבחור מה שחשוב לנו באמת — גם אם זה לא מה שכולם סביבנו חושבים שהכי "שווה".`,
+    cue:"קול רגוע ומזמין, לא מטיף."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #e5d0ec, #7a4a8c)",
+    emoji:"🏛️😌✨",
+    onscreen:"",
+    say:`זוכרים את אונקלוס הנסיך העשיר מתחילת הסיפור, שגדל בארמון מלא זהב?
+מסתבר שהעצה של דודו הקיסר, שנועדה להעשיר אותו בכסף, הובילה אותו לעושר גדול הרבה יותר.
+מה הדבר שאתם חושבים שיקר באמת, גם אם אחרים לא רואים בו ערך?`,
+    cue:"קול חם וסוגר, מוריד טון בהדרגה. תנו לשאלה האחרונה לרחף.",
+    link:true
+  }
+];
+
+let current = 0;
+
+function render(){
+  const s = slides[current];
+  document.getElementById('visual').style.background = s.bg;
+  document.getElementById('emojiScene').textContent = s.emoji;
+  document.getElementById('onscreenText').textContent = s.onscreen;
+  document.getElementById('onscreenText').style.display = s.onscreen ? 'block' : 'none';
+  document.getElementById('sayText').textContent = s.say;
+  document.getElementById('cueText').textContent = s.cue;
+  document.getElementById('slideCounter').textContent = `כרטיס ${current+1} מתוך ${slides.length}`;
+
+  const peda = document.getElementById('pedaNote');
+  if(current === 9){
+    peda.style.display = 'block';
+    peda.textContent = '💬 הערה פדגוגית: אונקלוס הוא מחבר "תרגום אונקלוס" — נלמד עד היום.';
+  } else {
+    peda.style.display = 'none';
+  }
+
+  const link = document.getElementById('linkNote');
+  if(current === 11){
+    link.style.display = 'block';
+    link.textContent = '🔗 חיבור: כמו ב"הסחורה הטובה ביותר" — אותה מטאפורה: תורה כ"סחורה" שערכה מתגלה בעתיד.';
+  } else {
+    link.style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.onclick = () => go(i);
+    dots.appendChild(d);
+  });
+}
+
+function go(i){
+  if(i < 0 || i >= slides.length) return;
+  current = i;
+  render();
+}
+
+function toggleMem(show){
+  document.getElementById('memOverlay').classList.toggle('show', show);
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft') go(current + 1);
+  if(e.key === 'ArrowRight') go(current - 1);
+});
+
+render();
+</script>
+</body>
+</html>

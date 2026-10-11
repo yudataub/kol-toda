@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>הקנה הרך והארז הקשה</title>
+<style>
+  :root{
+    --gold:#c9a227;
+    --cream:#fdf6e3;
+    --navy:#1f2a44;
+    --reed:#5a9c6a;
+    --reed-light:#cfe8d0;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:var(--navy);
+    color:var(--cream);
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .top-title{
+    font-size:1.1rem;
+    font-weight:bold;
+    color:var(--gold);
+  }
+  .mem-btn{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:0.9rem;
+  }
+  .stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .visual{
+    height:45%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    transition:background 0.6s ease;
+    text-align:center;
+    padding:10px;
+  }
+  .emoji-scene{
+    font-size:4rem;
+    margin-bottom:10px;
+    letter-spacing:10px;
+  }
+  .onscreen-text{
+    font-size:1.4rem;
+    font-weight:bold;
+    color:var(--cream);
+    background:rgba(0,0,0,0.35);
+    padding:10px 20px;
+    border-radius:10px;
+    max-width:85%;
+    line-height:1.6;
+  }
+  .panel{
+    flex:1;
+    background:var(--cream);
+    color:var(--navy);
+    padding:18px 24px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .slide-counter{
+    font-size:0.85rem;
+    color:var(--reed);
+    font-weight:bold;
+  }
+  .say-label, .cue-label{
+    font-weight:bold;
+    font-size:0.95rem;
+    color:var(--reed);
+  }
+  .say-text{
+    white-space:pre-line;
+    font-size:1.05rem;
+    line-height:1.7;
+    background:var(--reed-light);
+    padding:12px 16px;
+    border-radius:10px;
+  }
+  .cue-text{
+    white-space:pre-line;
+    font-size:0.95rem;
+    line-height:1.6;
+    font-style:italic;
+    color:#444;
+  }
+  .peda-note{
+    background:#fff3cd;
+    border-right:4px solid #e0a800;
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .link-note{
+    background:#fdeecb;
+    border-right:4px solid var(--gold);
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .nav button{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:10px 18px;
+    font-weight:bold;
+    font-size:1rem;
+    cursor:pointer;
+  }
+  .nav button:disabled{
+    opacity:0.35;
+    cursor:default;
+  }
+  .dots{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:center;
+    max-width:50%;
+  }
+  .dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.3);
+    cursor:pointer;
+  }
+  .dot.active{
+    background:var(--gold);
+  }
+  .mem-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    z-index:10;
+    align-items:center;
+    justify-content:center;
+  }
+  .mem-overlay.show{display:flex;}
+  .mem-box{
+    background:var(--cream);
+    color:var(--navy);
+    max-width:600px;
+    width:90%;
+    max-height:80vh;
+    overflow-y:auto;
+    border-radius:14px;
+    padding:24px;
+  }
+  .mem-box h2{
+    color:var(--reed);
+    margin-bottom:14px;
+  }
+  .mem-box table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:16px;
+  }
+  .mem-box th, .mem-box td{
+    border:1px solid #ccc;
+    padding:6px 10px;
+    text-align:right;
+    font-size:0.9rem;
+  }
+  .mem-box th{
+    background:var(--reed-light);
+  }
+  .close-mem{
+    background:var(--reed);
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-weight:bold;
+  }
+</style>
+<meta property="og:title" content="הקנה הרך והארז הקשה">
+<meta property="og:description" content="הקנה הרך והארז הקשה">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-24e696f5.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/24e696f5.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-title">הקנה הרך והארז הקשה</div>
+  <button class="mem-btn" onclick="toggleMem(true)">🎯 טבלת זיכרון מהירה</button>
+</div>
+
+<div class="stage">
+  <div class="visual" id="visual">
+    <div class="emoji-scene" id="emojiScene"></div>
+    <div class="onscreen-text" id="onscreenText"></div>
+  </div>
+  <div class="panel">
+    <div class="slide-counter" id="slideCounter"></div>
+    <div class="say-label">🗣️ אתה אומר</div>
+    <div class="say-text" id="sayText"></div>
+    <div class="cue-label">🎭 כיווני ביצוע</div>
+    <div class="cue-text" id="cueText"></div>
+    <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    <div class="link-note" id="linkNote" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="go(current-1)">◀ הקודם</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn" onclick="go(current+1)">הבא ▶</button>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>1-2</td><td>הגאווה של רבי שמעון</td><td>ארז קשה</td></tr>
+      <tr><td>5</td><td>הלעג</td><td>"כמה מכוער"</td></tr>
+      <tr><td>7</td><td>תשובת האיש</td><td>שתיקה / כרטיס שיא — "לך אל האומן"</td></tr>
+      <tr><td>8-9</td><td>ההבנה והבקשה על ברכיים</td><td>שבירת הגאווה</td></tr>
+      <tr><td>11-15</td><td>המסע והסליחה</td><td>תיקון אמיתי</td></tr>
+      <tr><td>16</td><td>הדרשה</td><td>קנה רך</td></tr>
+    </table>
+    <p style="margin-bottom:10px;"><b>💬 הערה פדגוגית:</b> חשוב להסביר שהסיפור לא "לועג" למראה החיצוני — אלא בדיוק להיפך: מלמד שביוש על מראה חיצוני הוא חטא חמור, כי הוא פוגע ב"יצירת" הקדוש ברוך הוא.</p>
+    <p style="margin-bottom:14px;"><b>🔗 חיבור לסיפורים קודמים:</b> כמו שראינו כמה כואב לבייש ולשתוק (קמצא ובר קמצא) — כאן דוגמה לתיקון אמיתי.</p>
+    <button class="close-mem" onclick="toggleMem(false)">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg:"linear-gradient(180deg, #4a90a4, #1f2a44)",
+    emoji:"🫏🌊😤",
+    onscreen:"",
+    say:`רבי שמעון בן אלעזר רכב על חמורו הנעים וטייל לאורך נהר המים הזורם. לבו היה מלא בשמחה עצומה ובגאווה רבה, מפני שזה עתה חזר מבית מדרשו של רבו, שם למד תורה הרבה והפליא את כולם בחכמתו הקדושה.`,
+    cue:"קול שמח ומתגאה — תנו לילדים להרגיש את הסיפוק העצמי, בלי לשפוט אותו עדיין."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #6b8a5a, #2a3a1c)",
+    emoji:"🌲😤",
+    onscreen:"",
+    say:`הוא הרגיש שהוא יודע הכל, שהוא מרומם מעל כולם, וראשו היה מורם אל על כמו ארז חזק וקשה.`,
+    cue:"קול מודגש על 'ארז חזק וקשה' — מטאפורה שתחזור בסוף, הטעימו אותה כבר כאן."
+  },
+  {
+    bg:"linear-gradient(180deg, #6b6b6b, #2a2a2a)",
+    emoji:"🧑‍🦲❓",
+    onscreen:"",
+    say:`לפתע, נזדמן — הגיע מולו בשביל — אדם אחד.
+האיש הזה היה מכוער ביותר. פניו היו מעוותות, אפו עקום ועורו חיוור ומלא צלקות. הוא נראה כמו יצור מסוכן ומוזר.
+מה אתם חושבים שקרה כשרבי שמעון ראה אותו? (עצירה)`,
+    cue:"תארו את המראה בזהירות ובלי לעג. השאלה בטון תוהה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #cfe8d0, #5a9c6a)",
+    emoji:"🙂👋",
+    onscreen:"\"שָׁלוֹם עָלֶיךָ, רַבִּי!\"",
+    say:`האיש הביט ברב, ובקול פשוט ונעים פנה אליו: "שלום עליך, רבי!"`,
+    cue:"קול חם ופשוט — תנו לברכה להישמע נעימה ותמימה לגמרי."
+  },
+  {
+    bg:"linear-gradient(180deg, #8c3a2e, #3a1414)",
+    emoji:"😠👉",
+    onscreen:"\"כַּמָּה מְכֹעָר הוּא הָאָדָם הַזֶּה!\"",
+    say:`אך רבי שמעון, שהיה מלא בגאווה של הלימוד שלו, לא החזיר לו שלום. הוא הביט בו בבוז ובגערה, ובמקום לסעד אותו בסבר פנים יפות, פלט בלעג: "ריקא! כמה מכוער הוא האדם הזה! שמא כל בני עירך מכוערים כמוך?"`,
+    cue:"קול קשה וזלזלני — זהו רגע קשה, אך חשוב שיישמע אמיתי כדי שהלקח יורגש."
+  },
+  {
+    bg:"linear-gradient(180deg, #4a4a5c, #1f2a44)",
+    emoji:"😔💔",
+    onscreen:"",
+    say:`האיש נפגע עד עומק נשמתו. דבריו הקשים של הרב המכובד חדרו כחיצים ללבו. אך הוא לא צעק ולא הכה שוב. הוא הביט ברבי שמעון בעיניים עצובות וחכמות, וענה לו בשקט חד רועד.`,
+    cue:"האטה משמעותית — קול רך אך נחוש, בונה למשפט התשובה הבא."
+  },
+  {
+    bg:"#0d1526",
+    emoji:"🧑‍🦲",
+    onscreen:"\"לֵךְ נָא אֶל הָאֻמָּן שֶׁבְּרָאָנִי\"",
+    say:`"אינני יודע אם כולם כמוני... אך אם המראה שלי מכעיס אותך, לך נא אל האומן — אל היוצר הקדוש שברא אותי — ואמור לו: 'כמה מכוער כלי זה שעשית!'"
+(עצירה של 2–3 שניות)`,
+    cue:"קראו את התשובה לאט ובבירור — משפט-המפתח הראשון. אחריו שתיקה מלאה."
+  },
+  {
+    bg:"linear-gradient(180deg, #4a3a2e, #1f2a44)",
+    emoji:"😳💥",
+    onscreen:"",
+    say:`ברגע ששמע רבי שמעון את הדברים האלה, הרגיש כאילו קומקום של מים חמים נשפך על גופו. הגאווה שלו נשברה בבת אחת. הוא הבין את החטא הנורא שעשה: הוא זלזל ביציר כפיו של הקדוש ברוך הוא!`,
+    cue:"קול נדהם ואז שבור — תנו למשפט 'הגאווה שלו נשברה' להישמע כמו התפכחות ממשית."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #cfe8d0, #5a9c6a)",
+    emoji:"🙇‍♂️😭",
+    onscreen:"",
+    say:`הוא ירד מיד מן החמור, נפל על ברכיו לפני האיש המכוער, בכה בבכי תמרורים והתחנן: "סלח לי, בני! חטאתי, עוויתי, פשעתי לפניך! אני מתחנן שתמחל לי!"`,
+    cue:"קול נשבר ומתחנן באמת — הראו שרבי שמעון לא מתבייש להתבזות לבקשת סליחה."
+  },
+  {
+    bg:"linear-gradient(180deg, #4a4a5c, #1f2a44)",
+    emoji:"🚫🚶",
+    onscreen:"",
+    say:`אך האיש הפגוע סירב: "אינני מוחל לך, עד שתלך אל אומני שעשאני ותאמר לו כמה מכוער הכלי שיצר!"`,
+    cue:"קול נחוש אך לא נקמני — האיש לא מנצל את הרגע, הוא דורש תיקון אמיתי."
+  },
+  {
+    bg:"linear-gradient(90deg, #6b8a5a, #4a90a4, #6b8a5a)",
+    emoji:"🚶‍♂️🚶‍♂️🏘️",
+    onscreen:"",
+    say:`רבי שמעון לא ויתר. הוא הלך ברגל אחרי האיש כל הדרך עד שהגיעו אל העיר שלו.`,
+    cue:"קול מתמשך — תנו לילדים להבין שזה מסע ארוך ומאמץ אמיתי."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f0dbb0, #c78a3d)",
+    emoji:"👏🧔👥",
+    onscreen:"\"שָׁלוֹם עָלֶיךָ, רַבִּי!\"",
+    say:`כשנכנסו בשער, יצאו כל בני העיר לקראתו של רבי שמעון בכבוד וקראו: "שלום עליך, רבי, מורי ורבנו!"
+פנה אליהם האיש המכוער ושאל: "למי אתם קוראים מורי ורבנו? לזה שהולך אחרי?"`,
+    cue:"קול מכובד ומופתע — תנו לניגוד בין הכבוד לתושבים למצב הנוכחי של רבי שמעון להישמע ברור."
+  },
+  {
+    bg:"linear-gradient(180deg, #6b6b6b, #2a2a2a)",
+    emoji:"😲🗣️",
+    onscreen:"",
+    say:`"הן," ענו התושבים, "זהו גדול הדור!"
+אמר להם: "אם זה רבי — אל ירבו כמותו בישראל! ראו מה עשה לי בדרך וכיצד ביים אותי!"`,
+    cue:"קול מופתע ואז חמור — תארו את הבושה הציבורית של רבי שמעון בעדינות."
+  },
+  {
+    bg:"linear-gradient(180deg, #6b6b6b, #3a3a3a)",
+    emoji:"🙏👥",
+    onscreen:"",
+    say:`הצטערו התושבים מאוד ופנו אל האיש בבקשת רחמים: "מחל לו, אנו מתחננים! שכן אדם גדול בתורה הוא ומשגגה יצאה מלפניו."`,
+    cue:"קול מתחנן מצד התושבים — תנו לרגע הזה להישמע כמו תמיכה קהילתית אמיתית."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #cfe8d0, #5a9c6a)",
+    emoji:"😌🤝",
+    onscreen:"",
+    say:`אמר האיש: "בשבילכם הריני מוחל לו, ובלבד שלא יהא רגיל לעשות כן עוד."`,
+    cue:"קול רגוע וסלחני — תנו לתנאי שהאיש מציב להישמע חשוב, לא רק 'בסדר, שוכח'."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #cfe8d0, #5a9c6a)",
+    emoji:"🌾💨📖",
+    onscreen:"\"רַךְ וְעָנָו כְּמוֹ קָנֶה\"",
+    say:`מיד נכנס רבי שמעון בן אלעזר אל בית המדרש ודרשה מפורסמת מסר לדורות הבאים: "לעולם יהא אדם רך וענו כמו קנה המתכופף ברוח, ואל יהא קשה ומתגאה כמו ארז קשה שסופו להישבר. ולכן זכה הקנה הרך שיקחו ממנו קולמוס — עט כתיבה — לכתוב בו את ספרי התורה, התפילין והמזוזות הקדושות שלנו."`,
+    cue:"משפט-המפתח המרכזי — קול חם, מבין ומלא ענווה חדשה. האטה על 'רך וענו כמו קנה'."
+  },
+  {
+    bg:"linear-gradient(180deg, #1f2a44, #14203a)",
+    emoji:"💭🌾🌲",
+    onscreen:"",
+    say:`בואו נחשוב יחד:
+למה לדעתכם הקנה הרך "זוכה" יותר מהארז הקשה, למרות שהארז חזק יותר?
+האם קרה לכם פעם שהגאווה גרמה לכם לומר או לעשות משהו שהתחרטתם עליו?`,
+    cue:"שאלות פתוחות בלבד. תנו זמן אמיתי למחשבה.",
+    peda:true
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #cfe8d0, #5a9c6a)",
+    emoji:"🧒🤝",
+    onscreen:"",
+    say:`אפשר גם אנחנו, כשאנחנו טועים או פוגעים במישהו — גם בטעות או בלי כוונה — לבקש סליחה בכנות, גם אם זה קשה או מביך.`,
+    cue:"קול רגוע ומזמין, לא מטיף."
+  },
+  {
+    bg:"linear-gradient(180deg, #4a90a4, #1f2a44)",
+    emoji:"🫏🌊😌",
+    onscreen:"",
+    say:`זוכרים איך פתחנו — רבי שמעון רוכב זקוף וגאה, ראשו כמו ארז קשה?
+מסתבר שהמסע הארוך שלו לימד אותו להיות רך יותר, כמו קנה שמתכופף ברוח ולא נשבר.
+מה הרגע שבו אתם תבחרו להיות רכים ולא קשים, השבוע?`,
+    cue:"קול חם וסוגר, מוריד טון בהדרגה. תנו לשאלה האחרונה לרחף.",
+    link:true
+  }
+];
+
+let current = 0;
+
+function render(){
+  const s = slides[current];
+  document.getElementById('visual').style.background = s.bg;
+  document.getElementById('emojiScene').textContent = s.emoji;
+  document.getElementById('onscreenText').textContent = s.onscreen;
+  document.getElementById('onscreenText').style.display = s.onscreen ? 'block' : 'none';
+  document.getElementById('sayText').textContent = s.say;
+  document.getElementById('cueText').textContent = s.cue;
+  document.getElementById('slideCounter').textContent = `כרטיס ${current+1} מתוך ${slides.length}`;
+
+  const peda = document.getElementById('pedaNote');
+  if(current === 16){
+    peda.style.display = 'block';
+    peda.textContent = '💬 הערה פדגוגית: הסיפור לא "לועג" למראה חיצוני — הוא מלמד שביוש על מראה הוא חטא חמור.';
+  } else {
+    peda.style.display = 'none';
+  }
+
+  const link = document.getElementById('linkNote');
+  if(current === 18){
+    link.style.display = 'block';
+    link.textContent = '🔗 חיבור: כמו שראינו כמה כואב לבייש ולשתוק (קמצא ובר קמצא) — כאן דוגמה לתיקון אמיתי.';
+  } else {
+    link.style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.onclick = () => go(i);
+    dots.appendChild(d);
+  });
+}
+
+function go(i){
+  if(i < 0 || i >= slides.length) return;
+  current = i;
+  render();
+}
+
+function toggleMem(show){
+  document.getElementById('memOverlay').classList.toggle('show', show);
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft') go(current + 1);
+  if(e.key === 'ArrowRight') go(current - 1);
+});
+
+render();
+</script>
+</body>
+</html>

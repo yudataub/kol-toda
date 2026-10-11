@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>שעורי העניים של רבי פנחס</title>
+<style>
+  :root{
+    --gold:#c9a227;
+    --cream:#fdf6e3;
+    --navy:#1f3320;
+    --dunec:#4a7d3f;
+    --dunec-light:#eaf3e2;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Segoe UI', Arial, sans-serif; background:var(--navy); color:var(--cream); height:100vh; overflow:hidden; display:flex; flex-direction:column;}
+  .top-bar{display:flex; justify-content:space-between; align-items:center; padding:10px 18px; background:rgba(0,0,0,0.25);}
+  .top-title{font-size:1.1rem; font-weight:bold; color:var(--gold);}
+  .mem-btn{background:var(--gold); color:var(--navy); border:none; border-radius:8px; padding:8px 14px; font-weight:bold; cursor:pointer; font-size:0.9rem;}
+  .warn-banner{background:#fff3cd; color:#5a4200; font-size:0.75rem; padding:4px 18px; text-align:center;}
+  .stage{flex:1; display:flex; flex-direction:column; overflow:hidden;}
+  .visual{height:43%; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; transition:background 0.6s ease; text-align:center; padding:10px;}
+  .emoji-scene{font-size:4rem; margin-bottom:10px; letter-spacing:10px;}
+  .onscreen-text{font-size:1.4rem; font-weight:bold; color:var(--cream); background:rgba(0,0,0,0.35); padding:10px 20px; border-radius:10px; max-width:85%; line-height:1.6;}
+  .panel{flex:1; background:var(--cream); color:var(--navy); padding:18px 24px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;}
+  .slide-counter{font-size:0.85rem; color:var(--dunec); font-weight:bold;}
+  .say-label, .cue-label{font-weight:bold; font-size:0.95rem; color:var(--dunec);}
+  .say-text{white-space:pre-line; font-size:1.05rem; line-height:1.7; background:var(--dunec-light); padding:12px 16px; border-radius:10px;}
+  .cue-text{white-space:pre-line; font-size:0.95rem; line-height:1.6; font-style:italic; color:#444;}
+  .peda-note{background:#fff3cd; border-right:4px solid #e0a800; padding:10px 14px; border-radius:6px; font-size:0.9rem;}
+  .link-note{background:#fdeecb; border-right:4px solid var(--gold); padding:10px 14px; border-radius:6px; font-size:0.9rem;}
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:10px 18px; background:rgba(0,0,0,0.25);}
+  .nav button{background:var(--gold); color:var(--navy); border:none; border-radius:8px; padding:10px 18px; font-weight:bold; font-size:1rem; cursor:pointer;}
+  .nav button:disabled{opacity:0.35; cursor:default;}
+  .dots{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; max-width:50%;}
+  .dot{width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.3); cursor:pointer;}
+  .dot.active{background:var(--gold);}
+  .mem-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:10; align-items:center; justify-content:center;}
+  .mem-overlay.show{display:flex;}
+  .mem-box{background:var(--cream); color:var(--navy); max-width:600px; width:90%; max-height:80vh; overflow-y:auto; border-radius:14px; padding:24px;}
+  .mem-box h2{color:var(--dunec); margin-bottom:14px;}
+  .mem-box table{width:100%; border-collapse:collapse; margin-bottom:16px;}
+  .mem-box th, .mem-box td{border:1px solid #ccc; padding:6px 10px; text-align:right; font-size:0.9rem;}
+  .mem-box th{background:var(--dunec-light);}
+  .close-mem{background:var(--dunec); color:white; border:none; border-radius:8px; padding:8px 16px; cursor:pointer; font-weight:bold;}
+</style>
+<meta property="og:title" content="שעורי העניים של רבי פנחס">
+<meta property="og:description" content="שעורי העניים של רבי פנחס">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-4024a969.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/4024a969.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-title">שעורי העניים של רבי פנחס</div>
+  <button class="mem-btn" onclick="toggleMem(true)">🎯 טבלת זיכרון מהירה</button>
+</div>
+<div class="warn-banner">⚠️ סיפור מדרשי מוכר על זהירותו של רבי פנחס בן יאיר מגזל — לא אותר ציטוט תלמודי ראשוני מדויק במקום אחד.</div>
+
+<div class="stage">
+  <div class="visual" id="visual">
+    <div class="emoji-scene" id="emojiScene"></div>
+    <div class="onscreen-text" id="onscreenText"></div>
+  </div>
+  <div class="panel">
+    <div class="slide-counter" id="slideCounter"></div>
+    <div class="say-label">🗣️ אתה אומר</div>
+    <div class="say-text" id="sayText"></div>
+    <div class="cue-label">🎭 כיווני ביצוע</div>
+    <div class="cue-text" id="cueText"></div>
+    <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    <div class="link-note" id="linkNote" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="go(current-1)">◀ הקודם</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn" onclick="go(current+1)">הבא ▶</button>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>2</td><td>השק מופקד לשמירה</td><td>פיקדון</td></tr>
+      <tr><td>4</td><td>זריעת השעורים</td><td>כרטיס שיא — שמירה פעילה</td></tr>
+      <tr><td>6-7</td><td>שבע שנים חולפות</td><td>נאמנות מתמשכת</td></tr>
+      <tr><td>8-9</td><td>העניים חוזרים</td><td>מחסנים מלאים — הכל שלכם</td></tr>
+    </table>
+    <p style="margin-bottom:10px; background:#fff3cd; padding:8px; border-radius:6px;"><b>⚠️ הערת מקור:</b> סיפור מדרשי מוכר על זהירותו הקפדנית של רבי פנחס בן יאיר בממון הזולת, אך לא אותר ציטוט תלמודי ראשוני מדויק. מומלץ להציג כ"סיפור מסורתי".</p>
+    <p style="margin-bottom:14px;"><b>🔗 חיבור לסיפורים קודמים:</b> כמו ב"רבי פנחס בן יאיר והעכברים שלמדו לשתף" — אותו תנא, אותה מידה של נאמנות וזהירות מגזל.</p>
+    <button class="close-mem" onclick="toggleMem(false)">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg:"radial-gradient(circle at 50% 35%, #e8f0d8, #4a7d3f)",
+    emoji:"👳‍♂️🌾",
+    onscreen:"",
+    say:`רבי פנחס בן יאיר היה צדיק שידוע בנאמנות הנקייה שלו. ממון של אדם אחר היה בעיניו קדוש מאוד. הוא היה נזהר שלא לגעת בשום חפץ שלא שייך לו, אפילו בשווה פרוטה קטנה.`,
+    cue:"קול רגוע ומכבד — תארו את הזהירות הזו כערך יומיומי, לא כחומרה מיוחדת."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #e8f0d8, #4a7d3f)",
+    emoji:"👨‍🌾👨‍🌾🌾",
+    onscreen:"",
+    say:`יום אחד דפקו על דלתו שני אנשים עניים ועייפים. בידיהם שק קטן ורעוע. "רבי יקר," אמרו, "אנחנו צריכים ללכת למרחקים לחפש עבודה. בתוך השק יש מעט שעורים. האם נוכל להשאיר אותו בביתך לשמירה עד שנחזור?" "בוודאי," ענה רבי פנחס במאור פנים, ולקח את השק.`,
+    cue:"קול נדיב ופשוט — קבלת האחריות מיד, בלי היסוס."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #d4c090, #7d6a3f)",
+    emoji:"⏳🌾😟",
+    onscreen:"",
+    say:`עברו חודשים. השנה חלפה, ושני העניים לא חזרו. רבי פנחס נכנס למחסן והביט בשק — השעורים בתוכו התחילו להתקלקל. "אם אשאיר אותן כך, הן ירקבו לגמרי ויאבדו," חשב בדאגה. "אני חייב לשמור על רכושם!"`,
+    cue:"קול דואג אך נחוש — הבעיה מוצגת בבירור."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 30%, #f0e0a0, #c9a227)",
+    emoji:"🌱🚜🌾",
+    onscreen:"",
+    say:`מה עשה? הוא לקח את השעורים, יצא אל השדה שלו, וזרע אותן באדמה. חודשים טיפל בשדה, השקה, עידר וקצר את היבול. השעורים צמחו יפהפיות וזהובות. רבי פנחס לא נגע בהן — "התבואה הזו שייכת לשני העניים," אמר לעצמו.
+מה אתם חושבים יעשה בשנה הבאה עם התבואה החדשה? (עצירה)`,
+    cue:"זהו כרטיס השיא — הבחירה לשמור ולא ליהנות, מודגשת בשקט."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 30%, #f0e0a0, #c9a227)",
+    emoji:"🌾🌾🌾",
+    onscreen:"",
+    say:`בשנה הבאה זרע רבי פנחס את כל כמות השעורים החדשה — והיבול גדל והתרבה עוד יותר. הוא נאלץ לבנות מחסנים ואסמים גדולים כדי לשמור על כל התבואה שהצטברה שנה אחר שנה.`,
+    cue:"קול מתפעל — תארו את הגידול כתוצאה טבעית של נאמנות מתמשכת."
+  },
+  {
+    bg:"linear-gradient(180deg, #3a5a2c, #1f3320)",
+    emoji:"📅😔",
+    onscreen:"",
+    say:`שבע שנים חלפו מאז הלכו האנשים.`,
+    cue:"קול שקט — תנו לזמן הארוך להישמע כמו זמן אמיתי שעבר."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #d4c090, #7d6a3f)",
+    emoji:"👴👴🚪",
+    onscreen:"",
+    say:`והנה, ביום בהיר אחד, הופיעו שני אנשים זקנים, עייפים ושבורים בפתח הבית. "שלום, רבי פנחס," אמרו בקול חלש. "האם אתה זוכר אותנו? לפני שנים השארנו אצלך שק קטן של שעורים. עכשיו חזרנו, ואנחנו עניים מאוד. אפילו את השק הקטן הזה אנחנו צריכים כדי לחיות."`,
+    cue:"קול עייף וצנוע — תארו את מצוקתם בכנות, בלי דרמטיות יתרה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 30%, #f0e0a0, #c9a227)",
+    emoji:"😊🏚️🌾",
+    onscreen:"",
+    say:`חיוך רחב ואור גדול האירו את פניו של רבי פנחס. "בואו אחריי," אמר בשמחה. הוא הוביל אותם מאחורי הבית, והראה להם שורה ארוכה של מחסני ענק מלאים בתבואה זהובה ונקייה.`,
+    cue:"קול נרגש — רגע ההפתעה של העניים חשוב יותר מהתיאור שלכם."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 30%, #f0e0a0, #c9a227)",
+    emoji:"🎁😭🤝",
+    onscreen:"\"כֻּלָּם שֶׁלָּכֶם הֵם\"",
+    say:`שני הזקנים הביטו במחסנים בתמיהה. "מה זה, רבי?" שאלו. "כל המחסנים האלה, וכל השעורים שבתוכם — שלכם הם!" אמר הצדיק. "זרעתי את השעורים שהשארתם, וטיפלתי בהן שנה אחר שנה כדי שלא יאבדו. קחו את החמורים והעגלות שלכם ומלאו אותם באוצר הזה!" שני העניים נפלו על צווארו ובכו מרוב התרגשות.`,
+    cue:"זהו משפט-המפתח — קול חם ונרגש, שיא הסיפור."
+  },
+  {
+    bg:"linear-gradient(180deg, #1f3320, #14231a)",
+    emoji:"💭🌾🤲",
+    onscreen:"",
+    say:`בואו נחשוב יחד:
+רבי פנחס יכל בקלות לקחת מעט מן השעורים לעצמו, במיוחד כשעבר כל כך הרבה זמן — למה לדעתכם הוא לא עשה זאת אפילו לרגע?
+מה זה אומר לשמור על משהו "בשביל מישהו אחר" גם כשאף אחד לא בודק אותנו?`,
+    cue:"שאלות פתוחות בלבד. תנו זמן אמיתי למחשבה.",
+    peda:true
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #e8f0d8, #4a7d3f)",
+    emoji:"🧒🤲",
+    onscreen:"",
+    say:`אפשר גם אנחנו לתרגל את זה — כשמישהו נותן לנו לשמור על משהו שלו, גם דבר קטן, לשמור עליו בזהירות ובנאמנות, בדיוק כאילו הוא שלנו.`,
+    cue:"קול רגוע ומזמין, לא מטיף."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #e8f0d8, #4a7d3f)",
+    emoji:"🌾🏚️✨",
+    onscreen:"",
+    say:`זוכרים את השק הקטן והרעוע שהעניים השאירו בתחילת הסיפור?
+מסתבר שכל מה שנדרש היה נאמנות אחת קטנה, יום אחרי יום, במשך שבע שנים שלמות.
+מה הדבר הקטן שאתם יכולים לשמור עליו היום בנאמנות, גם אם אף אחד לא רואה?`,
+    cue:"קול חם וסוגר, מוריד טון בהדרגה. תנו לשאלה האחרונה לרחף.",
+    link:true
+  }
+];
+
+let current = 0;
+
+function render(){
+  const s = slides[current];
+  document.getElementById('visual').style.background = s.bg;
+  document.getElementById('emojiScene').textContent = s.emoji;
+  document.getElementById('onscreenText').textContent = s.onscreen;
+  document.getElementById('onscreenText').style.display = s.onscreen ? 'block' : 'none';
+  document.getElementById('sayText').textContent = s.say;
+  document.getElementById('cueText').textContent = s.cue;
+  document.getElementById('slideCounter').textContent = `כרטיס ${current+1} מתוך ${slides.length}`;
+
+  const peda = document.getElementById('pedaNote');
+  if(s.peda){
+    peda.style.display = 'block';
+    peda.textContent = '💬 הערה פדגוגית: הדגישו שרבי פנחס לא "השקיע" את הפיקדון למען עצמו — הוא רק מנע ממנו להתקלקל, וכל הפרי חזר לבעליו.';
+  } else {
+    peda.style.display = 'none';
+  }
+
+  const link = document.getElementById('linkNote');
+  if(s.link){
+    link.style.display = 'block';
+    link.textContent = '🔗 חיבור: כמו ב"רבי פנחס בן יאיר והעכברים שלמדו לשתף" — אותו תנא, אותה מידה של דקדוק בממון הזולת.';
+  } else {
+    link.style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.onclick = () => go(i);
+    dots.appendChild(d);
+  });
+}
+
+function go(i){
+  if(i < 0 || i >= slides.length) return;
+  current = i;
+  render();
+}
+
+function toggleMem(show){
+  document.getElementById('memOverlay').classList.toggle('show', show);
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft') go(current + 1);
+  if(e.key === 'ArrowRight') go(current - 1);
+});
+
+render();
+</script>
+</body>
+</html>
