@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>אבא תחנא חסיד ונס השמש שבדרך</title>
+<style>
+  :root{
+    --gold:#c9a227;
+    --cream:#fdf6e3;
+    --navy:#1f2a44;
+    --sunset:#c76a3d;
+    --sunset-light:#f5d5b8;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:var(--navy);
+    color:var(--cream);
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .top-title{
+    font-size:1.1rem;
+    font-weight:bold;
+    color:var(--gold);
+  }
+  .mem-btn{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:0.9rem;
+  }
+  .warn-banner{
+    background:#fff3cd;
+    color:#5a4200;
+    font-size:0.75rem;
+    padding:4px 18px;
+    text-align:center;
+  }
+  .stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .visual{
+    height:43%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    transition:background 0.6s ease;
+    text-align:center;
+    padding:10px;
+  }
+  .emoji-scene{
+    font-size:4rem;
+    margin-bottom:10px;
+    letter-spacing:10px;
+  }
+  .onscreen-text{
+    font-size:1.4rem;
+    font-weight:bold;
+    color:var(--cream);
+    background:rgba(0,0,0,0.35);
+    padding:10px 20px;
+    border-radius:10px;
+    max-width:85%;
+    line-height:1.6;
+  }
+  .panel{
+    flex:1;
+    background:var(--cream);
+    color:var(--navy);
+    padding:18px 24px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .slide-counter{
+    font-size:0.85rem;
+    color:var(--sunset);
+    font-weight:bold;
+  }
+  .say-label, .cue-label{
+    font-weight:bold;
+    font-size:0.95rem;
+    color:var(--sunset);
+  }
+  .say-text{
+    white-space:pre-line;
+    font-size:1.05rem;
+    line-height:1.7;
+    background:var(--sunset-light);
+    padding:12px 16px;
+    border-radius:10px;
+  }
+  .cue-text{
+    white-space:pre-line;
+    font-size:0.95rem;
+    line-height:1.6;
+    font-style:italic;
+    color:#444;
+  }
+  .peda-note{
+    background:#fff3cd;
+    border-right:4px solid #e0a800;
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .link-note{
+    background:#fdeecb;
+    border-right:4px solid var(--gold);
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .nav button{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:10px 18px;
+    font-weight:bold;
+    font-size:1rem;
+    cursor:pointer;
+  }
+  .nav button:disabled{
+    opacity:0.35;
+    cursor:default;
+  }
+  .dots{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:center;
+    max-width:50%;
+  }
+  .dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.3);
+    cursor:pointer;
+  }
+  .dot.active{
+    background:var(--gold);
+  }
+  .mem-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    z-index:10;
+    align-items:center;
+    justify-content:center;
+  }
+  .mem-overlay.show{display:flex;}
+  .mem-box{
+    background:var(--cream);
+    color:var(--navy);
+    max-width:600px;
+    width:90%;
+    max-height:80vh;
+    overflow-y:auto;
+    border-radius:14px;
+    padding:24px;
+  }
+  .mem-box h2{
+    color:var(--sunset);
+    margin-bottom:14px;
+  }
+  .mem-box table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:16px;
+  }
+  .mem-box th, .mem-box td{
+    border:1px solid #ccc;
+    padding:6px 10px;
+    text-align:right;
+    font-size:0.9rem;
+  }
+  .mem-box th{
+    background:var(--sunset-light);
+  }
+  .close-mem{
+    background:var(--sunset);
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-weight:bold;
+  }
+</style>
+<meta property="og:title" content="אבא תחנא חסיד ונס השמש שבדרך">
+<meta property="og:description" content="אבא תחנא חסיד ונס השמש שבדרך">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-408ec127.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/408ec127.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-title">אבא תחנא חסיד ונס השמש</div>
+  <button class="mem-btn" onclick="toggleMem(true)">🎯 טבלת זיכרון מהירה</button>
+</div>
+<div class="warn-banner">⚠️ מוטיב אגדי מוכר — לא אותר ציטוט מקור מדויק (מסכת/דף) לנוסח המלא.</div>
+
+<div class="stage">
+  <div class="visual" id="visual">
+    <div class="emoji-scene" id="emojiScene"></div>
+    <div class="onscreen-text" id="onscreenText"></div>
+  </div>
+  <div class="panel">
+    <div class="slide-counter" id="slideCounter"></div>
+    <div class="say-label">🗣️ אתה אומר</div>
+    <div class="say-text" id="sayText"></div>
+    <div class="cue-label">🎭 כיווני ביצוע</div>
+    <div class="cue-text" id="cueText"></div>
+    <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    <div class="link-note" id="linkNote" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="go(current-1)">◀ הקודם</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn" onclick="go(current+1)">הבא ▶</button>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>2</td><td>קבלת המתנה לשבת</td><td>חבילה יקרה</td></tr>
+      <tr><td>4-5</td><td>האיש הפצוע בדרך</td><td>בקשת חסד</td></tr>
+      <tr><td>6</td><td>ההתלבטות</td><td>שלושה קשיים</td></tr>
+      <tr><td>7-8</td><td>ההחלטה</td><td>שתיקה / כרטיס שיא</td></tr>
+      <tr><td>9-10</td><td>הריצה חזרה, איחור</td><td>דאגה כנה</td></tr>
+      <tr><td>11-12</td><td>עצירת השמש</td><td>נס — "השבת שמרה עליו"</td></tr>
+    </table>
+    <p style="margin-bottom:10px; background:#fff3cd; padding:8px; border-radius:6px;"><b>⚠️ הערת מקור:</b> לא אותר ציטוט מדויק (מסכת/דף) לנוסח המלא. המוטיב מוכר במסורת האגדית אך יש להציג כעיבוד מסורתי-עממי, לא כציטוט מדויק.</p>
+    <p style="margin-bottom:14px;"><b>🔗 חיבור לסיפורים קודמים:</b> כמו אבא יודן שלא כעס — כאן גם אבא תחנא בוחר בדרך הקשה יותר מתוך אמונה.</p>
+    <button class="close-mem" onclick="toggleMem(false)">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f5d5b8, #c76a3d)",
+    emoji:"🧔💰😊",
+    onscreen:"",
+    say:`אבא תחנא היה אדם חסיד — אדם טוב שעושה חסדות עם כל נפש. הוא עבר במשך כל ימי השבוע בעיר רחוקה, עבד קשה כדי להרוויח לחם עבור ילדיו הקטנים, ורק ביום שישי בצהריים היה מקבל את שכרו וממהר לחזור לביתו שבכפר לכבוד שבת.`,
+    cue:"קול חם ועייף כאחד — תארו את השגרה השבועית הקשה בפשטות, בלי דרמה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f0dbb0, #c78a3d)",
+    emoji:"🎁🍎👕",
+    onscreen:"",
+    say:`ביום שישי אחד, נתן לו הסוחר הטוב את שכרו, וגם העניק לו מתנה יקרה: חבילה גדולה וכבדה ובה בגדים נקיים, נעליים חדשות, פירות וירקות טריים לסעודת השבת שלו.
+אבא תחנא שמח מאוד, העמיס את החבילה הכבדה על כתפיו העייפות והחל לצעוד בזריזות אל הכפר.`,
+    cue:"קול שמח ונרגש — תנו לשמחת השבת הקרובה להישמע אמיתית."
+  },
+  {
+    bg:"linear-gradient(180deg, #c76a3d, #4a2c1c)",
+    emoji:"🛤️🌅⏳",
+    onscreen:"",
+    say:`הדרך הייתה ארוכה ואבקית, והשמש החלה לרדת לכיוון מערב. אבא תחנא ידע שהזמן קצר, ועליו להגיע לביתו לפני שקיעת השמש כדי שלא יאחר את השבת.`,
+    cue:"קול מהיר ומודאג — תנו למרוץ נגד הזמן להישמע אמיתי ולוחץ."
+  },
+  {
+    bg:"linear-gradient(180deg, #4a3a2c, #1f2a44)",
+    emoji:"🌳🤕😖",
+    onscreen:"",
+    say:`לפתע, בצדי הדרך, שמע קול אנחה חלשה וצורמת.
+הוא הביט הצידה וראה אדם שוכב בחול תחת עץ פשוט. האיש היה מכוסה בפצעים ונאנח מכאב. הוא לא היה יכול לקום או לזוז אפילו כחוט השערה.
+מה אתם חושבים אבא תחנא יעשה עכשיו? (עצירה)`,
+    cue:"עצרו רגע לפני חשיפת הפצוע. השאלה בטון תוהה, לא רטורי."
+  },
+  {
+    bg:"linear-gradient(180deg, #4a3a2c, #1f2a44)",
+    emoji:"🙏😰",
+    onscreen:"",
+    say:`"הצילני נא, צדיק!" התחנן האיש החולה בקול רועד מפחד, "אם תשאיר אותי כאן לבדי בשדה הקר, חיות רעות יבואו בלילה ואני אמות! עשה עמי חסד וקח אותי אל העיר הסמוכה!"`,
+    cue:"קול רועד ומפוחד באמת — תנו לפחד להישמע ממשי, לא מוגזם."
+  },
+  {
+    bg:"linear-gradient(180deg, #5a4a3c, #2a1c14)",
+    emoji:"🤔⚖️",
+    onscreen:"",
+    say:`אבא תחנא עמד בפני החלטה קשה מאוד. לבו נקרע בפנים.
+"מה אעשה?" חשב בדאגה, "אם אעמיס את האיש החולה על כתפי, לא אוכל לסחוב גם את החבילה... אם אניח את החבילה כאן, שודדים יקחו אותה, ואם אתעכב — שמא אחלל את השבת הקדושה?!"`,
+    cue:"קול מתלבט אמיתי — תנו לשלושת הקשיים להישמע שווים במשקלם."
+  },
+  {
+    bg:"#0d1526",
+    emoji:"🎒🤕",
+    onscreen:"",
+    say:`אך אבא תחנא היה חסיד אמיתי. הוא ידע שהצלת חיים ועושה חסד לאדם סובל — קודמים לכל.
+(עצירה של 2–3 שניות)`,
+    cue:"שתיקה מלאה — תנו לרגע ההכרעה הפנימי להישמע כבד וממשי, זהו לב הסיפור."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f5d5b8, #c76a3d)",
+    emoji:"🙇‍♂️🤝",
+    onscreen:"",
+    say:`ללא היסוס נוסף, הניח את החבילה היקרה בשדה הפתוח תחת העץ, התכופף בעוד האיש החולה נאחז בו, העמיס אותו על גבו והלך לאט לאט ובזהירות, עד שהביא אותו בשלום לבית הרופא שבעיר ודאג לכל צרכיו.`,
+    cue:"קול איטי וסבלני — תנו לתנועות של אבא תחנא להישמע זהירות ומכבדות."
+  },
+  {
+    bg:"linear-gradient(180deg, #c76a3d, #6b4a2c)",
+    emoji:"🏃‍♂️🎁💨",
+    onscreen:"",
+    say:`כשסיים, פנה אבא תחנא ורץ בכל כוחו חזרה אל השדה. הוא הגיע אל העץ, ולשמחתו החבילה עדיין הייתה מונחת שם, ואיש לא נגע בה. הוא הרים אותה במהירות ורץ כחץ מקשת אל כפרו.`,
+    cue:"קול מהיר ונמרץ — תנו להקלה ולריצה המחודשת להישמע אנרגטית."
+  },
+  {
+    bg:"linear-gradient(180deg, #c76a3d, #4a2c1c)",
+    emoji:"😟🏘️👕",
+    onscreen:"",
+    say:`אך אוי, הזמן עבר. השמש כבר נשקה לאדמה, וכל אנשי הכפר כבר היו לבושים בבגדי לבן חגיגיים והלכו לבית הכנסת, בעוד אבא תחנא עדיין בבגדי עבודה מלוכלכים וחבילה על כתפו.
+"אוי לי," דאג אבא תחנא בלבו, "האם חיללתי את השבת הקדושה, חלילה?!"`,
+    cue:"קול מודאג ומיוסר — תנו לדאגה הכנה הזו להישמע אמיתית."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #ffe9a8, #c76a3d)",
+    emoji:"☀️✋⏸️",
+    onscreen:"",
+    say:`הקדוש ברוך הוא הביט משמיים בצערו של החסיד הטוב שוויתר על החבילה והסתכן בחילול שבת רק כדי להציל חיים. עשה הקדוש ברוך הוא נס עצום שלא נראה כמותו:
+השמש עצרה במקומה ברקיע השמיים! היא לא שקעה ולא ירדה, עד שאבא תחנא הגיע לביתו, התרחץ, לבש בגדים נקיים ולבנים ונכנס בשלווה אל בית הכנסת.`,
+    cue:"רגע השיא הפלאי — קול נרגש והולך וגובר. האטה על 'השמש עצרה במקומה'."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #ffe9a8, #f5d5b8)",
+    emoji:"🌇✨🕍",
+    onscreen:"\"הַשַּׁבָּת שָׁמְרָה עָלָיו!\"",
+    say:`רק אז, כשהיה מוכן ומזומן לקבל את השבת בשמחה, שקעה השמש והעולם התמלא באור של קדושה. כולם הבינו שהשם שומר על עושי רצונו, ובזכות מעשה החסד — השבת שמרה עליו!`,
+    cue:"משפט-המפתח המרכזי — קול חם ומלא הודיה, סגירה רגועה של המתח."
+  },
+  {
+    bg:"linear-gradient(180deg, #1f2a44, #14203a)",
+    emoji:"💭🎁🤕",
+    onscreen:"",
+    say:`בואו נחשוב יחד:
+אבא תחנא היה יכול להישאר עם החבילה ולעזוב את האיש הפצוע — למה בכל זאת בחר לעזור לו קודם?
+מה עושים כשיש לנו שתי מחויבויות חשובות באותו רגע, ואי אפשר לקיים את שתיהן במלואן?`,
+    cue:"שאלות פתוחות בלבד. השאלה השנייה עמוקה יחסית — תנו זמן אמיתי למחשבה.",
+    peda:true
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f5d5b8, #c76a3d)",
+    emoji:"🤝🧒",
+    onscreen:"",
+    say:`אפשר גם אנחנו, כשמישהו צריך עזרה באמת, לנסות לעזור גם אם זה עולה לנו במשהו — זמן, מאמץ, או אפילו דברים שחיכינו להם.`,
+    cue:"קול רגוע ומזמין, לא מטיף."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f5d5b8, #c76a3d)",
+    emoji:"🧔💰😌",
+    onscreen:"",
+    say:`זוכרים את אבא תחנא שמיהר כל כך לביתו בתחילת הסיפור?
+מסתבר שבדרך, במקום לא צפוי, הוא גילה שהחסד לאדם זר חשוב יותר אפילו מהמרוץ נגד הזמן.
+מה הדבר שאתם תעצרו בשבילו היום, גם אם זה "לא בזמן"?`,
+    cue:"קול חם וסוגר, מוריד טון בהדרגה. תנו לשאלה האחרונה לרחף.",
+    link:true
+  }
+];
+
+let current = 0;
+
+function render(){
+  const s = slides[current];
+  document.getElementById('visual').style.background = s.bg;
+  document.getElementById('emojiScene').textContent = s.emoji;
+  document.getElementById('onscreenText').textContent = s.onscreen;
+  document.getElementById('onscreenText').style.display = s.onscreen ? 'block' : 'none';
+  document.getElementById('sayText').textContent = s.say;
+  document.getElementById('cueText').textContent = s.cue;
+  document.getElementById('slideCounter').textContent = `כרטיס ${current+1} מתוך ${slides.length}`;
+
+  const peda = document.getElementById('pedaNote');
+  if(current === 12){
+    peda.style.display = 'block';
+    peda.textContent = '💬 הערה פדגוגית: הציגו כמסופר במסורת חז"ל, ולא בציטוט מקור מדויק.';
+  } else {
+    peda.style.display = 'none';
+  }
+
+  const link = document.getElementById('linkNote');
+  if(current === 14){
+    link.style.display = 'block';
+    link.textContent = '🔗 חיבור: כמו אבא יודן שלא כעס — כאן אבא תחנא בוחר בדרך הקשה יותר מתוך אמונה.';
+  } else {
+    link.style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.onclick = () => go(i);
+    dots.appendChild(d);
+  });
+}
+
+function go(i){
+  if(i < 0 || i >= slides.length) return;
+  current = i;
+  render();
+}
+
+function toggleMem(show){
+  document.getElementById('memOverlay').classList.toggle('show', show);
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft') go(current + 1);
+  if(e.key === 'ArrowRight') go(current - 1);
+});
+
+render();
+</script>
+</body>
+</html>

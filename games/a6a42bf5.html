@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>האתרוגים הקדושים מארץ ישראל</title>
+<style>
+  :root{
+    --gold:#c9a227;
+    --cream:#fdf6e3;
+    --navy:#1f2a44;
+    --etrogc:#9c8c2e;
+    --etrogc-light:#f0e8b8;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:var(--navy);
+    color:var(--cream);
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .top-title{
+    font-size:1.1rem;
+    font-weight:bold;
+    color:var(--gold);
+  }
+  .mem-btn{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:0.9rem;
+  }
+  .warn-banner{
+    background:#fff3cd;
+    color:#5a4200;
+    font-size:0.75rem;
+    padding:4px 18px;
+    text-align:center;
+  }
+  .stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .visual{
+    height:43%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    transition:background 0.6s ease;
+    text-align:center;
+    padding:10px;
+  }
+  .emoji-scene{
+    font-size:4rem;
+    margin-bottom:10px;
+    letter-spacing:10px;
+  }
+  .onscreen-text{
+    font-size:1.4rem;
+    font-weight:bold;
+    color:var(--cream);
+    background:rgba(0,0,0,0.35);
+    padding:10px 20px;
+    border-radius:10px;
+    max-width:85%;
+    line-height:1.6;
+  }
+  .panel{
+    flex:1;
+    background:var(--cream);
+    color:var(--navy);
+    padding:18px 24px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .slide-counter{
+    font-size:0.85rem;
+    color:var(--etrogc);
+    font-weight:bold;
+  }
+  .say-label, .cue-label{
+    font-weight:bold;
+    font-size:0.95rem;
+    color:var(--etrogc);
+  }
+  .say-text{
+    white-space:pre-line;
+    font-size:1.05rem;
+    line-height:1.7;
+    background:var(--etrogc-light);
+    padding:12px 16px;
+    border-radius:10px;
+  }
+  .cue-text{
+    white-space:pre-line;
+    font-size:0.95rem;
+    line-height:1.6;
+    font-style:italic;
+    color:#444;
+  }
+  .peda-note{
+    background:#fff3cd;
+    border-right:4px solid #e0a800;
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .link-note{
+    background:#fdeecb;
+    border-right:4px solid var(--gold);
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:0.9rem;
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 18px;
+    background:rgba(0,0,0,0.25);
+  }
+  .nav button{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:10px 18px;
+    font-weight:bold;
+    font-size:1rem;
+    cursor:pointer;
+  }
+  .nav button:disabled{
+    opacity:0.35;
+    cursor:default;
+  }
+  .dots{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:center;
+    max-width:50%;
+  }
+  .dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.3);
+    cursor:pointer;
+  }
+  .dot.active{
+    background:var(--gold);
+  }
+  .mem-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    z-index:10;
+    align-items:center;
+    justify-content:center;
+  }
+  .mem-overlay.show{display:flex;}
+  .mem-box{
+    background:var(--cream);
+    color:var(--navy);
+    max-width:600px;
+    width:90%;
+    max-height:80vh;
+    overflow-y:auto;
+    border-radius:14px;
+    padding:24px;
+  }
+  .mem-box h2{
+    color:var(--etrogc);
+    margin-bottom:14px;
+  }
+  .mem-box table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:16px;
+  }
+  .mem-box th, .mem-box td{
+    border:1px solid #ccc;
+    padding:6px 10px;
+    text-align:right;
+    font-size:0.9rem;
+  }
+  .mem-box th{
+    background:var(--etrogc-light);
+  }
+  .close-mem{
+    background:var(--etrogc);
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 16px;
+    cursor:pointer;
+    font-weight:bold;
+  }
+</style>
+<meta property="og:title" content="האתרוגים הקדושים מארץ ישראל">
+<meta property="og:description" content="האתרוגים הקדושים מארץ ישראל">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-games-a6a42bf5.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/games/a6a42bf5.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-title">האתרוגים הקדושים מארץ ישראל</div>
+  <button class="mem-btn" onclick="toggleMem(true)">🎯 טבלת זיכרון מהירה</button>
+</div>
+<div class="warn-banner">⚠️ סיפור עממי — לא אותר ציטוט תלמודי/מדרשי מדויק לעלילה זו.</div>
+
+<div class="stage">
+  <div class="visual" id="visual">
+    <div class="emoji-scene" id="emojiScene"></div>
+    <div class="onscreen-text" id="onscreenText"></div>
+  </div>
+  <div class="panel">
+    <div class="slide-counter" id="slideCounter"></div>
+    <div class="say-label">🗣️ אתה אומר</div>
+    <div class="say-text" id="sayText"></div>
+    <div class="cue-label">🎭 כיווני ביצוע</div>
+    <div class="cue-text" id="cueText"></div>
+    <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    <div class="link-note" id="linkNote" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="go(current-1)">◀ הקודם</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn" onclick="go(current+1)">הבא ▶</button>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>1-2</td><td>המלך החולה והרעיון</td><td>אתרוגים קדושים</td></tr>
+      <tr><td>3-4</td><td>הגניבה בפונדק</td><td>שתיקה / כרטיס שיא</td></tr>
+      <tr><td>6</td><td>הגילוי המזעזע</td><td>אבנים ועפר</td></tr>
+      <tr><td>7</td><td>התפילה בכלא</td><td>"עשיתי הכל לשם שמיים"</td></tr>
+      <tr><td>8-9</td><td>השר המסתורי והריפוי</td><td>נס</td></tr>
+      <tr><td>10</td><td>התיקון</td><td>פיצוי כפול</td></tr>
+    </table>
+    <p style="margin-bottom:10px; background:#fff3cd; padding:8px; border-radius:6px;"><b>⚠️ הערת מקור:</b> לא אותר ציטוט תלמודי מדויק. הציגו כ"סיפור עממי".</p>
+    <p style="margin-bottom:14px;"><b>🔗 חיבור לסיפורים קודמים:</b> כמו ב"אבא יודן והאוצר בבור" — דברים שנראים כאסון יכולים להפוך למקור ברכה.</p>
+    <button class="close-mem" onclick="toggleMem(false)">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg:"linear-gradient(180deg, #4a4a5c, #1f2a44)",
+    emoji:"👑🤒",
+    onscreen:"",
+    say:`השמועה העצובה הגיעה מהיכל המלכות: המלך הטוב חלה במחלה קשה ומסתורית. הרופאים המהוללים ניסו הכל, אך לא מצאו שום מרפא לכאבו.`,
+    cue:"קול כבד ומודאג — תארו את מחלת המלך כמצב חסר תקווה."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f0e8b8, #9c8c2e)",
+    emoji:"🧔🍋🙏",
+    onscreen:"",
+    say:`בארץ ישראל, חי יהודי צדיק שנשמתו הייתה מלאה בחסד. הוא הביט באתרוגים היפהפיים שגדלו בגינתו.
+"האתרוגים הקדושים שלנו מסוגלים להביא ברכה ורפואה!" אמר באמונה שלמה. "אארוז תבה מלאה בהם ואסע להעניק אותם למלך החולה!"`,
+    cue:"קול נלהב ומלא אמונה תמימה — תארו את הרעיון כמעשה טוב לב, לא כפזיזות."
+  },
+  {
+    bg:"linear-gradient(180deg, #6a5a4a, #2a2a1c)",
+    emoji:"🏨🌙👤",
+    onscreen:"",
+    say:`הוא סידר את האתרוגים בתוך תבת עץ נעולה, ויצא לדרך.
+כשחשכה הדרך, עצר ללון בפונדק דרכים קטן. בפונדק הזה גרו אנשים קנאים ורעים.`,
+    cue:"קול מתוח ומעונן — תארו את הפונדק כמקום עם איום סמוי."
+  },
+  {
+    bg:"#0d1526",
+    emoji:"📦🌙",
+    onscreen:"",
+    say:`בלילה, כשהצדיק ישן בשלווה ובטח בה', נכנסו האנשים בחשאי לחדרו. הם פתחו את התיבה, גנבו את כל האתרוגים, ובמקומם... מילאו את התיבה באבנים ועפר פשוט!
+(עצירה של 2–3 שניות)`,
+    cue:"שתיקה קצרה אחרי הגילוי המרומז — תנו רגע להבין את גודל התרמית."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f0e8b8, #9c8c2e)",
+    emoji:"🏛️😊📦",
+    onscreen:"",
+    say:`בבוקר המשיך הצדיק בנחמה ובשמחה אל הארמון, מבלי לדעת דבר על השוד.
+"הוד מלכותך!" קרא בנימוס, "הבאתי לך מתנה ורפואה מארץ ישראל — אתרוגים מפוארים וקדושים!"`,
+    cue:"קול שמח ותמים — תנו לביטחון של הצדיק להישמע כן."
+  },
+  {
+    bg:"linear-gradient(180deg, #6a3a3a, #2a1414)",
+    emoji:"📦🪨😡",
+    onscreen:"",
+    say:`המלך שמח וציווה לפתוח את התבה. אך כאשר נפתח המכסה... אוי ואבוי! בתוך הקופסה לא היו פירות צהובים, אלא ערמה של אבנים אפורות!
+"מה זה?! האם באת ללעוג לי?!" צעק המלך. "קחו אותו אל בית האסורים!"`,
+    cue:"קול נדהם ומזועזע לגילוי, קול זועם למלך — רגע ההלם, לב הקונפליקט."
+  },
+  {
+    bg:"linear-gradient(180deg, #3a3a5c, #1f2a44)",
+    emoji:"🔒🙏",
+    onscreen:"\"עָשִׂיתִי הַכֹּל לְשֵׁם שָׁמַיִם\"",
+    say:`היהודי הצדיק נאסר, וליבו נשבר בקרבו. הוא לא הבין איך זה קרה, אך ידע שהקדוש ברוך הוא משגיח עליו. הוא עצם את עיניו והתפלל: "ריבונו של עולם, אתה יודע שעשיתי הכל לשם שמיים. אנא, עזור לי!"`,
+    cue:"משפט-המפתח — קול כבד ורגיש, כן ומיוסר אך לא נואש."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #ffe9a8, #f0e8b8)",
+    emoji:"✨👤",
+    onscreen:"",
+    say:`באותו רגע, נכנס אל חדר המלך שר חדש ומסתורי עם פנים מאירות.
+הביט השר באבנים ואמר בחוכמה: "אדוני המלך! אל נא תכעס. היהודי הזה אדם ישר וטוב. אולי לעפר הזה יש כוח מיוחד לרפא אותך?"`,
+    cue:"קול רגוע וחכם, מעט מסתורי — תנו לשר להישמע כמו נוכחות מיוחדת."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #ffe9a8, #9c8c2e)",
+    emoji:"👑✨🕺",
+    onscreen:"",
+    say:`שמע המלך והחליט לנסות. הוא הריח מן העפר הקדוש ונישק את האבנים.
+ולפתע... נס עצום! כל הכאבים נעלמו בבת אחת! הוא קם ממיטתו בשמחה והתחיל לרקוד. הוא הבריא לגמרי!`,
+    cue:"קול נדהם והולך וגובר עד לשיא שמחה — תארו את הריפוי כמפתיע ומיידי."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #ffe9a8, #c9a227)",
+    emoji:"🤗💰🍋",
+    onscreen:"",
+    say:`קרא המלך ליהודי מבית האסורים, חיבק אותו ואמר: "סלח לי, צדיק יקר! האבנים והעפר הקדוש שלך הצילו את חיי!"
+המלך מילא את התבה בדינרי זהב ואבנים טובות. הצדיק חזר לארץ ישראל בלב רוקד ושמח.`,
+    cue:"קול חם ומלא הכרת תודה — תארו את הפיצוי כסגירת מעגל של צדק."
+  },
+  {
+    bg:"linear-gradient(180deg, #1f2a44, #14203a)",
+    emoji:"💭📦🍋",
+    onscreen:"",
+    say:`בואו נחשוב יחד:
+הגניבה נראתה כמו אסון גדול, אבל בסוף היא זו שהצילה את המלך — למה זה מזכיר לנו שלא תמיד רואים מיד את התמונה השלמה?
+מה זה אומר לשמור על אמונה גם כשקורה לנו משהו שנראה לא הוגן?`,
+    cue:"שאלות פתוחות בלבד. תנו זמן אמיתי למחשבה.",
+    peda:true
+  },
+  {
+    bg:"radial-gradient(circle at 50% 40%, #f0e8b8, #9c8c2e)",
+    emoji:"🧒🌈",
+    onscreen:"",
+    say:`אפשר גם אנחנו, כשקורה לנו משהו שנראה לא הוגן או מובן, לזכור שלפעמים יש תמונה גדולה יותר שאנחנו עוד לא רואים.`,
+    cue:"קול רגוע ומזמין, לא מטיף."
+  },
+  {
+    bg:"radial-gradient(circle at 50% 35%, #f0e8b8, #9c8c2e)",
+    emoji:"🍋💰😊",
+    onscreen:"",
+    say:`זוכרים את גינת האתרוגים היפה מתחילת הסיפור, ואת התכנית הפשוטה של הצדיק לרפא את המלך?
+מסתבר שהדרך שבה זה קרה הייתה שונה לגמרי ממה שהוא תכנן — אבל התוצאה הייתה בדיוק מה שהוא רצה מלכתחילה.
+מה הפעם שבה משהו לא הלך כמתוכנן, אבל בסוף התברר לטובה?`,
+    cue:"קול חם וסוגר, מוריד טון בהדרגה. תנו לשאלה האחרונה לרחף.",
+    link:true
+  }
+];
+
+let current = 0;
+
+function render(){
+  const s = slides[current];
+  document.getElementById('visual').style.background = s.bg;
+  document.getElementById('emojiScene').textContent = s.emoji;
+  document.getElementById('onscreenText').textContent = s.onscreen;
+  document.getElementById('onscreenText').style.display = s.onscreen ? 'block' : 'none';
+  document.getElementById('sayText').textContent = s.say;
+  document.getElementById('cueText').textContent = s.cue;
+  document.getElementById('slideCounter').textContent = `כרטיס ${current+1} מתוך ${slides.length}`;
+
+  const peda = document.getElementById('pedaNote');
+  if(current === 10){
+    peda.style.display = 'block';
+    peda.textContent = '💬 הערה פדגוגית: זהו סיפור עממי — הציגו אותו ככזה.';
+  } else {
+    peda.style.display = 'none';
+  }
+
+  const link = document.getElementById('linkNote');
+  if(current === 12){
+    link.style.display = 'block';
+    link.textContent = '🔗 חיבור: כמו ב"אבא יודן והאוצר בבור" — אסון-לכאורה שהופך לברכה.';
+  } else {
+    link.style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.onclick = () => go(i);
+    dots.appendChild(d);
+  });
+}
+
+function go(i){
+  if(i < 0 || i >= slides.length) return;
+  current = i;
+  render();
+}
+
+function toggleMem(show){
+  document.getElementById('memOverlay').classList.toggle('show', show);
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft') go(current + 1);
+  if(e.key === 'ArrowRight') go(current - 1);
+});
+
+render();
+</script>
+</body>
+</html>
