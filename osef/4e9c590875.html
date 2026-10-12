@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>רגל שולחן הזהב</title>
+<meta name="description" content="רגל שולחן הזהב">
+<style>
+  :root{
+    --gold:#c9a227;
+    --gold-light:#e8cf7a;
+    --cream:#fbf3df;
+    --navy:#1e2a3a;
+    --navy-light:#2c3e54;
+    --accent:#8b5e34;
+    --heaven:#5a4a8f;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    font-family:'Segoe UI',Arial,sans-serif;
+    background:linear-gradient(160deg,var(--navy) 0%,var(--navy-light) 100%);
+    overflow:hidden;
+    direction:rtl;
+  }
+  #app{
+    position:relative;
+    width:100%;height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  .stage{
+    width:min(920px,94vw);
+    height:min(660px,88vh);
+    background:var(--cream);
+    border-radius:22px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45);
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .visual{
+    flex:1 1 44%;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    transition:background 0.6s ease;
+  }
+  .visual .emoji-scene{
+    font-size:min(13vw,84px);
+    filter:drop-shadow(0 6px 10px rgba(0,0,0,0.25));
+    animation:floatIn 0.7s ease;
+    text-align:center;
+    line-height:1.1;
+  }
+  .visual .onscreen-text{
+    position:absolute;
+    bottom:14px;left:20px;right:20px;
+    text-align:center;
+    font-size:clamp(15px,2.4vw,24px);
+    font-weight:700;
+    color:#fff;
+    background:rgba(30,42,58,0.55);
+    padding:10px 16px;
+    border-radius:12px;
+    backdrop-filter:blur(2px);
+    animation:fadeUp 0.8s ease;
+  }
+  @keyframes floatIn{
+    from{opacity:0;transform:translateY(14px) scale(0.94);}
+    to{opacity:1;transform:translateY(0) scale(1);}
+  }
+  @keyframes fadeUp{
+    from{opacity:0;transform:translateY(10px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .panel{
+    flex:1 1 56%;
+    background:#fff;
+    padding:16px 26px 8px;
+    overflow-y:auto;
+    border-top:3px solid var(--gold);
+  }
+  .slide-counter{
+    font-size:13px;
+    color:var(--accent);
+    font-weight:700;
+    letter-spacing:0.5px;
+  }
+  .say-label{
+    display:inline-block;
+    background:var(--gold);
+    color:#3a2a05;
+    font-size:12px;
+    font-weight:800;
+    padding:3px 10px;
+    border-radius:20px;
+    margin:8px 0 6px;
+  }
+  .say-text{
+    font-size:clamp(14px,2vw,18px);
+    line-height:1.55;
+    color:var(--navy);
+    white-space:pre-line;
+  }
+  .cue-label{
+    display:inline-block;
+    background:var(--navy);
+    color:#fff;
+    font-size:12px;
+    font-weight:800;
+    padding:3px 10px;
+    border-radius:20px;
+    margin:10px 0 6px;
+  }
+  .cue-text{
+    font-size:13.5px;
+    color:#555;
+    line-height:1.5;
+    font-style:italic;
+  }
+  .link-note{
+    margin-top:10px;
+    background:var(--cream);
+    border-right:4px solid var(--gold);
+    padding:8px 12px;
+    font-size:13px;
+    color:var(--accent);
+    border-radius:8px;
+  }
+  .peda-note{
+    margin-top:10px;
+    background:#eef3ff;
+    border-right:4px solid var(--heaven);
+    padding:8px 12px;
+    font-size:13px;
+    color:#3b3070;
+    border-radius:8px;
+  }
+  .nav-bar{
+    position:absolute;
+    bottom:16px;left:0;right:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:14px;
+  }
+  .nav-btn{
+    background:var(--gold);
+    border:none;
+    color:#3a2a05;
+    font-size:16px;
+    font-weight:800;
+    padding:10px 18px;
+    border-radius:30px;
+    cursor:pointer;
+    box-shadow:0 4px 10px rgba(0,0,0,0.3);
+    transition:transform 0.15s ease, background 0.2s ease;
+  }
+  .nav-btn:hover{transform:translateY(-2px);background:var(--gold-light);}
+  .nav-btn:active{transform:translateY(0);}
+  .nav-btn:disabled{
+    opacity:0.35;
+    cursor:not-allowed;
+    transform:none;
+  }
+  .dots{
+    display:flex;
+    gap:4px;
+    align-items:center;
+    flex-wrap:wrap;
+    max-width:280px;
+    justify-content:center;
+  }
+  .dot{
+    width:8px;height:8px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.35);
+    cursor:pointer;
+    transition:background 0.2s, transform 0.2s;
+  }
+  .dot.active{
+    background:var(--gold);
+    transform:scale(1.4);
+  }
+  .top-bar{
+    width:min(920px,94vw);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+    color:var(--cream);
+  }
+  .top-title{
+    font-size:15px;
+    font-weight:700;
+    opacity:0.9;
+  }
+  .mem-btn{
+    background:transparent;
+    border:1.5px solid var(--gold);
+    color:var(--gold-light);
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background 0.2s;
+  }
+  .mem-btn:hover{background:rgba(201,162,39,0.15);}
+  .mem-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(10,15,22,0.85);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+  }
+  .mem-overlay.show{display:flex;}
+  .mem-box{
+    background:var(--cream);
+    width:min(700px,92vw);
+    max-height:85vh;
+    overflow-y:auto;
+    border-radius:16px;
+    padding:24px 28px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  }
+  .mem-box h2{
+    color:var(--navy);
+    margin-top:0;
+    border-bottom:3px solid var(--gold);
+    padding-bottom:8px;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+  }
+  th,td{
+    text-align:right;
+    padding:7px 9px;
+    border-bottom:1px solid #ddd;
+  }
+  th{
+    background:var(--gold);
+    color:#3a2a05;
+  }
+  tr:nth-child(even){background:#f6ecd0;}
+  .close-mem{
+    margin-top:16px;
+    background:var(--navy);
+    color:#fff;
+    border:none;
+    padding:8px 20px;
+    border-radius:20px;
+    cursor:pointer;
+    font-weight:700;
+  }
+  .mem-box .peda{
+    margin-top:14px;
+    background:#eef3ff;
+    border-right:4px solid var(--heaven);
+    padding:10px 14px;
+    font-size:13.5px;
+    color:#3b3070;
+    border-radius:8px;
+    line-height:1.5;
+  }
+  @media (max-width:600px){
+    .stage{border-radius:14px;}
+    .panel{padding:12px 14px 6px;}
+  }
+</style>
+<meta property="og:title" content="רגל שולחן הזהב">
+<meta property="og:description" content="רגל שולחן הזהב">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-osef-4e9c590875.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/osef/4e9c590875.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="app">
+  <div class="top-bar">
+    <div class="top-title">🪙 רגל שולחן הזהב</div>
+    <button class="mem-btn" id="memBtn">טבלת זיכרון מהירה</button>
+  </div>
+
+  <div class="stage">
+    <div class="visual" id="visual">
+      <div class="emoji-scene" id="emojiScene"></div>
+      <div class="onscreen-text" id="onscreenText"></div>
+    </div>
+    <div class="panel">
+      <div class="slide-counter" id="slideCounter"></div>
+      <div class="say-label">🗣️ אתה אומר</div>
+      <div class="say-text" id="sayText"></div>
+      <div class="cue-label">🎭 כיווני ביצוע</div>
+      <div class="cue-text" id="cueText"></div>
+      <div class="link-note" id="linkNote" style="display:none;"></div>
+      <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" id="prevBtn">◀ הקודם</button>
+    <div class="dots" id="dots"></div>
+    <button class="nav-btn" id="nextBtn">הבא ▶</button>
+  </div>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>1-2</td><td>בקשה + תפילה</td><td>"עד מתי נצטער?"</td></tr>
+      <tr><td>3-4</td><td>ניחוש + נס הזהב</td><td>יד משמים, רגל זהב</td></tr>
+      <tr><td>5</td><td>שמחה</td><td>רגע של אושר פשוט</td></tr>
+      <tr><td>6-7</td><td>החלום</td><td>שולחן חסר בגן עדן</td></tr>
+      <tr><td>8-9</td><td>השאלה + ניחוש הילדים</td><td>"שולחן שלם או חסר?"</td></tr>
+      <tr><td>10-11</td><td>תשובת האישה + הנס השני</td><td>"חלילה! נסתפק"</td></tr>
+      <tr><td>12</td><td>העמקה (אופציונלי)</td><td>לקחת בחזרה = נס גדול יותר</td></tr>
+      <tr><td>13</td><td>דיון</td><td>שאלות, לא תשובות</td></tr>
+      <tr><td>14-15</td><td>חיבור אישי + סגירה</td><td>"לשמוח עם מה שיש"</td></tr>
+    </table>
+    <div class="peda">
+      💬 <b>הערה פדגוגית:</b> זהו סיפור מופשט יותר מהקודמים (עוסק ב"עולם הבא" ו"שכר לעתיד").
+      מומלץ להאט בכרטיסים 6-9, ולתת דוגמה קונקרטית משלכם בכרטיס 14
+      (למשל: "לחכות לקינוח אחרי הארוחה, במקום לאכול אותו לפני") כדי לעגן את הרעיון בחוויה מוכרת לילד.
+    </div>
+    <button class="close-mem" id="closeMem">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#7a4a2b)",
+    emoji: "🏚️💬",
+    onscreen: "\"עד מתי נצטער בעוני הזה?\"",
+    say: "ילדים, בואו נתקרב.\n\nאתם זוכרים את רבי חנינא בן דוסא ואשתו — כמה עניים הם היו? יום אחד, אחרי כל הניסים שכבר ראו, אשתו פנתה אליו ואמרה בצער...\n\n(קול עדין ומבקש)\n\n'בעלי היקר, עד מתי נצטער כל כך בעוני הקשה הזה? התפלל לה' שייתן לנו מעט עזרה, כדי שנוכל להתפרנס.'",
+    cue: "טון חם ואנושי — זו לא תלונה, זו בקשה כנה ועייפה מעט. אם מספרים בסדרה, אפשר לשאול 'מי זוכר אותם מהסיפורים הקודמים?'"
+  },
+  {
+    bg: "linear-gradient(160deg,#c9a227,#3a2a05)",
+    emoji: "🙏",
+    onscreen: "",
+    say: "רבי חנינא, כמו תמיד, התפלל. ומיד קרה דבר מדהים.",
+    cue: "קצר וממוקד — לא לגרור, זה כרטיס מעבר קצר לפני ההפתעה."
+  },
+  {
+    bg: "linear-gradient(160deg,#8b5e34,#4a2f1a)",
+    emoji: "❓✨",
+    onscreen: "מה ירד להם משמים?",
+    say: "לפני שאני מספר לכם מה קרה — תנחשו: מה אתם חושבים ירד להם משמים, כתשובה לתפילה?",
+    cue: "לשמוע כמה ניחושים, לחייך לכולם, בלי לאשר או לפסול — פשוט 'עוד רגע נגלה!'"
+  },
+  {
+    bg: "radial-gradient(circle at 50% 40%,#e8cf7a 0%,#5a4a8f 80%)",
+    emoji: "🤚✨🪑",
+    onscreen: "רגל שולחן מזהב טהור!",
+    say: "(עצירה)\n\nנס משמים התרחש! יצאה כמין פיסת יד מהשמים, והושיטה לרבי חנינא... רגל של שולחן, עשויה כולה מזהב טהור ויקר ערך!",
+    cue: "קול של פליאה גדולה — זה הרגע הכי 'קסום' ויזואלית בסיפור. אפשר להרים ידיים כשמתארים את הזהב."
+  },
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#c9a227)",
+    emoji: "😊🪙",
+    onscreen: "שמחה גדולה",
+    say: "רבי חנינא ואשתו שמחו מאוד. סוף סוף — קצת עזרה, קצת רווחה.",
+    cue: "קול שמח וקליל — נותנים לילדים רגע להרגיש את השמחה הפשוטה, לפני שהעלילה מתהפכת."
+  },
+  {
+    bg: "linear-gradient(160deg,#5a4a8f,#1e2a3a)",
+    emoji: "💭🌙",
+    onscreen: "החלום",
+    say: "(האטה, קול חלומי ורגוע)\n\nאבל באותו לילה, רבי חנינא חלם חלום. הוא ראה את כל הצדיקים בגן עדן, לעתיד לבוא — יושבים ואוכלים סביב שולחנות זהב שלמים, עם שלוש רגליים.",
+    cue: "קול איטי ורך יותר — אנחנו נכנסים לעולם החלום, זה צריך להישמע אחרת מהמציאות."
+  },
+  {
+    bg: "linear-gradient(160deg,#5a4a8f,#c9a227)",
+    emoji: "🪑💫",
+    onscreen: "שולחן זהב... חסר רגל",
+    say: "ואילו הוא ואשתו... ישבו סביב שולחן זהב חסר. היה לו רק שתי רגליים — כי הרגל השלישית כבר ניתנה להם, למטה, בעולם הזה.",
+    cue: "הפסקה קלה אחרי 'חסר' — לתת לילדים לדמיין שולחן נוטה וחסר, ניגוד לשולחנות המלאים של כולם."
+  },
+  {
+    bg: "linear-gradient(160deg,#8b5e34,#5a4a8f)",
+    emoji: "🤔🪑",
+    onscreen: "\"האם יהיה לך טוב שכולם יאכלו על שולחנות שלמים, ורק אנו חסרים?\"",
+    say: "בבוקר, רבי חנינא סיפר לאשתו את החלום, ושאל אותה...\n\n(קול רציני ועדין)\n\n'האם יהיה לך טוב שכל הצדיקים בגן עדן יאכלו על שולחנות זהב שלמים, ורק אנו נאכל על שולחן חסר?'",
+    cue: "תני לשאלה הזו רגע לשקוע לפני שממשיכים — היא לא רטורית, היא באמת שאלה כבדה."
+  },
+  {
+    bg: "linear-gradient(160deg,#1e2a3a,#8b5e34)",
+    emoji: "🙋‍♀️🙋‍♂️",
+    onscreen: "מה אתם הייתם עונים?",
+    say: "אם היו שואלים אתכם את השאלה הזאת — מה הייתם עונים לו?",
+    cue: "לתת לילדים באמת להתלבט ולענות. יש כאן שתי תשובות אפשריות (להשאיר את הזהב / לוותר עליו) — לא לכוון אותם מראש."
+  },
+  {
+    bg: "linear-gradient(160deg,#c9a227,#7a4a2b)",
+    emoji: "💛🙅‍♀️",
+    onscreen: "\"חלילה! נסתפק במה שיש לנו!\"",
+    say: "אשתו ענתה מיד, בלי היסוס: 'חלילה! התפלל שוב שייקחו בחזרה את רגל הזהב, ואנו נסתפק במה שיש לנו בעולם הזה!'",
+    cue: "קול נחוש ומהיר — היא לא מהססת אפילו רגע, וזה חשוב להעביר בקצב הדיבור."
+  },
+  {
+    bg: "radial-gradient(circle at 50% 40%,#5a4a8f 0%,#1e2a3a 85%)",
+    emoji: "🤚⬆️",
+    onscreen: "",
+    say: "רבי חנינא התפלל שוב. ופיסת יד ירדה משמים... ונטלה בחזרה את רגל הזהב.",
+    cue: "קול רגוע, כמעט שלֵו — אין כאן אכזבה, יש כאן החלטה מודעת ושמחה."
+  },
+  {
+    bg: "linear-gradient(160deg,#5a4a8f,#c9a227)",
+    emoji: "⭐⭐⭐",
+    onscreen: "משמים רגילים רק לתת... בשבילם — לקחו בחזרה",
+    say: "ותדעו דבר מעניין: החכמים אומרים שהנס השני — שהזהב חזר לשמים — היה גדול אפילו יותר מהנס הראשון. כי משמים רגילים רק לתת מתנות טובות, אבל בשביל רבי חנינא ואשתו, עשו נס מיוחד ולקחו בחזרה — כי זה מה שהם באמת רצו.",
+    cue: "קול של הערכה והתפעלות — זה כרטיס 'בונוס' שמוסיף עומק, אפשר לוותר עליו אם רוצים סיפור קצר יותר."
+  },
+  {
+    bg: "linear-gradient(160deg,#1e2a3a,#5a4a8f)",
+    emoji: "💭❓",
+    onscreen: "למה הם ויתרו על עושר?",
+    say: "בואו נחשוב רגע — למה הם ויתרו על עושר אמיתי, כאן ועכשיו, בשביל משהו שהם אפילו לא יכולים לראות?\n\n(לשמוע תשובות)\n\nומה אתם חושבים באמת חשוב יותר — משהו שיש לך עכשיו, או משהו ששווה לחכות לו?",
+    cue: "אל תתני את התשובה! תני לילדים להגיע בעצמם לרעיון שיש דברים ששווה לחכות להם, ושהשלמות האמיתית לא תמיד נמדדת במה שיש לנו עכשיו."
+  },
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#3a7d9c)",
+    emoji: "🧸😊",
+    onscreen: "לשמוח עם מה שיש",
+    say: "לפעמים אנחנו רואים שלחבר יש צעצוע חדש, או משהו שאין לנו. וזה קצת קשה.\n\nרבי חנינא ואשתו לימדו אותנו שאפשר להיות שמחים גם עם מה שיש לנו — כי לפעמים הדברים הכי טובים, שווים לחכות להם.",
+    cue: "קול חם ואישי, לא שיפוטי — לא 'אסור לקנא', אלא הזמנה לחשוב אחרת על שמחה."
+  },
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#7a4a2b)",
+    emoji: "🏚️💛",
+    onscreen: "במה אתם יכולים לשמוח היום?",
+    say: "אז תחשבו — במה אתם כבר יכולים לשמוח היום, גם בלי לקבל משהו חדש?\n\n(לתת לכמה ילדים לשתף)\n\nרבי חנינא ואשתו בחרו בשלמות לעתיד, על פני עושר לרגע. וזו הייתה הבחירה שהפכה אותם לצדיקים גדולים כל כך.",
+    cue: "נעילה רגועה ומחממת לב, לא ממהרים לסיים."
+  }
+];
+
+let current = 0;
+
+const emojiScene = document.getElementById('emojiScene');
+const onscreenText = document.getElementById('onscreenText');
+const visual = document.getElementById('visual');
+const sayText = document.getElementById('sayText');
+const cueText = document.getElementById('cueText');
+const linkNote = document.getElementById('linkNote');
+const pedaNote = document.getElementById('pedaNote');
+const slideCounter = document.getElementById('slideCounter');
+const dotsEl = document.getElementById('dots');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+function buildDots(){
+  dotsEl.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.addEventListener('click', () => { current = i; render(); });
+    dotsEl.appendChild(d);
+  });
+}
+
+function render(){
+  const s = slides[current];
+  visual.style.background = s.bg;
+  emojiScene.textContent = s.emoji;
+  onscreenText.textContent = s.onscreen;
+  onscreenText.style.display = s.onscreen ? 'block' : 'none';
+  sayText.textContent = s.say;
+  cueText.textContent = s.cue;
+  linkNote.style.display = 'none';
+  pedaNote.style.display = 'none';
+  if(current === 0){
+    linkNote.style.display = 'block';
+    linkNote.textContent = "🔗 חיבור לסיפור הקודם: כדאי לפתוח בקישור ישיר — \"אתם זוכרים את הנס עם התנור המלא לחם? הפעם קרה להם עוד נס — אבל הפעם הסיפור לא נגמר במקום שחשבתם.\"";
+  }
+  if(current === 5 || current === 7){
+    pedaNote.style.display = 'block';
+    pedaNote.textContent = "💬 הערה פדגוגית: זהו קטע מופשט יותר (עולם הבא, שכר לעתיד) — מומלץ להאט כאן במיוחד ולתת לילדים זמן לעכל את הרעיון.";
+  }
+  slideCounter.textContent = 'כרטיס ' + (current+1) + ' מתוך ' + slides.length;
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = current === slides.length - 1;
+  nextBtn.textContent = current === slides.length - 1 ? 'סוף הסיפור ✓' : 'הבא ▶';
+  buildDots();
+  document.querySelector('.panel').scrollTop = 0;
+}
+
+prevBtn.addEventListener('click', () => {
+  if(current > 0){ current--; render(); }
+});
+nextBtn.addEventListener('click', () => {
+  if(current < slides.length - 1){ current++; render(); }
+});
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft'){
+    if(current < slides.length - 1){ current++; render(); }
+  } else if(e.key === 'ArrowRight'){
+    if(current > 0){ current--; render(); }
+  }
+});
+
+const memBtn = document.getElementById('memBtn');
+const memOverlay = document.getElementById('memOverlay');
+const closeMem = document.getElementById('closeMem');
+memBtn.addEventListener('click', () => memOverlay.classList.add('show'));
+closeMem.addEventListener('click', () => memOverlay.classList.remove('show'));
+memOverlay.addEventListener('click', (e) => {
+  if(e.target === memOverlay) memOverlay.classList.remove('show');
+});
+
+render();
+</script>
+
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif;direction:rtl"><a href="https://www.kol-toda.co.il/t/stories.html#s_tanaim" style="color:#4f46e5">← עוד בסיפורי התנאים</a> · <a href="https://www.kol-toda.co.il/" style="color:#4f46e5">אתר הקול החמישי</a></p>
+</body>
+</html>

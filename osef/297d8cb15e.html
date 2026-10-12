@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>משחק טריוויה – ברכת שהחיינו – הקול החמישי</title>
+<meta name="description" content="&gt;משחק טריוויה: ברכת שהחיינו&lt;/h1&gt;
+        &lt;button
+          onClick={() =&gt; setSoundEnabled(!soundEnabled)}
+          className=">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="משחק טריוויה – ברכת שהחיינו – הקול החמישי">
+<meta property="og:description" content="&gt;משחק טריוויה: ברכת שהחיינו&lt;/h1&gt;
+        &lt;button
+          onClick={() =&gt; setSoundEnabled(!soundEnabled)}
+          className=">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-osef-297d8cb15e.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/osef/297d8cb15e.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+
+
+<script>
+(function () {
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const questions = [{
+  question: "מתי מברכים ברכת שהחיינו על פירות?",
+  options: ["מיד כשרואים את הפרי החדש", "בפעם הראשונה שאוכלים אותו בעונה", "רק אחרי שמברכים ברכת העץ", "בכל פעם שאוכלים את הפרי"],
+  correctAnswer: 1
+}, {
+  question: "האם ברכת שהחיינו על פירות היא חובה?",
+  options: ["כן, חובה גמורה כמו כל הברכות", "לא, רשות גמורה", "רשות, אבל אם אוכל חייב לברך", "תלוי בסוג הפרי"],
+  correctAnswer: 2
+}, {
+  question: "האם מברכים שהחיינו על לימון?",
+  options: ["כן, כמו כל הפירות", "לא, כי אין לו זמן קבוע", "רק בעונה החדשה", "תלוי אם הוא מתוק"],
+  correctAnswer: 1
+}, {
+  question: "מה הדין בפרי שגדל פעמיים בשנה?",
+  options: ["מברכים רק פעם אחת בשנה", "לא מברכים כלל", "מברכים בכל פעם שמתחדש", "תלוי בטעם הפרי"],
+  correctAnswer: 2
+}, {
+  question: "האם מברכים שהחיינו על פירות חממה?",
+  options: ["לא מברכים כלל", "מברכים רק אם יש עונה מוגדרת", "מברכים בכל קנייה חדשה", "תלוי במחיר"],
+  correctAnswer: 1
+}];
+const emojis = ["🙏", "🍎", "✨", "📿", "🕊️", "🍇", "🌺", "🍊", "💫", "🌟"];
+
+// Audio URLs - using placeholder paths, replace with actual audio file URLs
+const AUDIO = {
+  correct: "/sounds/correct.mp3",
+  wrong: "/sounds/wrong.mp3",
+  gameStart: "/sounds/start.mp3",
+  gameEnd: "/sounds/end.mp3",
+  buttonHover: "/sounds/hover.mp3"
+};
+const TriviaGame = () => {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(Array(4).fill(0));
+  const [currentPlayer, setCurrentPlayer] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [lastAnswerCorrect, setLastAnswerCorrect] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  useEffect(() => {
+    // Play game start sound when component mounts
+    if (soundEnabled) {
+      const audio = new Audio(AUDIO.gameStart);
+      audio.play().catch(error => console.log('Audio playback failed:', error));
+    }
+  }, []);
+  const playSound = soundType => {
+    if (soundEnabled) {
+      const audio = new Audio(AUDIO[soundType]);
+      audio.play().catch(error => console.log('Audio playback failed:', error));
+    }
+  };
+  const handleAnswer = selectedAnswer => {
+    const isCorrect = selectedAnswer === questions[currentQuestion].correctAnswer;
+    setLastAnswerCorrect(isCorrect);
+    setShowExplanation(true);
+
+    // Play appropriate sound
+    playSound(isCorrect ? 'correct' : 'wrong');
+    if (isCorrect) {
+      setScore(prevScore => {
+        const newScore = [...prevScore];
+        newScore[currentPlayer] += 1;
+        return newScore;
+      });
+    }
+    setTimeout(() => {
+      setShowExplanation(false);
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+        setCurrentPlayer((currentPlayer + 1) % 4);
+      } else {
+        setGameOver(true);
+        playSound('gameEnd');
+      }
+    }, 2000);
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-amber-100 to-orange-100 p-8 rounded-lg shadow-lg max-w-2xl mx-auto text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-6"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-3xl font-bold text-amber-800"
+  }, "\u05DE\u05E9\u05D7\u05E7 \u05D8\u05E8\u05D9\u05D5\u05D5\u05D9\u05D4: \u05D1\u05E8\u05DB\u05EA \u05E9\u05D4\u05D7\u05D9\u05D9\u05E0\u05D5"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setSoundEnabled(!soundEnabled),
+    className: "bg-amber-500 text-white p-2 rounded-full"
+  }, soundEnabled ? '🔊' : '🔇')), !gameOver ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+    className: "mb-4 text-lg"
+  }, "\u05E9\u05D7\u05E7\u05DF ", currentPlayer + 1, ", \u05EA\u05D5\u05E8\u05DA!"), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-6 rounded-lg shadow mb-6"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl mb-4"
+  }, questions[currentQuestion].question), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 gap-4"
+  }, questions[currentQuestion].options.map((option, index) => /*#__PURE__*/React.createElement("button", {
+    key: index,
+    className: `bg-amber-500 text-white py-2 px-4 rounded hover:bg-amber-600 transition duration-300 ${showExplanation && index === questions[currentQuestion].correctAnswer ? 'bg-green-500' : ''}`,
+    onClick: () => !showExplanation && handleAnswer(index),
+    onMouseEnter: () => playSound('buttonHover'),
+    disabled: showExplanation
+  }, option, " ", emojis[index % emojis.length]))), showExplanation && /*#__PURE__*/React.createElement("div", {
+    className: `mt-4 p-3 rounded ${lastAnswerCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`
+  }, lastAnswerCorrect ? 'כל הכבוד! תשובה נכונה!' : 'לא מדויק. נסה שוב בשאלה הבאה!')), /*#__PURE__*/React.createElement("div", {
+    className: "mb-4"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-lg font-semibold"
+  }, "\u05E0\u05D9\u05E7\u05D5\u05D3 \u05E0\u05D5\u05DB\u05D7\u05D9:"), score.map((playerScore, index) => /*#__PURE__*/React.createElement("p", {
+    key: index
+  }, "\u05E9\u05D7\u05E7\u05DF ", index + 1, ": ", playerScore)))) : /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-6 rounded-lg shadow"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl mb-4"
+  }, "\u05D4\u05DE\u05E9\u05D7\u05E7 \u05D4\u05E1\u05EA\u05D9\u05D9\u05DD!"), /*#__PURE__*/React.createElement("ul", null, score.map((playerScore, index) => /*#__PURE__*/React.createElement("li", {
+    key: index,
+    className: "mb-2"
+  }, "\u05E9\u05D7\u05E7\u05DF ", index + 1, ": ", playerScore, " \u05E0\u05E7\u05D5\u05D3\u05D5\u05EA"))), /*#__PURE__*/React.createElement("p", {
+    className: "mt-4 text-lg"
+  }, "\u05DE\u05D9 \u05E9\u05D9\u05D5\u05D3\u05E2 \u05DC\u05D1\u05E8\u05DA \u05DB\u05E8\u05D0\u05D5\u05D9 - \u05D9\u05D5\u05D3\u05E2 \u05DC\u05D4\u05D5\u05D3\u05D5\u05EA \u05D5\u05DC\u05E9\u05DE\u05D5\u05D7! \uD83D\uDE4F\u2728")));
+};
+const __App = TriviaGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+})();
+</script>
+
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif;direction:rtl"><a href="https://www.kol-toda.co.il/t/tefila.html#f_general" style="color:#4f46e5">← עוד בברכות ותפילה – כללי</a> · <a href="https://www.kol-toda.co.il/" style="color:#4f46e5">אתר הקול החמישי</a></p>
+</body>
+</html>

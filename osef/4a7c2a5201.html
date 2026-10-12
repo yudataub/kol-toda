@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>משחק אהבת התורה – מסע אל הלב – הקול החמישי</title>
+<meta name="description" content="איך נוכל להפוך את התורה למקור החיים שלנו?">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="משחק אהבת התורה – מסע אל הלב – הקול החמישי">
+<meta property="og:description" content="איך נוכל להפוך את התורה למקור החיים שלנו?">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-osef-4a7c2a5201.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/osef/4a7c2a5201.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+(function () {
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const BookOpen = window.LucideReact["BookOpen"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const TorahLoveGame = () => {
+  const [currentLesson, setCurrentLesson] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [lessonScore, setLessonScore] = useState(0);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedback, setFeedback] = useState({
+    correct: false,
+    message: ''
+  });
+  const [gameComplete, setGameComplete] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showPartTwo, setShowPartTwo] = useState(false);
+  const [waitingForContinue, setWaitingForContinue] = useState(false);
+  const lessons = [{
+    title: "אהבת התורה של מרן",
+    part1: "אהבתו של מרן לתורה הקדושה לא ידעה גבולות. אהבה עצומה זו סייעה בידו לזכור את כל תלמודו, והיא גרמה לו לשקוע בלימוד התורה, עד שלא היה חש כלל בנעשה סביבו.\n\nחשוב רגע: האם אתה מרגיש את השמחה שבקרבה להשם דרך הלימוד?\n\nאהבת התורה ניפרה במרן גם בזמנים של חולשה. באותם מצבים, כאשר אדם מן השורה היה עולה אל מיטתו לנוח, היה מרן מתנתק מכל הסובב אותו ושוקע בלימוד התורה.\n\nרק הלימוד היה מחזיק אותו, וכאשר היה נאלץ להפסיק לרגע - היתה החולשה מתגברת עליו.",
+    part2: "באחת משנותיו האחרונות נזקק מרן לטיפול אנטיביוטי חריף. הטיפול מחליש מאוד את הגוף, ומשום כך נאלץ מרן לנוח במיטתו במשך רוב שעות היום.\n\nאולם אך התאושש מרן במעט, והוא שב אל חדר הלימוד, להגות בתורה הקדושה והמתוקה!\n\nשאלה למחשבה: איך אפשר לקיים את מצוות לימוד התורה באהבה ולא רק כחובה?\n\nבעקבות העדרותו מן הלשכה, הצטברו על שולחנו עשרות בקשות להמלצה. מרן התיישב ונגש לכתוב, אך החולשה גברה עליו.\n\nהוא כתב המלצה אחת, ועיניו נעצמו. כעבור כמה דקות פקח את עיניו, כתב עוד, ונתנמנם שוב...",
+    questions: [{
+      q: "מה סייע למרן לזכור את כל תלמודו?",
+      answers: ["אהבתו העצומה לתורה", "זיכרונו החריג", "שיטת הלימוד שפיתח", "החזרות הרבות"],
+      correct: 0,
+      hint: "חשוב על הרגש...",
+      thought: "איך אהבת ה' מתבטאת דרך אהבת התורה?"
+    }, {
+      q: "מה קרה כאשר מרן הפסיק לרגע מן הלימוד?",
+      answers: ["החולשה התגברת עליו", "חזר ללמוד אחרי מנוחה", "עבר לנושא אחר", "ביקש מתלמידיו להמשיך"],
+      correct: 0,
+      hint: "הלימוד היה כוחו...",
+      thought: "מה מלמד הסיפור על כוח התורה?"
+    }, {
+      q: "למה נזקק מרן בשנותיו האחרונות?",
+      answers: ["לטיפול אנטיביוטי חריף", "לניתוח מסובך", "למנוחה ארוכה", "לטיפול פיזיותרפי"],
+      correct: 0,
+      hint: "הטיפול מחליש...",
+      thought: "איך נשמור על אהבת ה' בזמנים קשים?"
+    }]
+  }, {
+    title: "הסוד של מרן - התורה מעוררת!",
+    part1: "המזכירים עמדו אובדי עצות. ולפתע ניצנץ רעיון במוחו של אחד מהם!\n\nרעיון מבריק: והוא פתח וסיפר למרן על שאלה הלכתית שנתקבלה הבוקר.\n\nלשמוע השאלה - התנער מרן ממקומו כאריה! החל פותח את הספרים שלפניו, מביא ראיות ומקשה קושיות, מתרץ ומסיק!\n\nפניהם של המזכירים נהרו. הרב התעורר! לחשו.",
+    part2: "מרן החל ללמוד ברתיחא דאורייתא (בהתלהבות התורה)!\n\nהמזכירים הגישו את הבקשות להמלצה. אולם לאחר שמרן כתב המלצה אחת, נעצמו שוב עיניו והוא נרדם...\n\nשוב הציגו שאלה הלכתית, ושוב התעורר מרן כאריה! שוב ביקשו לנצל את ההזדמנות, ושוב נתנמנם מרן על הדף.\n\nאז הבינו הסובבים ביתר שאת: מקור חייו של מרן אינו אלא התורה הקדושה!\n\nהתורה היתה נשמתו, חייו, ומקור כוחו של מרן!",
+    questions: [{
+      q: "מה עשה אחד המזכירים כשמרן המשיך להירדם?",
+      answers: ["סיפר לו על שאלה הלכתית", "הביא לו תה חם", "ביקש ממנו לנוח", "המתין בשקט"],
+      correct: 0,
+      hint: "הרעיון קשור ללימוד...",
+      thought: "מה מעורר בנו את אהבת ה' הכי הרבה?"
+    }, {
+      q: "איך הגיב מרן כששמע את השאלה ההלכתית?",
+      answers: ["התנער ממקומו כאריה והחל ללמוד", "ביקש שיחזרו לו אחר כך", "השיב תשובה קצרה", "אמר שיענה אחרי מנוחה"],
+      correct: 0,
+      hint: "התגובה היתה מלאת אנרגיה!",
+      thought: "איך אפשר לראות כאן את כוח אהבת התורה?"
+    }, {
+      q: "מה הבינו הסובבים בסוף הסיפור?",
+      answers: ["שמקור חייו של מרן הוא התורה", "שמרן זקוק למנוחה", "שצריך להפסיק להטריד אותו", "שכדאי להביא לו עוד ספרים"],
+      correct: 0,
+      hint: "מה היה נותן לו כוח?",
+      thought: "איך נוכל להפוך את התורה למקור החיים שלנו?"
+    }]
+  }, {
+    title: "לקחים לחיים - אהבת ה' בפעולה",
+    part1: "הלקחים שנלמדים מסיפור מרן:\n\n1. אהבה אמיתית לתורה\nכשאוהבים משהו באמת - זה נותן לנו כוח! מרן הראה שאהבת התורה יכולה להחיות אדם גם בזמנים קשים.\n\nשאלה: מה גורם לך להתחבר להשם ולתורה?\n\n2. התורה היא מקור החיים\nהתורה היא מקור אנרגיה רוחנית! כשלומדים באהבה, מתחברים לאור האלוקי.\n\nעץ חיים היא למחזיקים בה!",
+    part2: "3. ללמוד גם כשקשה\nמרן לימד שגם כשהגוף חלש, הנשמה יכולה להיות חזקה!\n\n4. התורה מעוררת את הנשמה\nכשהמזכירים דיברו על תורה - מרן התעורר מיד!\n\nיישום: כשעייף - נסה ללמוד משהו מעניין בתורה!\n\n5. חיבור אישי להשם\nמרן הראה שאפשר לחיות עם ה' כל הזמן, דרך הלימוד.\n\nואהבת את ה' אלוקיך בכל לבבך - האהבה הזו באה מתוך הלב, דרך התורה!",
+    questions: [{
+      q: "מה הלקח העיקרי מסיפור מרן?",
+      answers: ["אהבת התורה נותנת כוח וחיים", "צריך לנוח הרבה כשחולים", "חשוב לכתוב המלצות", "כדאי להיות גאון בתורה"],
+      correct: 0,
+      hint: "חשוב על מה נתן לו כוח...",
+      thought: "איך אהבת התורה מביאה אותנו קרוב להשם?"
+    }, {
+      q: "איך אפשר ליישם את הסיפור בחיים שלנו?",
+      answers: ["ללמוד תורה באהבה גם כשקשה", "לישון פחות ללמוד יותר", "להיות מומחה בכל התלמוד", "לכתוב המלצות לכולם"],
+      correct: 0,
+      hint: "מה כל אחד יכול לעשות?",
+      thought: "איזו מצווה אני רוצה לקיים היום מתוך שמחה?"
+    }, {
+      q: "למה התורה נקראת עץ חיים?",
+      answers: ["כי היא נותנת חיות וכוח לנשמה", "כי היא מדברת על עצים", "כי היא כתובה על קלף מעצים", "כי היא גדלה כמו עץ"],
+      correct: 0,
+      hint: "חשוב על מה התורה נתנה למרן...",
+      thought: "איך אני מרגיש את החיות שהתורה נותנת לי?"
+    }]
+  }];
+  const shuffleArray = array => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  useEffect(() => {
+    if (currentLesson < lessons.length && currentQuestion < lessons[currentLesson].questions.length) {
+      const question = lessons[currentLesson].questions[currentQuestion];
+      const answers = question.answers.map((answer, index) => ({
+        text: answer,
+        isCorrect: index === question.correct
+      }));
+      setShuffledAnswers(shuffleArray(answers));
+    }
+  }, [currentLesson, currentQuestion]);
+  const playSound = isCorrect => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const notes = isCorrect ? [261.63, 329.63, 392.00] : [392.00, 329.63, 261.63];
+      notes.forEach((freq, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.frequency.value = freq;
+        oscillator.type = 'sine';
+        const startTime = audioContext.currentTime + index * 0.15;
+        gainNode.gain.setValueAtTime(0.3, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.15);
+      });
+    } catch (e) {
+      console.log('Audio not available');
+    }
+  };
+  const playLessonCompleteSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25];
+      notes.forEach((freq, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.frequency.value = freq;
+        oscillator.type = 'sine';
+        const startTime = audioContext.currentTime + index * 0.2;
+        gainNode.gain.setValueAtTime(0.3, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.2);
+      });
+    } catch (e) {
+      console.log('Audio not available');
+    }
+  };
+  const encouragingMessages = ["מצוין! ⭐", "כל הכבוד! 💪", "פצצה! 🎯", "נהדר! 🌟", "מושלם! ✨"];
+  const handleAnswer = answerIndex => {
+    if (showFeedback) return;
+    setSelectedAnswer(answerIndex);
+    const isCorrect = shuffledAnswers[answerIndex].isCorrect;
+    if (isCorrect) {
+      const randomMessage = encouragingMessages[Math.floor(Math.random() * encouragingMessages.length)];
+      setFeedback({
+        correct: true,
+        message: randomMessage + "\n\nהשם שמח כשרואים את אהבתו בלבך! 💖"
+      });
+      setScore(score + 1);
+      setLessonScore(lessonScore + 1);
+      playSound(true);
+    } else {
+      const currentQ = lessons[currentLesson].questions[currentQuestion];
+      setFeedback({
+        correct: false,
+        message: "לא בדיוק... " + currentQ.hint + " 🤔\n\nנסה שוב - לפעמים גם בטעות לומדים לאהוב את השם! 💡"
+      });
+      playSound(false);
+    }
+    setShowFeedback(true);
+  };
+  const handleNext = () => {
+    const currentLessonData = lessons[currentLesson];
+    if (currentQuestion < currentLessonData.questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setShowFeedback(false);
+      setSelectedAnswer(null);
+    } else {
+      if (lessonScore >= 2) {
+        if (currentLesson < lessons.length - 1) {
+          setCurrentLesson(currentLesson + 1);
+          setCurrentQuestion(0);
+          setLessonScore(0);
+          setShowFeedback(false);
+          setSelectedAnswer(null);
+          setShowPartTwo(false);
+          setWaitingForContinue(false);
+          playLessonCompleteSound();
+        } else {
+          setGameComplete(true);
+          playLessonCompleteSound();
+        }
+      } else {
+        setCurrentQuestion(0);
+        setLessonScore(0);
+        setShowFeedback(false);
+        setSelectedAnswer(null);
+        setShowPartTwo(false);
+        setWaitingForContinue(false);
+      }
+    }
+  };
+  const handleContinueReading = () => {
+    setShowPartTwo(true);
+    setWaitingForContinue(false);
+  };
+  const totalQuestions = lessons.reduce((sum, lesson) => sum + lesson.questions.length, 0);
+  const progress = score / totalQuestions * 100;
+  if (gameComplete) {
+    const percentage = Math.round(score / totalQuestions * 100);
+    return /*#__PURE__*/React.createElement("div", {
+      dir: "rtl",
+      className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-3xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-2xl p-8 text-center border-4 border-yellow-400"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-8xl mb-6"
+    }, "\uD83C\uDFC6"), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold text-purple-800 mb-4"
+    }, "\u05DB\u05DC \u05D4\u05DB\u05D1\u05D5\u05D3! \uD83C\uDF89"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-gray-700 mb-6"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05D4\u05DE\u05E1\u05E2 \u05D1\u05D0\u05D4\u05D1\u05EA \u05D4'! \uD83D\uDC96"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-gray-800"
+    }, "\u05D4\u05E6\u05D9\u05D5\u05DF \u05E9\u05DC\u05DA: ", score, " \u05DE\u05EA\u05D5\u05DA ", totalQuestions), /*#__PURE__*/React.createElement("p", {
+      className: "text-3xl font-bold text-purple-600 mt-2"
+    }, percentage, "%")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-50 rounded-xl p-6 mb-6 border-2 border-blue-200"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl mb-4"
+    }, "\uD83C\uDF93"), /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-bold text-blue-800 mb-3"
+    }, "\u05EA\u05E2\u05D5\u05D3\u05EA \u05D4\u05E6\u05D8\u05D9\u05D9\u05E0\u05D5\u05EA"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 mb-4"
+    }, "\u05D1\u05D6\u05D0\u05EA \u05DE\u05E2\u05E0\u05D9\u05E7\u05D9\u05DD \u05EA\u05E2\u05D5\u05D3\u05EA \u05D4\u05E6\u05D8\u05D9\u05D9\u05E0\u05D5\u05EA \u05DC\u05DE\u05E9\u05EA\u05EA\u05E3/\u05EA \u05D9\u05E7\u05E8/\u05D4"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-purple-700 mb-4"
+    }, "\u05E2\u05DC \u05D4\u05E9\u05DC\u05DE\u05EA \u05DE\u05E1\u05E2 \u05D0\u05D4\u05D1\u05EA \u05D4\u05EA\u05D5\u05E8\u05D4 \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4!"), /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-center gap-2 mb-4"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-8 h-8 text-red-500"
+    }), /*#__PURE__*/React.createElement(Sparkles, {
+      className: "w-8 h-8 text-yellow-500"
+    }), /*#__PURE__*/React.createElement(Heart, {
+      className: "w-8 h-8 text-red-500"
+    })), /*#__PURE__*/React.createElement("p", {
+      className: "text-base text-gray-600 italic border-t-2 border-blue-200 pt-4"
+    }, "\u05D5\u05D0\u05D4\u05D1\u05EA \u05D0\u05EA \u05D4' \u05D0\u05DC\u05D5\u05E7\u05D9\u05DA \u05D1\u05DB\u05DC \u05DC\u05D1\u05D1\u05DA \u05D5\u05D1\u05DB\u05DC \u05E0\u05E4\u05E9\u05DA \u05D5\u05D1\u05DB\u05DC \u05DE\u05D0\u05D5\u05D3\u05DA")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-purple-50 rounded-xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold text-purple-800 mb-4"
+    }, "\uD83D\uDCAD \u05E9\u05D0\u05DC\u05D5\u05EA \u05DC\u05DE\u05D7\u05E9\u05D1\u05D4"), /*#__PURE__*/React.createElement("div", {
+      className: "text-right space-y-3"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, "\u2022 \u05D0\u05D9\u05DA \u05D0\u05D5\u05DB\u05DC \u05DC\u05D4\u05D1\u05D9\u05D0 \u05D9\u05D5\u05EA\u05E8 \u05D0\u05D4\u05D1\u05EA \u05D4' \u05DC\u05DC\u05D9\u05DE\u05D5\u05D3 \u05D4\u05D1\u05D0 \u05E9\u05DC\u05D9?"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, "\u2022 \u05D0\u05D9\u05D6\u05D5 \u05DE\u05E6\u05D5\u05D5\u05D4 \u05D0\u05E0\u05D9 \u05E8\u05D5\u05E6\u05D4 \u05DC\u05E7\u05D9\u05D9\u05DD \u05D4\u05D9\u05D5\u05DD \u05DE\u05EA\u05D5\u05DA \u05E9\u05DE\u05D7\u05D4?"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, "\u2022 \u05DE\u05D4 \u05DC\u05DE\u05D3\u05EA\u05D9 \u05D4\u05D9\u05D5\u05DD \u05E2\u05DC \u05D4\u05E7\u05E9\u05E8 \u05D1\u05D9\u05DF \u05D0\u05D4\u05D1\u05EA \u05D4\u05EA\u05D5\u05E8\u05D4 \u05DC\u05D0\u05D4\u05D1\u05EA \u05D4'?"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-green-100 to-teal-100 rounded-xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold text-green-800 mb-2"
+    }, "\uD83C\uDF81 \u05DB\u05DC \u05D4\u05DB\u05D1\u05D5\u05D3! \u05D6\u05DB\u05D9\u05EA \u05DC\u05E1\u05D9\u05D9\u05DD \u05D0\u05EA \u05D4\u05DE\u05E1\u05E2 \u05D1\u05D0\u05D4\u05D1\u05EA \u05D4'!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-base text-gray-700 mb-4"
+    }, "\u05D0\u05EA\u05D4 \u05E0\u05DB\u05E0\u05E1 \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4 \u05E0\u05D5\u05E9\u05D0\u05EA \u05E4\u05E8\u05E1\u05D9\u05DD! \uD83C\uDF8A"), /*#__PURE__*/React.createElement("a", {
+      href: "https://forms.gle/A66uubei4XSX6SG2A",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: "inline-block bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 transition-colors"
+    }, "\uD83D\uDC49 \u05DC\u05D7\u05E5 \u05DB\u05D0\u05DF \u05DC\u05D4\u05E8\u05E9\u05DE\u05D4 \u05DC\u05D4\u05D2\u05E8\u05DC\u05D4")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gray-50 rounded-xl p-4 text-sm text-gray-600"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "mb-1"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05D1\u05D0\u05D4\u05D1\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-gray-800"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "mt-2"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520")))));
+  }
+  const currentLessonData = lessons[currentLesson];
+  const isReadingMode = currentQuestion === 0 && !showFeedback;
+  return /*#__PURE__*/React.createElement("div", {
+    dir: "rtl",
+    className: "min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement(BookOpen, {
+    className: "w-8 h-8 text-purple-600"
+  }), /*#__PURE__*/React.createElement("h1", {
+    className: "text-2xl font-bold text-purple-800"
+  }, "\u05DE\u05E9\u05D7\u05E7 \u05D0\u05D4\u05D1\u05EA \u05D4\u05EA\u05D5\u05E8\u05D4")), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 bg-purple-100 px-4 py-2 rounded-lg"
+  }, /*#__PURE__*/React.createElement(Star, {
+    className: "w-5 h-5 text-yellow-500"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-purple-800"
+  }, score, " / ", totalQuestions))), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-3 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-purple-500 to-pink-500 h-full transition-all duration-500",
+    style: {
+      width: `${progress}%`
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-600 text-center mt-2"
+  }, "\u05E9\u05D9\u05E2\u05D5\u05E8 ", currentLesson + 1, " \u05DE\u05EA\u05D5\u05DA ", lessons.length)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-8"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-3xl font-bold text-center text-purple-800 mb-6 flex items-center justify-center gap-3"
+  }, /*#__PURE__*/React.createElement(Heart, {
+    className: "w-8 h-8 text-red-500"
+  }), currentLessonData.title, /*#__PURE__*/React.createElement(Heart, {
+    className: "w-8 h-8 text-red-500"
+  })), isReadingMode ? /*#__PURE__*/React.createElement("div", {
+    className: "space-y-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "prose prose-lg max-w-none text-right"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "whitespace-pre-line text-gray-800 leading-relaxed text-lg"
+  }, currentLessonData.part1)), !showPartTwo && !waitingForContinue && /*#__PURE__*/React.createElement("div", {
+    className: "text-center pt-6"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setWaitingForContinue(true),
+    className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 shadow-lg"
+  }, "\u05D4\u05DE\u05E9\u05DA \u05DC\u05D7\u05DC\u05E7 \u05D4\u05D1\u05D0 \uD83D\uDCD6")), waitingForContinue && !showPartTwo && /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-6 text-center border-2 border-yellow-300"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    className: "w-12 h-12 mx-auto text-orange-500 mb-3"
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "text-xl font-bold text-gray-800 mb-4"
+  }, "\u05E8\u05D5\u05E6\u05D4 \u05DC\u05D4\u05DE\u05E9\u05D9\u05DA \u05DC\u05D7\u05DC\u05E7 \u05D4\u05D1\u05D0 \u05D5\u05DC\u05D2\u05DC\u05D5\u05EA \u05E2\u05D5\u05D3 \u05D3\u05E8\u05DA \u05DC\u05D0\u05D4\u05D5\u05D1 \u05D0\u05EA \u05D4\u05E9\u05DD? \uD83D\uDC96"), /*#__PURE__*/React.createElement("button", {
+    onClick: handleContinueReading,
+    className: "bg-gradient-to-r from-green-500 to-teal-500 text-white px-8 py-3 rounded-lg font-bold text-lg hover:from-green-600 hover:to-teal-600 transition-all"
+  }, "\u05DB\u05DF, \u05D1\u05D5\u05D0\u05D5 \u05E0\u05DE\u05E9\u05D9\u05DA! \u2728")), showPartTwo && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "prose prose-lg max-w-none text-right"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "whitespace-pre-line text-gray-800 leading-relaxed text-lg"
+  }, currentLessonData.part2)), /*#__PURE__*/React.createElement("div", {
+    className: "text-center pt-6"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setCurrentQuestion(0),
+    className: "bg-gradient-to-r from-green-500 to-teal-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-teal-600 transition-all transform hover:scale-105 shadow-lg"
+  }, "\u05DE\u05D5\u05DB\u05DF \u05DC\u05D7\u05D9\u05D3\u05D5\u05DF! \uD83C\uDFAF")))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "mb-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-purple-600 font-bold mb-2"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, " \u05DE\u05EA\u05D5\u05DA ", currentLessonData.questions.length), /*#__PURE__*/React.createElement("p", {
+    className: "text-xl font-bold text-gray-800"
+  }, currentLessonData.questions[currentQuestion].q)), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, shuffledAnswers.map((answer, index) => /*#__PURE__*/React.createElement("button", {
+    key: index,
+    onClick: () => handleAnswer(index),
+    disabled: showFeedback,
+    className: `w-full text-right p-4 rounded-xl font-medium transition-all transform hover:scale-102 ${selectedAnswer === index ? answer.isCorrect ? 'bg-green-500 text-white border-2 border-green-600' : 'bg-red-400 text-white border-2 border-red-500' : showFeedback ? answer.isCorrect ? 'bg-green-100 border-2 border-green-400' : 'bg-gray-100 border-2 border-gray-300' : 'bg-white border-2 border-purple-300 hover:border-purple-500 hover:bg-purple-50'} ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}`
+  }, answer.text)))), !showFeedback && /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-5 mb-6 border-2 border-pink-200"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-base text-gray-700 italic text-center"
+  }, currentLessonData.questions[currentQuestion].thought)), showFeedback && /*#__PURE__*/React.createElement("div", {
+    className: `rounded-xl p-6 mb-6 ${feedback.correct ? 'bg-gradient-to-r from-green-100 to-teal-100 border-2 border-green-400' : 'bg-gradient-to-r from-orange-100 to-yellow-100 border-2 border-orange-400'}`
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-lg font-bold text-gray-800 whitespace-pre-line text-center"
+  }, feedback.message)), showFeedback && /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, currentQuestion < currentLessonData.questions.length - 1 ? /*#__PURE__*/React.createElement("button", {
+    onClick: handleNext,
+    className: "bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
+  }, "\u05D4\u05E9\u05D0\u05DC\u05D4 \u05D4\u05D1\u05D0\u05D4 \u27A1\uFE0F") : /*#__PURE__*/React.createElement(React.Fragment, null, lessonScore >= 2 ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-6 mb-4 border-2 border-yellow-400"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-2xl font-bold text-gray-800 mb-2"
+  }, lessonScore === 3 ? "מדהים! 🏆" : "כמעט מושלם! 💪"), /*#__PURE__*/React.createElement("p", {
+    className: "text-lg text-gray-700"
+  }, lessonScore === 3 ? "אתה שולט! אתה חי באהבת ה'! 🎉" : "ממש כמו באהבה - ממשיך לצמוח! 🌱")), /*#__PURE__*/React.createElement("button", {
+    onClick: handleNext,
+    className: "bg-gradient-to-r from-green-600 to-teal-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-700 hover:to-teal-700 transition-all transform hover:scale-105 shadow-lg"
+  }, currentLesson < lessons.length - 1 ? "לשיעור הבא! 🚀" : "סיום המשחק! 🎊")) : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-pink-100 to-red-100 rounded-xl p-6 mb-4 border-2 border-pink-400"
+  }, /*#__PURE__*/React.createElement(Heart, {
+    className: "w-12 h-12 mx-auto text-red-500 mb-3"
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "text-xl font-bold text-gray-800 mb-2"
+  }, "\u05D1\u05D5\u05D0 \u05E0\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1, \u05D1\u05D0\u05D4\u05D1\u05D4 \u05D5\u05E1\u05D1\u05DC\u05E0\u05D5\u05EA \uD83D\uDC96"), /*#__PURE__*/React.createElement("p", {
+    className: "text-base text-gray-700"
+  }, "\u05E6\u05E8\u05D9\u05DA \u05DC\u05E2\u05E0\u05D5\u05EA \u05E0\u05DB\u05D5\u05DF \u05DC\u05E4\u05D7\u05D5\u05EA \u05E2\u05DC 2 \u05DE\u05EA\u05D5\u05DA 3 \u05E9\u05D0\u05DC\u05D5\u05EA \u05DB\u05D3\u05D9 \u05DC\u05D4\u05DE\u05E9\u05D9\u05DA \uD83C\uDFAF")), /*#__PURE__*/React.createElement("button", {
+    onClick: handleNext,
+    className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 shadow-lg"
+  }, "\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1 \u05D0\u05EA \u05D4\u05E9\u05D9\u05E2\u05D5\u05E8 \uD83D\uDD04")))))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 text-center text-sm text-gray-600 bg-white rounded-xl p-4 shadow"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "mb-1"
+  }, "\u05E0\u05D1\u05E0\u05D4 \u05D1\u05D0\u05D4\u05D1\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+    className: "font-bold text-gray-800"
+  }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1"
+  }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+};
+const __App = TorahLoveGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+})();
+</script>
+
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif;direction:rtl"><a href="https://www.kol-toda.co.il/t/games.html#g_torah" style="color:#4f46e5">← עוד בתורה ומשנה</a> · <a href="https://www.kol-toda.co.il/" style="color:#4f46e5">אתר הקול החמישי</a></p>
+</body>
+</html>

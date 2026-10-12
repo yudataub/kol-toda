@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>מר עוקבא, אשתו והתנור הלוהט</title>
+<meta name="description" content="מר עוקבא, אשתו והתנור הלוהט">
+<style>
+  :root{
+    --gold:#c9a227;
+    --gold-light:#e8cf7a;
+    --cream:#fbf3df;
+    --navy:#1e2a3a;
+    --navy-light:#2c3e54;
+    --accent:#8b5e34;
+    --fire:#c1512e;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    font-family:'Segoe UI',Arial,sans-serif;
+    background:linear-gradient(160deg,var(--navy) 0%,var(--navy-light) 100%);
+    overflow:hidden;
+    direction:rtl;
+  }
+  #app{
+    position:relative;
+    width:100%;height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  .stage{
+    width:min(920px,94vw);
+    height:min(660px,88vh);
+    background:var(--cream);
+    border-radius:22px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45);
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .visual{
+    flex:1 1 44%;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    transition:background 0.6s ease;
+  }
+  .visual .emoji-scene{
+    font-size:min(13vw,84px);
+    filter:drop-shadow(0 6px 10px rgba(0,0,0,0.25));
+    animation:floatIn 0.7s ease;
+    text-align:center;
+    line-height:1.1;
+  }
+  .visual .onscreen-text{
+    position:absolute;
+    bottom:14px;left:20px;right:20px;
+    text-align:center;
+    font-size:clamp(15px,2.4vw,24px);
+    font-weight:700;
+    color:#fff;
+    background:rgba(30,42,58,0.55);
+    padding:10px 16px;
+    border-radius:12px;
+    backdrop-filter:blur(2px);
+    animation:fadeUp 0.8s ease;
+  }
+  @keyframes floatIn{
+    from{opacity:0;transform:translateY(14px) scale(0.94);}
+    to{opacity:1;transform:translateY(0) scale(1);}
+  }
+  @keyframes fadeUp{
+    from{opacity:0;transform:translateY(10px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .panel{
+    flex:1 1 56%;
+    background:#fff;
+    padding:16px 26px 8px;
+    overflow-y:auto;
+    border-top:3px solid var(--gold);
+  }
+  .slide-counter{
+    font-size:13px;
+    color:var(--accent);
+    font-weight:700;
+    letter-spacing:0.5px;
+  }
+  .say-label{
+    display:inline-block;
+    background:var(--gold);
+    color:#3a2a05;
+    font-size:12px;
+    font-weight:800;
+    padding:3px 10px;
+    border-radius:20px;
+    margin:8px 0 6px;
+  }
+  .say-text{
+    font-size:clamp(14px,2vw,18px);
+    line-height:1.55;
+    color:var(--navy);
+    white-space:pre-line;
+  }
+  .cue-label{
+    display:inline-block;
+    background:var(--navy);
+    color:#fff;
+    font-size:12px;
+    font-weight:800;
+    padding:3px 10px;
+    border-radius:20px;
+    margin:10px 0 6px;
+  }
+  .cue-text{
+    font-size:13.5px;
+    color:#555;
+    line-height:1.5;
+    font-style:italic;
+  }
+  .peda-note{
+    margin-top:10px;
+    background:#fff2ec;
+    border-right:4px solid var(--fire);
+    padding:8px 12px;
+    font-size:13px;
+    color:#7a331a;
+    border-radius:8px;
+  }
+  .link-note{
+    margin-top:10px;
+    background:var(--cream);
+    border-right:4px solid var(--gold);
+    padding:8px 12px;
+    font-size:13px;
+    color:var(--accent);
+    border-radius:8px;
+  }
+  .nav-bar{
+    position:absolute;
+    bottom:16px;left:0;right:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:14px;
+  }
+  .nav-btn{
+    background:var(--gold);
+    border:none;
+    color:#3a2a05;
+    font-size:16px;
+    font-weight:800;
+    padding:10px 18px;
+    border-radius:30px;
+    cursor:pointer;
+    box-shadow:0 4px 10px rgba(0,0,0,0.3);
+    transition:transform 0.15s ease, background 0.2s ease;
+  }
+  .nav-btn:hover{transform:translateY(-2px);background:var(--gold-light);}
+  .nav-btn:active{transform:translateY(0);}
+  .nav-btn:disabled{
+    opacity:0.35;
+    cursor:not-allowed;
+    transform:none;
+  }
+  .dots{
+    display:flex;
+    gap:4px;
+    align-items:center;
+    flex-wrap:wrap;
+    max-width:280px;
+    justify-content:center;
+  }
+  .dot{
+    width:8px;height:8px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.35);
+    cursor:pointer;
+    transition:background 0.2s, transform 0.2s;
+  }
+  .dot.active{
+    background:var(--gold);
+    transform:scale(1.4);
+  }
+  .top-bar{
+    width:min(920px,94vw);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+    color:var(--cream);
+  }
+  .top-title{
+    font-size:15px;
+    font-weight:700;
+    opacity:0.9;
+  }
+  .mem-btn{
+    background:transparent;
+    border:1.5px solid var(--gold);
+    color:var(--gold-light);
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background 0.2s;
+  }
+  .mem-btn:hover{background:rgba(201,162,39,0.15);}
+  .mem-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(10,15,22,0.85);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+  }
+  .mem-overlay.show{display:flex;}
+  .mem-box{
+    background:var(--cream);
+    width:min(700px,92vw);
+    max-height:85vh;
+    overflow-y:auto;
+    border-radius:16px;
+    padding:24px 28px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  }
+  .mem-box h2{
+    color:var(--navy);
+    margin-top:0;
+    border-bottom:3px solid var(--gold);
+    padding-bottom:8px;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+  }
+  th,td{
+    text-align:right;
+    padding:7px 9px;
+    border-bottom:1px solid #ddd;
+  }
+  th{
+    background:var(--gold);
+    color:#3a2a05;
+  }
+  tr:nth-child(even){background:#f6ecd0;}
+  .close-mem{
+    margin-top:16px;
+    background:var(--navy);
+    color:#fff;
+    border:none;
+    padding:8px 20px;
+    border-radius:20px;
+    cursor:pointer;
+    font-weight:700;
+  }
+  .mem-box .peda{
+    margin-top:14px;
+    background:#fff2ec;
+    border-right:4px solid var(--fire);
+    padding:10px 14px;
+    font-size:13.5px;
+    color:#7a331a;
+    border-radius:8px;
+    line-height:1.5;
+  }
+  .mem-box .link{
+    margin-top:10px;
+    background:var(--cream);
+    border-right:4px solid var(--gold);
+    padding:10px 14px;
+    font-size:13.5px;
+    color:var(--accent);
+    border-radius:8px;
+    line-height:1.5;
+  }
+  @media (max-width:600px){
+    .stage{border-radius:14px;}
+    .panel{padding:12px 14px 6px;}
+  }
+</style>
+<meta property="og:title" content="מר עוקבא, אשתו והתנור הלוהט">
+<meta property="og:description" content="מר עוקבא, אשתו והתנור הלוהט">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-osef-c0594d2f29.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/osef/c0594d2f29.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="app">
+  <div class="top-bar">
+    <div class="top-title">🔥 מר עוקבא, אשתו והתנור הלוהט</div>
+    <button class="mem-btn" id="memBtn">טבלת זיכרון מהירה</button>
+  </div>
+
+  <div class="stage">
+    <div class="visual" id="visual">
+      <div class="emoji-scene" id="emojiScene"></div>
+      <div class="onscreen-text" id="onscreenText"></div>
+    </div>
+    <div class="panel">
+      <div class="slide-counter" id="slideCounter"></div>
+      <div class="say-label">🗣️ אתה אומר</div>
+      <div class="say-text" id="sayText"></div>
+      <div class="cue-label">🎭 כיווני ביצוע</div>
+      <div class="cue-text" id="cueText"></div>
+      <div class="peda-note" id="pedaNote" style="display:none;"></div>
+      <div class="link-note" id="linkNote" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" id="prevBtn">◀ הקודם</button>
+    <div class="dots" id="dots"></div>
+    <button class="nav-btn" id="nextBtn">הבא ▶</button>
+  </div>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>1-2</td><td>פתיחה + המנהג הסודי</td><td>ערב שבת, יציאה בשקט</td></tr>
+      <tr><td>3</td><td>הערך המרכזי</td><td>לא לבייש, בסתר</td></tr>
+      <tr><td>4-5</td><td>סקרנות העני + שאלה</td><td>"מי דואג לי?"</td></tr>
+      <tr><td>6-7</td><td>המארב + הדלת נפתחת</td><td>מפנה דרמטי!</td></tr>
+      <tr><td>8-9</td><td>הבריחה + מבוי סתום</td><td>תנור בוער, "מה נעשה?"</td></tr>
+      <tr><td>10-11</td><td>שאלה + החלטת האישה</td><td>"מוטב שנילהט באש"</td></tr>
+      <tr><td>12</td><td>השיא</td><td><b>שתיקה!</b> קפיצה לתנור</td></tr>
+      <tr><td>13-14</td><td>הנס + הפרט המוזר</td><td>האש לא פגעה, רגליים חמות</td></tr>
+      <tr><td>15</td><td>התשובה המפתח</td><td>"חסדי מקורב ומהיר יותר"</td></tr>
+      <tr><td>16</td><td>דיון</td><td>שאלות, לא תשובות</td></tr>
+      <tr><td>17-18</td><td>חיבור אישי + סגירה</td><td>"לתת בלי שיידעו"</td></tr>
+    </table>
+    <div class="peda">
+      💬 <b>שני שיאים בסיפור אחד:</b> יש כאן שני רגעים גדולים — הקפיצה לתנור (השיא הדרמטי-פיזי)
+      והתשובה של האישה על הרגליים החמות (השיא הרעיוני-עדין). אל תשרפו את כל האנרגיה בכרטיס 12 —
+      כרטיס 15 הוא בעצם הלב האמיתי של הסיפור.
+    </div>
+    <div class="link">
+      🔗 <b>חיבור לסיפורים קודמים:</b> אפשר להזכיר את סיפור הלל הזקן — שגם עסק בדן לכף זכות ובכבוד הזולת.
+    </div>
+    <button class="close-mem" id="closeMem">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#8b5e34)",
+    emoji: "🕯️🌇",
+    onscreen: "ערב שבת המלכה",
+    say: "ילדים, בואו נתקרב.\n\nערב שבת הגיע, והשמש כבר החלה לשקוע לאט מאחורי הגבעות. בביתו של מר עוקבא — דיין וצדיק גדול — הכול היה מוכן לכבוד שבת המלכה. המפה הלבנה פרושה על השולחן, והנרות עומדים מוכנים.",
+    cue: "טון רגוע, חגיגי מעט — אווירת ערב שבת, לא ממהרים."
+  },
+  {
+    bg: "linear-gradient(160deg,#1e2a3a,#2c3e54)",
+    emoji: "🤫🚶‍♂️🚶‍♀️",
+    onscreen: "מנהג סודי",
+    say: "אבל למר עוקבא ולאשתו הצדקת היה מנהג סודי. בכל ערב שבת, לפני שנכנס היום הקדוש, הם היו יוצאים יחד מהבית — בשקט. הם היו צועדים בסמטאות, אל ביתו של שכן עני ומסכן שגר בקצה השכונה.",
+    cue: "קול נמוך, כמעט לוחש — יוצרים תחושת סוד משותפת עם הילדים."
+  },
+  {
+    bg: "linear-gradient(160deg,#c9a227,#7a4a2b)",
+    emoji: "🪙🚪",
+    onscreen: "לא רצה שהעני יתבייש",
+    say: "מר עוקבא לא רצה שהעני יתבייש לקבל צדקה. הוא ידע שלביש אדם אחר — זה דבר חמור מאוד.\n\nאז במקום לתת לו את הכסף ביד, מר עוקבא היה מתכופף בחשאי, ומשחיל ארבעה מטבעות כסף מתחת לדלת הסגורה — ומיד בורח מהמקום.",
+    cue: "קול עדין ומכבד — זו נקודת המפתח הערכית של כל הסיפור, כדאי להאט כאן."
+  },
+  {
+    bg: "linear-gradient(160deg,#8b5e34,#c9a227)",
+    emoji: "🤔👂",
+    onscreen: "\"מי דואג לי כך?\"",
+    say: "העני, ששמע בכל שבוע את צלצול המטבעות על הרצפה, הסתקרן מאוד. 'מי זה האדם הטוב שדואג לי כך?' חשב בליבו. 'הפעם אני חייב לגלות מי זה!'",
+    cue: "קול של סקרנות עולה — נותנים לילדים להזדהות עם הרצון הטבעי של העני לדעת מי עוזר לו."
+  },
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#8b5e34)",
+    emoji: "🙋‍♀️🙋‍♂️",
+    onscreen: "מה אתם הייתם עושים?",
+    say: "אם הייתם מקבלים עזרה בכל שבוע, ולא יודעים ממי — מה אתם הייתם עושים כדי לגלות?",
+    cue: "לשמוע 2-3 תשובות קצרות. זה כרטיס גשר קטן לפני שממשיכים לתוכנית של העני."
+  },
+  {
+    bg: "linear-gradient(160deg,#1e2a3a,#4a2f1a)",
+    emoji: "🚪🤫",
+    onscreen: "",
+    say: "באותו יום שישי, המתין העני מאחורי הדלת בשקט. מר עוקבא ואשתו התקרבו בנעילת סנדליהם הלחושה.",
+    cue: "האטה בקצב, קול נמוך — בונים מתח לקראת הרגע הבא."
+  },
+  {
+    bg: "radial-gradient(circle at 50% 40%,#c1512e 0%,#1e2a3a 80%)",
+    emoji: "🚪💥",
+    onscreen: "הדלת נפתחה במהירות!",
+    say: "מר עוקבא התכופף, שלשל את המטבעות, ולפתע...\n\n(עצירה, קול נדהם)\n\nהדלת נפתחה במהירות! העני יצא החוצה כדי לראות את מיטיבו!",
+    cue: "שינוי קצב פתאומי — מהשקט הקודם לתדהמה. אפשר 'לקפוץ' קלות בקול כדי להעביר את ההפתעה."
+  },
+  {
+    bg: "linear-gradient(160deg,#8b5e34,#1e2a3a)",
+    emoji: "🏃‍♂️🏃‍♀️💨",
+    onscreen: "בריחה בסמטאות",
+    say: "מר עוקבא ואשתו נבהלו עד עומק נשמתם. הם לא רצו שהוא יכיר אותם וירגיש בושה. הם החלו לרוץ בכל כוחם בסמטאות הצרות. העני רץ אחריהם, וקול צעדיו התקרב והתקרב.",
+    cue: "קצב מהיר, נשימה — קול רץ ונסער, ממש מעביר תחושת מרדף."
+  },
+  {
+    bg: "linear-gradient(160deg,#c1512e,#4a2f1a)",
+    emoji: "🔥🧱",
+    onscreen: "\"מה נעשה? הוא תכף יגיע!\"",
+    say: "הלב של מר עוקבא דפק בחוזקה מפחד. לפתע, הם הגיעו למקום ללא מוצא — חצר סגורה שבה עמד תנור גדול של אפייה. התנור היה חם מאוד, גחלים בוערות היו בתוכו.\n\n'מה נעשה?' לחש מר עוקבא, 'הוא תכף יגיע לכאן!'",
+    cue: "קול של פחד אמיתי — זה רגע קריטי, לתת לו את המשקל הדרמטי המגיע לו."
+  },
+  {
+    bg: "linear-gradient(160deg,#8b5e34,#c1512e)",
+    emoji: "🤔🔥",
+    onscreen: "מה הם היו עושים?",
+    say: "תארו לכם — מבוי סתום, תנור בוער, ומישהו רודף אחריכם ורוצה רק להודות לכם. מה הייתם עושים?",
+    cue: "לתת לילדים באמת להתלבט — התשובה שהם עומדים לשמוע היא קיצונית ומפתיעה."
+  },
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#c1512e)",
+    emoji: "💛🔥",
+    onscreen: "\"מוטב שנילהט באש!\"",
+    say: "אשתו, שעיניה זהרו באמונה שלמה, אחזה בידו ואמרה בשקט:\n\n(קול נחוש ורגוע לגמרי)\n\n'בוא, בעלי. ניכנס יחד לתוך התנור. מוטב לנו שניכווה באש — ובלבד שלא נלבין את פניו של העני ברבים ונביישו!'",
+    cue: "תני למשפט הזה לשקוע — זו החלטה עצומה, ואומרים אותה בביטחון מלא, לא בפחד."
+  },
+  {
+    bg: "radial-gradient(circle at 50% 50%,#c1512e 0%,#3a1a0a 85%)",
+    emoji: "🔥",
+    onscreen: "",
+    say: "(עצירה ארוכה — שתיקה של ממש)\n\nוהם קפצו יחד לתוך התנור החם, ועמדו על הגחלים.\n\nמה קרה לדעתכם?",
+    cue: "זו השתיקה החשובה בכל הסיפור. תני לילדים רגע להיבהל ולנחש לפני שממשיכים לגילוי הנס."
+  },
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#3a7d9c)",
+    emoji: "😌🔥",
+    onscreen: "האש לא פגעה בהם כלל!",
+    say: "והעני? הוא הגיע לחצר, הביט ימינה ושמאלה, ולא ראה איש. הוא התאכזב וחזר לביתו.\n\nובתוך התנור? נס עצום התרחש! האש הלוהטת לא פגעה בהם כלל.",
+    cue: "קול של הקלה גדולה, כמעט התרגשות — הסכנה חלפה, והנס מתגלה."
+  },
+  {
+    bg: "linear-gradient(160deg,#c9a227,#8b5e34)",
+    emoji: "🦶❓",
+    onscreen: "\"מדוע רגלייך קרירות יותר משלי?\"",
+    say: "אך מר עוקבא הרגיש שכפות רגליו מתחילות להתחמם מאוד. הוא הביט באשתו, וראה שפניה רגועות, ורגליה קרירות לגמרי.\n\n'ביתי,' שאל בפליאה ובענווה, 'מדוע הרוח הקרירה מגינה על רגלייך יותר מאשר על רגליי?'",
+    cue: "קול תמה, לא מבוהל — זו שאלה של פליאה עדינה, לא פחד חדש."
+  },
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#c9a227)",
+    emoji: "🍞💛",
+    onscreen: "\"חסדי מקורב ומהיר יותר\"",
+    say: "(קול רגוע ובהיר)\n\nחייכה אשתו ברוך וענתה: 'בעלי היקר, אתה נותן לעניים מטבעות כסף, והם צריכים ללכת לשוק ולקנות אוכל. אך אני עומדת בבית ומושיטה להם אוכל מוכן — חלות חמות ותבשילים, שמשביעים את נפשם מיד. לכן חסדי מקורב ומהיר יותר, והשמיים מרחמים עליי.'",
+    cue: "תני למשפט הזה זמן לשקוע — זו התובנה העדינה והחכמה ביותר בסיפור, לא למהר הלאה."
+  },
+  {
+    bg: "linear-gradient(160deg,#1e2a3a,#8b5e34)",
+    emoji: "💭❓",
+    onscreen: "למה נכנסו לתנור?",
+    say: "בואו נחשוב רגע — למה מר עוקבא ואשתו העדיפו להיכנס לתנור בוער, ולא פשוט לתת לעני להכיר אותם ולהודות להם?\n\n(לשמוע תשובות)\n\nולמה אתם חושבים שהחסד של האישה היה 'מהיר יותר' מזה של בעלה?",
+    cue: "אל תתני את התשובה! תני לילדים להגיע בעצמם לרעיון שכבוד האדם השני שווה הרבה יותר מרגע של הכרת תודה."
+  },
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#3a7d9c)",
+    emoji: "🎁📝",
+    onscreen: "לתת בלי שיידעו",
+    say: "לפעמים אנחנו רוצים לעזור למישהו, אבל גם לא רוצים שהוא ירגיש נבוך שאנחנו יודעים שהוא צריך עזרה.\n\nמר עוקבא ואשתו לימדו אותנו שאפשר לתת בלי שאף אחד ידע — וזה סוג מיוחד ויקר מאוד של נתינה.",
+    cue: "קול חם ואישי, איטי. מבט בעיניים של הילדים, לא במסך."
+  },
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#8b5e34)",
+    emoji: "🕯️💛",
+    onscreen: "איך תעזרו בסתר השבוע?",
+    say: "אז תחשבו — איך אתם יכולים לעזור למישהו השבוע, בלי שהוא בכלל ידע שזה הייתם אתם?\n\n(לתת לכמה ילדים לשתף)\n\nמר עוקבא ואשתו היו מוכנים אפילו להיכנס לתנור בוער, רק כדי לשמור על כבודו של אדם אחר. וזה מה שהפך אותם לצדיקים גדולים כל כך.",
+    cue: "נעילה חמה ורגועה, לא ממהרים לסיים."
+  }
+];
+
+let current = 0;
+
+const emojiScene = document.getElementById('emojiScene');
+const onscreenText = document.getElementById('onscreenText');
+const visual = document.getElementById('visual');
+const sayText = document.getElementById('sayText');
+const cueText = document.getElementById('cueText');
+const pedaNote = document.getElementById('pedaNote');
+const linkNote = document.getElementById('linkNote');
+const slideCounter = document.getElementById('slideCounter');
+const dotsEl = document.getElementById('dots');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+function buildDots(){
+  dotsEl.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.addEventListener('click', () => { current = i; render(); });
+    dotsEl.appendChild(d);
+  });
+}
+
+function render(){
+  const s = slides[current];
+  visual.style.background = s.bg;
+  emojiScene.textContent = s.emoji;
+  onscreenText.textContent = s.onscreen;
+  onscreenText.style.display = s.onscreen ? 'block' : 'none';
+  sayText.textContent = s.say;
+  cueText.textContent = s.cue;
+  pedaNote.style.display = 'none';
+  linkNote.style.display = 'none';
+  if(current === 11){
+    pedaNote.style.display = 'block';
+    pedaNote.textContent = "💬 זה השיא הדרמטי — אך אל תשרפו את כל האנרגיה כאן! כרטיס 15 (התשובה על הרגליים) הוא הלב האמיתי של הסיפור.";
+  }
+  if(current === 0){
+    linkNote.style.display = 'block';
+    linkNote.textContent = "🔗 אפשר לפתוח בהזכרת סיפור הלל הזקן — שגם הוא עסק בכבוד הזולת ובדן לכף זכות.";
+  }
+  slideCounter.textContent = 'כרטיס ' + (current+1) + ' מתוך ' + slides.length;
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = current === slides.length - 1;
+  nextBtn.textContent = current === slides.length - 1 ? 'סוף הסיפור ✓' : 'הבא ▶';
+  buildDots();
+  document.querySelector('.panel').scrollTop = 0;
+}
+
+prevBtn.addEventListener('click', () => {
+  if(current > 0){ current--; render(); }
+});
+nextBtn.addEventListener('click', () => {
+  if(current < slides.length - 1){ current++; render(); }
+});
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft'){
+    if(current < slides.length - 1){ current++; render(); }
+  } else if(e.key === 'ArrowRight'){
+    if(current > 0){ current--; render(); }
+  }
+});
+
+const memBtn = document.getElementById('memBtn');
+const memOverlay = document.getElementById('memOverlay');
+const closeMem = document.getElementById('closeMem');
+memBtn.addEventListener('click', () => memOverlay.classList.add('show'));
+closeMem.addEventListener('click', () => memOverlay.classList.remove('show'));
+memOverlay.addEventListener('click', (e) => {
+  if(e.target === memOverlay) memOverlay.classList.remove('show');
+});
+
+render();
+</script>
+
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif;direction:rtl"><a href="https://www.kol-toda.co.il/t/stories.html#s_tanaim" style="color:#4f46e5">← עוד בסיפורי התנאים</a> · <a href="https://www.kol-toda.co.il/" style="color:#4f46e5">אתר הקול החמישי</a></p>
+</body>
+</html>

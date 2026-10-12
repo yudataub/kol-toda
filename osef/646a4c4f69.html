@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>המגש שנעלם בערב החתונה</title>
+<meta name="description" content="המגש שנעלם בערב החתונה">
+<style>
+  :root{
+    --gold:#c9a227;
+    --gold-light:#e8cf7a;
+    --cream:#fbf3df;
+    --navy:#1e2a3a;
+    --navy-light:#2c3e54;
+    --accent:#8b5e34;
+    --warm:#c1512e;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    font-family:'Segoe UI',Arial,sans-serif;
+    background:linear-gradient(160deg,var(--navy) 0%,var(--navy-light) 100%);
+    overflow:hidden;
+    direction:rtl;
+  }
+  #app{
+    position:relative;
+    width:100%;height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  .stage{
+    width:min(920px,94vw);
+    height:min(660px,88vh);
+    background:var(--cream);
+    border-radius:22px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45);
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .visual{
+    flex:1 1 44%;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    transition:background 0.6s ease;
+  }
+  .visual .emoji-scene{
+    font-size:min(13vw,84px);
+    filter:drop-shadow(0 6px 10px rgba(0,0,0,0.25));
+    animation:floatIn 0.7s ease;
+    text-align:center;
+    line-height:1.1;
+  }
+  .visual .onscreen-text{
+    position:absolute;
+    bottom:14px;left:20px;right:20px;
+    text-align:center;
+    font-size:clamp(15px,2.4vw,24px);
+    font-weight:700;
+    color:#fff;
+    background:rgba(30,42,58,0.55);
+    padding:10px 16px;
+    border-radius:12px;
+    backdrop-filter:blur(2px);
+    animation:fadeUp 0.8s ease;
+  }
+  @keyframes floatIn{
+    from{opacity:0;transform:translateY(14px) scale(0.94);}
+    to{opacity:1;transform:translateY(0) scale(1);}
+  }
+  @keyframes fadeUp{
+    from{opacity:0;transform:translateY(10px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .panel{
+    flex:1 1 56%;
+    background:#fff;
+    padding:16px 26px 8px;
+    overflow-y:auto;
+    border-top:3px solid var(--gold);
+  }
+  .slide-counter{
+    font-size:13px;
+    color:var(--accent);
+    font-weight:700;
+    letter-spacing:0.5px;
+  }
+  .say-label{
+    display:inline-block;
+    background:var(--gold);
+    color:#3a2a05;
+    font-size:12px;
+    font-weight:800;
+    padding:3px 10px;
+    border-radius:20px;
+    margin:8px 0 6px;
+  }
+  .say-text{
+    font-size:clamp(14px,2vw,18px);
+    line-height:1.55;
+    color:var(--navy);
+    white-space:pre-line;
+  }
+  .cue-label{
+    display:inline-block;
+    background:var(--navy);
+    color:#fff;
+    font-size:12px;
+    font-weight:800;
+    padding:3px 10px;
+    border-radius:20px;
+    margin:10px 0 6px;
+  }
+  .cue-text{
+    font-size:13.5px;
+    color:#555;
+    line-height:1.5;
+    font-style:italic;
+  }
+  .peda-note{
+    margin-top:10px;
+    background:#eef3ff;
+    border-right:4px solid var(--warm);
+    padding:8px 12px;
+    font-size:13px;
+    color:#7a331a;
+    border-radius:8px;
+  }
+  .nav-bar{
+    position:absolute;
+    bottom:16px;left:0;right:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:14px;
+  }
+  .nav-btn{
+    background:var(--gold);
+    border:none;
+    color:#3a2a05;
+    font-size:16px;
+    font-weight:800;
+    padding:10px 18px;
+    border-radius:30px;
+    cursor:pointer;
+    box-shadow:0 4px 10px rgba(0,0,0,0.3);
+    transition:transform 0.15s ease, background 0.2s ease;
+  }
+  .nav-btn:hover{transform:translateY(-2px);background:var(--gold-light);}
+  .nav-btn:active{transform:translateY(0);}
+  .nav-btn:disabled{
+    opacity:0.35;
+    cursor:not-allowed;
+    transform:none;
+  }
+  .dots{
+    display:flex;
+    gap:4px;
+    align-items:center;
+    flex-wrap:wrap;
+    max-width:280px;
+    justify-content:center;
+  }
+  .dot{
+    width:8px;height:8px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.35);
+    cursor:pointer;
+    transition:background 0.2s, transform 0.2s;
+  }
+  .dot.active{
+    background:var(--gold);
+    transform:scale(1.4);
+  }
+  .top-bar{
+    width:min(920px,94vw);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+    color:var(--cream);
+  }
+  .top-title{
+    font-size:15px;
+    font-weight:700;
+    opacity:0.9;
+  }
+  .mem-btn{
+    background:transparent;
+    border:1.5px solid var(--gold);
+    color:var(--gold-light);
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background 0.2s;
+  }
+  .mem-btn:hover{background:rgba(201,162,39,0.15);}
+  .mem-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(10,15,22,0.85);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+  }
+  .mem-overlay.show{display:flex;}
+  .mem-box{
+    background:var(--cream);
+    width:min(700px,92vw);
+    max-height:85vh;
+    overflow-y:auto;
+    border-radius:16px;
+    padding:24px 28px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  }
+  .mem-box h2{
+    color:var(--navy);
+    margin-top:0;
+    border-bottom:3px solid var(--gold);
+    padding-bottom:8px;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+  }
+  th,td{
+    text-align:right;
+    padding:7px 9px;
+    border-bottom:1px solid #ddd;
+  }
+  th{
+    background:var(--gold);
+    color:#3a2a05;
+  }
+  tr:nth-child(even){background:#f6ecd0;}
+  .close-mem{
+    margin-top:16px;
+    background:var(--navy);
+    color:#fff;
+    border:none;
+    padding:8px 20px;
+    border-radius:20px;
+    cursor:pointer;
+    font-weight:700;
+  }
+  .mem-box .peda{
+    margin-top:14px;
+    background:#fff2ec;
+    border-right:4px solid var(--warm);
+    padding:10px 14px;
+    font-size:13.5px;
+    color:#7a331a;
+    border-radius:8px;
+    line-height:1.5;
+  }
+  @media (max-width:600px){
+    .stage{border-radius:14px;}
+    .panel{padding:12px 14px 6px;}
+  }
+</style>
+<meta property="og:title" content="המגש שנעלם בערב החתונה">
+<meta property="og:description" content="המגש שנעלם בערב החתונה">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-osef-646a4c4f69.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/osef/646a4c4f69.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="app">
+  <div class="top-bar">
+    <div class="top-title">🍞 המגש שנעלם בערב החתונה</div>
+    <button class="mem-btn" id="memBtn">טבלת זיכרון מהירה</button>
+  </div>
+
+  <div class="stage">
+    <div class="visual" id="visual">
+      <div class="emoji-scene" id="emojiScene"></div>
+      <div class="onscreen-text" id="onscreenText"></div>
+    </div>
+    <div class="panel">
+      <div class="slide-counter" id="slideCounter"></div>
+      <div class="say-label">🗣️ אתה אומר</div>
+      <div class="say-text" id="sayText"></div>
+      <div class="cue-label">🎭 כיווני ביצוע</div>
+      <div class="cue-text" id="cueText"></div>
+      <div class="peda-note" id="pedaNote" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" id="prevBtn">◀ הקודם</button>
+    <div class="dots" id="dots"></div>
+    <button class="nav-btn" id="nextBtn">הבא ▶</button>
+  </div>
+</div>
+
+<div class="mem-overlay" id="memOverlay">
+  <div class="mem-box">
+    <h2>🎯 טבלת זיכרון מהירה</h2>
+    <table>
+      <tr><th>#</th><th>רגע</th><th>מילת מפתח</th></tr>
+      <tr><td>1-2</td><td>פתיחה + האורח</td><td>ריח מדהים, סעודה מוכנה</td></tr>
+      <tr><td>3-4</td><td>דפיקה + הבחור הבוכה</td><td>"שלום לך, בני"</td></tr>
+      <tr><td>5</td><td>הסיפור שלו</td><td>"יום חתונתי, אין לחם"</td></tr>
+      <tr><td>6-7</td><td>דנה לכף זכות + שאלה</td><td>לא כעסה, לא שפטה</td></tr>
+      <tr><td>8-9</td><td>נותנת הכל + הוא רץ</td><td>סל אוכל, שמחה</td></tr>
+      <tr><td>10-11</td><td>מתחילה מחדש + ההמתנה</td><td>"בלי כעס", דברי תורה</td></tr>
+      <tr><td>12</td><td>הלל דן לכף זכות</td><td>"בוודאי יש סיבה טובה"</td></tr>
+      <tr><td>13</td><td>השיא</td><td><b>שתיקה!</b> שעתיים, המגש</td></tr>
+      <tr><td>14-16</td><td>השאלה + הסיפור + התגובה</td><td>"אף אני דנתי לכף זכות"</td></tr>
+      <tr><td>17</td><td>דיון</td><td>שאלות, לא תשובות</td></tr>
+      <tr><td>18-19</td><td>חיבור אישי + סגירה</td><td>"לדון לכף זכות"</td></tr>
+    </table>
+    <div class="peda">
+      💬 <b>הערה פדגוגית — המבנה הכפול:</b> שימו לב שהסיפור בנוי משני "מעשי דן לכף זכות" מקבילים —
+      קודם אשת הלל כלפי הבחור העני (כרטיס 6), ואז הלל כלפי אשתו (כרטיס 12).
+      בדיון (כרטיס 17) כדאי לשאול את הילדים אם שמו לב שזה קרה <b>פעמיים</b> באותו סיפור —
+      זה מחזק את התובנה שהערך חוזר ומשתקף בין הדמויות.
+    </div>
+    <button class="close-mem" id="closeMem">סגור</button>
+  </div>
+</div>
+
+<script>
+const slides = [
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#c1512e)",
+    emoji: "🍲🥖👩‍🍳",
+    onscreen: "ריח מדהים במטבח",
+    say: "ילדים, בואו נתקרב.\n\nתארו לכם ריח מדהים שממלא בית שלם — לחם טרי, בשר ודגים מבושלים, ולפתן מתוק. זה היה הריח במטבח של אשת הלל הזקן. היא עבדה קשה כל היום כדי להכין סעודה חגיגית.",
+    cue: "טון חם ומזמין — אפשר 'להריח' את הסעודה בקול, לתאר בהתלהבות."
+  },
+  {
+    bg: "linear-gradient(160deg,#c9a227,#7a4a2b)",
+    emoji: "🍽️😊",
+    onscreen: "הלל והאורח ממתינים",
+    say: "הלל, שכבר היה נשיא ישראל המכובד, הזמין לביתו את חברו הטוב לסעודה חגיגית. כשירד הערב, הכול היה מוכן לתפארת. הלל והאורח התיישבו ליד השולחן, מחייכים וממתינים.",
+    cue: "קול רגוע ונינוח — אווירה של ציפייה נעימה, לא מתח."
+  },
+  {
+    bg: "linear-gradient(160deg,#1e2a3a,#2c3e54)",
+    emoji: "🚪❔",
+    onscreen: "",
+    say: "אבל לפתע, כשאשת הלל סידרה את כל התבשילים החמים על מגש ענק, נכונה לצאת אל הסלון... היא שמעה דפיקה חלשה ועצובה על הדלת האחורית.",
+    cue: "להנמיך קול — הדפיקה צריכה להישמע שונה, עצובה וחלשה, לא נחרצת."
+  },
+  {
+    bg: "linear-gradient(160deg,#8b5e34,#1e2a3a)",
+    emoji: "😢🧑",
+    onscreen: "\"שלום לך, בני — במה אוכל לעזור?\"",
+    say: "היא פתחה את הדלת, וראתה בחור צעיר ועני עומד בפתח. פניו היו נפולות, ודמעות זלגו על לחייו החיוורות.\n\n'שלום לך, בני,' שאלה ברחמנות, 'במה אוכל לעזור לך?'",
+    cue: "קול רך ומרחם, לא נבהל — היא מתייחסת אליו מיד בחמלה."
+  },
+  {
+    bg: "linear-gradient(160deg,#c1512e,#4a2f1a)",
+    emoji: "💍😭",
+    onscreen: "\"היום הוא יום חתונתי... אין לנו אפילו פרוסת לחם\"",
+    say: "(קול בוכה ונשבר)\n\n'היום...' התייפח הבחור בבכי, 'היום הוא יום חתונתי! הכלה והאורחים כבר ממתינים, אבל אני וכלתי עניים מאוד. אין לנו אפילו פרוסת לחם אחת להגיש לאורחים, ואני מתבייש לבוא אל החופה בידיים ריקות!'",
+    cue: "קול שבור, איטי — תני למילים 'בידיים ריקות' לשקוע רגע לפני שממשיכים."
+  },
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#c9a227)",
+    emoji: "💛🤔",
+    onscreen: "היא לא כעסה — היא דנה אותו לכף זכות",
+    say: "אשת הלל הייתה אישה טובה. היא לא כעסה עליו על שבא ברגע כזה, ולא חשבה עליו רע. היא למדה עליו זכות — חשבה עליו מחשבה טובה ומצדיקה.",
+    cue: "קול חם ורגוע — זה משפט מפתח, כדאי להאט ולהדגיש אותו."
+  },
+  {
+    bg: "linear-gradient(160deg,#8b5e34,#c9a227)",
+    emoji: "🙋‍♀️🙋‍♂️",
+    onscreen: "מה אתם הייתם עושים?",
+    say: "עכשיו תחשבו רגע — אתם עבדתם כל היום על ארוחה מיוחדת, ובדיוק כשהיא מוכנה, מגיע מישהו שצריך אותה יותר מכם. מה הייתם עושים?",
+    cue: "לשמוע 2-3 תשובות. לא לאשר או לפסול — פשוט 'בואו נראה מה היא עשתה'."
+  },
+  {
+    bg: "linear-gradient(160deg,#c1512e,#e8cf7a)",
+    emoji: "🎁🥘",
+    onscreen: "היא נותנת לו את הכל",
+    say: "בלי היסוס יתר, נטלה האישה הצדקת את כל מאכלי הסעודה — הלחם הפריך, הבשר הטעים והדגים — ארזה אותם במהירות, ונתנה את הכול לחתן העני.",
+    cue: "קול נחוש ומהיר — היא לא מתלבטת אפילו רגע, זו החלטה מיידית ומלאה."
+  },
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#c9a227)",
+    emoji: "🏃‍♂️💨😊",
+    onscreen: "רץ בשמחה לחתונתו",
+    say: "אורו פניו של הבחור. הוא הודה לה מעומק הלב, ורץ בשמחה לחתונתו.",
+    cue: "קול שמח וקליל — רגע קטן של הקלה ואושר, לפני שחוזרים לבעיה של אשת הלל."
+  },
+  {
+    bg: "linear-gradient(160deg,#8b5e34,#4a2f1a)",
+    emoji: "🥣🔁",
+    onscreen: "מתחילה הכל מחדש — בלי כעס",
+    say: "ומה עשתה אשת הלל? היא הפשילה את שרווליה, והתחילה להכין את הסעודה כולה — מהתחלה. שוב לשה בצק, שוב בישלה בשר ודגים... בלי שום כעס או תלונה.",
+    cue: "קול נינוח ומקבל — אין כאן שום עצבנות, רק עבודה שלווה מחדש."
+  },
+  {
+    bg: "linear-gradient(160deg,#2c3e54,#1e2a3a)",
+    emoji: "📖⏳",
+    onscreen: "השעה מאוחרת... האורח רעב",
+    say: "באותו זמן, ישבו הלל והאורח בסלון ודיברו דברי תורה. השעה הלכה ונעשתה מאוחרת. האורח התחיל להרגיש רעב כבד.",
+    cue: "קול איטי — מעבירים את תחושת הזמן החולף, אולי עם הפסקה קטנה."
+  },
+  {
+    bg: "linear-gradient(160deg,#c9a227,#8b5e34)",
+    emoji: "🧔💭",
+    onscreen: "\"בוודאי יש סיבה טובה לכך\"",
+    say: "הלל התפלא מאוד בליבו: 'מדוע אשתי מתעכבת כל כך? הרי ראיתי אותה עומלת מבוקר!'\n\n(קול רגוע ובוטח)\n\nאבל הלל לא קרא לה בכעס, ולא דן אותה לכף חובה. הוא אמר בליבו: 'אשתי היא אישה טובה וישרת דרך, ובוודאי יש סיבה חשובה וטובה לכך שהאוכל מתעכב.' הוא דן אותה לכף זכות, והמתין בשלווה.",
+    cue: "זה כרטיס מקביל לכרטיס 6 — אותו ערך בדיוק, הפעם מצד הלל. אפשר להדגיש את ההקבלה בקול."
+  },
+  {
+    bg: "radial-gradient(circle at 50% 45%,#e8cf7a 0%,#1e2a3a 85%)",
+    emoji: "🍲✨",
+    onscreen: "",
+    say: "(עצירה ארוכה — שתיקה של ממש)\n\nלאחר שעתיים של עבודה קשה... יצאה אשת הלל מן המטבח, ומגש מלא בתבשילים טריים ומהבהבים בידיה. היא הניחה את המזון לפני הלל והאורח.",
+    cue: "זו השתיקה החשובה בכל הסיפור. תני למילה 'שעתיים' להישמע כמו נצח — ואז ההקלה הגדולה כשהמגש סוף סוף מגיע."
+  },
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#c9a227)",
+    emoji: "❓🧔",
+    onscreen: "\"בתי, מפני מה לא הבאת מיד?\"",
+    say: "שאל אותה הלל בנימוס ובנועם: 'בתי, מפני מה לא הבאת לנו מיד את הסעודה?'",
+    cue: "קול רך ולא מאשים בכלל — זו שאלה של סקרנות אוהבת, לא ביקורת."
+  },
+  {
+    bg: "linear-gradient(160deg,#c1512e,#8b5e34)",
+    emoji: "🗣️👂",
+    onscreen: "היא מספרת הכל",
+    say: "סיפרה לו אשתו את כל מה שקרה עם החתן העני, וכיצד בישלה הכול מחדש.",
+    cue: "קצר וממוקד — הילדים כבר יודעים את הסיפור, אין צורך לחזור עליו במלואו."
+  },
+  {
+    bg: "linear-gradient(160deg,#c9a227,#e8cf7a)",
+    emoji: "🤝💛",
+    onscreen: "\"אף אני דנתי אותך לכף זכות\"",
+    say: "שמח הלל הזקן מאוד בטוב ליבה של אשתו. הוא אחז בידה ואמר בחיוך רחב: 'בתי היקרה, אף אני לא דנתי אותך לכף חובה אלא לכף זכות. היה ברור לי כי כל מה שעשית — לא עשית אלא לשם שמיים.'",
+    cue: "קול חם, גאה ואוהב — זה השיא הרגשי של הסיפור, המשפט הכי חשוב. תני לו לשקוע."
+  },
+  {
+    bg: "linear-gradient(160deg,#1e2a3a,#8b5e34)",
+    emoji: "💭❓",
+    onscreen: "מה זה \"לדון לכף זכות\"?",
+    say: "בואו נחשוב רגע — מה זה אומר בעצם, 'לדון לכף זכות'?\n\n(לשמוע תשובות)\n\nומה אתם חושבים היה קורה אילו הלל כעס על אשתו, לפני ששמע בכלל מה קרה?",
+    cue: "אל תתני את התשובה! תני לילדים להגיע בעצמם לרעיון שלחשוב טוב על מישהו לפני שיודעים את כל הסיפור, זו בחירה — ולא תמיד היא קלה."
+  },
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#3a7d9c)",
+    emoji: "🧑‍🤝‍🧑⏰",
+    onscreen: "כשחבר מאחר...",
+    say: "לפעמים חבר מאחר, או שוכח משהו, או לא עונה לכם. וקל מאוד לכעוס ולחשוב עליו רע.\n\nאשת הלל והלל עצמו לימדו אותנו שאפשר גם לחשוב: 'בטח יש לו סיבה טובה' — ולתת לו הזדמנות לספר.",
+    cue: "קול חם ואישי, איטי. מבט בעיניים של הילדים, לא במסך."
+  },
+  {
+    bg: "linear-gradient(160deg,#e8cf7a,#c1512e)",
+    emoji: "🍲💛",
+    onscreen: "על מי תדונו לכף זכות השבוע?",
+    say: "אז תחשבו — על מי אתם תוכלו לדון לכף זכות השבוע, גם אם בהתחלה זה קצת קשה?\n\n(לתת לכמה ילדים לשתף)\n\nוזה מה שקרה בבית של הלל הזקן — שני אנשים טובים, שכל אחד מהם בחר לחשוב טוב על השני, גם כשהיה קל לחשוב אחרת.",
+    cue: "נעילה חמה ורגועה, לא ממהרים לסיים."
+  }
+];
+
+let current = 0;
+
+const emojiScene = document.getElementById('emojiScene');
+const onscreenText = document.getElementById('onscreenText');
+const visual = document.getElementById('visual');
+const sayText = document.getElementById('sayText');
+const cueText = document.getElementById('cueText');
+const pedaNote = document.getElementById('pedaNote');
+const slideCounter = document.getElementById('slideCounter');
+const dotsEl = document.getElementById('dots');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+function buildDots(){
+  dotsEl.innerHTML = '';
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.addEventListener('click', () => { current = i; render(); });
+    dotsEl.appendChild(d);
+  });
+}
+
+function render(){
+  const s = slides[current];
+  visual.style.background = s.bg;
+  emojiScene.textContent = s.emoji;
+  onscreenText.textContent = s.onscreen;
+  onscreenText.style.display = s.onscreen ? 'block' : 'none';
+  sayText.textContent = s.say;
+  cueText.textContent = s.cue;
+  pedaNote.style.display = 'none';
+  if(current === 5 || current === 11){
+    pedaNote.style.display = 'block';
+    pedaNote.textContent = "💬 שימו לב: זהו אחד משני רגעי 'דן לכף זכות' המקבילים בסיפור — כדאי להדגיש בדיון שזה קרה פעמיים!";
+  }
+  slideCounter.textContent = 'כרטיס ' + (current+1) + ' מתוך ' + slides.length;
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = current === slides.length - 1;
+  nextBtn.textContent = current === slides.length - 1 ? 'סוף הסיפור ✓' : 'הבא ▶';
+  buildDots();
+  document.querySelector('.panel').scrollTop = 0;
+}
+
+prevBtn.addEventListener('click', () => {
+  if(current > 0){ current--; render(); }
+});
+nextBtn.addEventListener('click', () => {
+  if(current < slides.length - 1){ current++; render(); }
+});
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft'){
+    if(current < slides.length - 1){ current++; render(); }
+  } else if(e.key === 'ArrowRight'){
+    if(current > 0){ current--; render(); }
+  }
+});
+
+const memBtn = document.getElementById('memBtn');
+const memOverlay = document.getElementById('memOverlay');
+const closeMem = document.getElementById('closeMem');
+memBtn.addEventListener('click', () => memOverlay.classList.add('show'));
+closeMem.addEventListener('click', () => memOverlay.classList.remove('show'));
+memOverlay.addEventListener('click', (e) => {
+  if(e.target === memOverlay) memOverlay.classList.remove('show');
+});
+
+render();
+</script>
+
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif;direction:rtl"><a href="https://www.kol-toda.co.il/t/stories.html#s_tanaim" style="color:#4f46e5">← עוד בסיפורי התנאים</a> · <a href="https://www.kol-toda.co.il/" style="color:#4f46e5">אתר הקול החמישי</a></p>
+</body>
+</html>
