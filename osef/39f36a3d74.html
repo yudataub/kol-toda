@@ -1,0 +1,1182 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>שקידה בלילה - מרן ובתו – הקול החמישי</title>
+<meta name="description" content="באיזו שעה שאלה הבת את אביה למה הוא לא הולך לישון?">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="שקידה בלילה - מרן ובתו – הקול החמישי">
+<meta property="og:description" content="באיזו שעה שאלה הבת את אביה למה הוא לא הולך לישון?">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-osef-39f36a3d74.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/osef/39f36a3d74.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+(function () {
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Moon = window.LucideReact["Moon"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const ArrowRight = window.LucideReact["ArrowRight"] || window.LucideReact.Circle;
+const RotateCcw = window.LucideReact["RotateCcw"] || window.LucideReact.Circle;
+const CheckCircle = window.LucideReact["CheckCircle"] || window.LucideReact.Circle;
+const XCircle = window.LucideReact["XCircle"] || window.LucideReact.Circle;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const BookOpen = window.LucideReact["BookOpen"] || window.LucideReact.Circle;
+const MaranShekidaGame = () => {
+  const [currentLevel, setCurrentLevel] = useState('easy');
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [gameState, setGameState] = useState('playing');
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  const [attempts, setAttempts] = useState(0);
+  const questions = {
+    easy: [{
+      type: 'multipleChoice',
+      question: 'מה עשתה בת של מרן בסיפור?',
+      answers: [{
+        text: 'הלכה לישון מוקדם',
+        correct: false,
+        explanation: 'לא - היא למדה עד שעות הלילה המאוחרות'
+      }, {
+        text: 'התכוננה למבחניה עד שעות הלילה המאוחרות',
+        correct: true,
+        explanation: 'מצוין! היא למדה בהתמדה גדולה'
+      }, {
+        text: 'ביקשה ממרן ללמד אותה',
+        correct: false,
+        explanation: 'לא - היא למדה בעצמה'
+      }, {
+        text: 'הלכה לבית הכנסת',
+        correct: false,
+        explanation: 'זה לא מוזכר בסיפור'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'באיזו שעה שאלה הבת את אביה למה הוא לא הולך לישון?',
+      answers: [{
+        text: 'שעה 12 בלילה',
+        correct: false,
+        explanation: 'מוקדם מדי - זה היה יותר מאוחר'
+      }, {
+        text: 'שעה 3 לפנות בוקר',
+        correct: true,
+        explanation: 'נכון לגמרי! ⭐ זה היה מאוד מאוחר'
+      }, {
+        text: 'שעה 10 בערב',
+        correct: false,
+        explanation: 'זה מאוד מוקדם - הסיפור מדבר על לילה מאוחר'
+      }, {
+        text: 'שעה 1 לפנות בוקר',
+        correct: false,
+        explanation: 'קרוב אבל לא מדויק - זה היה בשעה 3'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה ענה מרן כשהבת שאלה למה הוא לא הולך לישון?',
+      answers: [{
+        text: '"אני צריך לסיים את הלימוד שלי"',
+        correct: false,
+        explanation: 'לא - התשובה היתה הרבה יותר עמוקה'
+      }, {
+        text: '"כל עוד לא תלכי את לישון, לא אישן גם אני"',
+        correct: true,
+        explanation: 'בול! 🎯 זו התשובה המדויקת של מרן'
+      }, {
+        text: '"אני לא עייף"',
+        correct: false,
+        explanation: 'זו לא התשובה - מרן נתן סיבה עמוקה יותר'
+      }, {
+        text: '"זה חשוב לי ללמוד"',
+        correct: false,
+        explanation: 'נכון אבל לא זו התשובה הספציפית'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מהו ההיגיון (קל וחומר) שמרן הסביר לבתו?',
+      answers: [{
+        text: 'אם אני לומד, גם את צריכה ללמוד',
+        correct: false,
+        explanation: 'זה הפוך - הוא למד ממנה!'
+      }, {
+        text: 'אם את שאינך מחויבת לומדת כך, קל וחומר שאני המחויב צריך ללמוד',
+        correct: true,
+        explanation: 'מעולה! 💪 זהו בדיוק הקל וחומר של מרן'
+      }, {
+        text: 'אם את לא ישנה, גם אני לא אישן',
+        correct: false,
+        explanation: 'זה חלק מהתשובה אבל לא ההיגיון המלא'
+      }, {
+        text: 'אם את לומדת, אני צריך ללמד אותך',
+        correct: false,
+        explanation: 'לא נכון - הוא לא הציע ללמד אותה'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזו מידה (תכונה) של מרן מודגשת בסיפור?',
+      answers: [{
+        text: 'גאווה בלימודו',
+        correct: false,
+        explanation: 'להיפך - הסיפור מדגיש ענווה!'
+      }, {
+        text: 'ענווה - למידה מבתו',
+        correct: true,
+        explanation: 'מצוין! ✨ מרן בענווה לומד מהדוגמה של בתו'
+      }, {
+        text: 'כעס על בתו שלא ישנה',
+        correct: false,
+        explanation: 'לא - הוא לא כעס, להיפך!'
+      }, {
+        text: 'עצלות',
+        correct: false,
+        explanation: 'מגוחך - הוא למד בשקידה עצומה!'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה עשה מרן אחרי שהסביר לבתו?',
+      answers: [{
+        text: 'הלך לישון',
+        correct: false,
+        explanation: 'לא - הוא המשיך ללמוד'
+      }, {
+        text: 'שב לתלמודו',
+        correct: true,
+        explanation: 'נכון! 🌟 הוא חזר ללימוד מיד'
+      }, {
+        text: 'אמר לבת ללכת לישון',
+        correct: false,
+        explanation: 'הוא לא הורה לה - רק הסביר'
+      }, {
+        text: 'התפלל',
+        correct: false,
+        explanation: 'לא מוזכר בסיפור'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה הסיפור מלמד אותנו על שקידה?',
+      answers: [{
+        text: 'כי מרן למד רק בלילה',
+        correct: false,
+        explanation: 'לא נכון - הוא למד גם בלילה, לא רק'
+      }, {
+        text: 'כי מרן למד עד שעות מאוחרות מאוד בהתמדה',
+        correct: true,
+        explanation: 'בול! 🎯 שקידה = התמדה עד שעה 3 בבוקר'
+      }, {
+        text: 'כי הבת למדה הרבה',
+        correct: false,
+        explanation: 'נכון, אבל הדגש הוא על מרן'
+      }, {
+        text: 'כי מרן ביקש מהבת ללמוד',
+        correct: false,
+        explanation: 'הוא לא ביקש - הוא נתן דוגמה'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזה רגש הביעה הבת כששאלה את אביה?',
+      answers: [{
+        text: 'כעס',
+        correct: false,
+        explanation: 'לא - היא דאגה לו'
+      }, {
+        text: 'דאגה',
+        correct: true,
+        explanation: 'נכון מאוד! 💡 "שאלה בדאגה" - היא דאגה לבריאותו'
+      }, {
+        text: 'קנאה',
+        correct: false,
+        explanation: 'לא מתאים - זה לא רגש הדאגה'
+      }, {
+        text: 'אדישות',
+        correct: false,
+        explanation: 'להיפך - היא דאגה מאוד'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מי הוא "מרן" שמדובר עליו בסיפור?',
+      answers: [{
+        text: 'גדול תורה',
+        correct: true,
+        explanation: 'נכון! ⭐ "מרן" הוא כינוי לגדול תורה'
+      }, {
+        text: 'מורה בבית ספר',
+        correct: false,
+        explanation: 'לא מדויק - "מרן" הוא תואר נכבד יותר'
+      }, {
+        text: 'אבא רגיל',
+        correct: false,
+        explanation: 'לא - זה כינוי מיוחד לגדול תורה'
+      }, {
+        text: 'רב של עיר',
+        correct: false,
+        explanation: 'קרוב אבל "מרן" הוא כינוי נכבד במיוחד'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה הבת ראתה תמיד כשלמדה בלילה?',
+      answers: [{
+        text: 'את אמה עובדת',
+        correct: false,
+        explanation: 'לא - הסיפור מדבר על האבא'
+      }, {
+        text: 'את אביה יושב ולומד בשקידה עצומה',
+        correct: true,
+        explanation: 'מצוין! זו הדוגמה שהיתה לה כל לילה'
+      }, {
+        text: 'את אביה ישן',
+        correct: false,
+        explanation: 'להיפך - הוא היה ער ולומד'
+      }, {
+        text: 'את הבית חשוך',
+        correct: false,
+        explanation: 'לא - האבא היה ער ולומד'
+      }]
+    }],
+    medium: [{
+      type: 'multipleChoice',
+      question: 'מהי המשמעות של הביטוי "הרהיבה עוז" בהקשר של הבת?',
+      answers: [{
+        text: 'היא כעסה',
+        correct: false,
+        explanation: 'לא - זה לא קשור לכעס'
+      }, {
+        text: 'היא אזרה אומץ ושאלה (למרות הפחד/ההסתייגות)',
+        correct: true,
+        explanation: 'מעולה! 💪 "הרהיבה עוז" = אזרה אומץ לשאול'
+      }, {
+        text: 'היא רצה מהר',
+        correct: false,
+        explanation: 'לא - זה לא קשור למהירות פיזית'
+      }, {
+        text: 'היא צעקה',
+        correct: false,
+        explanation: 'לא - היא שאלה, לא צעקה'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'אתה רואה את המורה שלך לומד עד מאוחר בלילה. מה אתה לומד מזה?',
+      answers: [{
+        text: 'שהמורה לא יודע לנהל את הזמן שלו',
+        correct: false,
+        explanation: 'לא - זו הסקה שלילית ולא נכונה'
+      }, {
+        text: 'שאם המורה שמחויב לומד כך, קל וחומר שאני צריך להשקיע',
+        correct: true,
+        explanation: 'בול! 🎯 זהו בדיוק הלקח של הסיפור'
+      }, {
+        text: 'שאני לא צריך ללמוד כי המורה עושה את זה',
+        correct: false,
+        explanation: 'זו הבנה הפוכה לחלוטין!'
+      }, {
+        text: 'שזה משעמם ללמוד',
+        correct: false,
+        explanation: 'להיפך - השקידה מעידה על אהבת הלימוד'
+      }]
+    }, {
+      type: 'difference',
+      question: 'מה ההבדל בין "שקידה" ל"ביטול זמן בלימוד"?',
+      answers: [{
+        text: 'שקידה = התמדה עמוקה ומרוכזת, ביטול זמן = ישיבה ללא ריכוז',
+        correct: true,
+        explanation: 'מושלם! 🌟 שקידה היא איכות, לא רק כמות'
+      }, {
+        text: 'אין הבדל - שניהם אומרים לימוד',
+        correct: false,
+        explanation: 'יש הבדל עצום באיכות והמטרה'
+      }, {
+        text: 'שקידה = לימוד רק בלילה',
+        correct: false,
+        explanation: 'לא - שקידה היא התמדה בכל זמן'
+      }, {
+        text: 'ביטול זמן = לימוד יותר שעות',
+        correct: false,
+        explanation: 'להיפך - ביטול זמן הוא חוסר ריכוז'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה מרן לא אמר לבתו "לכי לישון, זה מאוחר"?',
+      answers: [{
+        text: 'כי הוא לא התעניין בה',
+        correct: false,
+        explanation: 'להיפך - הוא דאג לה מאוד!'
+      }, {
+        text: 'כי הוא רצה להשתמש בדוגמה שלה להתעוררות עצמית',
+        correct: true,
+        explanation: 'מעולה! 💡 הוא למד ממנה ולא הטיף'
+      }, {
+        text: 'כי הוא היה עסוק מדי',
+        correct: false,
+        explanation: 'לא - הוא דיבר איתה בהרחבה'
+      }, {
+        text: 'כי הוא לא ידע מה השעה',
+        correct: false,
+        explanation: 'מגוחך - הוא ידע בדיוק מה השעה'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'חבר שלך אומר: "אני לא מחויב ללמוד תורה כמו הרבנים, אז אני לא צריך להשקיע". מה תענה לו?',
+      answers: [{
+        text: 'אתה צודק, אל תטריח את עצמך',
+        correct: false,
+        explanation: 'זו תשובה הרסנית שסותרת את הסיפור'
+      }, {
+        text: 'אם את שאינך מחויבת למדה כך, קל וחומר שאתה צריך להשקיע!',
+        correct: true,
+        explanation: 'מצוין! ✨ זהו הקל וחומר ההפוך של מרן'
+      }, {
+        text: 'אתה לא חכם מספיק ללמוד',
+        correct: false,
+        explanation: 'זו תשובה פוגענית ולא נכונה'
+      }, {
+        text: 'רק רבנים צריכים ללמוד',
+        correct: false,
+        explanation: 'לא נכון - כולם צריכים ללמוד'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזו תכונה של מרן מתבטאת במשפט "אמר מרן בענווה"?',
+      answers: [{
+        text: 'גאווה בידע שלו',
+        correct: false,
+        explanation: 'להיפך - "בענווה" היא ההפך מגאווה'
+      }, {
+        text: 'הכרה שיש ללמוד גם ממי שנראה "פחות" ממנו',
+        correct: true,
+        explanation: 'בול! 🏆 ענווה = למידה מכל אדם'
+      }, {
+        text: 'פחד מהבת',
+        correct: false,
+        explanation: 'לא - זה לא פחד אלא כבוד והערכה'
+      }, {
+        text: 'עייפות',
+        correct: false,
+        explanation: 'לא קשור - "ענווה" היא תכונת אופי'
+      }]
+    }, {
+      type: 'difference',
+      question: 'מה ההבדל בין "ענווה" ל"ביטול עצמי"?',
+      answers: [{
+        text: 'ענווה = להעריך אחרים ולהכיר מגבלות, ביטול עצמי = לבטל את הערך שלך',
+        correct: true,
+        explanation: 'מושלם! 💪 ענווה איננה חולשה אלא חוזק'
+      }, {
+        text: 'אין הבדל - שניהם אותו דבר',
+        correct: false,
+        explanation: 'יש הבדל גדול - ענווה היא בריאה'
+      }, {
+        text: 'ענווה = לא לדבר, ביטול עצמי = לדבר',
+        correct: false,
+        explanation: 'לא מדויק - ענווה לא אומרת שתיקה'
+      }, {
+        text: 'ענווה = חולשה, ביטול עצמי = חוזק',
+        correct: false,
+        explanation: 'הפוך! ענווה היא חוזק אמיתי'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'אתה רואה ילד קטן עושה משהו טוב שאתה לא עושה. מה תלמד מסיפור זה?',
+      answers: [{
+        text: 'אני גדול יותר אז לא צריך ללמוד ממנו',
+        correct: false,
+        explanation: 'זו גישה גאה שסותרת את הסיפור'
+      }, {
+        text: 'קל וחומר שאני צריך לעשות זאת, ובענווה ללמוד מהילד',
+        correct: true,
+        explanation: 'מעולה! 🌟 זהו הלקח המרכזי של הסיפור'
+      }, {
+        text: 'זה רק מקרה, זה לא משנה',
+        correct: false,
+        explanation: 'זו גישה מפספסת את ההזדמנות ללמוד'
+      }, {
+        text: 'אני אבקש ממנו להפסיק',
+        correct: false,
+        explanation: 'זו תגובה הרסנית וגאה'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מדוע מרן חיכה עד שהבת תשאל, ולא אמר לה מיוזמתו?',
+      answers: [{
+        text: 'כי הוא לא רצה לדבר איתה',
+        correct: false,
+        explanation: 'לא - הוא דיבר איתה בחום'
+      }, {
+        text: 'כי לימוד שבא מתוך סקרנות ושאלה חודר עמוק יותר',
+        correct: true,
+        explanation: 'נכון מאוד! 💡 מרן חינך אותה בחכמה'
+      }, {
+        text: 'כי הוא היה עסוק',
+        correct: false,
+        explanation: 'לא - הוא שם לב אליה כל הזמן'
+      }, {
+        text: 'כי הוא לא ידע מה לומר',
+        correct: false,
+        explanation: 'מגוחך - התשובה שלו היתה מבריקה'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה מלמד הביטוי "שב לתלמודו" על מרן?',
+      answers: [{
+        text: 'שהוא לא התעניין בשיחה',
+        correct: false,
+        explanation: 'לא - הוא ענה לה בהרחבה'
+      }, {
+        text: 'שאחרי שהסביר, הוא מיד חזר לפעולה - עקביות בין דיבור למעשה',
+        correct: true,
+        explanation: 'מצוין! ✨ הוא לא רק דיבר, גם עשה'
+      }, {
+        text: 'שהוא התעייף מהשיחה',
+        correct: false,
+        explanation: 'לא - זו לא המסקנה'
+      }, {
+        text: 'שהוא רצה להימנע מהבת',
+        correct: false,
+        explanation: 'להיפך - הוא היה נוכח איתה'
+      }]
+    }, {
+      type: 'difference',
+      question: 'מה ההבדל בין "דוגמה אישית" ל"הטפה"?',
+      answers: [{
+        text: 'דוגמה אישית = לעשות בעצמי, הטפה = לומר לאחרים מה לעשות',
+        correct: true,
+        explanation: 'בול! 🎯 מרן נתן דוגמה, לא הטיף'
+      }, {
+        text: 'אין הבדל - שניהם אותו דבר',
+        correct: false,
+        explanation: 'יש הבדל עצום - דוגמה היא חזקה יותר'
+      }, {
+        text: 'דוגמה אישית = חולשה, הטפה = חוזק',
+        correct: false,
+        explanation: 'הפוך! דוגמה אישית היא החוזק האמיתי'
+      }, {
+        text: 'הטפה עובדת יותר מדוגמה',
+        correct: false,
+        explanation: 'לא - דוגמה אישית חזקה פי כמה'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'הורה שלך עובד קשה מאוד. איך תיישם את המסר של הסיפור?',
+      answers: [{
+        text: 'אני ילד אז לא צריך לעבוד קשה',
+        correct: false,
+        explanation: 'זו מסקנה הפוכה לחלוטין'
+      }, {
+        text: 'קל וחומר שאני צריך להשקיע בלימודים ובאחריות שלי',
+        correct: true,
+        explanation: 'מעולה! 💪 זהו יישום נכון של הקל וחומר'
+      }, {
+        text: 'אני אגיד לו להפסיק לעבוד קשה',
+        correct: false,
+        explanation: 'זו תגובה לא מכבדת'
+      }, {
+        text: 'זה לא קשור אליי',
+        correct: false,
+        explanation: 'כל דוגמה טובה קשורה אלינו!'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה הסיפור מדגיש שהבת "תמיד היתה רואה" את אביה לומד?',
+      answers: [{
+        text: 'כדי להראות שהיא רגלה אחריו',
+        correct: false,
+        explanation: 'לא - זה לא ריגול אלא תצפית טבעית'
+      }, {
+        text: 'כדי להדגיש שזו לא היתה פעם חד-פעמית אלא דרך חיים',
+        correct: true,
+        explanation: 'נכון! 🌟 עקביות היא המפתח'
+      }, {
+        text: 'כדי להראות שהיא לא ישנה',
+        correct: false,
+        explanation: 'לא - הדגש הוא על הדוגמה של האבא'
+      }, {
+        text: 'כדי להראות שהיא סקרנית',
+        correct: false,
+        explanation: 'לא העיקר - הדגש על העקביות'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזה סוג של קל וחומר משתמש מרן?',
+      answers: [{
+        text: 'קל וחומר רגיל - מהקל לחמור',
+        correct: false,
+        explanation: 'לא מדויק - זה קל וחומר הפוך!'
+      }, {
+        text: 'קל וחומר הפוך - אם מי שפחות מחויב עושה, המחויב צריך יותר',
+        correct: true,
+        explanation: 'מדהים! 🏆 זהו קל וחומר ייחודי ומפתיע'
+      }, {
+        text: 'קל וחומר כפול',
+        correct: false,
+        explanation: 'לא - זה לא המונח המדויק'
+      }, {
+        text: 'אין כאן קל וחומר',
+        correct: false,
+        explanation: 'יש כאן קל וחומר ברור!'
+      }]
+    }],
+    hard: [{
+      type: 'deepAnalysis',
+      question: 'למה מרן לא אמר: "את לומדת למבחן, אני לומד תורה - זה שונה"?',
+      answers: [{
+        text: 'כי הוא לא ראה הבדל בין לימוד תורה ללימוד חול',
+        correct: false,
+        explanation: 'לא נכון - בטח יש הבדל, אבל זו לא הנקודה'
+      }, {
+        text: 'כי הוא ראה את עצם ההשקעה כדוגמה, מעבר לתוכן הלימוד',
+        correct: true,
+        explanation: 'מושלם! 🌟 ענווה היא לראות טוב בכל אדם ובכל מצב'
+      }, {
+        text: 'כי הוא לא הבין מה היא לומדת',
+        correct: false,
+        explanation: 'מגוחך - הוא בטח הבין'
+      }, {
+        text: 'כי לימוד חול חשוב יותר',
+        correct: false,
+        explanation: 'לא נכון - לימוד תורה חשוב יותר, אבל זו לא הנקודה'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'אתה רואה עובד ניקיון עובד בחריצות בשעה 3 בבוקר. איך תיישם את עקרון הסיפור?',
+      answers: [{
+        text: 'זה לא קשור אליי - הוא עובד, אני לומד',
+        correct: false,
+        explanation: 'זו גישה מפספסת - העיקרון הוא אוניברסלי!'
+      }, {
+        text: 'קל וחומר שאני צריך להשקיע בתפקידי עם אותה מסירות',
+        correct: true,
+        explanation: 'מדהים! 🏆 זהו יישום עמוק של העיקרון לכל תחום'
+      }, {
+        text: 'אני עדיף ממנו אז לא צריך ללמוד',
+        correct: false,
+        explanation: 'זו גאווה שמנוגדת לחלוטין לסיפור'
+      }, {
+        text: 'אני אשכנע אותו להפסיק',
+        correct: false,
+        explanation: 'זו תגובה לא מכבדת ושגויה'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'מדוע מרן חייך כשאמר "כל עוד לא תלכי את לישון..."?',
+      answers: [{
+        text: 'כי הוא התלוצץ עליה',
+        correct: false,
+        explanation: 'לא - החיוך היה חיוך של חום ואהבה'
+      }, {
+        text: 'כי הוא שמח על ההזדמנות ללמד אותה ערך עמוק באהבה',
+        correct: true,
+        explanation: 'מעולה! 💡 חיוך = חינוך מתוך אהבה, לא ביקורת'
+      }, {
+        text: 'כי הוא היה עייף',
+        correct: false,
+        explanation: 'לא - החיוך היה חיוך משמעותי'
+      }, {
+        text: 'כי הוא רצה להתחמק מהשאלה',
+        correct: false,
+        explanation: 'להיפך - הוא ענה ישירות'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזו רמה של ענווה מתבטאת כאן: גדול תורה לומד מבת סמינר?',
+      answers: [{
+        text: 'ענווה בסיסית - כל אחד יכול',
+        correct: false,
+        explanation: 'לא - זו רמה גבוהה מאוד!'
+      }, {
+        text: 'ענווה עליונה - למידה מכל אדם, גם ממי שנראה "נמוך" יותר',
+        correct: true,
+        explanation: 'מושלם! 🌟 זו דרגה עליונה של ענווה'
+      }, {
+        text: 'זו לא ענווה אלא חינוך',
+        correct: false,
+        explanation: 'זה גם וגם - ענווה וחינוך ביחד'
+      }, {
+        text: 'ענווה מזויפת',
+        correct: false,
+        explanation: 'לא - זו ענווה אמיתית ועמוקה!'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'תלמיד חלש בכיתה משקיע יותר ממך. איך תגיב לפי הסיפור?',
+      answers: [{
+        text: 'הוא חלש אז צריך להשקיע יותר, אני לא',
+        correct: false,
+        explanation: 'זו גאווה שמחמיצה את ההזדמנות ללמוד'
+      }, {
+        text: 'קל וחומר שאני שמסוגל יותר צריך להשקיע עוד יותר ממנו',
+        correct: true,
+        explanation: 'מדהים! 💪 זהו קל וחומר נוסף - מהיכולת לאחריות'
+      }, {
+        text: 'אני אגיד לו להפסיק להתאמץ',
+        correct: false,
+        explanation: 'זו תגובה הרסנית וגאה'
+      }, {
+        text: 'זה לא קשור אליי',
+        correct: false,
+        explanation: 'כל דוגמה טובה צריכה לעורר אותנו!'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'מה המסר העמוק בכך שמרן אמר "שֶׁאֵינֵךְ מְחֻיֶּבֶת" (ולא "שאת חלשה" או "שאת בת")?',
+      answers: [{
+        text: 'הוא רצה להיות מנומס',
+        correct: false,
+        explanation: 'לא רק נימוס - יש כאן עומק'
+      }, {
+        text: 'הוא הכיר בערכה המלא והתמקד רק בהבדל החיוב, לא ביכולת',
+        correct: true,
+        explanation: 'מושלם! ✨ כבוד לאדם = הכרה בערכו המלא'
+      }, {
+        text: 'הוא לא רצה לפגוע בה',
+        correct: false,
+        explanation: 'נכון חלקית, אבל העומק גדול יותר'
+      }, {
+        text: 'הוא לא ידע מה לומר',
+        correct: false,
+        explanation: 'מגוחך - הוא ידע בדיוק מה לומר'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזה סוג של חינוך השתמש מרן - ישיר או עקיף?',
+      answers: [{
+        text: 'חינוך ישיר - אמר לה מה לעשות',
+        correct: false,
+        explanation: 'לא - הוא לא הורה, הוא הדגים'
+      }, {
+        text: 'חינוך עקיף - דוגמה אישית + הסבר כשנשאל',
+        correct: true,
+        explanation: 'נכון לגמרי! 🎯 החינוך העמוק ביותר הוא דרך דוגמה'
+      }, {
+        text: 'חינוך כופה',
+        correct: false,
+        explanation: 'להיפך - הוא לא כפה כלום'
+      }, {
+        text: 'חינוך פאסיבי',
+        correct: false,
+        explanation: 'לא - הוא היה אקטיבי בדוגמה ובהסבר'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'למה הסיפור מדגיש שהבת היתה "בגיל סמינר"?',
+      answers: [{
+        text: 'כי זה לא רלוונטי',
+        correct: false,
+        explanation: 'כל פרט בסיפור רלוונטי!'
+      }, {
+        text: 'כדי להדגיש שגם בגיל מתבגר, הדוגמה של ההורים משפיעה',
+        correct: true,
+        explanation: 'מעולה! 💡 חינוך בדוגמה עובד בכל גיל'
+      }, {
+        text: 'כי היא היתה צעירה מדי',
+        correct: false,
+        explanation: 'לא - גיל סמינר זה גיל בוגר יחסית'
+      }, {
+        text: 'כדי להראות שהיא לא חכמה',
+        correct: false,
+        explanation: 'מגוחך - היא למדה קשה!'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'ילד קטן אומר "תודה" יותר ממך. איך תיישם את עקרון הקל וחומר?',
+      answers: [{
+        text: 'הוא ילד אז זה לא חשוב',
+        correct: false,
+        explanation: 'זו גישה מפספסת את ההזדמנות'
+      }, {
+        text: 'אם ילד שלא מבין לגמרי אומר תודה, קל וחומר שאני צריך להיות אסיר תודה',
+        correct: true,
+        explanation: 'מדהים! 🌟 יישום מושלם של העיקרון'
+      }, {
+        text: 'אני גדול אז לא צריך',
+        correct: false,
+        explanation: 'זו גאווה שסותרת את הסיפור'
+      }, {
+        text: 'אני אבקש ממנו להפסיק',
+        correct: false,
+        explanation: 'זו תגובה הרסנית'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'מה היחס בין "שקידה עצומה" של מרן ל"התמדה" של הבת?',
+      answers: [{
+        text: 'מרן היה טוב יותר ממנה',
+        correct: false,
+        explanation: 'לא - הוא למד ממנה!'
+      }, {
+        text: 'שניהם עסקו באותה מידה (התמדה), כל אחד בתחומו',
+        correct: true,
+        explanation: 'בול! 🏆 השקידה היא עיקרון אוניברסלי'
+      }, {
+        text: 'הבת היתה עצלה',
+        correct: false,
+        explanation: 'מגוחך - היא למדה עד 3 בבוקר!'
+      }, {
+        text: 'אין כאן קשר',
+        correct: false,
+        explanation: 'יש קשר ישיר - זו הנקודה!'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזו רמה של מופת אישי מתבטא כאן?',
+      answers: [{
+        text: 'מופת בסיסי - עשיית מינימום',
+        correct: false,
+        explanation: 'לא - זה הרבה מעבר למינימום!'
+      }, {
+        text: 'מופת עליון - עקביות מוחלטת בין דיבור למעשה, 24/7',
+        correct: true,
+        explanation: 'מושלם! ✨ זו דרגה עליונה של אמינות'
+      }, {
+        text: 'מופת חלקי - רק בלילה',
+        correct: false,
+        explanation: 'לא - "תמיד רואה" = כל הזמן'
+      }, {
+        text: 'אין כאן מופת',
+        correct: false,
+        explanation: 'יש כאן מופת אדיר!'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'למה הסיפור מסתיים ב"ושב לתלמודו" ולא ב"והבת הלכה לישון"?',
+      answers: [{
+        text: 'כי הסיפור לא התעניין בבת',
+        correct: false,
+        explanation: 'לא - הסיפור מתעניין מאוד בשניהם'
+      }, {
+        text: 'כדי להדגיש שעקביות במעשה חשובה יותר מדיבור',
+        correct: true,
+        explanation: 'מעולה! 💪 הסיום מדגיש: דיבר ועשה!'
+      }, {
+        text: 'כי זה לא חשוב מה קרה אחרי',
+        correct: false,
+        explanation: 'לא - הסיום הוא משמעותי'
+      }, {
+        text: 'כי מרן היה חשוב יותר',
+        correct: false,
+        explanation: 'לא - זה לא על חשיבות אלא על העקביות'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'אתה רואה מישהו שמקיים מצווה קטנה בדקדוק. מה ללמוד מזה?',
+      answers: [{
+        text: 'זה רק מצווה קטנה, לא משנה',
+        correct: false,
+        explanation: 'זו גישה מזלזלת שסותרת את הסיפור'
+      }, {
+        text: 'אם הוא מדקדק במצווה קטנה, קל וחומר שאני צריך במצוות גדולות',
+        correct: true,
+        explanation: 'מדהים! 🌟 יישום נפלא של הקל וחומר'
+      }, {
+        text: 'אני לא צריך להדקדק כמוהו',
+        correct: false,
+        explanation: 'זו גישה רשלנית'
+      }, {
+        text: 'אני אגיד לו שזה מוגזם',
+        correct: false,
+        explanation: 'זו תגובה מזלזלת'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'מה המסר של העובדה שמרן "ממתין" שהבת תלך לישון ולא מצווה עליה?',
+      answers: [{
+        text: 'הוא לא אכפת לו ממנה',
+        correct: false,
+        explanation: 'להיפך - דאגתו עמוקה!'
+      }, {
+        text: 'כבוד לבחירה החופשית של האדם, חינוך בדוגמה ולא בכפייה',
+        correct: true,
+        explanation: 'מושלם! 🏆 זהו חינוך אמיתי - השראה, לא כפייה'
+      }, {
+        text: 'הוא פחד ממנה',
+        correct: false,
+        explanation: 'מגוחך - הוא היה האבא והגדול'
+      }, {
+        text: 'הוא לא ידע מה לומר לה',
+        correct: false,
+        explanation: 'לא - הוא ידע בדיוק מה לומר'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזה סוג של קל וחומר נוסף יכול ללמוד מהסיפור?',
+      answers: [{
+        text: 'אם מרן שגדול משקיע, קל וחומר שהקטנים לא צריכים',
+        correct: false,
+        explanation: 'זה הפוך לחלוטין!'
+      }, {
+        text: 'אם הקטן משקיע מתוך חובה חיצונית, קל וחומר שהגדול צריך להשקיע מתוך רצון פנימי',
+        correct: true,
+        explanation: 'מדהים! 💡 רמה נוספת של קל וחומר - מחובה לרצון'
+      }, {
+        text: 'אין כאן קל וחומר נוסף',
+        correct: false,
+        explanation: 'יש עומק נוסף כאן!'
+      }, {
+        text: 'קל וחומר שהכל מותר',
+        correct: false,
+        explanation: 'מגוחך - זה לא המסר'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'מה ניתן ללמוד מהעובדה שמרן לא אמר "אני צריך ללמוד יותר ממך"?',
+      answers: [{
+        text: 'שהוא לא רצה להתחרות',
+        correct: false,
+        explanation: 'נכון חלקית, אבל יש עומק נוסף'
+      }, {
+        text: 'שהוא שם את הדגש על החובה שלו, לא על השוואה או תחרות',
+        correct: true,
+        explanation: 'מושלם! ✨ ענווה אמיתית = מיקוד בעצמי, לא בהשוואה'
+      }, {
+        text: 'שהוא היה צנוע מדי',
+        correct: false,
+        explanation: 'לא - זו לא צניעות מוגזמת אלא ענווה אמיתית'
+      }, {
+        text: 'שהוא לא ידע איך להסביר',
+        correct: false,
+        explanation: 'להיפך - ההסבר שלו היה מדויק'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'אתה רואה מישהו עושה חסד קטן. איך ליישם את כל מסרי הסיפור?',
+      answers: [{
+        text: 'לומר לו שזה לא מספיק',
+        correct: false,
+        explanation: 'זו תגובה שיפוטית ולא נכונה'
+      }, {
+        text: 'בענווה ללמוד ממנו, ובקל וחומר להחליט לעשות חסד גדול יותר',
+        correct: true,
+        explanation: 'מדהים! 🏆 שילוב מושלם של כל המסרים!'
+      }, {
+        text: 'להתעלם - זה לא קשור אליי',
+        correct: false,
+        explanation: 'זו גישה מפספסת את ההזדמנות'
+      }, {
+        text: 'לעשות בדיוק כמוהו ולא יותר',
+        correct: false,
+        explanation: 'זה חסר את הקל וחומר'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'מהי המשמעות העמוקה של "בחיוך" בתשובת מרן?',
+      answers: [{
+        text: 'שהוא היה שמח שהיא לא ישנה',
+        correct: false,
+        explanation: 'לא - הוא דאג לה'
+      }, {
+        text: 'שחינוך אמיתי נעשה מאהבה ושמחה, לא מכעס או ביקורת',
+        correct: true,
+        explanation: 'מעולה! 🌟 החיוך הוא המפתח - חינוך בשמחה!'
+      }, {
+        text: 'שהוא היה עייף והתבלבל',
+        correct: false,
+        explanation: 'לא - החיוך היה מודע ומשמעותי'
+      }, {
+        text: 'שהוא התלוצץ',
+        correct: false,
+        explanation: 'לא - זה היה רציני מאוד, רק באהבה'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איזו רמה של "למוד זכות" מתבטאת כאן?',
+      answers: [{
+        text: 'אין כאן למוד זכות',
+        correct: false,
+        explanation: 'יש כאן למוד זכות עמוק!'
+      }, {
+        text: 'למוד זכות עליון - למרות שהבת לא מחויבת, מרן רואה בה דוגמה לחיקוי',
+        correct: true,
+        explanation: 'מושלם! 💪 רואה טוב בכל אדם ומצב'
+      }, {
+        text: 'למוד זכות בסיסי',
+        correct: false,
+        explanation: 'לא - זו רמה גבוהה מאוד!'
+      }, {
+        text: 'למוד זכות מזויף',
+        correct: false,
+        explanation: 'לא - זה אמיתי לחלוטין!'
+      }]
+    }, {
+      type: 'deepAnalysis',
+      question: 'מדוע הסיפור מתאר את מרן כ"יושב ולומד בשקידה עצומה" ולא רק "לומד"?',
+      answers: [{
+        text: 'כדי למלא מילים',
+        correct: false,
+        explanation: 'כל מילה בסיפור משמעותית!'
+      }, {
+        text: 'כדי להדגיש שהשקידה היא לא רק כמותית אלא גם איכותית - ריכוז ומסירות',
+        correct: true,
+        explanation: 'מדהים! 🏆 שקידה = איכות + כמות ביחד'
+      }, {
+        text: 'כדי להראות שהוא ישב',
+        correct: false,
+        explanation: 'זה לא העיקר - הדגש על השקידה'
+      }, {
+        text: 'כדי להפחיד את הבת',
+        correct: false,
+        explanation: 'מגוחך - זו לא הכוונה'
+      }]
+    }]
+  };
+  const levelRequirements = {
+    easy: {
+      total: 10,
+      passing: 8,
+      percentage: 80
+    },
+    medium: {
+      total: 15,
+      passing: 13,
+      percentage: 85
+    },
+    hard: {
+      total: 20,
+      passing: 18,
+      percentage: 90
+    }
+  };
+  const currentLevelQuestions = questions[currentLevel];
+  const currentQuestion = currentLevelQuestions[currentQuestionIndex];
+  const requirement = levelRequirements[currentLevel];
+
+  // Shuffle answers when question changes
+  useEffect(() => {
+    if (currentQuestion && currentQuestion.answers) {
+      const shuffled = [...currentQuestion.answers].sort(() => Math.random() - 0.5);
+      setShuffledAnswers(shuffled);
+    }
+  }, [currentQuestionIndex, currentLevel]);
+  const handleAnswer = (answer, isCorrect) => {
+    setSelectedAnswer(answer);
+    setShowFeedback(true);
+    if (isCorrect) {
+      setScore(score + 1);
+    } else {
+      setLives(lives - 1);
+      if (lives - 1 === 0) {
+        setAttempts(attempts + 1);
+        if (attempts + 1 >= 3) {
+          setGameState('gameOver');
+          return;
+        }
+      }
+    }
+  };
+  const nextQuestion = () => {
+    setShowFeedback(false);
+    setSelectedAnswer(null);
+    if (currentQuestionIndex + 1 < currentLevelQuestions.length) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      const percentage = score / requirement.total * 100;
+      if (percentage >= requirement.percentage) {
+        setGameState('levelComplete');
+      } else {
+        setGameState('levelFailed');
+      }
+    }
+  };
+  const nextLevel = () => {
+    if (currentLevel === 'easy') {
+      setCurrentLevel('medium');
+    } else if (currentLevel === 'medium') {
+      setCurrentLevel('hard');
+    }
+    setScore(0);
+    setLives(3);
+    setCurrentQuestionIndex(0);
+    setGameState('playing');
+    setAttempts(0);
+  };
+  const restart = () => {
+    setCurrentLevel('easy');
+    setScore(0);
+    setLives(3);
+    setCurrentQuestionIndex(0);
+    setGameState('playing');
+    setAttempts(0);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+  };
+  const renderQuestion = () => {
+    if (!currentQuestion) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold text-indigo-900 mb-6"
+    }, currentQuestion.question), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3"
+    }, shuffledAnswers.map((answer, index) => /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => !showFeedback && handleAnswer(answer, answer.correct),
+      disabled: showFeedback,
+      className: `w-full p-4 text-right rounded-lg border-2 transition-all ${showFeedback ? answer === selectedAnswer ? answer.correct ? 'bg-green-100 border-green-500' : 'bg-red-100 border-red-500' : 'bg-gray-50 border-gray-200' : 'bg-white border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50'}`
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-medium"
+    }, answer.text), showFeedback && answer === selectedAnswer && /*#__PURE__*/React.createElement("div", {
+      className: "mt-2 text-sm"
+    }, answer.correct ? /*#__PURE__*/React.createElement(CheckCircle, {
+      className: "inline ml-2 text-green-600",
+      size: 16
+    }) : /*#__PURE__*/React.createElement(XCircle, {
+      className: "inline ml-2 text-red-600",
+      size: 16
+    }), answer.explanation)))));
+  };
+  if (gameState === 'levelComplete') {
+    const percentage = score / requirement.total * 100;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-8 font-['Assistant']",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "w-24 h-24 mx-auto text-yellow-500 mb-4"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-indigo-900 mb-4"
+    }, percentage >= 95 ? 'מדהים! 🏆' : 'כל הכבוד! 💪'), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-6"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05E8\u05DE\u05EA ", currentLevel === 'easy' ? 'קל' : currentLevel === 'medium' ? 'בינוני' : 'קשה', "!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-indigo-50 p-6 rounded-lg mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-indigo-900 mb-2"
+    }, score, " / ", requirement.total, " (", percentage.toFixed(0), "%)"), percentage >= 95 ? /*#__PURE__*/React.createElement("p", {
+      className: "text-green-700"
+    }, "\u05D4\u05E4\u05E0\u05DE\u05EA \u05D0\u05EA \u05D4\u05DE\u05E1\u05E8\u05D9\u05DD \u05D1\u05E6\u05D5\u05E8\u05D4 \u05DE\u05D5\u05E9\u05DC\u05DE\u05EA! \uD83C\uDF89") : /*#__PURE__*/React.createElement("p", {
+      className: "text-blue-700"
+    }, "\u05D4\u05D1\u05E0\u05D4 \u05D8\u05D5\u05D1\u05D4, \u05E2\u05D5\u05D3 \u05E7\u05E6\u05EA \u05E2\u05D5\u05DE\u05E7 \u05DC-95% \uD83D\uDCDA")), currentLevel !== 'hard' ? /*#__PURE__*/React.createElement("button", {
+      onClick: nextLevel,
+      className: "bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:opacity-90 mb-4"
+    }, "\u05D4\u05DE\u05E9\u05DA \u05DC\u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4 ", /*#__PURE__*/React.createElement(ArrowRight, {
+      className: "inline mr-2"
+    })) : /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-indigo-900"
+    }, "\uD83C\uDF1F \u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05DB\u05DC \u05D4\u05E8\u05DE\u05D5\u05EA! \uD83C\uDF1F"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, "\u05D4\u05E4\u05E0\u05DE\u05EA \u05D0\u05EA \u05E2\u05E8\u05DB\u05D9 \u05D4\u05E9\u05E7\u05D9\u05D3\u05D4, \u05D4\u05E2\u05E0\u05D5\u05D5\u05D4, \u05D5\u05D4\u05E7\u05DC \u05D5\u05D7\u05D5\u05DE\u05E8!"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-yellow-50 p-4 rounded-lg mt-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold text-indigo-900 mb-2"
+    }, "\uD83D\uDCA1 \u05E9\u05D0\u05DC\u05D4 \u05DC\u05D4\u05DE\u05E9\u05DA \u05DE\u05D7\u05E9\u05D1\u05D4:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-800"
+    }, "\u05D1\u05D0\u05D9\u05D6\u05D4 \u05EA\u05D7\u05D5\u05DD \u05D1\u05D7\u05D9\u05D9\u05DD \u05E9\u05DC\u05DA \u05D0\u05EA\u05D4 \u05D9\u05DB\u05D5\u05DC \u05DC\u05D9\u05D9\u05E9\u05DD \u05D0\u05EA \u05E2\u05E7\u05E8\u05D5\u05DF \u05D4\u05E7\u05DC \u05D5\u05D7\u05D5\u05DE\u05E8 \u05E9\u05DC\u05DE\u05D3\u05EA \u05D4\u05D9\u05D5\u05DD?"))), /*#__PURE__*/React.createElement("button", {
+      onClick: restart,
+      className: "block mx-auto mt-4 text-indigo-600 hover:text-indigo-800"
+    }, "\u05D4\u05EA\u05D7\u05DC \u05DE\u05D7\u05D3\u05E9 ", /*#__PURE__*/React.createElement(RotateCcw, {
+      className: "inline mr-2",
+      size: 16
+    }))));
+  }
+  if (gameState === 'levelFailed' || gameState === 'gameOver') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-8 font-['Assistant']",
+      dir: "rtl"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-indigo-900 mb-4"
+    }, gameState === 'gameOver' ? 'בוא נחזור על הסיפור 🌱' : 'התחלה טובה! 🌱'), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl mb-6"
+    }, gameState === 'gameOver' ? 'נכשלת 3 פעמים ברמה זו. מומלץ לקרוא שוב את הסיפור ולהבין את המסרים.' : 'השגת פחות מ-' + requirement.percentage + '% ברמה זו.'), /*#__PURE__*/React.createElement("div", {
+      className: "bg-indigo-50 p-6 rounded-lg mb-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-indigo-900 mb-2"
+    }, score, " / ", requirement.total, " (", (score / requirement.total * 100).toFixed(0), "%)"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, "\u05D1\u05D5\u05D0 \u05E0\u05E2\u05DE\u05D9\u05E7 \u05D1\u05D4\u05D1\u05E0\u05EA \u05D4\u05E1\u05D9\u05E4\u05D5\u05E8! \uD83D\uDCAA")), /*#__PURE__*/React.createElement("button", {
+      onClick: restart,
+      className: "bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:opacity-90"
+    }, "\u05D4\u05EA\u05D7\u05DC \u05DE\u05D7\u05D3\u05E9 ", /*#__PURE__*/React.createElement(RotateCcw, {
+      className: "inline mr-2"
+    }))));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-8 font-['Assistant']",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl shadow-xl p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-3"
+  }, /*#__PURE__*/React.createElement(Moon, {
+    className: "w-8 h-8"
+  }), /*#__PURE__*/React.createElement("h1", {
+    className: "text-2xl font-bold"
+  }, "\u05E9\u05E7\u05D9\u05D3\u05D4 \u05D1\u05DC\u05D9\u05DC\u05D4 - \u05DE\u05E8\u05DF \u05D5\u05D1\u05EA\u05D5")), /*#__PURE__*/React.createElement("p", {
+    className: "text-indigo-100 text-sm leading-relaxed"
+  }, "\u05D1\u05EA \u05E9\u05DC \u05DE\u05E8\u05DF \u05DC\u05DE\u05D3\u05D4 \u05E2\u05D3 \u05E9\u05E2\u05D4 3 \u05D1\u05D1\u05D5\u05E7\u05E8, \u05E8\u05D0\u05EA\u05D4 \u05D0\u05EA \u05D0\u05D1\u05D9\u05D4 \u05DC\u05D5\u05DE\u05D3 \u05EA\u05DE\u05D9\u05D3 \u05D1\u05E9\u05E7\u05D9\u05D3\u05D4. \u05DB\u05E9\u05E9\u05D0\u05DC\u05D4 \u05DC\u05DE\u05D4 \u05D4\u05D5\u05D0 \u05DC\u05D0 \u05D9\u05E9\u05DF, \u05E2\u05E0\u05D4 \u05D1\u05E2\u05E0\u05D5\u05D5\u05D4: \"\u05D0\u05DD \u05D0\u05EA \u05E9\u05D0\u05D9\u05E0\u05DA \u05DE\u05D7\u05D5\u05D9\u05D1\u05EA \u05DC\u05D5\u05DE\u05D3\u05EA \u05DB\u05DA, \u05E7\u05DC \u05D5\u05D7\u05D5\u05DE\u05E8 \u05E9\u05D0\u05E0\u05D9 \u05D4\u05DE\u05D7\u05D5\u05D9\u05D1 \u05E6\u05E8\u05D9\u05DA \u05DC\u05DC\u05DE\u05D5\u05D3!\" \u05D5\u05E9\u05D1 \u05DC\u05EA\u05DC\u05DE\u05D5\u05D3\u05D5.")), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-xl p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-4"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-bold text-indigo-900 mb-2"
+  }, "\u05DE\u05E9\u05D7\u05E7 \u05D4\u05D1\u05E0\u05EA \u05D4\u05DE\u05E1\u05E8\u05D9\u05DD \uD83D\uDCD6"), /*#__PURE__*/React.createElement("p", {
+    className: "text-indigo-600"
+  }, "\u05E8\u05DE\u05D4: ", currentLevel === 'easy' ? 'קל ⭐' : currentLevel === 'medium' ? 'בינוני 🎯' : 'קשה 🏆')), /*#__PURE__*/React.createElement("div", {
+    className: "text-left"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl font-bold text-indigo-900"
+  }, score), /*#__PURE__*/React.createElement(Star, {
+    className: "text-yellow-500"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-1"
+  }, [...Array(3)].map((_, i) => /*#__PURE__*/React.createElement(Heart, {
+    key: i,
+    className: i < lives ? 'text-red-500 fill-red-500' : 'text-gray-300',
+    size: 20
+  }))))), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-3 mb-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-indigo-600 to-purple-600 h-3 rounded-full transition-all duration-500",
+    style: {
+      width: `${(currentQuestionIndex + 1) / requirement.total * 100}%`
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-600 text-center"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestionIndex + 1, " \u05DE\u05EA\u05D5\u05DA ", requirement.total)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-xl p-8"
+  }, renderQuestion(), showFeedback && /*#__PURE__*/React.createElement("div", {
+    className: "mt-6"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: nextQuestion,
+    className: "w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90"
+  }, currentQuestionIndex + 1 < requirement.total ? 'שאלה הבאה' : 'סיים רמה', " ", /*#__PURE__*/React.createElement(ArrowRight, {
+    className: "inline mr-2"
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-8 text-center bg-white rounded-xl shadow-lg p-6"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-700 font-bold mb-2"
+  }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+    className: "text-indigo-900 font-bold text-lg"
+  }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+    className: "text-indigo-600 mt-2"
+  }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+};
+const __App = MaranShekidaGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+})();
+</script>
+
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif;direction:rtl"><a href="https://www.kol-toda.co.il/t/stories.html#a_stories" style="color:#4f46e5">← עוד בסיפורי צדיקים ואמונה</a> · <a href="https://www.kol-toda.co.il/" style="color:#4f46e5">אתר הקול החמישי</a></p>
+</body>
+</html>

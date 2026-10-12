@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>אהבת השם – הקול החמישי</title>
+<meta name="description" content="היא מצוות עשה מן התורה שצריך לעסוק בה כל הזמן. אבל איך בדיוק לומדים לאהוב?">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="אהבת השם – הקול החמישי">
+<meta property="og:description" content="היא מצוות עשה מן התורה שצריך לעסוק בה כל הזמן. אבל איך בדיוק לומדים לאהוב?">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-osef-3e0bb292bf.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/osef/3e0bb292bf.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+(function () {
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const BookOpen = window.LucideReact["BookOpen"] || window.LucideReact.Circle;
+const Trophy = window.LucideReact["Trophy"] || window.LucideReact.Circle;
+const ArrowRight = window.LucideReact["ArrowRight"] || window.LucideReact.Circle;
+const CheckCircle = window.LucideReact["CheckCircle"] || window.LucideReact.Circle;
+const XCircle = window.LucideReact["XCircle"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const RefreshCw = window.LucideReact["RefreshCw"] || window.LucideReact.Circle;
+const AhavatHashemGame = () => {
+  const [gameState, setGameState] = useState('intro');
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [levelScore, setLevelScore] = useState(0);
+  const [answeredQuestions, setAnsweredQuestions] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  const [streak, setStreak] = useState(0);
+  const [studyMode, setStudyMode] = useState(true);
+  const playSound = type => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    if (type === 'correct') {
+      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2);
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } else if (type === 'wrong') {
+      oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    } else if (type === 'levelup') {
+      oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(554.37, audioContext.currentTime + 0.15);
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.3);
+      oscillator.frequency.setValueAtTime(880, audioContext.currentTime + 0.45);
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.6);
+    }
+  };
+  const questions = [
+  // רמה 1 - בסיסי
+  {
+    level: 1,
+    id: 1,
+    studyContent: {
+      title: "איך לומדים לאהוב את ה'?",
+      mainText: "אהבת ה' היא מצוות עשה מן התורה שצריך לעסוק בה כל הזמן. אבל איך בדיוק לומדים לאהוב?",
+      keyPoint: "🎁 שתי מתנות בכל מתנה",
+      explanation: "בכל מתנה שאנו מקבלים מהבורא יש שתי מתנות:\n\n1️⃣ המתנה עצמה (החפצא) - התפוח, השמש, האוויר\n2️⃣ יחס החיבה והאהבה שגילה הנותן - העיקר!\n\nכשאנו מתבוננים רק על המתנה עצמה, אנו מפספסים את העיקר. אבל כשאנו רואים את האהבה שמאחורי המתנה - אנו מתחילים לאהוב בחזרה!",
+      example: "💡 דוגמה: כשמברכים על אוכל, הברכה הראשונה היא לא על עצם המאכל - אלא על יחס החיבה ותשומת הלב שה' גילה בהכנת המתנה הזו עבורנו!"
+    },
+    question: "מהי הדרך העיקרית לרכוש אהבת ה' על פי הגישה המבוארת במקורות?",
+    answers: ["התבוננות לא רק בעצם המתנה אלא ביחס החיבה שגילה הנותן", "שמחה רבה בנחת וברווחה המתקבלים מאת הבורא בעולם", "קיום המצוות בהידור ושינון פסוקי אהבה מתוך השמחה", "התמקדות בחשיבות המאכל, היופי והריח כגורמים הכרחיים לקיום"],
+    correct: 0,
+    explanation: "אהבת ה' נרכשת באמצעות התבוננות והכרת הטוב. הדרך המיוחדת לכך היא להבחין כי בכל מתנה שאנו מקבלים מהבורא, נכללות שתי מתנות: האחת היא עצם המתנה (החפצא), והשנייה, שהיא העיקר, היא יחס החיבה והאהבה שגילה הנותן. התבוננות זו ביחס האוהב של הנותן, מעבר לרווח שלנו, היא המביאה לאהבה.",
+    message: "🌟 אתה בדרך הנכונה! אהבה היא לא רגש פאסיבי המופיע לפתע, אלא 'מיומנות נרכשת' הדורשת השקעה מתמדת. ככל שתתאמץ יותר להתבונן בטוב הנסתר שמאחורי כל פרט (ולא רק מה שנוח או הכרחי), כך תרוויח עושר רגשי ואהבה עמוקה שתמלא את לבך."
+  }, {
+    level: 1,
+    id: 2,
+    studyContent: {
+      title: "למה אין שיעור כזית בברכה ראשונה?",
+      mainText: "כשאנחנו אוכלים, אנחנו מברכים פעמיים - לפני ואחרי. אבל יש הבדל מהותי ביניהן!",
+      keyPoint: "🙏 שתי ברכות - שתי מטרות",
+      explanation: "הברכה הראשונה (לפני האכילה):\n• אינה תלויה בכמות (אפילו טעימה קטנה)\n• מהודה על יחס החיבה של ה'\n• על התשומת לב שהוא שם בהכנת המתנה\n\nהברכה האחרונה (אחרי האכילה):\n• תלויה בשיעור (כזית ומעלה)\n• מודה על ההנאה מעצם המאכל\n• על החפצא שנהניתי ממנו",
+      example: "💡 זה כמו כשמישהו מכין לך מתנה: הפתעת הקבלה (ברכה ראשונה) היא על המחשבה והאהבה. התודה המאוחרת (ברכה אחרונה) היא על השימוש בפועל."
+    },
+    question: "מדוע הברכה הראשונה על המאכל (שלפני האכילה) אינה נמדדת בשיעור כזית?",
+    answers: ["כיוון שהכמות אינה משפיעה על השמחה הפנימית של מקבל המתנה", "כי היא מהווה הכנה גופנית למאכל ואינה נחשבת להודאה ממשית", "משום שהיא הודאה על עצם המאכל וההנאה שנהנה האדם בפועל מהחפצא", "מכיוון שהיא נועדה להודות על יחס החיבה ותשומת הלב של הקב\"ה כלפי האוכל"],
+    correct: 3,
+    explanation: "הברכה הראשונה (כפי שלמדו חז\"ל מ'אשר נתן לך') אינה תלויה בשיעור המאכל או בהנאה הגשמית. היא מוקדשת ליחס החיבה של הקב\"ה בהכנת המתנה עבור מי שעומד לאוכלו. לעומת זאת, הברכה האחרונה ניתנת לאחר ההנאה מעצם המאכל (החפצא), ורק אם היה בו שיעור חשוב.",
+    message: "💎 אתה מחבר עולמות! הלב שלך הוא 'כלי' שרגשות כהים בו מהר. כדי להצליח לקיים את מצוות אהבת ה' בפועל, עליך לזכור לשהות בתוך הרגש והמחשבה. אם איבדת את הכוונה, אל תתייאש, עצם ההתאמצות שלך לחדש את הכוונה והאהבה היא פעולה נפלאה המביאה נחת רוח לבורא."
+  }, {
+    level: 1,
+    id: 3,
+    studyContent: {
+      title: "פירות הקיץ - אהבה יתרה!",
+      mainText: "לא כל המתנות שוות. יש מתנות הכרחיות לחיים, ויש מתנות שהן 'מותרות' - ודווקא הן חושפות את האהבה האמיתית!",
+      keyPoint: "🍇 ההבדל בין חג הקציר לחג האסיף",
+      explanation: "חג הקציר (שבועות):\n• מודים על התבואה - מזון הכרחי לחיים\n• דגן, יין ושמן - הבסיס לקיום\n\nחג האסיף (סוכות):\n• מודים על פירות הקיץ\n• אינם הכרחיים לחיותנו!\n• נועדו רק להנאתנו ועונגנו\n\nדווקא ה'מותרות' האלה מגלות את האהבה היתרה והעין היפה של ה'!",
+      example: "💝 כמו הורה שלא רק נותן אוכל בסיסי, אלא גם קונה גלידה ופינוקים - זה מראה אהבה מיוחדת!"
+    },
+    question: "מהי המשמעות העיקרית של פירות הקיץ (חג האסיף) או מותרות כמו בשר ויין, לעומת דברים הכרחיים?",
+    answers: ["הם מעוררים אצל האדם יחס חם יותר ומבטאים את העין היפה ואהבתו היתירה של הנותן", "הם ממלאים צרכים גופניים ורוחניים כאחד ומחויבים בהכרת טובה על עצם קיומם", "הם מדגישים את העובדה שהאדם אינו צריך לדאוג לצרכיו הבסיסיים בעולם הזה", "הם מאפשרים לאדם להגיע למדרגה של שמחה מרוממת יותר על עצם השמחה"],
+    correct: 0,
+    explanation: "ההבדל בין חג הקציר (שמכיר טובה על מזון חיוני) לחג האסיף (שמכיר טובה על פירות קיץ) הוא שפירות הקיץ 'אינם הכרחיים לחיותנו', והקב\"ה שם אותם בבריאה 'להנאתנו'. מותרות אלו, כמו ענני הכבוד (שאינם הכרח), מבטאים 'אהבה יתירה' ו'עין יפה' של הנותן, ודווקא ההתבוננות בהם מביאה ל'שמחה הגדולה של אהבת ה''.",
+    message: "🌈 אתה לומד לראות את האהבה הנסתרת! רוב העולם מודד רק את הצרכים ההכרחיים. אך מי שמתבונן במותרות וב'תפנוקים' שה' המציא רק בשביל עונג, הוא כ'אורח טוב' המכיר בטרחה שנעשתה למענו. היכולת לזהות את האהבה היתירה הזו בפרטים הקטנים היא תענוג אמיתי."
+  }, {
+    level: 1,
+    id: 4,
+    studyContent: {
+      title: "ידיעה שבלב - לא רק בראש!",
+      mainText: "התורה משתמשת במילה 'ידיעה' בצורה מיוחדת. זו לא ידיעה שכלית גרידא!",
+      keyPoint: "❤️ 'למען ידעו דורותיכם'",
+      explanation: "במצוות סוכה כתוב 'למען ידעו דורותיכם'. אבל מה פירוש 'ידעו'?\n\nהמילה 'ידיעה' בתורה מתייחסת ל:\n• הרגשה מוחשית בלב\n• לא רק הכרה שכלית\n• חוויה רגשית אמיתית\n\nדוגמאות מהתנ\"ך:\n'כי ידעתיו' - לשון אהבה\n'כי ידעתי את מכאוביו' - הרגשת הכאב",
+      example: "🎯 המטרה: שדורות הבאים לא רק 'יזכרו' את ענני הכבוד, אלא שירגישו את האהבה, החיבה והביטחון שכלל ישראל הרגישו תחת ענני הכבוד במדבר!"
+    },
+    question: "מה מיוחד בשימוש במילה 'ידעו' בפסוק 'למען ידעו דורותיכם' בהקשר למצוות סוכה?",
+    answers: ["הכוונה היא להגיע להשגה פילוסופית עמוקה של חסדי ה' עם ישראל", "המילה מתייחסת להרגשה מוחשית של הדבר בלב ולא רק להכרה שכלית גרידא", "היא מורה על שינון והטמעה של החומר הנלמד במשך דורות רבים בדרך הזיכרון", "היא מדגישה את חשיבות הזיכרון הלאומי ההיסטורי של יציאת מצרים ומתן תורה"],
+    correct: 1,
+    explanation: "המילה 'ידעו' בפסוק זה אינה מתייחסת רק ל'הכרה שכלית'. המקורות מראים שהמילה 'ידיעה' קשורה לאהבה וליחס רגשי בלב, כפי שמוכח מהפסוק 'כי ידעתיו' (לשון אהבה) או 'כי ידעתי את מכאוביו' (לשון הרגשת הכאב). מטרת מצוות סוכה היא 'להרגיש את האהבה החיבה והביטחון' שכלל ישראל הרגישו תחת ענני הכבוד.",
+    message: "📖 אתה קורא את מפת הלב! ידע שכלי (זיכרון) הוא דבר ששכל זוכר לאורך זמן, אבל רגשות הלב כהים מאוד מהר. היעד שלנו הוא לא רק לזכור את חסדי ה', אלא להרגיש אותם עכשיו. אם קשה לך לחוש את הרגש, דע כי כל מחשבה טובה שאתה חושב היא מצווה בפני עצמה, והיא פותחת את הדרך אל הלב."
+  },
+  // רמה 2 - בינוני
+  {
+    level: 2,
+    id: 5,
+    studyContent: {
+      title: "אהבת ה' - תכלית כל המצוות!",
+      mainText: "האם ידעת? יש מצווה אחת שהיא יותר חשובה מכל המצוות - אפילו מלימוד תורה!",
+      keyPoint: "👑 תכלית התכליות",
+      explanation: "מדרגות המצוות:\n\n🎯 למעלה מהכל: אהבת ה' ויראת ה'\n⬆️ דרך להגיע: לימוד תורה\n⬆️ דרכים נוספות: כל שאר המצוות\n\nחובות הלבבות מלמד:\n'אהבת ה' היא תכלית התכליות ואין מדרגה למעלה ממנה'\n\nכל המצוות (כולל לימוד תורה!) הן אמצעי להגיע לדרגה העליונה של אהבה.",
+      example: "🚗 דימוי: לימוד תורה הוא כמו GPS שמנווט אותך. אבל היעד הסופי (אהבת ה') הוא חשוב יותר מה-GPS עצמו!"
+    },
+    question: "מהי מעמד מצוות אהבת ה' ביחס לשאר המצוות, כולל לימוד תורה, על פי חובות הלבבות?",
+    answers: ["לימוד תורה הוא מצווה גדולה מכל המצוות, ואילו אהבת ה' היא שקולה להן", "אהבת ה' היא אמצעי חשוב להגיע לדרגת היראה העליונה, שהיא תכלית התכליות", "יש לקיים את המצוות לשמן, ואין קשר ישיר בין עצם המצווה לבין מצוות אהבת ה'", "אהבת ה' היא תכלית התכליות, וכל שאר המצוות והמעלות (כולל לימוד תורה) הן אמצעי להגיע אליה"],
+    correct: 3,
+    explanation: "על פי חובות הלבבות, אהבת ה' היא 'תכלית התכליות' ואין מדרגה למעלה ממנה. כל שאר המצוות ו'חובות הלבבות והמידות ונדבת הנפשות' הן 'מעלות ומדרגות אל העניין העליון הזה', כלומר הן משמשות אמצעי להשגת האהבה. אפילו לימוד תורה הוא אמצעי להגיע לאהבה.",
+    message: "🎯 המצוות שלך הן מנוע צמיחה! אם אתה מרגיש שהמצוות הן עול, זכור שהן 'אמצעי אחד... שמדריגתו למעלה מכל שאר האמצעיים' להגיע לדבקות עם הבורא. אם אינך חש את טעם הדבקות בלימוד תורה, זהו סימן שעליך להשקיע ברצון ובכוונה (כמו לרשום יעד ב-GPS) ואז התורה תנווט אותך לשם."
+  }, {
+    level: 2,
+    id: 6,
+    studyContent: {
+      title: "שני סוגי אהבה - איזו תבחר?",
+      mainText: "לא כל אהבה שווה! יש אהבה שמתפוגגת, ויש אהבה שנשארת לנצח.",
+      keyPoint: "🔄 אהבה תלויה בדבר vs. אהבה שאינה תלויה בדבר",
+      explanation: "אהבה התלויה בדבר:\n❌ תלויה בגורם חיצוני (טעם, כסף, הנאה)\n❌ כשהגורם נעלם - האהבה בטלה\n❌ רגש שטחי מבוסס על דמיון\n❌ דוגמה: 'אוהב דגים' (אוהב את הטעם)\n\nאהבה שאינה תלויה בדבר:\n✅ אהבה בעצם, מתוך אחדות פנימית\n✅ יציבה ואינה בטלה לעולם\n✅ נובעת מ'דעת' (מודעות למציאות)\n✅ דוגמה: אהבת הורים לילדיהם",
+      example: "💡 המבחן: האם תאהב את ה' גם כשקשה לך? גם כשאין לך הנאה מיידית? אם כן - זו אהבה אמיתית!"
+    },
+    question: "מהו ההבדל המהותי בין 'אהבה התלויה בדבר' ל'אהבה שאינה תלויה בדבר'?",
+    answers: ["אהבה שאינה תלויה בדבר היא אהבה מותנית, ואילו השנייה היא אהבה יציבה ועקבית", "אהבה שאינה תלויה בדבר היא אהבה הנובעת מדעת ומטרתה אחדות, בעוד הראשונה היא רגש שטחי שתלוי בסיבה חיצונית", "אהבה התלויה בדבר היא אהבה אמיתית המבוססת על דעת, ואילו השנייה היא רגש חולף", "אהבה התלויה בדבר מערבת את החשק הרגשי, ואילו השנייה מערבת רק את הרגש השכלי"],
+    correct: 1,
+    explanation: "אהבה שאינה תלויה בדבר יציבה ואינה בטלה לעולם. היא מושגת כאשר מנצלים את ה'דעת' (מודעות למציאות כפי שהיא) כדי לטפח תחושת אחדות עם הזולת או עם ה'. לעומתה, אהבה התלויה בדבר היא רגש שטחי (אהבת חשק) הנסמכת על גורם חיצוני (כסף, כבוד, הנאה), וכאשר הגורם נעלם - האהבה בטלה.",
+    message: "🌱 אתה נבנה מתוך מהותך הפנימית! הדמיון גורם לנו לחיות באהבה מותנית, כי קל יותר לאהוב 'בגלל' משהו. הקושי הוא לעקור את כוח הדמיון, אך ברגע שאתה מכיר בקיומך שלך ובקיום הבורא/הזולת בצורה בלתי מותנית, אתה מגלה את ה'דעת' הפנימית שלך, וזו אהבת אמת."
+  }, {
+    level: 2,
+    id: 7,
+    studyContent: {
+      title: "מעשים מחזקים לבבות!",
+      mainText: "אתה יכול לרצות לאהוב כמה שאתה רוצה, אבל בלי מעשים - האהבה לא תישאר בלב!",
+      keyPoint: "🔨 הפטיש שתוקע את המסמר",
+      explanation: "שלושת השלבים לאהבה:\n\n1️⃣ השכל/הרצון = המסמר\nאתה מבין ורוצה לאהוב\n\n2️⃣ המעשה = הפטיש\nאתה עושה פעולות של אהבה\n\n3️⃣ הלב = הקיר\nהרגש מתקבע בלב!\n\n⚠️ חשוב: רגשות הלב כהים מהר!\nבלי מעשים מתמידים - המסמר נושר.",
+      example: "💪 דוגמאות למעשים:\n• נתינה לאחרים\n• התגברות על עצלות\n• לוותר על כבוד\n• קימה מהשינה ללימוד"
+    },
+    question: "מהו תפקידן של 'פעולות' או 'מעשים' בעבודת אהבת ה'?",
+    answers: ["הפעולות יוצרות את הרגש בלב האדם ללא צורך בהתבוננות או רצון קודם", "המעשים משמשים כמסמר או כפטיש שמחזק ומטמיע בלב את האהבה שכבר קיימת בשכל או ברצון", "מעשים רבים מביאים להתרגלות המולידה לבסוף אהבה טבעית ואינסטינקטיבית", "האהבה מתפתחת רק דרך הרצון הפנימי, ואין למעשים הגשמיים משמעות"],
+    correct: 1,
+    explanation: "על אף שהאהבה צריכה להתחיל ברצון ובהכרה (המסמר), הרי ש'פעולות לא יוצרים לבבות - פעולות מחזקים לבבות'. המעשים שאדם עושה (כגון התגברות או נתינה) הם ה'פטיש החזק' שתוקע את האהבה שכבר קיימת בשכל או ברצון, אל הלב. זאת כיוון שרגשות הלב כהים מאוד מהר, ודרושה השקעה מתמדת במעשים כדי לקבע אותם.",
+    message: "🎯 אתה מחזק את הבסיס! כשאתה פועל מתוך אהבה (לדוגמה, נתינה שמקורה באהבה), אתה הופך את הרצון החמקמק שלך למציאות קבועה בלב. גם כאשר הפעולה קשה (כמו לוותר על שינה למען לימוד), המאמץ הופך אותך לאוהב יותר, וזהו שכר עצום."
+  }, {
+    level: 2,
+    id: 8,
+    studyContent: {
+      title: "'בכל נפשך' - מסירות הרצונות",
+      mainText: "הפסוק אומר 'ואהבת את ה' אלוקיך בכל לבבך ובכל נפשך'. מה זה 'בכל נפשך'?",
+      keyPoint: "🦁 הנפש הבהמית והרצונות",
+      explanation: "לכל אדם יש נפש בהמית עם 3 רצונות:\n\n1️⃣ קנאה - רוצה מה שיש לאחרים\n2️⃣ תאווה - רוצה הנאות גשמיות\n3️⃣ כבוד - רוצה שיכבדו אותו\n\n'בכל נפשך' = למסור את הרצונות האלה למען ה'!\n\nדוגמאות:\n• לוותר על שינה נעימה (תאווה)\n• לוותר על כבוד אישי\n• להתגבר על קנאה",
+      example: "🎖️ זהו המבחן האמיתי לאהבה: האם אתה מוכן לוותר על מה שאתה רוצה, למען מה שה' רוצה?"
+    },
+    question: "מה משמעות 'בכל נפשך' ביחס לאהבת ה', על פי הפירושים המבוארים?",
+    answers: ["יש להתאמץ לשלוט בכל המחשבות והרגשות שבלב ללא יוצא מן הכלל", "הכוונה היא למסירת הנפש הבהמית ולנטרול רצונות הקנאה, התאווה והכבוד למען ה'", "הכוונה היא למסור את החיים עצמם אם הקב\"ה דורש זאת, וזו הדרגה הגבוהה ביותר", "יש להקדיש את כל הכוחות הגופניים והשכליים לעבודת הבורא בחדווה"],
+    correct: 1,
+    explanation: "הביאור הפשוט של 'בכל נפשך' הוא 'מסירת הרצונות למען ה''. זה מתייחס לנפש הבהמית שלה רצונות של 'קנאה, תאווה וכבוד'. לדוגמה, לוותר על תאווה (כמו שינה) או על כבוד. זהו מבחן למידת האהבה שבו האדם מוכן לוותר על עצמו לטובת הבורא.",
+    message: "⚔️ אתה נלחם את המלחמה הקשה ביותר! המלחמה מול רצונות הנפש הבהמית (כבוד, עצלות, תאווה) היא מלחמת המסירות העיקרית. דע, כי טוב אחד שנעשה בצער (התגברות) שווה יותר ממאה שלא בצער, שכן ההתגברות הזו מוכיחה אהבה אמיתית ורבת עוצמה."
+  },
+  // רמה 3 - מתקדם
+  {
+    level: 3,
+    id: 9,
+    studyContent: {
+      title: "הדמיון - האויב הנסתר של האהבה",
+      mainText: "יש כוח בנפש שגורם לנו לחשוב שאנחנו אוהבים, אבל זו לא אהבה אמיתית. שמו: הדמיון!",
+      keyPoint: "🎭 דמיון מול מציאות",
+      explanation: "הדמיון יוצר רגשות מזויפים:\n\n❌ פחד שאינו מבוסס על סכנה אמיתית\n❌ שנאה ללא סיבה מציאותית\n❌ אהבה מותנית (אוהב 'בגלל')\n\nרגשות אמיתיים נובעים מ'דעת':\n✅ מודעות למציאות כפי שהיא\n✅ הכרה בקיום האמיתי של האחר\n✅ אהבה ללא תנאי\n\nהאתגר: לחיות במציאות ולא בדמיון!",
+      example: "🔍 דוגמה: אתה יכול לדמיין שאתה אוהב מישהו, אבל אם לא מכיר בקיומו האמיתי - זו לא אהבה אמיתית!"
+    },
+    question: "כיצד כוח ה'דמיון' משפיע על רגשות האדם ועל היכולת לאהוב?",
+    answers: ["הדמיון הוא כוח טבעי הכרחי המאפשר לאדם לחוות רגשות עזים, והוא הבסיס לאהבה מותנית", "רגשות שמקורם בדמיון (כמו אהבה מותנית ושנאה) הם שטחיים ומונעים מהאדם לחוות רגשות אמיתיים המבוססים על מציאות", "הדמיון יוצר רוגע פנימי ושקט נפשי, המאפשרים למודעות העצמית האמיתית להתגלות", "הדמיון הוא רובד חיצוני של האהבה, אך הוא זה שמאפשר את הופעת האהבה האמיתית המבוססת על דעת"],
+    correct: 1,
+    explanation: "רגשות שאינם נובעים ממציאות אלא מ'תחושה' בלבד מקורם בכוח הדמיון. הדמיון הוא שורש כל הרגשות השליליים והוא עלול לשטות באדם, כגון לשכנע אותו שהוא אוהב מישהו, כשלמעשה אהבתו דמיונית ותלויה בדבר. אדם שחי בדמיון אינו תופס את קיומו של הזולת כמציאות.",
+    message: "🌅 אתה מנתק את המחסום! המאמץ שלך להתבונן במציאות כפי שהיא (ולא דרך עדשת הדמיון) מסלק את הערפל המונע אהבה נלהבת להשם. אם תצליח להיפטר מהדמיון בחייך, לא רק שתשיג אהבה אמיתית, אלא שכל סבלך (כביכול) בגיהינום יפסק, כיוון שהסבל ניזון רק מהדמיון."
+  }, {
+    level: 3,
+    id: 10,
+    studyContent: {
+      title: "אהבת תמתי - הדרגה הגבוהה ביותר!",
+      mainText: "יש דרגה של אהבה שבה האדם אוהב לא 'בגלל' משהו, אלא בעצם. זו אהבת תמתי!",
+      keyPoint: "💫 ביטול מציאות ודבקות",
+      explanation: "שלוש דרגות אהבה:\n\n1️⃣ אהבת הנאה - אוהב בגלל הטוב\n2️⃣ אהבת חשק - רוצה להתחבר\n3️⃣ אהבת תמתי - ביטול גמור! 👑\n\nאהבת תמתי:\n• אהבה בעצם, לא בגלל משהו\n• ביטול מוחלט של האוהב אל הנאהב\n• 'קוב\"ה וישראל חד הוא'\n• הדרגה הנפלאה ביותר!",
+      example: "💑 דימוי: כמו נשיקה - דבקות מוחלטת שאין בינה לבין הנאהב שום הפסק!"
+    },
+    question: "מהי המהות של 'אהבת תמתי' (אהבת האחדות) המייצגת את הדרגה הגבוהה ביותר של אהבה?",
+    answers: ["זוהי אהבה המגיעה מהנאה גדולה כל כך, שבה האדם אוהב את הנאהב בגלל הטוב שקיבל", "זהו הרצון החזק ביותר להתחבר לגורם ההנאה, המשתף את כל חלקי הגוף באהבה", "זוהי אהבה שאינה תלויה בטוב או בתמורה כלשהי, והיא מבטאת דבקות וביטול מציאות של האוהב כלפי הנאהב", "זוהי הדרגה הראשונית של האהבה, שבה יש רצון עז להעניק ולתת ללא הפסקה"],
+    correct: 2,
+    explanation: "אהבת תמתי היא אהבה המייצגת 'אהבת האחדות' והיא נקראת אהבה שאינה תלויה בדבר. בדרגה זו האדם אוהב את הנאהב 'בעצם' ולא מחמת הטוב שקיבל ממנו. אהבה זו היא ביטול מוחלט של האוהב אל הנאהב, ורצון עז להתחבר אל גורם ההנאה. דבקות זו היא ה'תענוג האמיתי והעידון הגדול מכל העידונים'.",
+    message: "✨ הדבקות היא השלמות האמיתית! השאיפה שלך לדרגה זו היא הגשמת תכלית הבריאה כולה. הרגש שאתה חווה ברגעים כאלה של דבקות הוא השכר הניצחי שאין לו סוף. המשך לחפש רגעים של שקט וריכוז כדי לשהות במחשבה על ה' - זו הדרך להגיע אל הדבקות העילאית."
+  }, {
+    level: 3,
+    id: 11,
+    studyContent: {
+      title: "הכרה בקיום - דרך האהבה האמיתית",
+      mainText: "איך אפשר לאהוב מישהו שאתה לא מכיר? איך אפשר לאהוב את ה' בלי להכיר את קיומו?",
+      keyPoint: "👁️ דעת = מודעות למציאות",
+      explanation: "הדרך לאהבה אמיתית:\n\n1️⃣ הכר בקיומך שלך\nאתה יודע שאתה קיים - נכון?\n\n2️⃣ הכר בקיום האחר/הבורא\nבאותה בהירות שאתה יודע שאתה קיים\nככה תכיר שהאחר/ה' קיים!\n\n3️⃣ אהבה אוטומטית!\nברגע שאתה מכיר בקיומו האמיתי\nאתה אוהב אותו ללא תנאי!\n\nזה לא רגש - זו מודעות!",
+      example: "🔑 המפתח: להפסיק לחיות בדמיון (מה אני רוצה, מה נוח לי) ולהתחיל לחיות במציאות (מה באמת קיים)."
+    },
+    question: "כיצד ניתן להגיע לאהבה אמיתית לזולת או לבורא עולם ללא תנאי?",
+    answers: ["על ידי השגה והתבוננות שכלית, המאפשרת יצירת רגשות עזים של דבקות וחיבור", "על ידי עבודה מאומצת על מידת הנתינה וההקרבה למען הזולת, תוך חיזוק הרגש", "באמצעות כניעה לרצונות הלב, שהם מקור האהבה הטהורה, כפי שהם משתקפים בחושים הפיזיים", "על ידי הכרה מודעת בקיומו ובמציאותו של האחר (או הבורא) באותו אופן שאדם מכיר בקיומו שלו"],
+    correct: 3,
+    explanation: "אהבה אמיתית נובעת מדעת (מודעות למציאות). כדי לאהוב אהבה שאינה תלויה בדבר, על האדם להכיר בקיומו של האחר או של הבורא, באופן שאינו מסונן דרך הדמיון. עליו לדעת שהם קיימים באותה צורה אמיתית שבה הוא יודע שהוא עצמו קיים. אם אדם אינו מכיר בזולת כמציאות, הוא לעולם לא יוכל לאהוב אותו, אלא רק 'לדמיין אהבה'.",
+    message: "🎯 אתה חושף את המציאות האמיתית! האתגר לראות את ה' ואת הזולת כמציאות דורש יישוב הדעת וטיהור הלב. כל יום הוא הזדמנות לשבור את דפוסי ההשוואה והדמיון. אם תתמקד בהכרת קיומו של הזולת כמציאות, תפתח את הדרך לחוות אהבת אמת."
+  }, {
+    level: 3,
+    id: 12,
+    studyContent: {
+      title: "הבית היהודי - בית ספר לאהבת ה'",
+      mainText: "למה צריך להתחתן כדי לאהוב את ה'? מה הקשר בין נישואין לדבקות בבורא?",
+      keyPoint: "🏠 אימון מעשי לדבקות",
+      explanation: "הקשר בין איש לאשה כולל:\n\n1️⃣ יראה (כבוד)\n2️⃣ אהבה\n3️⃣ דבקות (אחדות מושלמת)\n\nאותו קשר בדיוק בין ישראל לקב\"ה!\n\nהבית היהודי הוא 'חדר כושר' למיומנות הדבקות:\n• לומד לתת בלי חשבונות\n• לומד לוותר על רצונות\n• לומד אהבה ללא תנאי\n• מתאמן בדבקות יום יום",
+      example: "💍 כל עוד אדם לבדו, הוא חסר בחוש האהבה המיועדת להתעלות לדבקות בה'!"
+    },
+    question: "מדוע נקרא הבית היהודי 'בית הספר לאהבת השם'?",
+    answers: ["הבית מאפשר לבני הזוג ליצור מערכת יחסים המבוססת רק על נתינה ואהבה ללא תנאי", "זהו המקום שבו האדם זוכה לרווחה כלכלית וביטחון, שהם חיוניים לעבודת ה'", "זהו כלי אימון מעשי, שבו לומד האדם על הדבקות והביטול המושלם של האוהב בנאהב, הדרוש לאהבת ה'", "הבית הוא המקום היחיד שבו איש ואישה יכולים לחוות אהבה תלויה בדבר"],
+    correct: 2,
+    explanation: "הבית היהודי הוא 'בית הספר לאהבת השם' שבו האדם מתאמן להגיע לדבקות ואחדות. צורת הקשר בין איש לאשתו - הכוללת חיובים של כבוד (יראה), אהבה ודבקות - משמשת מודל לחיבור בין ישראל לקב\"ה. הדבקות (שהיא אהבה עצומה) בין איש לאשתו, המושגת על ידי שמחה ותענוג, מכשירה את האדם לדבקות בה'.",
+    message: "👨‍👩‍👧‍👦 אתה מתרגל את המטרה העליונה! השלום והאהבה בביתך אינם מטרה גשמית גרידא, אלא הכנה חיונית לחיי העולם הבא (ליהנות מזיו השכינה). השמחה והתענוג שאתה יוצר עבור אשתך (בת המלך) - הם המפתח לזכות בכך שה' ידאג לשמח אותך ולענג אותך בלימוד התורה ובקיום המצוות."
+  }];
+  const levelNames = {
+    1: "בסיסי - הכרת הטוב והיחס לנותן",
+    2: "בינוני - תכלית המצוות ואמצעי רכישת האהבה",
+    3: "מתקדם - אהבה, דבקות ומציאות"
+  };
+  const shuffleArray = array => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+  useEffect(() => {
+    if (gameState === 'playing' && !studyMode) {
+      const currentQ = questions.filter(q => q.level === currentLevel)[currentQuestion];
+      if (currentQ) {
+        const answersWithIndex = currentQ.answers.map((answer, idx) => ({
+          text: answer,
+          originalIndex: idx
+        }));
+        setShuffledAnswers(shuffleArray(answersWithIndex));
+      }
+    }
+  }, [currentQuestion, gameState, currentLevel, studyMode]);
+  const handleStart = () => {
+    setGameState('playing');
+    setCurrentLevel(1);
+    setCurrentQuestion(0);
+    setScore(0);
+    setLevelScore(0);
+    setAnsweredQuestions(0);
+    setStreak(0);
+    setStudyMode(true);
+  };
+  const getLevelQuestions = () => {
+    return questions.filter(q => q.level === currentLevel);
+  };
+  const handleStudyComplete = () => {
+    setStudyMode(false);
+  };
+  const handleAnswer = answerIndex => {
+    setSelectedAnswer(answerIndex);
+    setShowFeedback(true);
+    const currentQ = getLevelQuestions()[currentQuestion];
+    const isCorrect = answerIndex === currentQ.correct;
+    if (isCorrect) {
+      setScore(score + 1);
+      setLevelScore(levelScore + 1);
+      setStreak(streak + 1);
+      playSound('correct');
+    } else {
+      setStreak(0);
+      playSound('wrong');
+    }
+    setAnsweredQuestions(answeredQuestions + 1);
+  };
+  const handleNext = () => {
+    const levelQuestions = getLevelQuestions();
+    if (currentQuestion < levelQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+      setStudyMode(true);
+    } else {
+      const levelPercentage = levelScore / levelQuestions.length * 100;
+      if (levelPercentage >= 95 && currentLevel < 3) {
+        setGameState('levelComplete');
+        playSound('levelup');
+      } else if (currentLevel === 3) {
+        setGameState('gameComplete');
+        playSound('levelup');
+      } else {
+        setGameState('levelFailed');
+      }
+    }
+  };
+  const handleNextLevel = () => {
+    setCurrentLevel(currentLevel + 1);
+    setCurrentQuestion(0);
+    setLevelScore(0);
+    setGameState('playing');
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setStudyMode(true);
+  };
+  const handleRetryLevel = () => {
+    setCurrentQuestion(0);
+    setLevelScore(0);
+    setGameState('playing');
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setStudyMode(true);
+  };
+  if (gameState === 'intro') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 p-4 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center mb-4"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-24 h-24 text-pink-500 animate-pulse",
+      strokeWidth: 1.5,
+      fill: "currentColor"
+    })), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold text-gray-800 mb-3"
+    }, "\u05D0\u05D4\u05D1\u05EA \u05D4\u05E9\u05DD"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-600"
+    }, "\u05DE\u05E1\u05E2 \u05DC\u05D9\u05DE\u05D5\u05D3\u05D9 \u05D0\u05D9\u05E0\u05D8\u05E8\u05D0\u05E7\u05D8\u05D9\u05D1\u05D9 \u05D0\u05DC \u05D4\u05DC\u05D1")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-bold text-gray-800 mb-4"
+    }, "\uD83D\uDC96 \u05DE\u05D5\u05D6\u05DE\u05E0\u05D9\u05DD \u05DC\u05DE\u05E1\u05E2 \u05DE\u05E8\u05D2\u05E9!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 leading-relaxed mb-4"
+    }, "\u05D0\u05D4\u05D1\u05EA \u05D4' \u05D4\u05D9\u05D0 \u05EA\u05DB\u05DC\u05D9\u05EA \u05D4\u05EA\u05DB\u05DC\u05D9\u05D5\u05EA - \u05D4\u05DE\u05D8\u05E8\u05D4 \u05D4\u05E2\u05DC\u05D9\u05D5\u05E0\u05D4 \u05E9\u05DC \u05DB\u05DC \u05D4\u05DE\u05E6\u05D5\u05D5\u05EA!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed"
+    }, "\u05D1\u05DE\u05E9\u05D7\u05E7 \u05D6\u05D4 \u05E0\u05DC\u05DE\u05D3 \u05D1\u05D9\u05D7\u05D3 \u05D0\u05D9\u05DA \u05DC\u05E8\u05DB\u05D5\u05E9 \u05D0\u05D4\u05D1\u05D4 \u05D0\u05DE\u05D9\u05EA\u05D9\u05EA, \u05DE\u05D4\u05D9 \u05D3\u05D1\u05E7\u05D5\u05EA, \u05D5\u05D0\u05D9\u05DA \u05DB\u05DC \u05D0\u05D7\u05D3 \u05DE\u05D0\u05D9\u05EA\u05E0\u05D5 \u05D9\u05DB\u05D5\u05DC \u05DC\u05D4\u05D2\u05D9\u05E2 \u05DC\u05D3\u05E8\u05D2\u05D4 \u05D4\u05E0\u05E4\u05DC\u05D0\u05D4 \u05D4\u05D6\u05D5.")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-purple-50 rounded-2xl p-6 mb-6 border-2 border-purple-200"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold text-gray-800 mb-3 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(BookOpen, {
+      className: "text-purple-500"
+    }), "\u05DE\u05D1\u05E0\u05D4 \u05D4\u05DE\u05E9\u05D7\u05E7 \u05D4\u05D7\u05D3\u05E9"), /*#__PURE__*/React.createElement("ul", {
+      className: "space-y-2 text-gray-700"
+    }, /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-purple-500 font-bold"
+    }, "\uD83D\uDCDA"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, "\u05DC\u05DE\u05D9\u05D3\u05D4"), " - \u05D7\u05D5\u05DE\u05E8 \u05DC\u05D9\u05DE\u05D5\u05D3\u05D9 \u05E7\u05E6\u05E8 \u05DC\u05E4\u05E0\u05D9 \u05DB\u05DC \u05E9\u05D0\u05DC\u05D4")), /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-purple-500 font-bold"
+    }, "\u2753"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, "\u05D7\u05D9\u05D3\u05D5\u05DF"), " - \u05D1\u05D7\u05DF \u05D0\u05EA \u05D4\u05D1\u05E0\u05EA\u05DA \u05D1\u05E9\u05D0\u05DC\u05D4 \u05E8\u05D1-\u05D1\u05E8\u05D9\u05E8\u05D4")), /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-purple-500 font-bold"
+    }, "\uD83D\uDCAC"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, "\u05E4\u05D9\u05D3\u05D1\u05E7"), " - \u05D4\u05E1\u05D1\u05E8 \u05DE\u05DC\u05D0 \u05D5\u05DE\u05E1\u05E8\u05D9\u05DD \u05DE\u05D7\u05D6\u05E7\u05D9\u05DD")), /*#__PURE__*/React.createElement("li", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-purple-500 font-bold"
+    }, "\u2B50"), /*#__PURE__*/React.createElement("span", null, "\u05E6\u05E8\u05D9\u05DA ", /*#__PURE__*/React.createElement("strong", null, "95%+ \u05D4\u05E6\u05DC\u05D7\u05D4"), " \u05DC\u05E2\u05D1\u05D5\u05E8 \u05DC\u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4")))), /*#__PURE__*/React.createElement("button", {
+      onClick: handleStart,
+      className: "w-full bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 hover:from-pink-500 hover:via-purple-500 hover:to-blue-500 text-white font-bold py-4 px-6 rounded-xl text-xl transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-6 h-6",
+      fill: "currentColor"
+    }), "\u05D1\u05D5\u05D0\u05D5 \u05E0\u05EA\u05D7\u05D9\u05DC \u05D0\u05EA \u05D4\u05DE\u05E1\u05E2!", /*#__PURE__*/React.createElement(Sparkles, {
+      className: "w-6 h-6"
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 text-center text-sm text-gray-500"
+    }, /*#__PURE__*/React.createElement("p", null, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9 \u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "mt-1"
+    }, "\u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+  }
+  if (gameState === 'playing' && studyMode) {
+    const levelQuestions = getLevelQuestions();
+    const currentQ = levelQuestions[currentQuestion];
+    const progress = currentQuestion / levelQuestions.length * 100;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-3xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-lg p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between items-center mb-4"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-bold text-gray-800"
+    }, "\u05E8\u05DE\u05D4 ", currentLevel), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600"
+    }, levelNames[currentLevel])), /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-3"
+    }, /*#__PURE__*/React.createElement(BookOpen, {
+      className: "text-purple-500 w-8 h-8"
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "text-lg text-gray-600"
+    }, "\u05E9\u05DC\u05D1 \u05D4\u05DC\u05DE\u05D9\u05D3\u05D4"))), /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between items-center text-sm text-gray-600 mb-2"
+    }, /*#__PURE__*/React.createElement("span", null, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, " \u05DE\u05EA\u05D5\u05DA ", levelQuestions.length)), /*#__PURE__*/React.createElement("div", {
+      className: "w-full bg-gray-200 rounded-full h-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-400 to-pink-400 h-3 rounded-full transition-all duration-500",
+      style: {
+        width: `${progress}%`
+      }
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-lg p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "mb-6 text-center"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-16 h-16 text-pink-500 mx-auto mb-4 animate-pulse",
+      fill: "currentColor"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-purple-800 mb-2"
+    }, currentQ.studyContent.title)), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 leading-relaxed"
+    }, currentQ.studyContent.mainText)), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold text-purple-800 mb-3 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(Star, {
+      className: "text-purple-500"
+    }), currentQ.studyContent.keyPoint), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed whitespace-pre-line"
+    }, currentQ.studyContent.explanation)), currentQ.studyContent.example && /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 border-2 border-yellow-200"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed whitespace-pre-line"
+    }, currentQ.studyContent.example))), /*#__PURE__*/React.createElement("button", {
+      onClick: handleStudyComplete,
+      className: "w-full mt-8 bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-4 px-6 rounded-xl text-xl transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+    }, "\u05D4\u05D1\u05E0\u05EA\u05D9! \u05D1\u05D5\u05D0\u05D5 \u05E0\u05D1\u05D7\u05DF \u05D0\u05EA \u05E2\u05E6\u05DE\u05D9", /*#__PURE__*/React.createElement(ArrowRight, {
+      className: "w-5 h-5"
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 text-center text-sm text-gray-500"
+    }, /*#__PURE__*/React.createElement("p", null, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9 \u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0 \u2022 \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+  }
+  if (gameState === 'playing' && !studyMode) {
+    const levelQuestions = getLevelQuestions();
+    const currentQ = levelQuestions[currentQuestion];
+    const progress = currentQuestion / levelQuestions.length * 100;
+    const levelPercentage = answeredQuestions > 0 ? (levelScore / answeredQuestions * 100).toFixed(0) : 0;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-3xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-lg p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between items-center mb-4"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-bold text-gray-800"
+    }, "\u05E8\u05DE\u05D4 ", currentLevel), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600"
+    }, levelNames[currentLevel])), /*#__PURE__*/React.createElement("div", {
+      className: "text-left"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2 mb-2"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      className: "text-yellow-500 w-6 h-6"
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl font-bold text-gray-800"
+    }, score)), streak > 0 && /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-pink-600 font-bold flex items-center gap-1"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-4 h-4",
+      fill: "currentColor"
+    }), "\u05E8\u05E6\u05E3: ", streak))), /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between items-center text-sm text-gray-600 mb-2"
+    }, /*#__PURE__*/React.createElement("span", null, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, " \u05DE\u05EA\u05D5\u05DA ", levelQuestions.length), /*#__PURE__*/React.createElement("span", {
+      className: "font-bold"
+    }, "\u05D4\u05E6\u05DC\u05D7\u05D4 \u05D1\u05E8\u05DE\u05D4: ", levelPercentage, "%")), /*#__PURE__*/React.createElement("div", {
+      className: "w-full bg-gray-200 rounded-full h-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-400 to-pink-400 h-3 rounded-full transition-all duration-500",
+      style: {
+        width: `${progress}%`
+      }
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-2xl shadow-lg p-8"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold text-gray-800 mb-6 leading-relaxed"
+    }, currentQ.question), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3"
+    }, shuffledAnswers.map((answer, idx) => {
+      const isSelected = selectedAnswer === answer.originalIndex;
+      const isCorrect = answer.originalIndex === currentQ.correct;
+      const showResult = showFeedback && isSelected;
+      let buttonClass = "w-full text-right p-4 rounded-xl border-2 transition-all transform hover:scale-102 ";
+      if (showResult) {
+        buttonClass += isCorrect ? "bg-green-50 border-green-500 text-green-800" : "bg-red-50 border-red-500 text-red-800";
+      } else if (showFeedback && isCorrect) {
+        buttonClass += "bg-green-50 border-green-500 text-green-800";
+      } else {
+        buttonClass += "bg-gray-50 border-gray-300 hover:border-purple-400 hover:bg-purple-50";
+      }
+      return /*#__PURE__*/React.createElement("button", {
+        key: idx,
+        onClick: () => !showFeedback && handleAnswer(answer.originalIndex),
+        disabled: showFeedback,
+        className: buttonClass
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex items-start gap-3"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "font-bold text-lg flex-shrink-0"
+      }, String.fromCharCode(1488 + idx), "."), /*#__PURE__*/React.createElement("span", {
+        className: "text-base leading-relaxed flex-1"
+      }, answer.text), showResult && (isCorrect ? /*#__PURE__*/React.createElement(CheckCircle, {
+        className: "text-green-600 flex-shrink-0"
+      }) : /*#__PURE__*/React.createElement(XCircle, {
+        className: "text-red-600 flex-shrink-0"
+      })), showFeedback && !isSelected && isCorrect && /*#__PURE__*/React.createElement(CheckCircle, {
+        className: "text-green-600 flex-shrink-0"
+      })));
+    })), showFeedback && /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 space-y-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: `p-5 rounded-xl ${selectedAnswer === currentQ.correct ? 'bg-green-50 border-2 border-green-300' : 'bg-blue-50 border-2 border-blue-300'}`
+    }, /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-gray-800 mb-2 flex items-center gap-2"
+    }, selectedAnswer === currentQ.correct ? '💚 מצוין! אתה מבין לעומק!' : '💙 בואו נלמד ביחד'), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed"
+    }, currentQ.explanation)), /*#__PURE__*/React.createElement("div", {
+      className: "p-5 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200"
+    }, /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-purple-800 mb-2 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-5 h-5",
+      fill: "currentColor"
+    }), "\u05DE\u05E1\u05E8 \u05DE\u05D7\u05D6\u05E7 \u05DE\u05D4\u05DE\u05D5\u05E8\u05D4"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed"
+    }, currentQ.message)), /*#__PURE__*/React.createElement("button", {
+      onClick: handleNext,
+      className: "w-full bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-4 px-6 rounded-xl text-lg transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+    }, currentQuestion < levelQuestions.length - 1 ? 'המשך למסע!' : 'לסיכום הרמה', /*#__PURE__*/React.createElement(ArrowRight, {
+      className: "w-5 h-5"
+    })))), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 text-center text-sm text-gray-500"
+    }, /*#__PURE__*/React.createElement("p", null, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9 \u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0 \u2022 \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+  }
+  if (gameState === 'levelComplete') {
+    const levelQuestions = getLevelQuestions();
+    const levelPercentage = (levelScore / levelQuestions.length * 100).toFixed(0);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 p-4 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center mb-4"
+    }, /*#__PURE__*/React.createElement(Award, {
+      className: "w-32 h-32 text-purple-500 animate-bounce",
+      strokeWidth: 1.5
+    })), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold text-gray-800 mb-3"
+    }, "\uD83C\uDF89 \u05D9\u05E4\u05D4 \u05DE\u05D0\u05D5\u05D3!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-gray-600"
+    }, "\u05E2\u05DC\u05D9\u05EA \u05D1\u05E8\u05DE\u05EA \u05D4\u05D0\u05D4\u05D1\u05D4! \uD83D\uDC96")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-bold text-gray-800 mb-4 text-center"
+    }, "\u05EA\u05D5\u05E6\u05D0\u05D5\u05EA \u05D4\u05E8\u05DE\u05D4"), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-2 gap-4 text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl font-bold text-purple-600"
+    }, levelPercentage, "%"), /*#__PURE__*/React.createElement("div", {
+      className: "text-gray-600"
+    }, "\u05D0\u05D7\u05D5\u05D6 \u05D4\u05E6\u05DC\u05D7\u05D4")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl font-bold text-pink-600"
+    }, levelScore, "/", levelQuestions.length), /*#__PURE__*/React.createElement("div", {
+      className: "text-gray-600"
+    }, "\u05EA\u05E9\u05D5\u05D1\u05D5\u05EA \u05E0\u05DB\u05D5\u05E0\u05D5\u05EA")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-6 mb-6 border-2 border-yellow-200"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold text-gray-800 mb-3 flex items-center justify-center gap-2"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "text-pink-500",
+      fill: "currentColor"
+    }), "\u05DE\u05E1\u05E8 \u05DE\u05D4\u05DE\u05D5\u05E8\u05D4"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed text-center"
+    }, "\u05D4\u05E8\u05D0\u05D9\u05EA \u05D4\u05EA\u05DE\u05D3\u05D4 \u05D5\u05D4\u05D1\u05E0\u05D4 \u05DE\u05E2\u05DE\u05D9\u05E7\u05D4! \u05D6\u05DB\u05D5\u05E8 - \u05DB\u05DE\u05D5 \u05E9\u05D0\u05D4\u05D1\u05D4 \u05D0\u05DE\u05D9\u05EA\u05D9\u05EA \u05D3\u05D5\u05E8\u05E9\u05EA \u05D4\u05E9\u05E7\u05E2\u05D4 \u05D9\u05D5\u05DD \u05D9\u05D5\u05DD, \u05DB\u05DA \u05D2\u05DD \u05D4\u05DC\u05DE\u05D9\u05D3\u05D4 \u05E9\u05DC\u05DA \u05DE\u05E6\u05D8\u05D1\u05E8\u05EA \u05DC\u05D3\u05E8\u05D2\u05D5\u05EA \u05D2\u05D1\u05D5\u05D4\u05D5\u05EA \u05D9\u05D5\u05EA\u05E8. \u05D4\u05DE\u05E9\u05DA \u05DC\u05D8\u05E4\u05D7 \u05D0\u05EA \u05D4\u05D0\u05D4\u05D1\u05D4 \u05D4\u05D6\u05D5! \uD83D\uDCAB")), /*#__PURE__*/React.createElement("button", {
+      onClick: handleNextLevel,
+      className: "w-full bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 hover:from-purple-500 hover:via-pink-500 hover:to-blue-500 text-white font-bold py-4 px-6 rounded-xl text-xl transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-6 h-6",
+      fill: "currentColor"
+    }), "\u05D1\u05D5\u05D0\u05D5 \u05E0\u05DE\u05E9\u05D9\u05DA \u05DC\u05E8\u05DE\u05D4 ", currentLevel + 1, "!", /*#__PURE__*/React.createElement(Sparkles, {
+      className: "w-6 h-6"
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 text-center text-sm text-gray-500"
+    }, /*#__PURE__*/React.createElement("p", null, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9 \u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "mt-1"
+    }, "\u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+  }
+  if (gameState === 'levelFailed') {
+    const levelQuestions = getLevelQuestions();
+    const levelPercentage = (levelScore / levelQuestions.length * 100).toFixed(0);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 p-4 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center mb-4"
+    }, /*#__PURE__*/React.createElement(RefreshCw, {
+      className: "w-32 h-32 text-orange-500",
+      strokeWidth: 1.5
+    })), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold text-gray-800 mb-3"
+    }, "\u05DB\u05DE\u05E2\u05D8 \u05D4\u05E6\u05DC\u05D7\u05EA! \uD83D\uDCAA"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-600"
+    }, "\u05E2\u05D5\u05D3 \u05EA\u05E8\u05D2\u05D5\u05DC \u05E7\u05D8\u05DF \u05D5\u05EA\u05D2\u05D9\u05E2 \u05DC\u05E9\u05DD")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-bold text-gray-800 mb-4 text-center"
+    }, "\u05D4\u05EA\u05D5\u05E6\u05D0\u05D5\u05EA \u05E9\u05DC\u05DA"), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-2 gap-4 text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl font-bold text-orange-600"
+    }, levelPercentage, "%"), /*#__PURE__*/React.createElement("div", {
+      className: "text-gray-600"
+    }, "\u05D0\u05D7\u05D5\u05D6 \u05D4\u05E6\u05DC\u05D7\u05D4")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl font-bold text-blue-600"
+    }, levelScore, "/", levelQuestions.length), /*#__PURE__*/React.createElement("div", {
+      className: "text-gray-600"
+    }, "\u05EA\u05E9\u05D5\u05D1\u05D5\u05EA \u05E0\u05DB\u05D5\u05E0\u05D5\u05EA"))), /*#__PURE__*/React.createElement("div", {
+      className: "mt-4 text-center text-gray-700"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold"
+    }, "\u05E0\u05D3\u05E8\u05E9: 95% \u05DC\u05D4\u05DE\u05E9\u05DA"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-blue-50 rounded-2xl p-6 mb-6 border-2 border-blue-200"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold text-gray-800 mb-3 flex items-center justify-center gap-2"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "text-blue-500"
+    }), "\u05DE\u05E1\u05E8 \u05DE\u05D4\u05DE\u05D5\u05E8\u05D4"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed text-center mb-3"
+    }, "\u05D6\u05DB\u05D5\u05E8: \u05D0\u05D4\u05D1\u05D4 \u05D4\u05D9\u05D0 '\u05DE\u05D9\u05D5\u05DE\u05E0\u05D5\u05EA \u05E0\u05E8\u05DB\u05E9\u05EA' \u05D4\u05D3\u05D5\u05E8\u05E9\u05EA \u05D4\u05E9\u05E7\u05E2\u05D4 \u05DE\u05EA\u05DE\u05D3\u05EA!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed text-center"
+    }, "\u05DB\u05DE\u05D5 \u05E9\u05DE\u05E2\u05E9\u05D9\u05DD \u05DE\u05D7\u05D6\u05E7\u05D9\u05DD \u05DC\u05D1\u05D1\u05D5\u05EA - \u05DB\u05DA \u05D2\u05DD \u05D7\u05D6\u05E8\u05D4 \u05E2\u05DC \u05D4\u05D7\u05D5\u05DE\u05E8 \u05EA\u05D7\u05D6\u05E7 \u05D0\u05EA \u05D4\u05D1\u05E0\u05EA\u05DA. \u05D0\u05EA\u05D4 \u05D9\u05DB\u05D5\u05DC! \uD83C\uDF1F")), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: handleRetryLevel,
+      className: "w-full bg-gradient-to-r from-orange-400 to-red-400 hover:from-orange-500 hover:to-red-500 text-white font-bold py-4 px-6 rounded-xl text-xl transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+    }, /*#__PURE__*/React.createElement(RefreshCw, {
+      className: "w-6 h-6"
+    }), "\u05D1\u05D5\u05D0\u05D5 \u05E0\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1!"), /*#__PURE__*/React.createElement("button", {
+      onClick: handleStart,
+      className: "w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-xl text-lg transition-all"
+    }, "\u05D4\u05EA\u05D7\u05DC \u05DE\u05D4\u05D4\u05EA\u05D7\u05DC\u05D4")), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 text-center text-sm text-gray-500"
+    }, /*#__PURE__*/React.createElement("p", null, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9 \u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "mt-1"
+    }, "\u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+  }
+  if (gameState === 'gameComplete') {
+    const totalQuestions = questions.length;
+    const finalPercentage = (score / totalQuestions * 100).toFixed(0);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center mb-4"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-40 h-40 text-pink-500 animate-pulse",
+      strokeWidth: 1.5,
+      fill: "currentColor"
+    })), /*#__PURE__*/React.createElement("h1", {
+      className: "text-5xl font-bold text-gray-800 mb-3"
+    }, "\uD83D\uDC96 \u05DE\u05D6\u05DC \u05D8\u05D5\u05D1! \uD83D\uDC96"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-gray-600"
+    }, "\u05D4\u05D2\u05E2\u05EA \u05DC\u05D3\u05D1\u05E7\u05D5\u05EA!")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-50 via-pink-50 to-blue-50 rounded-2xl p-6 mb-6"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-bold text-gray-800 mb-4 text-center"
+    }, "\u05D4\u05D9\u05E9\u05D2\u05D9\u05DD \u05E1\u05D5\u05E4\u05D9\u05D9\u05DD"), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-3 gap-4 text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl font-bold text-purple-600"
+    }, finalPercentage, "%"), /*#__PURE__*/React.createElement("div", {
+      className: "text-gray-600 text-sm"
+    }, "\u05D0\u05D7\u05D5\u05D6 \u05DB\u05DC\u05DC\u05D9")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl font-bold text-pink-600"
+    }, score), /*#__PURE__*/React.createElement("div", {
+      className: "text-gray-600 text-sm"
+    }, "\u05EA\u05E9\u05D5\u05D1\u05D5\u05EA \u05E0\u05DB\u05D5\u05E0\u05D5\u05EA")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-4xl font-bold text-blue-600"
+    }, "3"), /*#__PURE__*/React.createElement("div", {
+      className: "text-gray-600 text-sm"
+    }, "\u05E8\u05DE\u05D5\u05EA \u05D4\u05D5\u05E9\u05DC\u05DE\u05D5")))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-6 mb-6 border-2 border-yellow-200"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-2xl font-bold text-gray-800 mb-4 text-center flex items-center justify-center gap-2"
+    }, /*#__PURE__*/React.createElement(Sparkles, {
+      className: "text-yellow-500"
+    }), "\u05DE\u05E1\u05E8 \u05E1\u05D9\u05D5\u05DD \u05DE\u05D4\u05DE\u05D5\u05E8\u05D4", /*#__PURE__*/React.createElement(Sparkles, {
+      className: "text-yellow-500"
+    })), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed mb-4"
+    }, "\u05D9\u05E7\u05D9\u05E8\u05D9, \u05D4\u05E8\u05D0\u05D9\u05EA \u05D4\u05EA\u05DE\u05D3\u05D4 \u05DE\u05D5\u05E4\u05DC\u05D0\u05D4! \u05DC\u05DE\u05D3\u05EA \u05E9\u05D0\u05D4\u05D1\u05EA \u05D4' \u05D4\u05D9\u05D0 \u05DC\u05D0 \u05E8\u05E7 \u05DE\u05E6\u05D5\u05D5\u05D4 - \u05D6\u05D5 \u05EA\u05DB\u05DC\u05D9\u05EA \u05D4\u05EA\u05DB\u05DC\u05D9\u05D5\u05EA, \u05D4\u05DE\u05D8\u05E8\u05D4 \u05D4\u05E2\u05DC\u05D9\u05D5\u05E0\u05D4 \u05E9\u05DC \u05DB\u05DC \u05D4\u05DE\u05E6\u05D5\u05D5\u05EA."), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed mb-4"
+    }, "\u05D6\u05DB\u05D5\u05E8 \u05EA\u05DE\u05D9\u05D3: \u05D0\u05D4\u05D1\u05D4 \u05D0\u05DE\u05D9\u05EA\u05D9\u05EA \u05E0\u05D5\u05D1\u05E2\u05EA \u05DE\u05D4\u05DB\u05E8\u05EA \u05D4\u05D8\u05D5\u05D1, \u05DE\u05D4\u05EA\u05D1\u05D5\u05E0\u05E0\u05D5\u05EA \u05D1\u05D9\u05D7\u05E1 \u05D4\u05D7\u05D9\u05D1\u05D4 \u05E9\u05DC \u05D4\u05E0\u05D5\u05EA\u05DF, \u05D5\u05DE\u05D3\u05D1\u05E7\u05D5\u05EA \u05E9\u05DE\u05D2\u05D9\u05E2\u05D4 \u05DE\u05EA\u05D5\u05DA '\u05D3\u05E2\u05EA' - \u05DE\u05D5\u05D3\u05E2\u05D5\u05EA \u05D0\u05DE\u05D9\u05EA\u05D9\u05EA \u05DC\u05DE\u05E6\u05D9\u05D0\u05D5\u05EA."), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 leading-relaxed font-bold text-center text-lg"
+    }, "\u05E2\u05DB\u05E9\u05D9\u05D5, \u05E6\u05D0 \u05D5\u05D4\u05E4\u05D5\u05DA \u05DB\u05DC \u05E8\u05D2\u05E2 \u05DC\u05E8\u05D2\u05E2 \u05E9\u05DC \u05D0\u05D4\u05D1\u05D4 \u05D5\u05D3\u05D1\u05E7\u05D5\u05EA! \uD83D\uDCAB")), /*#__PURE__*/React.createElement("button", {
+      onClick: handleStart,
+      className: "w-full bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 hover:from-purple-500 hover:via-pink-500 hover:to-blue-500 text-white font-bold py-4 px-6 rounded-xl text-xl transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-6 h-6",
+      fill: "currentColor"
+    }), "\u05D7\u05D6\u05D5\u05E8 \u05E2\u05DC \u05D4\u05DE\u05E1\u05E2!", /*#__PURE__*/React.createElement(RefreshCw, {
+      className: "w-6 h-6"
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gray-50 rounded-xl p-4 border-2 border-gray-200"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold text-gray-800 mb-2"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9 \u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-600"
+    }, "\u05DC\u05E4\u05E8\u05D8\u05D9\u05DD \u05D5\u05E9\u05D0\u05DC\u05D5\u05EA: 0527139520")))));
+  }
+  return null;
+};
+const __App = AhavatHashemGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+})();
+</script>
+
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif;direction:rtl"><a href="https://www.kol-toda.co.il/t/games.html#g_ahava" style="color:#4f46e5">← עוד באהבת ה&#x27; והכרת הטוב</a> · <a href="https://www.kol-toda.co.il/" style="color:#4f46e5">אתר הקול החמישי</a></p>
+</body>
+</html>

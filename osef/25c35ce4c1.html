@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מי אני? - דמויות מסיפור לידת משה</title>
+<meta name="description" content="מי אני? - דמויות מסיפור לידת משה">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0d47a1 0%, #1976d2 30%, #42a5f5 60%, #81c784 100%);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide {
+            display: none;
+            width: 90%;
+            max-width: 1000px;
+            text-align: center;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(15px);
+            border: 3px solid rgba(129, 199, 132, 0.4);
+            min-height: 600px;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            animation: slideIn 0.7s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .slide h1 {
+            font-size: 4em;
+            margin-bottom: 30px;
+            color: #81c784;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.8);
+            font-weight: bold;
+        }
+
+        .slide h2 {
+            font-size: 3em;
+            margin-bottom: 25px;
+            color: #81c784;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+        }
+
+        .question-container {
+            background: rgba(13, 71, 161, 0.3);
+            padding: 40px;
+            border-radius: 20px;
+            margin: 20px 0;
+            border: 2px solid rgba(129, 199, 132, 0.5);
+        }
+
+        .clue {
+            font-size: 1.8em;
+            line-height: 1.8;
+            margin: 15px 0;
+            text-align: center;
+            color: #e3f2fd;
+        }
+
+        .answer-container {
+            display: none;
+            background: rgba(129, 199, 132, 0.2);
+            padding: 40px;
+            border-radius: 20px;
+            margin: 20px 0;
+            border: 3px solid #81c784;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .answer-container.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .answer-name {
+            font-size: 3.5em;
+            color: #81c784;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        .answer-description {
+            font-size: 1.5em;
+            line-height: 1.6;
+            color: #e8f5e8;
+        }
+
+        .verse {
+            background: rgba(129, 199, 132, 0.15);
+            padding: 20px;
+            border-right: 5px solid #81c784;
+            margin: 20px 0;
+            font-style: italic;
+            font-size: 1.2em;
+            border-radius: 10px;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            padding: 12px 25px;
+            background: rgba(129, 199, 132, 0.9);
+            color: #0d47a1;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            min-width: 120px;
+        }
+
+        .nav-btn:hover {
+            background: #81c784;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-btn:disabled {
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .reveal-btn {
+            padding: 20px 40px;
+            background: linear-gradient(45deg, #81c784, #4caf50);
+            color: white;
+            border: none;
+            border-radius: 35px;
+            cursor: pointer;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 30px auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            display: block;
+        }
+
+        .reveal-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .reveal-btn:disabled {
+            background: rgba(100, 100, 100, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1.2em;
+            color: #81c784;
+            border: 2px solid rgba(129, 199, 132, 0.5);
+        }
+
+        .character-number {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #81c784, #4caf50);
+            color: #0d47a1;
+            border-radius: 50%;
+            line-height: 60px;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 20px rgba(129, 199, 132, 0.4);
+        }
+
+        .intro-text {
+            font-size: 1.4em;
+            line-height: 1.7;
+            color: #e3f2fd;
+            margin: 20px 0;
+        }
+
+        .game-rules {
+            background: rgba(13, 71, 161, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px solid rgba(129, 199, 132, 0.3);
+        }
+    </style>
+<meta property="og:title" content="מי אני? - דמויות מסיפור לידת משה">
+<meta property="og:description" content="מי אני? - דמויות מסיפור לידת משה">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-osef-25c35ce4c1.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/osef/25c35ce4c1.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+    <div class="game-container">
+        <div class="slide-counter">
+            דמות <span id="current-slide">1</span> / <span id="total-slides">7</span>
+        </div>
+
+        <!-- שקף פתיחה -->
+        <div class="slide active">
+            <h1>🎭 מי אני? 🎭</h1>
+            <h2>דמויות מסיפור לידת משה</h2>
+            <div class="intro-text">
+                משחק זיהוי דמויות מפרשת שמות<br>
+                על פי הפסוקים בשמות פרק ב', פסוקים א-י
+            </div>
+            <div class="game-rules">
+                <strong>חוקי המשחק:</strong><br>
+                🔍 תקראו את הרמזים<br>
+                🤔 נסו לנחש מי הדמות<br>
+                👆 לחצו על "גלה את התשובה"<br>
+                ➡️ עברו לדמות הבאה
+            </div>
+        </div>
+
+        <!-- דמות 1: אמרם של משה -->
+        <div class="slide">
+            <div class="character-number">1</div>
+            <div class="question-container">
+                <h2>🤱 מי אני?</h2>
+                <div class="clue">• אני אישה מבית לוי</div>
+                <div class="clue">• הרגשתי שהילד שלי מיוחד - "כי טוב הוא"</div>
+                <div class="clue">• הצפנתי את בני שלושה חודשים</div>
+                <div class="clue">• כשלא יכולתי יותר, הכנתי לו תיבת גומא</div>
+                <div class="clue">• בסוף קיבלתי שכר להניק את הילד שלי</div>
+            </div>
+            <button class="reveal-btn" onclick="revealAnswer(1)">🔍 גלה את התשובה</button>
+            <div class="answer-container" id="answer1">
+                <div class="answer-name">יוכבד - אם משה</div>
+                <div class="answer-description">
+                    האם הגיבורה שהצילה את משה מגזירת פרעה.<br>
+                    הצפינה אותו שלושה חודשים ובנתה לו תיבת הצלה.
+                </div>
+                <div class="verse">
+                    "וַתַּהַר הָאִשָּׁה וַתֵּלֶד בֵּן וַתֵּרֶא אֹתוֹ כִּי־טוֹב הוּא וַתִּצְפְּנֵהוּ שְׁלֹשָׁה יְרָחִים"
+                </div>
+            </div>
+        </div>
+
+        <!-- דמות 2: מרים -->
+        <div class="slide">
+            <div class="character-number">2</div>
+            <div class="question-container">
+                <h2>👧 מי אני?</h2>
+                <div class="clue">• אני אחותו של התינוק</div>
+                <div class="clue">• התצבתי מרחוק לראות מה יעשה לו</div>
+                <div class="clue">• הייתי חכמה ומהירה בחשיבה</div>
+                <div class="clue">• הצעתי לבת פרעה למצוא מינקת עברייה</div>
+                <div class="clue">• הבאתי את אמי להניק את אחי</div>
+            </div>
+            <button class="reveal-btn" onclick="revealAnswer(2)">🔍 גלה את התשובה</button>
+            <div class="answer-container" id="answer2">
+                <div class="answer-name">מרים - אחות משה</div>
+                <div class="answer-description">
+                    הנביאה הצעירה ששמרה על אחיה מרחוק<br>
+                    ובחוכמתה זירזה את איחוד המשפחה מחדש.
+                </div>
+                <div class="verse">
+                    "וַתֵּתַצַּב אֲחֹתוֹ מֵרָחֹק לְדֵעָה מַה־יֵּעָשֶׂה לוֹ"
+                </div>
+            </div>
+        </div>
+
+        <!-- דמות 3: בת פרעה -->
+        <div class="slide">
+            <div class="character-number">3</div>
+            <div class="question-container">
+                <h2>👑 מי אני?</h2>
+                <div class="clue">• אני בת המלך</div>
+                <div class="clue">• ירדתי לרחוץ ביאור עם נערותיי</div>
+                <div class="clue">• מצאתי תיבה בסוף</div>
+                <div class="clue">• חמלתי על התינוק הבוכה</div>
+                <div class="clue">• אימצתי אותו כבן ונתתי לו שם</div>
+            </div>
+            <button class="reveal-btn" onclick="revealAnswer(3)">🔍 גלה את התשובה</button>
+            <div class="answer-container" id="answer3">
+                <div class="answer-name">בת פרעה - אמו המאמצת</div>
+                <div class="answer-description">
+                    הנסיכה המצרית ששברה את חוק אביה<br>
+                    והצילה את משה מחמלה ורחמים.
+                </div>
+                <div class="verse">
+                    "וַתִּפְתַּח וַתִּרְאֵהוּ אֶת־הַיֶּלֶד וְהִנֵּה נַעַר בֹּכֶה וַתַּחְמֹל עָלָיו"
+                </div>
+            </div>
+        </div>
+
+        <!-- דמות 4: עמרם -->
+        <div class="slide">
+            <div class="character-number">4</div>
+            <div class="question-container">
+                <h2>👨 מי אני?</h2>
+                <div class="clue">• אני איש מבית לוי</div>
+                <div class="clue">• לקחתי את בת לוי לאישה</div>
+                <div class="clue">• לפי המסורת, חזרתי לאשתי אחרי שגירשתי אותה</div>
+                <div class="clue">• הילד שנולד לי נעשה למנהיג עם ישראל</div>
+                <div class="clue">• אני אבא של שלושה מנהיגי העם</div>
+            </div>
+            <button class="reveal-btn" onclick="revealAnswer(4)">🔍 גלה את התשובה</button>
+            <div class="answer-container" id="answer4">
+                <div class="answer-name">עמרם - אבי משה</div>
+                <div class="answer-description">
+                    אבי שלושת מנהיגי יציאת מצרים:<br>
+                    מרים, אהרן ומשה רבנו.
+                </div>
+                <div class="verse">
+                    "וַיֵּלֶךְ אִישׁ מִבֵּית לֵוִי וַיִּקַּח אֶת־בַּת לֵוִי"
+                </div>
+            </div>
+        </div>
+
+        <!-- דמות 5: נערות בת פרעה -->
+        <div class="slide">
+            <div class="character-number">5</div>
+            <div class="question-container">
+                <h2>👭 מי אנחנו?</h2>
+                <div class="clue">• אנחנו משרתות בחצר המלוכה</div>
+                <div class="clue">• הלכנו עם בת פרעה ליאור</div>
+                <div class="clue">• ראינו איתה את התיבה</div>
+                <div class="clue">• אנחנו עדות לרגע ההיסטורי</div>
+                <div class="clue">• לפי המדרש, התנגדנו להצלת התינוק</div>
+            </div>
+            <button class="reveal-btn" onclick="revealAnswer(5)">🔍 גלה את התשובה</button>
+            <div class="answer-container" id="answer5">
+                <div class="answer-name">נערותיה של בת פרעה</div>
+                <div class="answer-description">
+                    המשרתות שליוו את הנסיכה ליאור<br>
+                    והיו עדות לרגע מציאת משה.
+                </div>
+                <div class="verse">
+                    "וְנַעֲרֹתֶיהָ הֹלְכֹת עַל־יַד הַיְאֹר"
+                </div>
+            </div>
+        </div>
+
+        <!-- דמות 6: משה התינוק -->
+        <div class="slide">
+            <div class="character-number">6</div>
+            <div class="question-container">
+                <h2>👶 מי אני?</h2>
+                <div class="clue">• אני התינוק המרכזי בסיפור</div>
+                <div class="clue">• אמי ראתה שאני "טוב"</div>
+                <div class="clue">• הוצפנתי שלושה חודשים</div>
+                <div class="clue">• שטתי ביאור בתיבת גומא</div>
+                <div class="clue">• שמי ניתן לי ע"י בת פרעה - "מן המים משיתיהו"</div>
+            </div>
+            <button class="reveal-btn" onclick="revealAnswer(6)">🔍 גלה את התשובה</button>
+            <div class="answer-container" id="answer6">
+                <div class="answer-name">משה רבנו - התינוק</div>
+                <div class="answer-description">
+                    המנהיג הגדול של עם ישראל בתקופת התינקות,<br>
+                    שהציל מגזירת פרעה בדרך נסית.
+                </div>
+                <div class="verse">
+                    "וַתִּקְרָא שְׁמוֹ מֹשֶׁה וַתֹּאמֶר כִּי מִן־הַמַּיִם מְשִׁיתִהוּ"
+                </div>
+            </div>
+        </div>
+
+        <!-- סיכום -->
+        <div class="slide">
+            <h1>🎉 כל הכבוד! 🎉</h1>
+            <h2>זיהיתם את כל הדמויות!</h2>
+            <div class="intro-text">
+                סיפור לידת משה מלמד אותנו על:<br><br>
+                💪 כוח האמונה והאומץ<br>
+                👪 חשיבות המשפחה<br>
+                🤝 שיתוף פעולה בין עמים<br>
+                🙏 השגחה אלוהית<br>
+                ✨ איך אדם אחד יכול לשנות את העולם
+            </div>
+            <div class="verse">
+                "וַיִּגְדַּל הַיֶּלֶד וַתְּבִאֵהוּ לְבַת־פַּרְעֹה וַיְהִי־לָהּ לְבֵן"<br>
+                <small>(שמות ב, י)</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" onclick="previousSlide()" id="prevBtn">◀ קודם</button>
+        <button class="nav-btn" onclick="nextSlide()" id="nextBtn">הבא ▶</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        document.getElementById('total-slides').textContent = totalSlides - 1; // מינוס שקף הפתיחה
+        
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            if (n >= totalSlides) currentSlide = 0;
+            if (n < 0) currentSlide = totalSlides - 1;
+            
+            slides[currentSlide].classList.add('active');
+            
+            // Update counter - don't count intro slide
+            if (currentSlide === 0) {
+                document.getElementById('current-slide').textContent = '0';
+            } else {
+                document.getElementById('current-slide').textContent = currentSlide;
+            }
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+        
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        }
+        
+        function previousSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        }
+        
+        function revealAnswer(answerNum) {
+            const answerContainer = document.getElementById('answer' + answerNum);
+            const button = event.target;
+            
+            answerContainer.classList.add('show');
+            button.disabled = true;
+            button.textContent = '✅ תשובה נחשפה';
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+            }
+        });
+        
+        // Initialize
+        showSlide(0);
+    </script>
+
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif;direction:rtl"><a href="https://www.kol-toda.co.il/t/parasha.html#p_1_0" style="color:#4f46e5">← עוד בשמות · פרשת שמות</a> · <a href="https://www.kol-toda.co.il/" style="color:#4f46e5">אתר הקול החמישי</a></p>
+</body>
+</html>

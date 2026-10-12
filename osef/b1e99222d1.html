@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בחירת מקום המגורים מנקודת מבט הלכתית-ערכית</title>
+<meta name="description" content="האם זה שינוי חיובי או בעייתי מבחינה הלכתית-ערכית?">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            height: 100vh;
+            overflow: hidden;
+            direction: rtl;
+        }
+
+        .presentation-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide {
+            display: none;
+            padding: 40px;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            display: block;
+            z-index: 10;
+        }
+
+        .slide-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .slide-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .slide-subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .slide-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .quote-box {
+            background: rgba(255,255,255,0.15);
+            border-right: 5px solid #FFD700;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .quote-text {
+            font-size: 1.3em;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .quote-source {
+            font-size: 1em;
+            opacity: 0.8;
+            text-align: left;
+        }
+
+        .highlight-box {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .point-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .point-list li {
+            background: rgba(255,255,255,0.1);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-right: 4px solid #FFD700;
+            transition: all 0.3s ease;
+        }
+
+        .point-list li:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(-5px);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.12);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .card h3 {
+            color: #FFD700;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .slide-number {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .title-slide {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .title-slide.active {
+            display: flex;
+        }
+
+        .title-slide .slide-title {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .title-slide .slide-subtitle {
+            font-size: 1.5em;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .author {
+            margin-top: 40px;
+            font-size: 1.2em;
+            opacity: 0.8;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .emphasis {
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        .section-header {
+            font-size: 2em;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .damage-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .damage-item {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            padding: 15px;
+            border-radius: 10px;
+            border-right: 4px solid #fff;
+        }
+
+        .benefit-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .benefit-item {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            padding: 15px;
+            border-radius: 10px;
+            border-right: 4px solid #fff;
+        }
+    </style>
+<meta property="og:title" content="בחירת מקום המגורים מנקודת מבט הלכתית-ערכית">
+<meta property="og:description" content="האם זה שינוי חיובי או בעייתי מבחינה הלכתית-ערכית?">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-osef-b1e99222d1.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/osef/b1e99222d1.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- שקף 1: כותרת -->
+        <div class="slide active title-slide">
+            <div class="slide-number">1/12</div>
+            <h1 class="slide-title">בחירת מקום המגורים</h1>
+            <h2 class="slide-subtitle">מנקודת מבט הלכתית-ערכית</h2>
+            <div class="author">שיעור מקיף על המהפכה הדמוגרפית בציבור החרדי</div>
+        </div>
+
+        <!-- שקף 2: המהפכה הדמוגרפית -->
+        <div class="slide">
+            <div class="slide-number">2/12</div>
+            <div class="slide-header">
+                <h1 class="slide-title">המהפכה הדמוגרפית בציבור החרדי</h1>
+                <p class="slide-subtitle">מתוך מאמר TheMarker על השינוי הדרמטי</p>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>השינויים החדשים</h3>
+                        <ul class="point-list">
+                            <li>מעבר משאיפה לבעלות לשכירות ארוכת טווח</li>
+                            <li>הגירה מסיבית לפריפריה</li>
+                            <li>מעבר לשכונות מעורבות</li>
+                            <li>השפעת האינטרנט וחיפוש דירות זולות</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>דוגמה מעשית</h3>
+                        <div class="quote-box">
+                            <div class="quote-text">"המעבר שיחרר אותנו מלחצים קהילתיים... אנחנו מרגישים יותר חופשיים עכשיו"</div>
+                            <div class="quote-source">אישה חרדית מאלעד שעברה לקריית גת</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    <h2 style="text-align: center; margin-bottom: 15px;">השאלה המרכזית</h2>
+                    <p style="text-align: center; font-size: 1.3em;"><strong>האם זה שינוי חיובי או בעייתי מבחינה הלכתית-ערכית?</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- שקף 3: הראיות לחובת מגורים במקום תורה -->
+        <div class="slide">
+            <div class="slide-number">3/12</div>
+            <div class="slide-header">
+                <h1 class="slide-title">הראיות לחובת מגורים במקום תורה</h1>
+            </div>
+            <div class="slide-content">
+                <h2 class="section-header">המשנה באבות - הראיה הבסיסית</h2>
+                <div class="quote-box">
+                    <div class="quote-text">"אם אתה נותן לי כל כסף וזהב שבעולם, איני דר אלא במקום תורה"</div>
+                    <div class="quote-source">רבי יוסי בן קיסמא - אבות פרק ו משנה ט</div>
+                </div>
+
+                <h2 class="section-header">הגמרא בכתובות - האיסור המפורש</h2>
+                <div class="quote-box">
+                    <div class="quote-text">"כשם שאסור לאדם לצאת מארץ ישראל לבבל, כך אסור לצאת מבבל לשאר ארצות"</div>
+                    <div class="quote-source">כתובות קי"א ע"א</div>
+                </div>
+                <p><strong>רש"י מסביר:</strong> "מפני שיש בה ישיבות המרביצות תורה"</p>
+
+                <div class="highlight-box">
+                    <h3>הדוגמה מבני גד ובני ראובן</h3>
+                    <p>ביקשו להתיישב בעבר הירדן מסיבות כלכליות ("מקנה רב היה להם")</p>
+                    <p><strong>התגובה של משה רבינו:</strong> "למה תניאו את לב בני ישראל?"</p>
+                    <p><span class="emphasis">המסר:</span> העדפת שיקולים כלכליים על פני הערכים הרוחניים - בעייתית!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- שקף 4: התירוצים וההבחנות - חלק א -->
+        <div class="slide">
+            <div class="slide-number">4/12</div>
+            <div class="slide-header">
+                <h1 class="slide-title">התירוצים וההבחנות - חלק א'</h1>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>תירוץ א': חילוק בין יחיד לקבוצה</h3>
+                        <p><strong>המשנה:</strong> מדברת על אדם יחיד שהולך לגור במקום שאין בו תורה</p>
+                        <p><strong>אבל:</strong> כשהולכת קבוצה שלמה ליצור מקום תורה חדש - זה שונה לחלוטין!</p>
+                        <ul class="point-list">
+                            <li>כמו רבי חייא שיצא להקים מקומות תורה</li>
+                            <li>כמו גדולי ישראל שעברו ממקום למקום</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>תירוץ ב': שינוי הנסיבות ההיסטוריות</h3>
+                        <div class="highlight-box">
+                            <h4>אז - הלימוד היה בעיקר בעל פה:</h4>
+                            <ul>
+                                <li>צריך היה להיות פיזית ליד החכם</li>
+                                <li>ספרים היו נדירים ויקרים</li>
+                                <li>הידע היה מרוכז במקומות ספורים</li>
+                            </ul>
+                        </div>
+                        <div class="quote-box">
+                            <h4>היום - המציאות שונה לחלוטין:</h4>
+                            <ul>
+                                <li>יש ספרים בכל מקום</li>
+                                <li>טלפונים לשאלות הלכתיות</li>
+                                <li>שיעורים מוקלטים ושידורי תורה</li>
+                                <li>אפשר ללמוד גם מרחוק</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- שקף 5: התירוצים וההבחנות - חלק ב -->
+        <div class="slide">
+            <div class="slide-number">5/12</div>
+            <div class="slide-header">
+                <h1 class="slide-title">התירוצים וההבחנות - חלק ב'</h1>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>תירוץ ג': ודאי וספק VS ספק וספק</h3>
+                        <div class="quote-box">
+                            <h4>אצל רבי יוסי בן קיסמא:</h4>
+                            <p><strong>ודאי:</strong> מקום תורה מבוסס ומצליח</p>
+                            <p><strong>ספק:</strong> מקום חדש שלא בטוח שיצליח</p>
+                        </div>
+                        <div class="highlight-box">
+                            <h4>במציאות שלנו:</h4>
+                            <p><strong>ספק:</strong> גם במקום היקר יש ספק אם ילמד בגלל הלחצים</p>
+                            <p><strong>ספק:</strong> גם במקום החדש יש ספק</p>
+                            <p><span class="emphasis">כשיש "ספק מול ספק" - אפשר לבחור את האפשרות שפותרת בעיות אחרות</span></p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>תירוץ ד': המניע - לכסף או לשמים?</h3>
+                        <div class="damage-item">
+                            <h4>בעייתי:</h4>
+                            <p>אם הולכים רק בגלל כסף וחיסכון</p>
+                        </div>
+                        <div class="benefit-item">
+                            <h4>רצוי:</h4>
+                            <ul>
+                                <li>לזכות את הרבים</li>
+                                <li>להפיץ תורה למקומות חדשים</li>
+                                <li>ליצור מקומות תורה שיכשירו דורות</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- שקף 6: הלקח מבני גד ובני ראובן -->
+        <div class="slide">
+            <div class="slide-number">6/12</div>
+            <div class="slide-header">
+                <h1 class="slide-title">הלקח מבני גד ובני ראובן</h1>
+            </div>
+            <div class="slide-content">
+                <div class="highlight-box">
+                    <h2 style="text-align: center; margin-bottom: 20px;">הבעיה לא הייתה במעבר עצמו</h2>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="damage-list">
+                        <div class="damage-item">
+                            <h3>1. המניע הלא נכון</h3>
+                            <p>"מקנה רב" לפני הרוחניות</p>
+                        </div>
+                        <div class="damage-item">
+                            <h3>2. הניתוק מכלל ישראל</h3>
+                            <p>"לא נעבור חלוצים"</p>
+                        </div>
+                    </div>
+                    <div class="benefit-list">
+                        <div class="benefit-item">
+                            <h3>התיקון</h3>
+                            <p>כשאמרו שילחמו עם שאר השבטים ויתרמו לכלל</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quote-box">
+                    <h3>המסר: גם מעבר כלכלי יכול להיות מתוקן אם:</h3>
+                    <ul class="point-list">
+                        <li>שומרים על הקשר עם כלל ישראל</li>
+                        <li>תורמים לחיזוק התורה במקום החדש</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- שקף 7: התורה חסה על ממונם של ישראל -->
+        <div class="slide">
+            <div class="slide-number">7/12</div>
+            <div class="slide-header">
+                <h1 class="slide-title">התורה חסה על ממונם של ישראל</h1>
+            </div>
+            <div class="slide-content">
+                <div class="quote-box">
+                    <div class="quote-text">"התורה חסה על ממונם של ישראל"</div>
+                    <div class="quote-source">גמרא מנחות עו ע"ב</div>
+                </div>
+
+                <h2 class="section-header">דוגמאות מהגמרא</h2>
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>מים מן הסלע</h3>
+                        <p>חיסכון על הכלים</p>
+                    </div>
+                    <div class="card">
+                        <h3>בית מנוגע</h3>
+                        <p>הוצאת הכלים קודם</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>חצוצרות מכסף ולא מזהב</h3>
+                    <p>למרות שזהב יותר יפה - התורה חסה על הכסף</p>
+                </div>
+
+                <div class="highlight-box">
+                    <h2 style="text-align: center;">אם התורה חסה על חיסכון קטן - כל שכן על הרס כלכלי!</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- שקף 8: שבעת הנזקים של יוקר הדיור -->
+        <div class="slide">
+            <div class="slide-number">8/12</div>
+            <div class="slide-header">
+                <h1 class="slide-title">שבעת הנזקים של יוקר הדיור</h1>
+            </div>
+            <div class="slide-content">
+                <div class="damage-list">
+                    <div class="damage-item">
+                        <h3>1. פיקוח נפש ממש</h3>
+                        <p>לחץ נפשי וגופני קיצוני</p>
+                    </div>
+                    <div class="damage-item">
+                        <h3>2. מכשולים הלכתיים</h3>
+                        <p>ריבית, אונאה, "לוה ואינו משלם"</p>
+                    </div>
+                    <div class="damage-item">
+                        <h3>3. נזק לזיכוי הרבים</h3>
+                        <p>כסף צדקה הולך לדירות במקום לישיבות</p>
+                    </div>
+                    <div class="damage-item">
+                        <h3>4. נשירה מלימוד התורה</h3>
+                        <p>בחורים נאלצים לעזוב ללכת לעבוד</p>
+                    </div>
+                    <div class="damage-item">
+                        <h3>5. עיוות בחירת זוג</h3>
+                        <p>כסף קובע במקום מידות ותורה</p>
+                    </div>
+                    <div class="damage-item">
+                        <h3>6. אפליה כלכלית בתורה</h3>
+                        <p>התורה הופכת להיות רק לעשירים</p>
+                    </div>
+                    <div class="damage-item">
+                        <h3>7. חילול השם</h3>
+                        <p>המצב הכלכלי הקשה מרחיק יהודים</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- שקף 9: מעלות המקומות הקטנים -->
+        <div class="slide">
+            <div class="slide-number">9/12</div>
+            <div class="slide-header">
+                <h1 class="slide-title">מעלות המקומות הקטנים</h1>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>צניעות ופשטות</h3>
+                        <div class="quote-box">
+                            <div class="quote-text">"נצא השדה נלינה בכפרים"</div>
+                        </div>
+                        <ul class="point-list">
+                            <li>חיים פשוטים</li>
+                            <li>הסתפקות במועט</li>
+                            <li>תנאי להצלחה בתורה</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>פיתוח אישי</h3>
+                        <ul class="point-list">
+                            <li>הכרת יחודו של כל אחד</li>
+                            <li>אחריות אישית להוביל</li>
+                            <li>חברות אמיתית ועמוקה</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="highlight-box">
+                    <h3>זיכוי הרבים</h3>
+                    <ul class="point-list">
+                        <li>השפעה על הסביבה המקומית</li>
+                        <li>יצירת מרכזי תורה חדשים</li>
+                        <li>הרבצת תורה במקומות שחסרים בהם</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- שקף 10: המימד ההיסטורי והעתידי -->
+        <div class="slide">
+            <div class="slide-number">10/12</div>
+            <div class="slide-header">
+                <h1 class="slide-title">המימד ההיסטורי והעתידי</h1>
+            </div>
+            <div class="slide-content">
+                <h2 class="section-header">ההשגחה העליונה בהיסטוריה</h2>
+                <div class="quote-box">
+                    <h3>התפשטות התורה לאורך הדורות:</h3>
+                    <ul class="point-list">
+                        <li>מבבל לספרד כשנחלשה התורה בבבל</li>
+                        <li>"כי מציון תצא תורה ודבר ה' מירושלים" - פירוש כפול</li>
+                    </ul>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>הזמן המיוחד שלנו</h3>
+                        <ul class="point-list">
+                            <li><span class="emphasis">אחרית הימים</span> - תקופה של התפשטות התורה</li>
+                            <li><span class="emphasis">יוקר הדיור</span> - חלק מההשגחה לעודד פיזור</li>
+                            <li><span class="emphasis">הזדמנות היסטורית</span> - ליצור מקומות תורה בכל הארץ</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>"ופרצת ימה וקדמה"</h3>
+                        <div class="highlight-box">
+                            <p style="text-align: center; font-size: 1.3em;">התורה צריכה להתפשט לכל כיוון - וזה מה שקורה עכשיו!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- שקף 11: יישום מעשי -->
+        <div class="slide">
+            <div class="slide-number">11/12</div>
+            <div class="slide-header">
+                <h1 class="slide-title">יישום מעשי - איך בוחרים נכון?</h1>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>השאלות שצריך לשאול</h3>
+                        <ul class="point-list">
+                            <li>האם יש במקום תושבי תורה? (גרעין ראשוני)</li>
+                            <li>האם המרחק מאפשר קשר עם רבותיי? (טלפון, ביקורים)</li>
+                            <li>האם יש אפשרויות פרנסה בסיסיות? (לא צריך להיות מושלם)</li>
+                            <li>האם המקום בטוח ובריא? (תנאי יסוד)</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>עקרונות החלטה</h3>
+                        <ul class="point-list">
+                            <li><span class="emphasis">התייעצות עם גדולי תורה</span> - לא להחליט לבד</li>
+                            <li><span class="emphasis">התחלה בקבוצה</span> - יותר קל כשיש מספר משפחות</li>
+                            <li><span class="emphasis">בדיקת התנאים הבסיסיים</span> - חינוך, בריאות, קהילה</li>
+                            <li><span class="emphasis">תכנון כלכלי נכון</span> - וידוא שהמהלך יציב</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- שקף 12: סיכום ומסקנות -->
+        <div class="slide">
+            <div class="slide-number">12/12</div>
+            <div class="slide-header">
+                <h1 class="slide-title">סיכום ומסקנות</h1>
+            </div>
+            <div class="slide-content">
+                <div class="highlight-box">
+                    <h2 style="text-align: center; margin-bottom: 20px;">החזרה למאמר הפתיחה</h2>
+                    <p style="text-align: center; font-size: 1.4em;"><strong>"המהפכה" בציבור החרדי איננה סטייה מהדרך - אלא תיקון הדרך!</strong></p>
+                </div>
+
+                <div class="quote-box">
+                    <h3>העיקרון המנחה</h3>
+                    <div class="quote-text">"התורה חסה על ממונם של ישראל"</div>
+                    <p>עיקרון יסוד שחייב להנחות החלטותינו</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>המסקנה המעשית</h3>
+                        <ul class="point-list">
+                            <li>אין חיוב לגור במקום היקר - במיוחד אם זה גורם לנזקים</li>
+                            <li>מותר ורצוי לצאת למקומות זולים - כשיוצרים מקום תורה</li>
+                            <li>זוהי מצווה של זיכוי הרבים - ולא בריחה מאחריות</li>
+                            <li>זה חלק מתהליך גדול יותר - של הרבצת התורה לכל העולם</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>קריאה לפעולה</h3>
+                        <ul class="point-list">
+                            <li><strong>לתלמידי חכמים:</strong> עליכם להוביל ולצאת למקומות חדשים</li>
+                            <li><strong>לצעירים:</strong> בחנו היטב את הצדדים הכלכליים והרוחניים</li>
+                            <li><strong>לקהילות:</strong> תמכו במי שיוצאים ליצור מקומות תורה חדשים</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h2 style="text-align: center; font-size: 1.5em;">"ויתקיים בנו: 'כי מלאה הארץ דעה את ה' כמים לים מכסים'"</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ניווט -->
+    <div class="navigation">
+        <button class="nav-btn" onclick="previousSlide()">← הקודם</button>
+        <button class="nav-btn" onclick="nextSlide()">הבא →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function previousSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        // ניווט עם מקלדת
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                previousSlide();
+            }
+        });
+
+        // מניעת גלילה בעמוד הראשי
+        document.body.style.overflow = 'hidden';
+    </script>
+
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif;direction:rtl"><a href="https://www.kol-toda.co.il/t/eretz.html#e_articles" style="color:#4f46e5">← עוד במאמרים וחומרים על ארץ ישראל</a> · <a href="https://www.kol-toda.co.il/" style="color:#4f46e5">אתר הקול החמישי</a></p>
+</body>
+</html>

@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>משחק אהבת השם – מדרגה למדרגה עד הדבקות – הקול החמישי</title>
+<meta name="description" content="אהבה ללא תנאי מצד האוהב, שאינה תלויה בתמורה או הנאה">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="משחק אהבת השם – מדרגה למדרגה עד הדבקות – הקול החמישי">
+<meta property="og:description" content="אהבה ללא תנאי מצד האוהב, שאינה תלויה בתמורה או הנאה">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-osef-2e3b66f66c.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/osef/2e3b66f66c.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+
+<script>
+(function () {
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Award = window.LucideReact["Award"] || window.LucideReact.Circle;
+const Target = window.LucideReact["Target"] || window.LucideReact.Circle;
+const ChevronRight = window.LucideReact["ChevronRight"] || window.LucideReact.Circle;
+const RotateCcw = window.LucideReact["RotateCcw"] || window.LucideReact.Circle;
+const Star = window.LucideReact["Star"] || window.LucideReact.Circle;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const NetivHadeveikutGame = () => {
+  const [currentLevel, setCurrentLevel] = useState('easy');
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [attempts, setAttempts] = useState(0);
+  const [gameComplete, setGameComplete] = useState(false);
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  const levels = {
+    easy: {
+      name: 'רמה קלה - זיהוי מושגים',
+      passingScore: 80,
+      totalQuestions: 10,
+      icon: '🌱'
+    },
+    medium: {
+      name: 'רמה בינונית - הבנת קשרים',
+      passingScore: 85,
+      totalQuestions: 15,
+      icon: '🎯'
+    },
+    hard: {
+      name: 'רמה קשה - יישום מעשי',
+      passingScore: 90,
+      totalQuestions: 20,
+      icon: '💎'
+    }
+  };
+  const questions = {
+    easy: [{
+      q: 'מהי "אהבה בחיריית" לפי החומר?',
+      correct: 'אהבה ללא תנאי מצד האוהב, שאינה תלויה בתמורה או הנאה',
+      wrong: ['אהבה שנובעת מבחירה חופשית בלבד, ללא השפעת רגשות', 'אהבה שבוחרים לתת רק כשמקבלים בחזרה אהבה דומה', 'אהבה שנבחרת על פי שיקולים רציונליים של התאמה'],
+      explanation: '"אהבה בחיריית" היא אהבה שאינה תלויה בדבר - אהבה ללא תנאי שמקורה ברצון האוהב לתת, לא בהנאה או רווח שמקבל.'
+    }, {
+      q: 'מהי "אהבת החשק" ומדוע היא נחשבת נחותה?',
+      correct: 'אהבה שנובעת מהנאה אישית ותלויה בקבלת הנאה, ולכן בטלה כשההנאה נעלמת',
+      wrong: ['אהבה שמבוססת על משיכה פיזית בלבד ואינה כוללת חיבור רוחני', 'אהבה שנובעת מחשק עז ורגשי שאינו ניתן לשליטה', 'אהבה שנובעת מרצון לממש חלומות משותפים עם בן הזוג'],
+      explanation: 'אהבת החשק היא "אהבת ההנאה" - אהבה התלויה בדבר. כשההנאה נעלמת, גם האהבה נעלמת. זו "אהבה דמיונית" שאינה יציבה.'
+    }, {
+      q: 'מדוע "לא טוב היות האדם לבדו" לפי החומר?',
+      correct: 'כי בלי קשר זוגי אי אפשר להגיע לשלמות של דבקות בה\' יתברך',
+      wrong: ['כי האדם זקוק לבן זוג כדי להרגיש מאושר ומסופק בחיים', 'כי האדם צריך עזרה פרקטית בניהול הבית ובגידול ילדים', 'כי הבדידות גורמת לעצבות ולדיכאון שמונעים צמיחה רוחנית'],
+      explanation: 'הבית היהודי הוא תנאי חיוני - "כלי אימון מעשי" להשגת הדבקות המושלמת עם ה\'. זו לא סתם נוחות, אלא השלמות האמיתית.'
+    }, {
+      q: 'מהו "חוק ההשתקפות" שמוזכר בשלב הראשון?',
+      correct: 'ככל שתדאג יותר לשמח את בת המלך, כך הקב"ה ידאג לשמח אותך בלימוד תורה ובמצוות',
+      wrong: ['ככל שתשקיע יותר בזוגיות, כך בן הזוג ישקיע בך באותה מידה', 'ככל שתשתקף טוב יותר בעיני בן הזוג, כך תזכה לכבוד רב יותר', 'ככל שתהיה מאושר יותר בזוגיות, כך תהיה מאושר יותר בעבודת ה\''],
+      explanation: 'זהו עיקרון רוחני עמוק: הדאגה שלך לשמח את "בת המלך" (בת הזוג) משתקפת בדאגת ה\' לשמח אותך בקשר שלך איתו.'
+    }, {
+      q: 'מהו ההבדל המרכזי בין "אהבת ההנאה" ל"אהבת הדעת"?',
+      correct: 'אהבת ההנאה מתמקדת בתענוג שמקבלים, ואילו אהבת הדעת מתמקדת ביחס ובחיבה של הנותן',
+      wrong: ['אהבת ההנאה היא רגשית ואהבת הדעת היא שכלית בלבד', 'אהבת ההנאה קצרת טווח ואהבת הדעת היא ארוכת טווח', 'אהבת ההנאה מבוססת על חוויות משותפות ואהבת הדעת על ערכים משותפים'],
+      explanation: 'העיקר הוא לא להיות "מאוהב באהבתך"! אהבת הדעת מתמקדת לא במעשה (החפצא) אלא ב"יחס החיבה והאהבה שגילה הנותן".'
+    }, {
+      q: 'מהי "אהבה דמיונית" לפי החומר?',
+      correct: 'אהבה שמבוססת על הנאה אישית ותעלם כשההנאה תיפסק',
+      wrong: ['אהבה שקיימת רק בדמיון ולא במציאות של החיים', 'אהבה שמבוססת על ציפיות לא מציאותיות מבן הזוג', 'אהבה שנובעת מאידיאליזציה של בן הזוג ולא מהכרתו האמיתית'],
+      explanation: 'אם אתה אוהב רק בגלל ההנאה שנגרמת לך, זו "אהבה דמיונית" שתעלם כשהסיבה תסתיים. צריך להתרומם אל "נותן הנעימות".'
+    }, {
+      q: 'מהי המטרה הסופית של כל תהליך העבודה הרוחנית?',
+      correct: 'השגת דבקות מושלמת בה\' יתברך',
+      wrong: ['השגת זוגיות מאושרת ומשגשגת בחיים', 'השגת שלווה נפשית ואושר אישי מתמיד', 'השגת מעלה רוחנית גבוהה וקרבה למלאכים'],
+      explanation: 'הדבקות בה\' היא התכלית הסופית. הזוגיות היא "בית הספר" - הכלי המעשי להגיע לשם.'
+    }, {
+      q: 'למה נקראת הזוגיות "בית הספר לאהבת השם"?',
+      correct: 'כי היא מקום התרגול המעשי ללמוד אהבה ללא תנאי כהכנה לאהבת ה\'',
+      wrong: ['כי בזוגיות לומדים לקבל את האחר בדיוק כמו שה\' מקבל אותנו', 'כי הבית היהודי הוא המקום שבו מלמדים את הילדים אהבת ה\'', 'כי דרך הזוגיות מבינים את עומק אהבתו של ה\' אלינו'],
+      explanation: 'הבית היהודי הוא "כלי אימון מעשי" - המקום שבו מתרגלים אהבה ללא תנאי, ודרך זה מתכוננים לדבקות בה\'.'
+    }, {
+      q: 'מהי "אהבת תמתי" (אהבת האחדות)?',
+      correct: 'אהבה מוחלטת של איחוד והתמזגות שבה אין הפרדה בין האוהב והנאהב',
+      wrong: ['אהבה שמתה ונפסקה בגלל חוסר תחזוקה והשקעה', 'אהבה שנמשכת עד המוות ולא משתנה לאורך כל החיים', 'אהבה שדורשת מסירות נפש מוחלטת ללא גבולות'],
+      explanation: 'זו אהבת האחדות המושלמת - רגע של דבקות מוחלטת שבה "נפשו קשורה באהבת ה\' ושוגה בה תמיד".'
+    }, {
+      q: 'מהו תפקיד המעשים (הנתינה) באהבה לפי החומר?',
+      correct: 'המעשים הם "הפטיש" שמחזק ומקבע את האהבה שכבר קיימת בלב',
+      wrong: ['המעשים הם הדרך היחידה ליצור אהבה בין בני זוג', 'המעשים מוכיחים שהאהבה אמיתית ולא רק מילים ריקות', 'המעשים הם תחליף לאהבה כשהרגשות נחלשים'],
+      explanation: 'הנתינה לא יוצרת אהבה - היא מחזקת אותה! המסמר (האהבה שבשכל) כבר קיים; הפעולה היא ה"פטיש" שמקבע אותו.'
+    }],
+    medium: [{
+      q: 'מהו הסדר הנכון של השלבים בדרך לדבקות?',
+      correct: 'בדידות→אחדות (בית יהודי)→דעת (אהבת הדעת)→נתינה (מעשים)→דבקות',
+      wrong: ['אחדות→בדידות→דעת→דבקות→נתינה', 'נתינה→דעת→אחדות→בדידות→דבקות', 'דעת→נתינה→אחדות→דבקות→בדידות'],
+      explanation: 'התהליך מתחיל בהכרה שבבדידות אין שלמות, עובר ליצירת אחדות (זוגיות), משם לאהבת הדעת, אח"כ למעשי נתינה, ולבסוף לדבקות.'
+    }, {
+      q: 'איזה שלב מתאר את "בכל מאודך" - התבוננות ביופי הבריאה?',
+      correct: 'שלב 4 - הוקרת החסד, שבו מתבוננים ביופי ובטוב ה\' ומעוררים אהבה',
+      wrong: ['שלב 1 - הצבת המטרה, שבו מבינים את חשיבות הבריאה', 'שלב 2 - בכל לבבך, שבו האהבה מתגלה דרך היופי', 'שלב 5 - השגת הדבקות, שבו חווים את שלמות הבריאה'],
+      explanation: '"בכל מאודך" הוא שלב ההתבוננות - לזהות שלושה דברים ביופי, טעם או ריח נעים שאינם הכרחיים, ולחוות הכרת טובה עצומה.'
+    }, {
+      q: 'מה הקשר בין "בכל לבבך" לבין "אהבת הדעת"?',
+      correct: '"בכל לבבך" מייצג את המעבר מאהבת ההנאה לאהבת הדעת - אהבה שאינה תלויה בדבר',
+      wrong: ['"בכל לבבך" מתאר אהבה רגשית ואילו "אהבת הדעת" מתארת אהבה שכלית', '"בכל לבבך" הוא תנאי מוקדם שצריך להשיג לפני שמגיעים לאהבת הדעת', '"בכל לבבך" ו"אהבת הדעת" הם שני שמות שונים לאותו מושג'],
+      explanation: '"בכל לבבך" הוא השלב שבו עוברים מהתמקדות בהנאה (אהבת החשק) להתמקדות ב"יחס החיבה והאהבה" של הנותן - זו אהבת הדעת.'
+    }, {
+      q: 'מדוע אהבת הדעת נקראת "יציבה ואינה בטלה לעולם"?',
+      correct: 'כי היא מבוססת על מהות האוהב ולא על הנאה חולפת, ולכן אינה תלויה בנסיבות',
+      wrong: ['כי היא נרכשת על ידי לימוד מעמיק שאינו נשכח לעולם', 'כי היא מבוססת על התחייבות והחלטה שאינן משתנות', 'כי היא מוקנית על ידי מעשים חוזרים שהופכים להרגל קבוע'],
+      explanation: 'אהבת הדעת מתמקדת במהות - באהבה עצמה ולא ברובד החיצוני (הרגש/הנוחות). לכן היא יציבה ולא משתנה.'
+    }, {
+      q: 'מהי הטעות בלהיות "מאוהב באהבתך"?',
+      correct: 'זה אומר שאתה אוהב את ההנאה שהאהבה נותנת לך, ולא את האדם עצמו',
+      wrong: ['זה אומר שאתה מתמקד יותר באהבה שלך מאשר באהבה שבן הזוג נותן', 'זה אומר שאתה גאה מדי באהבה שלך ומתפאר בה', 'זה אומר שאתה מרגיש אהבה כלפי עצמך יותר מכלפי בן הזוג'],
+      explanation: 'להיות "מאוהב באהבתך" פירושו לאהוב את ההנאה, לא את האוהב. זו אהבת החשק - אהבה דמיונית שתעלם.'
+    }, {
+      q: 'מהי המשמעות של "כל מעשה יקנה בנפש תכונה חזקה יותר" בהקשר של נתינה?',
+      correct: 'מעשי הנתינה מחזקים את תכונת האהבה בנפש יותר מאשר רק חשיבה על אהבה',
+      wrong: ['כל מעשה טוב מקנה לנו זכויות נוספות בשמיים', 'ככל שנעשה יותר מעשים טובים, כך נהיה אנשים טובים יותר', 'המעשים מייצרים הרגלים חזקים שקשה לשנות אותם'],
+      explanation: 'זהו עיקרון חשוב: פעולה יוצרת תכונה חזקה יותר מחשיבה בלבד. "הוי נושא ונותן בטובתו" - חפש איך לתת!'
+    }, {
+      q: 'מהו הקשר בין "אהבת איש ואשתו" ל"שיר השירים"?',
+      correct: 'הדבקות בזוגיות היא המודל לאהבת ישראל לה\', שבה "נפשו קשורה באהבת ה\'"',
+      wrong: ['שניהם מתארים אהבה רומנטית עזה שקשה לתאר במילים', 'שיר השירים משתמש באהבה זוגית כמטפורה ללימוד התורה', 'שניהם מדברים על אהבה שמתחילה בהתלהבות וצריכה תחזוקה'],
+      explanation: 'אהבת הזוגיות היא לא רק דימוי אלא המודל האמיתי - "בית הספר" שבו לומדים את הדבקות בה\'.'
+    }, {
+      q: 'למה צריך להתבונן דווקא ב"מותרות" (דברים שאינם הכרחיים)?',
+      correct: 'כי המותרות מגלות את אהבת ה\' שנותן מעבר לצורך - זו אהבה ללא תנאי',
+      wrong: ['כי המותרות הן הדברים היפים ביותר שה\' ברא בעולם', 'כי קל יותר להתפעל מדברים מיוחדים מאשר מדברים רגילים', 'כי ההכרה במותרות מלמדת אותנו להיות צנועים ולא לקחת הכל כמובן מאליו'],
+      explanation: 'המותרות (יופי, טעם, ריח נעים) הם ההוכחה שה\' נותן מעבר לצורך - זו אהבה בחיריית, אהבה ללא תנאי!'
+    }, {
+      q: 'מהי המשמעות של "דברים אלו יהיו על לבבך" בשלב האחרון?',
+      correct: 'האהבה והדבקות צריכות להיות נוכחות תמיד, לא רק ברגעים מיוחדים',
+      wrong: ['צריך לחזור על דברי תורה כל הזמן כדי שיישארו בזיכרון', 'צריך להרגיש את האהבה בלב ולא רק לחשוב עליה בשכל', 'צריך לשמור על הדברים האלה בסוד ולא לספר עליהם לאחרים'],
+      explanation: 'זהו עיקרון מרכזי: האהבה צריכה להיות "על לבבך בכל עת" - עבודה יומיומית תמידית, כי רגשות כהים מהר.'
+    }, {
+      q: 'מהו ההבדל בין שלב 2 (בכל לבבך) לשלב 3 (בכל נפשך)?',
+      correct: 'שלב 2 הוא האהבה בשכל והלב, שלב 3 הוא הוכחת האהבה במעשה ובנתינה',
+      wrong: ['שלב 2 הוא אהבה חלשה ושלב 3 הוא אהבה חזקה יותר', 'שלב 2 הוא אהבה רגשית ושלב 3 הוא מסירות נפש פיזית', 'שלב 2 הוא אהבה לה\' ושלב 3 הוא אהבה לבני אדם'],
+      explanation: '"בכל לבבך" = האהבה שבדעת. "בכל נפשך" = הוכחת האהבה במעשים. הנתינה מחזקת את האהבה שכבר קיימת.'
+    }, {
+      q: 'מדוע נאמר ש"רגשות כהים מאוד מהר"?',
+      correct: 'כדי להסביר למה האהבה צריכה להיות עבודה יומיומית תמידית ולא רגש חד-פעמי',
+      wrong: ['כי אנשים מתרגלים מהר לדברים טובים ומפסיקים להעריך אותם', 'כי החיים מלאים בלחצים שגורמים לרגשות להיחלש', 'כי הרגשות תלויים במצב הרוח שמשתנה כל הזמן'],
+      explanation: 'זו אזהרה חשובה: האהבה לא יכולה להישאר רק כרגש. צריכה "עבודה" תמידית - התבוננות והזנה של האהבה.'
+    }, {
+      q: 'מהו הקשר בין "ואהבת לרעך כמוך" לבין אהבת ה\'?',
+      correct: 'אהבה לכל יהודי (בן יקר של המלך) היא המדד האמיתי לאהבת ה\' שלך',
+      wrong: ['צריך לאהוב את עצמך לפני שתוכל לאהוב את ה\' ואת הזולת', 'אהבת הזולת היא מצווה נפרדת שאינה קשורה לאהבת ה\'', 'צריך לאהוב את הזולת באותה מידה שה\' אוהב אותו'],
+      explanation: 'זהו מבחן האמת: האהבה ליהודי (בן המלך) מראה את רמת אהבת ה\' האמיתית שלך. לא מדובר בשני דברים נפרדים.'
+    }, {
+      q: 'מדוע הנתינה לא צריכה להיות כדי "להרגיש טוב עם עצמך"?',
+      correct: 'כי אז זו נתינה מתוך אינטרס אישי (אהבת הנאה) ולא נתינה אמיתית',
+      wrong: ['כי ההרגשה הטובה תגרום לך להתגאות ולאבד את הענוה', 'כי נתינה צריכה להיות קשה וכואבת כדי שתהיה אמיתית', 'כי הרגשה טובה מעידה שהנתינה הייתה קלה מדי ולא משמעותית'],
+      explanation: 'הנתינה צריכה להיות כדי לחזק את האהבה, לא כדי שתרגיש טוב. אם זה בשביל ההרגשה - זו אהבת החשק שוב!'
+    }, {
+      q: 'מהי המשמעות של "חבוק בחיקו של הקב"ה" בשלב הדבקות?',
+      correct: 'תחושת קרבה מוחלטת ואיחוד מלא עם הבורא ללא הפרדה',
+      wrong: ['תחושת הגנה ובטחון שה\' שומר עליך מכל רע', 'תחושת חום ואהבה שמזכירה את חיבוק של הורה לילד', 'תחושת מנוחה ושלווה לאחר מאמץ רוחני ארוך'],
+      explanation: 'זו תיאור הדבקות המושלמת - "שובע שמחות את פניך". אחדות מוחלטת שאין בה הפרדה.'
+    }, {
+      q: 'מהי הטעות הנפוצה בשלב הדבקות לפי החומר?',
+      correct: 'לפחד מהרגשות העזים ולחשוב שהדבקות אינה אפשרית לאדם רגיל',
+      wrong: ['לחשוב שהדבקות היא רק לצדיקים גדולים ולא לאנשים פשוטים', 'להתמקד יותר מדי ברגשות ופחות במעשים המעשיים', 'לנסות להגיע לדבקות מהר מדי מבלי לעבור את כל השלבים'],
+      explanation: 'החומר מזהיר: אל תפחד! "אין מניעה מצד הברוך (ה\') לדבוק גם בארור הגדול ביותר" - הריחוק רק מצד האדם.'
+    }],
+    hard: [{
+      q: 'בן זוג א\' מתלונן: "אני עושה הכל בשבילה - מבשל, מנקה, מטייל איתה. למה היא לא מעריכה?" איזו טעות הוא עושה?',
+      correct: 'הוא נותן בציפייה להערכה (אינטרס), לא מתוך אהבה אמיתית - זו "אהבה התלויה בדבר"',
+      wrong: ['הוא לא מבין שנשים מעריכות דברים אחרים ממה שגברים חושבים', 'הוא עושה יותר מדי ולכן היא מקבלת את זה כמובן מאליו', 'הוא לא מתקשר מספיק עם בת הזוג שלו על הציפיות שלו'],
+      explanation: 'הבעיה היא שהוא נותן כדי לקבל הערכה - זו נתינה מתוך אינטרס (אהבת ההנאה). נתינה אמיתית היא כדי לחזק אהבה, לא כדי לקבל תמורה.'
+    }, {
+      q: 'אישה אומרת: "כשהוא קונה לי מתנות אני מרגישה אהובה. כשהוא לא קונה, אני מרגישה שהוא לא אוהב אותי." מה הבעיה?',
+      correct: 'היא מודדת אהבה לפי המעשה (החפצא) ולא לפי יחס החיבה - זו אהבת החשק',
+      wrong: ['היא צריכה לדבר איתו בגלובה ולהסביר לו מה שפת האהבה שלה', 'היא תלויה מדי במתנות חומריות ולא מעריכה דברים לא-חומריים', 'היא לא מבינה שגברים מבטאים אהבה בדרכים שונות מנשים'],
+      explanation: 'הטעות: התמקדות במעשה עצמו ולא ב"יחס החיבה והאהבה שגילה הנותן". צריך לראות את האהבה מעבר למתנה.'
+    }, {
+      q: 'זוג צעיר במשבר. הוא אומר: "אני הייתי מאוהב בה בהתחלה, עכשיו זה נגמר." מהי הדרך לתקן?',
+      correct: 'להבין שהוא היה "מאוהב באהבתו" (הנאה), ועכשיו צריך לעבור לאהבת הדעת - אהבה שאינה תלויה ברגש',
+      wrong: ['לנסות לחזור לתחושות ההתחלה דרך חוויות רומנטיות חדשות', 'לקבל שהאהבה מתפוגגת עם הזמן וזה חלק טבעי מהחיים', 'לעבוד על תקשורת ועל פתרון הבעיות המעשיות ביניהם'],
+      explanation: 'הבעיה: הוא חווה "אהבה דמיונית" שהתבססה על הנאה. התיקון: מעבר לאהבת הדעת - אהבה שמבוססת על מהות ולא על רגש חולף.'
+    }, {
+      q: 'אדם מתלונן: "אני לומד תורה, מתפלל, שומר מצוות. למה אני לא מרגיש דבקות בה\'?" מה חסר לו?',
+      correct: 'חסרה לו העבודה היומיומית של התבוננות בטוב ה\' ועוררות האהבה - "בכל מאודך"',
+      wrong: ['חסר לו לימוד עמוק יותר של קבלה וחסידות שיעורר את הדבקות', 'חסר לו ביטול יצר הרע והתנתקות מהעולם הגשמי', 'חסר לו רב מדריך או מורה דרך שינחה אותו בעבודת ה\''],
+      explanation: 'המצוות לבד לא מספיקות! צריך "עבודה" יומיומית של התבוננות בטוב - "בכל מאודך". רגשות כהים מהר, צריך לעורר אותם תמיד.'
+    }, {
+      q: 'בת זוג שואלת: "איך אני יודעת אם הוא באמת אוהב אותי או רק את הנוחות שאני נותנת לו?" מה התשובה?',
+      correct: 'לבחון האם הוא מוכן לתת גם כשזה לא נוח לו - האם הוא נותן מתוך "יחס החיבה" או רק מתוך אינטרס',
+      wrong: ['להקשיב איך הוא מדבר עליה לאחרים ומה הוא אומר על הקשר ביניהם', 'לבדוק אם הוא נשאר איתה גם בזמנים קשים כשהיא לא במצב רוח טוב', 'לשאול אותו ישירות ולראות אם התשובה שלו מרגישה כנה ואמיתית'],
+      explanation: 'המבחן האמיתי: האם הוא עושה דברים שלא נוחים לו למענה? זה מראה אהבה בחיריית (ללא תנאי) מול אהבת החשק (הנאה).'
+    }, {
+      q: 'אדם אומר: "אני מרגיש רחוק מה\' כי אני לא צדיק. הדבקות היא רק לצדיקים." מה הטעות?',
+      correct: 'הוא חושב שהמניעה היא מצד ה\', אבל "אין מניעה מצד הברוך לדבוק גם בארור הגדול" - הבעיה רק מצד האדם',
+      wrong: ['הוא צריך קודם לעבוד על עצמו ולהיות צדיק לפני שיבקש דבקות', 'הוא מתייאש מדי מהר ולא נותן לעצמו סיכוי להשתפר', 'הוא צריך להבין שיש דרגות שונות של דבקות ויכול להגיע לדרגה שלו'],
+      explanation: 'זו אחת הנקודות החזקות בחומר: ה\' אינו מונע דבקות מאף אחד! "הריחוק הוא רק מצד האדם" - צריך רק לעבוד על זה.'
+    }, {
+      q: 'זוג מתווכח המון. היא אומרת: "אם הוא באמת היה אוהב אותי, הוא לא היה מתווכח איתי." האם היא צודקת?',
+      correct: 'לא. ויכוח לא שולל אהבה. השאלה היא: האם הוויכוח נובע מרצון לתת (למען האמת והטוב), או מאגו אישי',
+      wrong: ['כן. אהבה אמיתית אומרת ויתור והימנעות מריבים וקונפליקטים', 'לא. ויכוחים הם חלק בריא מזוגיות ומעידים על תקשורת פתוחה', 'תלוי במה הם מתווכחים - אם זה על דברים חשובים אז זה בסדר'],
+      explanation: 'אהבה לא אומרת היעדר ויכוח. השאלה: האם הויכוח הוא מתוך רצון אמיתי לטוב (נתינה), או מתוך אגו שרוצה לנצח (אינטרס).'
+    }, {
+      q: 'אדם אומר: "אני אוהב את ה\', אבל קשה לי לאהוב יהודי מסוים שפגע בי." מה החומר היה אומר?',
+      correct: 'האהבה ליהודי הזה (בן המלך) היא המבחן האמיתי לאהבת ה\' שלך - "ואהבת לרעך כמוך"',
+      wrong: ['זה הגיוני שקשה לאהוב מי שפגע בך, אהבת ה\' לא קשורה לזה', 'צריך קודם לסלוח למי שפגע בך, אחר כך תוכל לאהוב אותו', 'אהבת הזולת היא מצווה נפרדת שלא תמיד אפשר לקיים במלואה'],
+      explanation: 'זהו מבחן האמת הקשה: האהבה לכל יהודי - אפילו מי שפגע - היא המדד לאהבת ה\'. "בן יקר של המלך" - זה הקשר.'
+    }, {
+      q: 'בן זוג מתלונן: "אני עושה הכל מאהבה, אבל אני עייף. איך ממשיכים?" מהי התשובה?',
+      correct: 'צריך להבין ש"רגשות כהים מהר" - האהבה צריכה עבודה יומיומית של התבוננות והזנה, לא רק מעשים',
+      wrong: ['צריך למצוא איזון בריא בין נתינה לבין דאגה לעצמך', 'צריך לדבר עם בן הזוג ולבקש שגם הוא יתן יותר', 'זה סימן שהאהבה אינה אמיתית והגיע הזמן לבחון את הקשר'],
+      explanation: 'הבעיה: הוא מסתמך על רגש בלבד. הפתרון: עבודה יומיומית של "בכל מאודך" - התבוננות בטוב, עוררות האהבה. זו עבודה תמידית.'
+    }, {
+      q: 'אדם שואל: "איך אני יכול לדעת שהגעתי לדבקות אמיתית?" מהו הסימן?',
+      correct: 'כשאתה חש "שובע שמחות" ו"חבוק בחיקו של הקב"ה" - אחדות מוחלטת שאינה מופרדת',
+      wrong: ['כשאתה מרגיש שמחה עזה בלימוד תורה ובקיום מצוות', 'כשאתה לא חוטא יותר ויש לך שליטה מלאה על היצר', 'כשאתה רואה נסים ברורים בחייך ומרגיש השגחה פרטית'],
+      explanation: 'הדבקות היא חוויה של "אהבת תמתי" - אחדות מוחלטת. "נפשו קשורה באהבת ה\' ושוגה בה תמיד" - זה הסימן.'
+    }, {
+      q: 'בת זוג אומרת: "כשהוא עושה משהו נחמד, אני חושבת שהוא רוצה משהו בתמורה." איך מתקנים את זה?',
+      correct: 'להתבונן ב"יחס החיבה שגילה הנותן" ולא לחשוד במניעים - לראות את האהבה מעבר למעשה',
+      wrong: ['היא צריכה לדבר איתו ולהסביר שזו התחושה שלה', 'זה סימן לבעיית אמון שצריכה טיפול מקצועי', 'היא צריכה ללמוד לקבל נתינה בלי לחשוד כל הזמן'],
+      explanation: 'זו בעיה של התמקדות ב"חפצא" (המעשה) ולא ב"יחס החיבה". צריך לעבור מאהבת החשק (חשד במניע) לאהבת הדעת (ראיית האהבה).'
+    }, {
+      q: 'אדם שואל: "מה עושים כשהרגש של אהבת ה\' נעלם לגמרי?" מהי התשובה המעשית?',
+      correct: 'חוזרים לעבודה של "בכל מאודך" - התבוננות יומיומית בשלושה דברים ביופי/טעם/ריח ועוררות הכרת הטוב',
+      wrong: ['מתפללים בכוונה רבה יותר ומקווים שהרגש יחזור', 'לומדים יותר תורה ומקיימים יותר מצוות עד שהרגש חוזר', 'מבקשים עזרה מרב או מדריך רוחני שיעזור להחזיר את הרגש'],
+      explanation: 'זו נקודת המפתח: רגשות כהים! צריך עבודה אקטיבית של התבוננות - "בכל מאודך". לא לחכות שהרגש יבוא, אלא לעורר אותו.'
+    }, {
+      q: 'זוג נשוי שנים. הוא אומר: "אני לא מרגיש יותר את הפרפרים בבטן. האהבה נגמרה?" מה התשובה?',
+      correct: 'הפרפרים היו "אהבת החשק" (רגש). עכשיו צריך לעבור ל"אהבת הדעת" - אהבה יציבה שאינה תלויה ברגש',
+      wrong: ['זה נורמלי שהרגשות משתנים, צריך לקבל שהאהבה היא עכשיו יותר עמוקה', 'צריך ליצור מחדש רומנטיקה ולהשקיע בזוגיות כמו בהתחלה', 'זה אומר שהזוגיות נכנסה לשגרה וצריך לעבוד על חידוש'],
+      explanation: 'זו בדיוק המעבר שהחומר מתאר: מ"אהבת ההנאה" (רגש חולף) ל"אהבת הדעת" (אהבה יציבה ואינה בטלה לעולם).'
+    }, {
+      q: 'אדם אומר: "אני נותן ונותן, אבל אני לא מרגיש שהאהבה שלי מתחזקת." מה הבעיה?',
+      correct: 'הוא מצפה שהנתינה תיצור אהבה, אבל הנתינה רק מחזקת אהבה קיימת - חסר לו "המסמר" (אהבת הדעת בלב)',
+      wrong: ['הוא נותן לא בכנות או מתוך ציפייה לתמורה ולכן זה לא עובד', 'הוא צריך לתת יותר זמן לתהליך, זה לוקח זמן עד שהאהבה מתחזקת', 'הוא נותן דברים שלא באמת חשובים לבן הזוג שלו'],
+      explanation: 'זה עיקרון חשוב: הנתינה היא "הפטיש", אבל צריך קודם "מסמר" (אהבת הדעת). לא יוצרים אהבה ממעשים, אלא מחזקים אותה.'
+    }, {
+      q: 'בת זוג אומרת: "אני רוצה שהוא יאהב אותי בדיוק כמו שה\' אוהב אותי - ללא תנאי." האם זה ריאלי?',
+      correct: 'כן! זה בדיוק המטרה - ללמוד אהבה בחיריית (ללא תנאי) דרך הזוגיות, כמו אהבת ה\'',
+      wrong: ['לא, אף אדם לא יכול לאהוב כמו שה\' אוהב, זו ציפייה לא ריאלית', 'כן, אבל זה דורש עבודה ארוכה של שנים רבות ושיפור אישי', 'תלוי באיזה שלב הזוגיות נמצאת - בהתחלה זה לא אפשרי'],
+      explanation: 'זו בדיוק המטרה! הבית היהודי הוא "בית הספר לאהבת השם" - המקום ללמוד אהבה ללא תנאי כמו אהבת ה\'.'
+    }, {
+      q: 'אדם מצליח בעסקים ושואל: "למה אני לא מרגיש את השמחה שה\' מבטיח?" מה חסר?',
+      correct: 'הוא לא מתבונן ב"מותרות" ובטוב ה\' מעבר לצורך - חסר לו עבודת "בכל מאודך"',
+      wrong: ['ההצלחה החומרית מרחיקה אותו מה\' והוא צריך להתנתק מהעושר', 'השמחה תגיע רק כשיגיע לדבקות מושלמת, הוא עדיין לא שם', 'הוא מצפה שהשמחה תבוא מההצלחה, אבל שמחה אמיתית באה רק מתורה ומצוות'],
+      explanation: 'הבעיה: הוא לא מתבונן! "בכל מאודך" = לזהות יופי, טעם, ריח שאינם הכרחיים. המותרות מגלות את אהבת ה\' - זה מעורר שמחה.'
+    }, {
+      q: 'זוג צעיר שואל: "מתי נדע שהזוגיות שלנו משיגה את המטרה שהחומר מדבר עליה?" מה הסימן?',
+      correct: 'כשהזוגיות מלמדת אתכם אהבה ללא תנאי ומכינה אתכם לדבקות בה\' - כשהיא "בית ספר לאהבת השם"',
+      wrong: ['כשאתם מאושרים ומרגישים שלמים בחיים הזוגיים', 'כשאתם גדלים רוחנית ביחד ולומדים תורה כזוג', 'כשאתם מקיימים מצוות ביחד ומחנכים ילדים לתורה ומצוות'],
+      explanation: 'הסימן: הזוגיות משמשת "כלי אימון" לאהבה ללא תנאי. כשאתם לומדים דרכה אהבת הדעת ומתכוננים לדבקות - השגתם את המטרה.'
+    }, {
+      q: 'אדם אומר: "אני מפחד מהדבקות. זה נשמע כמו לאבד את עצמי." איך עונים לו?',
+      correct: 'דווקא בדבקות משיגים את השלמות האמיתית - "כל עוה"ב הוא דבקות בה\' והנאה מזיו השכינה"',
+      wrong: ['הפחד שלך הגיוני, דבקות זה אכן סוג של ביטול עצמי', 'אתה צריך לעבוד על הביטחון העצמי שלך לפני שתגיע לדבקות', 'הדבקות לא אומרת לאבד את עצמך אלא למצוא את עצמך האמיתי'],
+      explanation: 'הפחד הוא מיותר! דבקות = השלמות האמיתית, לא אובדן. "שובע שמחות" - זה תענוג, לא איבוד עצמי.'
+    }, {
+      q: 'בת זוג שואלת: "איך אני יודעת מתי לתת ומתי לשמור גבולות?" מה התשובה?',
+      correct: 'השאלה היא: האם הנתינה מחזקת אהבה (מתוך "יחס חיבה") או הורסת אותך (מתוך פחד או חובה)',
+      wrong: ['צריך תמיד לשמור גבולות בריאים ולא לתת יותר מדי', 'תלוי במצב - לפעמים צריך לתת הכל ולפעמים לשמור על עצמך', 'צריך לדבר עם בן הזוג ולהגיע להסכמות ברורות על גבולות'],
+      explanation: 'המבחן: נתינה שמחזקת אהבה היא מ"בכל נפשך" - מעשה שמקבע את האהבה. אם זה הורס - זו לא נתינה אמיתית אלא ויתור מתוך חולשה.'
+    }, {
+      q: 'אדם שואל: "מה ההבדל בין הזוגיות שלי לבין עבודת ה\'? למה לא עובדים עליהם בנפרד?" מה התשובה?',
+      correct: 'הזוגיות היא "בית הספר" המעשי - לא ניתן להפריד. אהבת הזוגיות היא הכלי ללמוד אהבת ה\'',
+      wrong: ['זוגיות ועבודת ה\' הם שני תחומים נפרדים שצריך לתת להם זמן שווה', 'הזוגיות חשובה אבל עבודת ה\' חשובה יותר ולכן צריך לתת לה עדיפות', 'צריך למצוא איזון נכון בין הזמן שמקדישים לזוגיות ולעבודת ה\''],
+      explanation: 'זו הנקודה המרכזית: אי אפשר להפריד! "לא טוב היות האדם לבדו" - הזוגיות היא הכלי להשגת דבקות. הם חלק אחד.'
+    }]
+  };
+  useEffect(() => {
+    if (questions[currentLevel] && questions[currentLevel][currentQuestion]) {
+      const q = questions[currentLevel][currentQuestion];
+      const allAnswers = [q.correct, ...q.wrong];
+      const shuffled = allAnswers.sort(() => Math.random() - 0.5);
+      setShuffledAnswers(shuffled);
+    }
+  }, [currentLevel, currentQuestion]);
+  const handleAnswer = answer => {
+    const q = questions[currentLevel][currentQuestion];
+    const correct = answer === q.correct;
+    setSelectedAnswer(answer);
+    setIsCorrect(correct);
+    setShowFeedback(true);
+    if (correct) {
+      setScore(score + 1);
+    }
+  };
+  const nextQuestion = () => {
+    if (currentQuestion < levels[currentLevel].totalQuestions - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setShowFeedback(false);
+      setSelectedAnswer(null);
+    } else {
+      checkLevelCompletion();
+    }
+  };
+  const checkLevelCompletion = () => {
+    const percentage = score / levels[currentLevel].totalQuestions * 100;
+    const passed = percentage >= levels[currentLevel].passingScore;
+    if (passed && currentLevel === 'easy') {
+      setCurrentLevel('medium');
+      setCurrentQuestion(0);
+      setScore(0);
+      setShowFeedback(false);
+      setAttempts(0);
+    } else if (passed && currentLevel === 'medium') {
+      setCurrentLevel('hard');
+      setCurrentQuestion(0);
+      setScore(0);
+      setShowFeedback(false);
+      setAttempts(0);
+    } else if (passed && currentLevel === 'hard') {
+      setGameComplete(true);
+    } else {
+      if (attempts < 2) {
+        setAttempts(attempts + 1);
+        setCurrentQuestion(0);
+        setScore(0);
+        setShowFeedback(false);
+      } else {
+        setGameComplete(true);
+      }
+    }
+  };
+  const resetGame = () => {
+    setCurrentLevel('easy');
+    setCurrentQuestion(0);
+    setScore(0);
+    setShowFeedback(false);
+    setSelectedAnswer(null);
+    setAttempts(0);
+    setGameComplete(false);
+  };
+  if (gameComplete) {
+    const finalPercentage = score / levels[currentLevel].totalQuestions * 100;
+    const allLevelsCompleted = currentLevel === 'hard' && finalPercentage >= levels[currentLevel].passingScore;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-8 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl w-full bg-white rounded-2xl shadow-2xl p-8 text-center"
+    }, allLevelsCompleted ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl mb-4"
+    }, "\uD83C\uDFC6\u2728"), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold text-purple-600 mb-4"
+    }, "\u05DE\u05D3\u05D4\u05D9\u05DD! \u05D4\u05E9\u05D2\u05EA \u05D3\u05D1\u05E7\u05D5\u05EA! \uD83C\uDF89"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700 mb-4"
+    }, "\u05D6\u05DB\u05D9\u05EA \u05D1\u05EA\u05D5\u05D0\u05E8 ", /*#__PURE__*/React.createElement("strong", null, "\"\u05E9\u05D5\u05DE\u05E8 \u05D4\u05D3\u05D1\u05E7\u05D5\u05EA\""), "!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-600 mb-6"
+    }, "\u05E2\u05D1\u05E8\u05EA \u05D0\u05EA \u05DB\u05DC 3 \u05D4\u05E8\u05DE\u05D5\u05EA \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4. \u05D4\u05E9\u05D2\u05EA \u05D4\u05D1\u05E0\u05D4 \u05E2\u05DE\u05D5\u05E7\u05D4 \u05E9\u05DC \u05E0\u05EA\u05D9\u05D1 \u05D4\u05D3\u05D1\u05E7\u05D5\u05EA \u05D1\u05D6\u05D5\u05D2\u05D9\u05D5\u05EA. \u05DB\u05E2\u05EA \u05D0\u05EA\u05D4 \u05DE\u05D1\u05D9\u05DF \u05E9\"\u05DB\u05DC \u05D4\u05DE\u05E6\u05D5\u05D5\u05EA \u05DB\u05D5\u05DC\u05DC \u05DC\u05D9\u05DE\u05D5\u05D3 \u05EA\u05D5\u05E8\u05D4 \u05E0\u05D5\u05E2\u05D3\u05D5 \u05DB\u05D3\u05D9 \u05E9\u05D0\u05D3\u05DD \u05D9\u05E7\u05E0\u05D4 \u05D0\u05D4\u05D1\u05D4 \u05D5\u05D9\u05E8\u05D0\u05D4\"."), /*#__PURE__*/React.createElement("div", {
+      className: "bg-purple-50 p-6 rounded-xl mb-6"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "text-xl font-bold text-purple-700 mb-3"
+    }, "\u05E9\u05D0\u05DC\u05D5\u05EA \u05DC\u05D4\u05DE\u05E9\u05DA \u05D4\u05DE\u05E1\u05E2 \uD83D\uDCAD"), /*#__PURE__*/React.createElement("ul", {
+      className: "text-right space-y-2 text-gray-700"
+    }, /*#__PURE__*/React.createElement("li", null, "\u2022 \u05D0\u05D9\u05DA \u05D0\u05D5\u05DB\u05DC \u05DC\u05D4\u05E4\u05D5\u05DA \u05D0\u05EA \u05D4\u05D0\u05D4\u05D1\u05D4 \u05DE\"\u05E8\u05D2\u05E9\" \u05DC\"\u05D3\u05E2\u05EA\" \u05EA\u05DE\u05D9\u05D3\u05D9\u05EA?"), /*#__PURE__*/React.createElement("li", null, "\u2022 \u05D0\u05D9\u05DA \u05D0\u05E0\u05D9 \u05DE\u05EA\u05E8\u05D2\u05DC \"\u05D1\u05DB\u05DC \u05DE\u05D0\u05D5\u05D3\u05DA\" \u05D1\u05DB\u05DC \u05D9\u05D5\u05DD?"), /*#__PURE__*/React.createElement("li", null, "\u2022 \u05DB\u05D9\u05E6\u05D3 \u05D4\u05D6\u05D5\u05D2\u05D9\u05D5\u05EA \u05E9\u05DC\u05D9 \u05DE\u05E9\u05DE\u05E9\u05EA \"\u05D1\u05D9\u05EA \u05E1\u05E4\u05E8 \u05DC\u05D0\u05D4\u05D1\u05EA \u05D4\u05E9\u05DD\"?")))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      className: "text-5xl mb-4"
+    }, "\uD83C\uDF31"), /*#__PURE__*/React.createElement("h2", {
+      className: "text-3xl font-bold text-gray-700 mb-4"
+    }, "\u05D4\u05EA\u05D7\u05DC\u05D4 \u05D8\u05D5\u05D1\u05D4!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-600 mb-4"
+    }, "\u05D4\u05E9\u05D2\u05EA ", finalPercentage.toFixed(0), "% \u05D1\u05E8\u05DE\u05D4 ", levels[currentLevel].name), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-500 mb-6"
+    }, "\u05E0\u05E8\u05D0\u05D4 \u05E9\u05D9\u05E9 \u05DB\u05DE\u05D4 \u05DE\u05D5\u05E9\u05D2\u05D9\u05DD \u05E9\u05E6\u05E8\u05D9\u05DB\u05D9\u05DD \u05D7\u05D9\u05D6\u05D5\u05E7 \u05E0\u05D5\u05E1\u05E3. \u05DE\u05D5\u05DE\u05DC\u05E5 \u05DC\u05D7\u05D6\u05D5\u05E8 \u05E2\u05DC \u05D4\u05D7\u05D5\u05DE\u05E8 \u05D5\u05DC\u05E0\u05E1\u05D5\u05EA \u05E9\u05D5\u05D1! \uD83D\uDCDA")), /*#__PURE__*/React.createElement("button", {
+      onClick: resetGame,
+      className: "bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 mx-auto"
+    }, /*#__PURE__*/React.createElement(RotateCcw, {
+      size: 24
+    }), "\u05D4\u05EA\u05D7\u05DC \u05DE\u05D7\u05D3\u05E9"), /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 pt-6 border-t-2 border-gray-200"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-bold text-gray-700 mb-2"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-bold text-purple-600"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-600 mt-2"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: ", /*#__PURE__*/React.createElement("span", {
+      className: "font-bold"
+    }, "0527139520")))));
+  }
+  const currentQ = questions[currentLevel][currentQuestion];
+  const progress = (currentQuestion + 1) / levels[currentLevel].totalQuestions * 100;
+  const currentScore = (score / (currentQuestion + 1) * 100).toFixed(0);
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 md:p-8",
+    dir: "rtl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-xl p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mb-4"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
+    className: "text-3xl font-bold text-purple-600 flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Heart, {
+    className: "text-pink-500",
+    size: 32
+  }), "\u05E0\u05EA\u05D9\u05D1 \u05D4\u05D3\u05D1\u05E7\u05D5\u05EA \u05D1\u05D6\u05D5\u05D2\u05D9\u05D5\u05EA"), /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-600 mt-1"
+  }, "\u05DE\u05E1\u05E2 \u05DC\u05D9\u05DE\u05D5\u05D3\u05D9 \u05DC\u05D4\u05E9\u05D2\u05EA \u05D0\u05D4\u05D1\u05EA \u05D4' \u05D3\u05E8\u05DA \u05D4\u05D1\u05D9\u05EA \u05D4\u05D9\u05D4\u05D5\u05D3\u05D9")), /*#__PURE__*/React.createElement("div", {
+    className: "text-5xl"
+  }, levels[currentLevel].icon)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-4 mb-4"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold text-purple-700 mb-2"
+  }, levels[currentLevel].name), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-4 text-sm"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "bg-white px-3 py-1 rounded-full"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestion + 1, " \u05DE\u05EA\u05D5\u05DA ", levels[currentLevel].totalQuestions), /*#__PURE__*/React.createElement("span", {
+    className: "bg-white px-3 py-1 rounded-full"
+  }, "\u05E6\u05D9\u05D5\u05DF \u05E0\u05D5\u05DB\u05D7\u05D9: ", currentScore, "%"), /*#__PURE__*/React.createElement("span", {
+    className: "bg-white px-3 py-1 rounded-full"
+  }, "\u05E0\u05D3\u05E8\u05E9 \u05DC\u05DE\u05E2\u05D1\u05E8: ", levels[currentLevel].passingScore, "%"))), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-3 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-purple-500 to-pink-500 h-full transition-all duration-500 rounded-full",
+    style: {
+      width: `${progress}%`
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-xl p-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3 mb-4"
+  }, /*#__PURE__*/React.createElement(Target, {
+    className: "text-purple-500 flex-shrink-0 mt-1",
+    size: 24
+  }), /*#__PURE__*/React.createElement("h3", {
+    className: "text-2xl font-bold text-gray-800 leading-relaxed"
+  }, currentQ.q))), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3 mb-6"
+  }, shuffledAnswers.map((answer, index) => {
+    const isSelected = selectedAnswer === answer;
+    const isCorrectAnswer = answer === currentQ.correct;
+    const showResult = showFeedback && isSelected;
+    let buttonClass = "w-full text-right p-4 rounded-xl border-2 transition-all transform hover:scale-102 ";
+    if (showResult) {
+      buttonClass += isCorrect ? "bg-green-50 border-green-500 shadow-lg" : "bg-red-50 border-red-500 shadow-lg";
+    } else {
+      buttonClass += "bg-gray-50 border-gray-200 hover:border-purple-300 hover:bg-purple-50";
+    }
+    return /*#__PURE__*/React.createElement("button", {
+      key: index,
+      onClick: () => !showFeedback && handleAnswer(answer),
+      disabled: showFeedback,
+      className: buttonClass
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center font-bold text-purple-600"
+    }, String.fromCharCode(1488 + index)), /*#__PURE__*/React.createElement("span", {
+      className: "text-lg text-gray-800 flex-1"
+    }, answer), showResult && /*#__PURE__*/React.createElement("span", {
+      className: "text-2xl"
+    }, isCorrect ? '✅' : '❌')));
+  })), showFeedback && /*#__PURE__*/React.createElement("div", {
+    className: `p-6 rounded-xl mb-6 ${isCorrect ? 'bg-green-50 border-2 border-green-300' : 'bg-yellow-50 border-2 border-yellow-300'}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3 mb-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-3xl"
+  }, isCorrect ? '⭐' : '💡'), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "text-xl font-bold mb-2",
+    style: {
+      color: isCorrect ? '#059669' : '#d97706'
+    }
+  }, isCorrect ? 'מצוין! זה בדיוק נכון!' : 'לא בדיוק... בוא נחשוב על זה יחד'), /*#__PURE__*/React.createElement("p", {
+    className: "text-lg text-gray-700 leading-relaxed"
+  }, currentQ.explanation))), /*#__PURE__*/React.createElement("button", {
+    onClick: nextQuestion,
+    className: "mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 mr-auto"
+  }, currentQuestion < levels[currentLevel].totalQuestions - 1 ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, "\u05E9\u05D0\u05DC\u05D4 \u05D4\u05D1\u05D0\u05D4"), /*#__PURE__*/React.createElement(ChevronRight, {
+    size: 20
+  })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, "\u05E1\u05D9\u05D9\u05DD \u05E8\u05DE\u05D4"), /*#__PURE__*/React.createElement(Star, {
+    size: 20
+  }))))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 text-center bg-white rounded-xl shadow-lg p-4"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-600 mb-1"
+  }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+    className: "text-lg font-bold text-purple-600"
+  }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-600 mt-1"
+  }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: ", /*#__PURE__*/React.createElement("span", {
+    className: "font-bold"
+  }, "0527139520")))));
+};
+const __App = NetivHadeveikutGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+})();
+</script>
+
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif;direction:rtl"><a href="https://www.kol-toda.co.il/t/games.html#g_ahava" style="color:#4f46e5">← עוד באהבת ה&#x27; והכרת הטוב</a> · <a href="https://www.kol-toda.co.il/" style="color:#4f46e5">אתר הקול החמישי</a></p>
+</body>
+</html>

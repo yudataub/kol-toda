@@ -1,0 +1,1280 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>משחק משולב – משה נשלח למצרים (שמות ג׳–ד׳) – הקול החמישי</title>
+<meta name="description" content="לא מדויק. משה מתבקש לאסוף דווקא את הזקנים, לא את כל העם">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="משחק משולב – משה נשלח למצרים (שמות ג׳–ד׳) – הקול החמישי">
+<meta property="og:description" content="לא מדויק. משה מתבקש לאסוף דווקא את הזקנים, לא את כל העם">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-osef-e3661c46e1.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/osef/e3661c46e1.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+
+
+<script>
+(function () {
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const ExodusGame = () => {
+  // State Management
+  const [currentLevel, setCurrentLevel] = useState('easy');
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [gameState, setGameState] = useState('playing');
+  const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  const [streak, setStreak] = useState(0);
+  const [showFact, setShowFact] = useState(false);
+
+  // Level Requirements
+  const levelRequirements = {
+    easy: {
+      total: 10,
+      passing: 8,
+      percentage: 80,
+      icon: '⭐',
+      name: 'קל'
+    },
+    medium: {
+      total: 15,
+      passing: 13,
+      percentage: 85,
+      icon: '🎯',
+      name: 'בינוני'
+    },
+    hard: {
+      total: 20,
+      passing: 18,
+      percentage: 90,
+      icon: '🏆',
+      name: 'קשה'
+    }
+  };
+
+  // Questions Database
+  const questions = {
+    easy: [{
+      type: 'multipleChoice',
+      question: 'את מי משה צריך לאסוף לפי ציווי ה\'?',
+      answers: [{
+        text: 'זקני ישראל',
+        correct: true,
+        explanation: 'נכון! "לך ואספת את זקני ישראל" - משה צריך לאסוף את הזקנים 👴'
+      }, {
+        text: 'כל העם',
+        correct: false,
+        explanation: 'לא מדויק. משה מתבקש לאסוף דווקא את הזקנים, לא את כל העם 🤔'
+      }, {
+        text: 'הכהנים',
+        correct: false,
+        explanation: 'לא נכון. בתקופה זו עדיין לא הייתה כהונה מאורגנת, והציווי היה לזקנים 📖'
+      }, {
+        text: 'בני לוי',
+        correct: false,
+        explanation: 'לא מדויק. הציווי היה לזקני ישראל בכלל, לא רק לשבט לוי 💭'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה השם שה\' גילה למשה בפסוק יד?',
+      answers: [{
+        text: 'אהיה אשר אהיה',
+        correct: true,
+        explanation: 'מצוין! זהו השם המיוחד שה\' גילה למשה בסנה 🔥'
+      }, {
+        text: 'אדני צבאות',
+        correct: false,
+        explanation: 'זה שם של ה\', אבל לא זה שנאמר כאן בפסוק 🤔'
+      }, {
+        text: 'אל שדי',
+        correct: false,
+        explanation: 'זה השם שבו הוכרו האבות, אבל כאן נאמר שם אחר 📚'
+      }, {
+        text: 'ה\' אלוהים',
+        correct: false,
+        explanation: 'קרוב, אבל השם המיוחד שנאמר כאן הוא "אהיה אשר אהיה" ✨'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'כמה ימים ביקשו ללכת במדבר?',
+      answers: [{
+        text: 'שלושת ימים',
+        correct: true,
+        explanation: 'נכון! "נלכה נא דרך שלשת ימים במדבר" - זו הייתה הבקשה מפרעה 🚶‍♂️'
+      }, {
+        text: 'שבעה ימים',
+        correct: false,
+        explanation: 'לא מדויק. המספר הנכון הוא שלושה ימים, לא שבעה 🔢'
+      }, {
+        text: 'ארבעים יום',
+        correct: false,
+        explanation: 'זה מספר משמעותי בתנ"ך, אבל כאן הבקשה הייתה לשלושה ימים בלבד 💭'
+      }, {
+        text: 'יום אחד',
+        correct: false,
+        explanation: 'יותר מדי קצר. הבקשה הייתה לשלושת ימים 📖'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה יעשו במדבר לפי הבקשה?',
+      answers: [{
+        text: 'ונזבחה לה\'',
+        correct: true,
+        explanation: 'מעולה! המטרה המוצהרת הייתה להקריב קורבנות לה\' 🙏'
+      }, {
+        text: 'ונתפלל',
+        correct: false,
+        explanation: 'תפילה חשובה, אבל כאן הבקשה הספציפית הייתה להקריב זבחים 💭'
+      }, {
+        text: 'ונלמד תורה',
+        correct: false,
+        explanation: 'למידת תורה חשובה, אבל זה לא מה שנאמר בפסוקים אלו 📚'
+      }, {
+        text: 'ונחגוג',
+        correct: false,
+        explanation: 'קרוב לרוח, אבל המילים המדויקות הן "ונזבחה לה\'" - הקרבת קורבנות ✨'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם את שמות האבות לסדר הנכון שבו הם מוזכרים:',
+      pairs: [{
+        term: 'אב ראשון',
+        definition: 'אברהם'
+      }, {
+        term: 'אב שני',
+        definition: 'יצחק'
+      }, {
+        term: 'אב שלישי',
+        definition: 'יעקב'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איך ילכו בני ישראל ממצרים?',
+      answers: [{
+        text: 'לא תלכו ריקם',
+        correct: true,
+        explanation: 'נכון מאוד! ה\' הבטיח שיצאו עם רכוש 💎'
+      }, {
+        text: 'בחיפזון גדול',
+        correct: false,
+        explanation: 'זה אכן קרה ביציאה, אבל הפסוק כאן מדבר על הרכוש 🤔'
+      }, {
+        text: 'עם צדה לדרך',
+        correct: false,
+        explanation: 'לא זה הדגש כאן. הפסוק מדבר על כך שלא ילכו ריקם - עם רכוש 💭'
+      }, {
+        text: 'בלילה',
+        correct: false,
+        explanation: 'זה נכון היסטורית, אבל הפסוק מדגיש שילכו עם רכוש 📖'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה הנשים יבקשו מהשכנות?',
+      answers: [{
+        text: 'כלי כסף וכלי זהב',
+        correct: true,
+        explanation: 'מצוין! "ושאלה אשה משכנתה... כלי כסף וכלי זהב" 💍'
+      }, {
+        text: 'מזון לדרך',
+        correct: false,
+        explanation: 'לא זה. הבקשה הייתה דווקא לכלי כסף וזהב ושמלות 🤔'
+      }, {
+        text: 'ברכה לדרך',
+        correct: false,
+        explanation: 'נחמד, אבל הפסוק מדבר על בקשה מוחשית - כלים יקרים 💭'
+      }, {
+        text: 'סוסים ועגלות',
+        correct: false,
+        explanation: 'לא מדויק. הבקשה הייתה לכלי כסף, זהב ושמלות 📚'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'על מי ישימו את הכלים שיקבלו?',
+      answers: [{
+        text: 'על בניכם ובנתיכם',
+        correct: true,
+        explanation: 'נכון לגמרי! הכלים יועברו לדור הבא 👶'
+      }, {
+        text: 'על החמורים',
+        correct: false,
+        explanation: 'זה הגיוני למטען, אבל הפסוק מדבר על הילדים ✨'
+      }, {
+        text: 'במשכן',
+        correct: false,
+        explanation: 'המשכן עדיין לא נבנה בשלב זה. הכלים יושמו על הילדים 🤔'
+      }, {
+        text: 'בכלים מיוחדים',
+        correct: false,
+        explanation: 'לא זה. הכלים יושמו דווקא על הבנים והבנות 💭'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'דמיין: אתה משה ובני ישראל שואלים "למה לבקש רק 3 ימים ולא לספר את האמת?" מה תענה?',
+      answers: [{
+        text: 'כי ככה פרעה ייסכים להשאיל כלים יקרים',
+        correct: true,
+        explanation: 'חכם! אם היו אומרים שהם עוזבים לתמיד, המצרים לא היו נותנים כלום 💡'
+      }, {
+        text: 'כי אסור לשקר',
+        correct: false,
+        explanation: 'זה עיקרון חשוב, אבל כאן יש מטרה עמוקה יותר - להשיג את הכלים 🤔'
+      }, {
+        text: 'כי פרעה ידע את האמת בכל מקרה',
+        correct: false,
+        explanation: 'לא בדיוק. הבקשה ל-3 ימים הייתה חלק מהתכנית האלוקית 💭'
+      }, {
+        text: 'כי היה קשה מדי להסביר',
+        correct: false,
+        explanation: 'זו לא הסיבה. הבקשה ל-3 ימים שימשה מטרה ספציפית 📖'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מי ילווה את משה למלך מצרים?',
+      answers: [{
+        text: 'זקני ישראל',
+        correct: true,
+        explanation: 'מדויק! "ובאת אתה וזקני ישראל אל מלך מצרים" 👴'
+      }, {
+        text: 'אהרן בלבד',
+        correct: false,
+        explanation: 'אהרן חשוב, אבל הפסוק מדבר על הזקנים שילוו את משה 🤔'
+      }, {
+        text: 'כל בני ישראל',
+        correct: false,
+        explanation: 'לא מעשי. רק משה והזקנים יבואו למלך 💭'
+      }, {
+        text: 'משה לבד',
+        correct: false,
+        explanation: 'לא נכון. הזקנים יבואו איתו למלך מצרים 📚'
+      }]
+    }],
+    medium: [{
+      type: 'multipleChoice',
+      question: 'מה המשמעות של "פקד פקדתי אתכם"?',
+      answers: [{
+        text: 'ה\' זכר וביקר את בני ישראל בצרתם',
+        correct: true,
+        explanation: 'מצוין! לשון "פקידה" מבטאת תשומת לב אלוקית מיוחדת 🌟'
+      }, {
+        text: 'ה\' מינה פקידים על העם',
+        correct: false,
+        explanation: 'זו הבנה מילולית, אבל הכוונה לפקידה רוחנית - זכירה והשגחה 💭'
+      }, {
+        text: 'ה\' בדק את מעשיהם',
+        correct: false,
+        explanation: 'לא זה הפירוש. "פקידה" כאן היא תשומת לב חיובית, לא בדיקה 🤔'
+      }, {
+        text: 'ה\' ספר אותם',
+        correct: false,
+        explanation: 'זו משמעות אפשרית של "פקד", אבל כאן הכוונה לזכירה והשגחה ✨'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה ה\' מזכיר את כל שלושת האבות בנפרד?',
+      answers: [{
+        text: 'להדגיש את הרצף ההיסטורי וההבטחות לכל אחד',
+        correct: true,
+        explanation: 'נכון! כל אב קיבל הבטחות מיוחדות והזכרתם מחזקת את הקשר 📜'
+      }, {
+        text: 'כי כל אחד גר במקום אחר',
+        correct: false,
+        explanation: 'לא זו הסיבה. ההדגשה היא על רצף ההבטחות 🤔'
+      }, {
+        text: 'כי לא סמכו על יעקב בלבד',
+        correct: false,
+        explanation: 'לא נכון. ההזכרה היא חיובית - מדגישה את כל שרשרת האבות 💭'
+      }, {
+        text: 'רק מנהג דיבור',
+        correct: false,
+        explanation: 'בתורה אין דבר מקרי. כל אב מוזכר בנפרד מסיבה משמעותית ✨'
+      }]
+    }, {
+      type: 'difference',
+      question: 'מה ההבדל בין השם "אהיה" לשם "ה\'"?',
+      answers: [{
+        text: '"אהיה" מדגיש את העתיד והנוכחות, "ה\'" הוא השם הנצחי',
+        correct: true,
+        explanation: 'מעולה! "אהיה" = אני אהיה עמכם, "ה\'" = השם הקבוע לדורות 🎯'
+      }, {
+        text: 'אין הבדל, זה אותו שם',
+        correct: false,
+        explanation: 'יש הבדל משמעותי - אהיה מדגיש נוכחות עתידית, ה\' הוא השם הנצחי 📖'
+      }, {
+        text: '"אהיה" לעתיד בלבד, "ה\'" לעבר',
+        correct: false,
+        explanation: 'לא מדויק. שניהם כוללים את כל הזמנים, אבל בדגשים שונים 💭'
+      }, {
+        text: '"אהיה" למשה בלבד, "ה\'" לכולם',
+        correct: false,
+        explanation: 'לא זה ההבדל. שניהם נאמרים לעם, אבל עם משמעויות שונות 🤔'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מדוע נאמר "אלהי אברהם אלהי יצחק ואלהי יעקב" ולא "אלהי אברהם יצחק ויעקב"?',
+      answers: [{
+        text: 'כל אב זכה לקשר אישי ומיוחד עם ה\'',
+        correct: true,
+        explanation: 'נכון מאוד! החזרה על "אלהי" מדגישה את הקשר האישי של כל אחד 💫'
+      }, {
+        text: 'כי לא היו באותו זמן',
+        correct: false,
+        explanation: 'זה נכון, אבל לא זו הסיבה לניסוח. ההדגשה היא על הקשר האישי 🤔'
+      }, {
+        text: 'כדי להאריך את הפסוק',
+        correct: false,
+        explanation: 'בתורה אין מילים מיותרות. יש משמעות עמוקה לחזרה 💭'
+      }, {
+        text: 'רק סגנון כתיבה',
+        correct: false,
+        explanation: 'לא סתם סגנון - זו הדגשה משמעותית של הקשר האישי ✨'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'מצב: אתה אחד מהזקנים. משה בא ואומר שה\' שלח אותו. איך תדע שזה אמיתי?',
+      answers: [{
+        text: 'הוא יזכיר את השמות המדויקים שה\' אמר והאבות',
+        correct: true,
+        explanation: 'חכם! הזכרת האבות והשמות המדויקים היו "סיסמה" שהעם המתין לה 🔑'
+      }, {
+        text: 'הוא יעשה נס גדול',
+        correct: false,
+        explanation: 'נסים יעזרו, אבל "הסיסמה" העיקרית היא הזכרת "פקד פקדתי" והאבות 💭'
+      }, {
+        text: 'הוא ייראה מרשים',
+        correct: false,
+        explanation: 'מראה חיצוני לא מוכיח. ההוכחה היא בדברים המדויקים שה\' אמר 🤔'
+      }, {
+        text: 'כולם יסכימו איתו מיד',
+        correct: false,
+        explanation: 'לא בהכרח. העם המתין דווקא למילים ספציפיות - "פקד פקדתי" 📚'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איך יכנו את ה\' כשיבואו למלך מצרים?',
+      answers: [{
+        text: 'ה\' אלהי העברים',
+        correct: true,
+        explanation: 'נכון! זה השם שישתמשו בו בפני פרעה 🎯'
+      }, {
+        text: 'ה\' אלהי ישראל',
+        correct: false,
+        explanation: 'קרוב, אבל בפני פרעה השתמשו בשם "אלהי העברים" 💭'
+      }, {
+        text: 'אלהי אבותינו',
+        correct: false,
+        explanation: 'זה נאמר לעם, אבל לפרעה יגידו "אלהי העברים" 🤔'
+      }, {
+        text: 'אלהי השמים',
+        correct: false,
+        explanation: 'לא זה השם שיאמרו. יכנו אותו "אלהי העברים" 📖'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה ה\' אומר שיקרה אחרי שיכה את מצרים?',
+      answers: [{
+        text: 'ואחרי כן ישלח אתכם',
+        correct: true,
+        explanation: 'מדויק! רק אחרי המכות פרעה ישלח את העם 🚪'
+      }, {
+        text: 'ואחרי כן תבנו את המשכן',
+        correct: false,
+        explanation: 'המשכן יבוא מאוחר יותר. הפסוק מדבר על השילוח ממצרים 🤔'
+      }, {
+        text: 'ואחרי כן תקבלו את התורה',
+        correct: false,
+        explanation: 'גם זה יבוא, אבל לא זה נאמר כאן. הפסוק מדבר על השילוח 💭'
+      }, {
+        text: 'ואחרי כן תעברו את הים',
+        correct: false,
+        explanation: 'זה יקרה, אבל הפסוק אומר ש"ישלח אתכם" - פרעה יתן רשות ✨'
+      }]
+    }, {
+      type: 'matching',
+      question: 'התאם את השלב למה שיקרה בו:',
+      pairs: [{
+        term: 'לפני המכות',
+        definition: 'בקשה מפרעה לצאת 3 ימים'
+      }, {
+        term: 'במהלך המכות',
+        definition: 'הכאת מצרים בנפלאות'
+      }, {
+        term: 'אחרי המכות',
+        definition: 'פרעה ישלח את העם'
+      }, {
+        term: 'ביציאה',
+        definition: 'ניצול מצרים - רכוש רב'
+      }]
+    }, {
+      type: 'difference',
+      question: 'מה ההבדל בין "נקרה עלינו" לבין "שלח אותנו"?',
+      answers: [{
+        text: '"נקרה" = ה\' התגלה אלינו; "שלח" = בקשה לצאת',
+        correct: true,
+        explanation: 'מצוין! "נקרה" מדגיש את ההתגלות האלוקית, "שלח" היא הבקשה המעשית 💡'
+      }, {
+        text: 'אין הבדל, זה אותו דבר',
+        correct: false,
+        explanation: 'יש הבדל חשוב - "נקרה" זו התגלות, "שלח" זו בקשת רשות 🤔'
+      }, {
+        text: 'שניהם אומרים אותו דבר בדיוק',
+        correct: false,
+        explanation: 'לא מדויק. לכל אחד משמעות נפרדת ומשלימה 💭'
+      }, {
+        text: '"נקרה" לעבר, "שלח" לעתיד',
+        correct: false,
+        explanation: 'לא זה העיקר. "נקרה" מתאר התגלות, "שלח" היא בקשה ✨'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'איך יהיה מצב העם בעיני המצרים לפי ה\'?',
+      answers: [{
+        text: 'ונתתי את חן העם הזה בעיני מצרים',
+        correct: true,
+        explanation: 'נכון לגמרי! ה\' יגרום למצרים לראות את ישראל בחיבה 💕'
+      }, {
+        text: 'המצרים יפחדו מהם',
+        correct: false,
+        explanation: 'לא זה. דווקא חן והשפעה חיובית, לא פחד 🤔'
+      }, {
+        text: 'המצרים ישנאו אותם',
+        correct: false,
+        explanation: 'להפך! ה\' יתן חן בעיניהם 💭'
+      }, {
+        text: 'המצרים יתעלמו מהם',
+        correct: false,
+        explanation: 'לא נכון. דווקא יהיה חן והשפעה חיובית ✨'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'תרחיש: אתה מצרי והשכנה העברייה מבקשת כלי כסף וזהב "ל-3 ימים". למה תסכים?',
+      answers: [{
+        text: 'כי ה\' נתן בי חן כלפיה ואני רוצה לעזור',
+        correct: true,
+        explanation: 'מדויק! זו ההשפעה האלוקית - "ונתתי את חן העם הזה" 🌟'
+      }, {
+        text: 'כי אני פשוט טוב לב',
+        correct: false,
+        explanation: 'יותר מזה - זו השפעה אלוקית מיוחדת של חן 💭'
+      }, {
+        text: 'כי אני חושב שהם יחזרו',
+        correct: false,
+        explanation: 'זה חלק מזה, אבל העיקר הוא החן שה\' נתן 🤔'
+      }, {
+        text: 'כי אני לא יכול לסרב',
+        correct: false,
+        explanation: 'לא כפייה - זו השפעה של חן ורצון טוב אמיתי ✨'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה יעשו לארץ מצרים בסוף?',
+      answers: [{
+        text: 'ונצלתם את מצרים',
+        correct: true,
+        explanation: 'נכון! ינצלו את רכושה של מצרים 💎'
+      }, {
+        text: 'ונשרוף את מצרים',
+        correct: false,
+        explanation: 'לא. "ניצול" זה לקיחת רכוש, לא הרס פיזי 🤔'
+      }, {
+        text: 'ונעזוב את מצרים',
+        correct: false,
+        explanation: 'זה נכון, אבל הפסוק מדגיש את הניצול - הרכוש שייקחו 💭'
+      }, {
+        text: 'ונברך את מצרים',
+        correct: false,
+        explanation: 'לא זה. הפסוק מדבר על "ניצול" - לקיחת רכוש 📖'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'ה\' אומר "ואני ידעתי כי לא יתן אתכם מלך מצרים להלוך". מה זה אומר לנו?',
+      answers: [{
+        text: 'ה\' יודע מראש שפרעה יסרב ויצטרכו מכות',
+        correct: true,
+        explanation: 'מדויק! זה חלק מהתכנית - להראות את עוצמת ה\' דרך המכות 🎯'
+      }, {
+        text: 'ה\' מפחיד את משה',
+        correct: false,
+        explanation: 'לא מפחיד - מכין אותו למציאות ומסביר את התכנית 💭'
+      }, {
+        text: 'ה\' לא בטוח במשה',
+        correct: false,
+        explanation: 'להפך! ה\' מכין את משה ומסביר לו מה יקרה 🤔'
+      }, {
+        text: 'משה צריך לוותר',
+        correct: false,
+        explanation: 'ממש לא! זו הכנה למה שיבוא - המכות והגאולה ✨'
+      }]
+    }, {
+      type: 'difference',
+      question: 'מה ההבדל בין "עני מצרים" ל"ארץ זבת חלב ודבש"?',
+      answers: [{
+        text: 'עוני מול שפע, עבדות מול חירות',
+        correct: true,
+        explanation: 'מושלם! הניגוד מדגיש את גודל השינוי שמצפה לעם 🌈'
+      }, {
+        text: 'אין הבדל מיוחד',
+        correct: false,
+        explanation: 'יש הבדל עצום! זה מראה את המעבר מסבל לגאולה 💭'
+      }, {
+        text: 'רק שמות שונים לאותו מקום',
+        correct: false,
+        explanation: 'לא נכון. זה ניגוד בין מצרים (עוני) לארץ ישראל (שפע) 🤔'
+      }, {
+        text: 'שניהם מתארים מצרים',
+        correct: false,
+        explanation: 'לא. "עני מצרים" זה במצרים, "זבת חלב ודבש" זו ארץ כנען ✨'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה ה\' מזכיר את כל שבעת העמים בארץ כנען?',
+      answers: [{
+        text: 'להראות את גודל הארץ והירושה המיועדת לישראל',
+        correct: true,
+        explanation: 'נכון! הזכרת כל העמים מדגישה את גודל ההבטחה 🗺️'
+      }, {
+        text: 'כדי להפחיד את העם',
+        correct: false,
+        explanation: 'לא להפחיד - להראות את גודל הירושה שמצפה להם 💭'
+      }, {
+        text: 'כי משה לא ידע את השמות',
+        correct: false,
+        explanation: 'זו לא הסיבה. ההזכרה היא כדי להדגיש את גודל ההבטחה 🤔'
+      }, {
+        text: 'רק מידע גיאוגרפי',
+        correct: false,
+        explanation: 'יותר מזה - זו הדגשה של גודל הנחלה שתינתן לעם ✨'
+      }]
+    }],
+    hard: [{
+      type: 'scenario',
+      question: 'שאלה עמוקה: אם ה\' ידע שפרעה יסרב, למה בכלל לבקש ממנו? 3 תשובות אפשריות נלמדו במסורת:',
+      answers: [{
+        text: 'להראות לכל העולם את רשעות פרעה ואת צדקת ה\'',
+        correct: true,
+        explanation: 'מעולה! הבקשה הפשוטה שנדחתה מוכיחה את עומק הרשע של פרעה 🎯'
+      }, {
+        text: 'כי ה\' לא ידע בוודאות',
+        correct: false,
+        explanation: 'לא נכון. ה\' אומר במפורש "ואני ידעתי כי לא יתן" - הוא ידע 💭'
+      }, {
+        text: 'כדי להפתיע את פרעה',
+        correct: false,
+        explanation: 'לא זו המטרה. זו הוכחה פומבית של רשעותו של פרעה 🤔'
+      }, {
+        text: 'כי לא היה ברירה אחרת',
+        correct: false,
+        explanation: 'לא מדויק. זה היה חלק מהתכנית להראות את הרשע ✨'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'שלוש סיבות למה בני ישראל לא השיבו את כלי המצרים. איזו הכי חזקה משפטית?',
+      answers: [{
+        text: 'שכר עבודה - פיצוי על 210 שנות עבדות',
+        correct: true,
+        explanation: 'חזק ביותר! זהו פיצוי הוגן ומשפטי על עבודת כפייה 💪'
+      }, {
+        text: 'רכושו של ה\' - הוא נותן למי שירצה',
+        correct: false,
+        explanation: 'נכון פילוסופית, אבל משפטית הטיעון של שכר עבודה חזק יותר 🤔'
+      }, {
+        text: 'שלל רודפים - הם רדפו ואיבדו',
+        correct: false,
+        explanation: 'זה רלוונטי לשלל הים, אבל הכלים נלקחו לפני הרדיפה 💭'
+      }, {
+        text: 'המצרים נתנו במתנה',
+        correct: false,
+        explanation: 'לא לגמרי מתנה - זה היה פיצוי מוצדק על העבדות ✨'
+      }]
+    }, {
+      type: 'difference',
+      question: 'מה ההבדל העמוק בין "אהיה שלחני" ל"ה\' אלהי אבותיכם שלחני"?',
+      answers: [{
+        text: '"אהיה" = עתיד ונוכחות; "ה\'" = רצף היסטורי ונצחיות',
+        correct: true,
+        explanation: 'מושלם! "אהיה" מדגיש נוכחות עכשווית, "ה\'" מחבר לעבר ולעתיד 🎯'
+      }, {
+        text: 'אין הבדל משמעותי',
+        correct: false,
+        explanation: 'יש הבדל עמוק מאוד בין השמות ומשמעויותיהם 💭'
+      }, {
+        text: 'אהיה לזקנים, ה\' לצעירים',
+        correct: false,
+        explanation: 'לא נכון. שני השמות לכל העם, אבל במשמעויות שונות 🤔'
+      }, {
+        text: 'אהיה למצרים, ה\' לישראל',
+        correct: false,
+        explanation: 'לא זה. שניהם לישראל, אבל מדגישים היבטים שונים ✨'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'דילמה: אתה זקן בישראל ושומע את משה. איך תשכנע את העם הסקפטי?',
+      answers: [{
+        text: 'אזכיר שזהו המונח המדויק שהמסורת אמרה - "פקד פקדתי"',
+        correct: true,
+        explanation: 'מבריק! העם המתין דורות למילים האלו בדיוק 🔑'
+      }, {
+        text: 'אעשה הצבעה דמוקרטית',
+        correct: false,
+        explanation: 'לא רלוונטי. העניין הוא לזהות את האמת דרך המילים המדויקות 💭'
+      }, {
+        text: 'אבקש נס נוסף',
+        correct: false,
+        explanation: 'הנסים יעזרו, אבל "הסיסמה" העיקרית היא הלשון המדויק 🤔'
+      }, {
+        text: 'אחכה לפרעה יגיב',
+        correct: false,
+        explanation: 'מאוחר מדי. צריך לשכנע עכשיו דרך המילים שה\' אמר ✨'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה דווקא "3 ימים" ולא שבוע או חודש?',
+      answers: [{
+        text: 'מספיק רחוק להישמע הגיוני, לא רחוק מדי שפרעה יחשוד',
+        correct: true,
+        explanation: 'מושלם! איזון מדויק בין אמינות לתוכנית 💡'
+      }, {
+        text: 'כי זה מספר קדוש',
+        correct: false,
+        explanation: '3 אכן משמעותי, אבל כאן הסיבה יותר מעשית ואסטרטגית 🤔'
+      }, {
+        text: 'כי לא היה זמן לשבוע שלם',
+        correct: false,
+        explanation: 'לא זו הסיבה. 3 ימים היה האיזון המושלם לתוכנית 💭'
+      }, {
+        text: 'כי משה ביקש ככה',
+        correct: false,
+        explanation: 'לא משה החליט - זו הייתה הוראה אלוקית מחושבת ✨'
+      }]
+    }, {
+      type: 'difference',
+      question: 'השווה: "כי לא יתן אתכם" מול "ואחרי כן ישלח אתכם". מה משתנה?',
+      answers: [{
+        text: 'מסירוב מוחלט למכניעה מוחלטת - המכות שוברות את רצונו',
+        correct: true,
+        explanation: 'מצוין! זה מראה את עומק השינוי שהמכות יביאו 🎯'
+      }, {
+        text: 'אין שינוי, שניהם שלילה',
+        correct: false,
+        explanation: 'יש שינוי עצום - ממניעה לשליחה אקטיבית 💭'
+      }, {
+        text: 'סתם שני פסוקים שונים',
+        correct: false,
+        explanation: 'לא סתם - זה מתאר תהליך של שבירת הרצון 🤔'
+      }, {
+        text: 'שניהם אומרים שפרעה יסכים',
+        correct: false,
+        explanation: 'להפך - הראשון מסרב, השני נכנע רק אחרי המכות ✨'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'נקודת מבט פילוסופית: האם "להוליך פרעה שולל" ב-3 ימים זה "שקר"?',
+      answers: [{
+        text: 'לא, זו אסטרטגיה מוסרית נגד רודף שמסרב לצדק',
+        correct: true,
+        explanation: 'חכם מאוד! כשמדובר בעריץ שמסרב לבקשה צודקת, זו חכמה 💪'
+      }, {
+        text: 'כן, זה שקר ואסור',
+        correct: false,
+        explanation: 'לא בהקשר זה - מול עריץ אכזרי זו הגנה עצמית מוסרית 🤔'
+      }, {
+        text: 'זה תלוי בכוונה',
+        correct: false,
+        explanation: 'קרוב, אבל יותר מזה - זו חכמה מול רשע שמסרב לצדק 💭'
+      }, {
+        text: 'אין תשובה נכונה',
+        correct: false,
+        explanation: 'יש תשובה - זו אסטרטגיה מוסרית מול רודף ✨'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מדוע "אלהי העברים" דווקא בפני פרעה?',
+      answers: [{
+        text: 'שם שמצרים יכירו ויבינו, לא שם אינטימי של ישראל',
+        correct: true,
+        explanation: 'מדויק! זה שם "דיפלומטי" שמצרים יכולים להבין 🎯'
+      }, {
+        text: 'כי פרעה לא מכיר את ה\'',
+        correct: false,
+        explanation: 'זו הבעיה של פרעה, אבל השם "אלהי העברים" נבחר מסיבה ספציפית 💭'
+      }, {
+        text: 'כי עברים זה שם גנאי',
+        correct: false,
+        explanation: 'לא גנאי - זה שם אתני שמצרים מכירים ומבינים 🤔'
+      }, {
+        text: 'שם אקראי',
+        correct: false,
+        explanation: 'אין דבר אקראי בתורה - זה בחירה מדויקת לשיח דיפלומטי ✨'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה הקשר בין "חן בעיני מצרים" לבין "לא תלכו ריקם"?',
+      answers: [{
+        text: 'החן גורם למצרים לתת מרצון, זה לא גניבה',
+        correct: true,
+        explanation: 'מושלם! זו לא לקיחה בכוח אלא נתינה מרצון בגלל החן 💫'
+      }, {
+        text: 'אין קשר בין השניים',
+        correct: false,
+        explanation: 'יש קשר ישיר - החן הוא הסיבה שייתנו את הרכוש 💭'
+      }, {
+        text: 'החן זה רק מזל',
+        correct: false,
+        explanation: 'לא מזל - זו השפעה אלוקית מכוונת שגורמת לנתינה 🤔'
+      }, {
+        text: 'זה אותו דבר',
+        correct: false,
+        explanation: 'לא אותו דבר - החן הוא הגורם, הרכוש הוא התוצאה ✨'
+      }]
+    }, {
+      type: 'difference',
+      question: 'השווה: "שאלה אשה" מול "ונצלתם". איזה מילה יותר חזקה?',
+      answers: [{
+        text: '"ונצלתם" - מדגיש שזה פיצוי מגיע, לא סתם בקשה',
+        correct: true,
+        explanation: 'מצוין! "ניצול" = לקיחה מוצדקת של מה שמגיע 💎'
+      }, {
+        text: 'שאלה - כי זה בקשה יפה',
+        correct: false,
+        explanation: '"שאלה" זה רק השלב, "ניצול" חושף את הצדק שבמעשה 💭'
+      }, {
+        text: 'שתיהן שוות',
+        correct: false,
+        explanation: '"ניצול" חזקה יותר - מראה שזה זכות, לא חסד 🤔'
+      }, {
+        text: 'אין משמעות למילים',
+        correct: false,
+        explanation: 'יש משמעות עצומה - "ניצול" הופך את זה לזכות מוצדקת ✨'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'חשיבה ביקורתית: אם ה\' יכול לגרום ל"חן", למה בכלל צריך לעבור תהליך?',
+      answers: [{
+        text: 'כדי שהגאולה תהיה מושלמת - גם פיזית וגם מוסרית',
+        correct: true,
+        explanation: 'עמוק מאוד! לא רק חירות אלא גם כבוד וצדק מלא 🌟'
+      }, {
+        text: 'כי ה\' לא יכול לעשות הכל בבת אחת',
+        correct: false,
+        explanation: 'ה\' יכול, אבל התהליך עצמו חשוב לגאולה שלמה 💭'
+      }, {
+        text: 'כדי להעניש את המצרים',
+        correct: false,
+        explanation: 'זה חלק, אבל העומק הוא בגאולה מושלמת - גם רכוש וגם כבוד 🤔'
+      }, {
+        text: 'בגלל שמשה ביקש ככה',
+        correct: false,
+        explanation: 'לא משה החליט - זו תכנית אלוקית לגאולה שלמה ✨'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה "בניכם ובנתיכם" ולא סתם "לכם"?',
+      answers: [{
+        text: 'להדגיש שהדור הבא יתחיל חיים חדשים עם רכוש',
+        correct: true,
+        explanation: 'נכון מאוד! זו הדגשה של תחילה חדשה לדור העתיד 👶'
+      }, {
+        text: 'כי המבוגרים לא ירצו',
+        correct: false,
+        explanation: 'לא זו הסיבה. זו הדגשה של העתיד והדור החדש 💭'
+      }, {
+        text: 'כי הילדים יישאו יותר',
+        correct: false,
+        explanation: 'לא מעשי - זו הדגשה סמלית של העתיד 🤔'
+      }, {
+        text: 'סתם מנהג',
+        correct: false,
+        explanation: 'לא סתם - זו הדגשה משמעותית של הדור החדש ✨'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'שאלת עומק: איך משה מרגיש כשה\' אומר לו שפרעה יסרב וצריך מכות?',
+      answers: [{
+        text: 'מוכן אבל כבד, יודע שזה הכרחי אבל קשה',
+        correct: true,
+        explanation: 'הבנה עמוקה! משה מבין את ההכרח אבל גם את הכובד 💭'
+      }, {
+        text: 'שמח שיהיו מכות',
+        correct: false,
+        explanation: 'משה לא שמח מסבל. הוא מבין את ההכרח אבל זה כבד 🤔'
+      }, {
+        text: 'מפוחד לגמרי',
+        correct: false,
+        explanation: 'לא פחד טהור - יותר כובד של אחריות ענקית ✨'
+      }, {
+        text: 'לא אכפת לו',
+        correct: false,
+        explanation: 'מאוד אכפת - משה מנהיג רגיש שמבין את גודל המשימה 💪'
+      }]
+    }, {
+      type: 'difference',
+      question: 'מה ההבדל בין "עני מצרים" ל"עשוי לכם במצרים"?',
+      answers: [{
+        text: '"עני" = סבל כללי; "עשוי" = עוול ספציפי שה\' ראה',
+        correct: true,
+        explanation: 'מדויק! "עשוי" מדגיש שה\' שם לב לכל פרט של העוול 🎯'
+      }, {
+        text: 'אין הבדל, זה אותו דבר',
+        correct: false,
+        explanation: 'יש הבדל - "עשוי" מדגיש את תשומת הלב האישית של ה\' 💭'
+      }, {
+        text: '"עני" יותר גרוע מ"עשוי"',
+        correct: false,
+        explanation: 'לא עניין של דרגה - "עשוי" מדגיש שה\' ראה כל פרט 🤔'
+      }, {
+        text: 'שניהם מדברים על העתיד',
+        correct: false,
+        explanation: 'לא - שניהם על העבר, אבל "עשוי" מדגיש ראייה אלוקית ✨'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה ה\' מזכיר את "נפלאותי" לפני שהן קורות?',
+      answers: [{
+        text: 'כדי שמשה ידע שיש תכנית ולא יתייאש',
+        correct: true,
+        explanation: 'חכם! הידיעה מראש נותנת למשה כוח להמשיך גם בקשיים 💪'
+      }, {
+        text: 'כדי להתפאר',
+        correct: false,
+        explanation: 'לא התפארות - זו הכנה נפשית למשה לקראת המשימה 💭'
+      }, {
+        text: 'כי ה\' לא בטוח שיצליח',
+        correct: false,
+        explanation: 'ה\' בטוח לגמרי - זו הכנה של משה למציאות 🤔'
+      }, {
+        text: 'בשביל ההפתעה',
+        correct: false,
+        explanation: 'לא הפתעה - זו הכנה מושכלת למשה לקראת התהליך ✨'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'שאלה אתית: האם הצדק במכות הוא בעונש או בחינוך?',
+      answers: [{
+        text: 'שניהם - עונש למצרים וחינוך לכולם שה\' שולט',
+        correct: true,
+        explanation: 'תשובה מושלמת! המכות משרתות שתי מטרות - צדק וחינוך 🌟'
+      }, {
+        text: 'רק עונש',
+        correct: false,
+        explanation: 'לא רק - יש גם ממד חינוכי עמוק להכרת ה\' 💭'
+      }, {
+        text: 'רק חינוך',
+        correct: false,
+        explanation: 'לא רק - יש גם צדק לעוול שנעשה לישראל 🤔'
+      }, {
+        text: 'לא צודק בכלל',
+        correct: false,
+        explanation: 'זה צודק לגמרי - גם כעונש וגם כחינוך ✨'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'מה הקשר בין "זה שמי לעולם" ל"זה זכרי לדור דור"?',
+      answers: [{
+        text: 'שם = מהות נצחית; זכר = איך נזכור בכל דור',
+        correct: true,
+        explanation: 'מושלם! "שמי" זה מי שה\' הוא, "זכרי" זה איך נזכור אותו 💫'
+      }, {
+        text: 'אין הבדל, זה אותו דבר',
+        correct: false,
+        explanation: 'יש הבדל עמוק - שם הוא מהות, זכר הוא זיכרון 💭'
+      }, {
+        text: 'שניהם מדברים רק על העבר',
+        correct: false,
+        explanation: 'לא - דווקא על העתיד, איך ה\' ייזכר לדורות 🤔'
+      }, {
+        text: '"שמי" לזקנים, "זכרי" לצעירים',
+        correct: false,
+        explanation: 'לא - שניהם לכולם, אבל מדגישים היבטים שונים ✨'
+      }]
+    }, {
+      type: 'scenario',
+      question: 'מחשבה סופית: מה הלקח המרכזי של כל הפרשה לחיים שלך?',
+      answers: [{
+        text: 'שה\' רואה, זוכר ופועל - גם אם זה לוקח זמן',
+        correct: true,
+        explanation: 'תובנה נפלאה! "פקד פקדתי" - ה\' תמיד זוכר ופועל בזמן הנכון 🌟'
+      }, {
+        text: 'שצריך להילחם בעצמך',
+        correct: false,
+        explanation: 'זה חשוב, אבל העומק כאן הוא בהשגחה האלוקית 💭'
+      }, {
+        text: 'שהעבר לא משנה',
+        correct: false,
+        explanation: 'להפך - הזכרת האבות מראה שהעבר חשוב מאוד 🤔'
+      }, {
+        text: 'רק על יציאת מצרים',
+        correct: false,
+        explanation: 'לא רק - זה עיקרון לחיים: ה\' רואה וזוכר תמיד ✨'
+      }]
+    }, {
+      type: 'difference',
+      question: 'השווה את הלשון: "ואספת" מול "ובאת". מה ההבדל?',
+      answers: [{
+        text: '"ואספת" = אתה פעיל גם אחרי ההתגלות; "ובאת" = הלוך כהנהגה',
+        correct: true,
+        explanation: 'מעולה! משה לא רק מקבל - הוא פועל, אוסף, מוביל 💪'
+      }, {
+        text: 'אין הבדל, זה אותו דבר',
+        correct: false,
+        explanation: 'יש הבדל - אסיפה היא יוזמה, הליכה היא הנהגה 💭'
+      }, {
+        text: 'שניהם פסיביים',
+        correct: false,
+        explanation: 'להפך - שניהם אקטיביים אבל בצורות שונות 🤔'
+      }, {
+        text: 'רק הבדל לשוני',
+        correct: false,
+        explanation: 'לא רק - זה מדגיש את תפקידו הפעיל של משה ✨'
+      }]
+    }, {
+      type: 'multipleChoice',
+      question: 'למה דווקא "ושמלות" מתווסף לכסף וזהב?',
+      answers: [{
+        text: 'כבוד ומעמד - לא רק רכוש אלא גם הופעה מכובדת',
+        correct: true,
+        explanation: 'חכם מאוד! שמלות = כבוד חיצוני, לא רק עושר 👗'
+      }, {
+        text: 'כי היה להם קר',
+        correct: false,
+        explanation: 'לא מעשי - השמלות מסמלות כבוד ומעמד 💭'
+      }, {
+        text: 'כי הם לא היו להם בגדים',
+        correct: false,
+        explanation: 'היו להם - אבל השמלות מהמצרים מסמלות מעמד 🤔'
+      }, {
+        text: 'סתם נוסף',
+        correct: false,
+        explanation: 'אין דבר סתם - זה מדגיש כבוד לא רק עושר ✨'
+      }]
+    }]
+  };
+
+  // Shuffle answers when question changes
+  useEffect(() => {
+    const currentQuestion = questions[currentLevel][currentQuestionIndex];
+    if (currentQuestion?.answers) {
+      const shuffled = [...currentQuestion.answers].sort(() => Math.random() - 0.5);
+      setShuffledAnswers(shuffled);
+    }
+  }, [currentQuestionIndex, currentLevel]);
+
+  // Handle answer selection
+  const handleAnswer = answer => {
+    if (showFeedback) return;
+    setSelectedAnswer(answer);
+    setShowFeedback(true);
+    if (answer.correct) {
+      setScore(score + 1);
+      setStreak(streak + 1);
+      if ((streak + 1) % 5 === 0) {
+        setTimeout(() => alert('🔥 סטרייק! 5 תשובות נכונות ברצף!'), 300);
+      }
+    } else {
+      setLives(lives - 1);
+      setStreak(0);
+      if (lives - 1 === 0) {
+        setTimeout(() => {
+          setGameState('failed');
+        }, 1000);
+      }
+    }
+  };
+
+  // Next question
+  const nextQuestion = () => {
+    const req = levelRequirements[currentLevel];
+    if (currentQuestionIndex + 1 < req.total) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+
+      // Fun fact every 10 questions
+      if ((currentQuestionIndex + 1) % 10 === 0) {
+        setShowFact(true);
+        setTimeout(() => setShowFact(false), 3000);
+      }
+    } else {
+      // Level complete
+      if (score >= req.passing) {
+        if (currentLevel === 'easy') {
+          setGameState('levelComplete');
+        } else if (currentLevel === 'medium') {
+          setGameState('levelComplete');
+        } else {
+          setGameState('gameComplete');
+        }
+      } else {
+        setGameState('failed');
+      }
+    }
+  };
+
+  // Next level
+  const nextLevel = () => {
+    if (currentLevel === 'easy') {
+      setCurrentLevel('medium');
+    } else if (currentLevel === 'medium') {
+      setCurrentLevel('hard');
+    }
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setLives(3);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setGameState('playing');
+    setStreak(0);
+  };
+
+  // Retry level
+  const retryLevel = () => {
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setLives(3);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setGameState('playing');
+    setStreak(0);
+  };
+
+  // Render matching question
+  const renderMatchingQuestion = question => {
+    const [matches, setMatches] = useState({});
+    const [selectedTerm, setSelectedTerm] = useState(null);
+    const [shuffledDefs] = useState(() => [...question.pairs.map(p => p.definition)].sort(() => Math.random() - 0.5));
+    const handleMatch = (term, definition) => {
+      const newMatches = {
+        ...matches,
+        [term]: definition
+      };
+      setMatches(newMatches);
+      setSelectedTerm(null);
+
+      // Check if all matched
+      if (Object.keys(newMatches).length === question.pairs.length) {
+        const allCorrect = question.pairs.every(pair => newMatches[pair.term] === pair.definition);
+        setTimeout(() => {
+          if (allCorrect) {
+            setScore(score + 1);
+            setStreak(streak + 1);
+            alert('מעולה! 🎯 כל ההתאמות נכונות!');
+          } else {
+            setLives(lives - 1);
+            setStreak(0);
+            alert('לא בדיוק... נסה שוב! 🤔');
+            setMatches({});
+          }
+          nextQuestion();
+        }, 500);
+      }
+    };
+    return /*#__PURE__*/React.createElement("div", {
+      className: "space-y-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-2 gap-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-purple-800 text-center"
+    }, "\u05DE\u05D5\u05E9\u05D2\u05D9\u05DD"), question.pairs.map(pair => /*#__PURE__*/React.createElement("button", {
+      key: pair.term,
+      onClick: () => setSelectedTerm(pair.term),
+      disabled: matches[pair.term],
+      className: `w-full p-4 rounded-lg font-semibold transition-all ${matches[pair.term] ? 'bg-green-100 text-green-800 cursor-not-allowed' : selectedTerm === pair.term ? 'bg-purple-600 text-white scale-105' : 'bg-white hover:bg-purple-50 text-purple-900'}`
+    }, pair.term))), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold text-pink-800 text-center"
+    }, "\u05D4\u05D2\u05D3\u05E8\u05D5\u05EA"), shuffledDefs.map(def => /*#__PURE__*/React.createElement("button", {
+      key: def,
+      onClick: () => selectedTerm && handleMatch(selectedTerm, def),
+      disabled: Object.values(matches).includes(def),
+      className: `w-full p-4 rounded-lg font-semibold transition-all ${Object.values(matches).includes(def) ? 'bg-green-100 text-green-800 cursor-not-allowed' : 'bg-white hover:bg-pink-50 text-pink-900'}`
+    }, def)))));
+  };
+
+  // Get current question
+  const currentQuestion = questions[currentLevel][currentQuestionIndex];
+  const req = levelRequirements[currentLevel];
+
+  // Game complete screen
+  if (gameState === 'gameComplete') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50 p-8 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-12 text-center space-y-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-8xl"
+    }, "\uD83C\uDFC6"), /*#__PURE__*/React.createElement("h1", {
+      className: "text-5xl font-bold text-purple-900"
+    }, "\u05DE\u05D3\u05D4\u05D9\u05DD!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-purple-700"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05DB\u05DC 3 \u05D4\u05E8\u05DE\u05D5\u05EA! \uD83C\uDF89"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700"
+    }, "\u05D4\u05E9\u05D2\u05EA ", score, "/", req.total, " \u05D1\u05E9\u05DC\u05D1 \u05D4\u05D0\u05D7\u05E8\u05D5\u05DF"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-purple-100 to-pink-100 p-6 rounded-xl"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-purple-900 font-semibold"
+    }, "\uD83D\uDCAD \u05E2\u05DB\u05E9\u05D9\u05D5 \u05E9\u05DC\u05DE\u05D3\u05EA \u05D0\u05EA \u05D4\u05E4\u05E8\u05E9\u05D4..."), /*#__PURE__*/React.createElement("p", {
+      className: "text-purple-700 mt-2"
+    }, "\u05D0\u05D9\u05DA \u05D4\u05E9\u05DC\u05D9\u05D7\u05D5\u05EA \u05E9\u05DC \u05DE\u05E9\u05D4 \u05DE\u05E9\u05E0\u05D4 \u05D0\u05EA \u05D4\u05D3\u05E8\u05DA \u05E9\u05D0\u05EA\u05D4 \u05D7\u05D5\u05E9\u05D1 \u05E2\u05DC \u05D0\u05D7\u05E8\u05D9\u05D5\u05EA \u05D5\u05D4\u05E0\u05D4\u05D2\u05D4?")), /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 bg-white rounded-xl shadow-lg p-6"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700 font-bold mb-2"
+    }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-purple-900 font-bold text-lg"
+    }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+      className: "text-purple-600 mt-2"
+    }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+  }
+
+  // Level complete screen
+  if (gameState === 'levelComplete') {
+    const percentage = Math.round(score / req.total * 100);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-8 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-12 text-center space-y-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-8xl"
+    }, percentage >= 95 ? '🏆' : percentage >= 90 ? '🌟' : '💪'), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold text-purple-900"
+    }, percentage >= 95 ? 'מדהים!' : percentage >= 90 ? 'מעולה!' : 'יפה מאוד!'), /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-purple-700"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05E8\u05DE\u05D4 ", req.name, " \u05E2\u05DD ", score, "/", req.total, " (", percentage, "%)"), percentage >= 95 ? /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-green-700"
+    }, "\uD83C\uDF89 \u05E9\u05D5\u05DC\u05D8 \u05D1\u05D7\u05D5\u05DE\u05E8! \u05E2\u05D5\u05D1\u05E8 \u05DC\u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4") : percentage >= req.percentage ? /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-blue-700"
+    }, "\uD83D\uDCAA \u05D9\u05E4\u05D4! \u05E2\u05D5\u05D1\u05E8 \u05DC\u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4") : /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-orange-700"
+    }, "\uD83C\uDF31 \u05D4\u05EA\u05D7\u05DC\u05D4 \u05D8\u05D5\u05D1\u05D4! \u05E2\u05D5\u05D3 \u05E7\u05E6\u05EA \u05EA\u05E8\u05D2\u05D5\u05DC"), currentLevel !== 'hard' && score >= req.passing ? /*#__PURE__*/React.createElement("button", {
+      onClick: nextLevel,
+      className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white px-12 py-4 rounded-full text-xl font-bold hover:scale-105 transition-all shadow-lg"
+    }, "\u05D4\u05DE\u05E9\u05DA \u05DC\u05E8\u05DE\u05D4 \u05D4\u05D1\u05D0\u05D4! \uD83D\uDE80") : /*#__PURE__*/React.createElement("button", {
+      onClick: retryLevel,
+      className: "bg-gradient-to-r from-blue-600 to-purple-600 text-white px-12 py-4 rounded-full text-xl font-bold hover:scale-105 transition-all shadow-lg"
+    }, "\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1! \uD83D\uDD04")));
+  }
+
+  // Failed screen
+  if (gameState === 'failed') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 p-8 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-12 text-center space-y-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-8xl"
+    }, "\uD83C\uDF31"), /*#__PURE__*/React.createElement("h1", {
+      className: "text-4xl font-bold text-orange-900"
+    }, lives === 0 ? 'אופס! נגמרו החיים' : 'לא הצלחת לעבור'), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700"
+    }, "\u05D4\u05E9\u05D2\u05EA ", score, "/", req.total, " (", Math.round(score / req.total * 100), "%)"), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-600"
+    }, "\u05E6\u05E8\u05D9\u05DA ", req.passing, "/", req.total, " (", req.percentage, "%) \u05DB\u05D3\u05D9 \u05DC\u05E2\u05D1\u05D5\u05E8"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-orange-100 p-6 rounded-xl"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-orange-900"
+    }, "\uD83D\uDCA1 \u05DB\u05D3\u05D0\u05D9 \u05DC\u05D7\u05D6\u05D5\u05E8 \u05E2\u05DC \u05D4\u05D7\u05D5\u05DE\u05E8 \u05D5\u05DC\u05E0\u05E1\u05D5\u05EA \u05E9\u05D5\u05D1!")), /*#__PURE__*/React.createElement("button", {
+      onClick: retryLevel,
+      className: "bg-gradient-to-r from-orange-600 to-red-600 text-white px-12 py-4 rounded-full text-xl font-bold hover:scale-105 transition-all shadow-lg"
+    }, "\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1! \uD83D\uDCAA")));
+  }
+
+  // Main game screen
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4 sm:p-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl shadow-xl p-6 mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-4xl"
+  }, req.icon), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-bold text-purple-900"
+  }, "\u05E8\u05DE\u05D4 ", req.name), /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-600"
+  }, "\u05E9\u05D0\u05DC\u05D4 ", currentQuestionIndex + 1, " \u05DE\u05EA\u05D5\u05DA ", req.total))), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-600"
+  }, "\u05E0\u05D9\u05E7\u05D5\u05D3"), /*#__PURE__*/React.createElement("p", {
+    className: "text-2xl font-bold text-purple-900"
+  }, score)), /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-600"
+  }, "\u05D7\u05D9\u05D9\u05DD"), /*#__PURE__*/React.createElement("p", {
+    className: "text-2xl"
+  }, Array.from({
+    length: lives
+  }).map((_, i) => /*#__PURE__*/React.createElement("span", {
+    key: i
+  }, "\u2764\uFE0F")))))), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-purple-600 to-pink-600 h-3 rounded-full transition-all duration-500",
+    style: {
+      width: `${(currentQuestionIndex + 1) / req.total * 100}%`
+    }
+  })), streak >= 3 && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 text-center text-orange-600 font-bold"
+  }, "\uD83D\uDD25 \u05E1\u05D8\u05E8\u05D9\u05D9\u05E7 \u05E9\u05DC ", streak, "!")), showFact && /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-yellow-100 to-orange-100 rounded-2xl p-6 mb-6 shadow-lg animate-bounce"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-center text-lg font-bold text-orange-900"
+  }, "\u2728 \u05E2\u05D5\u05D1\u05D3\u05D4 \u05DE\u05E2\u05E0\u05D9\u05D9\u05E0\u05EA: \"\u05D0\u05D4\u05D9\u05D4 \u05D0\u05E9\u05E8 \u05D0\u05D4\u05D9\u05D4\" = \u05D0\u05E0\u05D9 \u05D0\u05D4\u05D9\u05D4 \u05E2\u05DD \u05DB\u05DC \u05D3\u05D5\u05E8 \u05D5\u05D3\u05D5\u05E8!")), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl shadow-xl p-8 mb-6"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-2xl font-bold text-purple-900 mb-6 text-center leading-relaxed"
+  }, currentQuestion.question), currentQuestion.type === 'matching' ? renderMatchingQuestion(currentQuestion) : /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4"
+  }, shuffledAnswers.map((answer, index) => /*#__PURE__*/React.createElement("button", {
+    key: index,
+    onClick: () => handleAnswer(answer),
+    disabled: showFeedback,
+    className: `w-full p-5 rounded-2xl text-right font-semibold text-lg transition-all duration-300 ${!showFeedback ? 'bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-900 hover:scale-102' : selectedAnswer === answer ? answer.correct ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 scale-105' : 'bg-gradient-to-r from-red-100 to-red-200 text-red-800' : answer.correct && !selectedAnswer?.correct ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-800' : 'bg-gray-100 text-gray-600 opacity-50'}`
+  }, answer.text))), showFeedback && selectedAnswer && /*#__PURE__*/React.createElement("div", {
+    className: `mt-6 p-6 rounded-2xl ${selectedAnswer.correct ? 'bg-gradient-to-r from-green-50 to-green-100' : 'bg-gradient-to-r from-orange-50 to-orange-100'}`
+  }, /*#__PURE__*/React.createElement("p", {
+    className: `text-xl font-bold mb-2 ${selectedAnswer.correct ? 'text-green-800' : 'text-orange-800'}`
+  }, selectedAnswer.correct ? ['מצוין! ⭐', 'פצצה! 🎯', 'כל הכבוד! 💪', 'בול! 🌟', 'מדויק! ✨'][Math.floor(Math.random() * 5)] : 'לא בדיוק... 🤔'), /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-800 leading-relaxed"
+  }, selectedAnswer.explanation), /*#__PURE__*/React.createElement("button", {
+    onClick: nextQuestion,
+    className: "mt-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-bold hover:scale-105 transition-all shadow-lg"
+  }, currentQuestionIndex + 1 < req.total ? 'שאלה הבאה ←' : 'סיים רמה! 🎉'))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-8 text-center bg-white rounded-xl shadow-lg p-6"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-700 font-bold mb-2"
+  }, "\u05E0\u05D1\u05E0\u05D4 \u05E2\u05DC \u05D9\u05D3\u05D9:"), /*#__PURE__*/React.createElement("p", {
+    className: "text-purple-900 font-bold text-lg"
+  }, "\u05D4\u05E8\u05D1 \u05D9\u05D4\u05D5\u05D3\u05D4 \u05D8\u05D0\u05D5\u05D1 \u05DE\u05E7\u05E8\u05D9\u05EA \u05D0\u05EA\u05D0"), /*#__PURE__*/React.createElement("p", {
+    className: "text-purple-600 mt-2"
+  }, "\uD83D\uDCDE \u05DC\u05E4\u05E8\u05D8\u05D9\u05DD: 0527139520"))));
+};
+const __App = ExodusGame;
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(__App));
+})();
+</script>
+
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif;direction:rtl"><a href="https://www.kol-toda.co.il/t/parasha.html#p_1_0" style="color:#4f46e5">← עוד בשמות · פרשת שמות</a> · <a href="https://www.kol-toda.co.il/" style="color:#4f46e5">אתר הקול החמישי</a></p>
+</body>
+</html>

@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מפתחות לאושר – הקול החמישי</title>
+<meta name="description" content="לראות בזה אתגר ולשמוח על ההזדמנות להוכיח את יכולותיי">
+<script src="lib/tailwind.js"></script>
+<style>body{margin:0;font-family:Heebo,Arial,sans-serif}</style>
+<meta property="og:title" content="מפתחות לאושר – הקול החמישי">
+<meta property="og:description" content="לראות בזה אתגר ולשמוח על ההזדמנות להוכיח את יכולותיי">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-osef-d52445d65b.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/osef/d52445d65b.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<script src="lib/react.js"></script>
+<script src="lib/react-dom.js"></script>
+<script>window.react = window.React;</script>
+<script src="lib/lucide-react.js"></script>
+<script src="lib/tone.js"></script>
+<script>
+(function () {
+const React = window.React;
+const useState = window.React.useState;
+const useEffect = window.React.useEffect;
+const Volume2 = window.LucideReact["Volume2"] || window.LucideReact.Circle;
+const VolumeX = window.LucideReact["VolumeX"] || window.LucideReact.Circle;
+const Heart = window.LucideReact["Heart"] || window.LucideReact.Circle;
+const Sparkles = window.LucideReact["Sparkles"] || window.LucideReact.Circle;
+const ChevronRight = window.LucideReact["ChevronRight"] || window.LucideReact.Circle;
+const Tone = window.Tone;
+const dilemmas = [{
+  id: 1,
+  text: "הבוס בעבודה נתן לך משימה קשה במיוחד ממש לפני סוף היום. התגובה הראשונית שלך:",
+  options: [{
+    text: "להתלונן בלב על חוסר ההתחשבות שלו",
+    type: "negative"
+  }, {
+    text: "להודות לה' שיש לי עבודה ומקור פרנסה",
+    type: "gratitude"
+  }, {
+    text: "לראות בזה אתגר ולשמוח על ההזדמנות להוכיח את יכולותיי",
+    type: "joy"
+  }],
+  insight: "ראיית הרע מול הכרת הטוב - האם אתה מתמקד בשלילה או מרחיב את המבט לטוב הכללי?"
+}, {
+  id: 2,
+  text: "חבר קרוב שכח להתקשר ליום ההולדת שלך.",
+  options: [{
+    text: "להיעלב ולהרגיש שהוא לא מעריך את הקשר ביניכם",
+    type: "negative"
+  }, {
+    text: "לחשוב על כל הפעמים האחרות שהוא כן היה שם בשבילך",
+    type: "gratitude"
+  }, {
+    text: "להבין שגם דברים כאלה קורים, ולשמוח על כל הטוב שיש לך בחיים",
+    type: "joy"
+  }],
+  insight: "הכרת הטוב בין אדם לחבירו - זכירת הטובות הקודמות מול התמקדות בחסר"
+}, {
+  id: 3,
+  text: "נתקעת בפקק תנועה ארוך בדרך לפגישה חשובה.",
+  options: [{
+    text: "להרגיש לחץ וכעס על המצב",
+    type: "negative"
+  }, {
+    text: "לנצל את הזמן להאזין לשיעור תורה או מוזיקה טובה",
+    type: "gratitude"
+  }, {
+    text: "להגיד 'תודה לה'' על הרכב, על הדלק, ועל כך שהכל בסדר",
+    type: "joy"
+  }],
+  insight: "הודיה על השגרה - הכרת תודה על הדברים הפשוטים במקום לקחתם כמובנים מאליהם"
+}, {
+  id: 4,
+  text: "קיבלת ציון נמוך מהצפוי במבחן שהשקעת בו הרבה.",
+  options: [{
+    text: "להרגיש כישלון ולהתייאש",
+    type: "negative"
+  }, {
+    text: "לחשוב שזה רק מבחן, ולהודות על הבריאות והמשפחה",
+    type: "gratitude"
+  }, {
+    text: "להבין שהכל מאת ה', ולקבל את הדין בשמחה תוך מחשבה איך להשתפר",
+    type: "joy"
+  }],
+  insight: "הצדקת הדין בשמחה - קבלת רצון ה' מתוך אמונה ש'טוב ה' לכל'"
+}, {
+  id: 5,
+  text: "מישהו חתך אותך בכביש בצורה מסוכנת.",
+  options: [{
+    text: "לצפור בכעס ולכעוס עליו כל הדרך",
+    type: "negative"
+  }, {
+    text: "להגיד תודה רבה לה' שלא קרתה תאונה",
+    type: "gratitude"
+  }, {
+    text: "לנסות לדון אותו לכף זכות, אולי הוא ממהר לבית חולים",
+    type: "joy"
+  }],
+  insight: "ראיית הטוב באחר - דון לכף זכות מול שנאת חינם"
+}, {
+  id: 6,
+  text: "עמית לעבודה קיבל קידום שאתה רצית.",
+  options: [{
+    text: "להרגיש קנאה ולחשוב כמה זה לא הוגן",
+    type: "negative"
+  }, {
+    text: "לפרגן לו חיצונית, אבל להרגיש מרירות בפנים",
+    type: "gratitude"
+  }, {
+    text: "לשמוח בשמחתו ולראות בכך סימן שגם לך יכולים לקרות דברים טובים",
+    type: "joy"
+  }],
+  insight: "שמחה בשמחת האחר (עין טובה) - היפוך הקנאה לאהבה"
+}, {
+  id: 7,
+  text: "הכנת ארוחת ערב מושקעת, ובן/בת הזוג כמעט ולא התייחס/ה.",
+  options: [{
+    text: "להיפגע ולהחליט שבפעם הבאה לא תתאמץ/י כל כך",
+    type: "negative"
+  }, {
+    text: "להזכיר לעצמך שאת/ה עושה זאת מאהבה ולא רק בשביל לקבל תודה",
+    type: "gratitude"
+  }, {
+    text: "ליזום שיחה נעימה ולהגיד: 'שמחתי להכין את זה, שמתי לב שהיית עסוק/ה'",
+    type: "joy"
+  }],
+  insight: "עשייה לשם שמיים - עשיית חסד ללא ציפייה לתמורה, ותקשורת מקרבת"
+}, {
+  id: 8,
+  text: "במהלך שיחה משפחתית, מישהו מעיר לך הערה ביקורתית.",
+  options: [{
+    text: "להגיב בהתגוננות ולהשיב בהערה עוקצנית משלך",
+    type: "negative"
+  }, {
+    text: "לנסות למצוא נקודת אמת בדבריו, גם אם זה כואב",
+    type: "gratitude"
+  }, {
+    text: "לחייך, להודות לו על המשוב, ולשמוח שיש לך הזדמנות לעבוד על המידות",
+    type: "joy"
+  }],
+  insight: "ענווה וחיפוש האמת - ראיית הביקורת כמתנה לצמיחה"
+}, {
+  id: 9,
+  text: "הילד שלך שבר בטעות חפץ יקר ערך בבית.",
+  options: [{
+    text: "לכעוס עליו ולהעניש אותו בחומרה",
+    type: "negative"
+  }, {
+    text: "להגיד לעצמך 'זה רק חפץ', אבל להרגיש אכזבה",
+    type: "gratitude"
+  }, {
+    text: "לחבק אותו, לוודא שהוא בסדר, ולהודות לה' על כך שהנזק הוא רק ברכוש",
+    type: "joy"
+  }],
+  insight: "הכרת הטוב על העיקר - הבנת הפרופורציות הנכונות בחיים: בריאות לפני רכוש"
+}, {
+  id: 10,
+  text: "שמעת רכילות מעניינת על מכר משותף.",
+  options: [{
+    text: "להקשיב בעניין ואולי להוסיף פרט משלך",
+    type: "negative"
+  }, {
+    text: "לשתוק ולהרגיש לא בנוח עם השיחה",
+    type: "gratitude"
+  }, {
+    text: "לומר בעדינות: 'בואו נדבר על משהו חיובי יותר'",
+    type: "joy"
+  }],
+  insight: "'נצור לשונך מרע' אקטיבי - הסטת השיחה לטוב במקום פאסיביות"
+}, {
+  id: 11,
+  text: "התפללת על משהו במשך זמן רב, והתשובה שקיבלת היא שלילית.",
+  options: [{
+    text: "להרגיש שה' לא שומע את תפילותיך ולהתייאש",
+    type: "negative"
+  }, {
+    text: "לקבל את המצב בעצב, מתוך הבנה שזה רצון ה'",
+    type: "gratitude"
+  }, {
+    text: "להאמין בלב שלם ש'טוב ה' לכל' וזוהי הטובה האמיתית עבורך",
+    type: "joy"
+  }],
+  insight: "הצדקת הדין בשמחה - אמונה שלמה ב'טוב ה' לכל' גם בהסתר"
+}, {
+  id: 12,
+  text: "באת הביתה עייף/ה אחרי יום עבודה, והבית מבולגן.",
+  options: [{
+    text: "להתעצבן על בני הבית שלא עזרו לסדר",
+    type: "negative"
+  }, {
+    text: "להתעלם מהבלגן וללכת לנוח",
+    type: "gratitude"
+  }, {
+    text: "להודות לה' שיש לך בית ומשפחה תוססת, ולשים מוזיקה שמחה לסדר",
+    type: "joy"
+  }],
+  insight: "שימוש בשמחה (מוזיקה) ככלי להפוך מטלה לחוויה"
+}, {
+  id: 13,
+  text: "חבר מבקש ממך טובה בדיוק כשאתה מאוד עסוק.",
+  options: [{
+    text: "לסרב ולהרגיש אשמה, או להסכים ולכעוס על הבקשה",
+    type: "negative"
+  }, {
+    text: "להסביר שאתה עסוק כרגע ולבקש לדחות את זה",
+    type: "gratitude"
+  }, {
+    text: "לשמוח על ההזדמנות לעשות חסד, ולראות איך אפשר לעזור",
+    type: "joy"
+  }],
+  insight: "שמחה של מצווה (גמילות חסדים) - ראיית ההזדמנות לעשות רצון ה'"
+}, {
+  id: 14,
+  text: "אתה רואה ברשתות החברתיות חברים שנהנים בחופשה יוקרתית שאינך יכול להרשות לעצמך.",
+  options: [{
+    text: "להרגיש צביטה של קנאה ולחשוב על מה שחסר לך",
+    type: "negative"
+  }, {
+    text: "לסגור את האפליקציה כדי לא לראות את זה",
+    type: "gratitude"
+  }, {
+    text: "להודות על הדברים הטובים שיש לך ולשמוח בשמחתם של חבריך",
+    type: "joy"
+  }],
+  insight: "שמחה בחלקו - התמקדות במה שיש במקום במה שאין"
+}, {
+  id: 15,
+  text: "נזכרת במשהו טוב שמישהו עשה עבורך לפני שנים רבות.",
+  options: [{
+    text: "לחשוב 'זה היה מזמן, זה כבר לא רלוונטי'",
+    type: "negative"
+  }, {
+    text: "להרגיש תחושה חמימה של הודיה בלב",
+    type: "gratitude"
+  }, {
+    text: "להרים טלפון לאותו אדם ולהגיד לו תודה",
+    type: "joy"
+  }],
+  insight: "הכרת הטוב מעשית - הפיכת הרגש למעשה שמגדיל טוב בעולם"
+}, {
+  id: 16,
+  text: "התחלת פרויקט חדש בהתלהבות, אבל הוא מתקדם לאט ועם קשיים.",
+  options: [{
+    text: "להתייאש ולחשוב שאולי כדאי לוותר",
+    type: "negative"
+  }, {
+    text: "להמשיך לעבוד, אבל עם פחות התלהבות ותחושת תסכול",
+    type: "gratitude"
+  }, {
+    text: "לשמוח על כל התקדמות קטנה ולראות בקושי אתגר שמחזק אותך",
+    type: "joy"
+  }],
+  insight: "שמחה של מצווה בעשייה - לשמוח על עצם הדרך ולא רק על המטרה"
+}, {
+  id: 17,
+  text: "אתה מרגיש 'תקוע' בחיים, וששום דבר חדש לא קורה.",
+  options: [{
+    text: "להיכנע לתחושת העצבות והשעמום",
+    type: "negative"
+  }, {
+    text: "להתחיל לחפש באופן אקטיבי ריגושים חיצוניים",
+    type: "gratitude"
+  }, {
+    text: "לפתוח 'יומן הודיה' ולרשום כל יום 5 דברים טובים בחייך",
+    type: "joy"
+  }],
+  insight: "עבודה פנימית של הודיה - שינוי המחשבה ככלי לשינוי ההרגשה ('בשמחה' אותיות 'מחשבה')"
+}, {
+  id: 18,
+  text: "קנית בגד חדש, ולמחרת ראית אותו בחנות אחרת במחיר נמוך משמעותית.",
+  options: [{
+    text: "להתעצבן על עצמך ועל 'חוסר המזל' שלך",
+    type: "negative"
+  }, {
+    text: "להחליט שלא תקנה יותר בחנות הראשונה",
+    type: "gratitude"
+  }, {
+    text: "לשמוח על הבגד החדש, ולהודות לה' שיש לך אפשרות לקנות בגדים",
+    type: "joy"
+  }],
+  insight: "שמחה בחלקו - היכולת לשמוח במה שיש לך כרגע"
+}, {
+  id: 19,
+  text: "מישהו נותן לך מחמאה, ואת/ה מרגיש/ה לא בנוח.",
+  options: [{
+    text: "לבטל את המחמאה ('זה שום דבר, זה ישן...')",
+    type: "negative"
+  }, {
+    text: "להגיד 'תודה' במבוכה ולהחליף נושא",
+    type: "gratitude"
+  }, {
+    text: "לחייך, להגיד 'תודה רבה, שימחת אותי!', ואולי אף להחזיר מחמאה",
+    type: "joy"
+  }],
+  insight: "קבלת השפע ושיתופו - הכרת הטוב והשפעת טוב בחזרה"
+}, {
+  id: 20,
+  text: "התור בסופרמרקט ארוך מאוד והקופאית עובדת לאט.",
+  options: [{
+    text: "להיאנח בחוסר סבלנות ולהסתכל בשעון כל רגע",
+    type: "negative"
+  }, {
+    text: "להוציא את הטלפון ולהתעדכן בחדשות",
+    type: "gratitude"
+  }, {
+    text: "לנצל את הזמן להתבוננות: להודות על השפע שיש בחנות",
+    type: "joy"
+  }],
+  insight: "הפיכת זמן 'מת' לזמן של עבודת ה' - התבוננות והודיה"
+}, {
+  id: 21,
+  text: "קיבלת מתנה מבן/בת הזוג שאת/ה לא אוהב/ת.",
+  options: [{
+    text: "להראות אכזבה על הפנים, גם אם את/ה מנסה להסתיר",
+    type: "negative"
+  }, {
+    text: "להודות בנימוס ולשים את המתנה בארון",
+    type: "gratitude"
+  }, {
+    text: "להתמקד במחשבה ובאהבה שמאחורי המתנה, ולהודות בחום",
+    type: "joy"
+  }],
+  insight: "הכרת הטוב על הכוונה - יסוד מרכזי בשלום בית"
+}, {
+  id: 22,
+  text: "במהלך ויכוח, הבנת שאת/ה טועה.",
+  options: [{
+    text: "להמשיך להתווכח כדי 'לא להפסיד'",
+    type: "negative"
+  }, {
+    text: "לשתוק ולתת לוויכוח לגווע, מבלי להודות בטעות",
+    type: "gratitude"
+  }, {
+    text: "לומר 'את/ה צודק/ת, טעיתי. תודה שהארת את עיניי'",
+    type: "joy"
+  }],
+  insight: "ענווה ושמחה על גילוי האמת - ראיית האמת כערך עליון"
+}, {
+  id: 23,
+  text: "את/ה מרגיש/ה עייפות וחוסר אנרגיה לקיים מצווה שאת/ה בדרך כלל אוהב/ת.",
+  options: [{
+    text: "לוותר על המצווה היום, 'אין לי כוח'",
+    type: "negative"
+  }, {
+    text: "לעשות אותה 'כמצוות אנשים מלומדה', רק כדי לצאת ידי חובה",
+    type: "gratitude"
+  }, {
+    text: "לעצור לרגע, לבקש מה' כוח, ולמצוא נקודה קטנה של שמחה בזכות",
+    type: "joy"
+  }],
+  insight: "שמחה של מצווה - גם במאמץ, מתוך הבנת גודל הזכות"
+}, {
+  id: 24,
+  text: "שכן מבקש ממך עזרה בהובלת רהיט כבד.",
+  options: [{
+    text: "למצוא תירוץ למה אינך יכול לעזור",
+    type: "negative"
+  }, {
+    text: "לעזור, אבל להתלונן בלב על הטרחה",
+    type: "gratitude"
+  }, {
+    text: "לשמוח על ההזדמנות לעשות חסד עם שכן ולחזק את הקשר",
+    type: "joy"
+  }],
+  insight: "'ואהבת לרעך כמוך' בשמחה - הבנה שזהו יסוד בעבודת ה'"
+}, {
+  id: 25,
+  text: "הגעת לסוף משחק הדילמות הזה.",
+  options: [{
+    text: "לחשוב 'סוף סוף נגמר, זה היה ארוך'",
+    type: "negative"
+  }, {
+    text: "לנסות לזכור דילמה אחת או שתיים מעניינות",
+    type: "gratitude"
+  }, {
+    text: "להודות על ההזדמנות ללמוד, ולחשוב על דבר אחד קטן שתנסה/י ליישם השבוע",
+    type: "joy"
+  }],
+  insight: "הכרת הטוב על הלמידה ויישום מעשי - חיבור התורה לחיים"
+}];
+function HappinessKeysGame() {
+  const [gameState, setGameState] = useState('welcome');
+  const [currentDilemma, setCurrentDilemma] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showInsight, setShowInsight] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [synth, setSynth] = useState(null);
+  const [responses, setResponses] = useState([]);
+  const [score, setScore] = useState({
+    negative: 0,
+    gratitude: 0,
+    joy: 0
+  });
+  useEffect(() => {
+    const newSynth = new Tone.PolySynth(Tone.Synth, {
+      oscillator: {
+        type: 'sine'
+      },
+      envelope: {
+        attack: 0.1,
+        decay: 0.2,
+        sustain: 0.3,
+        release: 1
+      }
+    }).toDestination();
+    newSynth.volume.value = -10;
+    setSynth(newSynth);
+    return () => {
+      if (newSynth) newSynth.dispose();
+    };
+  }, []);
+  const playSound = type => {
+    if (!soundEnabled || !synth) return;
+    Tone.start();
+    const notes = {
+      click: ['C5'],
+      select: ['E5', 'G5'],
+      insight: ['C5', 'E5', 'G5', 'C6'],
+      complete: ['C5', 'E5', 'G5', 'C6', 'E6']
+    };
+    synth.triggerAttackRelease(notes[type] || ['C5'], '8n');
+  };
+  const handleOptionSelect = (option, index) => {
+    playSound('select');
+    setSelectedOption(index);
+    setScore(prev => ({
+      ...prev,
+      [option.type]: prev[option.type] + 1
+    }));
+    setResponses([...responses, {
+      dilemma: currentDilemma,
+      choice: option.text,
+      type: option.type
+    }]);
+  };
+  const handleNextDilemma = () => {
+    playSound('click');
+    if (!showInsight) {
+      setShowInsight(true);
+      playSound('insight');
+    } else {
+      if (currentDilemma < dilemmas.length - 1) {
+        setCurrentDilemma(currentDilemma + 1);
+        setSelectedOption(null);
+        setShowInsight(false);
+      } else {
+        playSound('complete');
+        setGameState('summary');
+      }
+    }
+  };
+  const startGame = () => {
+    playSound('click');
+    setGameState('playing');
+  };
+  const resetGame = () => {
+    playSound('click');
+    setGameState('welcome');
+    setCurrentDilemma(0);
+    setSelectedOption(null);
+    setShowInsight(false);
+    setResponses([]);
+    setScore({
+      negative: 0,
+      gratitude: 0,
+      joy: 0
+    });
+  };
+  const getColorByType = type => {
+    switch (type) {
+      case 'negative':
+        return 'from-slate-500 to-slate-600';
+      case 'gratitude':
+        return 'from-blue-500 to-indigo-600';
+      case 'joy':
+        return 'from-amber-400 to-orange-500';
+      default:
+        return 'from-gray-500 to-gray-600';
+    }
+  };
+  const getPersonalityResult = () => {
+    const total = score.negative + score.gratitude + score.joy;
+    const joyPercent = score.joy / total * 100;
+    const gratitudePercent = score.gratitude / total * 100;
+    if (joyPercent > 50) {
+      return {
+        title: "✨ נשמה שמחה",
+        description: "אתה אדם שמחליט לחיות בשמחה! אתה רואה בכל אתגר הזדמנות, ובכל קושי מתנה. המשך בדרך הזו!",
+        color: "text-orange-600"
+      };
+    } else if (gratitudePercent > 40) {
+      return {
+        title: "🙏 לב מודה",
+        description: "אתה בעל לב מלא הכרת טוב. אתה רואה את הטוב שסביבך ויודע להעריך. כדאי לעבוד על להפוך את ההכרת טוב לשמחה פעילה.",
+        color: "text-blue-600"
+      };
+    } else {
+      return {
+        title: "🌱 בתחילת הדרך",
+        description: "אתה בתחילת מסע מרתק! יש לך מקום לצמוח ולפתח את היכולת לראות את הטוב. זה תהליך, והמשחק הזה הוא כלי מצוין.",
+        color: "text-slate-600"
+      };
+    }
+  };
+  if (gameState === 'welcome') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 p-8 flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-2xl w-full"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-12 text-center space-y-8 border-2 border-amber-200"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-amber-400 to-orange-500 p-6 rounded-full"
+    }, /*#__PURE__*/React.createElement(Sparkles, {
+      className: "w-16 h-16 text-white"
+    }))), /*#__PURE__*/React.createElement("h1", {
+      className: "text-5xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent"
+    }, "\u05DE\u05E4\u05EA\u05D7\u05D5\u05EA \u05DC\u05D0\u05D5\u05E9\u05E8"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-700 leading-relaxed"
+    }, "\u05DE\u05E9\u05D7\u05E7 \u05D3\u05D9\u05DC\u05DE\u05D5\u05EA \u05D5\u05E4\u05EA\u05E8\u05D5\u05E0\u05D5\u05EA \u05D4\u05DE\u05D1\u05D5\u05E1\u05E1 \u05E2\u05DC \u05E2\u05E7\u05E8\u05D5\u05E0\u05D5\u05EA \u05D4\u05E9\u05DE\u05D7\u05D4 \u05D5\u05D4\u05DB\u05E8\u05EA \u05D4\u05D8\u05D5\u05D1 \u05DE\u05D4\u05DE\u05E7\u05D5\u05E8\u05D5\u05EA"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-amber-100 to-orange-100 rounded-2xl p-6 text-right space-y-3"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-800 font-semibold"
+    }, "\uD83D\uDCD6 \u05D0\u05D9\u05DA \u05DE\u05E9\u05D7\u05E7\u05D9\u05DD?"), /*#__PURE__*/React.createElement("ul", {
+      className: "text-gray-700 space-y-2 text-sm"
+    }, /*#__PURE__*/React.createElement("li", null, "\u2022 \u05EA\u05E7\u05D1\u05DC 25 \u05D3\u05D9\u05DC\u05DE\u05D5\u05EA \u05DE\u05D4\u05D7\u05D9\u05D9\u05DD \u05D4\u05D0\u05DE\u05D9\u05EA\u05D9\u05D9\u05DD"), /*#__PURE__*/React.createElement("li", null, "\u2022 \u05D1\u05D7\u05E8 \u05D0\u05EA \u05D4\u05EA\u05D2\u05D5\u05D1\u05D4 \u05E9\u05D4\u05DB\u05D9 \u05DE\u05EA\u05D0\u05D9\u05DE\u05D4 \u05DC\u05DA"), /*#__PURE__*/React.createElement("li", null, "\u2022 \u05E7\u05D1\u05DC \u05EA\u05D5\u05D1\u05E0\u05D4 \u05E8\u05D5\u05D7\u05E0\u05D9\u05EA \u05DC\u05DB\u05DC \u05D1\u05D7\u05D9\u05E8\u05D4"), /*#__PURE__*/React.createElement("li", null, "\u2022 \u05D0\u05D9\u05DF \u05DB\u05D0\u05DF \u05E0\u05D9\u05E6\u05D7\u05D5\u05DF \u05D0\u05D5 \u05D4\u05E4\u05E1\u05D3 - \u05D4\u05DE\u05D8\u05E8\u05D4 \u05D4\u05D9\u05D0 \u05D4\u05EA\u05D4\u05DC\u05D9\u05DA \u05D4\u05DC\u05D9\u05DE\u05D5\u05D3\u05D9"))), /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center gap-4"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => setSoundEnabled(!soundEnabled),
+      className: "p-4 rounded-full bg-amber-100 hover:bg-amber-200 transition-all"
+    }, soundEnabled ? /*#__PURE__*/React.createElement(Volume2, {
+      className: "w-6 h-6 text-amber-600"
+    }) : /*#__PURE__*/React.createElement(VolumeX, {
+      className: "w-6 h-6 text-gray-400"
+    }))), /*#__PURE__*/React.createElement("button", {
+      onClick: startGame,
+      className: "bg-gradient-to-r from-amber-500 to-orange-600 text-white px-12 py-4 rounded-full text-xl font-bold hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 mx-auto"
+    }, "\u05D1\u05D5\u05D0\u05D5 \u05E0\u05EA\u05D7\u05D9\u05DC", /*#__PURE__*/React.createElement(ChevronRight, {
+      className: "w-6 h-6"
+    })))));
+  }
+  if (gameState === 'summary') {
+    const result = getPersonalityResult();
+    return /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 p-8"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "max-w-3xl mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-12 space-y-8 border-2 border-amber-200"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-center space-y-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-amber-400 to-orange-500 p-6 rounded-full"
+    }, /*#__PURE__*/React.createElement(Heart, {
+      className: "w-16 h-16 text-white"
+    }))), /*#__PURE__*/React.createElement("h2", {
+      className: "text-4xl font-bold text-gray-800"
+    }, "\u05E1\u05D9\u05D9\u05DE\u05EA \u05D0\u05EA \u05D4\u05DE\u05E1\u05E2! \uD83C\uDF89"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xl text-gray-600"
+    }, "\u05D4\u05E0\u05D4 \u05D4\u05EA\u05D5\u05D1\u05E0\u05D5\u05EA \u05E9\u05DC\u05DA")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-8 space-y-6"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: `text-3xl font-bold ${result.color} text-center`
+    }, result.title), /*#__PURE__*/React.createElement("p", {
+      className: "text-lg text-gray-700 text-center leading-relaxed"
+    }, result.description)), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-3 gap-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl p-6 text-center space-y-2"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl font-bold text-slate-600"
+    }, score.negative), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-slate-600"
+    }, "\u05D4\u05EA\u05DE\u05D5\u05D3\u05D3\u05D5\u05EA \u05E8\u05D0\u05E9\u05D5\u05E0\u05D9\u05EA")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl p-6 text-center space-y-2"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl font-bold text-blue-600"
+    }, score.gratitude), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-blue-600"
+    }, "\u05D4\u05DB\u05E8\u05EA \u05D4\u05D8\u05D5\u05D1")), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl p-6 text-center space-y-2"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-3xl font-bold text-orange-600"
+    }, score.joy), /*#__PURE__*/React.createElement("div", {
+      className: "text-sm text-orange-600"
+    }, "\u05E9\u05DE\u05D7\u05D4 \u05E4\u05E2\u05D9\u05DC\u05D4"))), /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-amber-100 to-orange-100 rounded-2xl p-6 text-right"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-800 font-semibold mb-3"
+    }, "\uD83D\uDCA1 \u05D4\u05DE\u05DC\u05E6\u05D4 \u05D0\u05D9\u05E9\u05D9\u05EA \u05DC\u05E9\u05D1\u05D5\u05E2 \u05D4\u05E7\u05E8\u05D5\u05D1:"), /*#__PURE__*/React.createElement("p", {
+      className: "text-gray-700"
+    }, "\u05D1\u05D7\u05E8 \u05D3\u05D9\u05DC\u05DE\u05D4 \u05D0\u05D7\u05EA \u05DE\u05D4\u05DE\u05E9\u05D7\u05E7 \u05E9\u05D4\u05DB\u05D9 \u05E0\u05D2\u05E2\u05D4 \u05DC\u05DA, \u05D5\u05E0\u05D9\u05E1\u05D4 \u05DC\u05D9\u05D9\u05E9\u05DD \u05D0\u05EA \u05D4\u05D2\u05D9\u05E9\u05D4 \u05D4\u05E9\u05DC\u05D9\u05E9\u05D9\u05EA (\u05E9\u05DE\u05D7\u05D4 \u05E4\u05E2\u05D9\u05DC\u05D4) \u05DB\u05E9\u05D4\u05D9\u05D0 \u05EA\u05E7\u05E8\u05D4 \u05D1\u05D7\u05D9\u05D9\u05DD \u05D4\u05D0\u05DE\u05D9\u05EA\u05D9\u05D9\u05DD. \u05E9\u05D9\u05DD \u05DC\u05D1 \u05D0\u05D9\u05DA \u05D6\u05D4 \u05DE\u05E9\u05E0\u05D4 \u05D0\u05EA \u05D4\u05D4\u05E8\u05D2\u05E9\u05D4 \u05E9\u05DC\u05DA!")), /*#__PURE__*/React.createElement("button", {
+      onClick: resetGame,
+      className: "w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-4 rounded-full text-xl font-bold hover:shadow-2xl hover:scale-105 transition-all duration-300"
+    }, "\u05E9\u05D7\u05E7 \u05E9\u05D5\u05D1"))));
+  }
+  const currentD = dilemmas[currentDilemma];
+  const progress = (currentDilemma + 1) / dilemmas.length * 100;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 p-4 md:p-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-4xl mx-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-6 bg-white/50 rounded-full h-3 overflow-hidden backdrop-blur-sm"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500 ease-out",
+    style: {
+      width: `${progress}%`
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-gray-600 font-semibold"
+  }, "\u05D3\u05D9\u05DC\u05DE\u05D4 ", currentDilemma + 1, " \u05DE\u05EA\u05D5\u05DA ", dilemmas.length), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setSoundEnabled(!soundEnabled),
+    className: "p-3 rounded-full bg-white/70 hover:bg-white transition-all"
+  }, soundEnabled ? /*#__PURE__*/React.createElement(Volume2, {
+    className: "w-5 h-5 text-amber-600"
+  }) : /*#__PURE__*/React.createElement(VolumeX, {
+    className: "w-5 h-5 text-gray-400"
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 space-y-8 border-2 border-amber-200"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center space-y-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "inline-block bg-gradient-to-r from-amber-400 to-orange-500 p-4 rounded-full mb-4"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    className: "w-8 h-8 text-white"
+  })), /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl md:text-3xl font-bold text-gray-800 leading-relaxed"
+  }, currentD.text)), !showInsight && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4"
+  }, currentD.options.map((option, index) => /*#__PURE__*/React.createElement("button", {
+    key: index,
+    onClick: () => handleOptionSelect(option, index),
+    disabled: selectedOption !== null,
+    className: `w-full text-right p-6 rounded-2xl transition-all duration-300 text-lg ${selectedOption === index ? `bg-gradient-to-r ${getColorByType(option.type)} text-white shadow-xl scale-105` : selectedOption !== null ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 hover:shadow-lg hover:scale-102 border-2 border-gray-200'}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start gap-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-xl mt-1"
+  }, String.fromCharCode(1488 + index), "."), /*#__PURE__*/React.createElement("span", {
+    className: "flex-1 leading-relaxed"
+  }, option.text))))), showInsight && /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-8 space-y-4 animate-fade-in border-2 border-amber-200"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-amber-400 to-orange-500 p-3 rounded-full"
+  }, /*#__PURE__*/React.createElement(Heart, {
+    className: "w-6 h-6 text-white"
+  })), /*#__PURE__*/React.createElement("h3", {
+    className: "text-2xl font-bold text-gray-800"
+  }, "\u05EA\u05D5\u05D1\u05E0\u05D4 \u05E8\u05D5\u05D7\u05E0\u05D9\u05EA")), /*#__PURE__*/React.createElement("p", {
+    className: "text-xl text-gray-700 leading-relaxed text-right"
+  }, currentD.insight)), selectedOption !== null && /*#__PURE__*/React.createElement("button", {
+    onClick: handleNextDilemma,
+    className: "w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-4 rounded-full text-xl font-bold hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3"
+  }, showInsight ? currentDilemma < dilemmas.length - 1 ? 'לדילמה הבאה' : 'לסיכום' : 'הצג תובנה', /*#__PURE__*/React.createElement(ChevronRight, {
+    className: "w-6 h-6"
+  })))));
+}
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(HappinessKeysGame));
+})();
+</script>
+
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif;direction:rtl"><a href="https://www.kol-toda.co.il/t/games.html#g_simcha" style="color:#4f46e5">← עוד בשמחה וחיוך</a> · <a href="https://www.kol-toda.co.il/" style="color:#4f46e5">אתר הקול החמישי</a></p>
+</body>
+</html>

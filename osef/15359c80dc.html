@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>השפה השקטה של ניהול הכיתה</title>
+<meta name="description" content="השפה השקטה של ניהול הכיתה">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Assistant', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+            color: #333;
+            direction: rtl;
+            overflow-x: hidden;
+        }
+
+        .presentation-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .slide:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .title-slide {
+            text-align: center;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            position: relative;
+        }
+
+        .title-slide::before {
+            background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+        }
+
+        .title-slide h1 {
+            font-size: 3.5em;
+            margin-bottom: 25px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+        }
+
+        .title-slide .subtitle {
+            font-size: 1.8em;
+            opacity: 0.95;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+
+        .brain-icon {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 2em;
+            opacity: 0.7;
+        }
+
+        .qa-slide {
+            border-right: 8px solid #4facfe;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .question-section {
+            margin-bottom: 40px;
+        }
+
+        .question {
+            font-size: 2.5em;
+            color: #2d3436;
+            margin-bottom: 30px;
+            line-height: 1.3;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 15px;
+            border-right: 6px solid #e17055;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-icon {
+            font-size: 1.2em;
+            margin-left: 20px;
+            color: #e17055;
+        }
+
+        .answer-section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 35px;
+            border-radius: 15px;
+            font-size: 1.8em;
+            line-height: 1.6;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .answer-section.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .answer-section::before {
+            content: '💡';
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            font-size: 2em;
+            background: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .click-hint {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.2em;
+            color: #636e72;
+            font-style: italic;
+            opacity: 0.8;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .click-hint:hover {
+            background: #e9ecef;
+            transform: scale(1.02);
+        }
+
+        .click-hint.hidden {
+            display: none;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .slide-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(116, 185, 255, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .example-box {
+            background: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-size: 1.1em;
+            border-right: 6px solid #e84393;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-size: 1.1em;
+            border-right: 6px solid #00a085;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            color: #2d3436;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 600;
+            border-right: 5px solid #e17055;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 20px;
+            }
+            
+            .title-slide h1 {
+                font-size: 2.5em;
+            }
+            
+            .question {
+                font-size: 1.8em;
+                padding: 20px;
+            }
+            
+            .answer-section {
+                font-size: 1.4em;
+                padding: 25px;
+            }
+            
+            .navigation {
+                bottom: 20px;
+            }
+        }
+
+        .slide {
+            display: none;
+        }
+
+        .slide.active {
+            display: block;
+        }
+    </style>
+<meta property="og:title" content="השפה השקטה של ניהול הכיתה">
+<meta property="og:description" content="השפה השקטה של ניהול הכיתה">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-osef-15359c80dc.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/osef/15359c80dc.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+    <div class="presentation-container">
+        
+        <!-- כותרת -->
+        <div class="slide active title-slide">
+            <div class="brain-icon">🧠</div>
+            <div class="slide-counter">שקופית 1 מתוך 7</div>
+            <h1>🤫 השפה השקטה של ניהול הכיתה</h1>
+            <div class="subtitle">שליטה באמצעות שפת גוף, קרבה פיזית ואותות מוסכמים</div>
+            <div class="subtitle">מצגת אינטראקטיבית למורים מקצועיים</div>
+        </div>
+
+        <!-- שקופית 1 -->
+        <div class="slide qa-slide">
+            <div class="brain-icon">👀</div>
+            <div class="slide-counter">שקופית 2 מתוך 7</div>
+            
+            <div class="question-section">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    מהי "השפה השקטה" של ניהול כיתה?
+                </div>
+            </div>
+
+            <div class="answer-section" id="answer1">
+                <strong>השפה השקטה</strong> היא שימוש בשפת גוף, קרבה פיזית ואותות לא מילוליים כדי לשלוט בכיתה בשקט, בלי להפריע לרצף השיעור ובלי ליצור עימותים מיותרים.
+            </div>
+
+            <div class="click-hint" onclick="showAnswer('answer1', this)">
+                👆 לחץ כאן כדי לראות את התשובה
+            </div>
+        </div>
+
+        <!-- שקופית 2 -->
+        <div class="slide qa-slide">
+            <div class="brain-icon">🚶‍♂️</div>
+            <div class="slide-counter">שקופית 3 מתוך 7</div>
+            
+            <div class="question-section">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    מהו היתרון המרכזי של שימוש בקרבה פיזית לניהול התנהגות?
+                </div>
+            </div>
+
+            <div class="answer-section" id="answer2">
+                המורה שולט בהתנהגות התלמידים רק בעזרת <strong>נוכחות פיזית</strong> – בלי לומר מילה, מבלי לבייש או ליצור עימות. התקרבות שקטה לתלמיד שמפריע לרוב מספיקה כדי להחזיר אותו למסלול.
+                
+                <div class="example-box">
+                    <strong>דוגמה:</strong> תלמיד מדבר עם חבר במהלך השיעור. המורה ממשיך ללמד ובמקביל מתקרב אליהם בשקט. הילדים מבינים מיד ועוצרים לדבר.
+                </div>
+            </div>
+
+            <div class="click-hint" onclick="showAnswer('answer2', this)">
+                👆 לחץ כאן כדי לראות את התשובה
+            </div>
+        </div>
+
+        <!-- שקופית 3 -->
+        <div class="slide qa-slide">
+            <div class="brain-icon">👁️</div>
+            <div class="slide-counter">שקופית 4 מתוך 7</div>
+            
+            <div class="question-section">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    אילו דוגמאות יש לאותות לא מילוליים שמחליפים צעקות והערות קולניות?
+                </div>
+            </div>
+
+            <div class="answer-section" id="answer3">
+                <strong>אותות לא מילוליים יעילים:</strong>
+                <br>• <strong>קשר עין משמעותי</strong> - מבט ישיר ומתמשך
+                <br>• <strong>אצבע על השפתיים</strong> - סימן שקט אוניברסלי
+                <br>• <strong>הנהון קל</strong> - לעידוד או אישור
+                <br>• <strong>תנועת יד מוסכמת</strong> - סימנים שהוסכמו מראש עם הכיתה
+                
+                <div class="tip-box">
+                    <strong>טיפ מקצועי:</strong> כל האותות האלה יכולים להספיק כדי להשיב שקט ולתקן התנהגות בלי לדבר, לבייש או להפריע לשיעור.
+                </div>
+            </div>
+
+            <div class="click-hint" onclick="showAnswer('answer3', this)">
+                👆 לחץ כאן כדי לראות את התשובה
+            </div>
+        </div>
+
+        <!-- שקופית 4 -->
+        <div class="slide qa-slide">
+            <div class="brain-icon">📢</div>
+            <div class="slide-counter">שקופית 5 מתוך 7</div>
+            
+            <div class="question-section">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    מהם "אותות קריאה-תגובה" וכיצד הם עובדים?
+                </div>
+            </div>
+
+            <div class="answer-section" id="answer4">
+                <strong>אותות קריאה-תגובה</strong> הם ביטויים קצרים וקצביים שבהם המורה קורא והכיתה עונה בתבנית מוסכמת.
+                
+                <div class="example-box">
+                    <strong>דוגמאות מעשיות:</strong>
+                    <br>• מורה: "1, 2, 3 - עיניים אליי!" → כיתה: "1, 2 - עיניים אליך!"
+                    <br>• מורה: מחיאות כפיים בקצב מסוים → כיתה: חוזרת על אותו קצב
+                    <br>• מורה: "כל האזניים!" → כיתה: "מקשיבות!"
+                </div>
+                
+                <div class="highlight">
+                    <strong>היתרון:</strong> דרך מהירה ויעילה למקד קשב של כיתה שלמה תוך שניות!
+                </div>
+            </div>
+
+            <div class="click-hint" onclick="showAnswer('answer4', this)">
+                👆 לחץ כאן כדי לראות את התשובה
+            </div>
+        </div>
+
+        <!-- שקופית 5 -->
+        <div class="slide qa-slide">
+            <div class="brain-icon">🤝</div>
+            <div class="slide-counter">שקופית 6 מתוך 7</div>
+            
+            <div class="question-section">
+                <div class="question">
+                    <span class="question-icon">❓</span>
+                    למה חשוב להעדיף ניהול שקט על פני הערות פומביות ותזכורות קולניות?
+                </div>
+            </div>
+
+            <div class="answer-section" id="answer5">
+                <strong>הסיבות המקצועיות:</strong>
+                
+                <div class="example-box">
+                    <strong>❌ הערה פומבית:</strong>
+                    <br>• מביכה את התלמיד בפני חבריו
+                    <br>• עלולה לגרור מאבקי כוח מיותרים
+                    <br>• "מזהמת" את אווירת הכיתה
+                    <br>• מפריעה לרצף ההוראה
+                </div>
+                
+                <div class="tip-box">
+                    <strong>✅ ניהול שקט:</strong>
+                    <br>• שומר על כבוד התלמיד
+                    <br>• מונע הסלמה מיותרת
+                    <br>• שומר על אווירה חיובית
+                    <br>• מאפשר המשך רצף ההוראה
+                </div>
+                
+                <div class="highlight">
+                    <strong>העיקרון:</strong> שימור ההון הרגשי של הכיתה!
+                </div>
+            </div>
+
+            <div class="click-hint" onclick="showAnswer('answer5', this)">
+                👆 לחץ כאן כדי לראות את התשובה
+            </div>
+        </div>
+
+        <!-- סיכום -->
+        <div class="slide qa-slide">
+            <div class="brain-icon">🎯</div>
+            <div class="slide-counter">שקופית 7 מתוך 7</div>
+            
+            <div class="question-section">
+                <div class="question">
+                    <span class="question-icon">💡</span>
+                    מה המסקנה המקצועית העיקרית על השפה השקטה?
+                </div>
+            </div>
+
+            <div class="answer-section" id="answer6">
+                <strong>השפה השקטה היא כלי מקצועי רב עוצמה</strong> שמאפשר למורים מנוסים לנהל כיתה ביעילות תוך שמירה על:
+                
+                <div class="tip-box">
+                    <strong>🔑 עקרונות מפתח:</strong>
+                    <br>• <strong>דיסקרטיות</strong> - התערבות שלא מביכה
+                    <br>• <strong>יעילות</strong> - תיקון מהיר של התנהגות
+                    <br>• <strong>חיוביות</strong> - שמירה על אווירת הכיתה
+                    <br>• <strong>רצף</strong> - המשך ההוראה ללא הפרעות
+                </div>
+                
+                <div class="highlight">
+                    <strong>זכור:</strong> המורה המקצועי שולט בכיתה בעיקר באמצעות נוכחותו, לא באמצעות קולו!
+                </div>
+            </div>
+
+            <div class="click-hint" onclick="showAnswer('answer6', this)">
+                👆 לחץ כאן כדי לראות את התשובה
+            </div>
+        </div>
+    </div>
+
+    <!-- ניווט -->
+    <div class="navigation">
+        <button class="nav-button" onclick="previousSlide()">← הקודם</button>
+        <button class="nav-button" onclick="nextSlide()">הבא →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function previousSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        function showAnswer(answerId, clickHint) {
+            const answer = document.getElementById(answerId);
+            answer.classList.add('show');
+            clickHint.classList.add('hidden');
+        }
+
+        // קיצורי מקלדת
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+            }
+        });
+
+        // הוספת אפקט רועד קל לכפתור הקליק
+        document.querySelectorAll('.click-hint').forEach(hint => {
+            hint.addEventListener('mouseenter', function() {
+                this.style.animation = 'pulse 1.5s infinite';
+            });
+            
+            hint.addEventListener('mouseleave', function() {
+                this.style.animation = 'none';
+            });
+        });
+
+        // הוספת CSS לאנימציה
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+
+<p style="text-align:center;margin:28px 0 18px;font:15px Heebo,Arial,sans-serif;direction:rtl"><a href="https://www.kol-toda.co.il/t/teachers.html#t_discipline" style="color:#4f46e5">← עוד במשמעת וסמכות בכיתה</a> · <a href="https://www.kol-toda.co.il/" style="color:#4f46e5">אתר הקול החמישי</a></p>
+</body>
+</html>
