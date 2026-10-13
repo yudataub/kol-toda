@@ -17,6 +17,7 @@ nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:1180px;
 nav a{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:5px 12px;color:var(--ink);text-decoration:none;font-size:.9rem}
 main{max-width:1180px;margin:0 auto;padding:0 16px 40px}
 section h2{margin:30px 0 12px;font-size:1.3rem;border-bottom:2px solid var(--line);padding-bottom:6px}section h2 small{color:var(--muted);font-weight:400;font-size:.9rem}
+.gh{margin:22px 0 10px;font-size:1.1rem;color:var(--acc)}nav.sub{margin:0 0 8px}nav.sub a{font-size:.8rem;padding:3px 10px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
 .card>a{color:inherit;text-decoration:none;display:flex;flex-direction:column;flex:1}
@@ -44,7 +45,7 @@ section h2{margin:30px 0 12px;font-size:1.3rem;border-bottom:2px solid var(--lin
 <a href="/">→ לאתר הקול החמישי</a></header>
 <div class="bar"><input id="q" type="search" placeholder="חיפוש: נושא, פרשה, צדיק, חג – או מילה מתוך המצגת…" autocomplete="off"><div id="info"></div></div>
 <nav id="chips"></nav><main id="main"></main><p id="none">לא נמצאו מצגות</p>
-<script src="data.js?v=f7c51cde00"></script>
+<script src="data.js?v=44f9e52211"></script>
 <script>
 (function(){
 var S=DATA.sections, I=DATA.items, main=document.getElementById("main"), chips=document.getElementById("chips");
@@ -54,22 +55,26 @@ var G="https://gamma.app/docs/";
 S.forEach(function(s){
   var its=I.filter(function(i){return i.s===s[0];}); if(!its.length) return;
   chips.insertAdjacentHTML("beforeend",'<a href="#'+s[0]+'">'+s[1]+" "+esc(s[2])+" ("+its.length+")</a>");
-  var h='<section id="'+s[0]+'"><h2>'+s[1]+" "+esc(s[2])+" <small>"+its.length+'</small></h2><div class="grid">';
+  var h='<section id="'+s[0]+'"><h2>'+s[1]+" "+esc(s[2])+" <small>"+its.length+'</small></h2>', cur=null, gi=0, subs=[];
   its.forEach(function(i){
-    i.k=norm(i.t+" "+(i.b||[]).join(" "));
+    var g=i.g||"";                                             // a sub-section: the parasha / the festival
+    if(g!==cur){ if(cur!==null) h+="</div></div>"; cur=g; gi++; if(g) subs.push('<a href="#'+s[0]+"-"+gi+'">'+esc(g)+"</a>");
+      h+='<div class="grp" id="'+s[0]+"-"+gi+'">'+(g?"<h3 class=\"gh\">"+esc(g)+"</h3>":"")+'<div class="grid">'; }
+    i.k=norm(i.t+" "+(i.b||[]).join(" ")+" "+g);
     h+='<div class="card" data-id="'+i.id+'"><a href="'+G+i.id+'" target="_blank" rel="noopener"><img loading="lazy" src="img/'+i.id+'.webp" alt="">'
       +'<div class="txt"><h3>'+esc(i.t)+'</h3>'+(i.b&&i.b.length?'<ul class="bul">'+i.b.map(function(b){return "<li>"+esc(b)+"</li>";}).join("")+"</ul>":"")
       +'<div class="meta">'+i.n+' שקפים</div><span class="go">פתיחה ב-Gamma ↗</span></div></a>'
       +(i.a&&i.a.length?'<div class="alts">עוד גרסאות: '+i.a.map(function(a,k){return '<a href="'+G+a+'" target="_blank" rel="noopener">גרסה '+(k+2)+"</a>";}).join("")+"</div>":"")
       +'<div class="rate" data-id="'+i.id+'">'+[1,2,3,4,5].map(function(n){return '<button type="button" data-n="'+n+'" aria-label="'+n+' כוכבים">★</button>';}).join("")+'<span class="avg"></span></div></div>';
   });
-  main.insertAdjacentHTML("beforeend",h+"</div></section>");
+  h+="</div></div>"; if(subs.length>1) h=h.replace("</h2>",'</h2><nav class="sub">'+subs.join("")+"</nav>");
+  main.insertAdjacentHTML("beforeend",h+"</section>");
 });
 var cards={}; [].forEach.call(document.querySelectorAll(".card"),function(c){cards[c.dataset.id]=c;});
 var BY={}; I.forEach(function(i){BY[i.id]=i;}); I=[].map.call(document.querySelectorAll(".card"),function(c){return BY[c.dataset.id];});  // page order: excerpts go to the cards on top
 var W=null, loading=false, T={}, q=document.getElementById("q"), info=document.getElementById("info");
 function loadWords(){ if(W||loading) return; loading=true; info.textContent="טוען את החיפוש בתוך המצגות…";
-  fetch("words.json?v=f7c51cde00").then(function(r){return r.json();}).then(function(d){W=d; info.textContent=""; run();}).catch(function(){info.textContent="";}); }
+  fetch("words.json?v=44f9e52211").then(function(r){return r.json();}).then(function(d){W=d; info.textContent=""; run();}).catch(function(){info.textContent="";}); }
 function excerpt(id,w){
   var c=cards[id], show=function(t){ var old=c.querySelector(".hit"); if(old) old.remove();
     var k=t.indexOf(w); if(k<0) return; var a=Math.max(0,k-55),e=Math.min(t.length,k+w.length+55),d=document.createElement("div"); d.className="hit";
@@ -87,6 +92,7 @@ function run(){
     c.style.display=ok?"":"none"; if(ok) n++;
     if(ok&&w.length){var x=w.filter(function(x){return i.k.indexOf(x)<0;})[0]; if(x&&shown<60){shown++; excerpt(i.id,x);}}
   });
+  [].forEach.call(document.querySelectorAll(".grp"),function(s){s.style.display=[].some.call(s.querySelectorAll(".card"),function(c){return c.style.display!=="none";})?"":"none";});
   [].forEach.call(document.querySelectorAll("section"),function(s){s.style.display=[].some.call(s.querySelectorAll(".card"),function(c){return c.style.display!=="none";})?"":"none";});
   document.getElementById("none").style.display=n?"none":"block";
   if(W||!w.length) info.textContent=w.length?(n+" מצגות"):"";
