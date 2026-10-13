@@ -170,8 +170,9 @@ function pic(r, c) {
 // ---------- matching: every word in the title or in its path (catalog › topic › …), at least one in the title
 let words = [], wordRes = [];
 // כתיב מלא / חסר: when the exact spelling finds little, a second pass without ו and י inside words
-// ("אמנו" finds "אימנו", "שבת" finds "שבות" too – so only as a fallback)
-const loose = s => s.replace(/(\S)[וי]+/g, "$1").replace(/(\S)[וי]+/g, "$1");
+// ("אמנו" finds "אימנו", "שבת" finds "שבות" too – so only as a fallback). It also folds a word-final ת into ה
+// (13.10: "שמחת חול המועד" did not find "שמחה בחול המועד"; so תורת/תורה, מצות/מצוה)
+const loose = s => s.replace(/(\S)[וי]+/g, "$1").replace(/(\S)[וי]+/g, "$1").replace(/(\S{2})ת(?![א-ת])/g, "$1ה");
 let LN = null, LP = null, LI = null, LIn = 0;
 function looseArrays() {
   if (!LN) { LN = NN.map(loose); LP = NP.map(loose); }
@@ -180,13 +181,21 @@ function looseArrays() {
 let inLoose = false;
 // where w starts a word of t, or -1: a guessed form (a prefix letter dropped, a short word without ו/י) must
 // not be found inside another word – "קל" inside "שוקולד" (שקלד) is not a hit
-function at(t, w) { if (t.startsWith(w)) return 0; const p = t.indexOf(" " + w); return p < 0 ? -1 : p + 1; }
+function at(t, w, title) {
+  if (t.startsWith(w)) return 0;
+  const p = t.indexOf(" " + w);
+  if (p >= 0 || !inLoose || !title || w.length < 2) return p < 0 ? -1 : p + 1;
+  // the other spelling: a word of the title (not of its path) may carry a prefix letter ("בחול" for "חול")
+  const m = new RegExp("(^| )[בהוכלמש]" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).exec(t);
+  return m ? m.index + m[1].length : -1;
+}
 function match(t, path) {
   let inT = 0, start = 0;
   for (const w of words) {
-    let p = inLoose ? at(t, w) : t.indexOf(w);
+    let p = inLoose ? at(t, w, true) : t.indexOf(w);
     // a word with a prefix letter ("בקול", "והלשון") also finds the bare word, at the start of a word
-    const b = p < 0 && w.length > 3 && "בהוכלמש".includes(w[0]) ? w.slice(1) : "";
+    // (in the other-spelling pass a word is shorter by its ו/י: "בחול" is "בחל" there)
+    const b = p < 0 && w.length > (inLoose ? 2 : 3) && "בהוכלמש".includes(w[0]) ? w.slice(1) : "";
     if (b) p = at(t, b);
     if (p >= 0) { inT++; if (p === 0 || t[p - 1] === " ") start++; }
     else if (!path.includes(w) && !(b && at(path, b) >= 0)) return -1;
@@ -280,7 +289,7 @@ $("out").addEventListener("click", e => {
 function run() {
   if (!N) return;
   if (!search(false)) return;
-  if (I && itemHits.length + nodeHits.length < 8 && words.some(w => /[וי]/.test(w.slice(1)))) {
+  if (I && itemHits.length + nodeHits.length < 8 && words.some(w => /[וי]/.test(w.slice(1)) || /..ת$/.test(w))) {
     // the exact-spelling hits stay first; the other spelling only adds after them
     const strict = [nodeHits, itemHits], had = strict[0].length + strict[1].length;
     search(true);
