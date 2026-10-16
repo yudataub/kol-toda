@@ -38,13 +38,41 @@ function btnHtml(f) {
   return `<a class="btn" style="color:${m[2]};background:${m[3]};border-color:${m[3]}" href="${esc(href)}" target="_blank" rel="noopener">${text}${f.z ? `<span class="sz">· ${esc(f.z)}</span>` : ""}</a>` +
     (href !== f.u ? `<a class="btn dl" href="${esc(f.u)}" download title="הורדת הקובץ">⬇️</a>` : "");
 }
+// the teachers' shared rating (ratings.js, the same Firestore store and ids as the catalog engine); "my" ratings
+// are kept under the catalog's own localStorage key, so a material rated in the catalog shows as rated here too
+const LS_MINE = "cat2_גדולי ישראל_mine";
+let MINE = {}; try { MINE = JSON.parse(localStorage.getItem(LS_MINE)) || {}; } catch (e) {}
+const keyOf = it => it.files[0].id;
+const idsOf = it => it.files.map(f => f.id).concat(it.dup || []);
+const BYKEY = {}; P.items.forEach(i => BYKEY[keyOf(i)] = i);
+function rating(it) {
+  const R = window.__ratingsApi && window.__ratingsApi.ratingsCache;
+  let sum = 0, count = 0;
+  if (R) idsOf(it).forEach(id => { const r = R.get(id); if (r) { sum += r.sum || 0; count += r.count || 0; } });
+  return {avg: count ? sum / count : 0, count};
+}
+const rateText = r => r.count ? `★ ${r.avg.toFixed(1)} (${r.count})` : "☆ דרגו";
+async function loadRatings() {
+  const api = window.__ratingsApi; if (!api) return;
+  const ids = [...document.querySelectorAll(".card[data-id]")].slice(0, 400).flatMap(c => BYKEY[c.dataset.id] ? idsOf(BYKEY[c.dataset.id]) : []);
+  await api.fetchRatings(ids);
+  document.querySelectorAll(".card[data-id]").forEach(c => {
+    const it = BYKEY[c.dataset.id], b = c.querySelector(".rate"); if (!it || !b) return;
+    const r = rating(it); b.textContent = rateText(r); b.classList.toggle("has", !!r.count);
+  });
+}
+window.addEventListener("ratings-ready", loadRatings);
+
 function cardHtml(it) {
   const m = FMT[kindOf(it.files[0])] || FMT.web, t = thumbOf(it);
   const fb = `<span class="fb" style="background:${m[3]}">${m[0]}</span>`;
   const th = t ? `<a class="th${t.wide ? " wide" : ""}" href="${esc(t.u)}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">` +
       `<img src="${esc(t.src)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('noimg')">${fb}</a>`
     : `<a class="th noimg" href="${esc(viewHref(it.files[0]))}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">${fb}</a>`;
-  return `<div class="card">${th}<div class="body"><div class="name" title="${esc(it.t)}">${esc(it.t)}</div>
+  const k = keyOf(it), mine = MINE[k] || 0, r = rating(it);
+  const stars = [1, 2, 3, 4, 5].map(v => `<button class="${v <= mine ? "on" : ""}" data-rate="${v}" aria-label="דירוג ${v}">★</button>`).join("");
+  return `<div class="card" data-id="${esc(k)}">${th}<div class="body"><div class="name" title="${esc(it.t)}">${esc(it.t)}</div>
+    <div class="rates"><button class="rate${r.count ? " has" : ""}" data-ratebtn="1" title="דירוג משותף של המורים">${rateText(r)}</button><span class="picker">${stars}</span></div>
     <div class="meta">${it.gr ? `<span class="badge grade">${esc(it.gr)}</span>` : ""}${it.s ? `<span class="badge">${esc(it.s)}</span>` : ""}</div>
     <div class="btns">${it.files.map(btnHtml).join("")}</div></div></div>`;
 }
@@ -64,9 +92,23 @@ function render() {
       <div class="grid">${(all ? list : list.slice(0, PAGE)).map(cardHtml).join("")}</div>
       ${all ? "" : `<button class="more" data-more="${c.k}">הצגת כל ${list.length}</button>`}</section>`;
   }).join("");
+  loadRatings();
 }
 document.getElementById("chips").innerHTML = FILTERS.map(([k, l]) => `<button class="chip${k ? "" : " on"}" data-fmt="${k}">${l}</button>`).join("");
-document.addEventListener("click", e => {
+document.addEventListener("click", async e => {
+  const open = e.target.closest(".rates");
+  document.querySelectorAll(".picker.open").forEach(p => { if (!open || p !== open.querySelector(".picker")) p.classList.remove("open"); });
+  if (e.target.closest("[data-ratebtn]")) { open.querySelector(".picker").classList.toggle("open"); return; }
+  const st = e.target.closest("[data-rate]");
+  if (st) {
+    const card = st.closest(".card"), k = card.dataset.id, v = +st.dataset.rate, old = MINE[k] || 0;
+    if (v === old) return;
+    MINE[k] = v; try { localStorage.setItem(LS_MINE, JSON.stringify(MINE)); } catch (err) {}
+    card.querySelectorAll(".picker button").forEach(b => b.classList.toggle("on", +b.dataset.rate <= v));
+    card.querySelector(".picker").classList.remove("open");
+    try { await window.__ratingsApi.submitRating(k, v, old); window.__ratingsApi.ratingsCache.delete(k); loadRatings(); } catch (err) { console.error(err); }
+    return;
+  }
   const c = e.target.closest("[data-fmt]");
   if (c) { state.fmt = c.dataset.fmt; document.querySelectorAll("[data-fmt]").forEach(b => b.classList.toggle("on", b === c)); return render(); }
   const m = e.target.closest("[data-more]");
