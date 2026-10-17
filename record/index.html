@@ -80,6 +80,8 @@ footer a{color:var(--acc);font-weight:700}
 #ravDlg input,#addRav input{width:100%;margin:4px 0 8px}
 #addRav{margin-top:10px;padding:10px;border-radius:10px;background:var(--acc2)}
 .bgs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0}
+@media (min-width:480px){.bgs{grid-template-columns:repeat(4,1fr)}}
+.bgh{font-size:14px;font-weight:700;color:var(--muted);margin:8px 0 0}
 .bgs button{aspect-ratio:16/10;border:2px solid var(--line);border-radius:10px;background:var(--acc2) center/cover;color:var(--ink);font-size:14px;font-weight:700;padding:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2}
 .bgs button small{font-weight:400;color:var(--muted);font-size:12px}
 .bgs button span{background:rgba(0,0,0,.55);color:#fff;border-radius:6px;padding:1px 6px;margin-top:auto}
@@ -191,14 +193,7 @@ footer a{color:var(--acc);font-weight:700}
   </div>
   <div id="bgOpts">
     <h2 style="font-size:17px;margin:14px 0 4px">🪄 רקע מאחוריכם (כמו בזום)</h2>
-    <div class="bgs" id="bgChoices">
-      <button type="button" data-bg="none">ללא<br><small>הבית כמו שהוא</small></button>
-      <button type="button" data-bg="blur">טשטוש<br><small>הבית מטושטש</small></button>
-      <button type="button" data-bg="img:seforim" style="background-image:url(bg-seforim.webp)"><span>ספרייה</span></button>
-      <button type="button" data-bg="img:jerusalem" style="background-image:url(bg-jerusalem.webp)"><span>ירושלים</span></button>
-      <button type="button" data-bg="img:study" style="background-image:url(bg-study.webp)"><span>חדר עבודה</span></button>
-      <button type="button" data-bg="img:custom" id="bgCustomBtn"><span>📁 תמונה משלי</span></button>
-    </div>
+    <div id="bgChoices"></div>
     <input type="file" id="bgFile" accept="image/*" hidden>
     <div class="m">המצלמה לא מודדת מרחק, ולכן הרקע מוחלף לפי זיהוי האדם: כל מה שמסביבכם מוחלף, גם אם הוא קרוב (כיסא, שולחן).</div>
     <div class="row"><button type="button" class="btn small ghost" id="bgPrevBtn">👁 תצוגה חיה מהמצלמה</button> <span class="m" id="bgPrevMsg"></span></div>
@@ -335,7 +330,25 @@ const V = {
 if (!canScreen) V.layout = "camera";
 if (V.bg === "img:custom" && !store.get("bgCustom")) V.bg = "none";
 const LAYOUT_NAMES = { camera: "📷 מצלמה מלאה", screenCam: "🖥️ מסך + מצלמה בעיגול", screen: "🖥️ מסך בלבד" };
-const BG_NAMES = { none: "", blur: " · רקע מטושטש", "img:seforim": " · רקע ספרייה", "img:jerusalem": " · רקע ירושלים", "img:study": " · רקע חדר עבודה", "img:custom": " · רקע משלי" };
+// רקעים מוכנים (נוצרו ב-Codex במיוחד לשיעור תורני). bg-<id>.webp לרקע, bg-<id>-t.webp לתמונה הקטנה
+const BG_LIST = [
+  ["תורה וירושלים", [["seforim", "ספרייה"], ["beitmidrash", "בית מדרש"], ["aron", "ארון קודש"], ["desk", "שולחן לימוד"],
+                     ["kotel", "הכותל"], ["jerusalem", "אבן ירושלמית"], ["alley", "העיר העתיקה"], ["study", "חדר עבודה"]]],
+  ["נופי טבע", [["galilee", "גבעות הגליל"], ["kinneret", "הכנרת"], ["waterfall", "מפל"], ["forest", "יער"],
+               ["negev", "הנגב"], ["sea", "הים בשקיעה"], ["wheat", "שדה חיטה"], ["lake", "אגם בהרים"]]]
+];
+const BG_IDS = new Set(BG_LIST.flatMap(g => g[1].map(x => x[0])));
+const BG_NAMES = { none: "", blur: " · רקע מטושטש", "img:custom": " · רקע משלי" };
+BG_LIST.forEach(g => g[1].forEach(([id, name]) => BG_NAMES["img:" + id] = " · רקע " + name));
+(function buildBgChoices() {
+  const btn = (bg, html, thumb) => `<button type="button" data-bg="${bg}"${thumb ? ` style="background-image:url(${thumb})"` : ""}>${html}</button>`;
+  let h = '<div class="bgs">' + btn("none", "ללא<br><small>הבית כמו שהוא</small>") + btn("blur", "טשטוש<br><small>הבית מטושטש</small>") +
+    btn("img:custom", "<span>📁 תמונה משלי</span>").replace("<button", '<button id="bgCustomBtn"') + "</div>";
+  for (const [title, items] of BG_LIST)
+    h += `<div class="bgh">${title}</div><div class="bgs">` + items.map(([id, name]) => btn("img:" + id, `<span>${name}</span>`, `bg-${id}-t.webp`)).join("") + "</div>";
+  $("bgChoices").innerHTML = h;
+})();
+if (V.bg.startsWith("img:") && V.bg !== "img:custom" && !BG_IDS.has(V.bg.slice(4))) V.bg = "none";
 function showVset() { $("vsetSum").textContent = LAYOUT_NAMES[V.layout] + (V.layout === "screen" ? "" : BG_NAMES[V.bg] || "") + " · " + V.vq + "p"; }
 
 let pickBg = V.bg;
@@ -390,7 +403,7 @@ async function startBgPreview() {
   msg.textContent = pickBg === "none" ? "" : "טוען את זיהוי הרקע… (בפעם הראשונה כמה שניות)";
   const me = bgPrev = { stop: [] };
   try {
-    const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: $("facing").value, width: { ideal: 1280 }, height: { ideal: 720 } } });
+    const s = await gum({ video: { facingMode: $("facing").value, width: { ideal: 1280 }, height: { ideal: 720 } } });
     me.stop.push(() => s.getTracks().forEach(t => t.stop()));
     if (bgPrev !== me) return me.stop.forEach(f => f());
     const v = await hiddenVideo(s); me.stop.push(() => v.remove());
@@ -599,8 +612,34 @@ $("mic").onchange = () => store.set("mic", $("mic").value);
 
 function audioConstraints() {
   const c = { echoCancellation: $("clean").checked, noiseSuppression: $("clean").checked, autoGainControl: $("clean").checked };
-  if ($("mic").value) c.deviceId = { exact: $("mic").value };
+  if ($("mic").value) c.deviceId = { ideal: $("mic").value };
   return c;
+}
+
+// getUserMedia עם נפילה לאחור: מכשיר שנבחר ונותק → ברירת המחדל. אין מצלמה/מיקרופון בכלל → הודעה ברורה
+// (במקום "Requested device not found" של הדפדפן)
+async function gum(c) {
+  try { return await navigator.mediaDevices.getUserMedia(c); }
+  catch (e) {
+    if (!/NotFound|Overconstrained|NotReadable/.test(e.name)) throw e;
+    const c2 = JSON.parse(JSON.stringify(c));
+    if (c2.audio && typeof c2.audio === "object") delete c2.audio.deviceId;
+    if (c2.video && typeof c2.video === "object") delete c2.video.facingMode;
+    if ($("mic").value) { $("mic").value = ""; store.set("mic", ""); }
+    try { return await navigator.mediaDevices.getUserMedia(c2); }
+    catch (e2) {
+      if (e2.name === "NotAllowedError") throw e2;
+      const busy = e2.name === "NotReadableError" ? " (אולי תוכנה אחרת, כמו זום, משתמשת בה עכשיו)" : "";
+      let devs = [];
+      try { devs = await navigator.mediaDevices.enumerateDevices(); } catch (x) {}
+      const noCam = c2.video && !devs.some(d => d.kind === "videoinput");
+      const noMic = c2.audio && !devs.some(d => d.kind === "audioinput");
+      throw Object.assign(new Error(
+        noCam ? "לא נמצאה מצלמה במכשיר. אפשר להקליט שמע (MP3), או לבחור ב-🎛️ הגדרות \"המסך בלבד\"." :
+        noMic ? "לא נמצא מיקרופון במכשיר. בדקו שהמיקרופון מחובר ומופעל בהגדרות הקול של המחשב." :
+        (c2.video ? "המצלמה או המיקרופון לא נפתחו" : "המיקרופון לא נפתח") + busy + "."), { name: "Missing" });
+    }
+  }
 }
 
 // ---------- מד עוצמה ----------
@@ -630,7 +669,8 @@ async function begin() {
   } catch (e) {
     r.stops.forEach(f => f()); r.streams.forEach(s => s.getTracks().forEach(t => t.stop()));
     $("preview").style.display = "none";
-    status(e.name === "NotAllowedError" ? "אין הרשאה למיקרופון/מצלמה/מסך. אשרו בדפדפן ונסו שוב." : "לא הצלחתי להתחיל: " + e.message, "err");
+    status(e.name === "NotAllowedError" ? "אין הרשאה למיקרופון/מצלמה/מסך. אשרו בדפדפן (סמל המנעול ליד הכתובת) ונסו שוב." :
+           e.name === "Missing" ? "⚠️ " + e.message : "לא הצלחתי להתחיל: " + e.message, "err");
     return;
   }
   R = r;
@@ -656,7 +696,7 @@ function saveChunk(r, blob) {
 }
 
 async function beginAudio(r) {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints() });
+  const stream = await gum({ audio: audioConstraints() });
   r.streams.push(stream);
   const RATES = [8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000];
   let ctx = new AudioContext();
@@ -717,7 +757,7 @@ async function beginVideo(r) {
   meterIn.connect(mix);
   let videoTrack;
   if (layout === "camera") {
-    const cam = await navigator.mediaDevices.getUserMedia({
+    const cam = await gum({
       video: { facingMode: V.facing, width: { ideal: dims[0] }, height: { ideal: dims[1] } },
       audio: audioConstraints() });
     r.streams.push(cam);
@@ -740,7 +780,7 @@ async function beginVideo(r) {
     r.streams.push(disp);
     let mic = null, cam = null;
     try {
-      const s = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints(),
+      const s = await gum({ audio: audioConstraints(),
         video: layout === "screenCam" ? { facingMode: V.facing, width: { ideal: 640 }, height: { ideal: 480 } } : false });
       r.streams.push(s);
       mic = s.getAudioTracks().length ? s : null;
