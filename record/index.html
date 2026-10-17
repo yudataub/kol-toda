@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>מקליט – הקול החמישי</title>
+<meta name="description" content="הקלטת שמע ל-MP3 ווידאו ל-MP4 ישירות מהדפדפן. ההקלטות נשמרות במכשיר, ואפשר לשמור אותן גם בגוגל דרייב.">
+<style>
+:root{--bg:#f4f1fa;--card:#fff;--ink:#1f2937;--muted:#6b7280;--line:#e5e0f0;--acc:#6d28d9;--acc2:#ede7fb;--rec:#dc2626;--ok:#15803d;--warn:#b45309}
+@media (prefers-color-scheme:dark){:root{--bg:#15131c;--card:#221f2c;--ink:#ece8f6;--muted:#a49cbb;--line:#353047;--acc:#a78bfa;--acc2:#2e2840;--rec:#f87171;--ok:#4ade80;--warn:#fbbf24}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 Heebo,Arial,sans-serif}
+main{max-width:760px;margin:0 auto;padding:18px 16px 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+h1{margin:0;font-size:26px}
+h2{font-size:19px;margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 4px 18px rgba(0,0,0,.05)}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tab{flex:1;padding:12px 8px;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;font:inherit;font-weight:700;cursor:pointer}
+.tab.on{border-color:var(--acc);background:var(--acc2);color:var(--acc)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0}
+label{font-size:15px;color:var(--muted)}
+select,input[type=text],input[type=password],input[type=url]{font:inherit;font-size:16px;padding:9px 11px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);max-width:100%}
+input.name{width:100%}
+button{font:inherit;cursor:pointer}
+.btn{padding:10px 16px;border:0;border-radius:10px;background:var(--acc);color:#fff;font-weight:700}
+.btn.ghost{background:var(--acc2);color:var(--acc)}
+.btn.small{padding:6px 11px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:default}
+.icon{background:none;border:0;font-size:22px;padding:4px 8px}
+.big{display:flex;justify-content:center;align-items:center;gap:22px;margin:16px 0 6px}
+#recBtn{width:92px;height:92px;border-radius:50%;border:6px solid var(--acc2);background:var(--rec);color:#fff;font-size:15px;font-weight:800;box-shadow:0 6px 20px rgba(220,38,38,.35)}
+#recBtn.stop{border-radius:22px}
+.round{width:58px;height:58px;border-radius:50%;border:0;background:var(--acc2);color:var(--acc);font-size:22px}
+.round:disabled{opacity:.35}
+#timer{text-align:center;font:700 34px/1.2 ui-monospace,Consolas,monospace;letter-spacing:1px}
+#timer.on{color:var(--rec)}
+#meter{height:10px;background:var(--acc2);border-radius:6px;overflow:hidden;margin:6px 0}
+#meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#eab308 70%,#ef4444);transition:width .08s}
+#preview{width:100%;max-height:380px;background:#000;border-radius:12px;display:none}
+.status{min-height:24px;text-align:center;font-size:15px;color:var(--muted)}
+.status.err{color:var(--rec)} .status.ok{color:var(--ok)}
+.note{font-size:14px;color:var(--warn);margin:6px 0}
+.rec{border-top:1px solid var(--line);padding:12px 0}
+.rec:first-child{border-top:0}
+.rec .t{font-weight:700;word-break:break-word}
+.rec .m{font-size:14px;color:var(--muted)}
+.rec audio,.rec video{width:100%;margin-top:8px;border-radius:10px}
+.rec video{max-height:320px;background:#000}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.prog{height:6px;background:var(--acc2);border-radius:4px;overflow:hidden;margin-top:6px;display:none}
+.prog i{display:block;height:100%;width:0;background:var(--acc)}
+.empty{color:var(--muted);font-size:15px}
+dialog{border:0;border-radius:16px;padding:20px;width:min(480px,94vw);background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog input{width:100%;margin:4px 0 10px;direction:ltr;text-align:left}
+details{font-size:15px;color:var(--muted)} summary{cursor:pointer}
+footer{margin-top:24px;padding:14px 16px;border-radius:14px;background:var(--acc2);font-size:15px;text-align:center}
+footer a{color:var(--acc);font-weight:700}
+</style><meta property="og:title" content="מקליט – הקול החמישי">
+<meta property="og:description" content="הקלטת שמע ל-MP3 ווידאו ל-MP4 ישירות מהדפדפן. ההקלטות נשמרות במכשיר, ואפשר לשמור אותן גם בגוגל דרייב.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-record-index.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/record/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+<script async src="https://www.kol-toda.co.il/a.js"></script>
+</head><body>
+<main>
+<header>
+  <h1>🎙️ מקליט</h1>
+  <button class="icon" id="setBtn" title="הגדרות שמירה בדרייב" aria-label="הגדרות">⚙️</button>
+</header>
+
+<div class="tabs" role="tablist">
+  <button class="tab on" data-mode="audio" role="tab">🎧 שמע · MP3</button>
+  <button class="tab" data-mode="video" role="tab">🎥 וידאו · MP4</button>
+</div>
+
+<section class="card">
+  <input class="name" id="name" type="text" aria-label="שם ההקלטה" placeholder="שם ההקלטה">
+  <div class="row" id="audioOpts">
+    <label>מיקרופון <select id="mic"><option value="">ברירת מחדל</option></select></label>
+    <label>איכות <select id="kbps"><option value="64">64 (דיבור, קטן)</option><option value="96">96</option><option value="128" selected>128 (מומלץ)</option><option value="192">192 (מוזיקה)</option></select></label>
+    <label><input type="checkbox" id="clean" checked> סינון רעשים</label>
+  </div>
+  <div class="row" id="videoOpts" hidden>
+    <label>מקור <select id="vsrc"><option value="camera">מצלמה</option><option value="screen">המסך + מיקרופון</option></select></label>
+    <label>מצלמה <select id="cam"><option value="user">קדמית</option><option value="environment">אחורית</option></select></label>
+    <label>איכות <select id="vq"><option value="720">720p</option><option value="1080">1080p</option><option value="480">480p (קטן)</option></select></label>
+  </div>
+  <div class="note" id="fmtNote" hidden></div>
+
+  <video id="preview" playsinline muted></video>
+  <div id="timer">00:00</div>
+  <div id="meter"><i></i></div>
+  <div class="big">
+    <button class="round" id="pauseBtn" disabled title="השהיה" aria-label="השהיה">⏸</button>
+    <button id="recBtn">הקלטה</button>
+    <span style="width:58px"></span>
+  </div>
+  <div class="status" id="status">לחצו "הקלטה" כדי להתחיל</div>
+  <div class="row" style="justify-content:center"><label><input type="checkbox" id="autoDrive"> לשמור אוטומטית בדרייב בסיום</label></div>
+</section>
+
+<section class="card">
+  <h2>📁 ההקלטות שלי (במכשיר הזה)</h2>
+  <div id="list"><div class="empty">עוד אין הקלטות.</div></div>
+  <details style="margin-top:10px"><summary>איפה זה נשמר?</summary>
+    ההקלטות נשמרות בתוך הדפדפן במכשיר הזה, וכל קטע נשמר תוך כדי ההקלטה, כך שגם אם הדף נסגר באמצע ההקלטה תשוחזר בכניסה הבאה.
+    ניקוי נתוני הדפדפן מוחק אותן, ולכן כדאי להוריד קובץ או לשמור בדרייב. <span id="quota"></span>
+  </details>
+</section>
+
+<section class="card">
+  <h2>☁️ ההקלטות בגוגל דרייב</h2>
+  <div id="driveBox" class="empty">כדי לשמור בדרייב פותחים את ⚙️ ומזינים את כתובת השרת ואת הקוד.</div>
+</section>
+
+<footer>📚 עוד חומרי לימוד – חינם, במאגר הקול החמישי: <a href="https://www.kol-toda.co.il/search/">חיפוש במאגר</a> · <a href="https://www.kol-toda.co.il/">המאגר המלא</a></footer>
+</main>
+
+<dialog id="dlg">
+  <h2>⚙️ שמירה בגוגל דרייב</h2>
+  <label for="cfgUrl">כתובת השרת (מסתיימת ב-‎/exec)</label>
+  <input id="cfgUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+  <label for="cfgCode">קוד שמירה</label>
+  <input id="cfgCode" type="password" autocomplete="off">
+  <div class="status" id="cfgStatus"></div>
+  <div class="row" style="justify-content:flex-end">
+    <button class="btn ghost" id="cfgClose">סגירה</button>
+    <button class="btn" id="cfgSave">בדיקה ושמירה</button>
+  </div>
+</dialog>
+
+<script src="lame.min.js"></script>
+<script>
+"use strict";
+// כתובת ברירת המחדל של שרת הדרייב (Apps Script). אפשר גם להזין ב-⚙️.
+const DRIVE_URL = "";
+const DIRECT_MAX = 25 * 1024 * 1024;   // עד כאן העלאה דרך השרת; מעל זה ישירות לדרייב
+
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d = "") { try { return localStorage.getItem("ktrec." + k) ?? d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("ktrec." + k, v); } catch (e) {} }
+};
+const cfg = () => ({ url: store.get("url", DRIVE_URL), code: store.get("code") });
+
+// ---------- IndexedDB ----------
+let dbp;
+function db() {
+  return dbp ||= new Promise((res, rej) => {
+    const r = indexedDB.open("kt-record", 1);
+    r.onupgradeneeded = () => {
+      const d = r.result;
+      d.createObjectStore("recs", { keyPath: "id" });
+      d.createObjectStore("live", { keyPath: "recId" });
+      d.createObjectStore("chunks", { autoIncrement: true }).createIndex("recId", "recId");
+    };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function tx(names, mode, fn) {
+  const d = await db();
+  return new Promise((res, rej) => {
+    const t = d.transaction(names, mode);
+    let out;
+    Promise.resolve(fn(...[].concat(names).map(n => t.objectStore(n)))).then(v => out = v);
+    t.oncomplete = () => res(out);
+    t.onerror = t.onabort = () => rej(t.error);
+  });
+}
+const req = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+
+async function chunksOf(recId) {
+  return tx("chunks", "readonly", s => req(s.index("recId").getAll(recId)));
+}
+async function dropLive(recId) {
+  await tx(["chunks", "live"], "readwrite", async (c, l) => {
+    const keys = await req(c.index("recId").getAllKeys(recId));
+    keys.forEach(k => c.delete(k));
+    l.delete(recId);
+  });
+}
+
+// ---------- מצב ----------
+let mode = "audio";
+let R = null;        // ההקלטה הנוכחית
+let wakeLock = null;
+
+const fmt = s => { s = Math.floor(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return (h ? h + ":" : "") + String(m).padStart(2, "0") + ":" + String(x).padStart(2, "0"); };
+const size = b => "⁦" + (b > 1048576 ? (b / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(b / 1024)) + " KB") + "⁩";
+function status(t, cls = "") { const s = $("status"); s.textContent = t; s.className = "status " + cls; }
+function defaultName() {
+  const d = new Date();
+  return "הקלטה " + d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear() + " " +
+    String(d.getHours()).padStart(2, "0") + "-" + String(d.getMinutes()).padStart(2, "0");
+}
+
+function videoMime() {
+  const opts = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4;codecs=avc1,mp4a", "video/mp4",
+                "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+  if (!window.MediaRecorder) return null;
+  return opts.find(m => MediaRecorder.isTypeSupported(m)) || "";
+}
+function updateNote() {
+  const n = $("fmtNote");
+  if (!navigator.mediaDevices?.getUserMedia) { n.hidden = false; n.textContent = "הדפדפן הזה לא מאפשר הקלטה. נסו כרום, אדג' או ספארי עדכני."; return; }
+  if (mode === "video") {
+    const m = videoMime();
+    n.hidden = !!(m && m.startsWith("video/mp4"));
+    n.textContent = m === null ? "הדפדפן הזה לא תומך בהקלטת וידאו." :
+      "הדפדפן הזה לא מקליט ישירות ל-MP4, ולכן הקובץ יישמר כ-WEBM. בכרום/אדג' עדכני ובאייפון הוא נשמר כ-MP4.";
+  } else n.hidden = true;
+}
+
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
+  if (R) return;
+  mode = b.dataset.mode;
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === b));
+  $("audioOpts").hidden = mode !== "audio";
+  $("videoOpts").hidden = mode !== "video";
+  updateNote();
+});
+if (!navigator.mediaDevices?.getDisplayMedia) $("vsrc").querySelector('[value=screen]').remove();
+$("vsrc").onchange = () => { $("cam").parentElement.hidden = $("vsrc").value === "screen"; };
+
+async function fillMics() {
+  try {
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    const sel = $("mic"), cur = sel.value || store.get("mic");
+    const mics = devs.filter(d => d.kind === "audioinput" && d.deviceId && d.deviceId !== "default");
+    sel.innerHTML = '<option value="">ברירת מחדל</option>' +
+      mics.map((d, i) => `<option value="${d.deviceId}">${(d.label || "מיקרופון " + (i + 1)).replace(/</g, "&lt;")}</option>`).join("");
+    if (mics.some(d => d.deviceId === cur)) sel.value = cur;
+  } catch (e) {}
+}
+$("mic").onchange = () => store.set("mic", $("mic").value);
+
+function audioConstraints() {
+  const c = { echoCancellation: $("clean").checked, noiseSuppression: $("clean").checked, autoGainControl: $("clean").checked };
+  if ($("mic").value) c.deviceId = { exact: $("mic").value };
+  return c;
+}
+
+// ---------- מד עוצמה ----------
+function startMeter(ctx, node) {
+  const an = ctx.createAnalyser(); an.fftSize = 512; node.connect(an);
+  const buf = new Uint8Array(an.fftSize), bar = $("meter").firstElementChild;
+  const loop = () => {
+    if (!R) { bar.style.width = "0"; return; }
+    an.getByteTimeDomainData(buf);
+    let peak = 0; for (const v of buf) peak = Math.max(peak, Math.abs(v - 128));
+    bar.style.width = Math.min(100, peak / 128 * 140) + "%";
+    requestAnimationFrame(loop);
+  };
+  loop();
+}
+
+// ---------- הקלטה ----------
+async function begin() {
+  const name = ($("name").value.trim() || defaultName());
+  const recId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const r = { recId, name, mode, ts: Date.now(), paused: false, elapsed: 0, since: 0, seq: 0, queue: Promise.resolve(), streams: [] };
+  try {
+    if (mode === "audio") await beginAudio(r); else await beginVideo(r);
+  } catch (e) {
+    r.streams.forEach(s => s.getTracks().forEach(t => t.stop()));
+    status(e.name === "NotAllowedError" ? "אין הרשאה למיקרופון/מצלמה. אשרו בדפדפן ונסו שוב." : "לא הצלחתי להתחיל: " + e.message, "err");
+    return;
+  }
+  R = r;
+  try { await tx("live", "readwrite", s => s.put({ recId, name, mode, mime: r.mime, ext: r.ext, ts: Date.now(), beat: Date.now() })); }
+  catch (e) { r.mem = []; }
+  r.since = performance.now();
+  r.tick = setInterval(tick, 250);
+  r.beat = setInterval(() => tx("live", "readwrite", async s => { const m = await req(s.get(recId)); if (m) { m.beat = Date.now(); m.dur = elapsed(); s.put(m); } }), 5000);
+  try { wakeLock = await navigator.wakeLock?.request("screen"); } catch (e) {}
+  $("recBtn").textContent = "עצירה"; $("recBtn").classList.add("stop");
+  $("pauseBtn").disabled = false; $("timer").classList.add("on");
+  document.querySelectorAll(".tab,#audioOpts select,#audioOpts input,#videoOpts select").forEach(x => x.disabled = true);
+  status("🔴 מקליט…");
+  fillMics();
+}
+
+function saveChunk(r, blob) {
+  if (!blob || !blob.size) return;
+  const seq = r.seq++;
+  if (r.mem) { r.mem.push(blob); return; }
+  r.queue = r.queue.then(() => tx("chunks", "readwrite", s => s.add({ recId: r.recId, seq, blob })))
+    .catch(() => { r.mem ||= []; r.mem.push(blob); });   // אין שמירה במכשיר: מחזיקים בזיכרון ומורידים בסוף
+}
+
+async function beginAudio(r) {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints() });
+  r.streams.push(stream);
+  const RATES = [8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000];
+  let ctx = new AudioContext();
+  if (!RATES.includes(ctx.sampleRate)) { ctx.close(); ctx = new AudioContext({ sampleRate: 48000 }); }
+  await ctx.resume();
+  r.ctx = ctx;
+  const src = ctx.createMediaStreamSource(stream);
+  const proc = ctx.createScriptProcessor(4096, 1, 1);
+  const enc = new lamejs.Mp3Encoder(1, ctx.sampleRate, +$("kbps").value);
+  r.enc = enc; r.pending = []; r.mime = "audio/mpeg"; r.ext = "mp3";
+  proc.onaudioprocess = ev => {
+    if (r.paused || r.done) return;
+    const f = ev.inputBuffer.getChannelData(0), s = new Int16Array(f.length);
+    for (let i = 0; i < f.length; i++) { const v = Math.max(-1, Math.min(1, f[i])); s[i] = v < 0 ? v * 0x8000 : v * 0x7fff; }
+    const out = enc.encodeBuffer(s);
+    if (out.length) r.pending.push(new Uint8Array(out));
+  };
+  const mute = ctx.createGain(); mute.gain.value = 0;
+  src.connect(proc); proc.connect(mute); mute.connect(ctx.destination);
+  r.proc = proc;
+  r.flush = setInterval(() => flushAudio(r), 4000);
+  startMeter(ctx, src);
+}
+function flushAudio(r) {
+  if (!r.pending.length) return;
+  const b = new Blob(r.pending, { type: "audio/mpeg" }); r.pending = [];
+  saveChunk(r, b);
+}
+
+async function beginVideo(r) {
+  const mime = videoMime();
+  if (mime === null) throw new Error("הדפדפן לא תומך בהקלטת וידאו");
+  const q = +$("vq").value, dims = { 480: [854, 480], 720: [1280, 720], 1080: [1920, 1080] }[q];
+  let stream;
+  const ctx = new AudioContext(); await ctx.resume(); r.ctx = ctx;
+  const mix = ctx.createMediaStreamDestination(), meterIn = ctx.createGain();
+  meterIn.connect(mix);
+  if ($("vsrc").value === "screen") {
+    const disp = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30, height: { ideal: dims[1] } }, audio: true });
+    r.streams.push(disp);
+    let mic = null;
+    try { mic = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints() }); r.streams.push(mic); } catch (e) {}
+    if (disp.getAudioTracks().length) ctx.createMediaStreamSource(new MediaStream(disp.getAudioTracks())).connect(meterIn);
+    if (mic) ctx.createMediaStreamSource(mic).connect(meterIn);
+    disp.getVideoTracks()[0].onended = () => { if (R === r) finish(); };   // "הפסק שיתוף" של הדפדפן
+    stream = new MediaStream([...disp.getVideoTracks(), ...mix.stream.getAudioTracks()]);
+  } else {
+    const cam = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: $("cam").value, width: { ideal: dims[0] }, height: { ideal: dims[1] } },
+      audio: audioConstraints() });
+    r.streams.push(cam);
+    ctx.createMediaStreamSource(cam).connect(meterIn);
+    stream = new MediaStream([...cam.getVideoTracks(), ...mix.stream.getAudioTracks()]);
+  }
+  const pv = $("preview"); pv.srcObject = stream; pv.style.display = "block"; pv.play().catch(() => {});
+  const vbps = { 480: 1e6, 720: 2e6, 1080: 4e6 }[q];
+  const mr = new MediaRecorder(stream, Object.assign({ videoBitsPerSecond: vbps, audioBitsPerSecond: 128000 }, mime ? { mimeType: mime } : {}));
+  r.mr = mr;
+  r.mime = (mr.mimeType || mime || "video/webm").split(";")[0];
+  r.ext = r.mime.includes("mp4") ? "mp4" : "webm";
+  mr.ondataavailable = e => saveChunk(r, e.data);
+  r.stopped = new Promise(res => mr.onstop = res);
+  mr.start(4000);
+  startMeter(ctx, meterIn);
+}
+
+const elapsed = () => R ? R.elapsed + (R.paused ? 0 : (performance.now() - R.since) / 1000) : 0;
+function tick() { $("timer").textContent = fmt(elapsed()); }
+
+function togglePause() {
+  if (!R) return;
+  if (R.paused) { R.paused = false; R.since = performance.now(); R.mr?.resume(); $("pauseBtn").textContent = "⏸"; status("🔴 מקליט…"); }
+  else { R.elapsed = elapsed(); R.paused = true; R.mr?.pause(); $("pauseBtn").textContent = "▶"; status("⏸ מושהה"); }
+}
+
+async function finish() {
+  const r = R; if (!r || r.done) return;
+  r.dur = elapsed(); r.done = true;
+  clearInterval(r.tick); clearInterval(r.beat); clearInterval(r.flush);
+  status("שומר…");
+  if (r.mr) { if (r.mr.state !== "inactive") r.mr.stop(); await r.stopped; }
+  else { flushAudio(r); const tail = r.enc.flush(); if (tail.length) saveChunk(r, new Blob([new Uint8Array(tail)], { type: "audio/mpeg" })); r.proc.disconnect(); }
+  r.streams.forEach(s => s.getTracks().forEach(t => t.stop()));
+  try { r.ctx.close(); } catch (e) {}
+  const pv = $("preview"); pv.srcObject = null; pv.style.display = "none";
+  await r.queue;
+  R = null;
+  try { await wakeLock?.release(); } catch (e) {} wakeLock = null;
+  $("recBtn").textContent = "הקלטה"; $("recBtn").classList.remove("stop");
+  $("pauseBtn").disabled = true; $("pauseBtn").textContent = "⏸"; $("timer").classList.remove("on");
+  document.querySelectorAll(".tab,#audioOpts select,#audioOpts input,#videoOpts select").forEach(x => x.disabled = false);
+  $("name").value = "";
+  if (r.mem && r.mem.length) {   // הדפדפן לא שומר במכשיר: מורידים מיד כקובץ
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(r.mem, { type: r.mime }));
+    a.download = fileName(r); a.click();
+    status("⬇️ ההקלטה ירדה כקובץ (הדפדפן הזה לא שומר הקלטות בדף).", "ok"); return;
+  }
+  let rec = null;
+  try { rec = await assemble(r.recId, { name: r.name, mode: r.mode, mime: r.mime, ext: r.ext, dur: r.dur, ts: r.ts }); } catch (e) {}
+  if (!rec) { status("לא נקלט כלום.", "err"); return; }
+  status("✅ נשמר במכשיר: " + rec.name + " (" + size(rec.size) + ")", "ok");
+  await renderList();
+  if ($("autoDrive").checked && cfg().url && cfg().code) upload(rec.id);
+}
+
+async function assemble(recId, meta) {
+  const parts = (await chunksOf(recId)).sort((a, b) => a.seq - b.seq);
+  if (!parts.length) { await dropLive(recId); return null; }
+  const blob = new Blob(parts.map(p => p.blob), { type: meta.mime });
+  const rec = { id: recId, name: meta.name, mode: meta.mode, mime: meta.mime, ext: meta.ext, dur: meta.dur || 0,
+                ts: meta.ts || Date.now(), size: blob.size, blob };
+  await tx("recs", "readwrite", s => s.put(rec));
+  await dropLive(recId);
+  return rec;
+}
+
+// הקלטות שנקטעו (הדף נסגר / הדפדפן קרס) – מרכיבים מהקטעים שנשמרו
+async function recover() {
+  const lives = await tx("live", "readonly", s => req(s.getAll()));
+  let n = 0;
+  for (const m of lives) {
+    if (Date.now() - (m.beat || 0) < 20000) continue;   // אולי מקליט כרגע בלשונית אחרת
+    if (await assemble(m.recId, Object.assign({}, m, { name: m.name + " (שוחזר)" }))) n++;
+  }
+  if (n) status("♻️ שוחזרו " + n + " הקלטות שנקטעו.", "ok");
+}
+
+$("recBtn").onclick = () => R ? finish() : begin();
+$("pauseBtn").onclick = togglePause;
+addEventListener("beforeunload", e => { if (R) { e.preventDefault(); e.returnValue = ""; } });
+document.addEventListener("visibilitychange", async () => {
+  if (R && document.visibilityState === "visible" && !wakeLock) try { wakeLock = await navigator.wakeLock?.request("screen"); } catch (e) {}
+});
+
+// ---------- רשימת ההקלטות ----------
+const urls = new Map();
+function blobUrl(rec) { if (!urls.has(rec.id)) urls.set(rec.id, URL.createObjectURL(rec.blob)); return urls.get(rec.id); }
+const fileName = rec => rec.name.replace(/[\\/:*?"<>|]/g, " ") + "." + rec.ext;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+async function renderList() {
+  const recs = (await tx("recs", "readonly", s => req(s.getAll()))).sort((a, b) => b.ts - a.ts);
+  const box = $("list");
+  if (!recs.length) { box.innerHTML = '<div class="empty">עוד אין הקלטות.</div>'; return; }
+  box.innerHTML = "";
+  for (const rec of recs) {
+    const d = new Date(rec.ts);
+    const el = document.createElement("div"); el.className = "rec";
+    el.innerHTML = `<div class="t">${rec.mode === "video" ? "🎥" : "🎧"} ${esc(rec.name)}</div>
+      <div class="m">${d.toLocaleDateString("he-IL")} ${d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })} · ${fmt(rec.dur)} · ${size(rec.size)} · ${rec.ext.toUpperCase()}
+      ${rec.drive ? ` · <a href="${esc(rec.drive)}" target="_blank" rel="noopener">✓ בדרייב</a>` : ""}</div>
+      <div class="acts">
+        <button class="btn small ghost" data-a="play">▶ השמעה</button>
+        <a class="btn small ghost" data-a="dl" style="text-decoration:none">⬇️ הורדה</a>
+        <button class="btn small ghost" data-a="drive">☁️ ${rec.drive ? "שמירה שוב בדרייב" : "שמירה בדרייב"}</button>
+        <button class="btn small ghost" data-a="ren">✏️ שם</button>
+        <button class="btn small ghost" data-a="del">🗑️</button>
+      </div><div class="prog"><i></i></div><div class="m up"></div>`;
+    const dl = el.querySelector("[data-a=dl]");
+    dl.href = blobUrl(rec); dl.download = fileName(rec);
+    el.querySelector("[data-a=play]").onclick = ev => {
+      ev.target.remove();
+      const m = document.createElement(rec.mode === "video" ? "video" : "audio");
+      m.controls = true; m.playsInline = true; m.src = blobUrl(rec);
+      el.querySelector(".acts").before(m); m.play().catch(() => {});
+    };
+    el.querySelector("[data-a=drive]").onclick = () => upload(rec.id, el);
+    el.querySelector("[data-a=ren]").onclick = async () => {
+      const n = prompt("שם חדש להקלטה:", rec.name); if (!n || !n.trim()) return;
+      rec.name = n.trim(); await tx("recs", "readwrite", s => s.put(rec)); renderList();
+    };
+    el.querySelector("[data-a=del]").onclick = async () => {
+      if (!confirm("למחוק את \"" + rec.name + "\" מהמכשיר?" + (rec.drive ? "\n(העותק בדרייב נשאר)" : "\nאין לה עותק בדרייב.")))
+        return;
+      if (urls.has(rec.id)) { URL.revokeObjectURL(urls.get(rec.id)); urls.delete(rec.id); }
+      await tx("recs", "readwrite", s => s.delete(rec.id)); renderList(); showQuota();
+    };
+    el.dataset.id = rec.id;
+    box.append(el);
+  }
+  showQuota();
+}
+async function showQuota() {
+  try { const e = await navigator.storage.estimate(); $("quota").textContent = `תפוס כרגע ${size(e.usage)} מתוך כ-${size(e.quota)} שזמינים לדף.`; } catch (e) {}
+}
+
+// ---------- גוגל דרייב ----------
+function xhr(method, url, body, headers, onProg) {
+  return new Promise((res, rej) => {
+    const x = new XMLHttpRequest(); x.open(method, url);
+    for (const k in headers || {}) x.setRequestHeader(k, headers[k]);
+    if (onProg) x.upload.onprogress = e => e.lengthComputable && onProg(e.loaded / e.total);
+    x.onload = () => res({ status: x.status, text: x.responseText });
+    x.onerror = () => rej(new Error("שגיאת רשת"));
+    x.send(body);
+  });
+}
+async function api(body) {
+  const { url, code } = cfg();
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(Object.assign({ code }, body)) });
+  return r.json();
+}
+const toB64 = blob => new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(String(f.result).split(",")[1]); f.onerror = rej; f.readAsDataURL(blob); });
+
+async function upload(id, el) {
+  const { url, code } = cfg();
+  if (!url || !code) { openCfg(); return; }
+  el ||= document.querySelector(`.rec[data-id="${id}"]`);
+  const rec = await tx("recs", "readonly", s => req(s.get(id)));
+  const info = el?.querySelector(".up"), bar = el?.querySelector(".prog"), btn = el?.querySelector("[data-a=drive]");
+  const say = (t, cls) => { if (info) { info.textContent = t; info.style.color = cls === "err" ? "var(--rec)" : ""; } else status(t, cls); };
+  const prog = p => { if (bar) { bar.style.display = "block"; bar.firstElementChild.style.width = Math.round(p * 100) + "%"; } say("מעלה לדרייב… " + Math.round(p * 100) + "%"); };
+  if (btn) btn.disabled = true;
+  try {
+    let link;
+    if (rec.blob.size <= DIRECT_MAX) {
+      say("מכין את הקובץ…");
+      const data = await toB64(rec.blob);
+      const r = await xhr("POST", url, JSON.stringify({ code, action: "upload", name: fileName(rec), mime: rec.mime, data }),
+                          { "Content-Type": "text/plain;charset=utf-8" }, prog);
+      const j = JSON.parse(r.text);
+      if (!j.ok) throw new Error(j.error === "code" ? "הקוד שגוי" : j.error);
+      link = j.url;
+    } else {
+      const s = await api({ action: "session", name: fileName(rec), mime: rec.mime, size: rec.blob.size, origin: location.origin });
+      if (!s.ok) throw new Error(s.error === "code" ? "הקוד שגוי" : s.error);
+      const r = await xhr("PUT", s.uploadUrl, rec.blob, {}, prog);
+      if (r.status !== 200 && r.status !== 201) throw new Error("דרייב החזיר " + r.status);
+      link = "https://drive.google.com/file/d/" + JSON.parse(r.text).id + "/view";
+    }
+    rec.drive = link;
+    await tx("recs", "readwrite", s => s.put(rec));
+    say("✅ נשמר בדרייב", "ok");
+    renderList(); listDrive();
+  } catch (e) {
+    say("⚠️ השמירה בדרייב נכשלה: " + e.message + ". ההקלטה עדיין שמורה במכשיר.", "err");
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function listDrive() {
+  const { url, code } = cfg(), box = $("driveBox");
+  if (!url || !code) return;
+  box.className = ""; box.textContent = "טוען…";
+  try {
+    const j = await (await fetch(url + "?action=list&code=" + encodeURIComponent(code))).json();
+    if (!j.ok) throw new Error(j.error === "code" ? "הקוד שגוי" : j.error);
+    box.innerHTML = `<div class="m" style="margin-bottom:6px"><a href="${esc(j.folder)}" target="_blank" rel="noopener">📂 פתיחת התיקייה בדרייב</a> · ${j.files.length} קבצים</div>` +
+      (j.files.length ? j.files.slice(0, 50).map(f => `<div class="rec"><div class="t">${f.mime.startsWith("video") ? "🎥" : "🎧"} <a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.name)}</a></div>
+        <div class="m">${new Date(f.ts).toLocaleString("he-IL")} · ${size(f.size)}</div></div>`).join("") : '<div class="empty">התיקייה ריקה.</div>');
+  } catch (e) { box.className = "empty"; box.textContent = "לא הצלחתי לקרוא מהדרייב: " + e.message; }
+}
+
+function openCfg() {
+  const { url, code } = cfg();
+  $("cfgUrl").value = url; $("cfgCode").value = code; $("cfgStatus").textContent = "";
+  $("dlg").showModal();
+}
+$("setBtn").onclick = openCfg;
+$("cfgClose").onclick = () => $("dlg").close();
+$("cfgSave").onclick = async () => {
+  const url = $("cfgUrl").value.trim(), code = $("cfgCode").value;
+  const st = $("cfgStatus");
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(url)) { st.className = "status err"; st.textContent = "הכתובת צריכה להיות כתובת של אפליקציית Apps Script שמסתיימת ב-/exec"; return; }
+  st.className = "status"; st.textContent = "בודק…";
+  try {
+    const r = await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "check", code }) });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error === "code" ? "הקוד שגוי" : j.error);
+    store.set("url", url); store.set("code", code);
+    st.className = "status ok"; st.textContent = "✅ מחובר לדרייב";
+    setTimeout(() => $("dlg").close(), 900); listDrive();
+  } catch (e) { st.className = "status err"; st.textContent = "⚠️ " + e.message; }
+};
+
+$("autoDrive").checked = store.get("auto") === "1";
+$("autoDrive").onchange = () => store.set("auto", $("autoDrive").checked ? "1" : "0");
+$("name").placeholder = "שם ההקלטה (לא חובה)";
+updateNote();
+try { navigator.storage?.persist?.(); } catch (e) {}
+(async () => {
+  try { await recover(); await renderList(); } catch (e) { status("⚠️ השמירה במכשיר לא זמינה בדפדפן הזה (מצב גלישה פרטית?). אפשר להקליט, אבל רק להוריד.", "err"); }
+  fillMics(); listDrive();
+})();
+</script>
+</body></html>
