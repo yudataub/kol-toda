@@ -72,6 +72,13 @@ details{font-size:15px;color:var(--muted)} summary{cursor:pointer}
 footer{margin-top:24px;padding:14px 16px;border-radius:14px;background:var(--acc2);font-size:15px;text-align:center}
 footer a{color:var(--acc);font-weight:700}
 .hide-vid{position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none}
+.ravbar{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:linear-gradient(90deg,#fef3c7,#fde68a);color:#78350f;font-size:15px}
+@media (prefers-color-scheme:dark){.ravbar{background:linear-gradient(90deg,#422006,#713f12);color:#fde68a}}
+.ravbar a{color:inherit;font-weight:700}
+.ravbar button{background:none;border:0;color:inherit;text-decoration:underline;font-size:14px;padding:0 4px}
+#rabbis .rec{padding:8px 0}
+#ravDlg input,#addRav input{width:100%;margin:4px 0 8px}
+#addRav{margin-top:10px;padding:10px;border-radius:10px;background:var(--acc2)}
 </style><meta property="og:title" content="מקליט – הקול החמישי">
 <meta property="og:description" content="הקלטת שמע ל-MP3 ווידאו ל-MP4 ישירות מהדפדפן: מצלמה, מסך, או מסך עם המצלמה בעיגול בפינה. כל הקלטה נשמרת במאגר הקול החמישי.">
 <meta property="og:image" content="https://www.kol-toda.co.il/og/sr-record-index.jpg">
@@ -96,6 +103,7 @@ footer a{color:var(--acc);font-weight:700}
 </div>
 
 <section class="card">
+  <div class="ravbar" id="ravBar" hidden></div>
   <input class="name" id="name" type="text" aria-label="שם ההקלטה" placeholder="שם ההקלטה (לא חובה)">
   <input class="name" id="by" type="text" aria-label="השם שלך" placeholder="השם שלך (לא חובה)" style="margin-top:8px">
   <div class="row" id="audioOpts">
@@ -192,6 +200,29 @@ footer a{color:var(--acc);font-weight:700}
   <div class="row" style="justify-content:flex-end">
     <button class="btn ghost" id="cfgClose">סגירה</button>
     <button class="btn" id="cfgSave">בדיקה ושמירה</button>
+  </div>
+  <div id="ownerRav" hidden>
+    <h2 style="margin-top:14px">🎓 רבנים עם דף שיעורים</h2>
+    <div class="m">כל הקלטה של רב נשמרת גם בדף השיעורים שלו בגיטהאב. שולחים לרב את הקישור האישי ואת הקוד שלו.</div>
+    <div id="rabbis" class="m">טוען…</div>
+    <div id="addRav">
+      <b>הוספת רב</b>
+      <input id="ravName" type="text" placeholder="שם, למשל: הרב משה כהן">
+      <input id="ravSlug" type="text" dir="ltr" placeholder="שם באנגלית לכתובת, למשל: moshe-cohen">
+      <input id="ravCodeNew" type="text" dir="ltr" placeholder="קוד אישי לרב (4 תווים לפחות)">
+      <button class="btn small" id="ravAdd">➕ הוספה</button> <span class="m" id="ravAddMsg"></span>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="ravDlg">
+  <h2>🎓 כניסה לדף השיעורים</h2>
+  <p class="m" id="ravDlgTxt">הכניסו את הקוד האישי שקיבלתם. אחרי זה כל הקלטה שלכם במכשיר הזה תישמר גם בדף השיעורים שלכם.</p>
+  <input id="ravCodeIn" type="password" dir="ltr" autocomplete="off" aria-label="קוד אישי">
+  <div class="status" id="ravDlgStatus"></div>
+  <div class="row" style="justify-content:flex-end">
+    <button class="btn ghost" id="ravDlgClose">לא עכשיו</button>
+    <button class="btn" id="ravDlgOk">כניסה</button>
   </div>
 </dialog>
 
@@ -435,7 +466,8 @@ async function begin() {
   const name = ($("name").value.trim() || defaultName());
   store.set("by", $("by").value.trim());
   const recId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  const r = { recId, name, mode, ts: Date.now(), paused: false, elapsed: 0, since: 0, seq: 0, queue: Promise.resolve(), streams: [], stops: [] };
+  const rv = curRav();
+  const r = { recId, name, mode, rav: rv ? { slug: rv.slug, code: rv.code } : null, ts: Date.now(), paused: false, elapsed: 0, since: 0, seq: 0, queue: Promise.resolve(), streams: [], stops: [] };
   try {
     if (mode === "audio") await beginAudio(r); else await beginVideo(r);
   } catch (e) {
@@ -445,7 +477,7 @@ async function begin() {
     return;
   }
   R = r;
-  try { await tx("live", "readwrite", s => s.put({ recId, name, mode, mime: r.mime, ext: r.ext, ts: r.ts, beat: Date.now() })); }
+  try { await tx("live", "readwrite", s => s.put({ recId, name, mode, mime: r.mime, ext: r.ext, ts: r.ts, rav: r.rav, beat: Date.now() })); }
   catch (e) { r.mem = []; }
   r.since = performance.now();
   r.tick = setInterval(tick, 250);
@@ -616,7 +648,7 @@ async function finish() {
   $("pauseBtn").disabled = true; $("pauseBtn").textContent = "⏸"; $("timer").classList.remove("on");
   document.querySelectorAll(".tab,#audioOpts select,#audioOpts input,#vsetBtn").forEach(x => x.disabled = false);
   $("name").value = "";
-  const meta = { name: r.name, mode: r.mode, mime: r.mime, ext: r.ext, dur: r.dur, ts: r.ts, by: store.get("by") };
+  const meta = { name: r.name, mode: r.mode, mime: r.mime, ext: r.ext, dur: r.dur, ts: r.ts, by: store.get("by"), rav: r.rav };
   let rec = null;
   if (r.mem && r.mem.length) {   // הדפדפן לא שומר במכשיר: ממשיכים מהזיכרון
     rec = Object.assign({ id: r.recId, blob: new Blob(r.mem, { type: r.mime }), memOnly: true }, meta);
@@ -649,7 +681,7 @@ async function assemble(recId, meta) {
   if (!parts.length) { await dropLive(recId); return null; }
   const blob = new Blob(parts.map(p => p.blob), { type: meta.mime });
   const rec = { id: recId, name: meta.name, mode: meta.mode, mime: meta.mime, ext: meta.ext, dur: meta.dur || 0,
-                ts: meta.ts || Date.now(), by: meta.by || "", size: blob.size, blob };
+                ts: meta.ts || Date.now(), by: meta.by || "", rav: meta.rav || null, size: blob.size, blob };
   await putRec(rec);
   await dropLive(recId);
   return rec;
@@ -778,7 +810,7 @@ async function renderList() {
     const el = document.createElement("div"); el.className = "rec"; el.dataset.id = rec.id;
     const sent = rec.drive ? (cfg().code ? ` · <a href="${esc(rec.drive)}" target="_blank" rel="noopener">✓ בדרייב</a>` : " · ✓ נשלח למאגר")
                : rec.up ? " · ⏳ השליחה הופסקה באמצע, תמשיך מאותה נקודה" : "";
-    el.innerHTML = `<div class="t">${rec.mode === "video" ? "🎥" : "🎧"} ${esc(rec.name)}</div>
+    el.innerHTML = `<div class="t">${rec.mode === "video" ? "🎥" : "🎧"} ${esc(rec.name)}${rec.rav ? ' <span title="יתפרסם בדף השיעורים">🎓</span>' : ""}</div>
       <div class="m">${d.toLocaleDateString("he-IL")} ${d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })} · ${fmt(rec.dur)} · ${size(rec.size)} · ${rec.ext.toUpperCase()}${sent}</div>
       <div class="acts">
         <button class="btn small ghost" data-a="play">▶ השמעה</button>
@@ -835,7 +867,8 @@ async function api(body) {
 const toB64 = blob => new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(String(f.result).split(",")[1]); f.onerror = rej; f.readAsDataURL(blob); });
 const ERR = { "daily limit": "המאגר קיבל היום את המכסה היומית. ננסה לשלוח שוב בכניסה הבאה",
               "too big": "ההקלטה גדולה מדי לשליחה (מעל 700MB). אפשר להוריד אותה",
-              "origin": "השליחה אפשרית רק מאתר הקול החמישי" };
+              "origin": "השליחה אפשרית רק מאתר הקול החמישי",
+              "rav": "קוד הרב שגוי או שהרב הוסר. היכנסו שוב מהקישור האישי" };
 class Fatal extends Error {}
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const online = () => navigator.onLine ? Promise.resolve() : new Promise(r => addEventListener("online", r, { once: true }));
@@ -856,6 +889,7 @@ async function upload(id) {
   el()?.querySelector("[data-a=drive]")?.setAttribute("disabled", "");
   uploading = true;
   const base = { origin: location.origin, by: rec.by || store.get("by"), name: fileName(rec), mime: rec.mime };
+  if (rec.rav) Object.assign(base, { rav: rec.rav.slug, ravCode: rec.rav.code });
   let netFails = 0;
   // שגיאת רשת כשהדפדפן מחובר: אחרי כמה פעמים זה כנראה לא ניתוק אלא חסימה. מוותרים (או שולחים דרך השרת)
   const netFail = async () => {
@@ -906,6 +940,9 @@ async function upload(id) {
       }
     }
     rec = await getRec(id) || rec;   // ייתכן שהשם שונה בינתיים
+    if (rec.rav) {   // הקלטה של רב: פתיחה לצפייה ורישום, כדי שתעלה לדף השיעורים שלו
+      try { await api(Object.assign({ action: "ravDone", id: fileId }, base, { data: undefined })); } catch (e) {}
+    }
     rec.drive = "https://drive.google.com/file/d/" + fileId + "/view";
     delete rec.up;
     await putRec(rec);
@@ -950,7 +987,65 @@ function openCfg() {
   const { url, code } = cfg();
   $("cfgUrl").value = url; $("cfgCode").value = code; $("cfgStatus").textContent = "";
   $("dlg").showModal();
+  if (code) loadRabbis();
 }
+
+// ---------- רבנים ----------
+// בעל האתר מוסיף רב ושולח לו קישור אישי (?rav=<שם>) וקוד. הרב מזין את הקוד פעם אחת במכשיר,
+// ומאז כל הקלטה שלו נשמרת בתיקייה שלו בדרייב, ומשם (C:/record-rabbis) בדף השיעורים שלו בגיטהאב.
+function curRav() { try { return JSON.parse(store.get("rav") || "null"); } catch (e) { return null; } }
+function showRav() {
+  const rv = curRav(), bar = $("ravBar");
+  bar.hidden = !rv;
+  if (!rv) { $("by").hidden = false; return; }
+  bar.innerHTML = `🎓 <b>${esc(rv.name)}</b> · כל הקלטה נשמרת גם ב<a href="${esc(rv.page)}" target="_blank" rel="noopener">דף השיעורים שלך</a> (מתעדכן תוך כרבע שעה) <button id="ravOut">יציאה</button>`;
+  $("by").hidden = true;
+  $("ravOut").onclick = () => { if (confirm("לצאת ממצב הרב במכשיר הזה? הקלטות חדשות לא יעלו לדף השיעורים.")) { store.set("rav", ""); showRav(); } };
+}
+let ravSlugAsked = "";
+function askRav(slug) {
+  ravSlugAsked = slug;
+  $("ravCodeIn").value = ""; $("ravDlgStatus").textContent = "";
+  $("ravDlg").showModal();
+}
+$("ravDlgClose").onclick = () => $("ravDlg").close();
+$("ravDlgOk").onclick = async () => {
+  const code = $("ravCodeIn").value.trim(), st = $("ravDlgStatus");
+  st.className = "status"; st.textContent = "בודק…";
+  try {
+    const j = await api({ action: "ravCheck", rav: ravSlugAsked, ravCode: code });
+    if (!j.ok) throw new Error("הקוד לא נכון");
+    store.set("rav", JSON.stringify({ slug: ravSlugAsked, code, name: j.name, page: j.page }));
+    st.className = "status ok"; st.textContent = "✅ שלום " + j.name;
+    showRav(); setTimeout(() => $("ravDlg").close(), 900);
+  } catch (e) { st.className = "status err"; st.textContent = "⚠️ " + e.message; }
+};
+
+async function loadRabbis() {
+  const { code } = cfg(); if (!code) return;
+  $("ownerRav").hidden = false;
+  const box = $("rabbis");
+  try {
+    const j = await api({ action: "rabbis", code });
+    if (!j.ok) throw new Error(j.error === "code" ? "הקוד שגוי" : j.error);
+    box.innerHTML = j.rabbis.length ? j.rabbis.map(r => `<div class="rec"><b>${esc(r.name)}</b> · קוד: <bdi>${esc(r.ravCode)}</bdi><br>
+      קישור להקלטה: <a href="${esc(r.link)}" target="_blank" rel="noopener" dir="ltr">${esc(r.link)}</a><br>
+      דף השיעורים: <a href="${esc(r.page)}" target="_blank" rel="noopener" dir="ltr">${esc(r.page)}</a></div>`).join("") : "עוד אין רבנים.";
+  } catch (e) { box.textContent = "לא הצלחתי לטעון: " + e.message + " (אם עוד לא עדכנת את קוד השרת – ראה ההוראות)"; }
+}
+$("ravAdd").onclick = async () => {
+  const msg = $("ravAddMsg");
+  const name = $("ravName").value.trim(), slug = $("ravSlug").value.trim().toLowerCase(), ravCode = $("ravCodeNew").value.trim();
+  if (!name || !/^[a-z0-9][a-z0-9-]{1,29}$/.test(slug) || ravCode.length < 4) { msg.textContent = "צריך שם, שם באנגלית (אותיות קטנות, ספרות ומקף) וקוד של 4 תווים לפחות"; return; }
+  msg.textContent = "מוסיף…";
+  try {
+    const j = await api({ action: "addRabbi", code: cfg().code, name, slug, ravCode });
+    if (!j.ok) throw new Error(j.error);
+    msg.textContent = "✅ נוסף. דף השיעורים ייפתח תוך כרבע שעה.";
+    $("ravName").value = $("ravSlug").value = $("ravCodeNew").value = "";
+    loadRabbis();
+  } catch (e) { msg.textContent = "⚠️ " + e.message; }
+};
 $("setBtn").onclick = openCfg;
 $("cfgClose").onclick = () => $("dlg").close();
 $("cfgSave").onclick = async () => {
@@ -964,13 +1059,16 @@ $("cfgSave").onclick = async () => {
     if (!j.ok) throw new Error(j.error === "code" ? "הקוד שגוי" : j.error);
     store.set("url", url === DRIVE_URL ? "" : url); store.set("code", code);
     st.className = "status ok"; st.textContent = "✅ מחובר לדרייב";
-    setTimeout(() => $("dlg").close(), 900); listDrive(); renderList();
+    listDrive(); renderList(); loadRabbis();
   } catch (e) { st.className = "status err"; st.textContent = "⚠️ " + e.message; }
 };
 
 $("by").value = store.get("by");
 $("by").onchange = () => store.set("by", $("by").value.trim());
 $("sendNote").hidden = !cfg().url;
+showRav();
+{ const want = new URLSearchParams(location.search).get("rav");
+  if (want && /^[a-z0-9][a-z0-9-]{1,29}$/.test(want) && curRav()?.slug !== want && cfg().url) askRav(want); }
 showVset();
 updateNote();
 try { navigator.storage?.persist?.(); } catch (e) {}
