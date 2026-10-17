@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>מקליט – הקול החמישי</title>
-<meta name="description" content="הקלטת שמע ל-MP3 ווידאו ל-MP4 ישירות מהדפדפן. ההקלטות נשמרות במכשיר, ואפשר לשמור אותן גם בגוגל דרייב.">
+<meta name="description" content="הקלטת שמע ל-MP3 ווידאו ל-MP4 ישירות מהדפדפן: מצלמה, מסך, או מסך עם המצלמה בעיגול בפינה. כל הקלטה נשמרת במאגר הקול החמישי.">
 <style>
 :root{--bg:#f4f1fa;--card:#fff;--ink:#1f2937;--muted:#6b7280;--line:#e5e0f0;--acc:#6d28d9;--acc2:#ede7fb;--rec:#dc2626;--ok:#15803d;--warn:#b45309}
 @media (prefers-color-scheme:dark){:root{--bg:#15131c;--card:#221f2c;--ink:#ece8f6;--muted:#a49cbb;--line:#353047;--acc:#a78bfa;--acc2:#2e2840;--rec:#f87171;--ok:#4ade80;--warn:#fbbf24}}
@@ -30,6 +30,7 @@ button{font:inherit;cursor:pointer}
 .big{display:flex;justify-content:center;align-items:center;gap:22px;margin:16px 0 6px}
 #recBtn{width:92px;height:92px;border-radius:50%;border:6px solid var(--acc2);background:var(--rec);color:#fff;font-size:15px;font-weight:800;box-shadow:0 6px 20px rgba(220,38,38,.35)}
 #recBtn.stop{border-radius:22px}
+#recBtn:disabled{opacity:.5}
 .round{width:58px;height:58px;border-radius:50%;border:0;background:var(--acc2);color:var(--acc);font-size:22px}
 .round:disabled{opacity:.35}
 #timer{text-align:center;font:700 34px/1.2 ui-monospace,Consolas,monospace;letter-spacing:1px}
@@ -40,25 +41,39 @@ button{font:inherit;cursor:pointer}
 .status{min-height:24px;text-align:center;font-size:15px;color:var(--muted)}
 .status.err{color:var(--rec)} .status.ok{color:var(--ok)}
 .note{font-size:14px;color:var(--warn);margin:6px 0}
+.vset{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0}
+.vset .sum{font-size:15px;color:var(--muted)}
 .rec{border-top:1px solid var(--line);padding:12px 0}
 .rec:first-child{border-top:0}
 .rec .t{font-weight:700;word-break:break-word}
 .rec .m{font-size:14px;color:var(--muted)}
-.rec audio,.rec video{width:100%;margin-top:8px;border-radius:10px}
-.rec video{max-height:320px;background:#000}
+.rec audio,.rec video,#review audio,#review video{width:100%;margin-top:8px;border-radius:10px}
+.rec video,#review video{max-height:320px;background:#000}
 .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .prog{height:6px;background:var(--acc2);border-radius:4px;overflow:hidden;margin-top:6px;display:none}
 .prog i{display:block;height:100%;width:0;background:var(--acc)}
 .empty{color:var(--muted);font-size:15px}
 .notice{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:var(--acc2);font-size:15px;text-align:center}
-dialog{border:0;border-radius:16px;padding:20px;width:min(480px,94vw);background:var(--card);color:var(--ink)}
+#review{border:2px solid var(--acc);border-radius:14px;padding:14px;margin-top:12px}
+#review .t{font-weight:700}
+#trimBox{margin-top:10px;padding:10px;border-radius:10px;background:var(--acc2)}
+#trimBox input[type=range]{width:100%;direction:ltr;accent-color:var(--acc)}
+#trimBox b{font-family:ui-monospace,Consolas,monospace}
+.m{font-size:14px;color:var(--muted)}
+dialog{border:0;border-radius:16px;padding:20px;width:min(520px,94vw);background:var(--card);color:var(--ink)}
 dialog::backdrop{background:rgba(0,0,0,.45)}
-dialog input{width:100%;margin:4px 0 10px;direction:ltr;text-align:left}
+#dlg input{width:100%;margin:4px 0 10px;direction:ltr;text-align:left}
+.choice{display:block;border:2px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;cursor:pointer;color:var(--ink);font-size:16px}
+.choice:has(input:checked){border-color:var(--acc);background:var(--acc2)}
+.choice small{display:block;color:var(--muted);font-size:14px;margin-right:24px}
+.choice.off{opacity:.45;cursor:default}
+#camPrev{width:100%;aspect-ratio:16/9;border-radius:10px;background:#000;display:block;margin-top:6px}
 details{font-size:15px;color:var(--muted)} summary{cursor:pointer}
 footer{margin-top:24px;padding:14px 16px;border-radius:14px;background:var(--acc2);font-size:15px;text-align:center}
 footer a{color:var(--acc);font-weight:700}
+.hide-vid{position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none}
 </style><meta property="og:title" content="מקליט – הקול החמישי">
-<meta property="og:description" content="הקלטת שמע ל-MP3 ווידאו ל-MP4 ישירות מהדפדפן. ההקלטות נשמרות במכשיר, ואפשר לשמור אותן גם בגוגל דרייב.">
+<meta property="og:description" content="הקלטת שמע ל-MP3 ווידאו ל-MP4 ישירות מהדפדפן: מצלמה, מסך, או מסך עם המצלמה בעיגול בפינה. כל הקלטה נשמרת במאגר הקול החמישי.">
 <meta property="og:image" content="https://www.kol-toda.co.il/og/sr-record-index.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -72,7 +87,7 @@ footer a{color:var(--acc);font-weight:700}
 <main>
 <header>
   <h1>🎙️ מקליט</h1>
-  <button class="icon" id="setBtn" title="הגדרות שמירה בדרייב" aria-label="הגדרות">⚙️</button>
+  <button class="icon" id="setBtn" title="לבעל האתר" aria-label="הגדרות בעל האתר">⚙️</button>
 </header>
 
 <div class="tabs" role="tablist">
@@ -81,17 +96,16 @@ footer a{color:var(--acc);font-weight:700}
 </div>
 
 <section class="card">
-  <input class="name" id="name" type="text" aria-label="שם ההקלטה" placeholder="שם ההקלטה">
+  <input class="name" id="name" type="text" aria-label="שם ההקלטה" placeholder="שם ההקלטה (לא חובה)">
   <input class="name" id="by" type="text" aria-label="השם שלך" placeholder="השם שלך (לא חובה)" style="margin-top:8px">
   <div class="row" id="audioOpts">
     <label>מיקרופון <select id="mic"><option value="">ברירת מחדל</option></select></label>
     <label>איכות <select id="kbps"><option value="64">64 (דיבור, קטן)</option><option value="96">96</option><option value="128" selected>128 (מומלץ)</option><option value="192">192 (מוזיקה)</option></select></label>
     <label><input type="checkbox" id="clean" checked> סינון רעשים</label>
   </div>
-  <div class="row" id="videoOpts" hidden>
-    <label>מקור <select id="vsrc"><option value="camera">מצלמה</option><option value="screen">המסך + מיקרופון</option></select></label>
-    <label>מצלמה <select id="cam"><option value="user">קדמית</option><option value="environment">אחורית</option></select></label>
-    <label>איכות <select id="vq"><option value="720">720p</option><option value="1080">1080p</option><option value="480">480p (קטן)</option></select></label>
+  <div class="vset" id="videoOpts" hidden>
+    <button class="btn ghost" id="vsetBtn">🎛️ הגדרות הקלטה</button>
+    <span class="sum" id="vsetSum"></span>
   </div>
   <div class="note" id="fmtNote" hidden></div>
 
@@ -104,7 +118,25 @@ footer a{color:var(--acc);font-weight:700}
     <span style="width:58px"></span>
   </div>
   <div class="status" id="status">לחצו "הקלטה" כדי להתחיל</div>
-  <div class="notice" id="sendNote" hidden>📤 בסיום, כל הקלטה נשלחת אוטומטית לשמירה במאגר הקול החמישי. עותק נשאר גם אצלך במכשיר.</div>
+  <div class="notice" id="sendNote" hidden>📤 בסיום, כל הקלטה נשלחת לשמירה במאגר הקול החמישי. עותק נשאר גם אצלך במכשיר.</div>
+
+  <div id="review" hidden>
+    <div class="t" id="revTitle"></div>
+    <div id="revMedia"></div>
+    <div class="acts">
+      <button class="btn" id="sendNow">📤 שליחה עכשיו</button>
+      <button class="btn ghost" id="trimOpen">✂️ לגזור התחלה/סוף</button>
+    </div>
+    <div class="m" id="countdown"></div>
+    <div id="trimBox" hidden>
+      <div class="row">התחלה: <b id="tS">00:00</b> <button class="btn small ghost" id="setS">⇤ מהמקום שמתנגן</button></div>
+      <input type="range" id="rS" min="0" step="0.1" aria-label="נקודת התחלה">
+      <div class="row">סוף: <b id="tE">00:00</b> <button class="btn small ghost" id="setE">עד המקום שמתנגן ⇥</button></div>
+      <input type="range" id="rE" min="0" step="0.1" aria-label="נקודת סוף">
+      <div class="m" id="trimNote"></div>
+      <div class="acts"><button class="btn" id="trimDo">✂️ גזירה ושליחה</button><button class="btn ghost" id="trimCancel">ביטול</button></div>
+    </div>
+  </div>
 </section>
 
 <section class="card">
@@ -112,7 +144,8 @@ footer a{color:var(--acc);font-weight:700}
   <div id="list"><div class="empty">עוד אין הקלטות.</div></div>
   <details style="margin-top:10px"><summary>איפה זה נשמר?</summary>
     ההקלטות נשמרות בתוך הדפדפן במכשיר הזה, וכל קטע נשמר תוך כדי ההקלטה, כך שגם אם הדף נסגר באמצע ההקלטה תשוחזר בכניסה הבאה.
-    ניקוי נתוני הדפדפן מוחק אותן, ולכן כדאי להוריד קובץ או לשמור בדרייב. <span id="quota"></span>
+    גם שליחה שנקטעה (למשל באין קליטה) ממשיכה מאותה נקודה כשהרשת חוזרת או בכניסה הבאה.
+    ניקוי נתוני הדפדפן מוחק את העותק במכשיר, ולכן כדאי להוריד קובץ. <span id="quota"></span>
   </details>
 </section>
 
@@ -123,6 +156,31 @@ footer a{color:var(--acc);font-weight:700}
 
 <footer>📚 עוד חומרי לימוד – חינם, במאגר הקול החמישי: <a href="https://www.kol-toda.co.il/search/">חיפוש במאגר</a> · <a href="https://www.kol-toda.co.il/">המאגר המלא</a></footer>
 </main>
+
+<dialog id="vdlg">
+  <h2>🎛️ הגדרות הקלטת וידאו</h2>
+  <label class="choice"><input type="radio" name="layout" value="camera" checked> 📷 מצלמה מלאה
+    <small>מה שהמצלמה רואה, על כל המסך</small></label>
+  <label class="choice" data-screen><input type="radio" name="layout" value="screenCam"> 🖥️ המסך + המצלמה בעיגול בפינה
+    <small>כמו בזום: מצגת או דף באתר, ואתם בעיגול קטן בפינה</small></label>
+  <label class="choice" data-screen><input type="radio" name="layout" value="screen"> 🖥️ המסך בלבד
+    <small>בלי מצלמה, עם הקול מהמיקרופון</small></label>
+  <div class="note" id="noScreen" hidden>הקלטת מסך אפשרית רק במחשב (כרום, אדג' או פיירפוקס).</div>
+  <div id="circleOpts">
+    <div class="row">
+      <label>מיקום העיגול <select id="camPos">
+        <option value="bottom-left">למטה משמאל</option><option value="bottom-right">למטה מימין</option>
+        <option value="top-left">למעלה משמאל</option><option value="top-right">למעלה מימין</option></select></label>
+      <label>גודל <select id="camSize"><option value="16">קטן</option><option value="22">בינוני</option><option value="30">גדול</option></select></label>
+    </div>
+    <canvas id="camPrev" width="640" height="360" aria-label="תצוגה מקדימה של מיקום העיגול"></canvas>
+  </div>
+  <div class="row">
+    <label>מצלמה <select id="facing"><option value="user">קדמית</option><option value="environment">אחורית</option></select></label>
+    <label>איכות <select id="vq"><option value="720">720p</option><option value="1080">1080p</option><option value="480">480p (קטן)</option></select></label>
+  </div>
+  <div class="row" style="justify-content:flex-end"><button class="btn" id="vdlgOk">אישור</button></div>
+</dialog>
 
 <dialog id="dlg">
   <h2>⚙️ לבעל האתר</h2>
@@ -140,9 +198,13 @@ footer a{color:var(--acc);font-weight:700}
 <script src="lame.min.js"></script>
 <script>
 "use strict";
-// כתובת ברירת המחדל של שרת הדרייב (Apps Script). אפשר גם להזין ב-⚙️.
+// כתובת שרת הדרייב (Apps Script, הקוד ב-record-server/drive-server.gs). בעל האתר יכול לעקוף ב-⚙️.
 const DRIVE_URL = "https://script.google.com/macros/s/AKfycbxB81FyVaSuqB7e1kC2cX2CUcaghD5q2df5uxQmkR5z6qo9CZrFFaxAhoEHT-9t4u3uCw/exec";
-const DIRECT_MAX = 25 * 1024 * 1024;   // עד כאן העלאה דרך השרת; מעל זה ישירות לדרייב
+const DIRECT_MAX = 25 * 1024 * 1024;              // גיבוי: קובץ קטן נשלח דרך השרת אם ההעלאה הישירה לדרייב לא נפתחה
+const CHUNK = window.KT_TEST_CHUNK || 8 * 1024 * 1024; // מקטע העלאה; חייב להיות כפולה של 256KB
+const KEYFRAME_MS = 2000;                          // פריים-מפתח כל 2 שניות: הגזירה מתחילה רק בפריים-מפתח
+const REVIEW_SECONDS = 30;                         // אחרי ההקלטה: זמן לגזירה לפני שליחה אוטומטית
+const FPS = 30;
 
 const $ = id => document.getElementById(id);
 const store = {
@@ -177,6 +239,8 @@ async function tx(names, mode, fn) {
   });
 }
 const req = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+const getRec = id => tx("recs", "readonly", s => req(s.get(id)));
+const putRec = rec => tx("recs", "readwrite", s => s.put(rec));
 
 async function chunksOf(recId) {
   return tx("chunks", "readonly", s => req(s.index("recId").getAll(recId)));
@@ -194,7 +258,7 @@ let mode = "audio";
 let R = null;        // ההקלטה הנוכחית
 let wakeLock = null;
 
-const fmt = s => { s = Math.floor(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+const fmt = s => { s = Math.max(0, Math.floor(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
   return (h ? h + ":" : "") + String(m).padStart(2, "0") + ":" + String(x).padStart(2, "0"); };
 const size = b => "⁦" + (b > 1048576 ? (b / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(b / 1024)) + " KB") + "⁩";
 function status(t, cls = "") { const s = $("status"); s.textContent = t; s.className = "status " + cls; }
@@ -203,24 +267,127 @@ function defaultName() {
   return "הקלטה " + d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear() + " " +
     String(d.getHours()).padStart(2, "0") + "-" + String(d.getMinutes()).padStart(2, "0");
 }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fileName = rec => rec.name.replace(/[\\/:*?"<>|]/g, " ") + "." + rec.ext;
+const canScreen = !!navigator.mediaDevices?.getDisplayMedia;
 
+// ---------- הגדרות וידאו ----------
+const V = {
+  layout: store.get("layout", "camera"),
+  camPos: store.get("camPos", "bottom-left"),
+  camSize: +store.get("camSize", "22"),
+  facing: store.get("facing", "user"),
+  vq: store.get("vq", "720")
+};
+if (!canScreen) V.layout = "camera";
+const LAYOUT_NAMES = { camera: "📷 מצלמה מלאה", screenCam: "🖥️ מסך + מצלמה בעיגול", screen: "🖥️ מסך בלבד" };
+function showVset() { $("vsetSum").textContent = LAYOUT_NAMES[V.layout] + " · " + V.vq + "p"; }
+
+function openVset() {
+  document.querySelector(`input[name=layout][value=${V.layout}]`).checked = true;
+  $("camPos").value = V.camPos; $("camSize").value = String(V.camSize); $("facing").value = V.facing; $("vq").value = V.vq;
+  document.querySelectorAll("[data-screen]").forEach(l => { l.classList.toggle("off", !canScreen); l.querySelector("input").disabled = !canScreen; });
+  $("noScreen").hidden = canScreen;
+  syncVsetDialog();
+  $("vdlg").showModal();
+}
+function syncVsetDialog() {
+  const lay = document.querySelector("input[name=layout]:checked").value;
+  $("circleOpts").hidden = lay !== "screenCam";
+  $("facing").parentElement.hidden = lay === "screen";
+  if (lay === "screenCam") drawPreview();
+}
+function drawPreview() {
+  const c = $("camPrev"), x = c.getContext("2d"), W = c.width, H = c.height;
+  x.fillStyle = "#f8fafc"; x.fillRect(0, 0, W, H);
+  x.fillStyle = "#6d28d9"; x.fillRect(0, 0, W, 46);
+  x.fillStyle = "#fff"; x.font = "bold 22px Arial"; x.direction = "rtl"; x.textAlign = "center"; x.fillText("המצגת שלכם", W / 2, 31);
+  x.fillStyle = "#cbd5e1"; for (let i = 0; i < 5; i++) x.fillRect(W * 0.2, 80 + i * 40, W * 0.6 * (1 - i * 0.08), 14);
+  drawCircle(x, W, H, null, { camPos: $("camPos").value, camSize: +$("camSize").value });
+}
+document.querySelectorAll("input[name=layout]").forEach(r => r.onchange = syncVsetDialog);
+$("camPos").onchange = $("camSize").onchange = drawPreview;
+$("vsetBtn").onclick = openVset;
+$("vdlgOk").onclick = () => {
+  V.layout = document.querySelector("input[name=layout]:checked").value;
+  V.camPos = $("camPos").value; V.camSize = +$("camSize").value; V.facing = $("facing").value; V.vq = $("vq").value;
+  for (const k in V) store.set(k, String(V[k]));
+  showVset(); $("vdlg").close();
+};
+
+// העיגול של המצלמה (אותה פונקציה לתצוגה המקדימה ולהקלטה, כמו בתוסף המקליט)
+function drawCircle(ctx, W, H, video, s) {
+  const d = Math.round(Math.min(W, H) * s.camSize / 100), m = Math.round(Math.min(W, H) * 0.03);
+  const [v, h] = s.camPos.split("-");
+  const x = h === "left" ? m : W - m - d, y = v === "top" ? m : H - m - d;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(x + d / 2, y + d / 2, d / 2, 0, Math.PI * 2); ctx.clip();
+  if (video && video.videoWidth) {
+    const sw = video.videoWidth, sh = video.videoHeight, side = Math.min(sw, sh);   // חיתוך ריבוע מהמרכז, בלי למתוח את הפנים
+    ctx.drawImage(video, (sw - side) / 2, (sh - side) / 2, side, side, x, y, d, d);
+  } else {
+    ctx.fillStyle = "#475569"; ctx.fillRect(x, y, d, d);
+    ctx.fillStyle = "#e2e8f0"; ctx.beginPath(); ctx.arc(x + d / 2, y + d * 0.4, d * 0.17, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + d / 2, y + d * 0.95, d * 0.33, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(x + d / 2, y + d / 2, d / 2, 0, Math.PI * 2);
+  ctx.lineWidth = Math.max(2, d * 0.025); ctx.strokeStyle = "#fff"; ctx.stroke();
+}
+
+// ---------- פורמט הווידאו ----------
+// כרום 154 ומעלה עלול לקרוס בהקלטת H.264 לתוך MP4 (באג בכרום, נמצא בתוסף המקליט ב-10.2026).
+// לכן בדפדפני כרומיום מקליטים WebM ומעבירים ל-MP4 בסיום, בלי קידוד מחדש (Mediabunny).
+// בספארי (אייפון) מקליטים MP4 ישירות. avc3 לפני avc1: שינוי רזולוציה באמצע (החלפת חלון משותף)
+// לא הורס את הקובץ.
+const isChromium = !!navigator.userAgentData?.brands?.some(b => /Chromium/.test(b.brand)) || /Chrome\/|Edg\//.test(navigator.userAgent);
 function videoMime() {
-  const opts = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4;codecs=avc1,mp4a", "video/mp4",
-                "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
   if (!window.MediaRecorder) return null;
-  return opts.find(m => MediaRecorder.isTypeSupported(m)) || "";
+  const webm = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+  const mp4 = ["video/mp4;codecs=avc3.42E01E,mp4a.40.2", "video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4"];
+  const order = isChromium ? webm.concat(mp4) : mp4.concat(webm);
+  return order.find(m => MediaRecorder.isTypeSupported(m)) || "";
 }
 function updateNote() {
   const n = $("fmtNote");
   if (!navigator.mediaDevices?.getUserMedia) { n.hidden = false; n.textContent = "הדפדפן הזה לא מאפשר הקלטה. נסו כרום, אדג' או ספארי עדכני."; return; }
-  if (mode === "video") {
-    const m = videoMime();
-    n.hidden = !!(m && m.startsWith("video/mp4"));
-    n.textContent = m === null ? "הדפדפן הזה לא תומך בהקלטת וידאו." :
-      "הדפדפן הזה לא מקליט ישירות ל-MP4, ולכן הקובץ יישמר כ-WEBM. בכרום/אדג' עדכני ובאייפון הוא נשמר כ-MP4.";
-  } else n.hidden = true;
+  n.hidden = !(mode === "video" && videoMime() === null);
+  n.textContent = "הדפדפן הזה לא תומך בהקלטת וידאו.";
 }
 
+let mbP = null;
+const mediabunny = () => mbP ||= import("./mediabunny.min.mjs");
+
+// ממיר/גוזר בלי קידוד מחדש. outFmt: "mp4" | "webm" | "mp3". trim: {start,end} או null
+async function remux(blob, outFmt, trim) {
+  const mb = await mediabunny();
+  const input = new mb.Input({ source: new mb.BlobSource(blob), formats: mb.ALL_FORMATS });
+  try {
+    let start = trim ? trim.start : 0;
+    if (trim && start > 0) {   // ההתחלה זזה לפריים-המפתח שלפניה, אחרת נגנים מציגים שנייה קפואה
+      const vt = await input.getPrimaryVideoTrack();
+      if (vt) { const p = await new mb.EncodedPacketSink(vt).getKeyPacket(start); start = p ? Math.max(0, p.timestamp) : 0; }
+    }
+    const format = outFmt === "mp4" ? new mb.Mp4OutputFormat({ fastStart: "fragmented" })
+                 : outFmt === "webm" ? new mb.WebMOutputFormat({ appendOnly: true })
+                 : new mb.Mp3OutputFormat();
+    const parts = []; let written = 0;
+    const target = new mb.StreamTarget(new WritableStream({ write(c) {
+      if (c.position !== written) throw new Error("הפלט לא נכתב ברצף");
+      parts.push(c.data); written += c.data.byteLength;
+    } }), { chunked: true });
+    const output = new mb.Output({ format, target });
+    const opts = { input, output, showWarnings: false };
+    if (trim) { opts.trim = { start, end: trim.end }; opts.copy = { shiftTolerance: Infinity, boundaryPolicy: "expand" }; }
+    const conv = await mb.Conversion.init(opts);
+    if (!conv.isValid || conv.discardedTracks.length) throw new Error("לא ניתן להמיר את הקובץ");
+    await conv.execute();
+    const mime = outFmt === "mp4" ? "video/mp4" : outFmt === "webm" ? "video/webm" : "audio/mpeg";
+    return { blob: new Blob(parts, { type: mime }), start };
+  } finally { input.dispose(); }
+}
+
+// ---------- בחירת מצב ----------
 document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
   if (R) return;
   mode = b.dataset.mode;
@@ -229,8 +396,6 @@ document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
   $("videoOpts").hidden = mode !== "video";
   updateNote();
 });
-if (!navigator.mediaDevices?.getDisplayMedia) $("vsrc").querySelector('[value=screen]').remove();
-$("vsrc").onchange = () => { $("cam").parentElement.hidden = $("vsrc").value === "screen"; };
 
 async function fillMics() {
   try {
@@ -238,7 +403,7 @@ async function fillMics() {
     const sel = $("mic"), cur = sel.value || store.get("mic");
     const mics = devs.filter(d => d.kind === "audioinput" && d.deviceId && d.deviceId !== "default");
     sel.innerHTML = '<option value="">ברירת מחדל</option>' +
-      mics.map((d, i) => `<option value="${d.deviceId}">${(d.label || "מיקרופון " + (i + 1)).replace(/</g, "&lt;")}</option>`).join("");
+      mics.map((d, i) => `<option value="${esc(d.deviceId)}">${esc(d.label || "מיקרופון " + (i + 1))}</option>`).join("");
     if (mics.some(d => d.deviceId === cur)) sel.value = cur;
   } catch (e) {}
 }
@@ -266,27 +431,29 @@ function startMeter(ctx, node) {
 
 // ---------- הקלטה ----------
 async function begin() {
+  closeReview(true);   // הקלטה חדשה בזמן הספירה לאחור: הקודמת נשלחת כמו שהיא
   const name = ($("name").value.trim() || defaultName());
   store.set("by", $("by").value.trim());
   const recId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  const r = { recId, name, mode, ts: Date.now(), paused: false, elapsed: 0, since: 0, seq: 0, queue: Promise.resolve(), streams: [] };
+  const r = { recId, name, mode, ts: Date.now(), paused: false, elapsed: 0, since: 0, seq: 0, queue: Promise.resolve(), streams: [], stops: [] };
   try {
     if (mode === "audio") await beginAudio(r); else await beginVideo(r);
   } catch (e) {
-    r.streams.forEach(s => s.getTracks().forEach(t => t.stop()));
-    status(e.name === "NotAllowedError" ? "אין הרשאה למיקרופון/מצלמה. אשרו בדפדפן ונסו שוב." : "לא הצלחתי להתחיל: " + e.message, "err");
+    r.stops.forEach(f => f()); r.streams.forEach(s => s.getTracks().forEach(t => t.stop()));
+    $("preview").style.display = "none";
+    status(e.name === "NotAllowedError" ? "אין הרשאה למיקרופון/מצלמה/מסך. אשרו בדפדפן ונסו שוב." : "לא הצלחתי להתחיל: " + e.message, "err");
     return;
   }
   R = r;
-  try { await tx("live", "readwrite", s => s.put({ recId, name, mode, mime: r.mime, ext: r.ext, ts: Date.now(), beat: Date.now() })); }
+  try { await tx("live", "readwrite", s => s.put({ recId, name, mode, mime: r.mime, ext: r.ext, ts: r.ts, beat: Date.now() })); }
   catch (e) { r.mem = []; }
   r.since = performance.now();
   r.tick = setInterval(tick, 250);
-  r.beat = setInterval(() => tx("live", "readwrite", async s => { const m = await req(s.get(recId)); if (m) { m.beat = Date.now(); m.dur = elapsed(); s.put(m); } }), 5000);
+  r.beat = setInterval(() => tx("live", "readwrite", async s => { const m = await req(s.get(recId)); if (m) { m.beat = Date.now(); m.dur = elapsed(); s.put(m); } }).catch(() => {}), 5000);
   try { wakeLock = await navigator.wakeLock?.request("screen"); } catch (e) {}
   $("recBtn").textContent = "עצירה"; $("recBtn").classList.add("stop");
   $("pauseBtn").disabled = false; $("timer").classList.add("on");
-  document.querySelectorAll(".tab,#audioOpts select,#audioOpts input,#videoOpts select").forEach(x => x.disabled = true);
+  document.querySelectorAll(".tab,#audioOpts select,#audioOpts input,#vsetBtn").forEach(x => x.disabled = true);
   status("🔴 מקליט…");
   fillMics();
 }
@@ -330,40 +497,94 @@ function flushAudio(r) {
   saveChunk(r, b);
 }
 
+// וידאו נסתר שממשיך להתעדכן (display:none עוצר את הפריימים בכרום)
+async function hiddenVideo(stream) {
+  const v = document.createElement("video");
+  v.muted = true; v.playsInline = true; v.className = "hide-vid"; v.srcObject = stream;
+  document.body.append(v);
+  await v.play().catch(() => {});
+  if (!v.videoWidth) await new Promise(res => { v.onloadedmetadata = res; setTimeout(res, 3000); });
+  return v;
+}
+
+// לולאת הציור רצה מתוך Worker: כשעוברים לחלון של המצגת, כרום מאט טיימרים בדף עצמו,
+// והמצלמה הייתה נתקעת על פריים אחד (כמו ב-ticker.js של תוסף המקליט)
+function startTicker(fn) {
+  const src = "let t=null;onmessage=e=>{if(e.data.a==='start'&&t===null)t=setInterval(()=>postMessage(0),e.data.ms);else if(e.data.a==='stop'){clearInterval(t);t=null}}";
+  const url = URL.createObjectURL(new Blob([src], { type: "text/javascript" }));
+  const w = new Worker(url);
+  w.onmessage = fn;
+  w.postMessage({ a: "start", ms: Math.round(1000 / FPS) });
+  return () => { w.postMessage({ a: "stop" }); w.terminate(); URL.revokeObjectURL(url); };
+}
+
 async function beginVideo(r) {
   const mime = videoMime();
   if (mime === null) throw new Error("הדפדפן לא תומך בהקלטת וידאו");
-  const q = +$("vq").value, dims = { 480: [854, 480], 720: [1280, 720], 1080: [1920, 1080] }[q];
-  let stream;
+  const q = +V.vq, dims = { 480: [854, 480], 720: [1280, 720], 1080: [1920, 1080] }[q];
+  const layout = canScreen ? V.layout : "camera";
   const ctx = new AudioContext(); await ctx.resume(); r.ctx = ctx;
   const mix = ctx.createMediaStreamDestination(), meterIn = ctx.createGain();
   meterIn.connect(mix);
-  if ($("vsrc").value === "screen") {
-    const disp = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30, height: { ideal: dims[1] } }, audio: true });
-    r.streams.push(disp);
-    let mic = null;
-    try { mic = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints() }); r.streams.push(mic); } catch (e) {}
-    if (disp.getAudioTracks().length) ctx.createMediaStreamSource(new MediaStream(disp.getAudioTracks())).connect(meterIn);
-    if (mic) ctx.createMediaStreamSource(mic).connect(meterIn);
-    disp.getVideoTracks()[0].onended = () => { if (R === r) finish(); };   // "הפסק שיתוף" של הדפדפן
-    stream = new MediaStream([...disp.getVideoTracks(), ...mix.stream.getAudioTracks()]);
-  } else {
+  let videoTrack;
+  if (layout === "camera") {
     const cam = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: $("cam").value, width: { ideal: dims[0] }, height: { ideal: dims[1] } },
+      video: { facingMode: V.facing, width: { ideal: dims[0] }, height: { ideal: dims[1] } },
       audio: audioConstraints() });
     r.streams.push(cam);
     ctx.createMediaStreamSource(cam).connect(meterIn);
-    stream = new MediaStream([...cam.getVideoTracks(), ...mix.stream.getAudioTracks()]);
+    videoTrack = cam.getVideoTracks()[0];
+  } else {
+    const disp = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: FPS, height: { ideal: dims[1] } }, audio: true });
+    r.streams.push(disp);
+    let mic = null, cam = null;
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints(),
+        video: layout === "screenCam" ? { facingMode: V.facing, width: { ideal: 640 }, height: { ideal: 480 } } : false });
+      r.streams.push(s);
+      mic = s.getAudioTracks().length ? s : null;
+      cam = layout === "screenCam" && s.getVideoTracks().length ? s : null;
+    } catch (e) {
+      if (layout === "screenCam") status("⚠️ המצלמה לא נפתחה, מקליט את המסך בלבד.", "err");
+    }
+    if (disp.getAudioTracks().length) ctx.createMediaStreamSource(new MediaStream(disp.getAudioTracks())).connect(meterIn);
+    if (mic) ctx.createMediaStreamSource(new MediaStream(mic.getAudioTracks())).connect(meterIn);
+    disp.getVideoTracks()[0].onended = () => { if (R === r) finish(); };   // "הפסק שיתוף" של הדפדפן
+    if (cam) {
+      const sv = await hiddenVideo(new MediaStream(disp.getVideoTracks()));
+      const cv = await hiddenVideo(new MediaStream(cam.getVideoTracks()));
+      const canvas = document.createElement("canvas");
+      const scale = Math.min(1, dims[1] / (sv.videoHeight || dims[1]));
+      canvas.width = Math.round((sv.videoWidth || dims[0]) * scale) & ~1;
+      canvas.height = Math.round((sv.videoHeight || dims[1]) * scale) & ~1;
+      const c2 = canvas.getContext("2d");
+      const style = { camPos: V.camPos, camSize: V.camSize };   // העתק: שינוי הגדרות באמצע לא משנה את ההקלטה
+      const draw = () => {
+        if (sv.videoWidth && (sv.videoWidth * scale | 0) !== canvas.width && sv.videoHeight) {   // החליפו חלון משותף בגודל אחר
+          c2.fillStyle = "#000"; c2.fillRect(0, 0, canvas.width, canvas.height);
+          const k = Math.min(canvas.width / sv.videoWidth, canvas.height / sv.videoHeight);
+          const w = sv.videoWidth * k, h = sv.videoHeight * k;
+          c2.drawImage(sv, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+        } else c2.drawImage(sv, 0, 0, canvas.width, canvas.height);
+        drawCircle(c2, canvas.width, canvas.height, cv, style);
+      };
+      draw();
+      const stopTicker = startTicker(draw);
+      r.stops.push(() => { stopTicker(); sv.srcObject = null; cv.srcObject = null; sv.remove(); cv.remove(); });
+      videoTrack = canvas.captureStream(FPS).getVideoTracks()[0];
+    } else videoTrack = disp.getVideoTracks()[0];
   }
-  const pv = $("preview"); pv.srcObject = stream; pv.style.display = "block"; pv.play().catch(() => {});
+  const stream = new MediaStream([videoTrack, ...mix.stream.getAudioTracks()]);
+  const pv = $("preview"); pv.srcObject = new MediaStream([videoTrack]); pv.style.display = "block"; pv.play().catch(() => {});
   const vbps = { 480: 1e6, 720: 2e6, 1080: 4e6 }[q];
-  const mr = new MediaRecorder(stream, Object.assign({ videoBitsPerSecond: vbps, audioBitsPerSecond: 128000 }, mime ? { mimeType: mime } : {}));
+  const mr = new MediaRecorder(stream, Object.assign({ videoBitsPerSecond: vbps, audioBitsPerSecond: 128000,
+    videoKeyFrameIntervalDuration: KEYFRAME_MS }, mime ? { mimeType: mime } : {}));
   r.mr = mr;
   r.mime = (mr.mimeType || mime || "video/webm").split(";")[0];
   r.ext = r.mime.includes("mp4") ? "mp4" : "webm";
   mr.ondataavailable = e => saveChunk(r, e.data);
   r.stopped = new Promise(res => mr.onstop = res);
-  mr.start(4000);
+  mr.start(2000);
   startMeter(ctx, meterIn);
 }
 
@@ -380,31 +601,47 @@ async function finish() {
   const r = R; if (!r || r.done) return;
   r.dur = elapsed(); r.done = true;
   clearInterval(r.tick); clearInterval(r.beat); clearInterval(r.flush);
+  $("recBtn").disabled = true;
   status("שומר…");
   if (r.mr) { if (r.mr.state !== "inactive") r.mr.stop(); await r.stopped; }
   else { flushAudio(r); const tail = r.enc.flush(); if (tail.length) saveChunk(r, new Blob([new Uint8Array(tail)], { type: "audio/mpeg" })); r.proc.disconnect(); }
+  r.stops.forEach(f => f());
   r.streams.forEach(s => s.getTracks().forEach(t => t.stop()));
   try { r.ctx.close(); } catch (e) {}
   const pv = $("preview"); pv.srcObject = null; pv.style.display = "none";
   await r.queue;
   R = null;
   try { await wakeLock?.release(); } catch (e) {} wakeLock = null;
-  $("recBtn").textContent = "הקלטה"; $("recBtn").classList.remove("stop");
+  $("recBtn").textContent = "הקלטה"; $("recBtn").classList.remove("stop"); $("recBtn").disabled = false;
   $("pauseBtn").disabled = true; $("pauseBtn").textContent = "⏸"; $("timer").classList.remove("on");
-  document.querySelectorAll(".tab,#audioOpts select,#audioOpts input,#videoOpts select").forEach(x => x.disabled = false);
+  document.querySelectorAll(".tab,#audioOpts select,#audioOpts input,#vsetBtn").forEach(x => x.disabled = false);
   $("name").value = "";
-  if (r.mem && r.mem.length) {   // הדפדפן לא שומר במכשיר: מורידים מיד כקובץ
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob(r.mem, { type: r.mime }));
-    a.download = fileName(r); a.click();
-    status("⬇️ ההקלטה ירדה כקובץ (הדפדפן הזה לא שומר הקלטות בדף).", "ok"); return;
-  }
+  const meta = { name: r.name, mode: r.mode, mime: r.mime, ext: r.ext, dur: r.dur, ts: r.ts, by: store.get("by") };
   let rec = null;
-  try { rec = await assemble(r.recId, { name: r.name, mode: r.mode, mime: r.mime, ext: r.ext, dur: r.dur, ts: r.ts }); } catch (e) {}
+  if (r.mem && r.mem.length) {   // הדפדפן לא שומר במכשיר: ממשיכים מהזיכרון
+    rec = Object.assign({ id: r.recId, blob: new Blob(r.mem, { type: r.mime }), memOnly: true }, meta);
+    rec.size = rec.blob.size;
+  } else {
+    try { rec = await assemble(r.recId, meta); } catch (e) {}
+  }
   if (!rec) { status("לא נקלט כלום.", "err"); return; }
+  rec = await toMp4(rec);
   status("✅ נשמר במכשיר: " + rec.name + " (" + size(rec.size) + ")", "ok");
   await renderList();
-  if (cfg().url) queueUpload(rec.id);
+  openReview(rec);
+}
+
+// WebM → MP4 בלי קידוד מחדש. אם ההמרה לא אפשרית (למשל VP8 בפיירפוקס) נשאר WebM
+async function toMp4(rec) {
+  if (rec.ext !== "webm") return rec;
+  status("ממיר ל-MP4…");
+  try {
+    const { blob } = await remux(rec.blob, "mp4", null);
+    if (!blob.size) throw new Error("empty");
+    Object.assign(rec, { blob, size: blob.size, mime: "video/mp4", ext: "mp4" });
+    if (!rec.memOnly) await putRec(rec);
+  } catch (e) { console.warn("המרה ל-MP4 נכשלה, נשאר WebM", e); }
+  return rec;
 }
 
 async function assemble(recId, meta) {
@@ -412,8 +649,8 @@ async function assemble(recId, meta) {
   if (!parts.length) { await dropLive(recId); return null; }
   const blob = new Blob(parts.map(p => p.blob), { type: meta.mime });
   const rec = { id: recId, name: meta.name, mode: meta.mode, mime: meta.mime, ext: meta.ext, dur: meta.dur || 0,
-                ts: meta.ts || Date.now(), size: blob.size, blob };
-  await tx("recs", "readwrite", s => s.put(rec));
+                ts: meta.ts || Date.now(), by: meta.by || "", size: blob.size, blob };
+  await putRec(rec);
   await dropLive(recId);
   return rec;
 }
@@ -424,23 +661,112 @@ async function recover() {
   let n = 0;
   for (const m of lives) {
     if (Date.now() - (m.beat || 0) < 20000) continue;   // אולי מקליט כרגע בלשונית אחרת
-    if (await assemble(m.recId, Object.assign({}, m, { name: m.name + " (שוחזר)" }))) n++;
+    const rec = await assemble(m.recId, Object.assign({}, m, { name: m.name + " (שוחזר)", by: store.get("by") }));
+    if (rec) { await toMp4(rec); n++; }
   }
   if (n) status("♻️ שוחזרו " + n + " הקלטות שנקטעו.", "ok");
 }
 
 $("recBtn").onclick = () => R ? finish() : begin();
 $("pauseBtn").onclick = togglePause;
-addEventListener("beforeunload", e => { if (R) { e.preventDefault(); e.returnValue = ""; } });
+addEventListener("beforeunload", e => { if (R || uploading || review) { e.preventDefault(); e.returnValue = ""; } });
 document.addEventListener("visibilitychange", async () => {
   if (R && document.visibilityState === "visible" && !wakeLock) try { wakeLock = await navigator.wakeLock?.request("screen"); } catch (e) {}
 });
 
+// ---------- סקירה וגזירה לפני השליחה ----------
+let review = null;   // { rec, timer, left, url }
+function openReview(rec) {
+  closeReview(false);
+  const auto = !!cfg().url && !rec.memOnly;
+  review = { rec, left: REVIEW_SECONDS };
+  $("revTitle").textContent = "✅ ההקלטה מוכנה: " + rec.name + " (" + fmt(rec.dur) + ")";
+  const m = document.createElement(rec.mode === "video" ? "video" : "audio");
+  m.controls = true; m.playsInline = true; m.preload = "metadata";
+  review.url = URL.createObjectURL(rec.blob); m.src = review.url;
+  $("revMedia").replaceChildren(m);
+  $("sendNow").hidden = !auto;
+  $("trimDo").textContent = auto ? "✂️ גזירה ושליחה" : "✂️ גזירה";
+  $("trimBox").hidden = true; $("trimOpen").hidden = false;
+  $("review").hidden = false;
+  if (rec.memOnly) {   // אין שמירה במכשיר: מורידים מיד כדי שלא תאבד
+    const a = document.createElement("a"); a.href = review.url; a.download = fileName(rec); a.click();
+    $("countdown").textContent = "⬇️ ההקלטה ירדה כקובץ (הדפדפן הזה לא שומר הקלטות בדף).";
+    return;
+  }
+  if (auto) {
+    const show = () => $("countdown").textContent = `נשלח אוטומטית בעוד ${review.left} שניות. אפשר לגזור קודם את ההתחלה או הסוף.`;
+    show();
+    review.timer = setInterval(() => { if (--review.left <= 0) sendFromReview(); else show(); }, 1000);
+  } else $("countdown").textContent = "";
+}
+function closeReview(send) {
+  if (!review) return;
+  clearInterval(review.timer);
+  const id = review.rec.id;
+  URL.revokeObjectURL(review.url);
+  review = null;
+  $("review").hidden = true; $("revMedia").replaceChildren();
+  if (send && cfg().url) queueUpload(id);
+}
+function sendFromReview() { if (review) closeReview(true); }
+$("sendNow").onclick = sendFromReview;
+
+$("trimOpen").onclick = () => {
+  if (!review) return;
+  clearInterval(review.timer);
+  $("countdown").textContent = "השליחה האוטומטית נעצרה. בחרו התחלה וסוף ולחצו על הגזירה.";
+  const player = $("revMedia").firstElementChild;
+  const dur = isFinite(player.duration) && player.duration > 0 ? player.duration : review.rec.dur;
+  review.dur = dur;
+  for (const id of ["rS", "rE"]) $(id).max = dur.toFixed(1);
+  $("rS").value = 0; $("rE").value = dur.toFixed(1);
+  showTrim();
+  $("trimNote").textContent = review.rec.mode === "video" ? "בווידאו ההתחלה עשויה לזוז עד 2 שניות אחורה (לפריים המלא הקרוב)." : "";
+  $("trimBox").hidden = false; $("trimOpen").hidden = true;
+};
+function showTrim() {
+  let s = +$("rS").value, e = +$("rE").value;
+  if (e - s < 1) { if (document.activeElement === $("rE")) $("rE").value = e = Math.min(review.dur, s + 1); else $("rS").value = s = Math.max(0, e - 1); }
+  $("tS").textContent = fmt(s); $("tE").textContent = fmt(e) + " (אורך " + fmt(e - s) + ")";
+}
+$("rS").oninput = $("rE").oninput = () => {
+  showTrim();
+  const p = $("revMedia").firstElementChild; if (p) p.currentTime = +(document.activeElement === $("rE") ? $("rE").value : $("rS").value);
+};
+$("setS").onclick = () => { $("rS").value = $("revMedia").firstElementChild.currentTime; showTrim(); };
+$("setE").onclick = () => { $("rE").value = $("revMedia").firstElementChild.currentTime; showTrim(); };
+$("trimCancel").onclick = () => { $("trimBox").hidden = true; $("trimOpen").hidden = false; $("countdown").textContent = cfg().url ? "השליחה תתבצע כשתלחצו \"שליחה עכשיו\"." : ""; };
+$("trimDo").onclick = async () => {
+  if (!review) return;
+  const rec = review.rec, s = +$("rS").value, e = +$("rE").value;
+  $("trimDo").disabled = true; $("trimDo").textContent = "גוזר…";
+  try {
+    const whole = s <= 0.2 && e >= review.dur - 0.2;
+    if (!whole) {
+      const { blob, start } = await remux(rec.blob, rec.ext, { start: s, end: e });
+      if (!blob.size) throw new Error("התוצאה ריקה");
+      Object.assign(rec, { blob, size: blob.size, dur: e - start });
+      await putRec(rec);
+    }
+    status("✂️ נגזר: " + rec.name + " (" + fmt(rec.dur) + ")", "ok");
+    $("trimDo").disabled = false;
+    closeReview(true);
+    renderList();
+  } catch (err) {
+    $("trimNote").textContent = "⚠️ הגזירה נכשלה: " + err.message + ". אפשר לשלוח את ההקלטה המלאה.";
+    $("trimDo").disabled = false; $("trimDo").textContent = cfg().url ? "✂️ גזירה ושליחה" : "✂️ גזירה";
+    $("sendNow").hidden = !cfg().url;
+  }
+};
+
 // ---------- רשימת ההקלטות ----------
 const urls = new Map();
-function blobUrl(rec) { if (!urls.has(rec.id)) urls.set(rec.id, URL.createObjectURL(rec.blob)); return urls.get(rec.id); }
-const fileName = rec => rec.name.replace(/[\\/:*?"<>|]/g, " ") + "." + rec.ext;
-const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function blobUrl(rec) {
+  const key = rec.id + ":" + rec.size;
+  if (!urls.has(key)) urls.set(key, URL.createObjectURL(rec.blob));
+  return urls.get(key);
+}
 
 async function renderList() {
   const recs = (await tx("recs", "readonly", s => req(s.getAll()))).sort((a, b) => b.ts - a.ts);
@@ -449,14 +775,15 @@ async function renderList() {
   box.innerHTML = "";
   for (const rec of recs) {
     const d = new Date(rec.ts);
-    const el = document.createElement("div"); el.className = "rec";
+    const el = document.createElement("div"); el.className = "rec"; el.dataset.id = rec.id;
+    const sent = rec.drive ? (cfg().code ? ` · <a href="${esc(rec.drive)}" target="_blank" rel="noopener">✓ בדרייב</a>` : " · ✓ נשלח למאגר")
+               : rec.up ? " · ⏳ השליחה הופסקה באמצע, תמשיך מאותה נקודה" : "";
     el.innerHTML = `<div class="t">${rec.mode === "video" ? "🎥" : "🎧"} ${esc(rec.name)}</div>
-      <div class="m">${d.toLocaleDateString("he-IL")} ${d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })} · ${fmt(rec.dur)} · ${size(rec.size)} · ${rec.ext.toUpperCase()}
-      ${rec.drive ? (cfg().code ? ` · <a href="${esc(rec.drive)}" target="_blank" rel="noopener">✓ בדרייב</a>` : " · ✓ נשלח למאגר") : ""}</div>
+      <div class="m">${d.toLocaleDateString("he-IL")} ${d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })} · ${fmt(rec.dur)} · ${size(rec.size)} · ${rec.ext.toUpperCase()}${sent}</div>
       <div class="acts">
         <button class="btn small ghost" data-a="play">▶ השמעה</button>
         <a class="btn small ghost" data-a="dl" style="text-decoration:none">⬇️ הורדה</a>
-        ${cfg().url && !rec.drive ? '<button class="btn small ghost" data-a="drive">📤 שליחה למאגר</button>' : ""}
+        ${cfg().url && !rec.drive ? `<button class="btn small ghost" data-a="drive">📤 ${rec.up ? "המשך שליחה" : "שליחה למאגר"}</button>` : ""}
         <button class="btn small ghost" data-a="ren">✏️ שם</button>
         <button class="btn small ghost" data-a="del">🗑️</button>
       </div><div class="prog"><i></i></div><div class="m up"></div>`;
@@ -471,15 +798,14 @@ async function renderList() {
     el.querySelector("[data-a=drive]")?.addEventListener("click", () => queueUpload(rec.id));
     el.querySelector("[data-a=ren]").onclick = async () => {
       const n = prompt("שם חדש להקלטה:", rec.name); if (!n || !n.trim()) return;
-      rec.name = n.trim(); await tx("recs", "readwrite", s => s.put(rec)); renderList();
+      const cur = await getRec(rec.id); cur.name = n.trim(); await putRec(cur); renderList();
     };
     el.querySelector("[data-a=del]").onclick = async () => {
       if (!confirm("למחוק את \"" + rec.name + "\" מהמכשיר?" + (rec.drive ? "\n(העותק שנשלח למאגר נשאר)" : "\nהיא עוד לא נשלחה למאגר.")))
         return;
-      if (urls.has(rec.id)) { URL.revokeObjectURL(urls.get(rec.id)); urls.delete(rec.id); }
+      if (review?.rec.id === rec.id) closeReview(false);
       await tx("recs", "readwrite", s => s.delete(rec.id)); renderList(); showQuota();
     };
-    el.dataset.id = rec.id;
     box.append(el);
   }
   showQuota();
@@ -488,65 +814,122 @@ async function showQuota() {
   try { const e = await navigator.storage.estimate(); $("quota").textContent = `תפוס כרגע ${size(e.usage)} מתוך כ-${size(e.quota)} שזמינים לדף.`; } catch (e) {}
 }
 
-// ---------- גוגל דרייב ----------
+// ---------- שליחה לגוגל דרייב ----------
+// העלאה במקטעים (resumable) כמו בתוסף המקליט: כתובת ההעלאה נשמרת לפני הבייט הראשון,
+// ניתוק לא מתחיל מאפס, ולחיצה חוזרת / כניסה מחדש ממשיכות את אותו קובץ ולא יוצרות כפול.
 function xhr(method, url, body, headers, onProg) {
   return new Promise((res, rej) => {
     const x = new XMLHttpRequest(); x.open(method, url);
     for (const k in headers || {}) x.setRequestHeader(k, headers[k]);
-    if (onProg) x.upload.onprogress = e => e.lengthComputable && onProg(e.loaded / e.total);
-    x.onload = () => res({ status: x.status, text: x.responseText });
-    x.onerror = () => rej(new Error("שגיאת רשת"));
+    if (onProg) x.upload.onprogress = e => e.lengthComputable && onProg(e.loaded);
+    // Range דרך getAllResponseHeaders: דרייב לא חושף אותו בכל תשובה, ו-getResponseHeader מדפיס שם שגיאה
+    x.onload = () => res({ status: x.status, text: x.responseText, range: (/^range:\s*(.*)$/im.exec(x.getAllResponseHeaders()) || [])[1] || null });
+    x.onerror = x.ontimeout = () => rej(Object.assign(new Error("אין חיבור לאינטרנט"), { net: true }));
     x.send(body);
   });
 }
 async function api(body) {
-  const { url } = cfg();
-  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) });
+  const r = await fetch(cfg().url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) });
   return r.json();
 }
 const toB64 = blob => new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(String(f.result).split(",")[1]); f.onerror = rej; f.readAsDataURL(blob); });
-
 const ERR = { "daily limit": "המאגר קיבל היום את המכסה היומית. ננסה לשלוח שוב בכניסה הבאה",
               "too big": "ההקלטה גדולה מדי לשליחה (מעל 700MB). אפשר להוריד אותה",
               "origin": "השליחה אפשרית רק מאתר הקול החמישי" };
-let upQ = Promise.resolve();
-const queueUpload = id => { upQ = upQ.then(() => upload(id)); return upQ; };
+class Fatal extends Error {}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const online = () => navigator.onLine ? Promise.resolve() : new Promise(r => addEventListener("online", r, { once: true }));
+
+let upQ = Promise.resolve(), uploading = false;
+const queueUpload = id => { upQ = upQ.then(() => upload(id)).catch(() => {}); return upQ; };
+
+const nextByte = res => { const m = /bytes=0-(\d+)/.exec(res.range || ""); return m ? +m[1] + 1 : null; };
 
 async function upload(id) {
-  const { url } = cfg();
-  if (!url) return;
-  const el = document.querySelector(`.rec[data-id="${id}"]`);
-  const rec = await tx("recs", "readonly", s => req(s.get(id)));
+  if (!cfg().url) return;
+  let rec = await getRec(id);
   if (!rec || rec.drive) return;
-  const base = { origin: location.origin, by: store.get("by"), name: fileName(rec), mime: rec.mime };
-  const info = el?.querySelector(".up"), bar = el?.querySelector(".prog"), btn = el?.querySelector("[data-a=drive]");
-  const say = (t, cls) => { if (info) { info.textContent = t; info.style.color = cls === "err" ? "var(--rec)" : ""; } else status(t, cls); };
-  const prog = p => { if (bar) { bar.style.display = "block"; bar.firstElementChild.style.width = Math.round(p * 100) + "%"; } say("📤 שולח למאגר… " + Math.round(p * 100) + "%"); };
-  if (btn) btn.disabled = true;
+  const el = () => document.querySelector(`.rec[data-id="${id}"]`);
+  const say = (t, cls) => { const i = el()?.querySelector(".up"); if (i) { i.textContent = t; i.style.color = cls === "err" ? "var(--rec)" : ""; } else status(t, cls); };
+  const bar = p => { const b = el()?.querySelector(".prog"); if (b) { b.style.display = "block"; b.firstElementChild.style.width = Math.round(p * 100) + "%"; } };
+  const total = rec.blob.size;
+  el()?.querySelector("[data-a=drive]")?.setAttribute("disabled", "");
+  uploading = true;
+  const base = { origin: location.origin, by: rec.by || store.get("by"), name: fileName(rec), mime: rec.mime };
+  let netFails = 0;
+  // שגיאת רשת כשהדפדפן מחובר: אחרי כמה פעמים זה כנראה לא ניתוק אלא חסימה. מוותרים (או שולחים דרך השרת)
+  const netFail = async () => {
+    if (!navigator.onLine) { say("⏳ אין חיבור. השליחה תמשיך כשהרשת תחזור…"); netFails = 0; await online(); await sleep(2000); return; }
+    if (++netFails >= 6) throw Object.assign(new Fatal("אין תקשורת עם הדרייב"), { blocked: true });
+    say("⏳ החיבור נקטע, מנסה שוב…"); await sleep(2000 * netFails);
+  };
   try {
-    let link;
-    if (rec.blob.size <= DIRECT_MAX) {
-      say("מכין את הקובץ…");
-      const data = await toB64(rec.blob);
-      say("📤 שולח למאגר…");   // בקשה פשוטה בלי מד התקדמות: Apps Script לא עונה לבקשת preflight
-      const j = await api(Object.assign({ action: "upload", data }, base));
-      if (!j.ok) throw new Error(ERR[j.error] || j.error);
-      link = "https://drive.google.com/file/d/" + j.id + "/view";
-    } else {
-      const s = await api(Object.assign({ action: "session", size: rec.blob.size }, base));
-      if (!s.ok) throw new Error(ERR[s.error] || s.error);
-      const r = await xhr("PUT", s.uploadUrl, rec.blob, {}, prog);
-      if (r.status !== 200 && r.status !== 201) throw new Error("דרייב החזיר " + r.status);
-      link = "https://drive.google.com/file/d/" + JSON.parse(r.text).id + "/view";
+    let fileId = null;
+    for (let attempt = 0; !fileId; attempt++) {
+      // 1. כתובת העלאה: ממשיכים את הקיימת (אותו קובץ, אותו גודל) או פותחים חדשה
+      if (!rec.up || rec.up.size !== total) {
+        say("📤 מתחיל לשלוח…");
+        let s;
+        try { s = await api(Object.assign({ action: "session", size: total }, base)); }
+        catch (e) { await online(); await sleep(Math.min(30000, 2000 * (attempt + 1))); continue; }
+        if (!s.ok) {
+          if (ERR[s.error]) throw new Fatal(ERR[s.error]);
+          if (total <= DIRECT_MAX) { fileId = await uploadDirect(rec, base, say); break; }   // גיבוי
+          throw new Fatal(s.error);
+        }
+        rec.up = { url: s.uploadUrl, size: total, created: Date.now() };
+        await putRec(rec);   // לפני הבייט הראשון
+      }
+      // 2. כמה כבר הגיע?
+      let pos = 0;
+      try {
+        const st = await xhr("PUT", rec.up.url, null, { "Content-Range": "bytes */" + total });
+        if (st.status === 200 || st.status === 201) { fileId = JSON.parse(st.text).id; break; }   // כבר הושלם (התשובה הקודמת אבדה)
+        if (st.status === 404 || st.status === 410) { rec.up = null; await putRec(rec); continue; }   // פג תוקף: פותחים חדשה
+        if (st.status === 308) pos = nextByte(st) ?? 0;
+        else if (st.status >= 400 && st.status < 500 && st.status !== 408 && st.status !== 429) { rec.up = null; await putRec(rec); continue; }
+      } catch (e) { await netFail(); continue; }
+      // 3. שולחים מקטע אחרי מקטע
+      while (pos < total && !fileId) {
+        const end = Math.min(pos + CHUNK, total);
+        let res;
+        try {
+          res = await xhr("PUT", rec.up.url, rec.blob.slice(pos, end), { "Content-Range": `bytes ${pos}-${end - 1}/${total}` },
+                          n => { bar((pos + n) / total); say("📤 שולח למאגר… " + Math.round((pos + n) / total * 100) + "%"); });
+        } catch (e) { await netFail(); break; }
+        netFails = 0;
+        if (res.status === 200 || res.status === 201) { fileId = JSON.parse(res.text).id; break; }
+        if (res.status === 308) { pos = nextByte(res) ?? end; continue; }
+        if (res.status === 404 || res.status === 410) { rec.up = null; await putRec(rec); break; }
+        await sleep(Math.min(30000, 2000 * (attempt + 1)));   // 5xx / 429: מנסים שוב מאותה נקודה
+        break;
+      }
     }
-    rec.drive = link;
-    await tx("recs", "readwrite", s => s.put(rec));
+    rec = await getRec(id) || rec;   // ייתכן שהשם שונה בינתיים
+    rec.drive = "https://drive.google.com/file/d/" + fileId + "/view";
+    delete rec.up;
+    await putRec(rec);
     say("✅ נשלח ונשמר במאגר", "ok");
     renderList(); listDrive();
   } catch (e) {
-    say("⚠️ השליחה למאגר נכשלה: " + e.message + ". ההקלטה שמורה במכשיר, ואפשר לנסות שוב.", "err");
-    if (btn) btn.disabled = false;
-  }
+    if (e.blocked && total <= DIRECT_MAX) {   // ההעלאה הישירה לדרייב חסומה: קובץ קטן נשלח דרך השרת
+      try {
+        const fid = await uploadDirect(rec, base, say);
+        rec = await getRec(id) || rec; rec.drive = "https://drive.google.com/file/d/" + fid + "/view"; delete rec.up;
+        await putRec(rec); say("✅ נשלח ונשמר במאגר", "ok"); renderList(); listDrive(); uploading = false; return;
+      } catch (e2) { e = e2; }
+    }
+    say("⚠️ השליחה למאגר נכשלה: " + e.message + ". ההקלטה שמורה במכשיר.", "err");
+    el()?.querySelector("[data-a=drive]")?.removeAttribute("disabled");
+  } finally { uploading = false; }
+}
+
+// גיבוי לקובץ קטן: בקשה פשוטה דרך השרת (בלי מד התקדמות: Apps Script לא עונה לבקשת preflight)
+async function uploadDirect(rec, base, say) {
+  say("📤 שולח למאגר…");
+  const j = await api(Object.assign({ action: "upload", data: await toB64(rec.blob) }, base));
+  if (!j.ok) throw new Fatal(ERR[j.error] || j.error);
+  return j.id;
 }
 
 async function listDrive() {
@@ -579,22 +962,22 @@ $("cfgSave").onclick = async () => {
     const r = await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "check", code }) });
     const j = await r.json();
     if (!j.ok) throw new Error(j.error === "code" ? "הקוד שגוי" : j.error);
-    store.set("url", url); store.set("code", code);
+    store.set("url", url === DRIVE_URL ? "" : url); store.set("code", code);
     st.className = "status ok"; st.textContent = "✅ מחובר לדרייב";
-    setTimeout(() => $("dlg").close(), 900); listDrive();
+    setTimeout(() => $("dlg").close(), 900); listDrive(); renderList();
   } catch (e) { st.className = "status err"; st.textContent = "⚠️ " + e.message; }
 };
 
 $("by").value = store.get("by");
 $("by").onchange = () => store.set("by", $("by").value.trim());
 $("sendNote").hidden = !cfg().url;
-$("name").placeholder = "שם ההקלטה (לא חובה)";
+showVset();
 updateNote();
 try { navigator.storage?.persist?.(); } catch (e) {}
 (async () => {
-  try { await recover(); await renderList(); } catch (e) { status("⚠️ השמירה במכשיר לא זמינה בדפדפן הזה (מצב גלישה פרטית?). אפשר להקליט, אבל רק להוריד.", "err"); }
+  try { await recover(); await renderList(); } catch (e) { status("⚠️ השמירה במכשיר לא זמינה בדפדפן הזה (מצב גלישה פרטית?). אפשר להקליט, וההקלטה תרד כקובץ.", "err"); }
   fillMics(); listDrive();
-  // הקלטות שעוד לא נשלחו (אין רשת / מכסה יומית) – שולחים עכשיו
+  // הקלטות שעוד לא נשלחו (אין רשת / מכסה יומית / הדף נסגר באמצע שליחה) – ממשיכים עכשיו
   try { if (cfg().url) for (const r of await tx("recs", "readonly", s => req(s.getAll()))) if (!r.drive) queueUpload(r.id); } catch (e) {}
 })();
 </script>
