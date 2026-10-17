@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="he" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
 <title>מקליט – הקול החמישי</title>
 <meta name="description" content="הקלטת שמע ל-MP3 ווידאו ל-MP4 ישירות מהדפדפן. ההקלטות נשמרות במכשיר, ואפשר לשמור אותן גם בגוגל דרייב.">
 <style>
@@ -51,6 +50,7 @@ button{font:inherit;cursor:pointer}
 .prog{height:6px;background:var(--acc2);border-radius:4px;overflow:hidden;margin-top:6px;display:none}
 .prog i{display:block;height:100%;width:0;background:var(--acc)}
 .empty{color:var(--muted);font-size:15px}
+.notice{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:var(--acc2);font-size:15px;text-align:center}
 dialog{border:0;border-radius:16px;padding:20px;width:min(480px,94vw);background:var(--card);color:var(--ink)}
 dialog::backdrop{background:rgba(0,0,0,.45)}
 dialog input{width:100%;margin:4px 0 10px;direction:ltr;text-align:left}
@@ -66,6 +66,7 @@ footer a{color:var(--acc);font-weight:700}
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://www.kol-toda.co.il/record/">
 <script async src="https://www.kol-toda.co.il/a.js"></script>
 </head><body>
 <main>
@@ -81,6 +82,7 @@ footer a{color:var(--acc);font-weight:700}
 
 <section class="card">
   <input class="name" id="name" type="text" aria-label="שם ההקלטה" placeholder="שם ההקלטה">
+  <input class="name" id="by" type="text" aria-label="השם שלך" placeholder="השם שלך (לא חובה)" style="margin-top:8px">
   <div class="row" id="audioOpts">
     <label>מיקרופון <select id="mic"><option value="">ברירת מחדל</option></select></label>
     <label>איכות <select id="kbps"><option value="64">64 (דיבור, קטן)</option><option value="96">96</option><option value="128" selected>128 (מומלץ)</option><option value="192">192 (מוזיקה)</option></select></label>
@@ -102,7 +104,7 @@ footer a{color:var(--acc);font-weight:700}
     <span style="width:58px"></span>
   </div>
   <div class="status" id="status">לחצו "הקלטה" כדי להתחיל</div>
-  <div class="row" style="justify-content:center"><label><input type="checkbox" id="autoDrive"> לשמור אוטומטית בדרייב בסיום</label></div>
+  <div class="notice" id="sendNote" hidden>📤 בסיום, כל הקלטה נשלחת אוטומטית לשמירה במאגר הקול החמישי. עותק נשאר גם אצלך במכשיר.</div>
 </section>
 
 <section class="card">
@@ -114,19 +116,19 @@ footer a{color:var(--acc);font-weight:700}
   </details>
 </section>
 
-<section class="card">
-  <h2>☁️ ההקלטות בגוגל דרייב</h2>
-  <div id="driveBox" class="empty">כדי לשמור בדרייב פותחים את ⚙️ ומזינים את כתובת השרת ואת הקוד.</div>
+<section class="card" id="driveCard" hidden>
+  <h2>☁️ כל ההקלטות שנשלחו (בדרייב)</h2>
+  <div id="driveBox" class="empty"></div>
 </section>
 
 <footer>📚 עוד חומרי לימוד – חינם, במאגר הקול החמישי: <a href="https://www.kol-toda.co.il/search/">חיפוש במאגר</a> · <a href="https://www.kol-toda.co.il/">המאגר המלא</a></footer>
 </main>
 
 <dialog id="dlg">
-  <h2>⚙️ שמירה בגוגל דרייב</h2>
+  <h2>⚙️ לבעל האתר</h2>
   <label for="cfgUrl">כתובת השרת (מסתיימת ב-‎/exec)</label>
   <input id="cfgUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
-  <label for="cfgCode">קוד שמירה</label>
+  <label for="cfgCode">קוד לצפייה בכל ההקלטות</label>
   <input id="cfgCode" type="password" autocomplete="off">
   <div class="status" id="cfgStatus"></div>
   <div class="row" style="justify-content:flex-end">
@@ -147,7 +149,7 @@ const store = {
   get(k, d = "") { try { return localStorage.getItem("ktrec." + k) ?? d; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem("ktrec." + k, v); } catch (e) {} }
 };
-const cfg = () => ({ url: store.get("url", DRIVE_URL), code: store.get("code") });
+const cfg = () => ({ url: store.get("url") || DRIVE_URL, code: store.get("code") });
 
 // ---------- IndexedDB ----------
 let dbp;
@@ -265,6 +267,7 @@ function startMeter(ctx, node) {
 // ---------- הקלטה ----------
 async function begin() {
   const name = ($("name").value.trim() || defaultName());
+  store.set("by", $("by").value.trim());
   const recId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const r = { recId, name, mode, ts: Date.now(), paused: false, elapsed: 0, since: 0, seq: 0, queue: Promise.resolve(), streams: [] };
   try {
@@ -401,7 +404,7 @@ async function finish() {
   if (!rec) { status("לא נקלט כלום.", "err"); return; }
   status("✅ נשמר במכשיר: " + rec.name + " (" + size(rec.size) + ")", "ok");
   await renderList();
-  if ($("autoDrive").checked && cfg().url && cfg().code) upload(rec.id);
+  if (cfg().url) queueUpload(rec.id);
 }
 
 async function assemble(recId, meta) {
@@ -449,11 +452,11 @@ async function renderList() {
     const el = document.createElement("div"); el.className = "rec";
     el.innerHTML = `<div class="t">${rec.mode === "video" ? "🎥" : "🎧"} ${esc(rec.name)}</div>
       <div class="m">${d.toLocaleDateString("he-IL")} ${d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })} · ${fmt(rec.dur)} · ${size(rec.size)} · ${rec.ext.toUpperCase()}
-      ${rec.drive ? ` · <a href="${esc(rec.drive)}" target="_blank" rel="noopener">✓ בדרייב</a>` : ""}</div>
+      ${rec.drive ? (cfg().code ? ` · <a href="${esc(rec.drive)}" target="_blank" rel="noopener">✓ בדרייב</a>` : " · ✓ נשלח למאגר") : ""}</div>
       <div class="acts">
         <button class="btn small ghost" data-a="play">▶ השמעה</button>
         <a class="btn small ghost" data-a="dl" style="text-decoration:none">⬇️ הורדה</a>
-        <button class="btn small ghost" data-a="drive">☁️ ${rec.drive ? "שמירה שוב בדרייב" : "שמירה בדרייב"}</button>
+        ${cfg().url && !rec.drive ? '<button class="btn small ghost" data-a="drive">📤 שליחה למאגר</button>' : ""}
         <button class="btn small ghost" data-a="ren">✏️ שם</button>
         <button class="btn small ghost" data-a="del">🗑️</button>
       </div><div class="prog"><i></i></div><div class="m up"></div>`;
@@ -465,13 +468,13 @@ async function renderList() {
       m.controls = true; m.playsInline = true; m.src = blobUrl(rec);
       el.querySelector(".acts").before(m); m.play().catch(() => {});
     };
-    el.querySelector("[data-a=drive]").onclick = () => upload(rec.id, el);
+    el.querySelector("[data-a=drive]")?.addEventListener("click", () => queueUpload(rec.id));
     el.querySelector("[data-a=ren]").onclick = async () => {
       const n = prompt("שם חדש להקלטה:", rec.name); if (!n || !n.trim()) return;
       rec.name = n.trim(); await tx("recs", "readwrite", s => s.put(rec)); renderList();
     };
     el.querySelector("[data-a=del]").onclick = async () => {
-      if (!confirm("למחוק את \"" + rec.name + "\" מהמכשיר?" + (rec.drive ? "\n(העותק בדרייב נשאר)" : "\nאין לה עותק בדרייב.")))
+      if (!confirm("למחוק את \"" + rec.name + "\" מהמכשיר?" + (rec.drive ? "\n(העותק שנשלח למאגר נשאר)" : "\nהיא עוד לא נשלחה למאגר.")))
         return;
       if (urls.has(rec.id)) { URL.revokeObjectURL(urls.get(rec.id)); urls.delete(rec.id); }
       await tx("recs", "readwrite", s => s.delete(rec.id)); renderList(); showQuota();
@@ -497,50 +500,58 @@ function xhr(method, url, body, headers, onProg) {
   });
 }
 async function api(body) {
-  const { url, code } = cfg();
-  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(Object.assign({ code }, body)) });
+  const { url } = cfg();
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) });
   return r.json();
 }
 const toB64 = blob => new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(String(f.result).split(",")[1]); f.onerror = rej; f.readAsDataURL(blob); });
 
-async function upload(id, el) {
-  const { url, code } = cfg();
-  if (!url || !code) { openCfg(); return; }
-  el ||= document.querySelector(`.rec[data-id="${id}"]`);
+const ERR = { "daily limit": "המאגר קיבל היום את המכסה היומית. ננסה לשלוח שוב בכניסה הבאה",
+              "too big": "ההקלטה גדולה מדי לשליחה (מעל 700MB). אפשר להוריד אותה",
+              "origin": "השליחה אפשרית רק מאתר הקול החמישי" };
+let upQ = Promise.resolve();
+const queueUpload = id => { upQ = upQ.then(() => upload(id)); return upQ; };
+
+async function upload(id) {
+  const { url } = cfg();
+  if (!url) return;
+  const el = document.querySelector(`.rec[data-id="${id}"]`);
   const rec = await tx("recs", "readonly", s => req(s.get(id)));
+  if (!rec || rec.drive) return;
+  const base = { origin: location.origin, by: store.get("by"), name: fileName(rec), mime: rec.mime };
   const info = el?.querySelector(".up"), bar = el?.querySelector(".prog"), btn = el?.querySelector("[data-a=drive]");
   const say = (t, cls) => { if (info) { info.textContent = t; info.style.color = cls === "err" ? "var(--rec)" : ""; } else status(t, cls); };
-  const prog = p => { if (bar) { bar.style.display = "block"; bar.firstElementChild.style.width = Math.round(p * 100) + "%"; } say("מעלה לדרייב… " + Math.round(p * 100) + "%"); };
+  const prog = p => { if (bar) { bar.style.display = "block"; bar.firstElementChild.style.width = Math.round(p * 100) + "%"; } say("📤 שולח למאגר… " + Math.round(p * 100) + "%"); };
   if (btn) btn.disabled = true;
   try {
     let link;
     if (rec.blob.size <= DIRECT_MAX) {
       say("מכין את הקובץ…");
       const data = await toB64(rec.blob);
-      const r = await xhr("POST", url, JSON.stringify({ code, action: "upload", name: fileName(rec), mime: rec.mime, data }),
-                          { "Content-Type": "text/plain;charset=utf-8" }, prog);
-      const j = JSON.parse(r.text);
-      if (!j.ok) throw new Error(j.error === "code" ? "הקוד שגוי" : j.error);
-      link = j.url;
+      say("📤 שולח למאגר…");   // בקשה פשוטה בלי מד התקדמות: Apps Script לא עונה לבקשת preflight
+      const j = await api(Object.assign({ action: "upload", data }, base));
+      if (!j.ok) throw new Error(ERR[j.error] || j.error);
+      link = "https://drive.google.com/file/d/" + j.id + "/view";
     } else {
-      const s = await api({ action: "session", name: fileName(rec), mime: rec.mime, size: rec.blob.size, origin: location.origin });
-      if (!s.ok) throw new Error(s.error === "code" ? "הקוד שגוי" : s.error);
+      const s = await api(Object.assign({ action: "session", size: rec.blob.size }, base));
+      if (!s.ok) throw new Error(ERR[s.error] || s.error);
       const r = await xhr("PUT", s.uploadUrl, rec.blob, {}, prog);
       if (r.status !== 200 && r.status !== 201) throw new Error("דרייב החזיר " + r.status);
       link = "https://drive.google.com/file/d/" + JSON.parse(r.text).id + "/view";
     }
     rec.drive = link;
     await tx("recs", "readwrite", s => s.put(rec));
-    say("✅ נשמר בדרייב", "ok");
+    say("✅ נשלח ונשמר במאגר", "ok");
     renderList(); listDrive();
   } catch (e) {
-    say("⚠️ השמירה בדרייב נכשלה: " + e.message + ". ההקלטה עדיין שמורה במכשיר.", "err");
+    say("⚠️ השליחה למאגר נכשלה: " + e.message + ". ההקלטה שמורה במכשיר, ואפשר לנסות שוב.", "err");
     if (btn) btn.disabled = false;
   }
 }
 
 async function listDrive() {
   const { url, code } = cfg(), box = $("driveBox");
+  $("driveCard").hidden = !(url && code);
   if (!url || !code) return;
   box.className = ""; box.textContent = "טוען…";
   try {
@@ -574,14 +585,17 @@ $("cfgSave").onclick = async () => {
   } catch (e) { st.className = "status err"; st.textContent = "⚠️ " + e.message; }
 };
 
-$("autoDrive").checked = store.get("auto") === "1";
-$("autoDrive").onchange = () => store.set("auto", $("autoDrive").checked ? "1" : "0");
+$("by").value = store.get("by");
+$("by").onchange = () => store.set("by", $("by").value.trim());
+$("sendNote").hidden = !cfg().url;
 $("name").placeholder = "שם ההקלטה (לא חובה)";
 updateNote();
 try { navigator.storage?.persist?.(); } catch (e) {}
 (async () => {
   try { await recover(); await renderList(); } catch (e) { status("⚠️ השמירה במכשיר לא זמינה בדפדפן הזה (מצב גלישה פרטית?). אפשר להקליט, אבל רק להוריד.", "err"); }
   fillMics(); listDrive();
+  // הקלטות שעוד לא נשלחו (אין רשת / מכסה יומית) – שולחים עכשיו
+  try { if (cfg().url) for (const r of await tx("recs", "readonly", s => req(s.getAll()))) if (!r.drive) queueUpload(r.id); } catch (e) {}
 })();
 </script>
 </body></html>
