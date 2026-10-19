@@ -457,6 +457,14 @@
     text-align: center;
     margin-top: 10px;
   }
+  .q-pic { position: relative; margin: 0 -6px 10px; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px var(--shadow); }
+  .q-pic img { display: block; width: 100%; height: auto; }
+  .pic-zone { position: absolute; background: transparent; border: 4px solid transparent; border-radius: 12px; cursor: pointer; padding: 0; }
+  .pic-zone:hover { border-color: rgba(255, 255, 255, .8); }
+  .pic-zone.z-correct { border-color: #2E9E4F; background: rgba(46, 158, 79, .18); }
+  .pic-zone.z-wrong { border-color: var(--pink); background: rgba(120, 120, 120, .45); }
+  .opt-list.opt-row { flex-direction: row; }
+  .opt-list.opt-row .opt-btn { flex: 1; justify-content: center; text-align: center; padding: 10px 6px; font-size: 14px; font-weight: 700; }
   .mode-btn {
     display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 12px; padding: 14px;
     text-align: right; font-family: inherit; font-size: 16px; color: var(--text);
@@ -986,7 +994,7 @@ function renderQuestion() {
   var order = q.options.map(function(_, i){ return i; }); // במבדק שומרים על סדר התשובות המקורי - יש תשובות כמו "א'+ב' נכונות"
   var optsHtml = order.map(function(origIdx, pos){
     return '<button class="opt-btn" data-pos="' + pos + '" type="button">' +
-      '<span class="opt-letter">' + letters[pos] + '</span>' +
+      (q.image ? '' : '<span class="opt-letter">' + letters[pos] + '</span>') +
       '<span class="opt-text">' + escapeHtml(q.options[origIdx]) + '</span>' +
     '</button>';
   }).join('');
@@ -995,7 +1003,8 @@ function renderQuestion() {
     '<div class="progress-row"><span>שאלה ' + (gi+1) + ' מתוך ' + TOTAL_QUESTIONS + '</span><div class="dots">' + dots + '</div></div>' +
     '<div class="level-badge">' + escapeHtml(level.title) + '</div>' +
     '<div class="q-prompt">' + escapeHtml(q.prompt) + '</div>' +
-    '<div class="opt-list" id="optList">' + optsHtml + '</div>' +
+    picHtml(q) +
+    '<div class="opt-list' + (q.image ? ' opt-row' : '') + '" id="optList">' + optsHtml + '</div>' +
     '<div id="fbArea"></div>';
 
   state.attempts = 0;
@@ -1025,6 +1034,37 @@ function renderQuestion() {
         btn.disabled = true;
         fb.innerHTML = '<div class="feedback retry">לא בדיוק, אבל אתם ממש קרובים! רמז: ' + escapeHtml(q.hint) + '</div>';
       }
+    });
+  });
+  bindPicZones();
+}
+
+// שאלת תמונה: zone = [למעלה, למטה, שמאל, ימין] באחוזים של התמונה - אזור הלוחות; לוח i נספר מימין
+function picHtml(q) {
+  if (!q.image) return '';
+  var z = q.zone, n = q.options.length, w = (z[3] - z[2]) / n, h = '';
+  for (var i = 0; i < n; i++) {
+    h += '<button class="pic-zone" type="button" data-pos="' + i + '" aria-label="' + escapeHtml(q.options[i]) + '" style="top:' + z[0] + '%;height:' + (z[1] - z[0]) +
+      '%;right:' + (100 - z[3] + i * w) + '%;width:' + w + '%"></button>';
+  }
+  return '<div class="q-pic"><img src="' + escapeHtml(q.image) + '" alt="' + escapeHtml(q.prompt) + '">' + h + '</div>';
+}
+function syncZones() {
+  Array.prototype.forEach.call(document.querySelectorAll('.pic-zone'), function(zn){
+    var b = document.querySelector('#optList .opt-btn[data-pos="' + zn.getAttribute('data-pos') + '"]');
+    if (!b) return;
+    zn.classList.toggle('z-correct', b.classList.contains('opt-correct'));
+    zn.classList.toggle('z-wrong', b.classList.contains('opt-wrong'));
+  });
+}
+function bindPicZones() {
+  var list = document.getElementById('optList');
+  if (!document.querySelector('.pic-zone')) return;
+  list.addEventListener('click', function(){ setTimeout(syncZones, 0); });
+  Array.prototype.forEach.call(document.querySelectorAll('.pic-zone'), function(zn){
+    zn.addEventListener('click', function(){
+      var b = document.querySelector('#optList .opt-btn[data-pos="' + zn.getAttribute('data-pos') + '"]');
+      if (b && !b.disabled) b.click();
     });
   });
 }
