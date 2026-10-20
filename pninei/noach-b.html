@@ -465,6 +465,10 @@
   .pic-zone.z-wrong { border-color: var(--pink); background: rgba(120, 120, 120, .45); }
   .opt-list.opt-row { flex-direction: row; }
   .opt-list.opt-row .opt-btn { flex: 1; justify-content: center; text-align: center; padding: 10px 6px; font-size: 14px; font-weight: 700; }
+  .riddle-link { display: block; width: 100%; margin-top: 14px; padding: 11px; font: 700 15px Heebo, sans-serif;
+    color: var(--green-dark); background: var(--danger-soft); border: 2px dashed var(--gold); border-radius: 12px; cursor: pointer; }
+  textarea { width: 100%; padding: 11px 12px; font-size: 16px; font-family: inherit; border: 1.5px solid var(--border);
+    border-radius: 10px; background: var(--bg); color: var(--text); resize: vertical; }
   .mode-btn {
     display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 12px; padding: 14px;
     text-align: right; font-family: inherit; font-size: 16px; color: var(--text);
@@ -527,6 +531,7 @@ var CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbwtHZ304ugUWdZ6DV5Sj-1gXMvv8ksDDLBkbZf6_XJTYXypHYAtmnkpofTzbNN0SFNb/exec',
   GAME_ID: 'pninei-noach-5787-b',        // מצב "תלמיד בבית"
   CLASS_GAME_ID: 'pninei-noach-5787-b-kita',  // מצב "משחק כיתתי" - לשונית נפרדת בגיליון
+  PARASHA: 'נח',
   GRADE: 'ב',
   SCHOOLS: [],
   CLASSES: ['א','ב','ג','ד','ה','ו'],
@@ -1189,10 +1194,51 @@ function boot() {
   screen.innerHTML =
     '<h2>איך משחקים היום?</h2>' +
     '<button class="mode-btn" id="modeClass" type="button"><span class="mode-ic">🏫</span><span><b>משחק כיתתי</b><small>כל הכיתה עונה יחד, והכיתה מקבלת ציון</small></span></button>' +
-    '<button class="mode-btn" id="modeHome" type="button"><span class="mode-ic">🏠</span><span><b>תלמיד בבית</b><small>כל תלמיד שמצליח מוסיף כתר 👑 לכיתה שלו</small></span></button>';
+    '<button class="mode-btn" id="modeHome" type="button"><span class="mode-ic">🏠</span><span><b>תלמיד בבית</b><small>כל תלמיד שמצליח מוסיף כתר 👑 לכיתה שלו</small></span></button>' +
+    '<button class="riddle-link" id="riddleBtn" type="button">✏️ לשליחת חידות לחצו כאן</button>';
   document.getElementById('modeClass').addEventListener('click', function(){ state.mode = 'class'; renderClassRegistration(); });
   document.getElementById('modeHome').addEventListener('click', function(){ state.mode = 'home'; bootHome(); });
+  document.getElementById('riddleBtn').addEventListener('click', renderRiddleForm);
   if (!boardsRequested) refreshLeaderboard(); else renderLeaderboard();
+}
+
+function renderRiddleForm() {
+  screen.innerHTML =
+    '<h2>✏️ שליחת חידה</h2>' +
+    '<p style="text-align:center;color:var(--text-soft);font-size:14px;margin:0;">חיברתם חידה? שלחו אותה, ואולי היא תיכנס לחידון עם תמונות! ' +
+    'לכל תשובה כתבו מה רואים בתמונה שלה.</p>' +
+    '<label for="rdName">שם</label><input type="text" id="rdName" maxlength="40" placeholder="השם שלכם">' +
+    '<label for="rdParasha">פרשה</label><input type="text" id="rdParasha" maxlength="40">' +
+    '<label for="rdQ">החידה</label><textarea id="rdQ" maxlength="300" rows="3" placeholder="למשל: כמה ילדים היו לנח?"></textarea>' +
+    '<label for="rdA1">✅ התשובה הנכונה - מה רואים בתמונה</label><input type="text" id="rdA1" maxlength="150" placeholder="למשל: נח עם שלושה בנים">' +
+    '<label for="rdA2">תשובה 2 - מה רואים בתמונה</label><input type="text" id="rdA2" maxlength="150">' +
+    '<label for="rdA3">תשובה 3 - מה רואים בתמונה</label><input type="text" id="rdA3" maxlength="150">' +
+    '<button class="primary" id="rdSend" type="button">שליחת החידה 📨</button>' +
+    '<div id="rdStatus" class="hint-note" style="text-align:center;"></div>';
+  document.getElementById('rdParasha').value = CONFIG.PARASHA || '';
+  var saved = loadStudent();
+  if (saved) document.getElementById('rdName').value = saved.name;
+  screen.appendChild(backLink());
+  document.getElementById('rdSend').addEventListener('click', function(){
+    var v = function(id){ return document.getElementById(id).value.trim(); };
+    var p = { type: 'riddle', name: v('rdName'), parasha: v('rdParasha'), question: v('rdQ'),
+              a1: v('rdA1'), a2: v('rdA2'), a3: v('rdA3'), from: CONFIG.GAME_ID, game: 'pninei-riddles' };
+    if (p.name.length < 2) { alert('אנא כתבו שם'); return; }
+    if (!p.question || !p.a1 || !p.a2 || !p.a3) { alert('אנא כתבו את החידה ואת שלוש התשובות'); return; }
+    var st = document.getElementById('rdStatus'), btn = document.getElementById('rdSend');
+    btn.disabled = true; st.textContent = 'שולח...';
+    sendScore(p).then(function(ok){
+      if (ok) {
+        screen.innerHTML = '<div class="celebrate"><div class="emoji">🎉</div><h2>תודה, ' + escapeHtml(p.name) + '!</h2>' +
+          '<p>החידה נשלחה. כל הכבוד על החשיבה והיצירתיות - ה׳ שמח בכל מי שלומד את התורה שלו! 🌟</p>' +
+          '<button class="secondary" id="rdMore" type="button">לשלוח עוד חידה</button></div>';
+        screen.appendChild(backLink());
+        document.getElementById('rdMore').addEventListener('click', renderRiddleForm);
+      } else {
+        btn.disabled = false; st.textContent = 'לא הצלחנו לשלוח. נסו שוב.';
+      }
+    });
+  });
 }
 
 function bootHome() {
