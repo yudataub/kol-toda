@@ -865,7 +865,7 @@ function fetchLeaders() {
     .catch(function(){ return []; });
 }
 function studentKey(name, cls, school) {
-  return normalize(name) + '|' + String(cls == null ? '' : cls).trim() + '|' + normalize(school);
+  return normalize(name) + '|' + String(cls == null ? '' : cls).trim() + '|' + schoolKey(school);
 }
 function apiReady() {
   return !!CONFIG.API_URL && CONFIG.API_URL.indexOf('PASTE_') !== 0;
@@ -905,9 +905,26 @@ function sendEntry(student) {
 var boards = undefined; // undefined = טוען, null = לא מוגדר, אחרת {cls: [...], home: [...]}
 var boardsRequested = false;
 
+var MAIN_SCHOOL = 'נעם קרית אתא';
+function canonSchool(s) {
+  s = String(s == null ? '' : s).trim();
+  return /נו?עם/.test(normalize(s)) ? MAIN_SCHOOL : s;   // נעם / נועם / נעם קרית אתא / חמ"ד נעם - בית ספר אחד
+}
+function schoolKey(s) { return normalize(canonSchool(s)); }
+function clsLabel(c) {
+  var m = String(c == null ? '' : c).match(/^([א-ת])(\d*)$/);
+  return m ? m[1] + "'" + m[2] : String(c == null ? '' : c);
+}
+function numOpts(cur) {
+  return '<option value="">ללא</option>' + ['1', '2', '3', '4', '5'].map(function(n){
+    return '<option value="' + n + '"' + (n === cur ? ' selected' : '') + '>' + n + '</option>';
+  }).join('');
+}
+var SCHOOL_LIST = '<datalist id="schoolList"><option value="' + MAIN_SCHOOL + '"></datalist>';
+
 function isMyClass(cls, school) {
   var me = state.mode === 'class' ? state.classroom : state.student;
-  return !!me && String(me.cls) === String(cls) && normalize(me.school) === normalize(school);
+  return !!me && String(me.cls) === String(cls) && schoolKey(me.school) === schoolKey(school);
 }
 
 function renderLeaderboard() {
@@ -918,9 +935,9 @@ function renderLeaderboard() {
   // 1) ציוני הכיתות - הציון הטוב ביותר של כל כיתה, מכל מבדקי הפרשה
   var best = {};
   boards.cls.forEach(function(r){
-    var k = normalize(r.name) + '|' + normalize(r.school);
+    var k = normalize(r.name) + '|' + schoolKey(r.school);
     var s = Number(r.score) || 0;
-    if (!best[k] || s > best[k].score) best[k] = { name: String(r.name), cls: r.cls, school: String(r.school), score: s };
+    if (!best[k] || s > best[k].score) best[k] = { name: String(r.name), cls: r.cls, school: canonSchool(r.school), score: s };
   });
   var rows = Object.keys(best).map(function(k){ return best[k]; })
     .sort(function(a, b){ return (b.score - a.score) || a.name.localeCompare(b.name, 'he'); });
@@ -945,8 +962,8 @@ function renderLeaderboard() {
     var sk = studentKey(r.name, r.cls, r.school);
     if (seen[sk]) return;
     seen[sk] = 1;
-    var gk = String(r.cls) + '|' + normalize(r.school);
-    if (!groups[gk]) groups[gk] = { cls: String(r.cls), school: String(r.school), n: 0 };
+    var gk = String(r.cls) + '|' + schoolKey(r.school);
+    if (!groups[gk]) groups[gk] = { cls: String(r.cls), school: canonSchool(r.school), n: 0 };
     groups[gk].n++;
   });
   var crowns = Object.keys(groups).map(function(k){ return groups[k]; })
@@ -957,7 +974,7 @@ function renderLeaderboard() {
     var h = '<ul class="lb-list">';
     crowns.slice(0, 100).forEach(function(g){
       h += '<li class="' + (isMyClass(g.cls, g.school) ? 'lb-me' : '') + '">' +
-        '<span class="lb-name">כיתה ' + escapeHtml(g.cls) + "' – " + g.n + (g.n === 1 ? ' כתר' : ' כתרים') +
+        '<span class="lb-name">כיתה ' + escapeHtml(clsLabel(g.cls)) + ' – ' + g.n + (g.n === 1 ? ' כתר' : ' כתרים') +
           '<div class="lb-meta">' + escapeHtml(g.school) + '</div></span>' +
         '<span class="lb-crowns">' + crownStr(g.n) + '</span></li>';
     });
@@ -983,7 +1000,7 @@ function renderRegistration() {
   var classOpts = CONFIG.CLASSES.map(function(c){ return '<option value="'+escapeHtml(c)+'"'+(c === CONFIG.GRADE ? ' selected' : '')+'>כיתה '+escapeHtml(c)+'</option>'; }).join('');
   var schoolField = CONFIG.SCHOOLS.length
     ? '<select id="regSchool"><option value="">בחרו בית ספר</option>' + CONFIG.SCHOOLS.map(function(s){ return '<option value="'+escapeHtml(s)+'">'+escapeHtml(s)+'</option>'; }).join('') + '</select>'
-    : '<input type="text" id="regSchool" placeholder="שם בית הספר" maxlength="60">';
+    : '<input type="text" id="regSchool" placeholder="שם בית הספר" maxlength="60" list="schoolList">' + SCHOOL_LIST;
 
   screen.innerHTML =
     '<h2>🏠 תלמיד בבית - לפני שמתחילים</h2>' +
@@ -992,6 +1009,7 @@ function renderRegistration() {
     '<div class="hint-note">כדאי לכתוב שם פרטי ואות ראשונה של שם המשפחה. שימו לב: רשימת התלמידים החכמים גלויה לכל מי שיש לו את הקישור.</div>' +
     '<label for="regClass">כיתה</label>' +
     '<select id="regClass"><option value="">בחרו כיתה</option>' + classOpts + '</select>' +
+    '<label for="regNum">מספר כיתה (לא חובה)</label><select id="regNum">' + numOpts('') + '</select>' +
     '<label for="regSchool">בית ספר</label>' +
     schoolField +
     '<button class="primary" id="regStart" type="button">בואו נתחיל! 🎉</button>';
@@ -1000,7 +1018,8 @@ function renderRegistration() {
   document.getElementById('regStart').addEventListener('click', function(){
     var name = document.getElementById('regName').value.trim();
     var cls = document.getElementById('regClass').value;
-    var school = document.getElementById('regSchool').value.trim();
+    if (cls) cls += document.getElementById('regNum').value;
+    var school = canonSchool(document.getElementById('regSchool').value);
     if (name.length < 2) { alert('אנא כתבו שם (לפחות 2 אותיות)'); return; }
     if (!cls) { alert('אנא בחרו כיתה'); return; }
     if (!school) { alert('אנא כתבו/בחרו בית ספר'); return; }
@@ -1227,7 +1246,7 @@ function renderFinish() {
   if (isClass) {
     top += '<div>הציון של הכיתה:</div><div class="score-num">' + score + '</div>';
   } else if (score >= CONFIG.PASS_SCORE) {
-    top += '<div class="crowns-box"><div class="big">👑</div>כל הכבוד! הוספתם כתר לכיתה ' + escapeHtml(who.cls) + "'!</div>";
+    top += '<div class="crowns-box"><div class="big">👑</div>כל הכבוד! הוספתם כתר לכיתה ' + escapeHtml(clsLabel(who.cls)) + '!</div>';
   } else {
     top += '<div class="result-badge">🌟 כל הכבוד על ההשתתפות!</div><p>נסו שוב - ותוסיפו כתר לכיתה שלכם 👑</p>';
   }
@@ -1271,7 +1290,10 @@ function renderRiddleForm() {
     '<p style="text-align:center;color:var(--text-soft);font-size:14px;margin:0;">חיברתם חידה? שלחו אותה, ואולי היא תיכנס לחידון עם תמונות! ' +
     'לכל תשובה כתבו מה רואים בתמונה שלה.</p>' +
     '<label for="rdName">שם</label><input type="text" id="rdName" maxlength="40" placeholder="השם שלכם">' +
-    '<label for="rdParasha">פרשה</label><input type="text" id="rdParasha" maxlength="40">' +
+    '<label for="rdParasha">פרשה</label><input type="text" id="rdParasha" maxlength="30">' +
+    '<label for="rdGrade">לאיזו כיתה החידה מיועדת?</label><select id="rdGrade">' +
+      CONFIG.CLASSES.map(function(c){ return '<option value="' + c + '"' + (c === CONFIG.GRADE ? ' selected' : '') + '>כיתה ' + c + "'</option>"; }).join('') +
+    '</select>' +
     '<label for="rdQ">החידה</label><textarea id="rdQ" maxlength="300" rows="3" placeholder="למשל: כמה ילדים היו לנח?"></textarea>' +
     '<label for="rdA1">✅ התשובה הנכונה - מה רואים בתמונה</label><input type="text" id="rdA1" maxlength="150" placeholder="למשל: נח עם שלושה בנים">' +
     '<label for="rdA2">תשובה 2 - מה רואים בתמונה</label><input type="text" id="rdA2" maxlength="150">' +
@@ -1284,7 +1306,8 @@ function renderRiddleForm() {
   screen.appendChild(backLink());
   document.getElementById('rdSend').addEventListener('click', function(){
     var v = function(id){ return document.getElementById(id).value.trim(); };
-    var p = { type: 'riddle', name: v('rdName'), parasha: v('rdParasha'), question: v('rdQ'),
+    // הכיתה נשמרת יחד עם הפרשה ("נח · כיתה ב'") - כך היא מגיעה לגיליון ולמייל בלי לשנות את ה-Apps Script
+    var p = { type: 'riddle', name: v('rdName'), parasha: v('rdParasha') + ' · כיתה ' + v('rdGrade') + "'", question: v('rdQ'),
               a1: v('rdA1'), a2: v('rdA2'), a3: v('rdA3'), from: CONFIG.GAME_ID, game: 'pninei-riddles' };
     if (p.name.length < 2) { alert('אנא כתבו שם'); return; }
     if (!p.question || !p.a1 || !p.a2 || !p.a3) { alert('אנא כתבו את החידה ואת שלוש התשובות'); return; }
@@ -1312,7 +1335,7 @@ function bootHome() {
     var welcome = document.createElement('div');
     welcome.innerHTML =
       '<h2>ברוכים השבים, ' + escapeHtml(state.student.name) + '! 👋</h2>' +
-      '<p style="text-align:center;color:var(--text-soft);font-size:14px;">כיתה ' + escapeHtml(state.student.cls) + ' · ' + escapeHtml(state.student.school) + '</p>' +
+      '<p style="text-align:center;color:var(--text-soft);font-size:14px;">כיתה ' + escapeHtml(clsLabel(state.student.cls)) + ' · ' + escapeHtml(state.student.school) + '</p>' +
       '<button class="primary" id="beginBtn" type="button">להתחיל את המבדק! 🎮</button>';
     screen.appendChild(welcome);
     screen.appendChild(renderSwitchLink());
@@ -1332,7 +1355,7 @@ function loadClassroom() {
 
 function renderClassRegistration() {
   var saved = loadClassroom() || {};
-  var cur = saved.cls || CONFIG.GRADE;
+  var cur = String(saved.cls || CONFIG.GRADE).charAt(0);
   var classOpts = CONFIG.CLASSES.map(function(c){
     return '<option value="' + escapeHtml(c) + '"' + (c === cur ? ' selected' : '') + '>כיתה ' + escapeHtml(c) + "'</option>";
   }).join('');
@@ -1340,23 +1363,21 @@ function renderClassRegistration() {
     '<h2>🏫 משחק כיתתי</h2>' +
     '<p style="text-align:center;color:var(--text-soft);font-size:14px;margin:0;">כל הכיתה עונה יחד על כל שאלה. בסוף - הכיתה מקבלת ציון!</p>' +
     '<label for="clsGrade">כיתה</label><select id="clsGrade">' + classOpts + '</select>' +
-    '<label for="clsExtra">כיתה מקבילה או שם המחנך/ת (לא חובה)</label>' +
-    '<input type="text" id="clsExtra" maxlength="20" placeholder="למשל: 2, או: של הרב כהן">' +
+    '<label for="clsNum">מספר כיתה (לא חובה)</label><select id="clsNum">' + numOpts(saved.num || '') + '</select>' +
     '<label for="clsSchool">בית ספר</label>' +
-    '<input type="text" id="clsSchool" maxlength="60" placeholder="שם בית הספר">' +
+    '<input type="text" id="clsSchool" maxlength="60" placeholder="שם בית הספר" list="schoolList">' + SCHOOL_LIST +
     '<button class="primary" id="clsStart" type="button">מתחילים את המבדק! 🎉</button>';
-  document.getElementById('clsExtra').value = saved.extra || '';
   document.getElementById('clsSchool').value = saved.school || '';
   screen.appendChild(backLink());
   document.getElementById('clsStart').addEventListener('click', function(){
-    var cls = document.getElementById('clsGrade').value;
-    var extra = document.getElementById('clsExtra').value.trim();
-    var school = document.getElementById('clsSchool').value.trim();
+    var num = document.getElementById('clsNum').value;
+    var cls = document.getElementById('clsGrade').value + num;
+    var school = canonSchool(document.getElementById('clsSchool').value);
     if (!school) { alert('אנא כתבו את שם בית הספר'); return; }
     var room = {
-      id: 'kita-' + cyrb53('kita|' + cls + '|' + normalize(extra) + '|' + normalize(school)),
-      name: 'כיתה ' + cls + "'" + (extra ? ' ' + extra : ''),
-      cls: cls, school: school, extra: extra
+      id: 'kita-' + cyrb53('kita|' + cls + '|' + schoolKey(school)),
+      name: 'כיתה ' + clsLabel(cls),
+      cls: cls, school: school, num: num
     };
     safeSet('uq_classroom', JSON.stringify(room));
     state.classroom = room;
