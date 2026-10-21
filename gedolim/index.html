@@ -406,7 +406,10 @@ function tabUrl(k) {
   if (window.parent !== window) try { window.parent.postMessage({kt: "share", k}, "*"); } catch (e) {}
   return new URL(D.share + encodeURIComponent(k) + ".html", DOC).href;
 }
-function setTab(k) { state.tab = k; state.q = ""; document.getElementById("q").value = ""; if (state.fmt === "fav") state.fmt = ""; history.replaceState(null, "", tabUrl(k)); renderChips(); render(); window.scrollTo({top: 0}); }
+// a catalog with a page per person (D.pages, gedolim): choosing a person opens the page – it has the materials and a search
+// of its own (21.10, the user: "שכל פעם שמבקשים אחד מגדול ישראל ישר נפתח הדף שלו")
+const pageOf = k => D.pages && D.tabs.some(t => t.k === k && t.g && !t.k.startsWith("gen-")) ? D.pages + k + ".html" : "";
+function setTab(k) { if (pageOf(k)) { location.href = pageOf(k); return; } state.tab = k; state.q = ""; document.getElementById("q").value = ""; if (state.fmt === "fav") state.fmt = ""; history.replaceState(null, "", tabUrl(k)); renderChips(); render(); window.scrollTo({top: 0}); }
 function renderChips() {
   document.getElementById("fmt").innerHTML = FILTERS.map(([k, l]) => `<button class="chip${state.fmt === k ? " on" : ""}" data-fmt="${k}">${l}</button>`).join("");
 }
@@ -504,6 +507,7 @@ fetch("data.json").then(r => r.json()).then(data => {
   document.getElementById("grade").insertAdjacentHTML("beforeend", grades.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join(""));
   if (!grades.length) document.getElementById("grade").style.display = "none";
   const h = decodeURIComponent(location.hash.slice(1));
+  if (pageOf(h)) { location.replace(pageOf(h)); return; }   // an old link to a person's tab
   state.tab = D.tabs.some(t => t.k === h) || isGroup(h) ? h : D.start || (D.tabs[1] || D.tabs[0]).k;
   if (D.share && h === state.tab) history.replaceState(null, "", tabUrl(state.tab));   // arrived from a share page / an old #link
   renderChips(); markOwn(false); render();
