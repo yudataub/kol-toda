@@ -86,7 +86,9 @@ function render() {
   if (!items.length) { main.innerHTML = `<div class="empty">לא נמצאו חומרים. נסו מילה אחרת או סוג חומר אחר.</div>`; return; }
   const by = {}; items.forEach(i => (by[i.c] = by[i.c] || []).push(i));
   main.innerHTML = P.cats.filter(c => by[c.k]).map(c => {
-    const list = by[c.k].sort((a, b) => a.t.localeCompare(b.t, "he", {numeric: true})), cc = CATCOL[c.k] || CATCOL.more;
+    // presentations before videos, always (21.10, the user); then by name
+    const kind = i => (i.files || []).some(f => /^(achiya:)?(ppt|gamma)$/.test(f.f)) ? 0 : (i.files || []).length && i.files.every(f => /^(achiya:)?video$/.test(f.f)) ? 2 : 1;
+    const list = by[c.k].sort((a, b) => (kind(a) - kind(b)) || a.t.localeCompare(b.t, "he", {numeric: true})), cc = CATCOL[c.k] || CATCOL.more;
     const all = opened[c.k] || list.length <= PAGE + 4;
     return `<section class="sec" id="${c.k}" style="--cc:${cc[0]};--cs:${cc[1]}"><h2><span class="e">${c.e}</span>${esc(c.l)}<span class="n">${list.length}</span></h2>
       <div class="grid">${(all ? list : list.slice(0, PAGE)).map(cardHtml).join("")}</div>
