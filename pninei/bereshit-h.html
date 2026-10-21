@@ -467,6 +467,8 @@
   .opt-list.opt-row4 { flex-wrap: wrap; }
   .opt-list.opt-row.opt-row4 .opt-btn { flex: 1 1 45%; }   /* יותר ספציפי מ-.opt-row .opt-btn שבא אחריו */
   .opt-list.opt-row .opt-btn { flex: 1; justify-content: center; text-align: center; padding: 10px 6px; font-size: 14px; font-weight: 700; }
+  input[type="email"] { width: 100%; padding: 11px 12px; font-size: 16px; font-family: inherit; border: 1.5px solid var(--border);
+    border-radius: 10px; background: var(--bg); color: var(--text); }
   .riddle-link { display: block; width: 100%; margin-top: 14px; padding: 11px; font: 700 15px Heebo, sans-serif;
     color: var(--green-dark); background: var(--danger-soft); border: 2px dashed var(--gold); border-radius: 12px; cursor: pointer; }
   textarea { width: 100%; padding: 11px 12px; font-size: 16px; font-family: inherit; border: 1.5px solid var(--border);
@@ -1242,6 +1244,9 @@ function renderRiddleForm() {
     '<label for="rdA1">✅ התשובה הנכונה - מה רואים בתמונה</label><input type="text" id="rdA1" maxlength="150" placeholder="למשל: נח עם שלושה בנים">' +
     '<label for="rdA2">תשובה 2 - מה רואים בתמונה</label><input type="text" id="rdA2" maxlength="150">' +
     '<label for="rdA3">תשובה 3 - מה רואים בתמונה</label><input type="text" id="rdA3" maxlength="150">' +
+    '<label for="rdEmail">מייל (של ההורים) - כדי שנוכל לעדכן אם החידה פורסמה (לא חובה)</label>' +
+    '<input type="email" id="rdEmail" maxlength="80" dir="ltr" placeholder="name@example.com">' +
+    '<div class="hint-note">המייל לא יפורסם באתר - הוא מגיע רק אלינו.</div>' +
     '<button class="primary" id="rdSend" type="button">שליחת החידה 📨</button>' +
     '<div id="rdStatus" class="hint-note" style="text-align:center;"></div>';
   document.getElementById('rdParasha').value = CONFIG.PARASHA || '';
@@ -1252,9 +1257,10 @@ function renderRiddleForm() {
     var v = function(id){ return document.getElementById(id).value.trim(); };
     // הכיתה נשמרת יחד עם הפרשה ("נח · כיתה ב'") - כך היא מגיעה לגיליון ולמייל בלי לשנות את ה-Apps Script
     var p = { type: 'riddle', name: v('rdName'), parasha: v('rdParasha') + ' · כיתה ' + v('rdGrade') + "'", question: v('rdQ'),
-              a1: v('rdA1'), a2: v('rdA2'), a3: v('rdA3'), from: CONFIG.GAME_ID, game: 'pninei-riddles' };
+              a1: v('rdA1'), a2: v('rdA2'), a3: v('rdA3'), email: v('rdEmail'), from: CONFIG.GAME_ID, game: 'pninei-riddles' };
     if (p.name.length < 2) { alert('אנא כתבו שם'); return; }
     if (!p.question || !p.a1 || !p.a2 || !p.a3) { alert('אנא כתבו את החידה ואת שלוש התשובות'); return; }
+    if (p.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) { alert('כתובת המייל לא תקינה - תקנו אותה או השאירו ריק'); return; }
     var st = document.getElementById('rdStatus'), btn = document.getElementById('rdSend');
     btn.disabled = true; st.textContent = 'שולח...';
     sendScore(p).then(function(ok){
