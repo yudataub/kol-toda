@@ -34,7 +34,8 @@ function thumbOf(it) {
 }
 function btnHtml(f) {
   const ach = f.f.startsWith("achiya:"), k = kindOf(f), m = FMT[k] || FMT.web;
-  const text = ach ? (k !== "web" ? m[1] + " · באתר אחיה" : "באתר אחיה") : (VERB[k] || m[1]);
+  let text = ach ? (k !== "web" ? m[1] + " · באתר אחיה" : "באתר אחיה") : (VERB[k] || m[1]);
+  if (f.l) text = esc(f.l);   // a label of its own: "פתחו את המצגת" / "קראו את הסיפור" (story decks, 22.10)
   const href = viewHref(f);
   return `<a class="btn" style="color:${m[2]};background:${m[3]};border-color:${m[3]}" href="${esc(href)}" target="_blank" rel="noopener">${text}${f.z ? `<span class="sz">· ${esc(f.z)}</span>` : ""}</a>` +
     (href !== f.u ? `<a class="btn dl" href="${esc(f.u)}" download title="הורדת הקובץ">⬇️</a>` : "");
