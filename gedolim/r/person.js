@@ -5,7 +5,7 @@ const FMT = {pdf:["📕","PDF","#e11d48","#fde8ec"],word:["📘","Word","#2563eb
   audio:["🎵","שמע","#0891b2","#e0f5fa"],gamma:["🖥️","Gamma","#9333ea","#f3e8ff"]};
 const VERB = {gamma:"פתחו מצגת", pdf:"PDF להדפסה", word:"Word לעריכה", ppt:"פתחו מצגת", video:"▶ צפו בסרטון", game:"🎮 שחקו",
   web:"פתחו קישור", folder:"פתחו תיקייה", excel:"פתחו Excel", image:"צפו בתמונה", audio:"▶ האזינו"};
-FMT.article = ["📖", "מאמר", "#7c2d12", "#fdf0e6"]; VERB.article = "📖 קראו את המאמר";   // an article (21.10)
+FMT.article = ["📖", "מאמר", "#7c2d12", "#fdf0e6"]; VERB.article = "📖 קראו את המאמר"; FMT.all = ["📚", "כל החומרים", "#4c1d95", "#efe7fd"]; VERB.all = "📚 כל החומרים במקום אחד";   // an article (21.10)
 const CATCOL = {lesson:["#4f46e5","#e9e8fd"], pres:["#ea580c","#fdeadb"], work:["#2563eb","#e3ecfd"], test:["#e11d48","#fde4ea"],
   game:["#7c3aed","#efe6fe"], story:["#0d9488","#dcf3ef"], art:["#db2777","#fce4f1"], summary:["#16a34a","#e2f5e8"], more:["#64748b","#eceff4"]};
 const FILTERS = [["","הכל"],["pdf","להדפסה"],["word","לעריכה"],["ppt","מצגות"],["video","סרטונים"],["game","משחקים"]];
