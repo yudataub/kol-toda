@@ -5,6 +5,7 @@ const FMT = {pdf:["📕","PDF","#e11d48","#fde8ec"],word:["📘","Word","#2563eb
   audio:["🎵","שמע","#0891b2","#e0f5fa"],gamma:["🖥️","Gamma","#9333ea","#f3e8ff"]};
 const VERB = {gamma:"פתחו מצגת", pdf:"PDF להדפסה", word:"Word לעריכה", ppt:"פתחו מצגת", video:"▶ צפו בסרטון", game:"🎮 שחקו",
   web:"פתחו קישור", folder:"פתחו תיקייה", excel:"פתחו Excel", image:"צפו בתמונה", audio:"▶ האזינו"};
+FMT.article = ["📖", "מאמר", "#7c2d12", "#fdf0e6"]; VERB.article = "📖 קראו את המאמר";   // an article (21.10)
 const CATCOL = {lesson:["#4f46e5","#e9e8fd"], pres:["#ea580c","#fdeadb"], work:["#2563eb","#e3ecfd"], test:["#e11d48","#fde4ea"],
   game:["#7c3aed","#efe6fe"], story:["#0d9488","#dcf3ef"], art:["#db2777","#fce4f1"], summary:["#16a34a","#e2f5e8"], more:["#64748b","#eceff4"]};
 const FILTERS = [["","הכל"],["pdf","להדפסה"],["word","לעריכה"],["ppt","מצגות"],["video","סרטונים"],["game","משחקים"]];
@@ -71,7 +72,7 @@ function cardHtml(it) {
     : `<a class="th noimg" href="${esc(viewHref(it.files[0]))}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">${fb}</a>`;
   const k = keyOf(it), mine = MINE[k] || 0, r = rating(it);
   const stars = [1, 2, 3, 4, 5].map(v => `<button class="${v <= mine ? "on" : ""}" data-rate="${v}" aria-label="דירוג ${v}">★</button>`).join("");
-  return `<div class="card" data-id="${esc(k)}">${th}<div class="body"><div class="name" title="${esc(it.t)}">${esc(it.t)}</div>
+  return `<div class="card" data-id="${esc(k)}">${th}<div class="body"><div class="name" title="${esc(it.t)}">${esc(it.t)}</div>${it.d ? `<div class="desc">${esc(it.d)}</div>` : ""}
     <div class="rates"><button class="rate${r.count ? " has" : ""}" data-ratebtn="1" title="דירוג משותף של המורים">${rateText(r)}</button><span class="picker">${stars}</span></div>
     <div class="meta">${it.gr ? `<span class="badge grade">${esc(it.gr)}</span>` : ""}${it.s ? `<span class="badge">${esc(it.s)}</span>` : ""}</div>
     <div class="btns">${it.files.map(btnHtml).join("")}</div></div></div>`;
