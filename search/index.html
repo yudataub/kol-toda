@@ -215,7 +215,9 @@ function mkRes(ws) {
 }
 
 // ---------- state
-const S = {scope: "", sec: "", fmt: "", nShow: 12, iShow: 50, last: ""};
+const S = {scope: "", sec: "", fmt: "", nShow: 12, fShow: 8, iShow: 50, last: ""};
+// a topic that is only a folder (Drive / OneDrive / Gamma) is listed apart from the catalogs' own topics (21.10, the user)
+const isFolder = i => N[i][1] === 3 || /drive\.google\.com\/drive|1drv\.ms\/f\/|gamma\.app\/folders/.test(N[i][4] || "");
 let nodeHits = [], itemHits = [], t0 = 0;
 function crumbs(n, withCat) {
   const out = []; let p = n;
@@ -227,9 +229,9 @@ function crumbs(n, withCat) {
 function nodeHtml(i) {
   const [name, lv, c, par, u, e, cnt] = N[i];
   const path = []; let p = par; while (p >= 0 && N[p][1] > 0) { path.unshift(N[p][0]); p = N[p][3]; }
-  const icon = lv === 3 ? "📁" : e || (lv === 0 ? CATS[c].e : lv === 1 ? "📂" : "🔖");
-  return `<a class="node lv${lv}" style="--sc:${secColor(c)}" href="${esc(abs(c, u))}" target="_blank" rel="noopener">
-    <span class="hd"><span class="pill">${LEVEL[lv]}</span><span>${cnt ? num(cnt) + " חומרים" : ""}</span></span>
+  const dir = isFolder(i), icon = dir ? "📁" : e || (lv === 0 ? CATS[c].e : lv === 1 ? "📂" : "🔖");
+  return `<a class="node lv${dir ? 3 : lv}" style="--sc:${secColor(c)}" href="${esc(abs(c, u))}" target="_blank" rel="noopener">
+    <span class="hd"><span class="pill">${dir ? LEVEL[3] : LEVEL[lv]}</span><span>${cnt ? num(cnt) + " חומרים" : ""}</span></span>
     <span class="nm">${icon} ${hl(name)}</span>
     <span class="pa">${lv ? esc([CATS[c].n, ...path].join(" › ")) : esc(GNAME[CATS[c].g] || "")}</span></a>`;
 }
@@ -250,10 +252,17 @@ function facetBtn(kind, key, label, color, n) {
 
 function draw() {
   const o = [];
-  if (nodeHits.length) {
-    o.push(`<h2>🧭 נושאים, תתי-נושאים ותיקיות <small>${num(nodeHits.length)} – לחיצה פותחת את הנושא בקטלוג</small></h2><div class="nodes">`);
-    o.push(nodeHits.slice(0, S.nShow).map(nodeHtml).join(""));
-    if (nodeHits.length > S.nShow) o.push(`<button class="morebtn" id="moreN">עוד ${num(Math.min(24, nodeHits.length - S.nShow))} נושאים</button>`);
+  const catHits = nodeHits.filter(i => !isFolder(i)), dirHits = nodeHits.filter(isFolder);
+  if (catHits.length) {
+    o.push(`<h2>🧭 נושאים בקטלוגים של האתר <small>${num(catHits.length)} – לחיצה פותחת את הנושא בקטלוג</small></h2><div class="nodes">`);
+    o.push(catHits.slice(0, S.nShow).map(nodeHtml).join(""));
+    if (catHits.length > S.nShow) o.push(`<button class="morebtn" id="moreN">עוד ${num(Math.min(24, catHits.length - S.nShow))} נושאים</button>`);
+    o.push("</div>");
+  }
+  if (dirHits.length) {
+    o.push(`<h2 class="dirs">📁 תיקיות בדרייב <small>${num(dirHits.length)} – תיקיות קבצים כמו שהן, בלי דף משלהן באתר</small></h2><div class="nodes">`);
+    o.push(dirHits.slice(0, S.fShow).map(nodeHtml).join(""));
+    if (dirHits.length > S.fShow) o.push(`<button class="morebtn" id="moreF">עוד ${num(Math.min(24, dirHits.length - S.fShow))} תיקיות</button>`);
     o.push("</div>");
   }
   if (!I) o.push(`<div class="empty">⏳ טוען את החומרים… (הנושאים כבר כאן)</div>`);
@@ -280,6 +289,7 @@ function draw() {
   }
   $("out").innerHTML = o.join("");
   const mn = $("moreN"); if (mn) mn.onclick = () => { S.nShow += 24; draw(); };
+  const mf = $("moreF"); if (mf) mf.onclick = () => { S.fShow += 24; draw(); };
   const mi = $("moreI"); if (mi) mi.onclick = () => { S.iShow += 50; draw(); };
   const ms = Math.round(performance.now() - t0);
   $("status").innerHTML = (S.loose ? "🔤 לא נמצא בכתיב הזה – מוצגות תוצאות בכתיב מלא/חסר · " : "") + `<b>${num(nodeHits.length)}</b> נושאים ותיקיות · <b>${I ? num(itemHits.length) : "…"}</b> חומרים${S.scope ? " ב" + esc(CATS[S.scope].n) : ""} · ${ms} אלפיות שנייה`;
@@ -341,7 +351,7 @@ function search(isLoose) {
     idx.sort((a, b) => own(b) - own(a) || ih[b + 1] - ih[a + 1] || ih[a] - ih[b]);
     itemHits = idx.map(j => ih[j]);
   }
-  S.nShow = 12; S.iShow = 50;
+  S.nShow = 12; S.fShow = 8; S.iShow = 50;
   return true;
 }
 
