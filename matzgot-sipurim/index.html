@@ -113,7 +113,7 @@ main{padding:8px 16px 60px}
 .grid .btns{padding:0 12px;margin-top:auto}
 .grid .side{padding:0 12px;justify-content:space-between}
 .ti{flex:1 1 240px;min-width:0}
-.ti .name{font-weight:600;font-size:1.02rem;word-break:break-word;line-height:1.35}
+.ti .name{font-weight:600;font-size:1.02rem;word-break:break-word;line-height:1.35}.ti .desc{font-size:.86rem;color:#4b5563;line-height:1.5;margin-top:4px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}.ti .desc:hover,.ti .desc:focus{-webkit-line-clamp:unset;display:block;overflow:visible;outline:none;cursor:text}
 .meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:3px}
 .meta:empty{display:none}
 .badge{font-size:.68rem;border-radius:999px;padding:0 7px;background:var(--accent-soft);color:#4338ca;white-space:nowrap}
@@ -200,7 +200,7 @@ FMT.gamma = ["🖥️", "Gamma", "#9333ea", "#f3e8ff"];
 const VERB = {gamma:"פתחו מצגת", pdf:"PDF להדפסה", word:"Word לעריכה", ppt:"פתחו מצגת", video:"▶ צפו בסרטון", game:"🎮 שחקו", web:"פתחו קישור",
   folder:"פתחו תיקייה", excel:"פתחו Excel", image:"צפו בתמונה", audio:"▶ האזינו"};
 // a Kol Toda video's written lesson, next to the video (written_lessons.py, 21.10)
-FMT.read = ["📄", "שיעור כתוב", "#0f766e", "#dcf3ef"]; VERB.read = "📄 השיעור הכתוב";
+FMT.read = ["📄", "שיעור כתוב", "#0f766e", "#dcf3ef"]; VERB.read = "📄 השיעור הכתוב"; FMT.article = ["📖", "מאמר", "#7c2d12", "#fdf0e6"]; VERB.article = "📖 קראו את המאמר"; FMT.all = ["📚", "כל החומרים", "#4c1d95", "#efe7fd"]; VERB.all = "📚 כל החומרים במקום אחד";
 const FILTERS = [["","הכל"],["pdf","להדפסה"],["word","לעריכה"],["ppt","מצגות"],["video","סרטונים"],["game","משחקים מקוונים"],["fav","♥ השמורים שלי"]];
 let D, state = {tab:null, q:"", fmt:"", src:"", grade:"", sort:"cv"}, PAGE = 40;
 const LS = k => "cat2_" + (D ? D.book : "") + "_" + k;
@@ -278,7 +278,7 @@ function rowHtml(it, showTab) {
   const stars = [1,2,3,4,5].map(v => `<button class="${v <= mine ? "on" : ""}" data-rate="${v}" aria-label="דירוג ${v}">★</button>`).join("");
   return `<div class="row" data-id="${esc(k)}">
     ${thumbHtml(it, icon)}
-    <div class="ti"><div class="name" title="${esc(it.t)}">${esc(it.t)}</div>
+    <div class="ti"><div class="name" title="${esc(it.t)}">${esc(it.t)}</div>${it.d ? `<div class="desc" tabindex="0" title="${esc(it.d)}">${esc(it.d)}</div>` : ""}
       <div class="meta">${it.gr ? `<span class="badge grade">${esc(it.gr)}</span>` : ""}${tabL ? `<button type="button" class="badge tabname" data-k="${esc(it.tab)}" title="לכל החומרים במדור הזה">${esc(tabL)}</button>` : ""}${it.s ? `<span class="badge"${it.also ? ` title="נמצא גם ב: ${esc(it.also.join(", "))}"` : ""}>${esc(it.s)}</span>` : ""}${it.n ? `<span class="badge new">חדש</span>` : ""}</div></div>
     <div class="btns">${btns}</div>
     <div class="side"><button class="rate${r.count ? " has" : ""}" data-ratebtn="1" title="דירוג משותף של המורים">${rateText(r)}</button><span class="picker">${stars}</span>
@@ -320,7 +320,8 @@ function viewHref(f) {
 }
 function btnHtml(file) {
   const ach = file.f.startsWith("achiya:"), k = file.f.replace("achiya:", ""), m = FMT[k] || FMT.web;
-  const text = ach ? (k !== "web" ? m[1] + " · באתר אחיה" : "באתר אחיה") : (VERB[k] || m[1]);
+  let text = ach ? (k !== "web" ? m[1] + " · באתר אחיה" : "באתר אחיה") : (VERB[k] || m[1]);
+  if (file.l) text = esc(file.l);   // a label of its own: "פתחו את המצגת" / "קראו את הסיפור" (story decks, 22.10)
   const local = inGit(file.u), href = viewHref(file);
   return `<a class="btn" style="color:${m[2]};background:${m[3]};border-color:${m[3]}" href="${esc(href)}" target="_blank" rel="noopener">${text}${file.z ? ` <span class="sz">· ${esc(file.z)}</span>` : ""}</a>` +
     (href !== new URL(file.u, document.baseURI).href ? `<a class="btn dl" href="${esc(file.u)}" download title="הורדת הקובץ">⬇️</a>` : "");
@@ -507,6 +508,7 @@ fetch("data.json").then(r => r.json()).then(data => {
   document.getElementById("grade").insertAdjacentHTML("beforeend", grades.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join(""));
   if (!grades.length) document.getElementById("grade").style.display = "none";
   const h = decodeURIComponent(location.hash.slice(1));
+  if (pageOf(h)) { location.replace(pageOf(h)); return; }   // an old link to a person's tab
   state.tab = D.tabs.some(t => t.k === h) || isGroup(h) ? h : D.start || (D.tabs[1] || D.tabs[0]).k;
   if (D.share && h === state.tab) history.replaceState(null, "", tabUrl(state.tab));   // arrived from a share page / an old #link
   renderChips(); markOwn(false); render();
