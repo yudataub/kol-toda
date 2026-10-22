@@ -38,11 +38,14 @@ main{max-width:980px;margin:0 auto;padding:10px 16px 30px}
 .crumbs a{cursor:pointer;text-decoration:none;color:var(--c2);font-weight:700}
 .crumbs a:hover{text-decoration:underline}
 .tree,.tree ul{list-style:none;margin:0;padding:0}
-.tree ul{margin-right:22px;padding-right:14px;border-right:2px solid #d9e8dc}
-.tree li{margin:6px 0}
+.tree ul{position:relative;margin-right:22px;padding-right:18px;border-right:3px solid var(--c);opacity:.9}
+.tree li{position:relative;margin:6px 0}
+.tree ul li::before{content:"";position:absolute;right:-18px;top:19px;width:16px;height:3px;background:var(--c)}   /* dorot-qa: a short branch from the line to each child, clearer on a projector (22.10, the user) */
+.kids-hdr{color:var(--c);font-weight:800;font-size:.86rem;margin:8px 0 2px}   /* dorot-qa: "תלמידיו של X" above the opened group */
 .node{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px 12px;
   box-shadow:0 2px 6px rgba(31,36,51,.05);max-width:100%}
-.node.root{border:2px solid var(--c);box-shadow:0 4px 14px rgba(21,128,61,.18)}
+.node.root{border:2px solid var(--c);background:#f0fdf4;box-shadow:0 4px 14px rgba(21,128,61,.18)}
+.node.distant{border-style:dashed;border-color:#b7b2a4}   /* dorot-qa: "כמה דורות" - a descendant, not a direct child (22.10, the user) */
 .node .tg{border:0;background:var(--c);color:#fff;font:inherit;font-size:.78rem;font-weight:800;border-radius:999px;padding:2px 10px;cursor:pointer;white-space:nowrap}
 .node .tg.open{background:#e5efe7;color:var(--c)}
 .node .nm{font-weight:800;cursor:pointer;font-size:1.02rem}
@@ -79,7 +82,7 @@ const count = i => KIDS[i].length;
 function line(i){ const a = []; for (let n = BY[i]; n; n = n.p ? BY[n.p] : null) a.unshift(n); return a; }
 function nodeHtml(i, root){
   const n = BY[i], k = count(i);
-  return '<div class="node' + (root ? ' root' : '') + (k ? '' : ' leaf') + '" data-i="' + i + '">' +
+  return '<div class="node' + (root ? ' root' : '') + (k ? '' : ' leaf') + (n.d ? ' distant' : '') + '" data-i="' + i + '">' +
     (k ? '<button class="tg" type="button">' + k + ' ' + (k === 1 ? 'ענף' : 'ענפים') + ' ▾</button>' : '') +
     '<span class="nm">' + esc(n.n) + '</span>' + (n.t ? '<span class="nt">' + esc(n.t) + '</span>' : '') +
     ((n.lu || n.gu) ? '<span class="links">' +
@@ -88,12 +91,15 @@ function nodeHtml(i, root){
     (!root && k ? '<span class="up" data-root="' + i + '">מרכז כאן</span>' : '') + '</div>';
 }
 function toggle(li){
-  const i = li.querySelector('.node').dataset.i, ul = li.querySelector(':scope > ul'), tg = li.querySelector(':scope > .node .tg');
+  const i = li.querySelector('.node').dataset.i, ul = li.querySelector(':scope > ul'), hdr = li.querySelector(':scope > .kids-hdr'), tg = li.querySelector(':scope > .node .tg');
   if (!tg) return;
-  if (ul) { ul.remove(); tg.classList.remove('open'); tg.innerHTML = count(i) + ' ' + (count(i) === 1 ? 'ענף' : 'ענפים') + ' ▾'; return; }
+  if (ul) { ul.remove(); if (hdr) hdr.remove(); tg.classList.remove('open'); tg.innerHTML = count(i) + ' ' + (count(i) === 1 ? 'ענף' : 'ענפים') + ' ▾'; return; }
+  // dorot-qa (22.10, the user): a clear heading over the opened group - "תלמידיו של X" - so a branch stays readable
+  // when several are open together, not only a faint indent
+  const h = document.createElement('div'); h.className = 'kids-hdr'; h.textContent = 'ענפיו של ' + BY[i].n;
   const kids = document.createElement('ul');
   KIDS[i].forEach(c => { const l = document.createElement('li'); l.innerHTML = nodeHtml(c, false); kids.appendChild(l); });
-  li.appendChild(kids); tg.classList.add('open'); tg.textContent = 'סגירה ▴';
+  li.appendChild(h); li.appendChild(kids); tg.classList.add('open'); tg.textContent = 'סגירה ▴';
 }
 function show(i, push){
   const a = line(i);
@@ -114,7 +120,7 @@ const q = document.getElementById('q'), res = document.getElementById('res'); le
 function find(){
   const t = norm(q.value); if (!t) { res.classList.remove('on'); return; }
   hits = N.filter(n => n.s.includes(t)).sort((a, b) => (a.s.indexOf(t) - b.s.indexOf(t)) || a.n.length - b.n.length).slice(0, 12); act = -1;
-  res.innerHTML = hits.length ? hits.map((n, j) => '<li data-j="' + j + '">' + esc(n.n) + (n.p ? '<small>תלמיד ' + esc(BY[n.p].n) + '</small>' : '') + '</li>').join('') : '<li>לא נמצא</li>';
+  res.innerHTML = hits.length ? hits.map((n, j) => '<li data-j="' + j + '">' + esc(n.n) + (n.p ? '<small>' + (n.d ? 'צאצא/צאצאית' : 'תלמיד') + ' ' + esc(BY[n.p].n) + '</small>' : '') + '</li>').join('') : '<li>לא נמצא</li>';
   res.classList.add('on');
 }
 function pick(j){ const n = hits[j]; if (!n) return; res.classList.remove('on'); q.value = n.n; q.blur(); show(n.i); }
