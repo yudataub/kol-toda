@@ -9,8 +9,10 @@ FMT.article = ["📖", "מאמר", "#7c2d12", "#fdf0e6"]; VERB.article = "📖 �
 const CATCOL = {lesson:["#4f46e5","#e9e8fd"], pres:["#ea580c","#fdeadb"], work:["#2563eb","#e3ecfd"], test:["#e11d48","#fde4ea"],
   game:["#7c3aed","#efe6fe"], story:["#0d9488","#dcf3ef"], art:["#db2777","#fce4f1"], summary:["#16a34a","#e2f5e8"], more:["#64748b","#eceff4"]};
 const FILTERS = [["","הכל"],["pdf","להדפסה"],["word","לעריכה"],["ppt","מצגות"],["video","סרטונים"],["game","משחקים"]];
-const PAGE = 24;
-let state = {q: "", fmt: ""}, opened = {};
+const PAGE = 24, TOP = 6;   // TOP: materials with o 1..6 also open the page, under "מומלצים לשיעור"
+let state = {q: "", fmt: "", g: ""}, opened = {};   // g: a guide button – only that story / kind / age (22.10)
+P.items.forEach((it, i) => it._i = i);
+const GUIDE = P.guide || {};
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const norm = s => String(s).replace(/[֑-ׇ]/g, "").toLowerCase();
 const kindOf = f => f.f.replace("achiya:", "");
@@ -54,8 +56,14 @@ function rating(it) {
   return {avg: count ? sum / count : 0, count};
 }
 const rateText = r => r.count ? `★ ${r.avg.toFixed(1)} (${r.count})` : "☆ דרגו";
+let rankedByRatings = false;   // once: the ratings of all the page's materials, so a rated material moves up (22.10)
 async function loadRatings() {
   const api = window.__ratingsApi; if (!api) return;
+  if (!rankedByRatings) {
+    rankedByRatings = true;
+    await api.fetchRatings(P.items.slice(0, 1500).flatMap(idsOf));
+    if (P.items.some(i => rating(i).count)) return render();
+  }
   const ids = [...document.querySelectorAll(".card[data-id]")].slice(0, 400).flatMap(c => BYKEY[c.dataset.id] ? idsOf(BYKEY[c.dataset.id]) : []);
   await api.fetchRatings(ids);
   document.querySelectorAll(".card[data-id]").forEach(c => {
@@ -80,17 +88,27 @@ function cardHtml(it) {
 }
 function visible() {
   const q = norm(state.q.trim());
+  const only = state.g && GUIDE[state.g] ? new Set(GUIDE[state.g]) : null;
   return P.items.filter(it => (!state.fmt || it.files.some(f => kindOf(f) === state.fmt || (state.fmt === "ppt" && f.f === "gamma")))
-    && (!q || norm(it.t).includes(q)));
+    && (!q || norm(it.t).includes(q)) && (!only || only.has(it._i)));
 }
 function render() {
   const items = visible(), main = document.getElementById("main");
+  document.querySelectorAll("[data-g]").forEach(b => b.classList.toggle("on", b.dataset.g === state.g));
   if (!items.length) { main.innerHTML = `<div class="empty">לא נמצאו חומרים. נסו מילה אחרת או סוג חומר אחר.</div>`; return; }
   const by = {}; items.forEach(i => (by[i.c] = by[i.c] || []).push(i));
-  main.innerHTML = P.cats.filter(c => by[c.k]).map(c => {
-    // presentations before videos, always (21.10, the user); then by name
-    const kind = i => (i.files || []).some(f => /^(achiya:)?(ppt|gamma)$/.test(f.f)) ? 0 : (i.files || []).length && i.files.every(f => /^(achiya:)?video$/.test(f.f)) ? 2 : 1;
-    const list = by[c.k].sort((a, b) => (kind(a) - kind(b)) || a.t.localeCompare(b.t, "he", {numeric: true})), cc = CATCOL[c.k] || CATCOL.more;
+  // presentations before videos, always (21.10, the user); then the order chosen for the teacher (o, item_rank.json –
+  // the most useful, engaging, full of love of Hashem first), then what teachers rated higher, then by name (22.10)
+  const kind = i => (i.files || []).some(f => /^(achiya:)?(ppt|gamma)$/.test(f.f)) ? 0 : (i.files || []).length && i.files.every(f => /^(achiya:)?video$/.test(f.f)) ? 2 : 1;
+  const score = i => { const r = rating(i); return r.avg * Math.min(r.count, 3); };
+  const order = (a, b) => ((a.o || 999) - (b.o || 999)) || (score(b) - score(a)) || a.t.localeCompare(b.t, "he", {numeric: true});
+  const top = items.filter(i => i.o && i.o <= TOP).sort(order);
+  const topHtml = top.length ? `<section class="sec" id="top" style="--cc:#b45309;--cs:#fef3c7"><h2><span class="e">⭐</span>מומלצים לשיעור<span class="n">${top.length}</span></h2>
+      <div class="grid">${top.map(cardHtml).join("")}</div></section>` : "";
+  const gb = state.g && document.querySelector(`[data-g="${state.g}"]`);
+  const gHtml = gb ? `<div class="gonly">מוצגים רק החומרים של: <b>${esc(gb.dataset.l || "")}</b> (${items.length}) <button data-gclear="1">הצגת הכול ×</button></div>` : "";
+  main.innerHTML = gHtml + (state.g ? "" : topHtml) + P.cats.filter(c => by[c.k]).map(c => {
+    const list = by[c.k].sort((a, b) => (kind(a) - kind(b)) || order(a, b)), cc = CATCOL[c.k] || CATCOL.more;
     const all = opened[c.k] || list.length <= PAGE + 4;
     return `<section class="sec" id="${c.k}" style="--cc:${cc[0]};--cs:${cc[1]}"><h2><span class="e">${c.e}</span>${esc(c.l)}<span class="n">${list.length}</span></h2>
       <div class="grid">${(all ? list : list.slice(0, PAGE)).map(cardHtml).join("")}</div>
@@ -113,6 +131,9 @@ document.addEventListener("click", async e => {
     try { await window.__ratingsApi.submitRating(k, v, old); window.__ratingsApi.ratingsCache.delete(k); loadRatings(); } catch (err) { console.error(err); }
     return;
   }
+  const gb = e.target.closest("[data-g]");
+  if (gb) { state.g = state.g === gb.dataset.g ? "" : gb.dataset.g; render(); document.getElementById("main").scrollIntoView({behavior: "smooth"}); return; }
+  if (e.target.closest("[data-gclear]")) { state.g = ""; render(); document.getElementById("guide").scrollIntoView({behavior: "smooth"}); return; }
   const c = e.target.closest("[data-fmt]");
   if (c) { state.fmt = c.dataset.fmt; document.querySelectorAll("[data-fmt]").forEach(b => b.classList.toggle("on", b === c)); return render(); }
   const m = e.target.closest("[data-more]");
