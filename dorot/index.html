@@ -247,6 +247,12 @@ function closeGroup(r){   // the selected person + up to 4 close ones: his masor
   }
   return keys.map(k => BYK[k]).filter(Boolean);
 }
+function yrTxt(p){
+  // dorot-card (22.10, the user): a person whose life starts before year 1 CE shows the Hebrew (AM) year in plain
+  // numbers (e.g. "1948"), not "לפנה״ס" CE text and not Hebrew letters - the card is short, CE-before-zero reads
+  // oddly, and the book itself dates this era by the Hebrew count anyway (see the "he"/"ce" split in yrs() above)
+  return p.a < 3761 ? (p.a + (p.b !== p.a ? ' – ' + p.b : '')) : (p.ca + (p.cb !== p.ca ? ' – ' + p.cb : ''));
+}
 function timePanel(r){
   const people = closeGroup(r).slice().sort((a, b) => a.a - b.a);
   const lo = Math.min(...people.map(p => p.a)), hi = Math.max(...people.map(p => p.b)), span = Math.max(hi - lo, 10);
@@ -257,7 +263,7 @@ function timePanel(r){
   people.forEach(p => {
     const a = pos(p.a), w = Math.max(pos(p.b) - a, 1.2), rc = p.rc || sec.c, sel = p.k === r.k;
     h += '<div class="mtl-label' + (sel ? ' sel' : '') + '"' + (sel ? '' : ' data-k="' + p.k + '"') + '>' + esc(p.n) +
-      '<small>' + esc(p.ca) + (p.cb !== p.ca ? ' – ' + esc(p.cb) : '') + '</small></div>' +
+      '<small>' + esc(yrTxt(p)) + '</small></div>' +
       '<div class="mtl-track"' + (sel ? '' : ' data-k="' + p.k + '"') + '><div class="mtl-bar' + (sel ? ' sel' : '') +
       '" style="right:' + a.toFixed(2) + '%;width:' + w.toFixed(2) + '%;background-color:' + rc + '"></div></div>';
   });
