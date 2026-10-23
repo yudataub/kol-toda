@@ -491,6 +491,14 @@
   .rd-msg.bad { padding: 10px; border-radius: 12px; background: #FFF4D6; color: #6B4500; border: 2px solid #E0A400; }
   [aria-invalid="true"] { border-color: #C0392B !important; box-shadow: 0 0 0 3px rgba(192, 57, 43, .25); }
   .rd-send { font-size: 19px; padding: 15px; }
+  .rd-spin { font-size: 52px; display: inline-block; animation: rdSpin 1.6s ease-in-out infinite; }
+  @keyframes rdSpin { 0%, 100% { transform: translateX(-14px) rotate(-12deg); } 50% { transform: translateX(14px) rotate(12deg); } }
+  .rd-answer { font-size: 19px; line-height: 1.6; font-weight: 600; background: var(--bg); border: 2px solid var(--border);
+    border-radius: 14px; padding: 12px; }
+  .rd-fixbox { background: #FFF4D6; color: #4A3200; border: 2px solid #E0A400; border-radius: 14px; padding: 12px; margin-bottom: 6px; }
+  .rd-fixbox p { margin: 6px 0 0; font-size: 17px; line-height: 1.6; }
+  :root[data-theme="dark"] .rd-fixbox { background: #3A2C05; color: #FFE08A; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rd-fixbox { background: #3A2C05; color: #FFE08A; } }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) .rd-chip.ok { background: #12351F; color: #BDF0CC; }
     :root:not([data-theme="light"]) .rd-chip.no { background: #3B1414; color: #FFC9C9; }
@@ -1272,13 +1280,13 @@ function boot() {
     '<button class="riddle-link" id="riddleBtn" type="button">✏️ חיברתם חידה? שלחו אותה לכאן!</button>';
   document.getElementById('modeClass').addEventListener('click', function(){ state.mode = 'class'; renderClassRegistration(); });
   document.getElementById('modeHome').addEventListener('click', function(){ state.mode = 'home'; bootHome(); });
-  document.getElementById('riddleBtn').addEventListener('click', renderRiddleForm);
+  document.getElementById('riddleBtn').addEventListener('click', function(){ renderRiddleForm(); });
   if (!boardsRequested) refreshLeaderboard(); else renderLeaderboard();
 }
 
 // מסך "שליחת חידה" לילדים בני 8 (23.10, בקשת המשתמש): מדריך קצר, דוגמה עם תמונה, ותשובות קצרות שאפשר לצייר.
 // הילדים לא מתארים את התמונה - את הציור מכינים אנחנו (riddles/PROMPT.md).
-function renderRiddleForm() {
+function renderRiddleForm(fix) {   // fix = {p, prev, msg}: חזרה לתיקון אחרי הבדיקה
   var ex = function(t, ok){ return '<span class="rd-chip ' + (ok ? 'ok' : 'no') + '">' + t + '</span>'; };
   screen.innerHTML =
     '<h2 id="rdTitle" tabindex="-1">✏️ חַבְּרוּ חִידָה!</h2>' +
@@ -1324,9 +1332,22 @@ function renderRiddleForm() {
   document.getElementById('rdParasha').value = CONFIG.PARASHA || '';
   var saved = loadStudent();
   if (saved) document.getElementById('rdName').value = saved.name;
+  if (fix) {
+    var f = fix.p;
+    document.getElementById('rdName').value = f.name; document.getElementById('rdQ').value = f.question;
+    document.getElementById('rdA1').value = f.a1; document.getElementById('rdA2').value = f.a2; document.getElementById('rdA3').value = f.a3;
+    document.getElementById('rdEmail').value = f.email || '';
+    document.getElementById('rdParasha').value = f.parasha.split(' · ')[0];
+    document.getElementById('rdGrade').value = f.grade;
+    var box = document.createElement('div');
+    box.className = 'rd-fixbox'; box.innerHTML = '<b>✏️ מתקנים את החידה</b><p>' + escapeHtml(fix.msg) + '</p>';
+    var now = screen.querySelector('.rd-now');
+    now.parentNode.insertBefore(box, now.nextSibling);
+    now.textContent = 'עכשיו מתקנים ✍️';
+  }
   screen.appendChild(backLink());
-  document.getElementById('rdTitle').focus();
-  window.scrollTo(0, 0);
+  if (fix) { document.getElementById('rdQ').focus(); screen.querySelector('.rd-fixbox').scrollIntoView({block: 'start'}); }
+  else { document.getElementById('rdTitle').focus(); window.scrollTo(0, 0); }
   var st = document.getElementById('rdStatus');
   function oops(id, msg) {
     Array.prototype.forEach.call(screen.querySelectorAll('[aria-invalid]'), function(x){ x.removeAttribute('aria-invalid'); });
@@ -1339,7 +1360,8 @@ function renderRiddleForm() {
     var v = function(id){ return document.getElementById(id).value.trim(); };
     // הכיתה נשמרת יחד עם הפרשה ("נח · כיתה ב'") - כך היא מגיעה לגיליון ולמייל בלי לשנות את ה-Apps Script
     var p = { type: 'riddle', name: v('rdName'), parasha: v('rdParasha') + ' · כיתה ' + v('rdGrade') + "'", question: v('rdQ'),
-              a1: v('rdA1'), a2: v('rdA2'), a3: v('rdA3'), email: v('rdEmail'), from: CONFIG.GAME_ID, game: 'pninei-riddles' };
+              a1: v('rdA1'), a2: v('rdA2'), a3: v('rdA3'), email: v('rdEmail'), from: CONFIG.GAME_ID, game: 'pninei-riddles',
+              tk: newTk(), prev: fix ? fix.prev : '', grade: v('rdGrade') };
     if (p.name.length < 2) return oops('rdName', 'כתבו את השם שלכם.');
     if (!p.question) return oops('rdQ', 'כתבו את השאלה.');
     var ids = ['rdA1', 'rdA2', 'rdA3'];
@@ -1356,17 +1378,72 @@ function renderRiddleForm() {
     btn.disabled = true; st.className = 'rd-msg'; st.textContent = 'שולחים...';
     sendScore(p).then(function(ok){
       if (ok) {
-        screen.innerHTML = '<div class="celebrate"><div class="emoji">🎉</div><h2 id="rdDone" tabindex="-1">תודה, ' + escapeHtml(p.name) + '!</h2>' +
-          '<p>החידה נשלחה! אם היא מתאימה, נצייר לה תמונה ונכניס אותה למשחק. ה׳ שמח בכל מי שלומד את התורה שלו! 🌟</p>' +
-          '<button class="secondary" id="rdMore" type="button">לשלוח עוד חידה</button></div>';
-        screen.appendChild(backLink());
-        document.getElementById('rdDone').focus();
-        document.getElementById('rdMore').addEventListener('click', renderRiddleForm);
+        riddleWait(p);
       } else {
         btn.disabled = false; st.className = 'rd-msg bad'; st.textContent = 'לא הצלחנו לשלוח. נסו שוב.';
       }
     });
   });
+}
+
+// התשובה מהבדיקה: שורות נפרדות, וקישור לאתר שלנו (איפה החידה תתפרסם) - לחיץ. קישורים אחרים נשארים טקסט.
+function answerHtml(m) {
+  return escapeHtml(m).replace(/(https:\/\/www\.kol-toda\.co\.il\/[A-Za-z0-9\/._-]+)/g, '<a href="$1">$1</a>')
+    .replace(/\n/g, '<br>');
+}
+
+// קוד אקראי לחידה: לפיו הדף שואל את ה-Apps Script מה יצא בבדיקה (riddles/live.py במחשב של הבעלים)
+function newTk() {
+  var a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789', t = '', i;
+  var rnd = (window.crypto && crypto.getRandomValues) ? crypto.getRandomValues(new Uint32Array(24)) : null;
+  for (i = 0; i < 24; i++) t += a.charAt((rnd ? rnd[i] : Math.floor(Math.random() * 4294967296)) % a.length);
+  return t;
+}
+
+// אחרי השליחה: "בודקים את החידה..." עד 3 דקות, ואז נכונה 🎉 / הסבר + תיקון / "נבדוק בקרוב"
+function riddleWait(p) {
+  screen.innerHTML = '<div class="celebrate rd-wait"><div class="rd-spin" aria-hidden="true">🔎</div>' +
+    '<h2 id="rdWaitH" tabindex="-1">בודקים את החידה שלך, ' + escapeHtml(p.name) + '...</h2>' +
+    '<p>זה לוקח בערך דקה. אפשר לחכות כאן. 🙂</p></div>';
+  document.getElementById('rdWaitH').focus();
+  var t0 = Date.now(), stopped = false;
+  function end(html) {
+    stopped = true;
+    screen.innerHTML = html;
+    screen.appendChild(backLink());
+    var h = screen.querySelector('h2'); if (h) { h.setAttribute('tabindex', '-1'); h.focus(); }
+    var more = document.getElementById('rdMore');
+    if (more) more.addEventListener('click', function(){ renderRiddleForm(); });
+  }
+  var thanks = '<p>ה׳ שמח בכל מי שלומד את התורה שלו! 🌟</p><button class="secondary" id="rdMore" type="button">לשלוח עוד חידה</button>';
+  function later() {
+    end('<div class="celebrate"><div class="emoji">📨</div><h2>תודה, ' + escapeHtml(p.name) + '!</h2>' +
+      '<p>החידה נשלחה. עוד לא הספקנו לבדוק אותה. נבדוק בקרוב, ואם היא מתאימה נצייר לה תמונה ונכניס אותה למשחק' +
+      (p.email ? ', ונספר לכם.' : '.') + '</p>' + thanks + '</div>');
+  }
+  function poll() {
+    if (stopped || !document.getElementById('rdWaitH')) return;
+    if (Date.now() - t0 > 180000) return later();
+    fetch(CONFIG.API_URL + '?action=riddle-result&tk=' + encodeURIComponent(p.tk))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!document.getElementById('rdWaitH')) return;
+        if (!d || !d.done) { setTimeout(poll, 6000); return; }
+        if (d.verdict === 'ok') {
+          end('<div class="celebrate"><div class="emoji">🎉</div><h2>החידה נכונה!</h2><p class="rd-answer">' + answerHtml(d.msg) + '</p>' +
+            '<p>עכשיו נצייר לה תמונה, ובתוך כמה שעות היא תיכנס למשחק עם השם שלך!</p>' + thanks + '</div>');
+        } else if (d.verdict === 'fix') {
+          end('<div class="celebrate"><div class="emoji">🤔</div><h2>כמעט!</h2><p class="rd-answer">' + escapeHtml(d.msg) + '</p>' +
+            '<button class="primary" id="rdFix" type="button">✏️ לתקן את החידה</button>' +
+            '<button class="secondary" id="rdMore" type="button">לשלוח חידה אחרת</button></div>');
+          document.getElementById('rdFix').addEventListener('click', function(){ renderRiddleForm({ p: p, prev: p.tk, msg: d.msg }); });
+        } else {
+          later();
+        }
+      })
+      .catch(function(){ setTimeout(poll, 8000); });
+  }
+  setTimeout(poll, 8000);
 }
 
 function bootHome() {
