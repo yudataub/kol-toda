@@ -96,13 +96,14 @@ function render() {
   const items = visible(), main = document.getElementById("main");
   document.querySelectorAll("[data-g]").forEach(b => b.classList.toggle("on", b.dataset.g === state.g));
   if (!items.length) { main.innerHTML = `<div class="empty">לא נמצאו חומרים. נסו מילה אחרת או סוג חומר אחר.</div>`; return; }
-  const by = {}; items.forEach(i => (by[i.c] = by[i.c] || []).push(i));
+  // a material with x (material_fixes "tail", 24.10) is drawn in its own section after all the categories
+  const by = {}, xs = {}; items.forEach(i => i.x ? (xs[i.x] = xs[i.x] || []).push(i) : (by[i.c] = by[i.c] || []).push(i));
   // presentations before videos, always (21.10, the user); then the order chosen for the teacher (o, item_rank.json –
   // the most useful, engaging, full of love of Hashem first), then what teachers rated higher, then by name (22.10)
   const kind = i => (i.files || []).some(f => /^(achiya:)?(ppt|gamma)$/.test(f.f)) ? 0 : (i.files || []).length && i.files.every(f => /^(achiya:)?video$/.test(f.f)) ? 2 : 1;
   const score = i => { const r = rating(i); return r.avg * Math.min(r.count, 3); };
   const order = (a, b) => ((a.o || 999) - (b.o || 999)) || (score(b) - score(a)) || a.t.localeCompare(b.t, "he", {numeric: true});
-  const top = items.filter(i => i.o && i.o <= TOP).sort(order);
+  const top = items.filter(i => i.o && i.o <= TOP && !i.x).sort(order);
   const topHtml = top.length ? `<section class="sec" id="top" style="--cc:#b45309;--cs:#fef3c7"><h2><span class="e">⭐</span>מומלצים לשיעור<span class="n">${top.length}</span></h2>
       <div class="grid">${top.map(cardHtml).join("")}</div></section>` : "";
   const gb = state.g && document.querySelector(`[data-g="${state.g}"]`);
@@ -113,6 +114,12 @@ function render() {
     return `<section class="sec" id="${c.k}" style="--cc:${cc[0]};--cs:${cc[1]}"><h2><span class="e">${c.e}</span>${esc(c.l)}<span class="n">${list.length}</span></h2>
       <div class="grid">${(all ? list : list.slice(0, PAGE)).map(cardHtml).join("")}</div>
       ${all ? "" : `<button class="more" data-more="${c.k}">הצגת כל ${list.length}</button>`}</section>`;
+  }).join("") + Object.keys(xs).map((x, n) => {
+    const k = "x" + (n + 1), list = xs[x].sort((a, b) => (kind(a) - kind(b)) || order(a, b)), cc = CATCOL.more;
+    const all = opened[k] || list.length <= PAGE + 4;
+    return `<section class="sec" id="${k}" style="--cc:${cc[0]};--cs:${cc[1]}"><h2><span class="e">🗂️</span>${esc(x)}<span class="n">${list.length}</span></h2>
+      <div class="grid">${(all ? list : list.slice(0, PAGE)).map(cardHtml).join("")}</div>
+      ${all ? "" : `<button class="more" data-more="${k}">הצגת כל ${list.length}</button>`}</section>`;
   }).join("");
   loadRatings();
 }
