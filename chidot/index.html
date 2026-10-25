@@ -38,7 +38,8 @@ h3{font-family:'Suez One',Georgia,serif;font-weight:400;font-size:20px;margin:0 
 .topics button:disabled{opacity:.45;cursor:default}
 .subjects{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
 .subjects span{padding:6px 14px;border-radius:999px;font-weight:700;font-size:15px;border:2px solid var(--line);color:var(--muted)}
-.subjects span.on{background:var(--soft);border-color:var(--main);color:var(--main-dark)}
+.subjects span.on,.subjects button.on{background:var(--soft);border-color:var(--main);color:var(--main-dark)}
+.subjects button{padding:6px 14px;min-height:44px;border-radius:999px;font:700 15px Heebo,sans-serif;border:2px solid var(--line);color:var(--ink);background:var(--paper);cursor:pointer}
 .empty{text-align:center;padding:12px 4px} .empty .big{font-size:52px}
 button.primary,button.secondary{display:block;width:100%;min-height:54px;margin-top:12px;font:800 18px Heebo,sans-serif;border-radius:14px;cursor:pointer}
 button.primary{background:linear-gradient(135deg,var(--main),var(--main-dark));color:#fff;border:0}
@@ -118,17 +119,27 @@ textarea{resize:vertical}
     <button role="tab" id="tabWrite" aria-selected="false" aria-controls="screen" type="button">✏️ לחבר חידה</button>
   </div>
   <main class="card" id="screen" tabindex="-1"></main>
-  <div class="sig">📚 עוד חומרי לימוד על הלכה – חינם, במאגר הקול החמישי:
-    <a href="https://www.kol-toda.co.il/halacha/">kol-toda.co.il/halacha</a><br>
+  <div class="sig" id="sig">📚 עוד חומרי לימוד על <span id="sigName">הלכה</span> – חינם, במאגר הקול החמישי:
+    <a id="sigLink" href="https://www.kol-toda.co.il/halacha/">kol-toda.co.il/halacha</a><br>
     המאגר המלא: <a href="https://www.kol-toda.co.il/">www.kol-toda.co.il</a></div>
 </div>
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbzGmqqMg2hy_dRB2Q_bkpVS8uwZ-G9LYBQ7RUrLvtRV3ZKTBTHq5qUwPMRfE4921HXk/exec';
-var SUBJECTS = [{"name": "הלכה", "on": true}, {"name": "משנה", "on": false}, {"name": "גמרא", "on": false}];   // [{name, on}] – תחומים: פעיל / בקרוב
-var TOPICS = [["השכמת הבוקר", "🌅"], ["ציצית", "🧵"], ["תפילין ומזוזה", "📜"], ["תפילה ובית הכנסת", "🙏"], ["זמני היום", "⏰"], ["ברכות", "🍞"], ["שבת", "🕯️"], ["כשרות", "🍽️"], ["מצוות התלויות בארץ", "🌳"], ["כיבוד הורים ומורים", "👨‍👦"], ["שמירת הלשון", "🤐"], ["צדקה וחסד", "🪙"], ["בין אדם לחברו", "🤝"]];       // [[שם, אייקון], ...] של התחום הפעיל
-var SUBJECT = SUBJECTS.filter(function(s){ return s.on; })[0].name;
-var RIDDLES = [{"topic": "תפילה ובית הכנסת", "question": "באיזה תאריך מבקשים על הגשם?", "options": ["ז׳", "ט״ו", "א׳"], "correct": 0, "hint": "זה קורה בחודש חשוון, כמה ימים אחרי שהעולים לרגל חזרו הביתה מירושלים.", "explain": "בארץ ישראל מתחילים לומר \"ותן טל ומטר לברכה\" בתפילת שמונה עשרה מז' בחשוון – כדי שמי שעלה לרגל לירושלים בסוכות יספיק לחזור לביתו לפני הגשמים. (בחוץ לארץ מתחילים מאוחר יותר, בתחילת דצמבר.) תודה רבה לדוד טאוב על החידה היפה!", "grades": "ג'-ו'", "who": "דוד טאוב", "verb": "חיבר", "zone": [46, 88, 2, 98], "image": "img/row3.webp"}, {"topic": "תפילה ובית הכנסת", "question": "בז' במרחשוון, באיזו תפילה מתחילים לשאול גשמים?", "options": ["שחרית", "מנחה", "מעריב"], "correct": 2, "hint": "בלוח העברי, היום מתחיל כבר בערב שלפניו.", "explain": "בלוח העברי היום מתחיל בלילה, ולכן התפילה הראשונה של ז' במרחשוון היא מעריב – ובה כבר מתחילים לומר \"ותן טל ומטר לברכה\" (בארץ ישראל). תודה רבה לדוד טאוב על החידה היפה!", "grades": "ג'-ו'", "who": "דוד טאוב", "verb": "חיבר", "zone": [46, 88, 2, 98], "image": "img/row5.webp"}, {"topic": "תפילה ובית הכנסת", "question": "מתי מתחילים לומר \"משיב הרוח ומוריד הגשם\"?", "options": ["ז׳ במרחשוון", "מוסף של שמיני עצרת", "י״א במרחשוון"], "correct": 1, "hint": "מתחילים כבר בחג, בתפילה שאומרים אחרי קריאת התורה.", "explain": "מתחילים להזכיר את הגשם – \"משיב הרוח ומוריד הגשם\" – בתפילת מוסף של שמיני עצרת, ואומרים אותו עד מוסף של יום טוב ראשון של פסח. זו רק הזכרה – שבחו של ה' שמוריד גשם. את הבקשה \"ותן טל ומטר\" מתחילים מאוחר יותר, בז' במרחשוון (בארץ ישראל). תודה רבה לדוד טאוב על החידה היפה!", "grades": "ג'-ו'", "who": "דוד טאוב", "verb": "חיבר", "zone": [46, 88, 2, 98], "image": "img/row7.webp"}, {"topic": "זמני היום", "question": "מתי זה עלות השחר?", "options": ["כשהשמיים מתחילים להתבהר", "כשהשמש שוקעת", "באמצע היום"], "correct": 0, "hint": "זה קורה עוד לפני שרואים את השמש בבוקר.", "explain": "עלות השחר הוא הזמן שבו האור הראשון מתחיל לעלות במזרח והשמיים מתחילים להתבהר – עוד לפני שהשמש זורחת. מעלות השחר כבר נחשב יום, ובדיעבד אפשר לקיים מצוות של יום, כמו קריאת שמע של שחרית. תודה רבה לדוד טאוב על החידה היפה!", "grades": "ג'-ו'", "who": "דוד טאוב", "verb": "חיבר", "zone": [41, 89, 1, 98], "image": "img/row9.webp"}, {"topic": "זמני היום", "question": "מתי זה זריחה?", "options": ["כשהשמש שוקעת", "כשיוצאים הכוכבים", "כשהשמש זורחת"], "correct": 2, "hint": "זה קורה בבוקר, כשמתחיל יום חדש.", "explain": "הזריחה (\"הנץ החמה\") היא הרגע שבו השמש מופיעה מעל האופק בבוקר. לפי ההלכה, הזמן הכי מהודר להתפלל תפילת עמידה של שחרית הוא בדיוק בזריחה – \"ותיקין\". תודה רבה לדוד טאוב על החידה היפה!", "grades": "א'-ג'", "who": "דוד טאוב", "verb": "חיבר", "zone": [40, 88, 1, 99], "image": "img/row10.webp"}, {"topic": "זמני היום", "question": "מתי זה חצות היום?", "options": ["כשהשמש זורחת", "כשהשמש באמצע השמים", "כשהשמש שוקעת"], "correct": 1, "hint": "חצות זה חצי – תחשבו על אמצע היום.", "explain": "חצות היום הוא בדיוק באמצע היום – באמצע הדרך בין הזריחה לשקיעה, כשהשמש הכי גבוהה בשמים. עד חצות היום צריך להתפלל שחרית (בדיעבד), ומחצי שעה אחרי חצות כבר אפשר להתפלל מנחה. תודה רבה לדוד טאוב על החידה היפה!", "grades": "ב'-ה'", "who": "דוד טאוב", "verb": "חיבר", "zone": [41, 88, 1, 99], "image": "img/row11.webp"}, {"topic": "זמני היום", "question": "מתי זה שקיעת החמה?", "options": ["כשהשמש שוקעת", "כשהשמש זורחת", "כשהשמש באמצע השמים"], "correct": 0, "hint": "זה קורה בערב, כשהיום נגמר.", "explain": "שקיעת החמה היא הרגע שבו השמש נעלמת מתחת לאופק בערב. אחרי השקיעה מתחיל \"בין השמשות\", ובערב שבת צריך להדליק נרות לפני השקיעה. תודה רבה לדוד טאוב על החידה היפה!", "grades": "א'-ג'", "who": "דוד טאוב", "verb": "חיבר", "zone": [43, 89, 1, 99], "image": "img/row12.webp"}];     // חידות שפורסמו (riddles.json → build_site.py)
-var EXAMPLE = {"q": "על מה מברכים ״בורא פרי העץ״?", "a": ["תפוח", "לחם", "חלב"], "img": "img/example.webp"};     // חידה לדוגמה עם תמונה, למסך "לחבר חידה" (או null)
+// תחומים (config.SUBJECTS): {name, on, topics: [[שם, אייקון]], about, chips, bad, ph: [שאלה, נכונה, לא, לא], sig: [שם, כתובת]}
+var SUBJECTS = [{"name": "הלכה", "on": true, "topics": [["השכמת הבוקר", "🌅"], ["ציצית", "🧵"], ["תפילין ומזוזה", "📜"], ["תפילה ובית הכנסת", "🙏"], ["זמני היום", "⏰"], ["ברכות", "🍞"], ["שבת", "🕯️"], ["כשרות", "🍽️"], ["מצוות התלויות בארץ", "🌳"], ["כיבוד הורים ומורים", "👨‍👦"], ["שמירת הלשון", "🤐"], ["צדקה וחסד", "🪙"], ["בין אדם לחברו", "🤝"]], "about": "על הלכה שלמדתם", "chips": ["🍎 תפוח", "🕯️ שני נרות", "📜 מזוזה", "🍞 שתי חלות"], "bad": "״כי ככה צריך לעשות כשקמים בבוקר״", "ph": ["על מה מברכים ״בורא פרי העץ״?", "תפוח", "לחם", "חלב"], "sig": ["הלכה", "https://www.kol-toda.co.il/halacha/"]}, {"name": "סיפורי התנאים", "on": true, "topics": [["הלל ושמאי", "⚖️"], ["רבן יוחנן בן זכאי", "🏛️"], ["רבי עקיבא", "💧"], ["רבי שמעון בר יוחאי", "🌳"], ["רבי מאיר", "💎"], ["רבי חנינא בן דוסא", "🍞"], ["נחום איש גם זו", "🎁"], ["רבי אליעזר ורבי יהושע", "📖"], ["רבן גמליאל", "🌙"], ["חוני המעגל", "⭕"], ["רבי יהודה הנשיא", "📜"], ["רבי טרפון", "👣"], ["תנאים נוספים", "✨"]], "about": "על סיפור של תנא שלמדתם", "chips": ["💧 טיפות מים", "🪨 אבן", "🌳 עץ חרוב", "🕳️ מערה"], "bad": "״כי הוא הבין שגם הלב שלו יכול להשתנות״", "ph": ["מה ראה רבי עקיבא שגרם לו להתחיל ללמוד תורה?", "מים על אבן", "ספר תורה", "בית מדרש"], "sig": ["גדולי ישראל", "https://www.kol-toda.co.il/gedolim/"]}, {"name": "משנה", "on": false}, {"name": "גמרא", "on": false}];
+var ON = SUBJECTS.filter(function(s){ return s.on; });
+var CUR = ON[0], TOPICS, SUBJECT;
+function setSubject(name){
+  CUR = ON.filter(function(s){ return s.name === name; })[0] || ON[0];
+  TOPICS = CUR.topics; SUBJECT = CUR.name;
+  document.getElementById('sigName').textContent = CUR.sig[0];
+  var a = document.getElementById('sigLink'); a.href = CUR.sig[1]; a.textContent = CUR.sig[1].replace('https://www.', '').replace(/\/$/, '');
+  sset('kr_subject', SUBJECT);
+}
+var ALL = [{"subject": "הלכה", "topic": "תפילה ובית הכנסת", "question": "באיזה תאריך מבקשים על הגשם?", "options": ["ז׳", "ט״ו", "א׳"], "correct": 0, "hint": "זה קורה בחודש חשוון, כמה ימים אחרי שהעולים לרגל חזרו הביתה מירושלים.", "explain": "בארץ ישראל מתחילים לומר \"ותן טל ומטר לברכה\" בתפילת שמונה עשרה מז' בחשוון – כדי שמי שעלה לרגל לירושלים בסוכות יספיק לחזור לביתו לפני הגשמים. (בחוץ לארץ מתחילים מאוחר יותר, בתחילת דצמבר.) תודה רבה לדוד טאוב על החידה היפה!", "grades": "ג'-ו'", "who": "דוד טאוב", "verb": "חיבר", "zone": [46, 88, 2, 98], "image": "img/row3.webp"}, {"subject": "הלכה", "topic": "תפילה ובית הכנסת", "question": "בז' במרחשוון, באיזו תפילה מתחילים לשאול גשמים?", "options": ["שחרית", "מנחה", "מעריב"], "correct": 2, "hint": "בלוח העברי, היום מתחיל כבר בערב שלפניו.", "explain": "בלוח העברי היום מתחיל בלילה, ולכן התפילה הראשונה של ז' במרחשוון היא מעריב – ובה כבר מתחילים לומר \"ותן טל ומטר לברכה\" (בארץ ישראל). תודה רבה לדוד טאוב על החידה היפה!", "grades": "ג'-ו'", "who": "דוד טאוב", "verb": "חיבר", "zone": [46, 88, 2, 98], "image": "img/row5.webp"}, {"subject": "הלכה", "topic": "תפילה ובית הכנסת", "question": "מתי מתחילים לומר \"משיב הרוח ומוריד הגשם\"?", "options": ["ז׳ במרחשוון", "מוסף של שמיני עצרת", "י״א במרחשוון"], "correct": 1, "hint": "מתחילים כבר בחג, בתפילה שאומרים אחרי קריאת התורה.", "explain": "מתחילים להזכיר את הגשם – \"משיב הרוח ומוריד הגשם\" – בתפילת מוסף של שמיני עצרת, ואומרים אותו עד מוסף של יום טוב ראשון של פסח. זו רק הזכרה – שבחו של ה' שמוריד גשם. את הבקשה \"ותן טל ומטר\" מתחילים מאוחר יותר, בז' במרחשוון (בארץ ישראל). תודה רבה לדוד טאוב על החידה היפה!", "grades": "ג'-ו'", "who": "דוד טאוב", "verb": "חיבר", "zone": [46, 88, 2, 98], "image": "img/row7.webp"}, {"subject": "הלכה", "topic": "זמני היום", "question": "מתי זה עלות השחר?", "options": ["כשהשמיים מתחילים להתבהר", "כשהשמש שוקעת", "באמצע היום"], "correct": 0, "hint": "זה קורה עוד לפני שרואים את השמש בבוקר.", "explain": "עלות השחר הוא הזמן שבו האור הראשון מתחיל לעלות במזרח והשמיים מתחילים להתבהר – עוד לפני שהשמש זורחת. מעלות השחר כבר נחשב יום, ובדיעבד אפשר לקיים מצוות של יום, כמו קריאת שמע של שחרית. תודה רבה לדוד טאוב על החידה היפה!", "grades": "ג'-ו'", "who": "דוד טאוב", "verb": "חיבר", "zone": [41, 89, 1, 98], "image": "img/row9.webp"}, {"subject": "הלכה", "topic": "זמני היום", "question": "מתי זה זריחה?", "options": ["כשהשמש שוקעת", "כשיוצאים הכוכבים", "כשהשמש זורחת"], "correct": 2, "hint": "זה קורה בבוקר, כשמתחיל יום חדש.", "explain": "הזריחה (\"הנץ החמה\") היא הרגע שבו השמש מופיעה מעל האופק בבוקר. לפי ההלכה, הזמן הכי מהודר להתפלל תפילת עמידה של שחרית הוא בדיוק בזריחה – \"ותיקין\". תודה רבה לדוד טאוב על החידה היפה!", "grades": "א'-ג'", "who": "דוד טאוב", "verb": "חיבר", "zone": [40, 88, 1, 99], "image": "img/row10.webp"}, {"subject": "הלכה", "topic": "זמני היום", "question": "מתי זה חצות היום?", "options": ["כשהשמש זורחת", "כשהשמש באמצע השמים", "כשהשמש שוקעת"], "correct": 1, "hint": "חצות זה חצי – תחשבו על אמצע היום.", "explain": "חצות היום הוא בדיוק באמצע היום – באמצע הדרך בין הזריחה לשקיעה, כשהשמש הכי גבוהה בשמים. עד חצות היום צריך להתפלל שחרית (בדיעבד), ומחצי שעה אחרי חצות כבר אפשר להתפלל מנחה. תודה רבה לדוד טאוב על החידה היפה!", "grades": "ב'-ה'", "who": "דוד טאוב", "verb": "חיבר", "zone": [41, 88, 1, 99], "image": "img/row11.webp"}, {"subject": "הלכה", "topic": "זמני היום", "question": "מתי זה שקיעת החמה?", "options": ["כשהשמש שוקעת", "כשהשמש זורחת", "כשהשמש באמצע השמים"], "correct": 0, "hint": "זה קורה בערב, כשהיום נגמר.", "explain": "שקיעת החמה היא הרגע שבו השמש נעלמת מתחת לאופק בערב. אחרי השקיעה מתחיל \"בין השמשות\", ובערב שבת צריך להדליק נרות לפני השקיעה. תודה רבה לדוד טאוב על החידה היפה!", "grades": "א'-ג'", "who": "דוד טאוב", "verb": "חיבר", "zone": [43, 89, 1, 99], "image": "img/row12.webp"}, {"subject": "סיפורי התנאים", "topic": "רבי חנינא בן דוסא", "question": "למה החמור של רבי חנינא בן דוסא לא רצה לאכול אצל הגנבים?", "options": ["לא היה מעושר", "רצה לחזור הביתה", "האוכל היה גזל"], "correct": 2, "hint": "החמור של צדיק לא אוכל דבר שלא שייך לו.", "explain": "גנבים גנבו את החמור של רבי חנינא בן דוסא, אבל הוא לא אכל ולא שתה אצלם – כי כל האוכל שם היה גזל. בסוף שחררו אותו והוא חזר הביתה לרבו (אבות דרבי נתן, פרק ח). תודה למשפחת איינורן על החידה!", "grades": "ב'-ה'", "who": "משפחת איינורן", "verb": "חיברו", "zone": [44, 90, 2, 98], "image": "img/row13.webp"}];         // חידות שפורסמו (riddles.json → build_site.py), כל אחת עם subject
+var RIDDLES = [];
+function mine(){ RIDDLES = ALL.filter(function(r){ return r.subject === SUBJECT; }); }
+var EXAMPLE = {"subject": "הלכה", "q": "על מה מברכים ״בורא פרי העץ״?", "a": ["תפוח", "לחם", "חלב"], "img": "img/example.webp"};     // חידה לדוגמה עם תמונה, למסך "לחבר חידה" (או null)
 var GRADES = ['א','ב','ג','ד','ה','ו'];
 var screen = document.getElementById('screen');
 
@@ -165,10 +176,17 @@ document.getElementById('tabPlay').addEventListener('click', function(){ setTab(
 document.getElementById('tabWrite').addEventListener('click', function(){ setTab('write'); renderForm(); });
 
 function subjectsHtml(){
-  return '<div class="subjects">' + SUBJECTS.map(function(s){
-    return '<span class="' + (s.on ? 'on' : '') + '">' + esc(s.name) + (s.on ? '' : ' · בקרוב') + '</span>';
+  return '<div class="subjects" id="subjects" role="group" aria-label="תחום">' + SUBJECTS.map(function(s){
+    if (!s.on) return '<span>' + esc(s.name) + ' · בקרוב</span>';
+    return '<button type="button" data-s="' + esc(s.name) + '" aria-pressed="' + (s === CUR) + '" class="' + (s === CUR ? 'on' : '') + '">' + esc(s.name) + '</button>';
   }).join('') + '</div>';
 }
+// מעבר תחום: אותו מסך (לפתור / לחבר) בתחום החדש
+screen.addEventListener('click', function(ev){
+  var b = ev.target.closest('#subjects button'); if (!b) return;
+  setSubject(b.getAttribute('data-s')); mine();
+  if (document.getElementById('tabWrite').getAttribute('aria-selected') === 'true') renderForm(); else renderTopics();
+});
 
 // ---------- לפתור: בחירת נושא ----------
 function renderTopics(){
@@ -259,20 +277,21 @@ function renderEnd(){
 // ---------- לחבר חידה: לילדים בני 8 – מדריך קצר, דוגמה, ותשובות קצרות שאפשר לצייר ----------
 function chip(t, ok){ return '<span class="chip ' + (ok ? 'ok' : 'no') + '">' + t + '</span>'; }
 function renderForm(fix){   // fix = {p, msg}: חזרה לתיקון אחרי הבדיקה
+  if (fix) { setSubject(fix.p.subject); mine(); }
   var topicOpts = '<option value="">בחרו נושא</option>' + TOPICS.map(function(t){ return '<option value="' + esc(t[0]) + '">' + t[1] + ' ' + esc(t[0]) + '</option>'; }).join('');
   var gradeOpts = GRADES.map(function(c){ return '<option value="' + c + '">כיתה ' + c + "'</option>"; }).join('');
   screen.innerHTML =
-    '<h2>✏️ חַבְּרוּ חִידָה ב' + esc(SUBJECT) + '!</h2>' +
+    subjectsHtml() + '<h2>✏️ חַבְּרוּ חִידָה ב' + esc(SUBJECT) + '!</h2>' +
     '<p>אם החידה שלכם טובה, נצייר לה תמונה ונכניס אותה למשחק, עם השם שלכם! 🎨</p>' +
     '<section class="guide" aria-labelledby="how"><h3 id="how">איך כותבים חידה?</h3>' +
       '<ol class="steps">' +
-        '<li><b>1</b><span>כותבים <u>שאלה</u> על הלכה שלמדתם.</span></li>' +
+        '<li><b>1</b><span>כותבים <u>שאלה</u> ' + CUR.about + '.</span></li>' +
         '<li><b>2</b><span>כותבים <u>3 תשובות</u>: אחת נכונה ושתיים לא נכונות.</span></li>' +
         '<li><b>3</b><span>כל תשובה קצרה: <u>מילה או שתיים</u>, של משהו <u>שאפשר לצייר</u>.</span></li>' +
       '</ol>' +
-      '<div class="mark">✅ תשובות טובות (אפשר לצייר אותן):</div>' + chip('🍎 תפוח', 1) + chip('🕯️ שני נרות', 1) + chip('📜 מזוזה', 1) + chip('🍞 שתי חלות', 1) +
-      '<div class="mark">❌ תשובה לא טובה (משפט ארוך, אי אפשר לצייר):</div>' + chip('״כי ככה צריך לעשות כשקמים בבוקר״', 0) +
-      (window.EXAMPLE ? '<figure><figcaption>👀 <b>דוגמה:</b> השאלה <b>״' + esc(EXAMPLE.q) + '״</b> והתשובות ' +
+      '<div class="mark">✅ תשובות טובות (אפשר לצייר אותן):</div>' + CUR.chips.map(function(c){ return chip(c, 1); }).join('') +
+      '<div class="mark">❌ תשובה לא טובה (משפט ארוך, אי אפשר לצייר):</div>' + chip(CUR.bad, 0) +
+      (EXAMPLE && EXAMPLE.subject === SUBJECT ? '<figure><figcaption>👀 <b>דוגמה:</b> השאלה <b>״' + esc(EXAMPLE.q) + '״</b> והתשובות ' +
         EXAMPLE.a.map(function(a){ return '<b>״' + esc(a) + '״</b>'; }).join(', ') + '. וזו התמונה שציירנו לה:</figcaption>' +
         '<img src="' + esc(EXAMPLE.img) + '" alt="דוגמה לחידה עם שלוש תמונות של תשובות" loading="lazy" width="600" height="600"></figure>' : '') +
     '</section>' +
@@ -280,10 +299,10 @@ function renderForm(fix){   // fix = {p, msg}: חזרה לתיקון אחרי ה
     '<label for="fName">מה השם שלכם?</label><input type="text" id="fName" maxlength="40" autocomplete="given-name">' +
     '<div class="two"><div><label for="fTopic">על איזה נושא?</label><select id="fTopic">' + topicOpts + '</select></div>' +
       '<div><label for="fGrade">באיזו כיתה אתם?</label><select id="fGrade">' + gradeOpts + '</select></div></div>' +
-    '<label for="fQ">❓ השאלה</label><textarea id="fQ" maxlength="200" rows="2" placeholder="למשל: על מה מברכים ״בורא פרי העץ״?"></textarea>' +
-    '<label for="fA1" class="lab-ok">✅ התשובה הנכונה</label><input type="text" id="fA1" maxlength="40" placeholder="למשל: תפוח" aria-describedby="short">' +
-    '<label for="fA2" class="lab-no">❌ תשובה לא נכונה</label><input type="text" id="fA2" maxlength="40" placeholder="למשל: לחם" aria-describedby="short">' +
-    '<label for="fA3" class="lab-no">❌ עוד תשובה לא נכונה</label><input type="text" id="fA3" maxlength="40" placeholder="למשל: חלב" aria-describedby="short">' +
+    '<label for="fQ">❓ השאלה</label><textarea id="fQ" maxlength="200" rows="2" placeholder="למשל: ' + esc(CUR.ph[0]) + '"></textarea>' +
+    '<label for="fA1" class="lab-ok">✅ התשובה הנכונה</label><input type="text" id="fA1" maxlength="40" placeholder="למשל: ' + esc(CUR.ph[1]) + '" aria-describedby="short">' +
+    '<label for="fA2" class="lab-no">❌ תשובה לא נכונה</label><input type="text" id="fA2" maxlength="40" placeholder="למשל: ' + esc(CUR.ph[2]) + '" aria-describedby="short">' +
+    '<label for="fA3" class="lab-no">❌ עוד תשובה לא נכונה</label><input type="text" id="fA3" maxlength="40" placeholder="למשל: ' + esc(CUR.ph[3]) + '" aria-describedby="short">' +
     '<div class="note" id="short">מילה או שתיים בכל תשובה – משהו שאפשר לצייר. את התמונה נצייר אנחנו!</div>' +
     '<label for="fC">📩 מייל או וואטסאפ של אבא או אמא <span class="opt">(לא חובה)</span></label>' +
     '<input type="text" id="fC" maxlength="80" dir="ltr" inputmode="email" autocomplete="email" placeholder="050-1234567" aria-describedby="priv">' +
@@ -379,6 +398,7 @@ function waitFor(p){
 }
 
 // ---------- פתיחה ----------
+setSubject(sget('kr_subject')); mine();
 if (location.hash === '#write') { setTab('write'); renderForm(); } else { renderTopics(); }
 </script>
 </body>
