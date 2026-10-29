@@ -161,7 +161,16 @@ function runSearch(query, catKey, isLoose) {
   nh.sort((a, b) => b[1] - a[1] || a[0] - b[0]); ih.sort((a, b) => b[1] - a[1] || a[0] - b[0]);
   return [nh.map(x => x[0]), ih.map(x => x[0])];
 }
-const allowed = new Set();   // every address the search returned – the only links the answer may carry
+// every result gets a short link id (r1, r2 …): the model writes [name](r12) and the page puts the exact address
+// back. A long address copied by the model came out broken (29.10: spaces, decoded letters, a lost bracket),
+// and an id that the search never gave links nowhere.
+const allowed = new Set(), REF = {}, REFOF = {};
+let nRef = 0;
+function ref(u) {
+  allowed.add(u);
+  if (!REFOF[u]) { REFOF[u] = "r" + ++nRef; REF[REFOF[u]] = u; }
+  return REFOF[u];
+}
 async function searchArchive({query, catalog}) {
   await dataP;
   query = String(query || "").slice(0, 80);
@@ -172,18 +181,18 @@ async function searchArchive({query, catalog}) {
     nh = nh.concat(n2.filter(i => !sn.has(i))); ih = ih.concat(i2.filter(i => !si.has(i)));
   }
   const topics = nh.slice(0, 10).map(i => {
-    const u = abs(N[i][2], N[i][4]); allowed.add(u);
-    return {topic: N[i][0], where: N[i][1] ? pathOf(N[i][3] >= 0 ? N[i][3] : i) : "קטלוג", items: N[i][6] || 0, url: u};
+    return {topic: N[i][0], where: N[i][1] ? pathOf(N[i][3] >= 0 ? N[i][3] : i) : "קטלוג", items: N[i][6] || 0, url: ref(abs(N[i][2], N[i][4]))};
   });
   const items = ih.slice(0, 22).map(i => {
-    const r = I[i], c = N[r[2]][2], u = abs(c, r[3]); allowed.add(u);
-    const o = {title: r[0], format: FMT[r[1]] || r[1], where: pathOf(r[2]), url: u};
+    const r = I[i], c = N[r[2]][2];
+    const o = {title: r[0], format: FMT[r[1]] || r[1], where: pathOf(r[2]), url: ref(abs(c, r[3]))};
     if (KINDS[r[5]]) o.kind = KINDS[r[5]];
     if (r[6]) o.own = 1;
     return o;
   });
   return {query, found_topics: nh.length, found_items: ih.length, topics, items,
-    more: `${SITE}search/#` + new URLSearchParams({q: query, c: catalog || ""})};
+    more: ref(`${SITE}search/#` + new URLSearchParams({q: query, c: catalog || ""})),
+    how_to_link: "url ו-more הם מזהי קישור קצרים. כותבים קישור כך: [שם החומר](r12) – בדיוק המזהה, בלי כתובת מלאה."};
 }
 
 // ---------- the answer: a little markdown, links only to what the search returned (or the site itself)
@@ -193,6 +202,8 @@ const canon = u => [...allowed].find(a => a === u || dec(a) === dec(u));
 const okUrl = u => !!canon(u) || u.startsWith(SITE) || /^https:\/\/(www\.)?sefaria\.org(\.il)?\//.test(u);
 function inline(s) {
   let h = esc(s);
+  h = h.replace(/\[([^\]]+)\]\(\s*(r\d+)\s*\)/g, (m, t, id) =>
+    REF[id] ? `<a href="${esc(REF[id])}" target="_blank" rel="noopener">${t}</a>` : t);
   h = h.replace(/\[([^\]]+)\]\(\s*(https?:\/\/[^)]+?)\s*\)/g, (m, t, u) => {
     const raw = u.replace(/&amp;/g, "&"), good = canon(raw) || raw;
     return okUrl(raw) ? `<a href="${esc(encodeURI(dec(good)))}" target="_blank" rel="noopener">${t}</a>` : t;
