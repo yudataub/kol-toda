@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>הבוט של הספרייה המוגנת</title>
+<meta name="description" content="דף מוגן בקוד גישה.">
+<style>
+:root{--bg:#f6f3fb;--card:#fff;--ink:#1f2937;--muted:#6b7280;--line:#e5e0f0;--acc:#6d28d9;--acc2:#ede7fb;--me:#fce7f3;--warn:#b45309;--link:#4338ca}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15131c;--card:#221f2c;--ink:#ece8f6;--muted:#a49cbb;--line:#353047;--acc:#a78bfa;--acc2:#2e2840;--me:#3b2337;--warn:#fbbf24;--link:#a5b4fc}}
+:root[data-theme="dark"]{--bg:#15131c;--card:#221f2c;--ink:#ece8f6;--muted:#a49cbb;--line:#353047;--acc:#a78bfa;--acc2:#2e2840;--me:#3b2337;--warn:#fbbf24;--link:#a5b4fc}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 Heebo,Arial,sans-serif}
+[hidden]{display:none!important}
+#lock{min-height:100vh;display:grid;place-items:center;padding:16px}
+#lock form{background:var(--card);padding:30px 26px;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.12);width:min(380px,100%);text-align:center}
+#lock h1{margin:0 0 6px;font-size:23px}
+#lock p{margin:0 0 16px;color:var(--muted);font-size:15px}
+#lock input{width:100%;padding:12px 14px;font-size:18px;border:2px solid var(--line);border-radius:10px;text-align:center;direction:ltr;background:var(--bg);color:var(--ink)}
+#lock button{margin-top:14px;width:100%;padding:12px;font-size:17px;font-weight:700;border:0;border-radius:10px;background:var(--acc);color:#fff;cursor:pointer}
+#lerr{color:#dc2626;min-height:24px;margin-top:10px;font-size:15px}
+main{max-width:820px;margin:0 auto;padding:18px 16px 30px;min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+header .logo{font-size:36px}
+h1.t{margin:0;font-size:24px;line-height:1.2}
+header p{margin:2px 0 0;color:var(--muted);font-size:15px}
+header a.home{margin-inline-start:auto;color:var(--link);font-size:15px;white-space:nowrap}
+#chat{flex:1;display:flex;flex-direction:column;gap:12px;padding:12px 0}
+.msg{max-width:100%;padding:12px 16px;border-radius:16px;border:1px solid var(--line);background:var(--card);overflow-wrap:anywhere}
+.msg.me{align-self:flex-start;background:var(--me);border-color:transparent;max-width:85%;white-space:pre-wrap}
+.msg.bot h3{margin:12px 0 4px;font-size:18px}
+.msg.bot h3:first-child{margin-top:0}
+.msg.bot p{margin:6px 0}
+.msg.bot ul,.msg.bot ol{margin:6px 0;padding-inline-start:22px}
+.msg.bot blockquote{margin:8px 0;padding:6px 12px;border-inline-start:3px solid var(--acc);background:var(--acc2);border-radius:8px}
+.msg a{color:var(--link);font-weight:600}
+.msg.err{border-color:var(--warn);color:var(--warn)}
+.steps{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.step{font-size:13px;color:var(--muted);background:var(--acc2);border-radius:20px;padding:2px 10px}
+.dots::after{content:"…";animation:d 1.2s steps(3) infinite;display:inline-block;width:1em;overflow:hidden;vertical-align:bottom}
+@keyframes d{from{width:0}to{width:1em}}
+.intro{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.intro .areas{color:var(--muted);font-size:15px;margin-top:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{font:inherit;font-size:15px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:20px;padding:6px 13px;cursor:pointer;text-align:start}
+.chip:hover{border-color:var(--acc);color:var(--acc)}
+form#f{position:sticky;bottom:0;background:var(--bg);padding:10px 0 6px;display:flex;gap:8px;align-items:flex-end}
+textarea{flex:1;font:inherit;font-size:17px;padding:11px 13px;border:2px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);resize:none;min-height:50px;max-height:180px}
+textarea:focus{outline:none;border-color:var(--acc)}
+.send{border:0;border-radius:14px;background:var(--acc);color:#fff;font:inherit;font-weight:700;padding:0 20px;height:50px;cursor:pointer}
+.send:disabled{opacity:.45;cursor:default}
+.note{color:var(--muted);font-size:13px;text-align:center;margin:2px 0 10px}
+.note button{font:inherit;color:var(--link);background:none;border:0;cursor:pointer;padding:0;text-decoration:underline}
+@media (max-width:520px){header .logo{font-size:30px}h1.t{font-size:20px}.msg.me{max-width:95%}.send{padding:0 14px}}
+</style>
+<meta property="og:title" content="הבוט של הספרייה המוגנת">
+<meta property="og:description" content="דף מוגן בקוד גישה.">
+<meta property="og:image" content="https://www.kol-toda.co.il/og/sr-z-bot.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/z/bot.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="lock">
+  <form id="lf" autocomplete="off">
+    <h1>🔒 הבוט של הספרייה המוגנת</h1><p>הכניסו את קוד הגישה</p>
+    <input id="k" type="password" autofocus aria-label="קוד גישה">
+    <button id="lb">כניסה</button><div id="lerr"></div>
+  </form>
+</div>
+
+<main id="app" hidden>
+<header>
+  <span class="logo">🗝️</span>
+  <div><h1 class="t">הבוט של הספרייה המוגנת</h1><p>קורא את הספרים והדפים שמאחורי הקוד, ועונה מתוכם</p></div>
+  <a class="home" href="./">← לספרייה</a>
+</header>
+<div id="chat">
+  <div class="intro" id="intro">
+    שאלו שאלה, והבוט יחפש בספרים ובדפים המוגנים, יקרא את הקטעים המתאימים ויענה עם קישור למקור.
+    <div class="areas" id="areas"></div>
+    <div class="chips">
+      <button class="chip">מה כתוב בספרים על שלום בית בתקופה עמוסה?</button>
+      <button class="chip">באיזה ספר יש פרק על כבוד האישה?</button>
+      <button class="chip">יש שיעור בספריית ואהבת על אמונה?</button>
+    </div>
+  </div>
+</div>
+<form id="f">
+  <textarea id="q" rows="1" placeholder="מה רוצים לדעת? כתבו כאן…" maxlength="2000" aria-label="שאלה לבוט"></textarea>
+  <button class="send" id="send" type="submit">שלח</button>
+</form>
+<p class="note">הבוט מבוסס בינה מלאכותית ועלול לטעות. כדי לענות, הקטעים שהוא קורא נשלחים ל-Claude. · <button id="reset" type="button">שיחה חדשה</button></p>
+</main>
+
+<script>
+// ---------- the server: its own Apps Script (bot-server/locked-proxy.gs). Its address is sealed inside the library
+// (L.api) and not written here, so only who opened the library has it. ?api=… for a test
+const API_TEST = new URLSearchParams(location.search).get("api") || "";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+
+// ---------- the sealed library (catalog-kit/build_locked_bot.py): one blob, one key - the same code as every z/ page
+let L = null, PN = [], TN = [];
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function openLibrary(code) {
+  const D = await fetch("https://yudataub.github.io/z-files/bot-data.json", {cache: "no-cache"}).then(r => r.json());
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(code), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({name: "PBKDF2", salt: b64(D.s), iterations: D.r, hash: "SHA-256"},
+                                            base, {name: "AES-GCM", length: 256}, false, ["decrypt"]);
+  const pt = await crypto.subtle.decrypt({name: "AES-GCM", iv: b64(D.i)}, key, b64(D.c));   // throws on a wrong code
+  const text = await new Response(new Blob([pt]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
+  L = JSON.parse(text);
+  for (let i = 0; i < L.p.length; i++) PN[i] = norm(L.p[i][1]);
+  for (let i = 0; i < L.docs.length; i++) TN[i] = norm(L.docs[i].t);
+}
+$("lf").addEventListener("submit", async e => {
+  e.preventDefault();
+  const code = $("k").value.trim(); if (!code) return;
+  $("lb").disabled = true; $("lerr").textContent = "פותח את הספרייה…";
+  try {
+    await openLibrary(code);
+    try { sessionStorage.setItem("kz", code); } catch (_) {}
+    start();
+  } catch (err) {
+    $("lerr").textContent = "הקוד שגוי"; $("lb").disabled = false;
+    try { sessionStorage.removeItem("kz"); } catch (_) {}
+  }
+});
+function start() {
+  $("lock").hidden = true; $("app").hidden = false;
+  const n = a => L.docs.filter(d => d.a === a).length;
+  $("areas").textContent = "בספרייה: " + Object.entries(L.areas).map(([a, name]) => `${name} (${n(a)})`).join(" · ");
+  $("q").focus();
+}
+(async () => {   // the code of this tab (the other z/ pages keep it in sessionStorage "kz") opens it at once
+  let code = ""; try { code = sessionStorage.getItem("kz") || ""; } catch (_) {}
+  if (!code) return;
+  $("lerr").textContent = "פותח את הספרייה…";
+  try { await openLibrary(code); start(); } catch (_) { $("lerr").textContent = ""; }
+})();
+
+// ---------- searching the passages (the same spelling rules as the site search)
+const norm = s => String(s || "").replace(/[֑-ׇ]/g, "").replace(/[״"׳'`]/g, "").replace(/[_\-–—.,:;()\[\]|/\\!?]/g, " ").toLowerCase().replace(/\s+/g, " ").trim();
+const loose = s => s.replace(/(\S)[וי]+/g, "$1").replace(/(\S)[וי]+/g, "$1").replace(/(\S{2})ת(?![א-ת])/g, "$1ה");
+const STOP = new Set("של את על עם אם או גם כי לא מה מי זה זו הוא היא יש אין כל אל".split(" "));
+let LP = null, LT = null;
+function hits(t, w) {   // whole-word-start matches of w in t (a prefix letter ב/ה/ו/כ/ל/מ/ש is allowed)
+  let n = 0, p = -1;
+  while ((p = t.indexOf(w, p + 1)) >= 0) {
+    const pre = p === 0 ? " " : t[p - 1], pre2 = p < 2 ? " " : t[p - 2];
+    if (pre === " " || ("בהוכלמש".includes(pre) && pre2 === " ")) n++;
+  }
+  return n;
+}
+function score(isLoose, words, q) {
+  if (isLoose && !LP) { LP = PN.map(loose); LT = TN.map(loose); }
+  const P = isLoose ? LP : PN, T = isLoose ? LT : TN, out = [];
+  for (let i = 0; i < P.length; i++) {
+    const d = L.p[i][0]; let s = 0, ok = true;
+    for (const w of words) {
+      const a = hits(P[i], w), b = hits(T[d], w);
+      if (!a && !b) { ok = false; break; }
+      s += Math.min(a, 6) * 3 + b * 8;
+    }
+    if (ok) { if (q.length > 4 && P[i].includes(q)) s += 25; out.push([i, s]); }
+  }
+  return out;
+}
+const REF = {}, REFOF = {}; let nRef = 0;
+function ref(u) { if (!REFOF[u]) { REFOF[u] = "r" + ++nRef; REF[REFOF[u]] = u; } return REFOF[u]; }
+function excerpt(i, words) {
+  const raw = L.p[i][1], n = norm(raw);
+  let at = -1; for (const w of words) { at = n.indexOf(w); if (at >= 0) break; }
+  const from = Math.max(0, Math.round(at / Math.max(1, n.length) * raw.length) - 150);
+  return (from ? "…" : "") + raw.slice(from, from + 420).replace(/\s+/g, " ") + (from + 420 < raw.length ? "…" : "");
+}
+function searchLibrary({query, area}) {
+  let q = norm(String(query || "").slice(0, 100));
+  let words = q.split(" ").filter(w => w && !STOP.has(w));
+  if (!words.length) return {error: "שאילתה ריקה"};
+  let res = score(false, words, q);
+  if (res.length < 5) {
+    const lw = words.map(loose), seen = new Set(res.map(x => x[0]));
+    res = res.concat(score(true, lw, loose(q)).filter(x => !seen.has(x[0])));
+  }
+  if (area && L.areas[area]) res = res.filter(x => L.docs[L.p[x[0]][0]].a === area);
+  res.sort((a, b) => b[1] - a[1]);
+  // at most 3 passages of one book, so one long book does not fill the answer
+  const per = {}, top = [];
+  for (const [i] of res) { const d = L.p[i][0]; if ((per[d] = (per[d] || 0) + 1) > 3) continue; top.push(i); if (top.length >= 10) break; }
+  return {query, found_passages: res.length,
+    results: top.map(i => { const d = L.docs[L.p[i][0]]; return {passage: "p" + i, source: d.t, area: L.areas[d.a], link: ref(d.u), excerpt: excerpt(i, words)}; }),
+    how_to_use: "לקריאת קטע מלא: read_passage עם מזהה ה-passage. קישור למקור כותבים כך: [שם המקור](r12) – בדיוק המזהה שבשדה link."};
+}
+function readPassage({passage, more}) {
+  const i = parseInt(String(passage || "").replace(/^p/, ""), 10);
+  if (!(i >= 0 && i < L.p.length)) return {error: "אין קטע כזה"};
+  const d = L.p[i][0], n = Math.min(3, Math.max(1, +more || 2)), parts = [];
+  for (let j = i; j < L.p.length && j < i + n && L.p[j][0] === d; j++) parts.push(L.p[j][1]);
+  const next = i + n < L.p.length && L.p[i + n][0] === d ? "p" + (i + n) : null;
+  return {source: L.docs[d].t, area: L.areas[L.docs[d].a], link: ref(L.docs[d].u), text: parts.join("\n"), next_passage: next};
+}
+
+// ---------- the answer: a little markdown; links only by the ids the tools gave
+function inline(s) {
+  let h = esc(s);
+  h = h.replace(/\[([^\]]+)\]\(\s*(r\d+)\s*\)/g, (m, t, id) => REF[id] ? `<a href="${esc(REF[id])}" target="_blank" rel="noopener">${t}</a>` : t);
+  h = h.replace(/\[([^\]]+)\]\(\s*https?:\/\/[^)]*\)/g, "$1");
+  return h.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+}
+function md(text) {
+  const out = []; let list = null;
+  const close = () => { if (list) { out.push(`</${list}>`); list = null; } };
+  for (const line of text.split("\n")) {
+    const l = line.trim(); let m;
+    if (!l) { close(); continue; }
+    if ((m = l.match(/^#{1,4}\s+(.*)/))) { close(); out.push(`<h3>${inline(m[1])}</h3>`); }
+    else if ((m = l.match(/^>\s?(.*)/))) { close(); out.push(`<blockquote>${inline(m[1])}</blockquote>`); }
+    else if ((m = l.match(/^[-*•]\s+(.*)/))) { if (list !== "ul") { close(); out.push("<ul>"); list = "ul"; } out.push(`<li>${inline(m[1])}</li>`); }
+    else if ((m = l.match(/^\d+[.)]\s+(.*)/))) { if (list !== "ol") { close(); out.push("<ol>"); list = "ol"; } out.push(`<li>${inline(m[1])}</li>`); }
+    else { close(); out.push(`<p>${inline(l)}</p>`); }
+  }
+  close();
+  return out.join("");
+}
+
+// ---------- the conversation
+let convo = [], busy = false;
+const ERR = {
+  daily_limit: "הבוט הגיע לתקרת השאלות של היום. אפשר לחזור מחר.",
+  client_limit: "שאלתם הרבה בשעה האחרונה. נסו שוב בעוד זמן מה.",
+  busy: "השירות עמוס כרגע. נסו שוב בעוד דקה.",
+  bad_request: "השיחה ארוכה מדי. לחצו על \"שיחה חדשה\" ונסו שוב.",
+  no_key: "הבוט עוד לא הופעל.", bad_key: "הבוט עוד לא הופעל.",
+};
+let clientId = "";
+try { clientId = localStorage.getItem("kt-zbot-id") || ""; if (!clientId) { clientId = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem("kt-zbot-id", clientId); } } catch (e) {}
+function add(cls, html) {
+  const d = document.createElement("div"); d.className = "msg " + cls; d.innerHTML = html;
+  $("chat").appendChild(d); d.scrollIntoView({block: "end", behavior: "smooth"});
+  return d;
+}
+function trimmed() {
+  let h = convo;
+  while (JSON.stringify(h).length > 150000) {
+    const next = h.findIndex((m, i) => i > 0 && m.role === "user" && typeof m.content === "string");
+    if (next < 0) break;
+    h = h.slice(next);
+  }
+  return h;
+}
+async function callServer() {
+  const api = API_TEST || (L && L.api);
+  if (!api) return {error: "no_key"};
+  // a server error now and then (29.10: once in the first test) – one more try before telling the user
+  for (let i = 0; ; i++) {
+    let r;
+    try { r = await fetch(api, {method: "POST", body: JSON.stringify({messages: trimmed(), client: clientId})}).then(x => x.json()); }
+    catch (e) { r = {error: "server"}; }
+    if (!r.error || i >= 1 || !["server", "api", "busy"].includes(r.error)) return r;
+    await new Promise(ok => setTimeout(ok, 2500));
+  }
+}
+const TOOLS = {search_library: searchLibrary, read_passage: readPassage};
+async function ask(text) {
+  if (busy || !text.trim() || !L) return;
+  busy = true; $("send").disabled = true;
+  $("intro")?.remove();
+  add("me", esc(text));
+  convo.push({role: "user", content: text});
+  const box = add("bot", `<div class="steps"><span class="step dots">חושב</span></div>`);
+  const steps = [];
+  const stepsHtml = wait => `<div class="steps">${steps.map(s => `<span class="step">${s}</span>`).join("")}${wait ? `<span class="step dots">${wait}</span>` : ""}</div>`;
+  try {
+    for (let round = 0; round < 10; round++) {
+      const r = await callServer();
+      if (r.error) throw new Error(r.error);
+      convo.push({role: "assistant", content: r.content});
+      const uses = r.content.filter(b => b.type === "tool_use");
+      if (r.stop_reason !== "tool_use" || !uses.length) {
+        const t = r.content.filter(b => b.type === "text").map(b => b.text).join("\n").trim();
+        box.innerHTML = (steps.length ? stepsHtml("") : "") + md(t || (r.stop_reason === "refusal" ? "על השאלה הזו הבוט לא יכול לענות. אפשר לנסח אחרת." : "לא התקבלה תשובה. נסו לנסח אחרת."));
+        break;
+      }
+      const results = [];
+      for (const u of uses) {
+        const f = TOOLS[u.name];
+        steps.push(u.name === "search_library" ? "🔎 " + esc(u.input?.query || "") : "📖 " + esc((L.docs[L.p[+String(u.input?.passage || "").slice(1)]?.[0]]?.t || "קורא").slice(0, 40)));
+        box.innerHTML = stepsHtml(u.name === "search_library" ? "מחפש בספרייה" : "קורא");
+        let res; try { res = f ? f(u.input || {}) : {error: "אין כלי כזה"}; } catch (e) { res = {error: "הפעולה נכשלה"}; }
+        results.push({type: "tool_result", tool_use_id: u.id, content: JSON.stringify(res)});
+      }
+      convo.push({role: "user", content: results});
+      box.innerHTML = stepsHtml("כותב תשובה");
+    }
+  } catch (e) {
+    box.classList.add("err");
+    box.innerHTML = esc(ERR[e.message] || "משהו השתבש. נסו שוב בעוד רגע.");
+    const last = convo.map(m => m.role === "user" && typeof m.content === "string").lastIndexOf(true);
+    convo = convo.slice(0, last);
+  }
+  busy = false; $("send").disabled = false; $("q").focus();
+}
+$("f").addEventListener("submit", e => { e.preventDefault(); const t = $("q").value; $("q").value = ""; grow(); ask(t); });
+$("q").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("f").requestSubmit(); } });
+const grow = () => { const t = $("q"); t.style.height = "auto"; t.style.height = Math.min(180, t.scrollHeight) + "px"; };
+$("q").addEventListener("input", grow);
+document.querySelectorAll(".chip").forEach(c => c.onclick = () => ask(c.textContent));
+$("reset").onclick = () => { if (!busy) { convo = []; $("chat").innerHTML = ""; } };
+</script>
+</body></html>
