@@ -39,6 +39,7 @@ header a.home{margin-inline-start:auto;color:var(--link);font-size:15px;white-sp
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .chip{font:inherit;font-size:15px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:20px;padding:6px 13px;cursor:pointer;text-align:start}
 .chip:hover{border-color:var(--acc);color:var(--acc)}
+.scope{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0 0;font-size:14px;color:var(--muted)}.scope button{font:inherit;font-size:14px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:20px;padding:4px 12px;cursor:pointer}.scope button.on{border-color:var(--acc);background:var(--acc2);color:var(--acc);font-weight:700}
 form{position:sticky;bottom:0;background:var(--bg);padding:10px 0 6px;display:flex;gap:8px;align-items:flex-end}
 textarea{flex:1;font:inherit;font-size:17px;padding:11px 13px;border:2px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);resize:none;min-height:50px;max-height:180px}
 textarea:focus{outline:none;border-color:var(--acc)}
@@ -82,6 +83,7 @@ textarea:focus{outline:none;border-color:var(--acc)}
   </div>
 </div>
 
+<div class="scope" id="scope" role="radiogroup" aria-label="איפה לחפש"><span>חיפוש ב:</span><button type="button" class="on" data-k="">הכול</button><button type="button" data-k="שיעור">שיעורים</button><button type="button" data-k="דף באתר">דפים</button><button type="button" data-k="מצגת">מצגות</button><button type="button" data-k="סיפור">סיפורים ותנאים</button></div>
 <form id="f">
   <textarea id="q" rows="1" placeholder="מה מחפשים? כתבו כאן…" maxlength="2000" aria-label="שאלה לבוט"></textarea>
   <button class="send" id="send" type="submit">שלח</button>
@@ -220,6 +222,7 @@ const shard = n => shardC[n] || (shardC[n] = fetch(`${WORKER}/w/${n}.json`).then
 const bundle = n => bundleC[n] || (bundleC[n] = fetch(`${WORKER}/b/${n}.json`).then(r => r.json()));
 const passage = async i => (await bundle(Math.floor(i / CD.bundle)))[i % CD.bundle];
 async function searchContent({query, kind}) {
+  if (SCOPE) kind = SCOPE;   // the user chose where to search (the chips above the box)
   await cdP; if (!CD) return {error: "אינדקס התוכן לא נטען"};
   if (!CD.commonSet) CD.commonSet = new Set(CD.common || []);
   // a word whose keys were all left out of the index as too common says nothing – skip it (not "missing")
@@ -277,10 +280,13 @@ async function searchContent({query, kind}) {
     results: top.map(([p, [d, text]]) => {
       const lt = loose(norm(text)); let at = -1; for (const w of ws) { at = lt.indexOf(w); if (at >= 0) break; }
       const from = Math.max(0, Math.round(at / Math.max(1, lt.length) * text.length) - 200);
-      return {passage: "p" + p, source: CD.docs[d][0], kind: CD.docs[d][2], url: ref(CD.docs[d][1]),
+      const o = {passage: "p" + p, source: CD.docs[d][0], kind: CD.docs[d][2], url: ref(CD.docs[d][1]),
               excerpt: (from ? "…" : "") + text.slice(from, from + 600).replace(/\s+/g, " ") + (from + 600 < text.length ? "…" : "")};
+      if (CD.docs[d][4]) o.deck = ref(CD.docs[d][4]);   // a story's classroom presentation
+      return o;
     }),
-    how_to_link: "url הוא מזהה קישור: [שם](r12). לקטע מלא – read_passage עם ה-passage."};
+    how_to_link: "url הוא מזהה קישור: [שם](r12). deck = מצגת לכיתה על הסיפור – אם יש, אמור שיש מצגת וקשר אליה: [מצגת](r13). לקטע מלא – read_passage עם ה-passage.",
+    ...(SCOPE ? {searched_only: SCOPE} : {})};
 }
 async function readPassage({passage: id}) {
   await cdP;
@@ -288,7 +294,7 @@ async function readPassage({passage: id}) {
   if (!CD || !(i >= 0 && i < CD.n)) return {error: "אין קטע כזה"};
   const [d, text] = await passage(i);
   const nx = i + 1 < CD.n ? await passage(i + 1) : null;
-  return {source: CD.docs[d][0], url: ref(CD.docs[d][1]), text: text + (nx && nx[0] === d ? "\n" + nx[1] : "")};
+  return {source: CD.docs[d][0], url: ref(CD.docs[d][1]), ...(CD.docs[d][4] ? {deck: ref(CD.docs[d][4])} : {}), text: text + (nx && nx[0] === d ? "\n" + nx[1] : "")};
 }
 
 // ---------- the answer: a little markdown, links only to what the search returned (or the site itself)
@@ -408,7 +414,8 @@ async function ask(text) {
   busy = true; $("send").disabled = true;
   $("intro")?.remove();
   add("me", esc(text));
-  history.push({role: "user", content: text});
+  // the scope the user chose goes to the bot with the question (not shown in the chat)
+  history.push({role: "user", content: SCOPE ? `[חיפוש רק ב: ${SCOPE_NAME[SCOPE]}] ${text}` : text});
   const box = add("bot", `<div class="steps"><span class="step dots">חושב</span></div>`);
   const steps = [];
   const stepsHtml = wait => `<div class="steps">${steps.map(s => `<span class="step">${s}</span>`).join("")}${wait ? `<span class="step dots">${wait}</span>` : ""}</div>`;
@@ -455,6 +462,9 @@ $("q").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) 
 const grow = () => { const t = $("q"); t.style.height = "auto"; t.style.height = Math.min(180, t.scrollHeight) + "px"; };
 $("q").addEventListener("input", grow);
 document.querySelectorAll(".chip").forEach(c => c.onclick = () => ask(c.textContent));
+let SCOPE = "";
+const SCOPE_NAME = {"שיעור": "שיעורים", "דף באתר": "דפי האתר", "מצגת": "מצגות", "סיפור": "סיפורים ותנאים"};
+$("scope").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; SCOPE = b.dataset.k; $("scope").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); $("q").focus(); });
 $("reset").onclick = () => { if (busy) return; history = []; location.reload(); };
 </script>
 </body></html>
