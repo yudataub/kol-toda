@@ -111,6 +111,11 @@ const dataP = (async () => {
   for (let i = 0; i < N.length; i++) { NN[i] = norm(N[i][0]); NP[i] = N[i][3] >= 0 ? NP[N[i][3]] + " " + NN[i] : NN[i]; }
   I = await fetch("../search/items.json").then(r => r.json());
   for (let i = 0; i < I.length; i++) IT[i] = norm(I[i][0]);
+  // the files inside the Drive folders (~150k, 14MB): joined in the background, the bot does not wait for them
+  fetch("../search/deep.json").then(r => r.json()).then(d => {
+    const from = I.length; I = I.concat(d);
+    for (let i = from; i < I.length; i++) IT[i] = norm(I[i][0]);
+  }).catch(() => {});
 })();
 const KN = () => KINDS.map(norm);
 const abs = (c, u) => !u ? "" : u[0] === "~" ? "https://drive.google.com/open?id=" + u.slice(1) : /^https?:/.test(u) ? u : new URL(u, CATS[c].u).href;
