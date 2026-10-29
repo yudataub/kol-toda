@@ -219,7 +219,7 @@ const shardC = {}, bundleC = {};
 const shard = n => shardC[n] || (shardC[n] = fetch(`${WORKER}/w/${n}.json`).then(r => r.json()));
 const bundle = n => bundleC[n] || (bundleC[n] = fetch(`${WORKER}/b/${n}.json`).then(r => r.json()));
 const passage = async i => (await bundle(Math.floor(i / CD.bundle)))[i % CD.bundle];
-async function searchContent({query}) {
+async function searchContent({query, kind}) {
   await cdP; if (!CD) return {error: "אינדקס התוכן לא נטען"};
   if (!CD.commonSet) CD.commonSet = new Set(CD.common || []);
   // a word whose keys were all left out of the index as too common says nothing – skip it (not "missing")
@@ -244,7 +244,7 @@ async function searchContent({query}) {
   // the title of the lesson or the article: every word of the question in it (the common ones too, e.g. "שמחה" in
   // "שמחה במצוות") puts its passages first
   const qAll = norm(String(query || "")).split(" ").filter(w => w && !STOP.has(w)).map(loose);
-  if (!CD.titles) CD.titles = CD.docs.map(d => " " + loose(norm(d[0])));
+  if (!CD.titles) CD.titles = CD.docs.map(d => " " + loose(norm(d[0] + " " + (d[3] || ""))));
   const inTitle = d => qAll.filter(w => CD.titles[d].includes(" " + w) || (w.length > 3 && "בהוכלמש".includes(w[0]) && CD.titles[d].includes(" " + w.slice(1)))).length;
   const ranked = [];
   for (const [p, s] of score) {
@@ -254,9 +254,17 @@ async function searchContent({query}) {
   ranked.sort((a, b) => b[1] - a[1]);
   // the title bonus needs the passage's doc: fetch the bundles of the best 60 (they are fetched for the answer anyway)
   const head = ranked.slice(0, 60);
-  for (const x of head) { const d = (await passage(x[0]))[0]; x[1] += inTitle(d) === qAll.length ? 100 : inTitle(d) * 3; }
+  // 29.10: a site page named "פרשת וירא" came before the lesson "תפילת לוט" (tagged וירא) for a dvar torah – the
+  // user's own lessons first, and the bot can ask for lessons only
+  for (const x of head) {
+    const d = (await passage(x[0]))[0];
+    x[1] += inTitle(d) === qAll.length ? 100 : inTitle(d) * 3;
+    if (CD.docs[d][2] === "שיעור") x[1] *= 1.3;
+    if (kind && CD.docs[d][2] !== kind) x[1] = -1;
+  }
   head.sort((a, b) => b[1] - a[1]);
-  ranked.splice(0, head.length, ...head);
+  ranked.splice(0, head.length, ...head.filter(x => x[1] >= 0));
+  if (kind) for (let i = ranked.length - 1; i >= head.length; i--) ranked.splice(i, 1);
   const perDoc = {}, top = [];
   for (const [p] of ranked.slice(0, 60)) {
     if (top.length >= 8) break;
@@ -392,7 +400,7 @@ async function callServer(onText) {
 }
 const TOOLS = {
   search_archive: [searchArchive, u => "🔎 " + esc(u.query || ""), "מחפש במאגר", u => typeof u.query === "string"],
-  search_content: [searchContent, u => "📚 " + esc(u.query || ""), "מחפש בתוך השיעורים", u => typeof u.query === "string"],
+  search_content: [searchContent, u => "📚 " + esc(u.query || "") + (u.kind ? " (" + esc(u.kind) + ")" : ""), "מחפש בתוך השיעורים", u => typeof u.query === "string"],
   read_passage: [readPassage, u => "📖 קורא", "קורא", u => typeof u.passage === "string"],
 };
 async function ask(text) {
