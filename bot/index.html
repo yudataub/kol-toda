@@ -48,6 +48,7 @@ textarea:focus{outline:none;border-color:var(--acc)}
 .note button{font:inherit;color:var(--link);background:none;border:0;cursor:pointer;padding:0;text-decoration:underline}
 .sig{margin-top:16px;padding:14px 16px;border-radius:14px;background:linear-gradient(135deg,var(--acc2),var(--card));border:1px solid var(--line);font-size:15px}
 .sig a{color:var(--link);font-weight:600}
+.copyans{display:block;margin-top:10px;font:inherit;font-size:13px;border:1.5px solid var(--line);background:var(--bg);color:var(--muted);border-radius:16px;padding:3px 12px;cursor:pointer}.copyans:hover{color:var(--acc);border-color:var(--acc)}
 @media (max-width:520px){header .logo{font-size:30px}h1{font-size:21px}.msg.me{max-width:95%}.send{padding:0 14px}}
 </style>
 <meta property="og:image" content="https://www.kol-toda.co.il/og/sr-bot-index.jpg">
@@ -236,6 +237,35 @@ function md(text) {
   return out.join("");
 }
 
+// ---------- "📋 העתקה עם הקישורים" under every answer (1.11, the user: copying the answer took only the words).
+// The clipboard gets both: HTML with live links (Word, Gmail, documents) and plain text with every address written
+// after its name (WhatsApp, plain text)
+function plainWithLinks(text) {
+  return text.replace(/\[([^\]]+)\]\(\s*(r\d+)\s*\)/g, (m, t, id) => REF[id] ? `${t}: ${REF[id]}` : t)
+    .replace(/\[([^\]]+)\]\(\s*(https?:\/\/[^)\s]+)\s*\)/g, (m, t, u) => okUrl(u) ? `${t}: ${u}` : t)
+    .replace(/\*\*([^*]+)\*\*/g, "$1").replace(/^#{1,4}\s+/gm, "").trim();
+}
+function addCopy(box, text) {
+  if (!text) return;
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "copyans"; b.textContent = "📋 העתקה עם הקישורים";
+  b.onclick = async () => {
+    const clone = box.cloneNode(true);
+    clone.querySelectorAll(".steps,.copyans").forEach(x => x.remove());
+    const html = `<div dir="rtl">${clone.innerHTML}</div>`, plain = plainWithLinks(text);
+    try {
+      await navigator.clipboard.write([new ClipboardItem({"text/html": new Blob([html], {type: "text/html"}),
+                                                          "text/plain": new Blob([plain], {type: "text/plain"})})]);
+    } catch (e) {
+      try { await navigator.clipboard.writeText(plain); }
+      catch (_) { const ta = document.createElement("textarea"); ta.value = plain; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); }
+    }
+    b.textContent = "✓ הועתק – אפשר להדביק";
+    setTimeout(() => b.textContent = "📋 העתקה עם הקישורים", 2500);
+  };
+  box.appendChild(b);
+}
+
 // ---------- the conversation
 let history = [], busy = false;
 const ERR = {
@@ -286,6 +316,7 @@ async function ask(text) {
       if (r.stop_reason !== "tool_use" || !uses.length) {
         const text = r.content.filter(b => b.type === "text").map(b => b.text).join("\n").trim();
         box.innerHTML = (steps.length ? `<div class="steps">${steps.map(s => `<span class="step">${s}</span>`).join("")}</div>` : "") + md(text || "לא התקבלה תשובה. נסו לנסח אחרת.");
+        addCopy(box, text);
         if (r.stop_reason === "refusal") box.insertAdjacentHTML("beforeend", "<p>לא אוכל לעזור בזה.</p>");
         break;
       }

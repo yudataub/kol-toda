@@ -50,6 +50,7 @@ textarea:focus{outline:none;border-color:var(--acc)}
 .send:disabled{opacity:.45;cursor:default}
 .note{color:var(--muted);font-size:13px;text-align:center;margin:2px 0 10px}
 .note button{font:inherit;color:var(--link);background:none;border:0;cursor:pointer;padding:0;text-decoration:underline}
+.copyans{display:block;margin-top:10px;font:inherit;font-size:13px;border:1.5px solid var(--line);background:var(--bg);color:var(--muted);border-radius:16px;padding:3px 12px;cursor:pointer}.copyans:hover{color:var(--acc);border-color:var(--acc)}
 @media (max-width:520px){header .logo{font-size:30px}h1.t{font-size:20px}.msg.me{max-width:95%}.send{padding:0 14px}}
 </style>
 <meta property="og:title" content="הבוט של הספרייה המוגנת">
@@ -207,7 +208,11 @@ function readPassage({passage, more}) {
 // ---------- the answer: a little markdown; links only by the ids the tools gave
 function inline(s) {
   let h = esc(s);
-  h = h.replace(/\[([^\]]+)\]\(\s*(r\d+)\s*\)/g, (m, t, id) => REF[id] ? `<a href="${esc(REF[id])}" target="_blank" rel="noopener">${t}</a>` : t);
+  // a locked page opens in a new tab WITH the opener (rel="opener"): only then does the browser copy this tab's
+  // sessionStorage – the code ("kz") – to the new tab, so the page opens without asking for the code again (1.11).
+  // Other sites (Gamma, the veahavta site) keep noopener; they have their own code anyway.
+  const relOf = u => u.startsWith(location.origin + "/z/") ? "opener" : "noopener";
+  h = h.replace(/\[([^\]]+)\]\(\s*(r\d+)\s*\)/g, (m, t, id) => REF[id] ? `<a href="${esc(REF[id])}" target="_blank" rel="${relOf(REF[id])}">${t}</a>` : t);
   h = h.replace(/\[([^\]]+)\]\(\s*https?:\/\/[^)]*\)/g, "$1");
   return h.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
 }
@@ -225,6 +230,35 @@ function md(text) {
   }
   close();
   return out.join("");
+}
+
+// ---------- "📋 העתקה עם הקישורים" under every answer (1.11, the user: copying the answer took only the words).
+// The clipboard gets both: HTML with live links (Word, Gmail, documents) and plain text with every address written
+// after its name (WhatsApp, plain text)
+function plainWithLinks(text) {
+  return text.replace(/\[([^\]]+)\]\(\s*(r\d+)\s*\)/g, (m, t, id) => REF[id] ? `${t}: ${REF[id]}` : t)
+    .replace(/\[([^\]]+)\]\(\s*(https?:\/\/[^)\s]+)\s*\)/g, (m, t, u) => false ? `${t}: ${u}` : t)
+    .replace(/\*\*([^*]+)\*\*/g, "$1").replace(/^#{1,4}\s+/gm, "").trim();
+}
+function addCopy(box, text) {
+  if (!text) return;
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "copyans"; b.textContent = "📋 העתקה עם הקישורים";
+  b.onclick = async () => {
+    const clone = box.cloneNode(true);
+    clone.querySelectorAll(".steps,.copyans").forEach(x => x.remove());
+    const html = `<div dir="rtl">${clone.innerHTML}</div>`, plain = plainWithLinks(text);
+    try {
+      await navigator.clipboard.write([new ClipboardItem({"text/html": new Blob([html], {type: "text/html"}),
+                                                          "text/plain": new Blob([plain], {type: "text/plain"})})]);
+    } catch (e) {
+      try { await navigator.clipboard.writeText(plain); }
+      catch (_) { const ta = document.createElement("textarea"); ta.value = plain; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); }
+    }
+    b.textContent = "✓ הועתק – אפשר להדביק";
+    setTimeout(() => b.textContent = "📋 העתקה עם הקישורים", 2500);
+  };
+  box.appendChild(b);
 }
 
 // ---------- the conversation
@@ -283,6 +317,7 @@ async function ask(text) {
       if (r.stop_reason !== "tool_use" || !uses.length) {
         const t = r.content.filter(b => b.type === "text").map(b => b.text).join("\n").trim();
         box.innerHTML = (steps.length ? stepsHtml("") : "") + md(t || (r.stop_reason === "refusal" ? "על השאלה הזו הבוט לא יכול לענות. אפשר לנסח אחרת." : "לא התקבלה תשובה. נסו לנסח אחרת."));
+        addCopy(box, t);
         break;
       }
       const results = [];
