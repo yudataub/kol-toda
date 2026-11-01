@@ -82,12 +82,14 @@ input[type=text]:focus{outline:0;border-color:var(--c3)}
 /* רמה ג */
 .slots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;direction:rtl;margin:12px 0}
 .word{display:flex;gap:5px;margin:0 8px}
+.slot-row{margin:6px 0}
+.slot-label{text-align:center;font-weight:700;color:var(--c3);font-size:.95em}
 .slot{width:46px;height:54px;border-radius:10px;border:3px dashed #c9bdf2;background:#faf8ff;font-size:1.6em;font-weight:800;
   display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink);font-family:inherit}
 .slot.full{border-style:solid;border-color:var(--c3);background:#fff}
 .slot.hint{border-style:solid;border-color:#f0b400;background:#fff6d6;cursor:default}
 .slot.ok{border-color:var(--ok);background:var(--okbg)}
-.slots.shake{animation:shake .4s}
+.slots.shake,#slots.shake{animation:shake .4s}
 @keyframes shake{0%,100%{transform:none}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 .bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
 .tile{width:48px;height:52px;border-radius:12px;border:0;font:inherit;font-size:1.5em;font-weight:800;cursor:pointer;color:#fff;
@@ -435,18 +437,24 @@ var ALEF_BET = "אבגדהוזחטיכלמנסעפצקרשת";
 function norm(ch) { return FINALS[ch] || ch; }
 function plain(s) { return s.replace(/[֑-ׇ]/g, ""); }
 function renderLetters(q, L) {
-  var ans = plain(q.answer).trim();
-  var words = ans.split(/\s+/);
-  var letters = words.join("").split("").map(norm);
+  // שאלה רגילה: answer. שאלת מנהגים: answers = [{label, answer}, ...] – שורת משבצות לכל מנהג, מחסן אותיות אחד
+  var rows = q.answers ? q.answers : [{ label: "", answer: q.answer }];
+  var words = [], letters = [];
   var extra = (q.extra || "").split("");
-  var C = S.c = { words: words, need: letters, slots: [], tries: 0, hints: 0, done: false };
-  var html = '<div class="slots" id="slots">', pos = 0;
-  words.forEach(function (w) {
-    html += '<div class="word">';
-    for (var i = 0; i < w.length; i++) { html += '<button class="slot" data-p="' + pos + '" data-last="' + (i === w.length - 1 ? 1 : 0) + '"></button>'; pos++; }
-    html += "</div>";
+  var html = '<div id="slots">', pos = 0;
+  rows.forEach(function (r) {
+    var ws = plain(r.answer).trim().split(/\s+/);
+    html += '<div class="slot-row">' + (r.label ? '<div class="slot-label">' + escapeHtml(r.label) + "</div>" : "") + '<div class="slots">';
+    ws.forEach(function (w) {
+      words.push(w);
+      html += '<div class="word">';
+      for (var i = 0; i < w.length; i++) { letters.push(norm(w[i])); html += '<button class="slot" data-p="' + pos + '" data-last="' + (i === w.length - 1 ? 1 : 0) + '"></button>'; pos++; }
+      html += "</div>";
+    });
+    html += "</div></div>";
   });
   html += "</div>";
+  var C = S.c = { words: words, need: letters, slots: [], tries: 0, hints: 0, done: false };
   var bank = shuffleArray(letters.concat(extra));
   html += '<div class="bank" id="bank">' + bank.map(function (ch, i) { return '<button class="tile" data-t="' + i + '" data-ch="' + ch + '">' + ch + "</button>"; }).join("") + "</div>";
   html += '<div class="crow"><button class="btn" id="cCheck" disabled>✔️ בְּדֹק</button><button class="btn ghost" id="cHint">💡 רֶמֶז (‎-2)</button><button class="btn ghost" id="cClear">🧹 נַקֵּה</button></div>';
