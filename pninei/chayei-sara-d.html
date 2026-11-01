@@ -541,6 +541,8 @@
     padding: 12px 14px; font-size: 13.5px; line-height: 1.7; text-align: center;
   }
   .site-sig a { color: var(--green-dark); font-weight: 700; }
+  .tier-h { margin: 16px 0 6px; font-size: 18px; color: var(--green-dark); border-bottom: 2px solid var(--gold); padding-bottom: 4px; }
+  .tier-h small { font-size: 13px; font-weight: 500; color: var(--text-soft); }
 </style>
 <meta property="og:title" content="מבדק פרשת חיי שרה - כיתה ד&#x27;">
 <meta property="og:description" content="מבדק פרשת חיי שרה - כיתה ד&#x27;">
@@ -577,8 +579,9 @@
     <div id="lbCrowns"><div class="lb-loading">טוען...</div></div>
   </div>
   <div id="scholarsBoard">
-    <h2>🎓 תלמידי חכמים</h2>
-    <div class="hint-note" style="text-align:center;margin:-4px 0 10px;">כל מבדק שעברתם בבית – בכל פרשה ובכל כיתה – מוסיף לכם כתר 👑<br>(אותו מבדק פעמיים – כתר אחד)</div>
+    <h2>🏅 לוח התלמידים</h2>
+    <div class="hint-note" style="text-align:center;margin:-4px 0 10px;">כל מבדק שעברתם בבית – בכל פרשה ובכל כיתה – מוסיף לכם כתר 👑<br>(אותו מבדק פעמיים – כתר אחד)<br>
+      ⭐ תלמיד משקיע: 1 או 2 כתרים · 📜 חתני התורה: 3 עד 9 כתרים · 🎓 תלמיד חכם: 10 כתרים ומעלה</div>
     <div id="lbScholars"><div class="lb-loading">טוען...</div></div>
   </div>
   <div class="site-sig">📚 עוד חומרי לימוד על פרשת השבוע – חינם, במאגר הקול החמישי:
@@ -1025,16 +1028,30 @@ function renderScholars() {
     .sort(function(a, b){ return (b.n - a.n) || a.name.localeCompare(b.name, 'he'); });
   if (!rows.length) { b.innerHTML = '<div class="lb-empty">עדיין אין תלמידי חכמים... הצליחו במבדק בבית וקבלו כתר! 🎓</div>'; return; }
   var me = state.mode === 'home' && state.student ? studentKey(state.student.name, state.student.cls, state.student.school) : '';
+  // שלוש דרגות (1.11, המשתמש): 10 כתרים ומעלה = תלמיד חכם, 3–9 = חתני התורה, 1–2 = תלמיד משקיע
+  var TIERS = [
+    { min: 10, title: '🎓 תלמידי חכמים', sub: '10 כתרים ומעלה' },
+    { min: 3,  title: '📜 חתני התורה',   sub: '3 עד 9 כתרים' },
+    { min: 1,  title: '⭐ תלמידים משקיעים', sub: '1–2 כתרים' }
+  ];
   var medals = ['🥇', '🥈', '🥉'];
-  var h = '<ul class="lb-list">';
-  rows.slice(0, 100).forEach(function(r, i){
-    h += '<li class="' + (me && studentKey(r.name, r.cls, r.school) === me ? 'lb-me' : '') + '">' +
-      '<span class="lb-rank">' + (medals[i] || (i + 1)) + '</span>' +
-      '<span class="lb-name">' + escapeHtml(r.name) + ' – ' + r.n + (r.n === 1 ? ' כתר' : ' כתרים') +
-        '<div class="lb-meta">כיתה ' + escapeHtml(r.cls) + "' · " + escapeHtml(r.school) + '</div></span>' +
-      '<span class="lb-crowns">' + (r.n > 5 ? '👑 × ' + r.n : crownStr(r.n)) + '</span></li>';   // שורה ארוכה דוחקת את השם
+  var h = '';
+  TIERS.forEach(function(t, ti){
+    var max = ti ? TIERS[ti - 1].min : Infinity;
+    var list = rows.filter(function(r){ return r.n >= t.min && r.n < max; });
+    h += '<h3 class="tier-h">' + t.title + ' <small>(' + t.sub + ' · ' + list.length + ')</small></h3>';
+    if (!list.length) { h += '<div class="lb-empty">עוד אין כאן אף אחד – אולי אתם הראשונים? 👑</div>'; return; }
+    h += '<ul class="lb-list">';
+    list.slice(0, 100).forEach(function(r, i){
+      h += '<li class="' + (me && studentKey(r.name, r.cls, r.school) === me ? 'lb-me' : '') + '">' +
+        '<span class="lb-rank">' + (ti === 0 && medals[i] ? medals[i] : (i + 1)) + '</span>' +
+        '<span class="lb-name">' + escapeHtml(r.name) + ' – ' + r.n + (r.n === 1 ? ' כתר' : ' כתרים') +
+          '<div class="lb-meta">כיתה ' + escapeHtml(r.cls) + "' · " + escapeHtml(r.school) + '</div></span>' +
+        '<span class="lb-crowns">' + (r.n > 5 ? '👑 × ' + r.n : crownStr(r.n)) + '</span></li>';   // שורה ארוכה דוחקת את השם
+    });
+    h += '</ul>';
   });
-  b.innerHTML = h + '</ul>';
+  b.innerHTML = h;
 }
 function refreshScholars() {
   if (!apiReady()) { scholars = null; renderScholars(); return; }
@@ -1308,7 +1325,7 @@ function renderFinish() {
     top += '<div>הציון של הכיתה:</div><div class="score-num">' + score + '</div>';
   } else if (score >= CONFIG.PASS_SCORE) {
     top += '<div class="crowns-box"><div class="big">👑</div>כל הכבוד! הוספתם כתר לכיתה ' + escapeHtml(clsLabel(who.cls)) + '!</div>' +
-      '<div class="hint-note">🎓 ואם זה מבדק שעוד לא עברתם – יש לכם עוד כתר בלוח "תלמידי חכמים"!</div>';
+      '<div class="hint-note">🎓 ואם זה מבדק שעוד לא עברתם – יש לכם עוד כתר בלוח התלמידים! (10 כתרים = תלמיד חכם 🎓)</div>';
   } else {
     top += '<div class="result-badge">🌟 כל הכבוד על ההשתתפות!</div><p>נסו שוב - ותוסיפו כתר לכיתה שלכם 👑</p>';
   }
