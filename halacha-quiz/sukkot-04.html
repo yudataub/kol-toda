@@ -108,6 +108,10 @@ body.inq .pic img.gen{max-height:max(200px, 42vh)}
 .slots.shake,#slots.shake{animation:shake .4s}
 @keyframes shake{0%,100%{transform:none}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 .bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+.bank.nope{animation:nope .3s}
+@keyframes nope{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.kbd-hint{display:none;text-align:center;font-size:.8em;color:var(--soft);margin:-2px 0 6px}
+@media (hover:hover) and (pointer:fine){.kbd-hint{display:block}}
 .tile{width:48px;height:52px;border-radius:12px;border:0;font:inherit;font-size:1.5em;font-weight:800;cursor:pointer;color:#fff;
   background:linear-gradient(140deg,var(--c1),var(--c2));box-shadow:0 3px 0 rgba(0,0,0,.18)}
 .tile:active{transform:translateY(2px)}
@@ -599,6 +603,34 @@ var FINALS = { "ך": "כ", "ם": "מ", "ן": "נ", "ף": "פ", "ץ": "צ" };
 var TO_FINAL = { "כ": "ך", "מ": "ם", "נ": "ן", "פ": "ף", "צ": "ץ" };
 var ALEF_BET = "אבגדהוזחטיכלמנסעפצקרשת";
 function norm(ch) { return FINALS[ch] || ch; }
+// הקלדה במקלדת ברמה ג׳: אות -> האריח שלה במחסן; Backspace מוחק; Enter בודק / ממשיך.
+// מקלדת באנגלית: לפי מקום המקש במקלדת העברית (t=א ...)
+var HE_KB = { t: "א", c: "ב", d: "ג", s: "ד", v: "ה", u: "ו", z: "ז", j: "ח", y: "ט", h: "י", f: "כ", l: "ך", k: "ל",
+  n: "מ", o: "ם", b: "נ", i: "ן", x: "ס", g: "ע", p: "פ", ";": "ף", m: "צ", ".": "ץ", e: "ק", r: "ר", a: "ש", ",": "ת" };
+document.addEventListener("keydown", function (e) {
+  var C = S.c;
+  if (!C || !$("sQuiz").classList.contains("on") || !$("bank") || e.ctrlKey || e.altKey || e.metaKey) return;
+  var tag = (document.activeElement && document.activeElement.tagName) || "";
+  if (tag === "INPUT" || tag === "TEXTAREA") return;
+  if (e.key === "Enter") {
+    if (!C.done && !$("cCheck").disabled) { e.preventDefault(); checkLetters(); }
+    else if ($("qNext").style.display !== "none") { e.preventDefault(); $("qNext").click(); }
+    return;
+  }
+  if (C.done) return;
+  if (e.key === "Backspace" || e.key === "Delete") {
+    e.preventDefault();
+    for (var p = C.fill.length - 1; p >= 0; p--) if (C.fill[p] != null && !C.hinted[p]) { takeBack(p); break; }
+    return;
+  }
+  var ch = e.key.length === 1 ? (HE_KB[e.key.toLowerCase()] || e.key) : "";
+  if (!/^[א-ת]$/.test(ch)) return;
+  e.preventDefault();
+  ch = norm(ch);
+  var tiles = $("bank").children;
+  for (var i = 0; i < tiles.length; i++) if (tiles[i].dataset.ch === ch && !tiles[i].classList.contains("used")) { putTile(tiles[i]); return; }
+  $("bank").classList.remove("nope"); void $("bank").offsetWidth; $("bank").classList.add("nope");   // האות לא במחסן
+});
 function plain(s) { return s.replace(/[֑-ׇ]/g, ""); }
 function renderLetters(q, L) {
   // שאלה רגילה: answer. שאלת מנהגים: answers = [{label, answer}, ...] – שורת משבצות לכל מנהג, מחסן אותיות אחד
@@ -621,6 +653,7 @@ function renderLetters(q, L) {
   var C = S.c = { words: words, need: letters, slots: [], tries: 0, hints: 0, done: false };
   var bank = shuffleArray(letters.concat(extra));
   html += '<div class="bank" id="bank">' + bank.map(function (ch, i) { return '<button class="tile" data-t="' + i + '" data-ch="' + ch + '">' + ch + "</button>"; }).join("") + "</div>";
+  html += '<div class="kbd-hint">⌨️ אֶפְשָׁר גַּם לְהַקְלִיד בַּמִּקְלֶדֶת – Enter לִבְדִיקָה</div>';
   html += '<div class="crow"><button class="btn" id="cCheck" disabled>✔️ בְּדֹק</button><button class="btn ghost" id="cHint">💡 רֶמֶז (‎-2)</button><button class="btn ghost" id="cClear">🧹 נַקֵּה</button></div>';
   $("qBody").innerHTML = html;
   C.slotEls = $("qBody").querySelectorAll(".slot");
