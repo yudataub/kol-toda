@@ -50,6 +50,7 @@ input[type=text]:focus{outline:0;border-color:var(--c3)}
 .hcard .ic{font-size:1.5em;margin-left:6px}
 .hcard .mark{background:var(--yellow);border-radius:12px;padding:8px 12px;margin:8px 0;font-weight:500}
 .hcard .ahava{background:linear-gradient(120deg,#fff0f5,#fff7e6);border-radius:12px;padding:8px 12px;margin-top:8px}
+.hcard .srow{margin:5px 0;padding:4px 10px;border-radius:10px;background:rgba(0,0,0,.035)}
 .hcard .src{font-size:.78em;color:var(--soft);margin-top:6px}
 .src a{color:inherit;text-decoration:underline dotted}
 .inspire{background:var(--blue);border-right:6px solid var(--blueline);border-radius:14px;padding:12px 16px;margin:14px 0;font-weight:500}
@@ -472,6 +473,12 @@ function start() {
 
 /* ---------- לימוד ---------- */
 var CARD_COLORS = ["#ff6b6b", "#ff9f1c", "#2ec4b6", "#5b7cfa", "#b45cff", "#e0559b"];
+/* כַּרְטִיס מְיֻמָּנֻיּוֹת: הַהֲלָכָה מְפֹרֶקֶת – מִקְרֶה, דִּין, טַעַם, מָקוֹר, מֻשָּׂג */
+function skillRows(c) {
+  return [["case", "📖 מִקְרֶה"], ["din", "⚖️ דִּין"], ["taam", "💡 טַעַם"], ["makor", "📜 מָקוֹר"], ["musag", "🧭 מֻשָּׂג"]].map(function (r) {
+    return c[r[0]] ? '<div class="srow"><b>' + r[1] + ":</b> " + escapeHtml(c[r[0]]) + "</div>" : "";
+  }).join("");
+}
 function openStudy() {
   var L = QUIZ.levels[S.lv];
   drawMap($("map1"));
@@ -479,10 +486,10 @@ function openStudy() {
   $("studyCards").innerHTML = L.cards.map(function (c, i) {
     return '<div class="hcard" style="--c:' + CARD_COLORS[i % CARD_COLORS.length] + '">' +
       '<h3><span class="ic">' + c.icon + "</span>" + escapeHtml(c.title) + "</h3>" +
-      "<div>" + escapeHtml(c.text) + "</div>" +
-      '<div class="mark">' + escapeHtml(c.mark) + "</div>" +
+      (c.text ? "<div>" + escapeHtml(c.text) + "</div>" : "") + skillRows(c) +
+      (c.mark ? '<div class="mark">' + escapeHtml(c.mark) + "</div>" : "") +
       '<div class="ahava">💛 <b>אַהֲבַת הַשֵּׁם:</b> ' + escapeHtml(c.ahava) + "</div>" +
-      '<div class="src">📖 ' + escapeHtml(QUIZ.book || "פְּנִינֵי הֲלָכָה – תְּפִלָּה") + ", " + srcLinks(c.src) + "</div></div>";
+      (c.src ? '<div class="src">📖 ' + escapeHtml(QUIZ.book || "פְּנִינֵי הֲלָכָה – תְּפִלָּה") + ", " + srcLinks(c.src) + "</div>" : "") + "</div>";
   }).join("");
   $("studyInspire").innerHTML = "💭 <b>שְׁאֵלָה לַלֵּב:</b> " + escapeHtml(L.inspire);
   show("sStudy");
