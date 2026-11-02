@@ -24,6 +24,7 @@ body{margin:0;font-family:Rubik,Arial,sans-serif;background:var(--bg);color:var(
 .qc em{font-style:normal;font-weight:800;color:#1d6b30}
 .how{background:#fff;border-radius:18px;padding:14px 18px;box-shadow:0 4px 16px rgba(60,40,120,.08)}
 .pts{text-align:center;font-weight:700;font-size:1.1em;margin:10px 0}
+.pts a{color:#7b5cff;text-decoration:underline}
 .kol-toda-sign{margin:26px 0 0;padding:16px 18px;border-radius:16px;background:linear-gradient(120deg,#eaf6ff,#f3ecff);border:2px solid #cfe0ff;text-align:center}
 .kol-toda-sign a{color:#3d4fd6;font-weight:700}
 </style>
@@ -153,21 +154,29 @@ body{margin:0;font-family:Rubik,Arial,sans-serif;background:var(--bg);color:var(
 </main>
 <script>
 var API_URL = "https://script.google.com/macros/s/AKfycbxnmfZcen-MXI1Af0a61_m2awo_WIz19wcbWnl_pgywOYpj2f7kgT9T08icGmRV8Oa7/exec";
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 (function () {
   var me = null;
   try { me = JSON.parse(localStorage.getItem("hq-me") || "null"); } catch (e) {}
-  if (!API_URL || !me || !me.name) return;
-  fetch(API_URL + "?action=me&name=" + encodeURIComponent(me.name) + "&cls=" + encodeURIComponent(me.cls || "") + "&school=" + encodeURIComponent(me.school || ""))
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      if (!d || !d.ok) return;
-      var el = document.getElementById("pts");
-      el.textContent = "⭐ " + me.name + ", צָבַרְתָּ " + d.points + " נְקֻדּוֹת";
-      Array.prototype.forEach.call(document.querySelectorAll(".qc"), function (a) {
-        var s = d.games[a.dataset.id];
-        if (s != null) a.querySelector("em").textContent = "✅ " + s;
-      });
-    }).catch(function () {});
+  var el = document.getElementById("pts");
+  if (!me || !me.name) return;
+  el.innerHTML = "⭐ <a href=\"profile.html\">" + esc(me.name) + "</a>";   // שם לחיץ לפרופיל - מהרגע שהוזן שם, בכל חזרה לדף הבית
+  if (!API_URL) return;
+  Promise.all([
+    fetch(API_URL + "?action=me&name=" + encodeURIComponent(me.name) + "&cls=" + encodeURIComponent(me.cls || "") + "&school=" + encodeURIComponent(me.school || "")).then(function (r) { return r.json(); }),
+    fetch("progress.json").then(function (r) { return r.json(); })
+  ]).then(function (res) {
+    var d = res[0], p = res[1];
+    if (!d || !d.ok) return;
+    var learned = {};
+    Object.keys(d.games || {}).forEach(function (qid) { (p.halachot[qid] || []).forEach(function (h) { learned[h] = 1; }); });
+    el.innerHTML = "⭐ <a href=\"profile.html\">" + esc(me.name) + "</a>, צָבַרְתָּ " + d.points + " נְקֻדּוֹת · 📜 "
+      + Object.keys(learned).length + " מִתּוֹךְ " + p.total + " הֲלָכוֹת לָמַדְתָּ";
+    Array.prototype.forEach.call(document.querySelectorAll(".qc"), function (a) {
+      var s = d.games[a.dataset.id];
+      if (s != null) a.querySelector("em").textContent = "✅ " + s;
+    });
+  }).catch(function () {});
 })();
 </script>
 </body>
