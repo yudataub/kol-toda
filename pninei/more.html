@@ -38,6 +38,15 @@ h2{font-family:'Suez One',Georgia,serif;font-weight:400;font-size:22px;margin:0 
 .sig{margin-top:28px;background:var(--soft);border:1.5px solid var(--gold);border-radius:14px;padding:12px 14px;font-size:14px;text-align:center}
 .sig a{color:var(--main-dark);font-weight:700}
 @media (max-width:480px){.plist,.glist{grid-template-columns:repeat(2,1fr)}.modes{grid-template-columns:1fr}}
+.cal{margin-top:26px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px}
+.cal .yr{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.cal .yr button{font:700 15px Heebo,sans-serif;padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.cal .yr button.on{background:var(--main);border-color:var(--main);color:#fff}
+.cal table{width:100%;border-collapse:collapse;font-size:15px}
+.cal th,.cal td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right}
+.cal th{color:var(--muted);font-weight:500;font-size:13.5px}
+.cal tr.now td{background:var(--soft);font-weight:700}
+.cal tr.now td:first-child::after{content:" ← פתוח עכשיו";color:var(--gold)}
 </style>
 <meta property="og:title" content="חידונים נוספים לפרשת השבוע – פניני הפרשה">
 <meta property="og:description" content="מבדק לכל פרשה ולכל כיתה, כמשחק: כל הכיתה יחד בכיתה (הכיתה מקבלת ציון), או כל תלמיד בבית (וכל מי שמצליח מוסיף כתר לכיתה שלו).">
@@ -72,6 +81,7 @@ h2{font-family:'Suez One',Georgia,serif;font-weight:400;font-size:22px;margin:0 
   <section class="grades" id="g-toldot" hidden><h2>פרשת תולדות · בחרו כיתה</h2><div class="glist"><a class="g" href="toldot-mb.html">כיתה ב'</a><a class="g" href="toldot-mg.html">כיתה ג'</a><a class="g" href="toldot-md.html">כיתה ד'</a><a class="g" href="toldot-mh.html">כיתה ה'</a><a class="g" href="toldot-mv.html">כיתה ו'</a></div></section>
   <section class="grades" id="g-vayigash" hidden><h2>פרשת ויגש · בחרו כיתה</h2><div class="glist"><a class="g" href="vayigash-mb.html">כיתה ב'</a><a class="g" href="vayigash-mg.html">כיתה ג'</a><a class="g" href="vayigash-md.html">כיתה ד'</a><a class="g" href="vayigash-mh.html">כיתה ה'</a><a class="g" href="vayigash-mv.html">כיתה ו'</a></div></section>
   <section class="grades" id="g-vayechi" hidden><h2>פרשת ויחי · בחרו כיתה</h2><div class="glist"><a class="g" href="vayechi-mb.html">כיתה ב'</a><a class="g" href="vayechi-mg.html">כיתה ג'</a><a class="g" href="vayechi-md.html">כיתה ד'</a><a class="g" href="vayechi-mh.html">כיתה ה'</a><a class="g" href="vayechi-mv.html">כיתה ו'</a></div></section>
+  
   <div class="sig">📚 עוד חומרי לימוד על פרשת השבוע – חינם, במאגר הקול החמישי:
     <a href="https://www.kol-toda.co.il/t/parasha.html">kol-toda.co.il/t/parasha.html</a></div>
 </div>
@@ -94,6 +104,24 @@ h2{font-family:'Suez One',Georgia,serif;font-weight:400;font-size:22px;margin:0 
   });
   var h = location.hash.replace('#', '');
   if (h && document.getElementById('g-' + h)) show(h);
+})();
+(function(){   // לוח כתר הפרשה: כפתור לכל שנה, והשורה של השבוע הנוכחי מודגשת
+  var cal = document.getElementById('crownCal');
+  if (!cal) return;
+  function pick(y){
+    var b = cal.querySelectorAll('.yr button'), t = cal.querySelectorAll('table');
+    for (var i = 0; i < b.length; i++) b[i].classList.toggle('on', b[i].getAttribute('data-y') === y);
+    for (var j = 0; j < t.length; j++) t[j].hidden = t[j].getAttribute('data-y') !== y;
+  }
+  cal.querySelector('.yr').addEventListener('click', function(ev){ var b = ev.target.closest('button'); if (b) pick(b.getAttribute('data-y')); });
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  var rows = cal.querySelectorAll('tr[data-from]'), shown = null;
+  for (var i = 0; i < rows.length; i++) {
+    var f = new Date(rows[i].getAttribute('data-from') + 'T00:00:00'), to = new Date(rows[i].getAttribute('data-to') + 'T00:00:00');
+    if (today >= f && today <= to) { rows[i].classList.add('now'); shown = rows[i].closest('table').getAttribute('data-y'); }
+    if (!shown && today < f) shown = rows[i].closest('table').getAttribute('data-y');
+  }
+  pick(shown || cal.querySelector('table').getAttribute('data-y'));
 })();
 </script>
 </body>
