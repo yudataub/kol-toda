@@ -570,12 +570,12 @@
   <div id="screen" class="card"></div>
   <div id="leaderboard">
     <h2>🏆 ציוני הכיתות</h2>
-    <div class="hint-note" style="text-align:center;margin:-4px 0 10px;">משחק כיתתי: כל הכיתה עונה יחד, והכיתה מקבלת ציון</div>
+    <div class="hint-note" style="text-align:center;margin:-4px 0 10px;">משחק כיתתי: כל הכיתה עונה יחד, והכיתה מקבלת ציון<br>(כיתות בית הספר נעם קרית אתא)</div>
     <div id="lbClass"><div class="lb-loading">טוען...</div></div>
   </div>
   <div id="crownsBoard">
     <h2>👑 כתרי הכיתות</h2>
-    <div class="hint-note" style="text-align:center;margin:-4px 0 10px;">על כל תלמיד שהצליח במבדק בבית – הכיתה שלו מקבלת כתר (תלמיד אחד = כתר אחד בכל פרשה)<br>
+    <div class="hint-note" style="text-align:center;margin:-4px 0 10px;">על כל תלמיד שהצליח במבדק בבית – הכיתה שלו מקבלת כתר (תלמיד אחד = כתר אחד בכל פרשה)<br>כיתות בית הספר נעם קרית אתא<br>
       🏆 כתר הפרשה: הכיתה המובילה בשבוע הפרשה – מיום ראשון ועד יום שלישי שאחרי השבת</div>
     <div id="lbCrowns"><div class="lb-loading">טוען...</div></div>
   </div>
@@ -870,6 +870,7 @@ function renderLeaderboard() {
   // 1) ציוני הכיתות - הציון הטוב ביותר של כל כיתה, מכל מבדקי הפרשה
   var best = {};
   boards.cls.forEach(function(r){
+    if (!isNoam(r.school)) return;   // 3.11 (המשתמש): בלוחות הכיתות - רק כיתות נעם קרית אתא
     var k = normalize(r.name) + '|' + schoolKey(r.school);
     var s = Number(r.score) || 0;
     if (!best[k] || s > best[k].score) best[k] = { name: String(r.name), cls: r.cls, school: canonSchool(r.school), score: s };
@@ -893,6 +894,7 @@ function renderLeaderboard() {
   // 2) כתרי הכיתות - כתר על כל תלמיד שהצליח בבית (כל תלמיד נספר פעם אחת)
   var seen = {}, groups = {};
   boards.home.forEach(function(r){
+    if (!isNoam(r.school)) return;   // 3.11 (המשתמש): בלוחות הכיתות - רק כיתות נעם קרית אתא
     if ((Number(r.score) || 0) < CONFIG.PASS_SCORE) return;
     var sk = studentKey(r.name, r.cls, r.school);
     if (seen[sk]) return;
@@ -972,7 +974,7 @@ function renderScholars() {
       h += '<li class="' + (me && studentKey(r.name, r.cls, r.school) === me ? 'lb-me' : '') + '">' +
         '<span class="lb-rank">' + (ti === 0 && medals[i] ? medals[i] : (i + 1)) + '</span>' +
         '<span class="lb-name">' + escapeHtml(r.name) + ' – ' + r.n + (r.n === 1 ? ' כתר' : ' כתרים') +
-          '<div class="lb-meta">כיתה ' + escapeHtml(r.cls) + "' · " + escapeHtml(r.school) + '</div></span>' +
+          '<div class="lb-meta">כיתה ' + escapeHtml(clsLabel(r.cls)) + ' · ' + escapeHtml(r.school) + '</div></span>' +
         '<span class="lb-crowns">' + (r.n > 5 ? '👑 × ' + r.n : crownStr(r.n)) + '</span></li>';   // שורה ארוכה דוחקת את השם
     });
     h += '</ul>';
@@ -980,6 +982,7 @@ function renderScholars() {
   b.innerHTML = h;
   renderClassCrowns();
 }
+function isNoam(school) { return schoolKey(school) === schoolKey(MAIN_SCHOOL); }
 function parashaOf(game) {
   var m = /^pninei-(?:more-)?(.+)-5787-[a-z]+$/.exec(String(game));
   return m ? m[1] : String(game);
@@ -991,6 +994,7 @@ function classGroups(rows, keep) {
   var seen = {}, groups = {};
   rows.forEach(function(r){
     if ((Number(r.score) || 0) < CONFIG.PASS_SCORE || (keep && !keep(r))) return;
+    if (!isNoam(r.school)) return;   // 3.11 (המשתמש): בלוחות הכיתות - רק כיתות נעם קרית אתא
     var sk = studentKey(r.name, r.cls, r.school) + '|' + parashaOf(r.game);
     if (seen[sk]) return;
     seen[sk] = 1;
