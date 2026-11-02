@@ -1131,16 +1131,46 @@ function refreshScholars() {
   loadScholarsRows().then(function(rows){ scholars = rows; renderScholars(); });
 }
 
-function refreshLeaderboard() {
-  try { refreshScholars(); } catch (e) {}   // הלוח השלישי לא עוצר את שני הלוחות האחרים
-  boardsRequested = true;
-  if (!apiReady()) { boards = null; renderLeaderboard(); return; }
-  boards = undefined;
+// ---------- טעינה מהירה (2.11): כל הלוחות בבקשה אחת (action=boards, Apps Script גרסה 13) ----------
+// שורה: [משחק, שם, כיתה, בית ספר, ציון הכי טוב, [זמני מעבר]]. הלוחות האחרונים נשמרים בדפדפן ומוצגים מיד
+// בכניסה הבאה, ומתעדכנים ברקע. אם השרת עוד לא מכיר את action=boards - הדרך הישנה (בקשה לכל משחק).
+var BOARDS_LS = 'pninei-boards-v13';
+function applyAllBoards(rows) {
+  var home = [], kita = [];
+  rows.forEach(function(e){
+    var r = { game: e[0], name: e[1], cls: e[2], school: e[3], score: e[4], ts: e[5] || [] };
+    if (/-kita$/.test(r.game)) { if (CONFIG.SERIES_CLASS.indexOf(r.game) >= 0) kita.push(r); }
+    else if (CONFIG.ALL_HOME.indexOf(r.game) >= 0) home.push(r);
+  });
+  scholars = home;
+  boards = { cls: kita, home: home.filter(function(r){ return CONFIG.SERIES_HOME.indexOf(r.game) >= 0; }) };
   renderLeaderboard();
+  renderScholars();
+}
+function refreshLeaderboardSlow() {
+  try { refreshScholars(); } catch (e) {}   // הלוח השלישי לא עוצר את שני הלוחות האחרים
   Promise.all([loadSeries(CONFIG.SERIES_CLASS), loadSeries(CONFIG.SERIES_HOME)]).then(function(res){
     boards = { cls: res[0], home: res[1] };
     renderLeaderboard();
   });
+}
+function refreshLeaderboard() {
+  boardsRequested = true;
+  if (!apiReady()) { boards = null; scholars = null; renderLeaderboard(); renderScholars(); return; }
+  var shown = false;
+  try {
+    var saved = JSON.parse(localStorage.getItem(BOARDS_LS) || 'null');
+    if (saved && saved.rows) { applyAllBoards(saved.rows); shown = true; }
+  } catch (e) {}
+  if (!shown) { boards = undefined; renderLeaderboard(); renderScholars(); }
+  Promise.resolve().then(function(){ return fetch(CONFIG.API_URL + '?action=boards'); })
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if (!j || !j.ok || !j.rows) throw new Error('no boards action');
+      try { localStorage.setItem(BOARDS_LS, JSON.stringify({ t: Date.now(), rows: j.rows })); } catch (e) {}
+      applyAllBoards(j.rows);
+    })
+    .catch(function(){ if (!shown) refreshLeaderboardSlow(); });
 }
 
 // ---------- screens ----------
