@@ -390,6 +390,15 @@ function soundGrand() {
         [[G4], .14], [[C5], .14], [[E5], .14], [[G5], .14], [[C6, E5], .14], [[E5], .14], [[G5], .14], [[C6, G5], .3],
         [[B5, G5], .16], [[C6, E5, G5, C5], 1.4]]);
 }
+/* הַקְרָאַת מִשְׁפַּט הָעִדּוּד בְּקוֹל, לֹא רַק בְּכְתַב */
+function speak(t) {
+  try {
+    speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(t.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}✅✓✔]/gu, ""));
+    u.lang = "he-IL"; u.rate = 0.95;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
 
 /* ---------- מצב ---------- */
 var S = { name: DEFAULT_NAME, cls: "", school: "", real: false, young: false, lv: 0, q: 0, list: [], retry: false,
@@ -659,6 +668,7 @@ function feedback(ok, q, pts) {
     S.right++; S.streak++;
     if (!S.retry) S.scores[QUIZ.levels[S.lv].key] += pts;
     if (lvl >= 4) soundStreak(S.streak); else if (lvl >= 2) tone([659, 784], 0.1);
+    speak(FB_OK[lvl].replace("{n}", S.name));
     fb.className = "fb on ok" + (lvl >= 10 ? " l10" : lvl >= 7 ? " l7" : lvl >= 3 ? " l3" : "");
     var love = true ? '<div class="love">' + nm(draw("ok", LOVE_OK)) + "</div>" : "";
     fb.innerHTML = '<div class="t">' + (lvl >= 3 ? '<span class="star">⭐</span>' : "") + nm(FB_OK[lvl]) + (S.retry ? "" : " +" + PER_RIGHT + " ⭐") + "</div>" +
