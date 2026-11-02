@@ -134,13 +134,18 @@ body.inq .pic img.gen{max-height:max(200px, 42vh)}
 .split div{background:#f6f2ff;border-radius:12px;padding:6px 14px;font-weight:500}
 .cert{border:4px double var(--c2);border-radius:22px;padding:20px;text-align:center;background:linear-gradient(160deg,#fffdf5,#fff3f8)}
 .cert .nm{font-size:1.8em;font-weight:800;color:var(--c3)}
-.boards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.boards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .board h3{margin:0 0 8px;font-size:1.1em}
 .board ol{margin:0;padding:0 22px 0 0}
 .board li{padding:3px 0;border-bottom:1px dashed #eee}
 .board li.me{background:#fff3b0;border-radius:8px}
 .board .pts{float:left;font-weight:800;color:var(--c3)}
 .board .cl{color:var(--soft);font-size:.8em}
+.badge-line{font-weight:800;font-size:1.15em;text-align:center}
+.progress{text-align:center;margin:10px 0}
+.progress .gain{font-weight:800;color:#15803d;font-size:1.05em;margin:0 0 6px}
+.bbar{height:14px;border-radius:8px;background:#eee;overflow:hidden;margin:8px 0 4px}
+.bbar-fill{height:100%;background:linear-gradient(90deg,#fbbf24,#f59e0b);border-radius:8px;transition:width 1s ease-out}
 .fbk{margin:22px 0 0}.fbk summary{cursor:pointer;font-weight:700;color:var(--c1);list-style:none;text-align:center;padding:10px;border-radius:14px;background:var(--card);box-shadow:0 2px 10px rgba(60,40,120,.08)}
 .fbk summary::-webkit-details-marker{display:none}.fbk .box{margin-top:8px}.fbk label{display:block;font-weight:600;margin:10px 0 4px}
 .fbk input[type=email]{width:100%;font:inherit;padding:10px 14px;border-radius:12px;border:2px solid #ddd3f5}
@@ -196,6 +201,7 @@ body.inq .pic img.gen{max-height:max(200px, 42vh)}
       <input type="text" id="inSchool" maxlength="40" autocomplete="off">
       <p class="note">כְּדֵי לִהְיוֹת בְּלוּחַ הַמּוֹבִילִים וְלִצְבֹּר נְקֻדּוֹת – כִּתְבוּ שֵׁם, כִּתָּה וּבֵית סֵפֶר. תָּמִיד אוֹתוֹ דָּבָר, וְהַנְּקֻדּוֹת מִכָּל הַחִידוֹנִים יִצְטַבְּרוּ יַחַד.</p>
       <p class="note" id="myPts"></p>
+      <p class="note badge-line" id="myBadge"></p>
       <div class="center"><button class="btn" id="goBtn">🚀 מַתְחִילִים!</button></div>
     </div>
   </section>
@@ -234,12 +240,19 @@ body.inq .pic img.gen{max-height:max(200px, 42vh)}
       <div class="big" id="fScore"></div>
       <div class="split" id="fSplit"></div>
       <p id="fMsg"></p>
-      <p id="fPts" style="font-weight:700"></p>
+      <div class="box progress" id="fProgress" style="display:none">
+        <p id="fGain" class="gain"></p>
+        <p id="fPts" style="font-weight:700"></p>
+        <div id="fBadge" class="badge-line"></div>
+        <div class="bbar"><div class="bbar-fill" id="fBadgeBar"></div></div>
+        <p class="note" id="fBadgeNext"></p>
+      </div>
       <p class="note" id="fSend"></p>
     </div>
     <div class="boards">
       <div class="box board"><h3>🏆 עֲשָׂרָה מוֹבִילִים בַּחִידוֹן הַזֶּה</h3><ol id="bQuiz"><li>טוֹעֵן...</li></ol></div>
       <div class="box board"><h3>⭐ עֲשָׂרָה מוֹבִילִים בְּכָל הַחִידוֹנִים</h3><ol id="bAll"><li>טוֹעֵן...</li></ol></div>
+      <div class="box board"><h3>🏫 הַכִּתָּה הַמּוֹבִילָה</h3><ol id="bCls"><li>טוֹעֵן...</li></ol></div>
     </div>
     <div class="box cert">
       <div>🎖️ תְּעוּדַת הִצְטַיְּנוּת 🎖️</div>
@@ -407,6 +420,38 @@ function nm(s) { return s.replace("{n}", escapeHtml(S.name)); }
 var PER_RIGHT = 10;
 function ptsTotal() { return S.base == null ? S.pts : S.base - S.prevBest + Math.max(S.prevBest, S.pts); }
 function drawPts() { var b = $("qPts"); if (b) b.querySelector("b").textContent = ptsTotal(); }
+// תְּחוּשַׁת הִתְקַדְּמוּת – גַּם לְתַלְמִיד חַלָּשׁ: דַּרְגָּה לְפִי סַךְ הַנְּקֻדּוֹת הַמֻּחְלָט (לֹא יַחֲסִית לְתַלְמִידִים אֲחֵרִים), שֶׁכָּל תַּלְמִיד מִתְקַדֵּם בָּהּ בַּקֶּצֶב שֶׁלּוֹ
+var BADGES = [
+  { min: 0, emoji: "🌱", name: "מַתְחִיל" },
+  { min: 50, emoji: "🥉", name: "לוֹמֵד מַתְמִיד" },
+  { min: 200, emoji: "🥈", name: "לוֹמֵד מְצֻיָּן" },
+  { min: 500, emoji: "🥇", name: "חָכָם צָעִיר" },
+  { min: 1000, emoji: "💎", name: "תַּלְמִיד חָכָם" },
+  { min: 2500, emoji: "👑", name: "אַלּוּף הַהֲלָכָה" }
+];
+function badgeFor(pts) {
+  var cur = BADGES[0], next = null;
+  for (var i = 0; i < BADGES.length; i++) { if (pts >= BADGES[i].min) cur = BADGES[i]; else { next = BADGES[i]; break; } }
+  return { cur: cur, next: next };
+}
+function badgeText(pts) { var b = badgeFor(pts); return b.cur.emoji + " " + b.cur.name; }
+function showProgress(pts, gain) {
+  var box = $("fProgress"); if (!box) return;
+  box.style.display = "";
+  $("fGain").textContent = gain > 0 ? "📈 הַיּוֹם צָבַרְתָּ עוֹד " + gain + " נְקֻדּוֹת!"
+    : "💪 סִיַּמְתָּ אֶת הַחִידוֹן! נַסֵּה שׁוּב וְתִרְאֶה אֵיךְ אַתָּה מוֹסִיף נְקֻדּוֹת.";
+  $("fPts").textContent = "⭐ סַךְ הַנְּקֻדּוֹת שֶׁלְּךָ: " + pts;
+  var b = badgeFor(pts);
+  $("fBadge").textContent = b.cur.emoji + " הַדַּרְגָּה שֶׁלְּךָ: " + b.cur.name;
+  if (b.next) {
+    var span = b.next.min - b.cur.min, have = Math.max(0, pts - b.cur.min);
+    $("fBadgeBar").style.width = Math.max(4, Math.min(100, Math.round(have / span * 100))) + "%";
+    $("fBadgeNext").textContent = "עוֹד " + (b.next.min - pts) + " נְקֻדּוֹת וְתַעֲלֶה לְדַרְגַּת " + b.next.emoji + " " + b.next.name + "!";
+  } else {
+    $("fBadgeBar").style.width = "100%";
+    $("fBadgeNext").textContent = "🎉 הִגַּעְתָּ לַדַּרְגָּה הַגְּבוֹהָה בְּיוֹתֵר!";
+  }
+}
 function addPts(anchor) {
   S.pts += PER_RIGHT; drawPts();
   var b = $("qPts"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop");
@@ -479,7 +524,7 @@ function loadMyPoints() {
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d && d.ok) { S.base = Number(d.points) || 0; S.prevBest = Number((d.games || {})[QUIZ.id]) || 0; drawPts(); }
-      if (d && d.ok && d.points) $("myPts").textContent = "⭐ צָבַרְתָּ עַד עַכְשָׁו " + d.points + " נְקֻדּוֹת. כָּל הַכָּבוֹד!"; })
+      if (d && d.ok && d.points) { $("myPts").textContent = "⭐ צָבַרְתָּ עַד עַכְשָׁו " + d.points + " נְקֻדּוֹת. כָּל הַכָּבוֹד!"; $("myBadge").textContent = badgeText(d.points); } })
     .catch(function () {});
 }
 function readMe() {
@@ -809,6 +854,7 @@ function finish() {
   $("cVerse").textContent = "✨ " + QUIZ.verse;
   $("fThink").innerHTML = QUIZ.think.map(function (t) { return "<li>" + escapeHtml(t) + "</li>"; }).join("");
   if (NEXT_URL) { $("nextQuiz").href = NEXT_URL; $("nextQuiz").style.display = "inline-block"; }
+  if (S.real) showProgress(ptsTotal(), Math.max(0, ptsTotal() - (S.base || 0)));
   show("sFinal");
   sendScore(S.pts);
 }
@@ -829,12 +875,17 @@ function sendScore(score) {
       loadBoards();
     });
 }
-function boardsOff(msg) { $("bQuiz").innerHTML = "<li>" + msg + "</li>"; $("bAll").innerHTML = "<li>" + msg + "</li>"; }
+function boardsOff(msg) { $("bQuiz").innerHTML = "<li>" + msg + "</li>"; $("bAll").innerHTML = "<li>" + msg + "</li>"; $("bCls").innerHTML = "<li>" + msg + "</li>"; }
 function normKey(s) { return String(s || "").toLowerCase().replace(/[^א-תa-z0-9]/g, ""); }   // כמו norm_ בשרת: רק אותיות וספרות
 function isMe(r) { return S.real && normKey(r.name) === normKey(S.name) && normKey(r.cls) === normKey(S.cls) && normKey(r.school) === normKey(S.school); }
 function rowHtml(r, v) {
   return '<li class="' + (isMe(r) ? "me" : "") + '"><span class="pts">' + v + "</span>" + escapeHtml(r.name) +
     ' <span class="cl">' + escapeHtml([r.cls, r.school].filter(Boolean).join(", ")) + "</span></li>";
+}
+function isMyClass(r) { return S.real && normKey(r.cls) === normKey(S.cls) && normKey(r.school) === normKey(S.school); }
+function classRowHtml(r) {
+  return '<li class="' + (isMyClass(r) ? "me" : "") + '"><span class="pts">' + r.avg + "</span>" + escapeHtml(r.cls) +
+    ' <span class="cl">' + escapeHtml(r.school) + " · " + r.students + " תַּלְמִידִים" + "</span></li>";
 }
 function loadBoards() {
   fetch(API_URL + "?action=board&limit=10&game=" + encodeURIComponent(QUIZ.id)).then(function (r) { return r.json(); }).then(function (d) {
@@ -843,6 +894,9 @@ function loadBoards() {
   fetch(API_URL + "?action=points&limit=10").then(function (r) { return r.json(); }).then(function (d) {
     $("bAll").innerHTML = (d.top || []).map(function (r) { return rowHtml(r, r.points); }).join("") || "<li>עוֹד אֵין נְקֻדּוֹת</li>";
   }).catch(function () { $("bAll").innerHTML = "<li>לֹא נִטְעַן כָּרֶגַע</li>"; });
+  fetch(API_URL + "?action=classes&limit=10").then(function (r) { return r.json(); }).then(function (d) {
+    $("bCls").innerHTML = (d.top || []).map(function (r) { return classRowHtml(r); }).join("") || "<li>עוֹד אֵין כִּתּוֹת עִם 2 תַּלְמִידִים וּמַעְלָה</li>";
+  }).catch(function () { $("bCls").innerHTML = "<li>לֹא נִטְעַן כָּרֶגַע</li>"; });
   if (S.real) fetch(API_URL + "?action=me&name=" + encodeURIComponent(S.name) + "&cls=" + encodeURIComponent(S.cls) + "&school=" + encodeURIComponent(S.school))
     .then(function (r) { return r.json(); }).then(function (d) { if (d && d.ok) $("fPts").textContent = "⭐ הַנְּקֻדּוֹת שֶׁצָּבַרְתָּ עַד עַכְשָׁו: " + d.points; }).catch(function () {});
 }
