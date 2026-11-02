@@ -37,8 +37,9 @@ body{margin:0;font-family:Rubik,Arial,sans-serif;background:var(--bg);color:var(
 .btn[disabled]{opacity:.45;cursor:default;transform:none}
 .center{text-align:center}
 label{display:block;font-weight:500;margin:10px 0 2px}
-input[type=text]{width:100%;font:inherit;padding:10px 14px;border-radius:12px;border:2px solid #ddd3f5}
-input[type=text]:focus{outline:0;border-color:var(--c3)}
+input[type=text],select{width:100%;font:inherit;padding:10px 14px;border-radius:12px;border:2px solid #ddd3f5;background:#fff}
+input[type=text]:focus,select:focus{outline:0;border-color:var(--c3)}
+.gradeNote{font-size:.85em}
 .note{color:var(--soft);font-size:.85em}
 .levels-map{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
 .levels-map span{padding:6px 14px;border-radius:30px;background:#f1ecff;font-weight:700;font-size:.9em}
@@ -193,6 +194,18 @@ body.inq .pic img.gen{max-height:max(200px, 42vh)}
         <li><b>רָמָה ב׳</b> – שְׁאֵלוֹת קָשׁוֹת לַחֲכָמִים 🧠</li>
         <li><b>רָמָה ג׳</b> – כּוֹתְבִים אֶת הַתְּשׁוּבָה בְּעַצְמְךָ ✍️</li>
       </ul>
+      <label for="inGrade">אֲנִי בְּכִתָּה</label>
+      <select id="inGrade">
+        <option value="">— בְּחַרוּ כִּתָּה —</option>
+        <option value="a">א׳</option>
+        <option value="b">ב׳</option>
+        <option value="c">ג׳</option>
+        <option value="d">ד׳</option>
+        <option value="e">ה׳</option>
+        <option value="f">ו׳</option>
+      </select>
+      <p class="note gradeNote" id="gradeNote">כִּתּוֹת א׳–ג׳: מְסַיְּמִים אַחֲרֵי רָמָה ב׳, וְרוֹאִים כְּבָר אֶת הַצִּיּוּן וְאֶת לוּחַ הַמּוֹבִילִים. כִּתּוֹת ד׳ וּמַעְלָה: מְשִׂחֲקִים גַּם בְּרָמָה ג׳, וְרוֹאִים אֶת הַצִּיּוּן בַּסּוֹף.</p>
+      <p class="note" id="gradeMsg" style="display:none;color:#c0392b;font-weight:700"></p>
       <label for="inName">הַשֵּׁם שֶׁלְּךָ</label>
       <input type="text" id="inName" maxlength="30" autocomplete="off">
       <label for="inCls">כִּתָּה</label>
@@ -379,7 +392,7 @@ function soundGrand() {
 }
 
 /* ---------- מצב ---------- */
-var S = { name: DEFAULT_NAME, cls: "", school: "", real: false, lv: 0, q: 0, list: [], retry: false,
+var S = { name: DEFAULT_NAME, cls: "", school: "", real: false, young: false, lv: 0, q: 0, list: [], retry: false,
           right: 0, scores: {}, maxes: {}, busy: false, answered: 0, streak: 0, pts: 0, base: null, prevBest: 0 };
 
 var PRAISE = ["מְצֻיָּן, {n}! ⭐", "כָּל הַכָּבוֹד, {n}! 💪", "פְּצָצָה, {n}! 🎯", "יָפֶה מְאוֹד, {n}! 🌟", "אַלּוּף, {n}! 🏆"];
@@ -466,8 +479,10 @@ function show(id) {
   document.body.classList.toggle("inq", id === "sQuiz");   // בשאלות: כותרת קטנה, כדי שהתמונה עם התשובות תיכנס במסך בלי לגלול
   window.scrollTo(0, 0);
 }
+var YOUNG_GRADES = ["a", "b", "c"];   // א׳-ג׳: מסיימים אחרי רמה ב׳ (רמה ג׳, הכתיבה, מיועדת לד׳ ומעלה)
+function visibleLevels() { return S.young ? QUIZ.levels.slice(0, 2) : QUIZ.levels; }
 function drawMap(el) {
-  el.innerHTML = QUIZ.levels.map(function (L, i) {
+  el.innerHTML = visibleLevels().map(function (L, i) {
     var cls = i < S.lv ? "done" : i === S.lv ? "now" : "";
     return '<span class="' + cls + '">' + (i < S.lv ? "✅ " : "") + escapeHtml(L.name.split("–")[0]) + "</span>";
   }).join("");
@@ -505,7 +520,7 @@ function init() {
   $("srcline").textContent = "📖 " + QUIZ.source;
   document.documentElement.style.setProperty("--c1", QUIZ.theme[0]);
   var saved = store("hq-me");
-  if (saved) { try { var m = JSON.parse(saved); $("inName").value = m.name || ""; $("inCls").value = m.cls || ""; $("inSchool").value = m.school || ""; } catch (e) {} }
+  if (saved) { try { var m = JSON.parse(saved); $("inName").value = m.name || ""; $("inCls").value = m.cls || ""; $("inSchool").value = m.school || ""; $("inGrade").value = m.grade || ""; } catch (e) {} }
   drawMap($("map0"));
   loadMyPoints();
   ["inName", "inCls", "inSchool"].forEach(function (id) {
@@ -528,13 +543,15 @@ function loadMyPoints() {
     .catch(function () {});
 }
 function readMe() {
-  var n = $("inName").value.trim(), c = $("inCls").value.trim(), s = $("inSchool").value.trim();
-  return { name: n || DEFAULT_NAME, cls: c, school: s, real: !!(n && c && s) };
+  var n = $("inName").value.trim(), c = $("inCls").value.trim(), s = $("inSchool").value.trim(), g = $("inGrade").value;
+  return { name: n || DEFAULT_NAME, cls: c, school: s, real: !!(n && c && s), grade: g };
 }
 function start() {
   var m = readMe();
-  S.name = m.name; S.cls = m.cls; S.school = m.school; S.real = m.real;
-  if (m.real) store("hq-me", JSON.stringify({ name: m.name, cls: m.cls, school: m.school }));
+  if (!m.grade) { $("gradeMsg").style.display = ""; $("gradeMsg").textContent = "✍️ בְּחֲרוּ כִּתָּה כְּדֵי לְהַתְחִיל"; $("inGrade").focus(); return; }
+  $("gradeMsg").style.display = "none";
+  S.name = m.name; S.cls = m.cls; S.school = m.school; S.real = m.real; S.young = YOUNG_GRADES.indexOf(m.grade) !== -1;
+  store("hq-me", JSON.stringify({ name: m.real ? m.name : "", cls: m.cls, school: m.school, grade: m.grade }));
   tone([660], 0.08);
   S.lv = 0; S.retry = false; S.pts = 0;
   if (API_URL && m.real)   // הנקודות שכבר יש לתלמיד – כדי שהמונה יתחיל מהסך שלו
@@ -820,10 +837,11 @@ function levelEnd() {
   $("qBar").style.width = "100%";
   if (ratio >= PASS) {
     S.lv++; S.retry = false;
-    var last = S.lv >= QUIZ.levels.length;
+    var justDid = QUIZ.levels[S.lv - 1].key;   // כִּתּוֹת א׳-ג׳ מְסַיְּמוֹת כָּאן, אַחֲרֵי רָמָה ב׳ (בְּלִי רָמָה ג׳, הַכְּתִיבָה)
+    var last = S.lv >= QUIZ.levels.length || (S.young && justDid === "b");
     $("lvIcon").textContent = S.right === n ? "🏆" : "💪";
     $("lvTitle").innerHTML = S.right === n ? nm("מַדְהִים, {n}! כָּל הַתְּשׁוּבוֹת נְכוֹנוֹת!") : nm("כִּמְעַט מֻשְׁלָם, {n}!");
-    $("lvText").textContent = (S.right + " מִתּוֹךְ " + n + " נָכוֹן. ") + (last ? "סִיַּמְתָּ אֶת כָּל הָרָמוֹת! 🎉" : "עָלִיתָ רָמָה! 🚀 עַכְשָׁו – " + QUIZ.levels[S.lv].name);
+    $("lvText").textContent = (S.right + " מִתּוֹךְ " + n + " נָכוֹן. ") + (last ? "סִיַּמְתָּ אֶת הַחִידוֹן! 🎉" : "עָלִיתָ רָמָה! 🚀 עַכְשָׁו – " + QUIZ.levels[S.lv].name);
     $("lvBtn").textContent = last ? "לַצִּיּוּן שֶׁלִּי 🏁" : "לָרָמָה הַבָּאָה ⬆️";
     $("lvBtn").onclick = last ? finish : openStudy;
     if (S.right === n) soundWin(); else soundStreak(Math.max(S.streak, 6));
@@ -845,7 +863,7 @@ function finish() {
   var score = Math.round(total / (max || 100) * 100);
   soundGrand();
   $("fScore").textContent = "⭐ " + S.pts + " נְקֻדּוֹת";
-  $("fSplit").innerHTML = QUIZ.levels.map(function (L) {
+  $("fSplit").innerHTML = QUIZ.levels.filter(function (L) { return S.maxes[L.key] != null; }).map(function (L) {
     return "<div>" + escapeHtml(L.name.split("–")[0]) + ": " + (S.scores[L.key] || 0) + "/" + S.maxes[L.key] + "</div>";
   }).join("");
   $("fMsg").innerHTML = score >= 90 ? nm("מַדְהִים, {n}! 🏆 אַתָּה חַי בְּאַהֲבַת ה׳! 🎉") : score >= 66 ? nm("כִּמְעַט מֻשְׁלָם, {n}! 💪 מַמְשִׁיךְ לִצְמֹחַ 🌱") : nm("כָּל הַכָּבוֹד שֶׁהִגַּעְתָּ עַד הַסּוֹף, {n}! 💖 נַסֵּה שׁוּב וְתִרְאֶה אֵיךְ אַתָּה עוֹלֶה");
