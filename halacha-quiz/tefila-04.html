@@ -448,6 +448,12 @@ function badgeFor(pts) {
   return { cur: cur, next: next };
 }
 function badgeText(pts) { var b = badgeFor(pts); return b.cur.emoji + " " + b.cur.name; }
+// "הגעתי לכאן" – גם למי שלא מסיים (יודע מי מתחיל ונעצר, ובאיזו רמה); לא חוסם ולא מציג שגיאה לתלמיד
+function pingProgress(stage) {
+  if (!API_URL || !S.real) return;
+  var data = { action: "progress", name: S.name, cls: S.cls, school: S.school, game: QUIZ.id, stage: stage };
+  fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(data) }).catch(function () {});
+}
 function showProgress(pts, gain) {
   var box = $("fProgress"); if (!box) return;
   box.style.display = "";
@@ -552,6 +558,7 @@ function start() {
   $("gradeMsg").style.display = "none";
   S.name = m.name; S.cls = m.cls; S.school = m.school; S.real = m.real; S.young = YOUNG_GRADES.indexOf(m.grade) !== -1;
   store("hq-me", JSON.stringify({ name: m.real ? m.name : "", cls: m.cls, school: m.school, grade: m.grade }));
+  pingProgress("start");
   tone([660], 0.08);
   S.lv = 0; S.retry = false; S.pts = 0;
   if (API_URL && m.real)   // הנקודות שכבר יש לתלמיד – כדי שהמונה יתחיל מהסך שלו
@@ -839,6 +846,7 @@ function levelEnd() {
     S.lv++; S.retry = false;
     var justDid = QUIZ.levels[S.lv - 1].key;   // כִּתּוֹת א׳-ג׳ מְסַיְּמוֹת כָּאן, אַחֲרֵי רָמָה ב׳ (בְּלִי רָמָה ג׳, הַכְּתִיבָה)
     var last = S.lv >= QUIZ.levels.length || (S.young && justDid === "b");
+    pingProgress({ a: "levelA", b: "levelB", c: "levelC" }[justDid]);   // עבר את הרמה בהצלחה (לא בניסיון שנכשל)
     $("lvIcon").textContent = S.right === n ? "🏆" : "💪";
     $("lvTitle").innerHTML = S.right === n ? nm("מַדְהִים, {n}! כָּל הַתְּשׁוּבוֹת נְכוֹנוֹת!") : nm("כִּמְעַט מֻשְׁלָם, {n}!");
     $("lvText").textContent = (S.right + " מִתּוֹךְ " + n + " נָכוֹן. ") + (last ? "סִיַּמְתָּ אֶת הַחִידוֹן! 🎉" : "עָלִיתָ רָמָה! 🚀 עַכְשָׁו – " + QUIZ.levels[S.lv].name);
