@@ -399,11 +399,11 @@ function soundGrand() {
 var FB_AUDIO = ["", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb1.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb2.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb3.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb4.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb5.mp3",
   "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb6.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb7.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb8.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb9.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb10.mp3"];
 var fbAudio = null;
-function speakFb(lvl) {
+function speakFb(lvl, src) {   // src: הקלטה של מחמאה מסוימת (שלב 10+, audio/fb10_N.mp3)
   if (!lvl) return;
   try {
     if (fbAudio) { fbAudio.pause(); }
-    fbAudio = new Audio(FB_AUDIO[lvl]);
+    fbAudio = new Audio(src || FB_AUDIO[lvl]);
     fbAudio.play().catch(function () {});
   } catch (e) {}
 }
@@ -429,7 +429,7 @@ var FB_OK_10 = ["אַשְׁרֶיךָ, {n}! 🌍 כָּל הֲלָכָה שֶׁ�
   "כֹּחַ גָּדוֹל, {n}! 🔥 הָרֶצֶף שֶׁלְּךָ מַרְשִׁים מְאוֹד",
   "אוֹצָר, {n}! 💎 כָּל תְּשׁוּבָה נְכוֹנָה הִיא עוֹד אֶבֶן יְקָרָה בַּיְּדִיעָה שֶׁלְּךָ",
   "וָאוּ, {n}! 🚀 אַתָּה מַמְרִיא קָדִימָה בַּהֲלָכָה",
-  "יֵשׁ לְךָ רֹאשׁ לְהַשֵּׁם, {n}! 🧠✨ מַמָּשׁ נֶהֱנֶה לִרְאוֹת",
+  "יֵשׁ לְךָ רֹאשׁ שֶׁל תַּלְמִיד חָכָם, {n}! 🧠✨ מַמָּשׁ נֶהֱנֶה לִרְאוֹת",
   "חֲתִיכַת תַּלְמִיד, {n}! 📚 אַתָּה סוֹחֵף אוֹתִי אִתְּךָ בַּלִּמּוּד"];
 var FB_BAD = ["", "לֹא מְדֻיָּק", "טָעוּת – נִלְמַד אֶת זֶה יַחַד", "לֹא בְּדִיּוּק, {n} 🤔", "כִּמְעַט, {n}! קְרָא אֶת הַהֶסְבֵּר 👇",
   "הַהֲלָכָה הַזֹּאת קְצָת מְאַתְגֶּרֶת – בּוֹא נַחְשֹׁב יַחַד", "הַטָּעוּת הַזֹּאת מְלַמֶּדֶת מַשֶּׁהוּ חָשׁוּב 🌱",
@@ -685,10 +685,11 @@ function feedback(ok, q, pts) {
     S.right++; S.streak++;
     if (!S.retry) S.scores[QUIZ.levels[S.lv].key] += pts;
     if (lvl >= 4) soundStreak(S.streak); else if (lvl >= 2) tone([659, 784], 0.1);
-    speakFb(lvl);
+    var k10 = lvl >= 10 ? draw("fbok10", FB_OK_10.map(function (_, i) { return i; })) : -1;   // אותה מחמאה בטקסט ובקול
+    speakFb(lvl, k10 >= 0 ? "audio/fb10_" + (k10 + 1) + ".mp3" : null);
     fb.className = "fb on ok" + (lvl >= 10 ? " l10" : lvl >= 7 ? " l7" : lvl >= 3 ? " l3" : "");
     var love = true ? '<div class="love">' + nm(draw("ok", LOVE_OK)) + "</div>" : "";
-    fb.innerHTML = '<div class="t">' + (lvl >= 3 ? '<span class="star">⭐</span>' : "") + (lvl >= 10 ? nm(draw("fbok10", FB_OK_10)) : nm(FB_OK[lvl])) + (S.retry ? "" : " +" + PER_RIGHT + " ⭐") + "</div>" +
+    fb.innerHTML = '<div class="t">' + (lvl >= 3 ? '<span class="star">⭐</span>' : "") + (k10 >= 0 ? nm(FB_OK_10[k10]) : nm(FB_OK[lvl])) + (S.retry ? "" : " +" + PER_RIGHT + " ⭐") + "</div>" +
       (lvl >= 8 ? love + "<div>" + escapeHtml(q.explain) + "</div>" + whyBox(q) : "<div>" + escapeHtml(q.explain) + "</div>" + whyBox(q) + love) +
       '<div class="src">📖 ' + srcLinks(q.src) + "</div>";
     if (!S.retry) addPts(fb.querySelector(".t") || fb);
