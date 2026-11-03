@@ -42,6 +42,10 @@ label{display:block;font-weight:500;margin:10px 0 2px}
 input[type=text],select{width:100%;font:inherit;padding:10px 14px;border-radius:12px;border:2px solid #ddd3f5;background:#fff}
 input[type=text]:focus,select:focus{outline:0;border-color:var(--c3)}
 .gradeNote{font-size:.85em}
+.lb{margin:14px 0 6px;border:2px dashed #ddd3f5;border-radius:14px;padding:8px 12px}
+.lb summary{cursor:pointer;font-weight:700;color:var(--c1)}
+.resume{background:#fff6d6;border:2px solid #f0b400;border-radius:16px;padding:10px 14px;margin-bottom:12px;text-align:center}
+.resume p{margin:4px 0}
 .note{color:var(--soft);font-size:.85em}
 .levels-map{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
 .levels-map span{padding:6px 14px;border-radius:30px;background:#f1ecff;font-weight:700;font-size:.9em}
@@ -349,6 +353,23 @@ function shuffleArray(a) {
 }
 function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
 function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+/* שְׁמִירַת מָקוֹם: אַחֲרֵי כָּל תְּשׁוּבָה וּבִתְחִלַּת כָּל רָמָה – כְּדֵי שֶׁרִעֲנוּן אוֹ הַפְסָקָה לֹא יַחְזִירוּ לַהַתְחָלָה.
+   phase "study" = כַּרְטִיסֵי הָרָמָה lv; phase "quiz" = הַשְּׁאֵלָה הַבָּאָה הִיא q (q == מִסְפַּר הַשְּׁאֵלוֹת -> סוֹף הָרָמָה). */
+var RUN_KEY = "hq-run-" + QUIZ.id, RUN_DAYS = 14;
+function saveRun(phase, q) {
+  store(RUN_KEY, JSON.stringify({ t: Date.now(), phase: phase, q: q || 0, lv: S.lv, right: S.right, retry: S.retry,
+    scores: S.scores, maxes: S.maxes, pts: S.pts, answered: S.answered, streak: S.streak,
+    name: S.name, cls: S.cls, school: S.school, real: S.real, young: S.young }));
+}
+function clearRun() { try { localStorage.removeItem(RUN_KEY); } catch (e) {} }
+function readRun() {
+  try {
+    var r = JSON.parse(store(RUN_KEY) || "null");
+    if (!r || Date.now() - r.t > RUN_DAYS * 864e5 || !QUIZ.levels[r.lv]) return null;
+    if (r.q > QUIZ.levels[r.lv].questions.length) return null;
+    return r;
+  } catch (e) { return null; }
+}
 
 /* ---------- צלילים ---------- */
 var audioContext = null;
@@ -565,6 +586,16 @@ function init() {
   if (saved) { try { var m = JSON.parse(saved); $("inName").value = m.name || ""; $("inCls").value = m.cls || ""; $("inSchool").value = m.school || ""; $("inGrade").value = m.grade || ""; } catch (e) {} }
   drawMap($("map0"));
   loadMyPoints();
+  var me0 = readMe();
+  if (me0.real) $("lbBox").querySelector("summary").textContent = "🏆 בְּלוּחַ הַמּוֹבִילִים בְּתוֹר " + me0.name + " (לְשִׁנּוּי – לְחֲצוּ כָּאן)";
+  var run = readRun();
+  if (run) {
+    var RL = QUIZ.levels[run.lv];
+    $("resumeText").textContent = "📌 יֵשׁ חִידוֹן שֶׁעוֹד לֹא נִגְמַר" + (run.real ? " שֶׁל " + run.name : "") + ": " + RL.name.split("–")[0].trim() +
+      (run.phase === "quiz" && run.q < RL.questions.length ? ", שְׁאֵלָה " + (run.q + 1) + " מִתּוֹךְ " + RL.questions.length : "");
+    $("resumeBox").style.display = "";
+    $("resumeBtn").onclick = function () { resumeRun(run); };
+  }
   ["inName", "inCls", "inSchool"].forEach(function (id) {
     $(id).addEventListener("keydown", function (e) { if (e.key === "Enter") start(); });
   });
@@ -597,14 +628,30 @@ function start() {
   pingProgress("start");
   tone([660], 0.08);
   S.lv = 0; S.retry = false; S.pts = 0;
-  if (API_URL && m.real)   // הנקודות שכבר יש לתלמיד – כדי שהמונה יתחיל מהסך שלו
-    fetch(API_URL + "?action=me&name=" + encodeURIComponent(m.name) + "&cls=" + encodeURIComponent(m.cls) + "&school=" + encodeURIComponent(m.school))
+  clearRun();
+  fetchBase();
+  drawPts();
+  openStudy();
+}
+function fetchBase() {
+  if (API_URL && S.real)   // הנקודות שכבר יש לתלמיד – כדי שהמונה יתחיל מהסך שלו
+    fetch(API_URL + "?action=me&name=" + encodeURIComponent(S.name) + "&cls=" + encodeURIComponent(S.cls) + "&school=" + encodeURIComponent(S.school))
       .then(function (r) { return r.json(); })
       .then(function (d) { if (d && d.ok) { S.base = Number(d.points) || 0; S.prevBest = Number((d.games || {})[QUIZ.id]) || 0; drawPts(); } })
       .catch(function () {});
   else { S.base = null; S.prevBest = 0; }
+}
+function resumeRun(r) {
+  ["lv", "right", "retry", "scores", "maxes", "pts", "answered", "streak", "name", "cls", "school", "real", "young"].forEach(function (k) { if (r[k] != null) S[k] = r[k]; });
+  tone([660], 0.08);
+  fetchBase();
   drawPts();
-  openStudy();
+  if (r.phase !== "quiz") { openStudy(); return; }
+  S.list = QUIZ.levels[S.lv].questions.slice();
+  S.q = r.q;
+  if (S.q >= S.list.length) { levelEnd(); return; }
+  renderQuestion();
+  show("sQuiz");
 }
 
 /* ---------- לימוד ---------- */
@@ -628,6 +675,7 @@ function openStudy() {
       (c.src ? '<div class="src">📖 ' + escapeHtml(QUIZ.book || "פְּנִינֵי הֲלָכָה – תְּפִלָּה") + ", " + srcLinks(c.src) + "</div>" : "") + "</div>";
   }).join("");
   $("studyInspire").innerHTML = "💭 <b>שְׁאֵלָה לַלֵּב:</b> " + escapeHtml(L.inspire);
+  saveRun("study");
   show("sStudy");
 }
 
@@ -716,6 +764,7 @@ function feedback(ok, q, pts, hints) {
   }
   $("qNext").style.display = "inline-block";
   $("qNext").focus();
+  saveRun("quiz", S.q + 1);
 }
 /* 🤔 לָמָּה? – הַטַּעַם שֶׁל הַהֲלָכָה (שָׂדֶה why בַּשְּׁאֵלָה) */
 function whyBox(q) { return q.why ? '<div class="why">💡 <b>טַעַם הַדִּין:</b> ' + escapeHtml(q.why) + "</div>" : ""; }
@@ -908,6 +957,7 @@ function finish() {
   var total = 0, max = 0;
   QUIZ.levels.forEach(function (L) { total += S.scores[L.key] || 0; max += S.maxes[L.key] || 0; });
   var score = Math.round(total / (max || 100) * 100);
+  clearRun();
   soundGrand();
   $("fScore").textContent = "⭐ " + S.pts + " נְקֻדּוֹת";
   $("fSplit").innerHTML = QUIZ.levels.filter(function (L) { return S.maxes[L.key] != null; }).map(function (L) {
