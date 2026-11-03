@@ -424,6 +424,8 @@ var FB_OK = ["", "נָכוֹן ✓", "הִצְלַחְתָּ! ✓", "מְצֻי�
   "וָאוּ! 💫 אַתָּה כְּבָר שׁוֹלֵט בַּהֲלָכוֹת הָאֵלֶּה!", ""];
 // רָמָה 10 וּמַעְלָה (S.answered>=10, לֹא רֶצֶף – בְּחִידוֹן אָרֹךְ זֶה קוֹרֶה עֲשָׂרוֹת פְּעָמִים): מַחְמָאָה
 // אַחֶרֶת בְּכָל פַּעַם (draw בְּלִי חֲזָרוֹת), לֹא אוֹתָהּ מִלָּה קְבוּעָה לְכָל אֹרֶךְ הַחִידוֹן
+// כְּתוֹבוֹת מְפֹרָשׁוֹת (לֹא מְחֻבָּרוֹת בְּזְמַן רִיצָה) – kol/offload.py מַחְלִיף אוֹתָן לְכְתוֹבֶת kol-toda-files בְּעֵת הַפִּרְסוּם
+var FB_AUDIO_10 = ["https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb10_1.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb10_2.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb10_3.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb10_4.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb10_5.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb10_6.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/fb10_7.mp3"];
 var FB_OK_10 = ["אַשְׁרֶיךָ, {n}! 🌍 כָּל הֲלָכָה שֶׁלָּמַדְתָּ מְקָרֶבֶת אוֹתְךָ לְהַשֵּׁם",
   "אֵין עָלֶיךָ, {n}! 👑 אַתָּה מַמָּשׁ בֶּן־בַּיִת בַּהֲלָכוֹת הָאֵלֶּה",
   "כֹּחַ גָּדוֹל, {n}! 🔥 הָרֶצֶף שֶׁלְּךָ מַרְשִׁים מְאוֹד",
@@ -497,11 +499,11 @@ function showProgress(pts, gain) {
     $("fBadgeNext").textContent = "🎉 הִגַּעְתָּ לַדַּרְגָּה הַגְּבוֹהָה בְּיוֹתֵר!";
   }
 }
-function addPts(anchor) {
-  S.pts += PER_RIGHT; drawPts();
+function addPts(gain) {
+  S.pts += gain; drawPts();
   var b = $("qPts"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop");
   var r = b.getBoundingClientRect(), f = document.createElement("div");   // ה-+10 עולה אל המונה שבפינה (תמיד על המסך)
-  f.className = "plus10"; f.textContent = "+" + PER_RIGHT;
+  f.className = "plus10"; f.textContent = "+" + gain;
   f.style.left = (r.left + r.width / 2) + "px"; f.style.top = (r.bottom + 70) + "px";
   document.body.appendChild(f); setTimeout(function () { f.remove(); }, 1200);
 }
@@ -676,8 +678,9 @@ function answer(k) {
   });
   feedback(o.isCorrect, q, L.points);
 }
-function feedback(ok, q, pts) {
+function feedback(ok, q, pts, hints) {
   var fb = $("qFb");
+  var gain = Math.max(0, PER_RIGHT - 2 * (hints || 0));   // רמז ברמה ג׳ מוריד 2 גם מהנקודות שבמונה ובלוח המובילים, לא רק מציון הרמה
   S.answered++;
   var lvl = Math.min(S.answered, 10);
   fb.classList.remove("l3", "l7", "l10");
@@ -686,13 +689,13 @@ function feedback(ok, q, pts) {
     if (!S.retry) S.scores[QUIZ.levels[S.lv].key] += pts;
     if (lvl >= 4) soundStreak(S.streak); else if (lvl >= 2) tone([659, 784], 0.1);
     var k10 = lvl >= 10 ? draw("fbok10", FB_OK_10.map(function (_, i) { return i; })) : -1;   // אותה מחמאה בטקסט ובקול
-    speakFb(lvl, k10 >= 0 ? "audio/fb10_" + (k10 + 1) + ".mp3" : null);
+    speakFb(lvl, k10 >= 0 ? FB_AUDIO_10[k10] : null);
     fb.className = "fb on ok" + (lvl >= 10 ? " l10" : lvl >= 7 ? " l7" : lvl >= 3 ? " l3" : "");
     var love = true ? '<div class="love">' + nm(draw("ok", LOVE_OK)) + "</div>" : "";
-    fb.innerHTML = '<div class="t">' + (lvl >= 3 ? '<span class="star">⭐</span>' : "") + (k10 >= 0 ? nm(FB_OK_10[k10]) : nm(FB_OK[lvl])) + (S.retry ? "" : " +" + PER_RIGHT + " ⭐") + "</div>" +
+    fb.innerHTML = '<div class="t">' + (lvl >= 3 ? '<span class="star">⭐</span>' : "") + (k10 >= 0 ? nm(FB_OK_10[k10]) : nm(FB_OK[lvl])) + (S.retry ? "" : " +" + gain + " ⭐") + "</div>" +
       (lvl >= 8 ? love + "<div>" + escapeHtml(q.explain) + "</div>" + whyBox(q) : "<div>" + escapeHtml(q.explain) + "</div>" + whyBox(q) + love) +
       '<div class="src">📖 ' + srcLinks(q.src) + "</div>";
-    if (!S.retry) addPts(fb.querySelector(".t") || fb);
+    if (!S.retry && gain) addPts(gain);
   } else {
     S.streak = 0;
     if (lvl >= 2) soundBad();
@@ -847,7 +850,7 @@ function checkLetters() {
     var pts = Math.max(0, (C.tries === 1 ? L.points : Math.round(L.points / 2)) - 2 * C.hints);
     Array.prototype.forEach.call(C.slotEls, function (s) { s.classList.add("ok"); });
     $("cCheck").disabled = true; $("cHint").disabled = true; $("cClear").disabled = true;
-    feedback(true, q, pts);
+    feedback(true, q, pts, C.hints);
     return;
   }
   var sl = $("slots"); sl.classList.remove("shake"); void sl.offsetWidth; sl.classList.add("shake");
