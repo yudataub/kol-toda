@@ -138,6 +138,47 @@ body.inq .pic img.gen{max-height:max(200px, 42vh)}
   background:linear-gradient(140deg,var(--c1),var(--c2));box-shadow:0 3px 0 rgba(0,0,0,.18)}
 .tile:active{transform:translateY(2px)}
 .tile.used{visibility:hidden}
+/* רמה ג׳ – מגוון משחקים (שדה game בשאלה, 5.11.2026) */
+.g-box{background:#fff;border:3px solid var(--c3);border-radius:18px;padding:10px 12px;margin:8px 0;min-height:70px;position:relative}
+.g-box.drop{border-style:dashed;background:#faf8ff}
+.g-head{text-align:center;font-weight:800;color:var(--c3);margin-bottom:6px}
+.g-head .ic{font-size:1.5em;display:block;line-height:1.2}
+.g-count{font-weight:600;color:var(--soft);font-size:.85em}
+.g-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{font:inherit;font-weight:700;cursor:pointer;border:2px solid #e2dbf7;background:#fff;color:var(--ink);border-radius:40px;
+  padding:7px 16px;box-shadow:0 2px 0 rgba(0,0,0,.08);transition:transform .15s,background .2s}
+.chip:hover:not([disabled]){border-color:var(--c3);transform:translateY(-2px)}
+.chip.in{background:linear-gradient(140deg,var(--c1),var(--c2));color:#fff;border-color:transparent}
+.chip.sel{outline:3px solid #f0b400;outline-offset:2px}
+.chip.ok{background:var(--okbg);border-color:var(--ok);color:var(--ink)}
+.chip.bad{background:var(--badbg);border-color:var(--bad);color:var(--ink)}
+.chip[disabled]{cursor:default}
+.chip .n{display:inline-block;min-width:1.5em;margin-left:6px;border-radius:50%;background:rgba(255,255,255,.35);text-align:center}
+.g-bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.g-bins .g-box{cursor:pointer;margin:0}
+.g-bins .g-box.target{box-shadow:0 0 0 4px rgba(240,180,0,.45)}
+.g-match{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}
+.g-match .chip{border-radius:14px;width:100%;text-align:center}
+.g-verse{font-size:1.25em;line-height:2.4;text-align:center;background:var(--yellow);border-radius:14px;padding:10px}
+.g-blank{display:inline-block;min-width:80px;border:0;border-bottom:3px dashed var(--c3);background:#fff;border-radius:8px 8px 0 0;
+  font:inherit;font-weight:800;color:var(--c3);padding:0 8px;margin:0 3px;cursor:pointer;vertical-align:baseline}
+.g-blank.full{border-bottom-style:solid}
+.g-blank.ok{background:var(--okbg);color:var(--ink)}
+.g-blank.bad{background:var(--badbg);color:var(--ink)}
+.g-ref{background:var(--blue);border-right:5px solid var(--blueline);border-radius:12px;padding:8px 12px;margin:6px 0}
+.g-ref b{display:block;color:var(--blueline);font-size:.85em}
+.g-word{font:inherit;cursor:pointer;border:0;background:transparent;border-radius:8px;padding:0 3px;color:inherit}
+.g-word:hover:not([disabled]){background:#ffe9a8}
+.g-word.in{background:#f0b400;color:#fff}
+.g-word.ok{background:var(--okbg)}.g-word.bad{background:var(--badbg)}
+.g-tf{display:flex;align-items:center;gap:8px;border:2px solid #e2dbf7;border-radius:14px;padding:6px 10px;margin:6px 0;background:#fff}
+.g-tf .t{flex:1}
+.g-tf .chip{padding:5px 12px}
+.g-tf.ok{border-color:var(--ok);background:var(--okbg)}.g-tf.bad{border-color:var(--bad);background:var(--badbg)}
+.g-num{font-size:2.2em;font-weight:800;text-align:center;letter-spacing:2px;min-height:1.6em;color:var(--c3)}
+.g-pad{display:grid;grid-template-columns:repeat(3,64px);gap:8px;justify-content:center}
+.g-pad .tile{width:64px}
+.g-say{text-align:center;color:var(--soft);font-size:.9em;margin:2px 0 6px}
 .crow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px}
 /* סיום */
 .big{font-size:3.2em;font-weight:800;text-align:center;background:linear-gradient(120deg,var(--c1),var(--c3));-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.2}
@@ -958,7 +999,7 @@ function renderQuestion() {
   $("qNext").style.display = "none";
   S.busy = false;
   climbDraw();
-  if (L.key === "c") return renderLetters(q, L);
+  if (L.key === "c") return q.game && GAMES[q.game] ? GAMES[q.game](q, L) : renderLetters(q, L);   // game: מגוון משחקים (חומש דברים)
   var body = "";
   if (q.zones && q.img) {
     body += '<div class="pic"><img src="' + q.img + '" alt="">' + q.zones.map(function (z, i) {
@@ -1059,6 +1100,322 @@ function nextQuestion() {
   if (S.q < S.list.length) { renderQuestion(); window.scrollTo(0, 0); return; }
   levelEnd();
 }
+
+/* ---------- רמה ג׳: מגוון משחקים (5.11.2026) ----------
+   שאלה עם game: pick | order | sort | match | verse | diff | truefalse | odd | number. בלי game – משבצות אותיות (renderLetters).
+   שני ניסיונות: בראשון ציון מלא, בשני חצי. odd – ניסיון אחד. השדות המלאים: GAMES.md */
+var GAMES = {};
+function gEsc(t) { return escapeHtml(String(t == null ? "" : t)); }
+function gPlain(t) { return plain(String(t || "")).replace(/[^א-ת ]/g, "").replace(/\s+/g, " ").trim(); }
+function gStart(q, L, html, check) {
+  S.c = null;
+  var G = S.g = { tries: 0, done: false, q: q, L: L, check: check };
+  $("qBody").innerHTML = (q.say ? '<div class="g-say">' + gEsc(q.say) + "</div>" : "") + html +
+    '<div class="crow"><button class="btn" id="gCheck" disabled>✔️ בְּדֹק</button></div>';
+  $("gCheck").onclick = function () { if (!G.done) check(); };
+  return G;
+}
+function gReady(on) { var b = $("gCheck"); if (b) b.disabled = !on || S.g.done; }
+// ok: הצליח. markBad(): מסמן את השגויים ומחזיר אותם לניסיון נוסף. reveal(): מראה את התשובה הנכונה
+function gResult(ok, markBad, reveal) {
+  var G = S.g; G.tries++;
+  if (ok) {
+    G.done = true; $("gCheck").disabled = true;
+    feedback(true, G.q, G.tries === 1 ? G.L.points : Math.round(G.L.points / 2));
+    return;
+  }
+  if (G.tries < 2 && !G.single) {
+    soundBad();
+    var fb = $("qFb"); fb.className = "fb on bad";
+    fb.innerHTML = '<div class="t">' + nm("עוֹד לֹא, {n}... נַסֵּה שׁוּב! 🤔") + "</div><div>מָה שֶׁמְּסֻמָּן בְּאָדֹם – לֹא בַּמָּקוֹם. יֵשׁ לְךָ עוֹד נִסָּיוֹן אֶחָד.</div>";
+    gReady(false); markBad();
+    return;
+  }
+  G.done = true; $("gCheck").disabled = true; reveal(); feedback(false, G.q, 0);
+}
+function gLock() { Array.prototype.forEach.call($("qBody").querySelectorAll(".chip,.g-blank,.g-word,.g-box"), function (b) { if (b.tagName === "BUTTON") b.disabled = true; else b.onclick = null; }); }
+function gClearFb() { var fb = $("qFb"); fb.className = "fb"; fb.innerHTML = ""; }
+
+/* 🎯 pick – בוחרים את הנכונים לתוך חלון (חלון השופט: שלוש התכונות של הדיינים) */
+GAMES.pick = function (q, L) {
+  var need = q.correct.length, items = shuffleArray(q.items.map(function (t, i) { return { t: t, i: i }; }));
+  var tg = q.target || {};
+  var html = '<div class="g-box drop"><div class="g-head"><span class="ic">' + gEsc(tg.icon || "🎯") + "</span>" + gEsc(tg.label || "") +
+    ' <span class="g-count" id="gCnt">(0/' + need + ')</span></div><div class="g-chips" id="gIn"></div></div>' +
+    '<div class="g-chips" id="gPool">' + items.map(function (o) { return '<button class="chip" data-i="' + o.i + '">' + gEsc(o.t) + "</button>"; }).join("") + "</div>";
+  var G = gStart(q, L, html, function () {
+    var inn = $("gIn").querySelectorAll(".chip");
+    var bad = Array.prototype.filter.call(inn, function (c) { return q.correct.indexOf(+c.dataset.i) < 0; });
+    gResult(bad.length === 0, function () {
+      bad.forEach(function (c) { c.classList.add("bad"); });
+      setTimeout(function () { bad.forEach(function (c) { c.classList.remove("bad", "in"); $("gPool").appendChild(c); }); count(); gClearFb(); }, 1100);
+    }, function () {
+      Array.prototype.forEach.call($("qBody").querySelectorAll(".chip"), function (c) {
+        var good = q.correct.indexOf(+c.dataset.i) >= 0;
+        if (good) { c.classList.add("ok"); $("gIn").appendChild(c); } else if (c.parentNode.id === "gIn") c.classList.add("bad");
+      });
+      gLock();
+    });
+  });
+  function count() { var n = $("gIn").children.length; $("gCnt").textContent = "(" + n + "/" + need + ")"; gReady(n === need); }
+  Array.prototype.forEach.call($("qBody").querySelectorAll(".chip"), function (c) {
+    c.onclick = function () {
+      if (G.done) return;
+      if (c.parentNode.id === "gIn") { c.classList.remove("in"); $("gPool").appendChild(c); }
+      else if ($("gIn").children.length < need) { c.classList.add("in"); $("gIn").appendChild(c); tone([700], 0.05); }
+      count();
+    };
+  });
+};
+
+/* 🔢 order – מסדרים לפי הסדר (מאורעות, מסעות, חלקי פסוק). words: true – שורה אחת של מילים */
+GAMES.order = function (q, L) {
+  var items = shuffleArray(q.items.map(function (t, i) { return { t: t, i: i }; }));
+  var tg = q.target || {};
+  var html = '<div class="g-box drop"><div class="g-head"><span class="ic">' + gEsc(tg.icon || "🔢") + "</span>" + gEsc(tg.label || "לְפִי הַסֵּדֶר") +
+    '</div><div class="g-chips" id="gIn" style="' + (q.words ? "" : "flex-direction:column;align-items:stretch") + '"></div></div>' +
+    '<div class="g-chips" id="gPool">' + items.map(function (o) { return '<button class="chip" data-i="' + o.i + '">' + gEsc(o.t) + "</button>"; }).join("") + "</div>";
+  var G = gStart(q, L, html, function () {
+    var inn = Array.prototype.slice.call($("gIn").children), bad = inn.filter(function (c, k) { return +c.dataset.i !== k; });
+    gResult(bad.length === 0, function () {
+      bad.forEach(function (c) { c.classList.add("bad"); });
+      setTimeout(function () { bad.forEach(function (c) { c.classList.remove("bad", "in"); $("gPool").appendChild(c); }); renum(); gClearFb(); }, 1100);
+    }, function () {
+      var all = Array.prototype.slice.call($("qBody").querySelectorAll(".chip")).sort(function (a, b) { return a.dataset.i - b.dataset.i; });
+      all.forEach(function (c) { c.classList.remove("bad"); c.classList.add("ok", "in"); $("gIn").appendChild(c); }); renum(); gLock();
+    });
+  });
+  function renum() {
+    Array.prototype.forEach.call($("gIn").children, function (c, k) { c.innerHTML = '<span class="n">' + (k + 1) + "</span>" + gEsc(q.items[c.dataset.i]); });
+    Array.prototype.forEach.call($("gPool").children, function (c) { c.textContent = q.items[c.dataset.i]; });
+    gReady($("gPool").children.length === 0);
+  }
+  Array.prototype.forEach.call($("qBody").querySelectorAll(".chip"), function (c) {
+    c.onclick = function () {
+      if (G.done) return;
+      if (c.parentNode.id === "gIn") { if (c.classList.contains("ok")) return; c.classList.remove("in"); $("gPool").appendChild(c); }
+      else { c.classList.add("in"); $("gIn").appendChild(c); tone([700], 0.05); }
+      renum();
+    };
+  });
+};
+
+/* 🧺 sort – ממיינים לסלים (אדום/מואב/עמון, עשה/לא תעשה, לוח ראשון/שני). בוחרים פריט ואז סל */
+GAMES.sort = function (q, L) {
+  var items = shuffleArray(q.items.map(function (o, i) { return { t: o.t, bin: o.bin, i: i }; })), sel = null;
+  var html = '<div class="g-bins">' + q.bins.map(function (b, k) {
+      return '<div class="g-box drop" data-b="' + k + '"><div class="g-head"><span class="ic">' + gEsc(b.icon || "🧺") + "</span>" + gEsc(b.label) + '</div><div class="g-chips"></div></div>';
+    }).join("") + '</div><div class="g-say">👆 בּוֹחֲרִים פְּרִיט, וְאָז לוֹחֲצִים עַל הַסַּל</div>' +
+    '<div class="g-chips" id="gPool">' + items.map(function (o) { return '<button class="chip" data-i="' + o.i + '">' + gEsc(o.t) + "</button>"; }).join("") + "</div>";
+  var G = gStart(q, L, html, function () {
+    var bad = [];
+    Array.prototype.forEach.call($("qBody").querySelectorAll(".g-bins .chip"), function (c) {
+      if (+c.closest(".g-box").dataset.b !== q.items[c.dataset.i].bin) bad.push(c);
+    });
+    gResult(bad.length === 0, function () {
+      bad.forEach(function (c) { c.classList.add("bad"); });
+      setTimeout(function () { bad.forEach(function (c) { c.classList.remove("bad", "in"); $("gPool").appendChild(c); }); ready(); gClearFb(); }, 1100);
+    }, function () {
+      Array.prototype.forEach.call($("qBody").querySelectorAll(".chip"), function (c) {
+        var box = $("qBody").querySelector('.g-box[data-b="' + q.items[c.dataset.i].bin + '"] .g-chips');
+        var wrong = c.parentNode !== box; box.appendChild(c); c.classList.add(wrong ? "bad" : "ok");
+      });
+      gLock();
+    });
+  });
+  function ready() { gReady($("gPool").children.length === 0); }
+  function mark() { Array.prototype.forEach.call($("qBody").querySelectorAll(".g-bins .g-box"), function (b) { b.classList.toggle("target", !!sel); }); }
+  Array.prototype.forEach.call($("qBody").querySelectorAll(".chip"), function (c) {
+    c.onclick = function (e) {
+      e.stopPropagation(); if (G.done) return;
+      if (c.parentNode.id !== "gPool") { c.classList.remove("in"); $("gPool").appendChild(c); sel = null; ready(); mark(); return; }
+      if (sel) sel.classList.remove("sel");
+      sel = sel === c ? null : c; if (sel) sel.classList.add("sel"); mark();
+    };
+  });
+  Array.prototype.forEach.call($("qBody").querySelectorAll(".g-bins .g-box"), function (b) {
+    b.onclick = function () {
+      if (G.done || !sel) return;
+      sel.classList.remove("sel"); sel.classList.add("in"); b.querySelector(".g-chips").appendChild(sel); sel = null;
+      tone([700], 0.05); ready(); mark();
+    };
+  });
+};
+
+/* 🔗 match – מחברים זוגות (מילה ↔ פירוש רש״י, מקום ↔ חטא, מצווה ↔ טעם) */
+GAMES.match = function (q, L) {
+  var right = q.pairs.map(function (p, i) { return { t: p[0], i: i }; }), left = shuffleArray(q.pairs.map(function (p, i) { return { t: p[1], i: i }; }));
+  var COL = ["#ffd6e0", "#d6ecff", "#dcf7d0", "#fff0c2", "#ead9ff", "#ffe1c7", "#c9f2ee", "#f3d1f0"];
+  var pairOf = {}, selR = null;   // pairOf[ימין] = שמאל
+  var html = '<div class="g-match">' + right.map(function (r, k) {
+    return '<button class="chip" data-side="r" data-i="' + r.i + '">' + gEsc(r.t) + '</button><button class="chip" data-side="l" data-i="' + left[k].i + '">' + gEsc(left[k].t) + "</button>";
+  }).join("") + '</div><div class="g-say">👆 לוֹחֲצִים עַל מִשְׁבֶּצֶת מִימִין, וְאָז עַל הַזּוּג שֶׁלָּהּ מִשְּׂמֹאל</div>';
+  var G = gStart(q, L, html, function () {
+    var bad = Object.keys(pairOf).filter(function (r) { return +r !== pairOf[r]; });
+    gResult(bad.length === 0, function () {
+      bad.forEach(function (r) { el("r", r).classList.add("bad"); el("l", pairOf[r]).classList.add("bad"); });
+      setTimeout(function () { bad.forEach(function (r) { unpair(r); }); draw(); gClearFb(); }, 1100);
+    }, function () {
+      Object.keys(pairOf).forEach(function (r) { if (+r !== pairOf[r]) { el("r", r).classList.add("bad"); } });
+      q.pairs.forEach(function (_, i) { pairOf[i] = i; }); draw();
+      Array.prototype.forEach.call($("qBody").querySelectorAll(".chip"), function (c) { if (!c.classList.contains("bad")) c.classList.add("ok"); });
+      gLock();
+    });
+  });
+  function el(side, i) { return $("qBody").querySelector('.chip[data-side="' + side + '"][data-i="' + i + '"]'); }
+  function unpair(r) { var l = pairOf[r]; delete pairOf[r]; [el("r", r), el("l", l)].forEach(function (c) { c.classList.remove("bad"); }); }
+  function draw() {
+    Array.prototype.forEach.call($("qBody").querySelectorAll(".chip"), function (c) { c.style.background = ""; c.classList.remove("sel"); });
+    Object.keys(pairOf).forEach(function (r, k) { var col = COL[+r % COL.length]; el("r", r).style.background = col; el("l", pairOf[r]).style.background = col; });
+    if (selR != null) el("r", selR).classList.add("sel");
+    gReady(Object.keys(pairOf).length === q.pairs.length);
+  }
+  Array.prototype.forEach.call($("qBody").querySelectorAll(".chip"), function (c) {
+    c.onclick = function () {
+      if (G.done) return;
+      var i = +c.dataset.i;
+      if (c.dataset.side === "r") { if (pairOf[i] != null) unpair(i); selR = selR === i ? null : i; }
+      else {
+        Object.keys(pairOf).forEach(function (r) { if (pairOf[r] === i) unpair(r); });
+        if (selR != null) { pairOf[selR] = i; selR = null; tone([700], 0.05); }
+      }
+      draw();
+    };
+  });
+};
+
+/* 📜 verse – משלימים פסוק: text עם [מילה] במקום החסר, extra = מילים מסיחות */
+GAMES.verse = function (q, L) {
+  var parts = String(q.text).split(/(\[[^\]]+\])/), blanks = [];
+  var html = '<div class="g-verse">' + parts.map(function (p) {
+    if (/^\[.*\]$/.test(p)) { blanks.push(p.slice(1, -1)); return '<button class="g-blank" data-b="' + (blanks.length - 1) + '">&nbsp;</button>'; }
+    return gEsc(p);
+  }).join("") + "</div>";
+  var bank = shuffleArray(blanks.map(function (w, i) { return { t: w, i: i }; }).concat((q.extra || []).map(function (w) { return { t: w, i: -1 }; })));
+  html += '<div class="g-chips" id="gPool" style="margin-top:10px">' + bank.map(function (o, k) { return '<button class="chip" data-k="' + k + '">' + gEsc(o.t) + "</button>"; }).join("") + "</div>";
+  var fill = blanks.map(function () { return null; });   // לכל חסר: מספר המילה מהמחסן
+  var G = gStart(q, L, html, function () {
+    var bad = fill.map(function (k, b) { return gPlain(bank[k].t) === gPlain(blanks[b]) ? -1 : b; }).filter(function (b) { return b >= 0; });
+    gResult(bad.length === 0, function () {
+      bad.forEach(function (b) { blankEl(b).classList.add("bad"); });
+      setTimeout(function () { bad.forEach(function (b) { blankEl(b).classList.remove("bad"); take(b); }); gClearFb(); }, 1100);
+    }, function () {
+      blanks.forEach(function (w, b) { var e = blankEl(b), was = fill[b] != null && gPlain(bank[fill[b]].t) === gPlain(w); e.textContent = w; e.classList.add(was ? "ok" : "bad"); });
+      gLock();
+    });
+  });
+  function blankEl(b) { return $("qBody").querySelector('.g-blank[data-b="' + b + '"]'); }
+  function chip(k) { return $("qBody").querySelector('.chip[data-k="' + k + '"]'); }
+  function take(b) { if (fill[b] == null) return; chip(fill[b]).style.visibility = ""; fill[b] = null; var e = blankEl(b); e.innerHTML = "&nbsp;"; e.classList.remove("full"); gReady(false); }
+  Array.prototype.forEach.call($("qBody").querySelectorAll(".chip"), function (c) {
+    c.onclick = function () {
+      if (G.done) return;
+      var b = fill.indexOf(null); if (b < 0) return;
+      fill[b] = +c.dataset.k; c.style.visibility = "hidden";
+      var e = blankEl(b); e.textContent = bank[fill[b]].t; e.classList.add("full"); tone([700], 0.05);
+      gReady(fill.indexOf(null) < 0);
+    };
+  });
+  Array.prototype.forEach.call($("qBody").querySelectorAll(".g-blank"), function (e) { e.onclick = function () { if (!G.done) take(+e.dataset.b); }; });
+};
+
+/* 🔍 diff – מוצאים את ההבדל: a = פסוק להשוואה, b = הפסוק שבו לוחצים על המילים ששונות/נוספו (answer: רשימת מילים מ-b) */
+GAMES.diff = function (q, L) {
+  var words = String(q.b.text).split(/\s+/), want = q.answer.map(gPlain), need = want.length;
+  var html = '<div class="g-ref"><b>' + gEsc(q.a.label) + "</b>" + gEsc(q.a.text) + "</div>" +
+    '<div class="g-ref" style="background:var(--yellow);border-color:var(--c3)"><b style="color:var(--c3)">' + gEsc(q.b.label) + "</b>" +
+    words.map(function (w, i) { return '<button class="g-word" data-i="' + i + '">' + gEsc(w) + "</button>"; }).join(" ") + "</div>" +
+    '<div class="g-say">👆 לוֹחֲצִים עַל ' + (need === 1 ? "הַמִּלָּה" : need + " הַמִּלִּים") + ' שֶׁיֵּשׁ רַק בַּפָּסוּק הַצָּהֹב <span id="gCnt">(0/' + need + ")</span></div>";
+  function isWant(i) { return want.indexOf(gPlain(words[i])) >= 0; }
+  var G = gStart(q, L, html, function () {
+    var on = Array.prototype.filter.call($("qBody").querySelectorAll(".g-word.in"), function () { return true; });
+    var bad = on.filter(function (w) { return !isWant(+w.dataset.i); });
+    gResult(bad.length === 0, function () {
+      bad.forEach(function (w) { w.classList.add("bad"); });
+      setTimeout(function () { bad.forEach(function (w) { w.classList.remove("bad", "in"); }); count(); gClearFb(); }, 1100);
+    }, function () {
+      Array.prototype.forEach.call($("qBody").querySelectorAll(".g-word"), function (w) {
+        if (isWant(+w.dataset.i)) { w.classList.remove("in"); w.classList.add("ok"); } else if (w.classList.contains("in")) w.classList.add("bad");
+      });
+      gLock();
+    });
+  });
+  function count() { var n = $("qBody").querySelectorAll(".g-word.in").length; $("gCnt").textContent = "(" + n + "/" + need + ")"; gReady(n === need); }
+  Array.prototype.forEach.call($("qBody").querySelectorAll(".g-word"), function (w) {
+    w.onclick = function () {
+      if (G.done) return;
+      if (!w.classList.contains("in") && $("qBody").querySelectorAll(".g-word.in").length >= need) return;
+      w.classList.toggle("in"); tone([700], 0.05); count();
+    };
+  });
+};
+
+/* ⚖️ truefalse – אמת או לא: items = [{t, ok}], labels = [כן, לא] (למשל ["אֱמֶת", "דִּבָּה"]) */
+GAMES.truefalse = function (q, L) {
+  var lab = q.labels || ["✔️ נָכוֹן", "✘ לֹא נָכוֹן"], ans = q.items.map(function () { return null; });
+  var html = q.items.map(function (o, i) {
+    return '<div class="g-tf" data-i="' + i + '"><span class="t">' + gEsc(o.t) + '</span><button class="chip" data-v="1">' + gEsc(lab[0]) +
+      '</button><button class="chip" data-v="0">' + gEsc(lab[1]) + "</button></div>";
+  }).join("");
+  var G = gStart(q, L, html, function () {
+    var bad = q.items.map(function (o, i) { return ans[i] === !!o.ok ? -1 : i; }).filter(function (i) { return i >= 0; });
+    gResult(bad.length === 0, function () {
+      bad.forEach(function (i) { row(i).classList.add("bad"); });
+      setTimeout(function () { bad.forEach(function (i) { row(i).classList.remove("bad"); ans[i] = null; draw(); }); gClearFb(); }, 1100);
+    }, function () {
+      q.items.forEach(function (o, i) { row(i).classList.add(ans[i] === !!o.ok ? "ok" : "bad"); ans[i] = !!o.ok; }); draw(); gLock();
+    });
+  });
+  function row(i) { return $("qBody").querySelector('.g-tf[data-i="' + i + '"]'); }
+  function draw() {
+    q.items.forEach(function (_, i) { Array.prototype.forEach.call(row(i).querySelectorAll(".chip"), function (c) { c.classList.toggle("in", ans[i] === (c.dataset.v === "1")); }); });
+    gReady(ans.indexOf(null) < 0);
+  }
+  Array.prototype.forEach.call($("qBody").querySelectorAll(".g-tf .chip"), function (c) {
+    c.onclick = function () { if (G.done) return; ans[+c.closest(".g-tf").dataset.i] = c.dataset.v === "1"; tone([700], 0.05); draw(); };
+  });
+};
+
+/* 🕵️ odd – יוצא דופן: items, correct = מספר הפריט שלא שייך. ניסיון אחד */
+GAMES.odd = function (q, L) {
+  var items = shuffleArray(q.items.map(function (t, i) { return { t: t, i: i }; }));
+  var html = '<div class="g-chips">' + items.map(function (o) { return '<button class="chip" style="font-size:1.1em;padding:12px 20px" data-i="' + o.i + '">' + gEsc(o.t) + "</button>"; }).join("") + "</div>";
+  var G = gStart(q, L, html, function () {});
+  G.single = true; $("gCheck").style.display = "none";
+  Array.prototype.forEach.call($("qBody").querySelectorAll(".chip"), function (c) {
+    c.onclick = function () {
+      if (G.done) return;
+      var ok = +c.dataset.i === q.correct;
+      c.classList.add(ok ? "ok" : "bad");
+      gResult(ok, function () {}, function () { $("qBody").querySelector('.chip[data-i="' + q.correct + '"]').classList.add("ok"); gLock(); });
+      gLock();
+    };
+  });
+};
+
+/* 🔢 number – מספר (40 יום, 11 יום מחורב, 7 מינים): answer, unit. בניסיון השני רמז: יותר / פחות */
+GAMES.number = function (q, L) {
+  var val = "";
+  var html = '<div class="g-box"><div class="g-num" id="gNum">?</div><div class="g-say">' + gEsc(q.unit || "") + "</div></div>" +
+    '<div class="g-pad">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, "⌫", 0, ""].map(function (d) {
+      return d === "" ? "<span></span>" : '<button class="tile" data-d="' + d + '">' + d + "</button>";
+    }).join("") + "</div>";
+  var G = gStart(q, L, html, function () {
+    var n = +val;
+    gResult(n === +q.answer, function () {
+      $("gNum").textContent = val + (n < q.answer ? " ⬆️" : " ⬇️");
+      $("qFb").querySelector("div:last-child").textContent = n < q.answer ? "הַמִּסְפָּר הַנָּכוֹן גָּדוֹל יוֹתֵר. יֵשׁ לְךָ עוֹד נִסָּיוֹן אֶחָד." : "הַמִּסְפָּר הַנָּכוֹן קָטָן יוֹתֵר. יֵשׁ לְךָ עוֹד נִסָּיוֹן אֶחָד.";
+      val = ""; setTimeout(function () { if (!G.done) $("gNum").textContent = "?"; }, 1600);
+    }, function () { $("gNum").textContent = q.answer; $("gNum").style.color = "var(--ok)"; gLock(); });
+  });
+  Array.prototype.forEach.call($("qBody").querySelectorAll(".g-pad .tile"), function (t) {
+    t.onclick = function () {
+      if (G.done) return;
+      if (t.dataset.d === "⌫") val = val.slice(0, -1); else if (val.length < 4) val += t.dataset.d;
+      $("gNum").textContent = val || "?"; tone([700], 0.05); gReady(val !== "");
+    };
+  });
+};
 
 /* ---------- רמה ג: משבצות ומחסן אותיות ---------- */
 var FINALS = { "ך": "כ", "ם": "מ", "ן": "נ", "ף": "פ", "ץ": "צ" };
@@ -1246,7 +1603,9 @@ function torahWin(then) {
   climbDraw(true);
   $("twName").textContent = S.real ? "כָּל הַכָּבוֹד, " + S.name + "! 🌟" : "כָּל הַכָּבוֹד! 🌟";
   $("torahWin").classList.add("on");
-  $("twGo").onclick = function () { $("torahWin").classList.remove("on"); then(); };
+  var tw = null;   // הַקְרָאָה בְּקוֹל (https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/torah.mp3 – tts_feedback.py, Gemini): "וַיֵּרֶד הַשֵּׁם עַל הַר סִינַי…"
+  try { if (fbAudio) fbAudio.pause(); tw = new Audio("https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/torah.mp3"); setTimeout(function () { tw.play().catch(function () {}); }, 500); } catch (e) {}
+  $("twGo").onclick = function () { try { if (tw) tw.pause(); } catch (e) {} $("torahWin").classList.remove("on"); then(); };
 }
 /* ---------- סיום ---------- */
 function finish() {
