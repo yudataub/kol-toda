@@ -60,7 +60,7 @@ body{margin:0;font-family:Rubik,Arial,sans-serif;background:var(--bg);color:var(
 </header>
 <!-- מסך רישום משותף (build.py מכניס אותו במקום __REG__ בדף הבית, בחידונים ובדף "שלי") – מ-5.11.2026.
      שומר ב-localStorage "hq-me" = {name, cls, school, grade}. אותם שם+כיתה+בית ספר בכל מחשב = אותו תלמיד בשרת.
-     "דילוג" נשמר ב-"hq-skip". הכפתור בפינה הימנית (.me-btn, או #regChip שנוצר כאן) מציג את השם ופותח את המסך. -->
+     מ-6.11 (המשתמש): אי אפשר לדלג – השם חובה (גם מי שנכנס מקישור ישיר לחידון). כיתה ובית ספר רצויים, לא חובה. הכפתור בפינה הימנית (.me-btn, או #regChip שנוצר כאן) מציג את השם ופותח את המסך. -->
 <style>
 #regScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#fff3e6,#f1ebff);display:none;align-items:center;justify-content:center;padding:16px;overflow:auto}
 #regScreen.on{display:flex}
@@ -129,8 +129,9 @@ body.inq header.top.hasreg{padding-top:34px}
     </div>
     <div class="rmsg" id="regMsg"></div>
     <button class="rgo" id="regGo">✅ נִרְשָׁמִים וּמַתְחִילִים</button>
-    <button class="rskip" id="regSkip">לְדַלֵּג – לְשַׂחֵק בְּלִי שֵׁם</button>
+    <button class="rskip" id="regSkip" style="display:none">סְגִירָה</button>
     <button class="rskip" id="regOther" style="display:none">🔄 תַּלְמִיד אַחֵר – לְהִתְחִיל מֵחָדָשׁ</button>
+    <p class="rnote">✍️ הַשֵּׁם – חוֹבָה. כִּתָּה וּבֵית סֵפֶר – מְאוֹד כְּדַאי: רַק כָּךְ נִכְנָסִים לְלוּחַ הַמְּצֻיָּנִים.</p>
     <p class="rnote">💡 בְּכָל מַחְשֵׁב בָּעוֹלָם: כּוֹתְבִים אוֹתוֹ שֵׁם, אוֹתוֹ בֵּית סֵפֶר וְאוֹתָהּ כִּתָּה – וּמַמְשִׁיכִים מֵהַמָּקוֹם שֶׁעֲצַרְתֶּם, עִם כָּל הַנְּקֻדּוֹת.</p>
   </div>
 </div>
@@ -142,6 +143,7 @@ body.inq header.top.hasreg{padding-top:34px}
   function put(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
   function me() { try { return JSON.parse(get("hq-me") || "null") || {}; } catch (e) { return {}; } }
   function registered(m) { return !!(m && m.name && m.cls && m.school); }
+  function hasName(m) { return !!(m && m.name); }
   function gradeOf(cls) {   // "ד׳ 2" -> d (תלמידים שנרשמו לפני המסך הזה)
     var h = String(cls || "").replace(/[^א-ת]/g, "").charAt(0);
     for (var k in GR) if (GR[k] === h) return k;
@@ -152,7 +154,7 @@ body.inq header.top.hasreg{padding-top:34px}
     g("regName").value = m.name || ""; g("regSchool").value = m.school || "";
     g("regGrade").value = m.grade || gradeOf(m.cls); g("regNum").value = (String(m.cls || "").match(/\d+/) || [""])[0];
     g("regOther").style.display = registered(m) ? "" : "none";
-    g("regSkip").textContent = registered(m) ? "סְגִירָה" : "לְדַלֵּג – לְשַׂחֵק בְּלִי שֵׁם";
+    g("regSkip").style.display = hasName(m) ? "" : "none";   // בְּלִי שֵׁם – אֵין סְגִירָה
     g("regMsg").textContent = "";
     g("regScreen").classList.add("on");
     setTimeout(function () { (registered(m) ? g("regGo") : g("regName")).focus(); }, 50);
@@ -161,28 +163,26 @@ body.inq header.top.hasreg{padding-top:34px}
   function save() {
     var n = g("regName").value.trim(), s = g("regSchool").value.trim(), gr = g("regGrade").value, num = g("regNum").value.replace(/\D/g, "");
     if (!n) { g("regMsg").textContent = "✍️ כִּתְבוּ אֶת הַשֵּׁם"; g("regName").focus(); return; }
-    if (!s) { g("regMsg").textContent = "✍️ כִּתְבוּ אֶת שֵׁם בֵּית הַסֵּפֶר"; g("regSchool").focus(); return; }
-    if (!gr) { g("regMsg").textContent = "✍️ בַּחֲרוּ כִּתָּה"; g("regGrade").focus(); return; }
-    var old = me(), cls = GR[gr] + "׳" + (num ? " " + num : "");
+    var old = me(), cls = gr ? GR[gr] + "׳" + (num ? " " + num : "") : "";
     put("hq-me", JSON.stringify({ name: n, cls: cls, school: s, grade: gr }));
     put("hq-skip", null);
     if (old.name !== n || old.cls !== cls || old.school !== s) location.reload(); else close();
   }
   function chip() {
-    var m = me(), b = document.querySelector(".me-btn"), label = registered(m) ? "👤 " + m.name : "👤 הַרְשָׁמָה";
+    var m = me(), b = document.querySelector(".me-btn"), label = hasName(m) ? "👤 " + m.name : "👤 הַרְשָׁמָה";
     if (!b) {   // דפים בלי כפתור "שלי" (דף הבית): כפתור משלנו בפינה הימנית
       var top = document.querySelector("header.top"); if (!top) return;
       b = document.createElement("a"); b.id = "regChip"; b.href = "profile.html"; top.appendChild(b);
     }
-    if (registered(m)) { b.textContent = label; b.title = "הַכִּתָּה: " + m.cls + " · " + m.school + " (לְהַחְלָפָה – ✏️)"; b.classList.add("named"); }
-    if (!registered(m)) { b.textContent = label; b.onclick = function (e) { e.preventDefault(); open(); }; return; }
+    if (hasName(m)) { b.textContent = label; b.title = (m.cls ? "הַכִּתָּה: " + m.cls + " · " + m.school : "הוֹסִיפוּ כִּתָּה וּבֵית סֵפֶר") + " (לְהַחְלָפָה – ✏️)"; b.classList.add("named"); }
+    if (!hasName(m)) { b.textContent = label; b.onclick = function (e) { e.preventDefault(); open(); }; return; }
     var pen = document.createElement("button"); pen.type = "button"; pen.textContent = "✏️"; pen.title = "לְהַחְלִיף שֵׁם / כִּתָּה";
     pen.style.cssText = "background:none;border:0;cursor:pointer;font-size:1em;margin-inline-start:4px;padding:0";
     pen.onclick = function (e) { e.preventDefault(); e.stopPropagation(); open(); };
     b.appendChild(pen);
   }
   g("regGo").onclick = save;
-  g("regSkip").onclick = function () { if (!registered(me())) put("hq-skip", "1"); close(); };
+  g("regSkip").onclick = function () { if (hasName(me())) close(); };
   g("regOther").onclick = function () {
     put("hq-me", null); put("hq-skip", null);
     g("regName").value = g("regSchool").value = g("regNum").value = ""; g("regGrade").value = "";
@@ -213,9 +213,9 @@ body.inq header.top.hasreg{padding-top:34px}
     g("lbClose").onclick = function () { g("lbScreen").classList.remove("on"); };
     g("lbScreen").addEventListener("click", function (e) { if (e.target.id === "lbScreen") g("lbScreen").classList.remove("on"); });
   })();
-  window.HQREG = { openLb: openLb, open: open, me: me, registered: registered, gradeOf: gradeOf };
+  window.HQREG = { openLb: openLb, open: open, me: me, registered: registered, hasName: hasName, gradeOf: gradeOf };
   chip();
-  if (!registered(me()) && !get("hq-skip")) open();
+  if (!hasName(me())) open();   // אֵין שֵׁם – הַמָּסָךְ נִפְתָּח תָּמִיד (גַּם בְּקִשּׁוּר יָשִׁיר לְחִידוֹן)
 })();
 </script>
 

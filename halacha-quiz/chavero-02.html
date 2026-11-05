@@ -270,6 +270,23 @@ body.inq #climb{height:min(calc(100vh - 90px),660px)}
 #torahWin h2{margin:6px 0;font-size:1.7em;color:#5a3fd6}
 #torahWin p{margin:6px 0;color:#2b2340;font-size:1.08em}
 .term{color:#c2185b;font-weight:800;background:linear-gradient(transparent 55%,#ffe08a 55%);border-radius:3px;padding:0 2px}
+
+/* תְּמוּנָה + תְּשׁוּבוֹת בְּחַלּוֹן אֶחָד (מ-6.11) */
+body.inq .split .pic img.gen{cursor:zoom-in}
+@media (min-width:860px){
+  body.inq .split{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:center}
+  body.inq .split .pic{margin:0;width:auto}
+  body.inq .split .pic img.gen{width:100%;max-height:calc(100vh - 220px);object-fit:contain}
+  body.inq .split .opts{gap:8px}
+  body.inq .split .opt{padding:9px 14px;line-height:1.5}
+}
+@media (max-width:859px){
+  body.inq .split .opts{grid-template-columns:1fr 1fr;gap:8px}
+  body.inq .split .opt{padding:9px 10px;font-size:.93em;line-height:1.45}
+}
+.zoom{position:fixed;inset:0;z-index:9500;background:rgba(20,12,40,.88);display:flex;align-items:center;justify-content:center;padding:12px;cursor:zoom-out}
+.zoom img{max-width:100%;max-height:100%;border-radius:14px}
+.zoom span{position:absolute;top:12px;left:16px;color:#fff;font-size:1.6em;font-weight:800}
 </style>
 <meta property="og:title" content="אֱמֶת וְיֹשֶׁר – חִידוֹן הֲלָכָה">
 <meta property="og:description" content="חִידוֹן הֲלָכָה בְּשָׁלוֹשׁ רָמוֹת: אֲמִירַת אֱמֶת, עֲמִידָה בַּדִּבּוּר, שִׁנּוּי מִפְּנֵי הַשָּׁלוֹם וְאִסּוּר גְּנֵבַת דַּעַת">
@@ -293,7 +310,7 @@ body.inq #climb{height:min(calc(100vh - 90px),660px)}
 </header>
 <!-- מסך רישום משותף (build.py מכניס אותו במקום __REG__ בדף הבית, בחידונים ובדף "שלי") – מ-5.11.2026.
      שומר ב-localStorage "hq-me" = {name, cls, school, grade}. אותם שם+כיתה+בית ספר בכל מחשב = אותו תלמיד בשרת.
-     "דילוג" נשמר ב-"hq-skip". הכפתור בפינה הימנית (.me-btn, או #regChip שנוצר כאן) מציג את השם ופותח את המסך. -->
+     מ-6.11 (המשתמש): אי אפשר לדלג – השם חובה (גם מי שנכנס מקישור ישיר לחידון). כיתה ובית ספר רצויים, לא חובה. הכפתור בפינה הימנית (.me-btn, או #regChip שנוצר כאן) מציג את השם ופותח את המסך. -->
 <style>
 #regScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#fff3e6,#f1ebff);display:none;align-items:center;justify-content:center;padding:16px;overflow:auto}
 #regScreen.on{display:flex}
@@ -362,8 +379,9 @@ body.inq header.top.hasreg{padding-top:34px}
     </div>
     <div class="rmsg" id="regMsg"></div>
     <button class="rgo" id="regGo">✅ נִרְשָׁמִים וּמַתְחִילִים</button>
-    <button class="rskip" id="regSkip">לְדַלֵּג – לְשַׂחֵק בְּלִי שֵׁם</button>
+    <button class="rskip" id="regSkip" style="display:none">סְגִירָה</button>
     <button class="rskip" id="regOther" style="display:none">🔄 תַּלְמִיד אַחֵר – לְהִתְחִיל מֵחָדָשׁ</button>
+    <p class="rnote">✍️ הַשֵּׁם – חוֹבָה. כִּתָּה וּבֵית סֵפֶר – מְאוֹד כְּדַאי: רַק כָּךְ נִכְנָסִים לְלוּחַ הַמְּצֻיָּנִים.</p>
     <p class="rnote">💡 בְּכָל מַחְשֵׁב בָּעוֹלָם: כּוֹתְבִים אוֹתוֹ שֵׁם, אוֹתוֹ בֵּית סֵפֶר וְאוֹתָהּ כִּתָּה – וּמַמְשִׁיכִים מֵהַמָּקוֹם שֶׁעֲצַרְתֶּם, עִם כָּל הַנְּקֻדּוֹת.</p>
   </div>
 </div>
@@ -375,6 +393,7 @@ body.inq header.top.hasreg{padding-top:34px}
   function put(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
   function me() { try { return JSON.parse(get("hq-me") || "null") || {}; } catch (e) { return {}; } }
   function registered(m) { return !!(m && m.name && m.cls && m.school); }
+  function hasName(m) { return !!(m && m.name); }
   function gradeOf(cls) {   // "ד׳ 2" -> d (תלמידים שנרשמו לפני המסך הזה)
     var h = String(cls || "").replace(/[^א-ת]/g, "").charAt(0);
     for (var k in GR) if (GR[k] === h) return k;
@@ -385,7 +404,7 @@ body.inq header.top.hasreg{padding-top:34px}
     g("regName").value = m.name || ""; g("regSchool").value = m.school || "";
     g("regGrade").value = m.grade || gradeOf(m.cls); g("regNum").value = (String(m.cls || "").match(/\d+/) || [""])[0];
     g("regOther").style.display = registered(m) ? "" : "none";
-    g("regSkip").textContent = registered(m) ? "סְגִירָה" : "לְדַלֵּג – לְשַׂחֵק בְּלִי שֵׁם";
+    g("regSkip").style.display = hasName(m) ? "" : "none";   // בְּלִי שֵׁם – אֵין סְגִירָה
     g("regMsg").textContent = "";
     g("regScreen").classList.add("on");
     setTimeout(function () { (registered(m) ? g("regGo") : g("regName")).focus(); }, 50);
@@ -394,28 +413,26 @@ body.inq header.top.hasreg{padding-top:34px}
   function save() {
     var n = g("regName").value.trim(), s = g("regSchool").value.trim(), gr = g("regGrade").value, num = g("regNum").value.replace(/\D/g, "");
     if (!n) { g("regMsg").textContent = "✍️ כִּתְבוּ אֶת הַשֵּׁם"; g("regName").focus(); return; }
-    if (!s) { g("regMsg").textContent = "✍️ כִּתְבוּ אֶת שֵׁם בֵּית הַסֵּפֶר"; g("regSchool").focus(); return; }
-    if (!gr) { g("regMsg").textContent = "✍️ בַּחֲרוּ כִּתָּה"; g("regGrade").focus(); return; }
-    var old = me(), cls = GR[gr] + "׳" + (num ? " " + num : "");
+    var old = me(), cls = gr ? GR[gr] + "׳" + (num ? " " + num : "") : "";
     put("hq-me", JSON.stringify({ name: n, cls: cls, school: s, grade: gr }));
     put("hq-skip", null);
     if (old.name !== n || old.cls !== cls || old.school !== s) location.reload(); else close();
   }
   function chip() {
-    var m = me(), b = document.querySelector(".me-btn"), label = registered(m) ? "👤 " + m.name : "👤 הַרְשָׁמָה";
+    var m = me(), b = document.querySelector(".me-btn"), label = hasName(m) ? "👤 " + m.name : "👤 הַרְשָׁמָה";
     if (!b) {   // דפים בלי כפתור "שלי" (דף הבית): כפתור משלנו בפינה הימנית
       var top = document.querySelector("header.top"); if (!top) return;
       b = document.createElement("a"); b.id = "regChip"; b.href = "profile.html"; top.appendChild(b);
     }
-    if (registered(m)) { b.textContent = label; b.title = "הַכִּתָּה: " + m.cls + " · " + m.school + " (לְהַחְלָפָה – ✏️)"; b.classList.add("named"); }
-    if (!registered(m)) { b.textContent = label; b.onclick = function (e) { e.preventDefault(); open(); }; return; }
+    if (hasName(m)) { b.textContent = label; b.title = (m.cls ? "הַכִּתָּה: " + m.cls + " · " + m.school : "הוֹסִיפוּ כִּתָּה וּבֵית סֵפֶר") + " (לְהַחְלָפָה – ✏️)"; b.classList.add("named"); }
+    if (!hasName(m)) { b.textContent = label; b.onclick = function (e) { e.preventDefault(); open(); }; return; }
     var pen = document.createElement("button"); pen.type = "button"; pen.textContent = "✏️"; pen.title = "לְהַחְלִיף שֵׁם / כִּתָּה";
     pen.style.cssText = "background:none;border:0;cursor:pointer;font-size:1em;margin-inline-start:4px;padding:0";
     pen.onclick = function (e) { e.preventDefault(); e.stopPropagation(); open(); };
     b.appendChild(pen);
   }
   g("regGo").onclick = save;
-  g("regSkip").onclick = function () { if (!registered(me())) put("hq-skip", "1"); close(); };
+  g("regSkip").onclick = function () { if (hasName(me())) close(); };
   g("regOther").onclick = function () {
     put("hq-me", null); put("hq-skip", null);
     g("regName").value = g("regSchool").value = g("regNum").value = ""; g("regGrade").value = "";
@@ -446,9 +463,9 @@ body.inq header.top.hasreg{padding-top:34px}
     g("lbClose").onclick = function () { g("lbScreen").classList.remove("on"); };
     g("lbScreen").addEventListener("click", function (e) { if (e.target.id === "lbScreen") g("lbScreen").classList.remove("on"); });
   })();
-  window.HQREG = { openLb: openLb, open: open, me: me, registered: registered, gradeOf: gradeOf };
+  window.HQREG = { openLb: openLb, open: open, me: me, registered: registered, hasName: hasName, gradeOf: gradeOf };
   chip();
-  if (!registered(me()) && !get("hq-skip")) open();
+  if (!hasName(me())) open();   // אֵין שֵׁם – הַמָּסָךְ נִפְתָּח תָּמִיד (גַּם בְּקִשּׁוּר יָשִׁיר לְחִידוֹן)
 })();
 </script>
 
@@ -888,6 +905,10 @@ function init() {
     $("inGrade").style.display = "none"; $("gradeLbl").style.display = "none";
     $("hello").style.display = ""; $("hello").textContent = "שָׁלוֹם, " + $("inName").value + "! 🌟 כִּתָּה " + $("inCls").value + ", " + $("inSchool").value;
   } else if (window.HQREG) {
+    if (HQREG.hasName(HQREG.me())) {   // יֵשׁ שֵׁם בְּלִי כִּתָּה / בֵּית סֵפֶר
+      $("hello").style.display = ""; $("hello").textContent = "שָׁלוֹם, " + $("inName").value + "! 🌟";
+      $("regAskA").textContent = "📝 הוֹסִיפוּ כִּתָּה וּבֵית סֵפֶר – וְתִכָּנְסוּ לְלוּחַ הַמְּצֻיָּנִים וְתוּכְלוּ לְהַמְשִׁיךְ מִכָּל מַחְשֵׁב";
+    }
     $("regAsk").style.display = "";
     $("regAskA").onclick = function (e) { e.preventDefault(); HQREG.open(); };
   }
@@ -953,10 +974,11 @@ function readMe() {
 }
 function start() {
   var m = readMe();
+  if (window.HQREG && !$("inName").value.trim()) { HQREG.open(); return; }   // בְּלִי שֵׁם לֹא נִכְנָסִים (מ-6.11)
   if (!m.grade) { $("gradeMsg").style.display = ""; $("gradeMsg").textContent = "✍️ בְּחֲרוּ כִּתָּה כְּדֵי לְהַתְחִיל"; $("inGrade").focus(); return; }
   $("gradeMsg").style.display = "none";
   S.name = m.name; S.cls = m.cls; S.school = m.school; S.real = m.real; S.young = YOUNG_GRADES.indexOf(m.grade) !== -1;
-  store("hq-me", JSON.stringify({ name: m.real ? m.name : "", cls: m.cls, school: m.school, grade: m.grade }));
+  store("hq-me", JSON.stringify({ name: $("inName").value.trim(), cls: m.cls, school: m.school, grade: m.grade }));
   pingProgress("start");
   tone([660], 0.08);
   S.lv = 0; S.retry = false; S.pts = 0;
@@ -987,12 +1009,30 @@ function resumeRun(r) {
 }
 
 
+
+/* ---------- הַשְּׁאֵלָה, הַתְּמוּנָה וְהַתְּשׁוּבוֹת בְּחַלּוֹן אֶחָד (מ-6.11.2026) ----------
+   מַחְשֵׁב: תְּמוּנָה וּתְשׁוּבוֹת זוֹ לְיַד זוֹ (CSS). טֶלֶפוֹן: תְּשׁוּבוֹת 2×2, וְהַתְּמוּנָה מִתְכַּוֶּצֶת לַגֹּבַהּ שֶׁנִּשְׁאַר. לְחִיצָה – הַגְדָּלָה. */
+function fitPic() {
+  var sp = $("qBody").querySelector(".split"); if (!sp) return;
+  var img = sp.querySelector("img.gen"), opts = sp.querySelector(".opts"); if (!img || !opts) return;
+  if (window.innerWidth >= 860) { img.style.maxHeight = ""; return; }
+  var top = img.getBoundingClientRect().top + window.scrollY - window.scrollY;
+  var avail = window.innerHeight - img.getBoundingClientRect().top - opts.offsetHeight - 22;
+  img.style.maxHeight = Math.max(110, Math.min(avail, window.innerHeight * 0.5)) + "px";
+}
+window.addEventListener("resize", fitPic);
+function zoomPic(src) {
+  var z = document.createElement("div"); z.className = "zoom";
+  z.innerHTML = '<img src="' + src + '" alt=""><span>✕</span>';
+  z.onclick = function () { z.remove(); };
+  document.body.appendChild(z);
+}
 /* ---------- הַדְגָּשַׁת הַמִּלָּה שֶׁמְּבָאֲרִים (לְשׁוֹן חֲכָמִים / בֵּאוּר מֻשָּׂגִים, מ-5.11.2026) ----------
    רַק בְּחִידוֹנֵי מֻשָּׂגִים (‎-mk, ‎-mks) וּלְשׁוֹן חֲכָמִים (‎-NNl, ‎-NNk). הַמֻּשָּׂגִים נֶאֱסָפִים מִכָּל "מֻשָּׂג – פֵּרוּשׁ"
    בְּתַחְלַת מִשְׁפָּט בְּ-mark שֶׁל כַּרְטִיס אוֹ בְּ-explain שֶׁל שְׁאֵלָה, וּמֻדְגָּשִׁים בַּטֶּקְסְט, בַּשְּׁאֵלָה וּבַהֶסְבֵּר –
    בְּלִי תְּלוּת בַּנִּקּוּד, וְגַם עִם אוֹת שִׁמּוּשׁ בְּהַתְחָלָה (לַשֶּׂכְוִי ← שֶׂכְוִי). */
 var NIK = "[֑-ׇ]*";
-var TERM_ON = /-mks?\d*[a-z]?$|-\d+[lk]$/.test(QUIZ.id);
+var TERM_ON = /-mk|-\d+[lk]$/.test(QUIZ.id);
 var HEAD_RE = /(^|[.!?]\s+)(📖\s*)?([^–:.!?״"]{1,40}?)(\s+–\s)/g;
 var TERM_RE = (function () {
   if (!TERM_ON) return null;
@@ -1079,7 +1119,11 @@ function renderQuestion() {
   body += '<div class="opts' + (q.zones ? " row" : "") + '"' + (q.picOnly && q.zones ? ' style="display:none"' : "") + '>' + S.opts.map(function (o, k) {
     return '<button class="opt" data-k="' + k + '">' + escapeHtml(o.text) + "</button>";
   }).join("") + "</div>";
+  if (q.img && !q.zones) body = '<div class="split">' + body + "</div>";   // תְּמוּנָה + תְּשׁוּבוֹת בְּחַלּוֹן אֶחָד (מ-6.11)
   $("qBody").innerHTML = body;
+  fitPic();
+  var gi = $("qBody").querySelector("img.gen");
+  if (gi) gi.onclick = function () { zoomPic(gi.src); };
   Array.prototype.forEach.call($("qBody").querySelectorAll(".opt"), function (b) {
     b.onclick = function () { answer(+b.dataset.k); };
   });
