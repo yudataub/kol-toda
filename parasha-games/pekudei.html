@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>זיכרון רצף - פקודי</title>
+<style>
+:root{--ink:#2b2140;--bg1:#fff7e8;--bg2:#ffe9f0;--card:#ffffff;--main:#7b4fd6;--main2:#ff7a59;--gold:#f5b82e;--ok:#1e9b5a;--bad:#d9822b;--line:#e6dcf5}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:Arial,"Segoe UI",Tahoma,sans-serif;color:var(--ink);background:linear-gradient(160deg,var(--bg1),var(--bg2));min-height:100vh;line-height:1.55;font-size:18px}
+.wrap{max-width:980px;margin:0 auto;padding:12px 14px 40px}
+header.top{background:linear-gradient(120deg,#7b4fd6,#e0508f 55%,#ff9a3c);color:#fff;border-radius:22px;padding:18px 16px;text-align:center;box-shadow:0 6px 18px rgba(123,79,214,.28)}
+header.top h1{margin:0;font-size:clamp(24px,5vw,38px)}
+header.top p{margin:6px 0 0;font-size:clamp(15px,3vw,19px);opacity:.96}
+.back{display:inline-flex;align-items:center;min-height:44px;margin:10px 2px;color:#5a34b5;font-weight:bold;text-decoration:none;padding:6px 10px;border-radius:12px}
+.back:hover,.back:focus-visible{background:#fff;outline:3px solid #b79af0}
+.screen{background:var(--card);border-radius:22px;padding:18px 16px;box-shadow:0 4px 14px rgba(60,30,110,.12);border:2px solid var(--line)}
+.hidden{display:none!important}
+.love{background:#fff3d6;border:2px dashed var(--gold);border-radius:16px;padding:12px 14px;font-size:1.05em;font-weight:bold;text-align:center}
+.howto{margin:14px 0;padding-inline-start:22px}
+.howto li{margin:4px 0}
+.btn{font:inherit;font-weight:bold;min-height:48px;min-width:48px;padding:10px 22px;border:0;border-radius:16px;cursor:pointer;color:#fff;background:linear-gradient(120deg,var(--main),#c04fd0);box-shadow:0 4px 0 #53309e;transition:transform .12s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #53309e}
+.btn.alt{background:linear-gradient(120deg,#ff8a4c,#f5b82e);color:#3a2300;box-shadow:0 4px 0 #b9741a}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:4px solid #2a6df4;outline-offset:2px}
+.center{text-align:center}
+.hud{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.pill{background:#f3ecff;border-radius:999px;padding:6px 14px;font-weight:bold;min-height:36px;display:inline-flex;align-items:center;gap:6px}
+.prog{flex:1 1 160px;height:16px;background:#eadff9;border-radius:999px;overflow:hidden}
+.prog>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#46c284,#f5b82e);transition:width .4s}
+.fb{min-height:54px;margin:10px 0;padding:10px 14px;border-radius:14px;background:#f7f3fd;font-weight:bold;text-align:center;display:flex;align-items:center;justify-content:center}
+.fb.good{background:#dff7ea;color:#0d5e35}
+.fb.soft{background:#fff0dc;color:#7a4300}
+.fb.info{background:#e8f0ff;color:#1a3f8a}
+.opts{display:grid;grid-template-columns:1fr;gap:10px;margin:12px 0}
+@media(min-width:640px){.opts.two{grid-template-columns:1fr 1fr}}
+.opt{font:inherit;text-align:center;min-height:52px;padding:10px 14px;border-radius:16px;border:3px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font-weight:bold;transition:transform .12s,background .2s}
+.opt:hover:not(:disabled){transform:translateY(-2px);border-color:#b79af0;background:#faf6ff}
+.opt.right{background:#c9f2dc;border-color:var(--ok);color:#0d5e35}
+.opt.wrong{background:#ffe6cc;border-color:var(--bad);color:#7a4300}
+.opt:disabled{cursor:default}
+.q{font-size:1.2em;font-weight:bold;margin:8px 0}
+.fact{background:#eef7ff;border-right:5px solid #4a90e2;border-radius:10px;padding:8px 12px;margin:8px 0;font-size:.95em}
+.fact b{color:#1a4f9a}
+.endbox{text-align:center}
+.stars{font-size:46px;letter-spacing:6px;margin:6px 0}
+.bigscore{font-size:1.6em;font-weight:bold;color:var(--main)}
+.bless{background:#fff3d6;border-radius:16px;padding:12px;margin:12px 0;font-weight:bold}
+.talk{background:#e8f6ff;border-radius:16px;padding:12px;margin:12px 0;text-align:right}
+.sign{margin-top:16px;color:#6a5a8a;font-weight:bold}
+.pop{animation:pop .5s}
+@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+
+.pads{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:440px;margin:12px auto}
+.pad{font:inherit;border:5px solid rgba(0,0,0,.18);border-radius:22px;min-height:96px;font-weight:bold;color:#fff;cursor:pointer;font-size:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;filter:brightness(.86);transition:filter .15s,transform .15s}
+.pad .em{font-size:34px}
+.pad.lit{filter:brightness(1.25) saturate(1.2);transform:scale(1.05);box-shadow:0 0 26px 6px rgba(255,255,255,.85)}
+.pad:disabled{cursor:default}
+.pad:hover:not(:disabled){filter:brightness(.9)}
+.pad0{background:#2f6fd6}.pad1{background:#7b3fa8}.pad2{background:#d6403f}.pad3{background:#c99700;color:#2b2140}
+.dots{display:flex;gap:6px;justify-content:center;margin:6px 0}
+.dot{width:16px;height:16px;border-radius:50%;background:#eadff9;border:2px solid #cdbbee}
+.dot.on{background:#f5b82e;border-color:#b9741a}
+.snd{min-height:44px;padding:4px 12px;font:inherit;border-radius:12px;border:2px solid var(--line);background:#fff;cursor:pointer}
+</style>
+<meta property="og:title" content="זיכרון רצף - פקודי">
+<meta property="og:description" content="זיכרון רצף - פקודי">
+<meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-parasha-games-pekudei.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/parasha-games/pekudei.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://www.kol-toda.co.il/parasha-games/pekudei.html">
+<script async src="https://www.kol-toda.co.il/a.js"></script>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><h1>🎵 זיכרון הרצף - פקודי</h1><p>חידושים לפרשת פקודי - הרב יהודה טאוב</p></header>
+<a class="back" href="index.html" aria-label="חזרה לכל הפרשות">← חזרה לכל הפרשות</a>
+
+<main>
+<section id="intro" class="screen" aria-label="פתיחה">
+  <div class="love" id="loveLine"></div>
+  <ul class="howto" id="howto"></ul>
+  <div class="center">
+    <button class="btn" id="startBtn" aria-label="התחלת המשחק">▶ מתחילים!</button>
+    <p id="bestLine" class="sign"></p>
+  </div>
+</section>
+
+<section id="game" class="screen hidden" aria-label="המשחק">
+  <div class="hud">
+    <span class="pill" aria-live="polite">⭐ ניקוד: <span id="scoreVal">0</span></span>
+    <div class="prog" id="progBar" role="progressbar" aria-label="התקדמות" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="progFill"></i></div>
+    <span id="extraHud"></span>
+  </div>
+  <div id="fb" class="fb" aria-live="polite"></div>
+  <div id="stage"></div>
+</section>
+
+<section id="end" class="screen endbox hidden" aria-label="סיום">
+  <h2>סיימנו! 🎉</h2>
+  <div class="bigscore" id="endScore"></div>
+  <div class="stars" id="endStars" role="img"></div>
+  <div id="bestMsg" class="sign"></div>
+  <div class="bless" id="endBless"></div>
+  <div class="talk"><b>שיחה קצרה בבית או בכיתה:</b><br><span id="talkQ"></span></div>
+  <button class="btn alt" id="againBtn" aria-label="לשחק שוב">🔁 לשחק שוב</button>
+  <p class="sign">הקול החמישי - הרב יהודה טאוב</p>
+  <p><a class="back" href="index.html" aria-label="חזרה לכל הפרשות">← חזרה לכל הפרשות</a></p>
+</section>
+</main>
+</div>
+<script>
+const CONFIG = {
+  "slug": "pekudei",
+  "love": "ה' אוהב אותנו כמו אבא אוהב את ילדיו, ואנחנו עושים בדיוק מה שהוא ביקש מתוך אמון ואהבה. עכשיו נאמן את הזיכרון!",
+  "howto": [
+    "צופים ברצף של צבעים שמהבהבים: תכלת, ארגמן, תולעת שני וזהב - צבעי המשכן.",
+    "חוזרים על הרצף בלחיצה (או במקשים 1 עד 4).",
+    "אחרי כל רצף יש שאלה על החידושים. הרצף מתארך בכל סיבוב!",
+    "טעיתם ברצף? לא נורא, אפשר לראות שוב."
+  ],
+  "talk": "על איזה דבר טוב בחייכם כדאי לא לספר לכולם, כדי שיישאר מוגן? ואיזו מצווה \"הגיונית\" אתם יכולים לעשות מתוך כך שה' ציווה?"
+};
+// DATA: חידושים מעמוד פקודי (יש בעמוד שלושה חידושים; לכל חידוש כמה שאלות). o[0] נכונה.
+const DATA = [
+  { q: 'באיזה בגדים כתוב במיוחד "כאשר צוה ה\' את משה"?', o: ['בגדי הכהונה', 'בגדי הילדים', 'בגדי שבת בלבד'], exp: 'כלי המשכן מובנים מאליהם, ואילו הבגדים נעשים "לכבוד ולתפארת", ולכן שם מדגישים לעשות בדיוק כפי שנצטוו.' },
+  { q: 'איך מתקנים את חטא העגל, לפי החידוש?', o: ['עושים בדיוק כפי שנצטווינו', 'בונים משהו גדול יותר', 'מדברים פחות'], exp: 'אחרי חטא העגל, התיקון הוא לעשות את מה שה\' ביקש, בדיוק כפי שהוא ביקש.' },
+  { q: 'מה אמר משה לבצלאל: "בצל אל היית". מה זה מלמד עליו?', o: ['הוא היה בצל של ה\' וידע את הסוד', 'הוא ישב בצל העץ', 'הוא פחד'], exp: 'בצלאל צדק בטענתו, אבל התורה מדגישה לעשות בדיוק את הציווי.' },
+  { q: 'המשכן וכליו מקבילים למצוות שבין אדם ל...', o: ['מקום (ה\')', 'חברו', 'עצמו'], exp: 'והבגדים מקבילים למצוות שבין אדם לחברו. גם שם עושים מפני שה\' ציווה.' },
+  { q: 'בלוחות השניים נוסף "כאשר צוך" בשבת ובכיבוד הורים. למה?', o: ['כי מצוות הגיוניות עושים גם מפני רצון ה\'', 'כי הן קשות', 'כי הן חדשות'], exp: 'שתי המצוות מובנות לשכל, ולכן יש סכנה לעשות אותן רק מתוך הבנה.' },
+  { q: 'לפי רבי נחמן, גם "דרך ארץ" כמו לא לגזול, ישראל עושים...', o: ['מפני גזירת המלך', 'מפני שזה נוח', 'מפני הרגל'], exp: '"דרך מצותיך ארוץ": גם את הדברים הפשוטים עושים לשם ה\', וכל החיים הופכים לשיחה איתו.' },
+  { q: 'הפרשה מתחילה: "אלה פקודי המשכן". מה קורה לדבר שנמנה ונחשף?', o: ['הוא נחשף לעין הרע', 'הוא נעשה גדול', 'הוא מתחזק'], exp: 'מה שחשוף ונמנה לעין כול פגיע, ומה שנשמר בצנעה מוגן.' },
+  { q: 'הלוחות הראשונים ניתנו ברעש גדול, והשניים...', o: ['בצנעה', 'בעיר גדולה', 'בחג'], exp: 'הלוחות הראשונים נשתברו, והשניים נשארו. הדברים הכי יקרים נבנים בשקט.' },
+  { q: 'איזה משפט למדנו על ברכה?', o: ['אין הברכה מצויה אלא בדבר הסמוי מן העין', 'ברכה צריכה קהל גדול', 'ברכה באה רק בחג'], exp: 'ה\' נקרא "אל מסתתר", והקשר העמוק איתו נבנה בחדרי הלב.' }
+];
+const PADS = [
+  { n: 'תכלת', e: '💧', f: 262 }, { n: 'ארגמן', e: '🍇', f: 330 },
+  { n: 'תולעת שני', e: '🍓', f: 392 }, { n: 'זהב', e: '⭐', f: 494 }
+];
+const LENGTHS = [2, 3, 3, 4, 4, 5, 5, 6];
+const $ = (s, r) => (r || document).querySelector(s);
+const PRAISE = [
+  'נכון! ה\' אוהב אותך ושמח בך 💛',
+  'יפה מאוד! אהבת ה\' מלווה אותך 🌟',
+  'מצוין! ה\' מחייך אליך כשאתה לומד תורה 😊',
+  'כל הכבוד! ה\' אוהב כל חידוש שלומדים בשמחה 📖',
+  'נהדר! הלב שלך מלא אור, וה\' אוהב את זה ✨',
+  'בדיוק! ה\' אוהב אותך כמו אבא אוהב את הילד שלו 🤗',
+  'וואו! כל תשובה נכונה היא מתנה שאתה נותן לה\' 🎁',
+  'תשובה מצוינת! ה\' תמיד קרוב אליך 💫'
+];
+const RETRY = [
+  'כמעט! נסה שוב, ה\' איתך 💛',
+  'לא נורא, גם טעות היא חלק מהלמידה. ה\' אוהב אותך באותה מידה 🌈',
+  'עוד רגע תצליח! ה\' מאמין בך 💪',
+  'קרוב מאוד! קח נשימה ונסה שוב, ה\' איתך 🌸'
+];
+let _lp = -1, _lr = -1;
+function pickFrom(arr, which) {
+  let i, last = which === 'p' ? _lp : _lr;
+  do { i = Math.floor(Math.random() * arr.length); } while (i === last && arr.length > 1);
+  if (which === 'p') _lp = i; else _lr = i;
+  return arr[i];
+}
+function praise() { return pickFrom(PRAISE, 'p'); }
+function retry() { return pickFrom(RETRY, 'r'); }
+function shuffle(a) {
+  const b = a.slice();
+  for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = b[i]; b[i] = b[j]; b[j] = t; }
+  return b;
+}
+const Store = {
+  get(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } }
+};
+const BEST_KEY = 'kol-toda-game-' + CONFIG.slug;
+function show(id) {
+  ['intro', 'game', 'end'].forEach(function (x) { $('#' + x).classList.toggle('hidden', x !== id); });
+  window.scrollTo(0, 0);
+}
+function setProgress(n, total) { $('#progFill').style.width = Math.round(100 * n / total) + '%'; $('#progBar').setAttribute('aria-valuenow', String(Math.round(100 * n / total))); }
+function setScore(s) { $('#scoreVal').textContent = String(s); }
+function say(msg, kind) { const f = $('#fb'); f.textContent = msg; f.className = 'fb ' + (kind || ''); }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function finish(score, max, extraLine, opt) {
+  const ratio = max > 0 ? score / max : 0;
+  let n = ratio >= 0.75 ? 3 : ratio >= 0.4 ? 2 : 1;
+  if (opt && opt.stars) n = opt.stars;
+  $('#endScore').textContent = (opt && opt.text) ? opt.text : score + ' מתוך ' + max;
+  $('#endStars').textContent = '⭐'.repeat(n) + '☆'.repeat(3 - n);
+  $('#endStars').setAttribute('aria-label', n + ' כוכבים מתוך 3');
+  const bl = [
+    'איזו התחלה יפה! ה\' אוהב אותך מאוד, ובכל פעם שתשחק תגלה עוד אור. שבת שלום ולב מלא שמחה 💛',
+    'כל הכבוד! ה\' שמח בך ואוהב את הלימוד שלך. שתמיד יהיה לך לב פתוח ומחייך 🌟',
+    'מושלם! ה\' אוהב אותך אהבה גדולה, והלב שלך זורח. ברכה והצלחה בכל מה שתעשה ✨'
+  ];
+  $('#endBless').textContent = bl[n - 1] + (extraLine ? ' ' + extraLine : '');
+  $('#talkQ').textContent = CONFIG.talk;
+  let best = parseInt(Store.get(BEST_KEY) || '0', 10) || 0;
+  if (score > best) { best = score; Store.set(BEST_KEY, String(score)); $('#bestMsg').textContent = 'שיא חדש! 🎉'; }
+  else { $('#bestMsg').textContent = best > 0 ? 'השיא שלך: ' + best : ''; }
+  show('end');
+}
+function initShell() {
+  $('#loveLine').textContent = CONFIG.love;
+  const ul = $('#howto');
+  CONFIG.howto.forEach(function (t) { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+  const b = parseInt(Store.get(BEST_KEY) || '0', 10) || 0;
+  $('#bestLine').textContent = b > 0 ? 'השיא שלך: ' + b : '';
+  $('#startBtn').addEventListener('click', function () { startGame(); });
+  $('#againBtn').addEventListener('click', function () { show('intro'); const bb = parseInt(Store.get(BEST_KEY) || '0', 10) || 0; $('#bestLine').textContent = bb > 0 ? 'השיא שלך: ' + bb : ''; });
+}
+
+
+let round, seq, pos, score, qs, busy, seqTries, soundOn = true, actx = null, playing = false;
+
+function tone(f) {
+  if (!soundOn) return;
+  try {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.frequency.value = f; o.type = 'sine';
+    g.gain.setValueAtTime(0.0001, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.2, actx.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.4);
+    o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + 0.42);
+  } catch (e) { /* no sound */ }
+}
+function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+function flash(i, ms) {
+  const el = document.getElementById('pad' + i);
+  el.classList.add('lit'); tone(PADS[i].f);
+  return sleep(ms).then(function () { el.classList.remove('lit'); return sleep(180); });
+}
+
+function startGame() {
+  qs = shuffle(DATA).slice(0, LENGTHS.length);
+  round = 0; score = 0; setScore(0); setProgress(0, LENGTHS.length);
+  $('#extraHud').innerHTML = '<button class="snd" id="sndBtn" aria-label="הפעלה וכיבוי של צלילים">🔊 צליל</button>';
+  $('#sndBtn').addEventListener('click', function () {
+    soundOn = !soundOn; this.textContent = soundOn ? '🔊 צליל' : '🔇 בלי צליל';
+  });
+  $('#stage').innerHTML = '<div class="dots" id="dots" aria-hidden="true"></div><div class="pads" id="pads" role="group" aria-label="לוח הצבעים"></div><div class="center"><button class="btn alt" id="replay" aria-label="לראות את הרצף שוב">👁 לראות שוב</button></div><div id="qbox"></div>';
+  PADS.forEach(function (p, i) {
+    const b = document.createElement('button');
+    b.className = 'pad pad' + i; b.id = 'pad' + i; b.disabled = true;
+    b.setAttribute('aria-label', p.n + ', מקש ' + (i + 1));
+    b.innerHTML = '<span class="em" aria-hidden="true">' + p.e + '</span><span>' + p.n + '</span>';
+    b.addEventListener('click', function () { press(i); });
+    $('#pads').appendChild(b);
+  });
+  $('#replay').addEventListener('click', function () { if (!busy) { seqTries++; playSeq(); } });
+  show('game');
+  newRound();
+}
+
+document.addEventListener('keydown', function (e) {
+  if (e.key >= '1' && e.key <= '4' && !$('#game').classList.contains('hidden')) {
+    const b = document.getElementById('pad' + (parseInt(e.key, 10) - 1));
+    if (b && !b.disabled) press(parseInt(e.key, 10) - 1);
+  }
+});
+
+function setPads(on) { PADS.forEach(function (_, i) { const b = document.getElementById('pad' + i); if (b) b.disabled = !on; }); }
+
+function newRound() {
+  $('#qbox').innerHTML = '';
+  const len = LENGTHS[round];
+  seq = []; for (let i = 0; i < len; i++) seq.push(Math.floor(Math.random() * 4));
+  seqTries = 0;
+  playSeq();
+}
+
+function renderDots() {
+  let h = '';
+  for (let i = 0; i < seq.length; i++) h += '<span class="dot' + (i < pos ? ' on' : '') + '"></span>';
+  $('#dots').innerHTML = h;
+}
+
+function playSeq() {
+  busy = true; setPads(false); pos = 0; renderDots();
+  $('#replay').disabled = true;
+  say('סיבוב ' + (round + 1) + ' מתוך ' + LENGTHS.length + ': מסתכלים טוב... 👀', 'info');
+  let p = sleep(500);
+  seq.forEach(function (s) { p = p.then(function () { return flash(s, 520); }); });
+  p.then(function () {
+    busy = false; setPads(true); $('#replay').disabled = false;
+    say('עכשיו תורכם! חזרו על הרצף 🎯', 'info');
+  });
+}
+
+function press(i) {
+  if (busy) return;
+  const el = document.getElementById('pad' + i);
+  el.classList.add('lit'); tone(PADS[i].f);
+  setTimeout(function () { el.classList.remove('lit'); }, 220);
+  if (i === seq[pos]) {
+    pos++; renderDots();
+    if (pos >= seq.length) { busy = true; setPads(false); $('#replay').disabled = true; seqDone(); }
+  } else {
+    busy = true; setPads(false); seqTries++;
+    say(retry() + ' נראה את הרצף שוב.', 'soft');
+    setTimeout(playSeq, 1400);
+  }
+}
+
+function seqDone() {
+  score += seqTries === 0 ? 10 : 5; setScore(score);
+  say(praise() + ' עכשיו שאלה קטנה:', 'good');
+  setTimeout(askQ, 900);
+}
+
+function askQ() {
+  const it = qs[round];
+  const box = $('#qbox');
+  box.innerHTML = '<div class="q"></div><div class="opts" id="opts"></div><div id="expBox"></div>';
+  box.querySelector('.q').textContent = it.q;
+  let wrong = 0;
+  shuffle(it.o).forEach(function (t) {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = t; b.setAttribute('aria-label', 'תשובה: ' + t);
+    b.addEventListener('click', function () {
+      if (t === it.o[0]) {
+        [].forEach.call(document.querySelectorAll('#opts .opt'), function (x) { x.disabled = true; });
+        b.classList.add('right', 'pop');
+        score += wrong === 0 ? 10 : 5; setScore(score); setProgress(round + 1, LENGTHS.length);
+        say(praise(), 'good');
+        const ex = $('#expBox');
+        ex.innerHTML = '<div class="fact"><b>ידעת?</b> <span></span></div>';
+        ex.querySelector('span').textContent = it.exp;
+        const nb = document.createElement('button');
+        nb.className = 'btn'; nb.textContent = round + 1 >= LENGTHS.length ? 'לסיום ←' : 'לסיבוב הבא ←';
+        nb.setAttribute('aria-label', 'המשך');
+        nb.addEventListener('click', function () {
+          round++;
+          if (round >= LENGTHS.length) finish(score, LENGTHS.length * 20, 'זכרתם רצפים עד אורך ' + LENGTHS[LENGTHS.length - 1] + '!');
+          else newRound();
+        });
+        ex.appendChild(nb); nb.focus();
+      } else {
+        wrong++; b.disabled = true; b.classList.add('wrong', 'shake');
+        say(retry(), 'soft');
+      }
+    });
+    $('#opts').appendChild(b);
+  });
+}
+
+initShell();
+
+</script>
+</body>
+</html>

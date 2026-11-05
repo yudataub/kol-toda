@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מפת חלוקה</title>
+<style>
+:root{--g1:#14532d;--g2:#0f766e;--g3:#1d4ed8;--bg:#fff6e5;--ink:#3b2412;--card:#ffffff;--accent:#b45309;--good:#15803d;--goodbg:#dcfce7;--tryc:#9a3412;--trybg:#ffedd5;--line:#f3d9a8}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Arial,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:18px;min-height:100vh}
+header.top{background:linear-gradient(135deg,var(--g1),var(--g2),var(--g3));color:#fff;padding:18px 16px 22px;text-align:center;border-radius:0 0 28px 28px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+header.top h1{margin:6px 0 2px;font-size:clamp(1.6rem,5vw,2.4rem);text-shadow:0 2px 4px rgba(0,0,0,.3)}
+header.top .sub{margin:0;font-size:1rem;opacity:.95}
+a.back{display:inline-flex;align-items:center;min-height:44px;color:#fff;font-weight:bold;text-decoration:underline;padding:0 10px}
+main{max-width:860px;margin:0 auto;padding:16px}
+.card{background:var(--card);border-radius:22px;padding:20px;box-shadow:0 4px 16px rgba(120,60,0,.12);border:2px solid var(--line);margin-bottom:16px}
+.card h2{margin-top:0;color:var(--accent)}
+button{font-family:inherit;font-size:1rem;cursor:pointer}
+.big,.opt,.mini{min-height:48px;border:none;border-radius:16px;padding:10px 18px;font-weight:bold;color:#fff;background:linear-gradient(135deg,var(--g1),var(--g2));box-shadow:0 3px 0 rgba(0,0,0,.25);transition:transform .15s}
+.big{font-size:1.2rem;padding:12px 28px}
+.big:hover,.opt:hover,.mini:hover{transform:translateY(-2px)}
+.big:active,.opt:active{transform:translateY(1px)}
+.opt{display:block;width:100%;text-align:right;background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:0 2px 0 var(--line);font-weight:normal;margin:8px 0}
+.opt.sel{border-color:var(--g2);background:#fff1d6}
+.opt.right{background:var(--goodbg);border-color:var(--good);color:#14532d}
+.opt.wrong{background:var(--trybg);border-color:#ea580c;color:var(--tryc)}
+.opt:disabled{cursor:default;transform:none}
+:focus-visible{outline:4px solid #2563eb;outline-offset:2px}
+.hud{display:flex;align-items:center;gap:12px;margin-bottom:12px;font-weight:bold}
+.bar{flex:1;height:16px;background:#fde7bd;border-radius:10px;overflow:hidden;border:2px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g1),var(--g3));transition:width .4s}
+.fb{min-height:52px;margin-top:12px;padding:10px 14px;border-radius:14px;font-weight:bold;display:none}
+.fb.good{display:block;background:var(--goodbg);color:#14532d;animation:pop .35s}
+.fb.try{display:block;background:var(--trybg);color:var(--tryc);animation:pop .35s}
+.know{margin-top:10px;padding:10px 14px;border-radius:14px;background:#e0f2fe;color:#0c4a6e;border:2px dashed #38bdf8;display:none}
+.know.on{display:block}
+#ctl{margin-top:12px;text-align:center}
+.stars{font-size:2.2rem;letter-spacing:4px}
+.talk{background:#fef3c7;border-radius:16px;padding:14px;border:2px solid #f59e0b}
+.sig{text-align:center;font-weight:bold;color:var(--accent);margin-top:14px}
+footer{text-align:center;padding:16px;color:#7c4a1c;font-size:.95rem}
+.hint{color:#7c4a1c;font-size:.95rem}
+h3.q{margin:0 0 8px;font-size:1.2rem}
+@keyframes pop{from{transform:scale(.94);opacity:.4}to{transform:scale(1);opacity:1}}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.shake{animation:shake .35s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.map{width:100%;max-width:640px;height:auto;display:block;margin:0 auto;border-radius:20px;background:linear-gradient(#e0f2fe,#f0f9ff)}
+.map .zone{cursor:pointer;transition:transform .2s}
+.map .zone:hover path,.map .zone:focus path{stroke:#1d4ed8;stroke-width:5}
+.map .zone:focus{outline:none}
+.map .zone:focus-visible path{stroke:#1d4ed8;stroke-width:6}
+.map .zone.hot path{stroke:#16a34a;stroke-width:6}
+.cardItem{touch-action:none;cursor:grab;user-select:none;margin:10px auto;padding:14px 16px;max-width:520px;text-align:center;font-weight:bold;font-size:1.15rem;border-radius:18px;background:#fff7ed;border:3px solid var(--g2);box-shadow:0 4px 0 rgba(0,0,0,.18);position:relative;z-index:5}
+.cardItem.drag{opacity:.85;z-index:99;position:fixed;width:min(80vw,380px);margin:0}
+.pinTxt{font-size:15px;fill:#3b2412;font-weight:bold}
+
+</style>
+<meta property="og:title" content="מפת חלוקה">
+<meta property="og:description" content="מפת חלוקה">
+<meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-parasha-games-pinchas.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/parasha-games/pinchas.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://www.kol-toda.co.il/parasha-games/pinchas.html">
+<script async src="https://www.kol-toda.co.il/a.js"></script>
+</head>
+<body>
+<header class="top">
+<a class="back" href="index.html" aria-label="חזרה לכל הפרשות">&larr; חזרה לכל הפרשות</a>
+<h1>🗺️ מפת חלוקה</h1>
+<p class="sub">פרשת פינחס - מניחים כל חידוש באי המתאים</p>
+</header>
+<main>
+<section id="intro" class="card">
+<h2>ה׳ אוהב אותך ואוהב שלום, ארץ ישראל ובית מלא אהבה 💛</h2>
+<p>על המפה יש שלושה איים: אי השלום, אי הברית וארץ ישראל. בכל שלב מופיע חידוש מפרשת פינחס. גררו אותו אל האי הנכון, או לחצו על האי.</p>
+<p class="hint" id="best"></p>
+<button class="big" id="startBtn" aria-label="התחלת המשחק">מתחילים</button>
+</section>
+<section id="play" hidden>
+<div class="hud"><span id="scoreEl" aria-live="polite">⭐ 0</span><div class="bar" role="progressbar" aria-label="התקדמות"><i id="barFill"></i></div><span id="progTxt"></span></div>
+<div id="stage" class="card"></div>
+<div id="fb" class="fb" role="status" aria-live="polite"></div>
+<div id="know" class="know"></div>
+<div id="ctl"></div>
+</section>
+<section id="end" class="card" hidden>
+<h2>סיימנו! ברכה גדולה לך 🎉</h2>
+<p class="stars" id="endStars" aria-label="כוכבים"></p>
+<p id="endScore" style="font-size:1.3rem;font-weight:bold"></p>
+<p id="endBest" class="hint"></p>
+<p id="endBless"></p>
+<div class="talk"><b>שיחה קצרה בבית או בכיתה:</b><br><span id="endTalk"></span></div>
+<p style="text-align:center"><button class="big" id="againBtn" aria-label="לשחק שוב">לשחק שוב</button></p>
+<p style="text-align:center"><a class="back" style="color:var(--accent)" href="index.html" aria-label="חזרה לכל הפרשות">&larr; חזרה לכל הפרשות</a></p>
+<p class="sig">הקול החמישי - הרב יהודה טאוב</p>
+</section>
+</main>
+<footer>הקול החמישי - הרב יהודה טאוב</footer>
+<script>
+const DATA={
+slug:"pinchas",
+talk:"איך מעשה חזק יכול להיות מעשה של שלום? ומה אפשר לעשות היום כדי לעשות שלום בבית?",
+zones:[
+{id:"a",name:"אי השלום",emoji:"🕊️",color:"#bfdbfe"},
+{id:"b",name:"אי הברית",emoji:"👶",color:"#fed7aa"},
+{id:"c",name:"ארץ ישראל",emoji:"🏡",color:"#bbf7d0"}
+],
+items:[
+{t:"פנחס פעל מתוך דאגה לישראל, לא מתוך אכזריות.",z:"a",know:"הכוונה חשובה לא פחות מהמעשה. לכן כתוב ׳בן אהרן׳ - אוהב השלום."},
+{t:"השכר של פנחס הוא ׳ברית שלום׳.",z:"a",know:"השכר הוא שלום ולא קנאות, כי המטרה של הקנאה הייתה שלום לעם."},
+{t:"שלום הוא שלמות פנימית וחיבור בין כוחות שונים.",z:"a",know:"כך מסבירים הספורנו, המלבי״ם והאברבנאל: שלום הוא לא רק סוף מריבה."},
+{t:"מעשהו של פנחס עצר את המגפה והציל נפשות.",z:"a",know:"מי שפועל לשם שמים זוכה לשכר כבר בעולם הזה."},
+{t:"בית שיש בו שלום מוליד ילדים צדיקים.",z:"a",know:"הרמב״ם מלמד שגידול הילדים עצמו הוא קידוש ה׳."},
+{t:"כסא אליהו בברית מילה.",z:"b",know:"מנהג כסא אליהו נלמד מסיפור קנאתו של אליהו."},
+{t:"אליהו נקרא מלאך הברית.",z:"b",know:"יש מי שאומר שמה שנראה כעונש הפך אצל אליהו לזכות."},
+{t:"אליהו בא לכל ברית ומזכיר רק טוב על ישראל.",z:"b",know:"אליהו אוהב את ישראל ואינו מזכיר עליהם אלא טוב."},
+{t:"יש הלכות מעשיות לכסא אליהו ולסנדק.",z:"b",know:"ההלכות מלמדות איך מכבדים את הכסא ואת מי שמחזיק את התינוק בברית."},
+{t:"׳בן יוסף׳ - אהבת הארץ עוברת בירושה.",z:"c",know:"הביטוי ׳בן יוסף׳ נלמד כרמז לאהבת הארץ שעוברת מדור לדור."},
+{t:"בנות צלפחד ביקשו חלק בארץ כדי שלא ייגרע שם אביהן.",z:"c",know:"הן ביקשו לא לטובת עצמן אלא כדי לתקן את נשמת אביהן."},
+{t:"חלק בארץ נחשב כחלק בעולם הבא.",z:"c",know:"לכן הבנות כל כך רצו חלק בארץ: זה חלק בעולם הבא."},
+{t:"חמש בנות - רמז לגאולה, לעומת ארבע בגלות.",z:"c",know:"המספר חמש מקושר לגאולה, והמספר ארבע לגלות."},
+{t:"יוסף ביקש להביא לארץ רק את עצמותיו, כדי לא לטמא אותה.",z:"c",know:"במשל החתן והכלה: מי שמחבב את הבית שהחתן הכין לכלה, מקרב את הגאולה."},
+{t:"שמות הבנות מלמדים להודות גם בצרה.",z:"c",know:"אפשר להודות לה׳ גם כשקשה."}
+]};
+
+
+const FEEDBACK_OK=["נכון! ה׳ אוהב אותך כל כך 💛","יפה מאוד! אהבת ה׳ מלווה אותך.","מצוין! ה׳ שמח בך ובלימוד שלך.","כל הכבוד! ה׳ מחבק אותך באהבה.","תשובה נכונה! הלב שלך מלא באור של ה׳.","נהדר! ה׳ אוהב כל ילד שלומד תורה.","בדיוק! ה׳ אוהב אותך ושמח בכל צעד שלך.","אלוף! אהבת ה׳ גדולה מכל דבר."];
+const FEEDBACK_TRY=["כמעט! נסה שוב, ה׳ איתך 🤗","לא נורא, ה׳ אוהב אותך גם כשטועים. נסה שוב!","עוד קצת! ה׳ איתך בכל ניסיון.","יופי שאתה מנסה! ה׳ אוהב מי שממשיך."];
+const $=s=>document.querySelector(s);
+const stage=$('#stage'),fb=$('#fb'),knowEl=$('#know'),ctlEl=$('#ctl');
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t;}return a;}
+let okIdx=Math.floor(Math.random()*FEEDBACK_OK.length),tryIdx=0;
+function say(ok,extra){fb.className='fb '+(ok?'good':'try');const m=ok?FEEDBACK_OK[okIdx++%FEEDBACK_OK.length]:FEEDBACK_TRY[tryIdx++%FEEDBACK_TRY.length];fb.textContent=m+(extra?' '+extra:'');}
+function clearFb(){fb.className='fb';fb.textContent='';knowEl.className='know';knowEl.textContent='';ctlEl.innerHTML='';}
+function showKnow(t){if(!t)return;knowEl.textContent='💡 ידעת? '+t;knowEl.className='know on';}
+function setProgress(i,n){$('#barFill').style.width=Math.round(i/n*100)+'%';$('#progTxt').textContent=Math.min(i+1,n)+'/'+n;}
+function setScore(s){$('#scoreEl').textContent='⭐ '+(Number.isInteger(s)?s:s.toFixed(1));}
+function ctl(label,fn){ctlEl.innerHTML='';const b=document.createElement('button');b.className='big';b.textContent=label;b.setAttribute('aria-label',label);b.onclick=fn;ctlEl.appendChild(b);b.focus();}
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
+function optBtn(txt,fn){const b=el('button','opt',txt);b.setAttribute('aria-label',txt);b.onclick=fn;return b;}
+const KEY='game-'+DATA.slug;
+function getBest(){try{return parseFloat(localStorage.getItem(KEY))||0;}catch(e){return 0;}}
+function saveBest(v){try{localStorage.setItem(KEY,String(v));}catch(e){}}
+function showBest(){const b=getBest();$('#best').textContent=b?('השיא שלך: '+b+' אחוז'):'';}
+function finish(score,max){
+  $('#play').hidden=true;$('#end').hidden=false;
+  const pct=max?Math.round(score/max*100):0;
+  const stars=Math.max(1,Math.round(pct/20));
+  $('#endStars').textContent='⭐'.repeat(stars)+'☆'.repeat(5-stars);
+  $('#endScore').textContent='הציון שלך: '+(Number.isInteger(score)?score:score.toFixed(1))+' מתוך '+max+' ('+pct+' אחוז)';
+  const prev=getBest();
+  $('#endBest').textContent=pct>prev?'שיא חדש! כל הכבוד!':(prev?'השיא שלך: '+prev+' אחוז':'');
+  if(pct>prev)saveBest(pct);
+  $('#endBless').textContent='ברכה לך: שה׳ ימלא את ליבך באהבה ובשמחה, ושתמשיך ללמוד ולהאיר. ה׳ אוהב אותך תמיד!';
+  $('#endTalk').textContent=DATA.talk;
+  window.scrollTo(0,0);
+  $('#againBtn').focus();
+}
+function begin(){
+  $('#intro').hidden=true;$('#end').hidden=true;$('#play').hidden=false;
+  setScore(0);clearFb();stage.innerHTML='';
+  startGame();
+}
+$('#startBtn').onclick=begin;
+$('#againBtn').onclick=begin;
+showBest();
+function startGame(){
+  const items=shuffle(DATA.items);
+  const counts={};DATA.zones.forEach(z=>counts[z.id]=0);
+  const MAX=items.length;
+  let i=0,score=0,firstTry=true,locked=false;
+  const NS='http://www.w3.org/2000/svg';
+  stage.innerHTML='';
+  const info=el('div');
+  const card=el('div','cardItem');
+  card.tabIndex=0;
+  const hint=el('p','hint');
+  const svg=document.createElementNS(NS,'svg');
+  svg.setAttribute('viewBox','0 0 640 300');svg.setAttribute('class','map');svg.setAttribute('role','group');svg.setAttribute('aria-label','מפת חלוקה עם שלושה איים');
+  const shapes={
+    a:'M30,70 C40,20 150,10 200,40 C250,70 230,150 190,190 C140,235 40,220 25,160 C15,125 20,100 30,70 Z',
+    b:'M240,60 C270,15 390,10 430,50 C470,90 450,170 410,205 C360,245 270,230 245,180 C225,140 225,95 240,60 Z',
+    c:'M470,70 C490,20 600,15 620,70 C640,120 615,200 570,225 C520,250 465,215 455,165 C448,130 455,100 470,70 Z'
+  };
+  const labelX={a:125,b:335,c:540};
+  const pinsG={};
+  DATA.zones.forEach(z=>{
+    const g=document.createElementNS(NS,'g');
+    g.setAttribute('class','zone');g.setAttribute('tabindex','0');g.setAttribute('role','button');g.setAttribute('aria-label','להניח את הכרטיס ב'+z.name);g.dataset.zone=z.id;
+    const p=document.createElementNS(NS,'path');p.setAttribute('d',shapes[z.id]);p.setAttribute('fill',z.color);p.setAttribute('stroke','#92400e');p.setAttribute('stroke-width','3');
+    g.appendChild(p);
+    const e=document.createElementNS(NS,'text');e.setAttribute('x',labelX[z.id]);e.setAttribute('y',95);e.setAttribute('text-anchor','middle');e.setAttribute('font-size','40');e.textContent=z.emoji;g.appendChild(e);
+    const t=document.createElementNS(NS,'text');t.setAttribute('x',labelX[z.id]);t.setAttribute('y',135);t.setAttribute('text-anchor','middle');t.setAttribute('font-size','20');t.setAttribute('font-weight','bold');t.setAttribute('fill','#3b2412');t.textContent=z.name;g.appendChild(t);
+    const c=document.createElementNS(NS,'text');c.setAttribute('x',labelX[z.id]);c.setAttribute('y',185);c.setAttribute('text-anchor','middle');c.setAttribute('class','pinTxt');c.textContent='';g.appendChild(c);
+    pinsG[z.id]=c;
+    g.onclick=()=>place(z.id);
+    g.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();place(z.id);}};
+    svg.appendChild(g);
+  });
+  stage.appendChild(info);stage.appendChild(card);stage.appendChild(hint);stage.appendChild(svg);
+  hint.textContent='גררו את הכרטיס אל האי המתאים, או לחצו על האי.';
+
+  function next(){
+    clearFb();
+    if(i>=items.length){finish(score,MAX);return;}
+    setProgress(i,items.length);
+    firstTry=true;locked=false;
+    info.innerHTML='';
+    info.appendChild(el('h3','q','לאיזה אי שייך החידוש הזה?'));
+    card.textContent=items[i].t;
+    card.setAttribute('aria-label','כרטיס: '+items[i].t);
+  }
+  function place(zid){
+    if(locked||i>=items.length)return;
+    const it=items[i];
+    if(zid!==it.z){
+      firstTry=false;say(false);
+      const g=svg.querySelector('[data-zone="'+zid+'"]');
+      if(g){g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),400);}
+      return;
+    }
+    locked=true;
+    if(firstTry)score++;
+    counts[zid]++;
+    pinsG[zid].textContent='📍 '+counts[zid]+' כרטיסים';
+    setScore(score);
+    say(true);showKnow(it.know);
+    i++;
+    card.textContent='✅ הכרטיס הונח במקומו';
+    ctl(i>=items.length?'לסיום':'לכרטיס הבא',next);
+  }
+  // drag
+  let ghost=null,sx=0,sy=0;
+  card.addEventListener('pointerdown',ev=>{
+    if(locked)return;
+    sx=ev.clientX;sy=ev.clientY;
+    card.setPointerCapture(ev.pointerId);
+    card.classList.add('drag');
+    card.style.left=(ev.clientX-120)+'px';card.style.top=(ev.clientY-30)+'px';
+    ghost=true;
+  });
+  card.addEventListener('pointermove',ev=>{
+    if(!ghost)return;
+    card.style.left=(ev.clientX-120)+'px';card.style.top=(ev.clientY-30)+'px';
+    svg.querySelectorAll('.zone').forEach(z=>z.classList.remove('hot'));
+    const t=zoneAt(ev.clientX,ev.clientY);if(t)t.classList.add('hot');
+  });
+  function endDrag(ev){
+    if(!ghost)return;ghost=null;
+    card.classList.remove('drag');card.style.left='';card.style.top='';
+    svg.querySelectorAll('.zone').forEach(z=>z.classList.remove('hot'));
+    const t=zoneAt(ev.clientX,ev.clientY);
+    if(t)place(t.dataset.zone);
+  }
+  card.addEventListener('pointerup',endDrag);
+  card.addEventListener('pointercancel',()=>{ghost=null;card.classList.remove('drag');card.style.left='';card.style.top='';});
+  function zoneAt(x,y){
+    card.style.pointerEvents='none';
+    const e=document.elementFromPoint(x,y);
+    card.style.pointerEvents='';
+    return e&&e.closest?e.closest('.zone'):null;
+  }
+  next();
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>בונה משפט</title>
+<style>
+:root{--g1:#581c87;--g2:#9d174d;--g3:#c2410c;--bg:#fff6e5;--ink:#3b2412;--card:#ffffff;--accent:#b45309;--good:#15803d;--goodbg:#dcfce7;--tryc:#9a3412;--trybg:#ffedd5;--line:#f3d9a8}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Arial,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:18px;min-height:100vh}
+header.top{background:linear-gradient(135deg,var(--g1),var(--g2),var(--g3));color:#fff;padding:18px 16px 22px;text-align:center;border-radius:0 0 28px 28px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+header.top h1{margin:6px 0 2px;font-size:clamp(1.6rem,5vw,2.4rem);text-shadow:0 2px 4px rgba(0,0,0,.3)}
+header.top .sub{margin:0;font-size:1rem;opacity:.95}
+a.back{display:inline-flex;align-items:center;min-height:44px;color:#fff;font-weight:bold;text-decoration:underline;padding:0 10px}
+main{max-width:860px;margin:0 auto;padding:16px}
+.card{background:var(--card);border-radius:22px;padding:20px;box-shadow:0 4px 16px rgba(120,60,0,.12);border:2px solid var(--line);margin-bottom:16px}
+.card h2{margin-top:0;color:var(--accent)}
+button{font-family:inherit;font-size:1rem;cursor:pointer}
+.big,.opt,.mini{min-height:48px;border:none;border-radius:16px;padding:10px 18px;font-weight:bold;color:#fff;background:linear-gradient(135deg,var(--g1),var(--g2));box-shadow:0 3px 0 rgba(0,0,0,.25);transition:transform .15s}
+.big{font-size:1.2rem;padding:12px 28px}
+.big:hover,.opt:hover,.mini:hover{transform:translateY(-2px)}
+.big:active,.opt:active{transform:translateY(1px)}
+.opt{display:block;width:100%;text-align:right;background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:0 2px 0 var(--line);font-weight:normal;margin:8px 0}
+.opt.sel{border-color:var(--g2);background:#fff1d6}
+.opt.right{background:var(--goodbg);border-color:var(--good);color:#14532d}
+.opt.wrong{background:var(--trybg);border-color:#ea580c;color:var(--tryc)}
+.opt:disabled{cursor:default;transform:none}
+:focus-visible{outline:4px solid #2563eb;outline-offset:2px}
+.hud{display:flex;align-items:center;gap:12px;margin-bottom:12px;font-weight:bold}
+.bar{flex:1;height:16px;background:#fde7bd;border-radius:10px;overflow:hidden;border:2px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g1),var(--g3));transition:width .4s}
+.fb{min-height:52px;margin-top:12px;padding:10px 14px;border-radius:14px;font-weight:bold;display:none}
+.fb.good{display:block;background:var(--goodbg);color:#14532d;animation:pop .35s}
+.fb.try{display:block;background:var(--trybg);color:var(--tryc);animation:pop .35s}
+.know{margin-top:10px;padding:10px 14px;border-radius:14px;background:#e0f2fe;color:#0c4a6e;border:2px dashed #38bdf8;display:none}
+.know.on{display:block}
+#ctl{margin-top:12px;text-align:center}
+.stars{font-size:2.2rem;letter-spacing:4px}
+.talk{background:#fef3c7;border-radius:16px;padding:14px;border:2px solid #f59e0b}
+.sig{text-align:center;font-weight:bold;color:var(--accent);margin-top:14px}
+footer{text-align:center;padding:16px;color:#7c4a1c;font-size:.95rem}
+.hint{color:#7c4a1c;font-size:.95rem}
+h3.q{margin:0 0 8px;font-size:1.2rem}
+@keyframes pop{from{transform:scale(.94);opacity:.4}to{transform:scale(1);opacity:1}}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.shake{animation:shake .35s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:560px){.cols{grid-template-columns:1fr}}
+.piece{display:block;width:100%;min-height:56px;text-align:right;margin:6px 0;padding:10px 14px;border-radius:16px;border:3px solid var(--g2);background:#fff;font-weight:bold;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.piece.endp{border-style:dashed;background:#fffbeb}
+.piece.sel{background:#ffedd5;border-color:#ea580c;transform:scale(1.02)}
+.piece:disabled{opacity:.35}
+.built{margin:8px 0;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#dcfce7,#fef9c3);border:3px solid var(--good);font-weight:bold;animation:pop .4s}
+
+</style>
+<meta property="og:title" content="בונה משפט">
+<meta property="og:description" content="בונה משפט">
+<meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-parasha-games-matot.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/parasha-games/matot.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://www.kol-toda.co.il/parasha-games/matot.html">
+<script async src="https://www.kol-toda.co.il/a.js"></script>
+</head>
+<body>
+<header class="top">
+<a class="back" href="index.html" aria-label="חזרה לכל הפרשות">&larr; חזרה לכל הפרשות</a>
+<h1>🧩 בונה משפט</h1>
+<p class="sub">פרשת מטות - מחברים תחילת משפט לסופו</p>
+</header>
+<main>
+<section id="intro" class="card">
+<h2>ה׳ אוהב את הדיבור הטוב שלך, וכל מילה טובה שווה לו הרבה 💛</h2>
+<p>בכל סבב יש ארבע תחילות משפט וארבעה סופים, מחידושי פרשת מטות. לחצו על תחילה ואחר כך על הסוף שמתאים לה, והמשפט יתחבר.</p>
+<p class="hint" id="best"></p>
+<button class="big" id="startBtn" aria-label="התחלת המשחק">מתחילים</button>
+</section>
+<section id="play" hidden>
+<div class="hud"><span id="scoreEl" aria-live="polite">⭐ 0</span><div class="bar" role="progressbar" aria-label="התקדמות"><i id="barFill"></i></div><span id="progTxt"></span></div>
+<div id="stage" class="card"></div>
+<div id="fb" class="fb" role="status" aria-live="polite"></div>
+<div id="know" class="know"></div>
+<div id="ctl"></div>
+</section>
+<section id="end" class="card" hidden>
+<h2>סיימנו! ברכה גדולה לך 🎉</h2>
+<p class="stars" id="endStars" aria-label="כוכבים"></p>
+<p id="endScore" style="font-size:1.3rem;font-weight:bold"></p>
+<p id="endBest" class="hint"></p>
+<p id="endBless"></p>
+<div class="talk"><b>שיחה קצרה בבית או בכיתה:</b><br><span id="endTalk"></span></div>
+<p style="text-align:center"><button class="big" id="againBtn" aria-label="לשחק שוב">לשחק שוב</button></p>
+<p style="text-align:center"><a class="back" style="color:var(--accent)" href="index.html" aria-label="חזרה לכל הפרשות">&larr; חזרה לכל הפרשות</a></p>
+<p class="sig">הקול החמישי - הרב יהודה טאוב</p>
+</section>
+</main>
+<footer>הקול החמישי - הרב יהודה טאוב</footer>
+<script>
+const DATA={
+slug:"matot",
+talk:"איזו הבטחה קטנה אתם מבטיחים לעצמכם השבוע, ואיך תשמרו עליה כמו שיהודי שומר על המילה שלו?",
+pairs:[
+{a:"המילה של יהודי היא",b:"דבר קדוש, ולכן שומרים על הדיבור.",know:"בדומה לבורא שברא בדיבור, מי ששומר על דיבורו נעשה נאמן."},
+{a:"משה לא יצא למלחמה במדין, כי",b:"גדל שם וקיבל בית, ולכן שמר על הכרת הטוב.",know:"הכרת הטוב היא גבול שגם אדם גדול אינו חוצה."},
+{a:"מי שמתרגל להכיר טובה לבני אדם",b:"לומד להכיר גם את הטובה של ה׳.",know:"לזכור טובה גם למי שהתרחק אחר כך."},
+{a:"נקמה היא בדרך כלל מידה רעה, אבל",b:"כשהיא לשם כבוד שמים ובידי בית דין, היא מצווה.",know:"אין זה היתר לאדם לעשות דין לעצמו."},
+{a:"דמו של כל יהודי",b:"יקר לפני ה׳, והוא אינו שוכח אף טיפה.",know:"הקב״ה אוהב את בניו ואינו שוכח אף אחד מהם."},
+{a:"בית של אהבה ושלום",b:"הוא משכן קטן, והשכינה שורה בו.",know:"אהבה, כבוד ושלום בבית מזמינים את השכינה."},
+{a:"האדם עומד עם הרגליים על הקרקע",b:"והראש בשמים, ומקדש גם את הדברים הגשמיים.",know:"לא בורחים מהעולם ולא שוקעים בו."},
+{a:"כל ברכה, חסד ומילה טובה",b:"מוסיפים כוח של טוב לעולם.",know:"אין מעשה קטן."},
+{a:"בני גד וראובן רצו לבנות גדרות לצאן, ומשה תיקן:",b:"קודם הילדים ואחר כך הצאן.",know:"שמים את הילדים, הבית והתורה לפני הנכסים."},
+{a:"בני גד וראובן נשארו עם אחיהם",b:"ולא הלכו הביתה עד שלכולם היה בית.",know:"כשחבר קשה לו, נשארים איתו עד שייטב לו."},
+{a:"מעשה טוב בין אדם לחברו",b:"נעשה מצווה כשעושים אותו ׳לפני ה׳׳.",know:"משה שינה את המילים של בני גד וראובן ל׳לפני ה׳׳."},
+{a:"כשמעירים לנו על טעות",b:"מקבלים את התיקון בשמחה, כמו בני גד וראובן.",know:"הם קלטו את התיקון ואימצו את הביטויים של משה."}
+]};
+
+
+const FEEDBACK_OK=["נכון! ה׳ אוהב אותך כל כך 💛","יפה מאוד! אהבת ה׳ מלווה אותך.","מצוין! ה׳ שמח בך ובלימוד שלך.","כל הכבוד! ה׳ מחבק אותך באהבה.","תשובה נכונה! הלב שלך מלא באור של ה׳.","נהדר! ה׳ אוהב כל ילד שלומד תורה.","בדיוק! ה׳ אוהב אותך ושמח בכל צעד שלך.","אלוף! אהבת ה׳ גדולה מכל דבר."];
+const FEEDBACK_TRY=["כמעט! נסה שוב, ה׳ איתך 🤗","לא נורא, ה׳ אוהב אותך גם כשטועים. נסה שוב!","עוד קצת! ה׳ איתך בכל ניסיון.","יופי שאתה מנסה! ה׳ אוהב מי שממשיך."];
+const $=s=>document.querySelector(s);
+const stage=$('#stage'),fb=$('#fb'),knowEl=$('#know'),ctlEl=$('#ctl');
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t;}return a;}
+let okIdx=Math.floor(Math.random()*FEEDBACK_OK.length),tryIdx=0;
+function say(ok,extra){fb.className='fb '+(ok?'good':'try');const m=ok?FEEDBACK_OK[okIdx++%FEEDBACK_OK.length]:FEEDBACK_TRY[tryIdx++%FEEDBACK_TRY.length];fb.textContent=m+(extra?' '+extra:'');}
+function clearFb(){fb.className='fb';fb.textContent='';knowEl.className='know';knowEl.textContent='';ctlEl.innerHTML='';}
+function showKnow(t){if(!t)return;knowEl.textContent='💡 ידעת? '+t;knowEl.className='know on';}
+function setProgress(i,n){$('#barFill').style.width=Math.round(i/n*100)+'%';$('#progTxt').textContent=Math.min(i+1,n)+'/'+n;}
+function setScore(s){$('#scoreEl').textContent='⭐ '+(Number.isInteger(s)?s:s.toFixed(1));}
+function ctl(label,fn){ctlEl.innerHTML='';const b=document.createElement('button');b.className='big';b.textContent=label;b.setAttribute('aria-label',label);b.onclick=fn;ctlEl.appendChild(b);b.focus();}
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
+function optBtn(txt,fn){const b=el('button','opt',txt);b.setAttribute('aria-label',txt);b.onclick=fn;return b;}
+const KEY='game-'+DATA.slug;
+function getBest(){try{return parseFloat(localStorage.getItem(KEY))||0;}catch(e){return 0;}}
+function saveBest(v){try{localStorage.setItem(KEY,String(v));}catch(e){}}
+function showBest(){const b=getBest();$('#best').textContent=b?('השיא שלך: '+b+' אחוז'):'';}
+function finish(score,max){
+  $('#play').hidden=true;$('#end').hidden=false;
+  const pct=max?Math.round(score/max*100):0;
+  const stars=Math.max(1,Math.round(pct/20));
+  $('#endStars').textContent='⭐'.repeat(stars)+'☆'.repeat(5-stars);
+  $('#endScore').textContent='הציון שלך: '+(Number.isInteger(score)?score:score.toFixed(1))+' מתוך '+max+' ('+pct+' אחוז)';
+  const prev=getBest();
+  $('#endBest').textContent=pct>prev?'שיא חדש! כל הכבוד!':(prev?'השיא שלך: '+prev+' אחוז':'');
+  if(pct>prev)saveBest(pct);
+  $('#endBless').textContent='ברכה לך: שה׳ ימלא את ליבך באהבה ובשמחה, ושתמשיך ללמוד ולהאיר. ה׳ אוהב אותך תמיד!';
+  $('#endTalk').textContent=DATA.talk;
+  window.scrollTo(0,0);
+  $('#againBtn').focus();
+}
+function begin(){
+  $('#intro').hidden=true;$('#end').hidden=true;$('#play').hidden=false;
+  setScore(0);clearFb();stage.innerHTML='';
+  startGame();
+}
+$('#startBtn').onclick=begin;
+$('#againBtn').onclick=begin;
+showBest();
+function startGame(){
+  const all=shuffle(DATA.pairs);
+  const rounds=[];
+  for(let k=0;k<all.length;k+=4)rounds.push(all.slice(k,k+4));
+  const MAX=all.length;
+  let r=0,score=0,done=0;
+  function round(){
+    clearFb();
+    if(r>=rounds.length){finish(score,MAX);return;}
+    setProgress(r,rounds.length);
+    const set=rounds[r];
+    let selA=null,selB=null,left=set.length;
+    const mistakes=new Set();
+    stage.innerHTML='';
+    stage.appendChild(el('h3','q','בחרו תחילת משפט, ואז את הסוף שמתאים לה. המשפט יתחבר!'));
+    const cols=el('div','cols');
+    const colA=el('div'),colB=el('div');
+    colA.appendChild(el('div','hint','תחילת המשפט'));
+    colB.appendChild(el('div','hint','סוף המשפט'));
+    cols.appendChild(colA);cols.appendChild(colB);
+    stage.appendChild(cols);
+    const builtBox=el('div');
+    stage.appendChild(builtBox);
+    function mk(txt,cls,col,idx,side){
+      const b=el('button','piece '+cls,txt);
+      b.setAttribute('aria-label',(side==='a'?'תחילת משפט: ':'סוף משפט: ')+txt);
+      b.dataset.i=idx;
+      b.onclick=()=>pick(b,side,idx);
+      col.appendChild(b);
+      return b;
+    }
+    const btnA={},btnB={};
+    shuffle(set.map((p,k)=>k)).forEach(k=>{btnA[k]=mk(set[k].a,'',colA,k,'a');});
+    shuffle(set.map((p,k)=>k)).forEach(k=>{btnB[k]=mk(set[k].b,'endp',colB,k,'b');});
+    function pick(b,side,idx){
+      if(side==='a'){if(selA!==null)btnA[selA].classList.remove('sel');selA=idx;b.classList.add('sel');}
+      else{if(selB!==null)btnB[selB].classList.remove('sel');selB=idx;b.classList.add('sel');}
+      if(selA===null||selB===null)return;
+      if(selA===selB){
+        const k=selA;
+        btnA[k].disabled=true;btnB[k].disabled=true;
+        btnA[k].classList.remove('sel');btnB[k].classList.remove('sel');
+        if(!mistakes.has(k))score++;
+        setScore(score);
+        builtBox.appendChild(el('div','built',set[k].a+' '+set[k].b));
+        say(true);showKnow(set[k].know);
+        selA=null;selB=null;left--;
+        if(left===0){
+          r++;
+          ctl(r>=rounds.length?'לסיום':'לסבב הבא',round);
+        }
+      }else{
+        mistakes.add(selA);mistakes.add(selB);
+        const a=btnA[selA],b2=btnB[selB];
+        a.classList.add('shake');b2.classList.add('shake');
+        setTimeout(()=>{a.classList.remove('shake');b2.classList.remove('shake');},400);
+        a.classList.remove('sel');b2.classList.remove('sel');
+        selA=null;selB=null;
+        say(false);
+      }
+    }
+  }
+  round();
+}
+
+</script>
+</body>
+</html>
