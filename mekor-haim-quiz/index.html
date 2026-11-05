@@ -20,6 +20,17 @@
   h2{max-width:720px;margin:34px auto 0;color:#7b5cff;font-size:1.3em;border-bottom:2px solid #e8dcff;padding-bottom:6px}
   a.card.mk{border-right-color:#f59e0b;background:#fffaf0}
   a.card.mk b{color:#b45309}
+
+  details.card.mk{display:block;cursor:pointer}
+  details.card.mk summary{list-style:none;display:flex;flex-direction:column}
+  details.card.mk summary::-webkit-details-marker{display:none}
+  details.card.mk summary b::after{content:" ▾";color:#b45309}
+  details.card.mk[open] summary b::after{content:" ▴"}
+  .chs{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:10px}
+  .chs a.ch{display:flex;flex-direction:column;background:#fff;border:2px solid #fcd9a6;border-radius:12px;padding:8px 10px;text-decoration:none;color:#2b2b2b}
+  .chs a.ch:hover{border-color:#f59e0b;background:#fff7ea}
+  .chs a.ch b{color:#b45309}
+  .chs a.ch span{font-size:.9em;color:#555}
 </style>
 <meta property="og:title" content="חידוני מקור חיים לתלמידים">
 <meta property="og:description" content="חידוני הלכה בשלוש רמות על פי קיצור שולחן ערוך מקור חיים לתלמידים (הרב חיים דוד הלוי), ובסוף כל שער חידון מושגים ולשון חכמים. לכיתות ג׳–ו׳, בחינם">
@@ -35,6 +46,170 @@
 </head>
 <body>
 <h1>📖 חידוני מקור חיים לתלמידים</h1>
+<header class="top" style="background:none;padding:0;min-height:44px"></header>
+<!-- מסך רישום משותף (build.py מכניס אותו במקום __REG__ בדף הבית, בחידונים ובדף "שלי") – מ-5.11.2026.
+     שומר ב-localStorage "hq-me" = {name, cls, school, grade}. אותם שם+כיתה+בית ספר בכל מחשב = אותו תלמיד בשרת.
+     "דילוג" נשמר ב-"hq-skip". הכפתור בפינה הימנית (.me-btn, או #regChip שנוצר כאן) מציג את השם ופותח את המסך. -->
+<style>
+#regScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#fff3e6,#f1ebff);display:none;align-items:center;justify-content:center;padding:16px;overflow:auto}
+#regScreen.on{display:flex}
+#regScreen .rbox{background:#fff;border-radius:26px;box-shadow:0 10px 40px rgba(60,40,120,.18);padding:26px 22px;max-width:440px;width:100%;text-align:center;font-family:Rubik,Arial,sans-serif;color:#2b2340;line-height:1.7}
+#regScreen h2{margin:0 0 4px;font-size:1.7em}
+#regScreen .rsub{color:#6b6385;margin:0 0 16px}
+#regScreen label{display:block;text-align:right;font-weight:700;margin:10px 0 4px}
+#regScreen input,#regScreen select{width:100%;font:inherit;font-size:1.1em;padding:10px 14px;border:2px solid #cfc3ff;border-radius:14px;outline:none;background:#fff}
+#regScreen input:focus,#regScreen select:focus{border-color:#7b5cff}
+#regScreen .rrow{display:flex;gap:10px}
+#regScreen .rrow>div{flex:1}
+#regScreen .rgo{margin-top:18px;width:100%;border:0;border-radius:16px;padding:13px;font:inherit;font-size:1.2em;font-weight:800;color:#fff;cursor:pointer;background:linear-gradient(120deg,#ff9a3c,#ff5e7e 55%,#7b5cff)}
+#regScreen .rskip{margin-top:10px;background:none;border:0;color:#6b6385;font:inherit;text-decoration:underline;cursor:pointer}
+#regScreen .rmsg{color:#c0392b;font-weight:700;min-height:1.4em;margin-top:6px}
+#regScreen .rnote{font-size:.88em;color:#6b6385;margin-top:12px}
+#regChip{position:absolute;top:10px;right:12px;background:rgba(255,255,255,.92);color:#5a3fd6;font-weight:700;font-size:.8em;border-radius:999px;padding:5px 12px;text-decoration:none;cursor:pointer;border:0;font-family:inherit;z-index:5}
+.top{position:relative}
+.me-btn.named{max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.inq .me-btn.named{display:inline-block;font-size:.72em;top:6px;padding:3px 10px}
+#lbBtn{position:absolute;top:44px;right:12px;background:rgba(255,255,255,.92);color:#b7791f;font-weight:800;font-size:.8em;border-radius:999px;padding:5px 12px;border:0;cursor:pointer;font-family:inherit;z-index:5}
+body.inq #lbBtn{top:6px;right:auto;left:50%;transform:translateX(-50%);font-size:.72em;padding:3px 10px}
+header.top.hasreg{padding-top:84px}
+body.inq header.top.hasreg{padding-top:34px}
+#lbScreen{position:fixed;inset:0;z-index:9998;background:rgba(30,20,60,.55);display:none;align-items:flex-start;justify-content:center;padding:16px;overflow:auto}
+#lbScreen.on{display:flex}
+#lbScreen .rbox{background:#fff;border-radius:24px;max-width:520px;width:100%;padding:20px 18px;font-family:Rubik,Arial,sans-serif;color:#2b2340;line-height:1.6;margin-top:20px}
+#lbScreen h2{margin:0 0 8px;text-align:center}
+#lbScreen h3{margin:14px 0 4px;font-size:1.05em}
+#lbScreen ol{margin:0;padding-inline-start:26px}
+#lbScreen li{padding:3px 0;border-bottom:1px dashed #eee}
+#lbScreen li.me{background:#fff6c2;font-weight:800;border-radius:8px}
+#lbScreen li .p{float:left;font-weight:800;color:#7b5cff}
+#lbScreen li .c{color:#6b6385;font-size:.85em}
+#lbScreen .x{display:block;margin:14px auto 0;border:0;border-radius:14px;padding:10px 26px;font:inherit;font-weight:800;color:#fff;background:#7b5cff;cursor:pointer}
+</style>
+<div id="lbScreen" role="dialog" aria-modal="true" aria-labelledby="lbTtl">
+  <div class="rbox">
+    <h2 id="lbTtl">🏆 לוּחַ הַמְּצֻיָּנִים</h2>
+    <div id="lbQuizWrap" style="display:none"><h3>🎯 בַּחִידוֹן הַזֶּה</h3><ol id="lbQuiz"></ol></div>
+    <h3>⭐ הַכִּי הַרְבֵּה נְקֻדּוֹת – כָּל הַחִידוֹנִים</h3><ol id="lbAll"></ol>
+    <h3>🏫 הַכִּתּוֹת הַמּוֹבִילוֹת</h3><ol id="lbCls"></ol>
+    <button class="x" id="lbClose">סְגִירָה</button>
+  </div>
+</div>
+<div id="regScreen" role="dialog" aria-modal="true" aria-labelledby="regTtl">
+  <div class="rbox">
+    <h2 id="regTtl">👋 שָׁלוֹם וּבְרוּכִים הַבָּאִים!</h2>
+    <p class="rsub">לִפְנֵי שֶׁמַּתְחִילִים – מִי אַתֶּם?</p>
+    <label for="regName">הַשֵּׁם שֶׁלִּי</label>
+    <input id="regName" maxlength="30" autocomplete="off" placeholder="שֵׁם פְּרָטִי וְשֵׁם מִשְׁפָּחָה">
+    <label for="regSchool">בֵּית הַסֵּפֶר</label>
+    <input id="regSchool" maxlength="40" autocomplete="off" placeholder="שֵׁם בֵּית הַסֵּפֶר וְהָעִיר">
+    <div class="rrow">
+      <div>
+        <label for="regGrade">כִּתָּה</label>
+        <select id="regGrade">
+          <option value="">— בַּחֲרוּ —</option>
+          <option value="a">א׳</option><option value="b">ב׳</option><option value="c">ג׳</option><option value="d">ד׳</option>
+          <option value="e">ה׳</option><option value="f">ו׳</option><option value="g">ז׳</option><option value="h">ח׳</option>
+        </select>
+      </div>
+      <div>
+        <label for="regNum">מִסְפַּר כִּתָּה</label>
+        <input id="regNum" maxlength="3" inputmode="numeric" autocomplete="off" placeholder="לְמָשָׁל 2">
+      </div>
+    </div>
+    <div class="rmsg" id="regMsg"></div>
+    <button class="rgo" id="regGo">✅ נִרְשָׁמִים וּמַתְחִילִים</button>
+    <button class="rskip" id="regSkip">לְדַלֵּג – לְשַׂחֵק בְּלִי שֵׁם</button>
+    <button class="rskip" id="regOther" style="display:none">🔄 תַּלְמִיד אַחֵר – לְהִתְחִיל מֵחָדָשׁ</button>
+    <p class="rnote">💡 בְּכָל מַחְשֵׁב בָּעוֹלָם: כּוֹתְבִים אוֹתוֹ שֵׁם, אוֹתוֹ בֵּית סֵפֶר וְאוֹתָהּ כִּתָּה – וּמַמְשִׁיכִים מֵהַמָּקוֹם שֶׁעֲצַרְתֶּם, עִם כָּל הַנְּקֻדּוֹת.</p>
+  </div>
+</div>
+<script>
+(function () {
+  var GR = { a: "א", b: "ב", c: "ג", d: "ד", e: "ה", f: "ו", g: "ז", h: "ח" };
+  function g(id) { return document.getElementById(id); }
+  function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function put(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
+  function me() { try { return JSON.parse(get("hq-me") || "null") || {}; } catch (e) { return {}; } }
+  function registered(m) { return !!(m && m.name && m.cls && m.school); }
+  function gradeOf(cls) {   // "ד׳ 2" -> d (תלמידים שנרשמו לפני המסך הזה)
+    var h = String(cls || "").replace(/[^א-ת]/g, "").charAt(0);
+    for (var k in GR) if (GR[k] === h) return k;
+    return "";
+  }
+  function open() {
+    var m = me();
+    g("regName").value = m.name || ""; g("regSchool").value = m.school || "";
+    g("regGrade").value = m.grade || gradeOf(m.cls); g("regNum").value = (String(m.cls || "").match(/\d+/) || [""])[0];
+    g("regOther").style.display = registered(m) ? "" : "none";
+    g("regSkip").textContent = registered(m) ? "סְגִירָה" : "לְדַלֵּג – לְשַׂחֵק בְּלִי שֵׁם";
+    g("regMsg").textContent = "";
+    g("regScreen").classList.add("on");
+    setTimeout(function () { (registered(m) ? g("regGo") : g("regName")).focus(); }, 50);
+  }
+  function close() { g("regScreen").classList.remove("on"); }
+  function save() {
+    var n = g("regName").value.trim(), s = g("regSchool").value.trim(), gr = g("regGrade").value, num = g("regNum").value.replace(/\D/g, "");
+    if (!n) { g("regMsg").textContent = "✍️ כִּתְבוּ אֶת הַשֵּׁם"; g("regName").focus(); return; }
+    if (!s) { g("regMsg").textContent = "✍️ כִּתְבוּ אֶת שֵׁם בֵּית הַסֵּפֶר"; g("regSchool").focus(); return; }
+    if (!gr) { g("regMsg").textContent = "✍️ בַּחֲרוּ כִּתָּה"; g("regGrade").focus(); return; }
+    var old = me(), cls = GR[gr] + "׳" + (num ? " " + num : "");
+    put("hq-me", JSON.stringify({ name: n, cls: cls, school: s, grade: gr }));
+    put("hq-skip", null);
+    if (old.name !== n || old.cls !== cls || old.school !== s) location.reload(); else close();
+  }
+  function chip() {
+    var m = me(), b = document.querySelector(".me-btn"), label = registered(m) ? "👤 " + m.name : "👤 הַרְשָׁמָה";
+    if (!b) {   // דפים בלי כפתור "שלי" (דף הבית): כפתור משלנו בפינה הימנית
+      var top = document.querySelector("header.top"); if (!top) return;
+      b = document.createElement("a"); b.id = "regChip"; b.href = "profile.html"; top.appendChild(b);
+    }
+    if (registered(m)) { b.textContent = label; b.title = "הַכִּתָּה: " + m.cls + " · " + m.school + " (לְהַחְלָפָה – ✏️)"; b.classList.add("named"); }
+    if (!registered(m)) { b.textContent = label; b.onclick = function (e) { e.preventDefault(); open(); }; return; }
+    var pen = document.createElement("button"); pen.type = "button"; pen.textContent = "✏️"; pen.title = "לְהַחְלִיף שֵׁם / כִּתָּה";
+    pen.style.cssText = "background:none;border:0;cursor:pointer;font-size:1em;margin-inline-start:4px;padding:0";
+    pen.onclick = function (e) { e.preventDefault(); e.stopPropagation(); open(); };
+    b.appendChild(pen);
+  }
+  g("regGo").onclick = save;
+  g("regSkip").onclick = function () { if (!registered(me())) put("hq-skip", "1"); close(); };
+  g("regOther").onclick = function () {
+    put("hq-me", null); put("hq-skip", null);
+    g("regName").value = g("regSchool").value = g("regNum").value = ""; g("regGrade").value = "";
+    g("regOther").style.display = "none"; g("regName").focus();
+  };
+  ["regName", "regSchool", "regNum"].forEach(function (id) { g(id).addEventListener("keydown", function (e) { if (e.key === "Enter") save(); }); });
+  /* לוח המצוינים – תמיד אפשר לפתוח (כפתור 🏆 בכותרת) */
+  function nk(x) { return String(x || "").toLowerCase().replace(/[^א-תa-z0-9]/g, ""); }
+  function esc2(x) { var d = document.createElement("div"); d.textContent = x == null ? "" : String(x); return d.innerHTML; }
+  function li(r, v, mine) { return '<li class="' + (mine ? "me" : "") + '"><span class="p">' + v + "</span>" + esc2(r.name || r.cls) + ' <span class="c">' + esc2(r.name ? [r.cls, r.school].filter(Boolean).join(", ") : r.school + " · " + r.students + " תַּלְמִידִים") + "</span></li>"; }
+  function fill(id, url, row) {
+    g(id).innerHTML = "<li>טוֹעֵן…</li>";
+    fetch(url).then(function (r) { return r.json(); }).then(function (d) {
+      g(id).innerHTML = (d.top || []).map(row).join("") || "<li>עוֹד אֵין כָּאן אַף אֶחָד – אוּלַי אַתֶּם הָרִאשׁוֹנִים? 🙂</li>";
+    }).catch(function () { g(id).innerHTML = "<li>לֹא נִטְעַן כָּרֶגַע</li>"; });
+  }
+  function openLb() {
+    var api = window.API_URL, m = me(), isMe = function (r) { return registered(m) && nk(r.name) === nk(m.name) && nk(r.cls) === nk(m.cls) && nk(r.school) === nk(m.school); };
+    g("lbScreen").classList.add("on");
+    if (!api) { g("lbAll").innerHTML = g("lbCls").innerHTML = "<li>הַלּוּחַ יִפָּתַח בְּקָרוֹב</li>"; return; }
+    if (window.QUIZ && QUIZ.id) { g("lbQuizWrap").style.display = ""; fill("lbQuiz", api + "?action=board&limit=10&game=" + encodeURIComponent(QUIZ.id), function (r) { return li(r, r.score, isMe(r)); }); }
+    fill("lbAll", api + "?action=points&limit=10", function (r) { return li(r, r.points, isMe(r)); });
+    fill("lbCls", api + "?action=classes&limit=10", function (r) { return li(r, r.avg, registered(m) && nk(r.cls) === nk(m.cls) && nk(r.school) === nk(m.school)); });
+  }
+  (function () {
+    var top = document.querySelector("header.top"); if (!top) return;
+    var b = document.createElement("button"); b.id = "lbBtn"; b.type = "button"; b.textContent = "🏆 לוּחַ הַמְּצֻיָּנִים"; b.onclick = openLb; top.appendChild(b); top.classList.add("hasreg");
+    g("lbClose").onclick = function () { g("lbScreen").classList.remove("on"); };
+    g("lbScreen").addEventListener("click", function (e) { if (e.target.id === "lbScreen") g("lbScreen").classList.remove("on"); });
+  })();
+  window.HQREG = { openLb: openLb, open: open, me: me, registered: registered, gradeOf: gradeOf };
+  chip();
+  if (!registered(me()) && !get("hq-skip")) open();
+})();
+</script>
+
+<script>var API_URL = "https://script.google.com/macros/s/AKfycbxnmfZcen-MXI1Af0a61_m2awo_WIz19wcbWnl_pgywOYpj2f7kgT9T08icGmRV8Oa7/exec";</script>
+
 <p class="sub">על פי קיצור שולחן ערוך מקור חיים לתלמידים (הרב חיים דוד הלוי זצ"ל) – חידוני הלכה בשלוש רמות, ובסוף כל שער חידון מושגים ולשון חכמים 🔑. לכיתות ג׳–ו׳</p>
 <div class="grid">
 <h2>שַׁעַר רִאשׁוֹן – הַשְׁכָּמַת הַבֹּקֶר</h2>
@@ -45,13 +220,33 @@
   <a class="card" href="mekorhaim-06.html"><b>6. צִיצִית – חֵלֶק א׳</b><span>פרק ז</span></a>
   <a class="card" href="mekorhaim-07.html"><b>7. הַטַּלִּית וְחוּטֵי הַצִּיצִית</b><span>פרק ז</span></a>
   <a class="card" href="mekorhaim-08.html"><b>8. טַלִּית שְׁאוּלָה וּפְתִיל תְּכֵלֶת</b><span>פרק ז</span></a>
-  <a class="card mk" href="mekorhaim-mk1.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – שַׁעַר רִאשׁוֹן: הַשְׁכָּמַת הַבֹּקֶר</b><span>פרקים א-ז: 13 מילים בתמונה, 19 מושגים, 20 מילים לכתיבה</span></a>
+  <details class="card mk"><summary><b>🔑 מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – הַשְׁכָּמַת הַבֹּקֶר</b><span>בּוֹחֲרִים פֶּרֶק – 5 חִידוֹנִים קְצָרִים, בְּכָל אֶחָד מִלִּים וּמֻשָּׂגִים שֶׁל הַפֶּרֶק</span></summary>
+    <div class="chs">
+      <a class="ch" href="mekorhaim-mkp001.html"><b>פְּרָקִים א׳–ב׳</b><span>הַשְׁכָּמַת הַבֹּקֶר</span></a>
+      <a class="ch" href="mekorhaim-mkp003.html"><b>פְּרָקִים ג׳–ד׳</b><span>בִּרְכַּת אֲשֶׁר יָצַר וּבִרְכוֹת הַתּוֹרָה</span></a>
+      <a class="ch" href="mekorhaim-mkp005.html"><b>פֶּרֶק ה׳</b><span>בִּרְכוֹת הַשַּׁחַר</span></a>
+      <a class="ch" href="mekorhaim-mkp006.html"><b>פֶּרֶק ו׳</b><span>הַשְׁכָּמַת בֵּית הַכְּנֶסֶת וּקְדֻשָּׁתוֹ</span></a>
+      <a class="ch" href="mekorhaim-mkp007.html"><b>פֶּרֶק ז׳</b><span>צִיצִית</span></a>
+    </div>
+  </details>
 <h2>שַׁעַר שֵׁנִי – תְּפִלָּה</h2>
   <a class="card" href="mekorhaim-05.html"><b>5. פֶּרֶק ח׳: קַדִּישׁ</b><span>פרק ח</span></a>
   <a class="card" href="mekorhaim-09.html"><b>9. מִנְיַן עֲשָׂרָה</b><span>פרק ט</span></a>
-  <a class="card mk" href="mekorhaim-mk2.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – קַדִּישׁ, מִנְיָן, אָמֵן וּקְרִיאַת שְׁמַע</b><span>פרקים ח-יב: 8 מילים בתמונה, 17 מושגים, 16 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mk3.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – תְּפִלַּת שְׁמוֹנֶה עֶשְׂרֵה וְהַגְּשָׁמִים</b><span>פרקים יג-טז: 9 מילים בתמונה, 15 מושגים, 14 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mk4.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – חֲזָרַת הַשַּׁ״ץ, בִּרְכַּת כֹּהֲנִים, מִנְחָה וְעַרְבִית</b><span>פרקים יג-כא: 9 מילים בתמונה, 18 מושגים, 16 מילים לכתיבה</span></a>
+  <details class="card mk"><summary><b>🔑 מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – תְּפִלָּה</b><span>בּוֹחֲרִים פֶּרֶק – 11 חִידוֹנִים קְצָרִים, בְּכָל אֶחָד מִלִּים וּמֻשָּׂגִים שֶׁל הַפֶּרֶק</span></summary>
+    <div class="chs">
+      <a class="ch" href="mekorhaim-mkp008.html"><b>פֶּרֶק ח׳</b><span>קַדִּישׁ</span></a>
+      <a class="ch" href="mekorhaim-mkp009.html"><b>פֶּרֶק ט׳</b><span>מִנְיַן עֲשָׂרָה</span></a>
+      <a class="ch" href="mekorhaim-mkp010.html"><b>פֶּרֶק י׳</b><span>קַדִּישׁ, מִנְיָן, אָמֵן וּקְרִיאַת שְׁמַע</span></a>
+      <a class="ch" href="mekorhaim-mkp011.html"><b>פְּרָקִים י״א–י״ב</b><span>קַדִּישׁ, מִנְיָן, אָמֵן וּקְרִיאַת שְׁמַע</span></a>
+      <a class="ch" href="mekorhaim-mkp013.html"><b>פֶּרֶק י״ג</b><span>תְּפִלַּת שְׁמוֹנֶה עֶשְׂרֵה וְהַגְּשָׁמִים</span></a>
+      <a class="ch" href="mekorhaim-mkp014.html"><b>פֶּרֶק י״ד</b><span>תְּפִלַּת שְׁמוֹנֶה עֶשְׂרֵה וְהַגְּשָׁמִים</span></a>
+      <a class="ch" href="mekorhaim-mkp015.html"><b>פֶּרֶק ט״ו</b><span>תְּפִלַּת שְׁמוֹנֶה עֶשְׂרֵה וְהַגְּשָׁמִים</span></a>
+      <a class="ch" href="mekorhaim-mkp016.html"><b>פֶּרֶק ט״ז</b><span>תְּפִלַּת שְׁמוֹנֶה עֶשְׂרֵה וְהַגְּשָׁמִים</span></a>
+      <a class="ch" href="mekorhaim-mkp017.html"><b>פְּרָקִים י״ז–י״ח</b><span>חֲזָרַת הַשַּׁ״ץ, בִּרְכַּת כֹּהֲנִים, מִנְחָה וְעַרְבִית</span></a>
+      <a class="ch" href="mekorhaim-mkp019.html"><b>פְּרָקִים י״ט–כ׳</b><span>חֲזָרַת הַשַּׁ״ץ, בִּרְכַּת כֹּהֲנִים, מִנְחָה וְעַרְבִית</span></a>
+      <a class="ch" href="mekorhaim-mkp021.html"><b>פֶּרֶק כ״א</b><span>חֲזָרַת הַשַּׁ״ץ, בִּרְכַּת כֹּהֲנִים, מִנְחָה וְעַרְבִית</span></a>
+    </div>
+  </details>
 <h2>שַׁעַר שְׁלִישִׁי – בְּרָכוֹת</h2>
   <a class="card" href="mekorhaim-10.html"><b>10. נְטִילַת יָדַיִם לִפְנֵי הַסְּעוּדָה</b><span>פרק כב</span></a>
   <a class="card" href="mekorhaim-11.html"><b>11. הַמּוֹצִיא וּבִרְכַּת הַמָּזוֹן</b><span>פרקים כג-כד</span></a>
@@ -67,8 +262,18 @@
   <a class="card" href="mekorhaim-21.html"><b>21. בִּרְכַּת הַגּוֹמֵל</b><span>פרק לג</span></a>
   <a class="card" href="mekorhaim-22.html"><b>22. בִּרְכוֹת הָרְאִיָּה</b><span>פרקים לד-לה</span></a>
   <a class="card" href="mekorhaim-23.html"><b>23. קֶשֶׁת, אִילָנוֹת וְחַמָּה</b><span>פרק לה</span></a>
-  <a class="card mk" href="mekorhaim-mks3a.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – נְטִילַת יָדַיִם, בִּרְכַּת הַמָּזוֹן וּבִרְכוֹת הַנֶּהֱנִין</b><span>פרקים כב-כח: 7 מילים בתמונה, 16 מושגים, 10 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mks3b.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – בִּרְכוֹת הָרֵיחַ, הַשֶּׁבַח וְהָרְאִיָּה</b><span>פרקים כט-לה: 7 מילים בתמונה, 17 מושגים, 9 מילים לכתיבה</span></a>
+  <details class="card mk"><summary><b>🔑 מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – בְּרָכוֹת</b><span>בּוֹחֲרִים פֶּרֶק – 8 חִידוֹנִים קְצָרִים, בְּכָל אֶחָד מִלִּים וּמֻשָּׂגִים שֶׁל הַפֶּרֶק</span></summary>
+    <div class="chs">
+      <a class="ch" href="mekorhaim-mkp022.html"><b>פֶּרֶק כ״ב</b><span>נְטִילַת יָדַיִם לִפְנֵי הַסְּעוּדָה</span></a>
+      <a class="ch" href="mekorhaim-mkp023.html"><b>פְּרָקִים כ״ג–כ״ד</b><span>הַמּוֹצִיא וּבִרְכַּת הַמָּזוֹן</span></a>
+      <a class="ch" href="mekorhaim-mkp025.html"><b>פֶּרֶק כ״ה</b><span>בִּרְכַּת חֲמֵשֶׁת מִינֵי דָּגָן</span></a>
+      <a class="ch" href="mekorhaim-mkp026.html"><b>פֶּרֶק כ״ו</b><span>מֵעֵין שָׁלוֹשׁ וּפְרִי הָעֵץ</span></a>
+      <a class="ch" href="mekorhaim-mkp027.html"><b>פְּרָקִים כ״ז–כ״ט</b><span>דִּין קְדִימָה בִּבְרָכוֹת, מְכַוְּנִים אֶת הַלֵּב בַּבְּרָכָה, בִּרְכַּת הָרֵיחַ</span></a>
+      <a class="ch" href="mekorhaim-mkp030.html"><b>פְּרָקִים ל׳–ל״ב</b><span>שֶׁהֶחֱיָנוּ וּבִרְכוֹת הַנִּסִּים, תְּפִלַּת הַדֶּרֶךְ וּזְהִירוּת בַּדְּרָכִים</span></a>
+      <a class="ch" href="mekorhaim-mkp033.html"><b>פֶּרֶק ל״ג</b><span>בִּרְכַּת הַגּוֹמֵל</span></a>
+      <a class="ch" href="mekorhaim-mkp034.html"><b>פְּרָקִים ל״ד–ל״ה</b><span>בִּרְכוֹת הָרְאִיָּה</span></a>
+    </div>
+  </details>
 <h2>שַׁעַר רְבִיעִי – שַׁבָּת</h2>
   <a class="card" href="mekorhaim-24.html"><b>24. גְּדֻלַּת הַשַּׁבָּת וּכְבוֹדָהּ</b><span>פרקים לו-לז</span></a>
   <a class="card" href="mekorhaim-25.html"><b>25. מְכִינִים אֶת הַשַּׁבָּת</b><span>פרקים לח-לט</span></a>
@@ -90,11 +295,22 @@
   <a class="card" href="mekorhaim-41.html"><b>41. אַרְבַּע רְשֻׁיּוֹת הַשַּׁבָּת</b><span>פרק נב</span></a>
   <a class="card" href="mekorhaim-42.html"><b>42. מֻקְצֶה בְּשַׁבָּת – חֵלֶק א׳</b><span>פרק נג</span></a>
   <a class="card" href="mekorhaim-43.html"><b>43. מֻקְצֶה – חֵלֶק ב׳</b><span>פרק נג</span></a>
-  <a class="card mk" href="mekorhaim-mks4a.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – כְּבוֹד הַשַּׁבָּת, נֵרוֹת, קִדּוּשׁ וּסְעוּדוֹת</b><span>פרקים לו-מד: 6 מילים בתמונה, 16 מושגים, 10 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mks4b.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – קְרִיאַת הַתּוֹרָה, מוֹצָאֵי שַׁבָּת וְהַבְדָּלָה</b><span>פרקים מה-מז: 6 מילים בתמונה, 14 מושגים, 11 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mks4c.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – מְלָאכוֹת שַׁבָּת, בּוֹרֵר וּבִשּׁוּל</b><span>פרקים מח-נג: 6 מילים בתמונה, 15 מושגים, 11 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mks4d.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – ״מִמְּצוֹא חֶפְצְךָ״, אַרְבַּע רְשֻׁיּוֹת וְעֵרוּב</b><span>פרקים נא-נב: 6 מילים בתמונה, 13 מושגים, 10 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mks4e.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – מֻקְצֶה</b><span>פרק נג: 5 מילים בתמונה, 13 מושגים, 9 מילים לכתיבה</span></a>
+  <details class="card mk"><summary><b>🔑 מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – שַׁבָּת</b><span>בּוֹחֲרִים פֶּרֶק – 12 חִידוֹנִים קְצָרִים, בְּכָל אֶחָד מִלִּים וּמֻשָּׂגִים שֶׁל הַפֶּרֶק</span></summary>
+    <div class="chs">
+      <a class="ch" href="mekorhaim-mkp036.html"><b>פְּרָקִים ל״ו–ל״ז</b><span>גְּדֻלַּת הַשַּׁבָּת וּכְבוֹדָהּ</span></a>
+      <a class="ch" href="mekorhaim-mkp038.html"><b>פְּרָקִים ל״ח–מ׳</b><span>מְכִינִים אֶת הַשַּׁבָּת, נֵרוֹת שַׁבָּת</span></a>
+      <a class="ch" href="mekorhaim-mkp041.html"><b>פֶּרֶק מ״א</b><span>קַבָּלַת שַׁבָּת</span></a>
+      <a class="ch" href="mekorhaim-mkp042.html"><b>פְּרָקִים מ״ב–מ״ג</b><span>קִדּוּשׁ עַל הַיַּיִן, שָׁלוֹשׁ סְעוּדוֹת וּתְפִלַּת מוּסָף</span></a>
+      <a class="ch" href="mekorhaim-mkp044.html"><b>פְּרָקִים מ״ד–מ״ה</b><span>שָׁלוֹשׁ סְעוּדוֹת וּתְפִלַּת מוּסָף, קְרִיאַת הַתּוֹרָה</span></a>
+      <a class="ch" href="mekorhaim-mkp046.html"><b>פֶּרֶק מ״ו</b><span>עַרְבִית שֶׁל מוֹצָאֵי שַׁבָּת וְהַבְדָּלָה בַּתְּפִלָּה</span></a>
+      <a class="ch" href="mekorhaim-mkp047.html"><b>פֶּרֶק מ״ז</b><span>הַבְדָּלָה עַל הַכּוֹס</span></a>
+      <a class="ch" href="mekorhaim-mkp048.html"><b>פֶּרֶק מ״ח</b><span>הַמְּלָאכוֹת הָאֲסוּרוֹת בְּשַׁבָּת</span></a>
+      <a class="ch" href="mekorhaim-mkp049.html"><b>פְּרָקִים מ״ט–נ׳</b><span>בּוֹרֵר בְּשַׁבָּת, בִּשּׁוּל בְּשַׁבָּת</span></a>
+      <a class="ch" href="mekorhaim-mkp051.html"><b>פֶּרֶק נ״א</b><span>מִמְּצוֹא חֶפְצְךָ וְדַבֵּר דָּבָר</span></a>
+      <a class="ch" href="mekorhaim-mkp052.html"><b>פֶּרֶק נ״ב</b><span>אַרְבַּע רְשֻׁיּוֹת הַשַּׁבָּת</span></a>
+      <a class="ch" href="mekorhaim-mkp053.html"><b>פֶּרֶק נ״ג</b><span>מֻקְצֶה בְּשַׁבָּת</span></a>
+    </div>
+  </details>
 <h2>שַׁעַר חֲמִישִׁי – מוֹעֲדֵי יִשְׂרָאֵל</h2>
   <a class="card" href="mekorhaim-44.html"><b>44. רֹאשׁ חֹדֶשׁ</b><span>פרק נד</span></a>
   <a class="card" href="mekorhaim-45.html"><b>45. רֹאשׁ חֹדֶשׁ – הַלֵּל וּקְרִיאַת הַתּוֹרָה</b><span>פרק נד</span></a>
@@ -158,32 +374,72 @@
   <a class="card" href="mekorhaim-103.html"><b>103. קְרִיאַת הַמְּגִלָּה (הֶמְשֵׁךְ)</b><span>פרק צג</span></a>
   <a class="card" href="mekorhaim-104.html"><b>104. מִצְווֹת יוֹם הַפּוּרִים</b><span>פרק צד</span></a>
   <a class="card" href="mekorhaim-105.html"><b>105. שְׁנֵי יְמֵי הַפּוּרִים</b><span>פרק צה</span></a>
-  <a class="card mk" href="mekorhaim-mks5a.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – רֹאשׁ חֹדֶשׁ, בִּרְכַּת הַלְּבָנָה, חֹדֶשׁ נִיסָן</b><span>פרקים נד-נו: 6 מילים בתמונה, 12 מושגים, 12 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mks5b.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – אִסּוּר חָמֵץ, בְּדִיקָה וּבִעוּר, הַכְשָׁרַת כֵּלִים, עֶרֶב פֶּסַח</b><span>פרקים נז-סא: 6 מילים בתמונה, 14 מושגים, 12 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mks5c.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – לֵיל הַסֵּדֶר, סִימָנֵי הַסֵּדֶר, תְּפִלּוֹת הַחַג וּשְׁבִיעִי שֶׁל פֶּסַח</b><span>פרקים סג-סה: 6 מילים בתמונה, 13 מושגים, 11 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mks5d.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – שִׂמְחַת יוֹם טוֹב, מְלָאכָה בְּיוֹם טוֹב, חֹל הַמּוֹעֵד וְעֵרוּב תַּבְשִׁילִין</b><span>פרקים סו-סט: 6 מילים בתמונה, 13 מושגים, 11 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mks5e.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – סְפִירַת הָעֹמֶר, חַג הַשָּׁבוּעוֹת, תַּעֲנִיּוֹת הַחֻרְבָּן, בֵּין הַמְּצָרִים וְתִשְׁעָה בְּאָב</b><span>פרקים ע-עג: 6 מילים בתמונה, 13 מושגים, 10 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mks5f.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – אֱלוּל, רֹאשׁ הַשָּׁנָה, שׁוֹפָר וּתְשׁוּבָה</b><span>פרקים עד-עט: 6 מילים בתמונה, 15 מושגים, 11 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mks5g.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – עֶרֶב יוֹם הַכִּפּוּרִים, הַתַּעֲנִית וְהַתְּפִלּוֹת</b><span>פרקים פ-פב: 5 מילים בתמונה, 14 מושגים, 11 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mks5h.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – סֻכָּה, אַרְבָּעָה מִינִים, הוֹשַׁעְנוֹת וְשִׂמְחַת תּוֹרָה</b><span>פרקים פג-פט: 6 מילים בתמונה, 15 מושגים, 10 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mks5i.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – חֲנֻכָּה, ט״וּ בִּשְׁבָט, אֲדָר וּפוּרִים</b><span>פרקים צ-צה: 5 מילים בתמונה, 16 מושגים, 12 מילים לכתיבה</span></a>
+  <details class="card mk"><summary><b>🔑 מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – מוֹעֲדֵי יִשְׂרָאֵל</b><span>בּוֹחֲרִים פֶּרֶק – 27 חִידוֹנִים קְצָרִים, בְּכָל אֶחָד מִלִּים וּמֻשָּׂגִים שֶׁל הַפֶּרֶק</span></summary>
+    <div class="chs">
+      <a class="ch" href="mekorhaim-mkp054.html"><b>פֶּרֶק נ״ד</b><span>רֹאשׁ חֹדֶשׁ</span></a>
+      <a class="ch" href="mekorhaim-mkp055.html"><b>פֶּרֶק נ״ה</b><span>בִּרְכַּת הַלְּבָנָה</span></a>
+      <a class="ch" href="mekorhaim-mkp056.html"><b>פֶּרֶק נ״ו</b><span>דִּינֵי חֹדֶשׁ נִיסָן וּמִנְהָגָיו</span></a>
+      <a class="ch" href="mekorhaim-mkp057.html"><b>פְּרָקִים נ״ז–נ״ח</b><span>אִסּוּר חָמֵץ, בְּדִיקַת חָמֵץ</span></a>
+      <a class="ch" href="mekorhaim-mkp059.html"><b>פֶּרֶק נ״ט</b><span>הַכְשָׁרַת הַכֵּלִים לְפֶסַח</span></a>
+      <a class="ch" href="mekorhaim-mkp060.html"><b>פְּרָקִים ס׳–ס״א</b><span>מַכְשִׁירִים אֶת הַמִּטְבָּח לְפֶסַח, עֶרֶב פֶּסַח</span></a>
+      <a class="ch" href="mekorhaim-mkp063.html"><b>פֶּרֶק ס״ג</b><span>לֵיל הַסֵּדֶר</span></a>
+      <a class="ch" href="mekorhaim-mkp064.html"><b>פֶּרֶק ס״ד</b><span>סִימָנֵי הַסֵּדֶר</span></a>
+      <a class="ch" href="mekorhaim-mkp065.html"><b>פְּרָקִים ס״ה–ס״ו</b><span>שְׁבִיעִי שֶׁל פֶּסַח וְשִׂמְחַת יוֹם טוֹב</span></a>
+      <a class="ch" href="mekorhaim-mkp067.html"><b>פְּרָקִים ס״ז–ס״ח</b><span>אִסּוּר מְלָאכָה בְּיָמִים טוֹבִים, חֹל הַמּוֹעֵד</span></a>
+      <a class="ch" href="mekorhaim-mkp069.html"><b>פְּרָקִים ס״ט–ע׳</b><span>עֵרוּב תַּבְשִׁילִין, בֵּין פֶּסַח לַעֲצֶרֶת</span></a>
+      <a class="ch" href="mekorhaim-mkp071.html"><b>פֶּרֶק ע״א</b><span>חַג הַשָּׁבוּעוֹת</span></a>
+      <a class="ch" href="mekorhaim-mkp072.html"><b>פֶּרֶק ע״ב</b><span>תַּעֲנִיּוֹת הַחֻרְבָּן וּבֵין הַמְּצָרִים</span></a>
+      <a class="ch" href="mekorhaim-mkp073.html"><b>פְּרָקִים ע״ג–ע״ד</b><span>תַּעֲנִית תִּשְׁעָה בְּאָב, חֹדֶשׁ אֱלוּל</span></a>
+      <a class="ch" href="mekorhaim-mkp075.html"><b>פְּרָקִים ע״ה–ע״ו</b><span>עֶרֶב רֹאשׁ הַשָּׁנָה, לֵיל רֹאשׁ הַשָּׁנָה</span></a>
+      <a class="ch" href="mekorhaim-mkp077.html"><b>פֶּרֶק ע״ז</b><span>קוֹל הַשּׁוֹפָר בְּרֹאשׁ הַשָּׁנָה</span></a>
+      <a class="ch" href="mekorhaim-mkp078.html"><b>פְּרָקִים ע״ח–ע״ט</b><span>מִצְוַת הַתְּשׁוּבָה, תְּפִלּוֹת עֲשֶׂרֶת יְמֵי תְּשׁוּבָה</span></a>
+      <a class="ch" href="mekorhaim-mkp080.html"><b>פְּרָקִים פ׳–פ״א</b><span>עֶרֶב יוֹם הַכִּפּוּרִים, תַּעֲנִית יוֹם הַכִּפּוּרִים</span></a>
+      <a class="ch" href="mekorhaim-mkp082.html"><b>פֶּרֶק פ״ב</b><span>תְּפִלּוֹת יוֹם הַכִּפּוּרִים</span></a>
+      <a class="ch" href="mekorhaim-mkp083.html"><b>פֶּרֶק פ״ג</b><span>בְּנִיַּת הַסֻּכָּה</span></a>
+      <a class="ch" href="mekorhaim-mkp084.html"><b>פְּרָקִים פ״ד–פ״ה</b><span>לֵיל חַג הַסֻּכּוֹת וּמִצְוַת יְשִׁיבַת סֻכָּה, מִי חַיָּב בַּסֻּכָּה?</span></a>
+      <a class="ch" href="mekorhaim-mkp086.html"><b>פֶּרֶק פ״ו</b><span>אַרְבַּעַת הַמִּינִים – לוּלָב וַהֲדַס</span></a>
+      <a class="ch" href="mekorhaim-mkp087.html"><b>פְּרָקִים פ״ז–פ״ח</b><span>נְטִילַת לוּלָב, נִסּוּךְ הַמַּיִם וַהוֹשַׁעְנוֹת</span></a>
+      <a class="ch" href="mekorhaim-mkp089.html"><b>פְּרָקִים פ״ט–צ׳</b><span>שְׁמִינִי עֲצֶרֶת וְשִׂמְחַת תּוֹרָה, חֲנֻכָּה – הַנֵּס וְהַדְלָקַת הַנֵּרוֹת</span></a>
+      <a class="ch" href="mekorhaim-mkp091.html"><b>פְּרָקִים צ״א–צ״ב</b><span>ט״וּ בִּשְׁבָט, חֹדֶשׁ אֲדָר וּמַחֲצִית הַשֶּׁקֶל</span></a>
+      <a class="ch" href="mekorhaim-mkp093.html"><b>פֶּרֶק צ״ג</b><span>קְרִיאַת הַמְּגִלָּה</span></a>
+      <a class="ch" href="mekorhaim-mkp094.html"><b>פְּרָקִים צ״ד–צ״ה</b><span>מִצְווֹת יוֹם הַפּוּרִים, שְׁנֵי יְמֵי הַפּוּרִים</span></a>
+    </div>
+  </details>
 <h2>שַׁעַר שִׁשִּׁי – תַּלְמוּד תּוֹרָה</h2>
   <a class="card" href="mekorhaim-106.html"><b>106. תַּלְמוּד תּוֹרָה וּכְבוֹד רַבּוֹ</b><span>פרק צו</span></a>
   <a class="card" href="mekorhaim-107.html"><b>107. כָּבוֹד לְסִפְרֵי הַקֹּדֶשׁ</b><span>פרק צז</span></a>
   <a class="card" href="mekorhaim-108.html"><b>108. גְּנִיזָה</b><span>פרק צח</span></a>
-  <a class="card mk" href="mekorhaim-mks6.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – תַּלְמוּד תּוֹרָה וְסִפְרֵי קֹדֶשׁ</b><span>פרקים צו-צח: 6 מילים בתמונה, 14 מושגים, 9 מילים לכתיבה</span></a>
+  <details class="card mk"><summary><b>🔑 מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – תַּלְמוּד תּוֹרָה</b><span>בּוֹחֲרִים פֶּרֶק – 2 חִידוֹנִים קְצָרִים, בְּכָל אֶחָד מִלִּים וּמֻשָּׂגִים שֶׁל הַפֶּרֶק</span></summary>
+    <div class="chs">
+      <a class="ch" href="mekorhaim-mkp096.html"><b>פֶּרֶק צ״ו</b><span>תַּלְמוּד תּוֹרָה וּכְבוֹד רַבּוֹ</span></a>
+      <a class="ch" href="mekorhaim-mkp097.html"><b>פְּרָקִים צ״ז–צ״ח</b><span>כָּבוֹד לְסִפְרֵי הַקֹּדֶשׁ, גְּנִיזָה</span></a>
+    </div>
+  </details>
 <h2>שַׁעַר שְׁבִיעִי – כַּשְׁרוּת הַמַּאֲכָלִים</h2>
   <a class="card" href="mekorhaim-109.html"><b>109. כַּשְׁרוּת בַּעֲלֵי חַיִּים</b><span>פרק צט</span></a>
   <a class="card" href="mekorhaim-110.html"><b>110. אִסּוּר דָּם בְּבָשָׂר וּבְבֵיצִים</b><span>פרק ק</span></a>
   <a class="card" href="mekorhaim-111.html"><b>111. בָּשָׂר וְחָלָב</b><span>פרק קא</span></a>
-  <a class="card mk" href="mekorhaim-mks7.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – כַּשְׁרוּת הַמַּאֲכָלִים</b><span>פרקים צט-קא: 9 מילים בתמונה, 13 מושגים, 11 מילים לכתיבה</span></a>
+  <details class="card mk"><summary><b>🔑 מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – כַּשְׁרוּת הַמַּאֲכָלִים</b><span>בּוֹחֲרִים פֶּרֶק – 3 חִידוֹנִים קְצָרִים, בְּכָל אֶחָד מִלִּים וּמֻשָּׂגִים שֶׁל הַפֶּרֶק</span></summary>
+    <div class="chs">
+      <a class="ch" href="mekorhaim-mkp099.html"><b>פֶּרֶק צ״ט</b><span>כַּשְׁרוּת בַּעֲלֵי חַיִּים</span></a>
+      <a class="ch" href="mekorhaim-mkp100.html"><b>פֶּרֶק ק׳</b><span>אִסּוּר דָּם בְּבָשָׂר וּבְבֵיצִים</span></a>
+      <a class="ch" href="mekorhaim-mkp101.html"><b>פֶּרֶק ק״א</b><span>בָּשָׂר וְחָלָב</span></a>
+    </div>
+  </details>
 <h2>שַׁעַר שְׁמִינִי – אֶרֶץ יִשְׂרָאֵל וּמִצְווֹתֶיהָ</h2>
   <a class="card" href="mekorhaim-112.html"><b>112. קְדֻשַּׁת אֶרֶץ יִשְׂרָאֵל</b><span>פרק קב</span></a>
   <a class="card" href="mekorhaim-113.html"><b>113. עָרְלָה וְנֶטַע רְבָעִי</b><span>פרק קג</span></a>
   <a class="card" href="mekorhaim-114.html"><b>114. תְּרוּמוֹת וּמַעַשְׂרוֹת</b><span>פרק קד</span></a>
   <a class="card" href="mekorhaim-115.html"><b>115. שְׁנַת הַשְּׁמִטָּה</b><span>פרק קה</span></a>
   <a class="card" href="mekorhaim-116.html"><b>116. שְׁנַת הַשְּׁמִטָּה – חֵלֶק ב׳</b><span>פרק קה</span></a>
-  <a class="card mk" href="mekorhaim-mks8.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – אֶרֶץ יִשְׂרָאֵל וּמִצְווֹתֶיהָ</b><span>פרקים קב-קה: 8 מילים בתמונה, 18 מושגים, 14 מילים לכתיבה</span></a>
+  <details class="card mk"><summary><b>🔑 מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – אֶרֶץ יִשְׂרָאֵל וּמִצְווֹתֶיהָ</b><span>בּוֹחֲרִים פֶּרֶק – 4 חִידוֹנִים קְצָרִים, בְּכָל אֶחָד מִלִּים וּמֻשָּׂגִים שֶׁל הַפֶּרֶק</span></summary>
+    <div class="chs">
+      <a class="ch" href="mekorhaim-mkp102.html"><b>פֶּרֶק ק״ב</b><span>קְדֻשַּׁת אֶרֶץ יִשְׂרָאֵל</span></a>
+      <a class="ch" href="mekorhaim-mkp103.html"><b>פֶּרֶק ק״ג</b><span>עָרְלָה וְנֶטַע רְבָעִי</span></a>
+      <a class="ch" href="mekorhaim-mkp104.html"><b>פֶּרֶק ק״ד</b><span>תְּרוּמוֹת וּמַעַשְׂרוֹת</span></a>
+      <a class="ch" href="mekorhaim-mkp105.html"><b>פֶּרֶק ק״ה</b><span>שְׁנַת הַשְּׁמִטָּה</span></a>
+    </div>
+  </details>
 <h2>שַׁעַר תְּשִׁיעִי – מִצְווֹת שֶׁבֵּין אָדָם לַחֲבֵרוֹ</h2>
   <a class="card" href="mekorhaim-117.html"><b>117. וְאָהַבְתָּ לְרֵעֲךָ כָּמוֹךָ</b><span>פרקים קו-קז</span></a>
   <a class="card" href="mekorhaim-118.html"><b>118. כִּבּוּד אָב וָאֵם</b><span>פרק קח</span></a>
@@ -194,8 +450,17 @@
   <a class="card" href="mekorhaim-123.html"><b>123. הֲשָׁבַת אֲבֵדָה</b><span>פרק קיג</span></a>
   <a class="card" href="mekorhaim-124.html"><b>124. גְּנֵבָה וּגְזֵלָה</b><span>פרק קיד</span></a>
   <a class="card" href="mekorhaim-125.html"><b>125. אִסּוּר לָשׁוֹן הָרַע</b><span>פרק קטו</span></a>
-  <a class="card mk" href="mekorhaim-mks9a.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – אַהֲבַת הַבְּרִיּוֹת, כִּבּוּד הוֹרִים וּצְדָקָה</b><span>פרקים קו-קי: 6 מילים בתמונה, 16 מושגים, 11 מילים לכתיבה</span></a>
-  <a class="card mk" href="mekorhaim-mks9b.html"><b>מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – אוֹנָאָה, אֲבֵדָה, גְּנֵבָה וְלָשׁוֹן הָרַע</b><span>פרקים קיא-קטו: 7 מילים בתמונה, 16 מושגים, 11 מילים לכתיבה</span></a>
+  <details class="card mk"><summary><b>🔑 מוּשָּׂגִים וּלְשׁוֹן חֲכָמִים – מִצְווֹת שֶׁבֵּין אָדָם לַחֲבֵרוֹ</b><span>בּוֹחֲרִים פֶּרֶק – 7 חִידוֹנִים קְצָרִים, בְּכָל אֶחָד מִלִּים וּמֻשָּׂגִים שֶׁל הַפֶּרֶק</span></summary>
+    <div class="chs">
+      <a class="ch" href="mekorhaim-mkp106.html"><b>פֶּרֶק ק״ו</b><span>וְאָהַבְתָּ לְרֵעֲךָ כָּמוֹךָ</span></a>
+      <a class="ch" href="mekorhaim-mkp107.html"><b>פֶּרֶק ק״ז</b><span>וְאָהַבְתָּ לְרֵעֲךָ כָּמוֹךָ</span></a>
+      <a class="ch" href="mekorhaim-mkp108.html"><b>פֶּרֶק ק״ח</b><span>כִּבּוּד אָב וָאֵם</span></a>
+      <a class="ch" href="mekorhaim-mkp109.html"><b>פְּרָקִים ק״ט–ק״י</b><span>מִצְוַת צְדָקָה וּמִצְוַת הַלְוָאָה, בִּקּוּר חוֹלִים וּשְׁכֵנוּת טוֹבָה</span></a>
+      <a class="ch" href="mekorhaim-mkp111.html"><b>פְּרָקִים קי״א–קי״ב</b><span>בִּקּוּר חוֹלִים וּשְׁכֵנוּת טוֹבָה, אוֹנָאָה, גְּנֵבַת דַּעַת וְהַלְבָּנַת פָּנִים</span></a>
+      <a class="ch" href="mekorhaim-mkp113.html"><b>פֶּרֶק קי״ג</b><span>הֲשָׁבַת אֲבֵדָה</span></a>
+      <a class="ch" href="mekorhaim-mkp114.html"><b>פְּרָקִים קי״ד–קט״ו</b><span>גְּנֵבָה וּגְזֵלָה, אִסּוּר לָשׁוֹן הָרַע</span></a>
+    </div>
+  </details>
 </div>
 <p class="src">הנקודות נצברות מכל החידונים – <a href="profile.html">👤 הנקודות שלי</a></p>
 <div class="sign">📚 עוד חומרי לימוד על הלכה - חינם, במאגר הקול החמישי: <a href="https://www.kol-toda.co.il/halacha/">kol-toda.co.il/halacha</a><br>המאגר המלא: <a href="https://www.kol-toda.co.il/">kol-toda.co.il</a></div>
