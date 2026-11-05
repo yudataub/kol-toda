@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>מעקב תלמידים</title>
+<meta name="description" content="דף מעקב למורה – התקדמות התלמידים בחידוני ההלכה (נעול בקוד).">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2b2340;--soft:#6b6385;--bg:#f6f3ff;--card:#fff;--line:#ece7fb;--brand:#7b5cff;--ok:#1d9b4a;--okbg:#e5f7ec;--bad:#d64545;--badbg:#fdeaea;--warn:#b7791f;--warnbg:#fff4d6}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink:#eeeaff;--soft:#b6aed6;--bg:#16122a;--card:#211b3d;--line:#352c5c;--okbg:#173a26;--badbg:#3d1d22;--warnbg:#3b3017}}
+:root[data-theme="dark"]{--ink:#eeeaff;--soft:#b6aed6;--bg:#16122a;--card:#211b3d;--line:#352c5c;--okbg:#173a26;--badbg:#3d1d22;--warnbg:#3b3017}
+*{box-sizing:border-box}
+body{margin:0;font-family:Rubik,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+.top{background:linear-gradient(120deg,#ff9a3c,#ff5e7e 55%,#7b5cff);color:#fff;text-align:center;padding:22px 16px 26px;border-radius:0 0 28px 28px;position:relative}
+.top h1{margin:0;font-size:1.9em}
+.top .sub{opacity:.92}
+.home-btn{position:absolute;top:10px;left:12px;background:rgba(255,255,255,.92);color:#5a3fd6;font-weight:700;font-size:.8em;border-radius:999px;padding:5px 12px;text-decoration:none}
+.wrap{max-width:1100px;margin:0 auto;padding:18px 16px 40px}
+.card{background:var(--card);border-radius:20px;box-shadow:0 4px 18px rgba(60,40,120,.10);padding:18px;margin:14px 0}
+#login{max-width:420px;margin:40px auto;text-align:center}
+#login input{width:100%;font:inherit;font-size:1.4em;letter-spacing:.2em;text-align:center;padding:10px 14px;border:2px solid #cfc3ff;border-radius:14px;outline:none;background:var(--card);color:var(--ink)}
+.btn{border:0;border-radius:14px;padding:10px 20px;font:inherit;font-weight:800;color:#fff;background:var(--brand);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--brand);border:2px solid var(--brand)}
+.msg{color:var(--bad);font-weight:700;min-height:1.5em;margin-top:8px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.filters label{display:flex;flex-direction:column;font-weight:700;font-size:.9em;flex:1;min-width:150px}
+.filters select,.filters input{font:inherit;padding:8px 10px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{background:var(--card);border-radius:18px;padding:14px;text-align:center;box-shadow:0 4px 14px rgba(60,40,120,.08)}
+.stat b{display:block;font-size:1.9em;color:var(--brand);line-height:1.2}
+.stat span{color:var(--soft);font-size:.9em}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.tab{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 16px;font:inherit;font-weight:700;cursor:pointer}
+.tab.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.95em}
+th{text-align:right;color:var(--soft);font-weight:700;padding:8px;border-bottom:2px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.row:hover td{background:rgba(123,92,255,.06);cursor:pointer}
+.pill{display:inline-block;border-radius:999px;padding:1px 9px;font-size:.82em;font-weight:700;margin:1px}
+.p-ok{background:var(--okbg);color:var(--ok)}.p-bad{background:var(--badbg);color:var(--bad)}.p-warn{background:var(--warnbg);color:var(--warn)}.p-soft{background:var(--line);color:var(--soft)}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden;min-width:80px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#ff9a3c,#7b5cff)}
+.muted{color:var(--soft);font-size:.88em}
+.back{margin-bottom:10px}
+.qrow{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:8px 0}
+.qrow h4{margin:0 0 4px;font-size:1.02em}
+.lvls{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0}
+.wrongs{margin:6px 0 0;padding-inline-start:20px;font-size:.92em}
+.wrongs li{margin:2px 0}
+.hide{display:none}
+.kol-toda-sign{margin:26px 0 0;padding:16px 18px;border-radius:16px;background:linear-gradient(120deg,#eaf6ff,#f3ecff);border:2px solid #cfe0ff;text-align:center;color:#2b2340}
+.kol-toda-sign a{color:#3d4fd6;font-weight:700}
+@media (max-width:600px){.top h1{font-size:1.5em}td,th{padding:6px 5px}.hide-sm{display:none}}
+</style>
+<meta property="og:title" content="מעקב תלמידים">
+<meta property="og:description" content="דף מעקב למורה – התקדמות התלמידים בחידוני ההלכה (נעול בקוד).">
+<meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-devarim-quiz-teacher.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/devarim-quiz/teacher.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+<script async src="https://www.kol-toda.co.il/a.js"></script>
+</head>
+<body>
+<header class="top">
+  <a class="home-btn" href="./">🏠 כָּל הַחִידוֹנִים</a>
+  <h1>📋 מַעֲקַב תַּלְמִידִים</h1>
+  <div class="sub">חִידוֹנֵי הֲלָכָה – לַמּוֹרֶה: מִי שִׂחֵק, עַד הֵיכָן הִגִּיעַ, מָה הִצְלִיחַ וְעַל מָה טָעָה</div>
+</header>
+<main class="wrap">
+  <div class="card" id="login">
+    <h2 style="margin-top:0">🔒 כְּנִיסָה לַמּוֹרֶה</h2>
+    <p class="muted">הַדַּף מַצִּיג שְׁמוֹת תַּלְמִידִים וְצִיּוּנִים, וְלָכֵן הוּא נָעוּל בְּקוֹד.</p>
+    <input id="code" type="password" inputmode="numeric" autocomplete="off" placeholder="• • • • • •">
+    <div class="msg" id="loginMsg"></div>
+    <button class="btn" id="loginBtn" style="width:100%;margin-top:6px">כְּנִיסָה</button>
+  </div>
+
+  <div id="app" class="hide">
+    <div class="card">
+      <div class="filters">
+        <label>🏫 בֵּית סֵפֶר<select id="fSchool"></select></label>
+        <label>👥 כִּתָּה<select id="fCls"></select></label>
+        <label>📅 תְּקוּפָה<select id="fDays"><option value="0">כָּל הַזְּמַן</option><option value="1">הַיּוֹם</option><option value="7">7 יָמִים</option><option value="30">30 יָמִים</option></select></label>
+        <label>🔎 חִפּוּשׂ תַּלְמִיד<input id="fName" type="search" placeholder="שֵׁם"></label>
+        <button class="btn ghost" id="refresh" title="טְעִינָה מֵחָדָשׁ מֵהַשָּׁרָת">🔄 רִעֲנוּן</button>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-v="students">👥 תַּלְמִידִים</button>
+      <button class="tab" data-v="quizzes">📊 חִידוֹנִים</button>
+      <button class="tab" data-v="questions">❓ שְׁאֵלוֹת קָשׁוֹת</button>
+    </div>
+    <div class="card" id="view"></div>
+    <p class="muted" id="note">💡 עַל אֵילּוּ שְׁאֵלוֹת טָעוּ נִרְשָׁם מֵ-5.11.2026. לִפְנֵי כֵן יֵשׁ רַק צִיּוּנִים וְרָמוֹת. רוֹאִים רַק תַּלְמִידִים שֶׁנִּרְשְׁמוּ בְּשֵׁם, כִּתָּה וּבֵית סֵפֶר.</p>
+  </div>
+
+  <div class="kol-toda-sign">📚 עוֹד חָמְרֵי לִמּוּד עַל הֲלָכָה – חִנָּם, בַּמַּאֲגָר הַקּוֹל הַחֲמִישִׁי:
+    <a href="https://www.kol-toda.co.il/halacha/">kol-toda.co.il/halacha</a><br>
+    הַמַּאֲגָר הַמָּלֵא: <a href="https://www.kol-toda.co.il/">kol-toda.co.il</a></div>
+</main>
+<script>
+var API_URL = "https://script.google.com/macros/s/AKfycbxnmfZcen-MXI1Af0a61_m2awo_WIz19wcbWnl_pgywOYpj2f7kgT9T08icGmRV8Oa7/exec";
+var STAGE = { start: 0, levelA: 1, levelB: 2, levelC: 3 }, LV_HE = { a: "א׳", b: "ב׳", c: "ג׳", d: "ד׳", e: "ה׳" };
+var RAW = null, TITLES = {}, VIEW = "students", OPEN = null, SORT = { k: "last", d: -1 };
+function $(id) { return document.getElementById(id); }
+function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+function norm(s) { return String(s == null ? "" : s).toLowerCase().replace(/[^א-תa-z0-9]/g, ""); }
+function key(n, c, s) { return norm(n) + "|" + norm(c) + "|" + norm(s); }
+function ago(t) {
+  var m = (Date.now() - t) / 60000;
+  if (m < 60) return "לִפְנֵי " + Math.max(1, Math.round(m)) + " דַּקּוֹת";
+  if (m < 1440) return "לִפְנֵי " + Math.round(m / 60) + " שָׁעוֹת";
+  var d = Math.round(m / 1440); return d === 1 ? "אֶתְמוֹל" : "לִפְנֵי " + d + " יָמִים";
+}
+function title(g) { return TITLES[g] || g; }
+function sget(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+function sset(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
+
+/* ---------- כניסה ---------- */
+function login(code, quiet) {
+  $("loginMsg").textContent = quiet ? "" : "בּוֹדֵק…"; $("loginBtn").disabled = true;
+  fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ action: "teacher", code: code }) })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d.ok) { $("loginMsg").textContent = d.error === "locked" ? "⛔ יוֹתֵר מִדַּי נִסְיוֹנוֹת. נַסּוּ שׁוּב בְּעוֹד שָׁעָה." : "❌ הַקּוֹד לֹא נָכוֹן"; return; }
+      sset("hq-tcode", code); RAW = d; $("login").classList.add("hide"); $("app").classList.remove("hide"); prepare();
+    })
+    .catch(function () { $("loginMsg").textContent = "⚠️ אֵין חִבּוּר לַשָּׁרָת. נַסּוּ שׁוּב."; })
+    .then(function () { $("loginBtn").disabled = false; });
+}
+$("loginBtn").onclick = function () { login($("code").value.trim()); };
+$("code").addEventListener("keydown", function (e) { if (e.key === "Enter") login($("code").value.trim()); });
+$("refresh").onclick = function () { var c = sget("hq-tcode"); if (c) login(c, true); };
+fetch("search.json").then(function (r) { return r.json(); }).then(function (d) {
+  (d.quizzes || []).forEach(function (q) { TITLES[q.id] = q.t; }); if (RAW) render();
+}).catch(function () {});
+if (sget("hq-tcode")) login(sget("hq-tcode"), true);
+
+/* ---------- עיבוד ---------- */
+var STU = {}, SCHOOLS = {};
+function prepare() {
+  STU = {}; SCHOOLS = {};
+  function stu(r) {
+    var k = key(r[2], r[3], r[4]), s = STU[k];
+    if (!s) s = STU[k] = { k: k, name: r[2], cls: r[3], school: r[4], games: {}, last: 0 };
+    return s;
+  }
+  function game(s, g) { return s.games[g] || (s.games[g] = { best: null, plays: 0, stage: -1, att: [], last: 0 }); }
+  RAW.scores.forEach(function (r) {
+    var t = Date.parse(r[0]) || 0, s = stu(r), g = game(s, r[1]);
+    g.plays++; if (g.best == null || r[5] > g.best.score) g.best = { score: +r[5], a: +r[6], b: +r[7], c: +r[8], t: t };
+    g.last = Math.max(g.last, t); s.last = Math.max(s.last, t); g.stage = Math.max(g.stage, 3);
+  });
+  RAW.progress.forEach(function (r) {
+    var t = Date.parse(r[0]) || 0, s = stu(r), g = game(s, r[1]);
+    var rank = STAGE[r[5]]; if (rank == null) return;
+    g.stage = Math.max(g.stage, rank); g.last = Math.max(g.last, t); s.last = Math.max(s.last, t);
+    (g.times || (g.times = [])).push(t);
+  });
+  RAW.attempts.forEach(function (r) {
+    var t = Date.parse(r[0]) || 0, s = stu(r), g = game(s, r[1]), w = [];
+    try { w = JSON.parse(r[9] || "[]"); } catch (e) {}
+    g.att.push({ t: t, lv: r[5], right: +r[6], n: +r[7], passed: !!+r[8], wrong: w });
+    g.last = Math.max(g.last, t); s.last = Math.max(s.last, t);
+  });
+  Object.keys(STU).forEach(function (k) { var s = STU[k]; if (!norm(s.name)) return; (SCHOOLS[s.school] = SCHOOLS[s.school] || {})[s.cls] = 1; });
+  var cur = $("fSchool").value;
+  $("fSchool").innerHTML = '<option value="">כָּל בָּתֵּי הַסֵּפֶר</option>' + Object.keys(SCHOOLS).sort().map(function (x) { return "<option>" + esc(x) + "</option>"; }).join("");
+  if (cur && SCHOOLS[cur]) $("fSchool").value = cur;
+  fillCls(); render();
+}
+function fillCls() {
+  var sc = $("fSchool").value, cur = $("fCls").value, set = {};
+  Object.keys(SCHOOLS).forEach(function (s) { if (!sc || s === sc) Object.keys(SCHOOLS[s]).forEach(function (c) { set[c] = 1; }); });
+  $("fCls").innerHTML = '<option value="">כָּל הַכִּתּוֹת</option>' + Object.keys(set).sort().map(function (x) { return "<option>" + esc(x) + "</option>"; }).join("");
+  if (cur && set[cur]) $("fCls").value = cur;
+}
+["fSchool", "fCls", "fDays"].forEach(function (id) { $(id).onchange = function () { if (id === "fSchool") fillCls(); OPEN = null; render(); }; });
+$("fName").oninput = function () { OPEN = null; render(); };
+Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (b) {
+  b.onclick = function () { VIEW = b.dataset.v; OPEN = null; document.querySelectorAll(".tab").forEach(function (x) { x.classList.toggle("on", x === b); }); render(); };
+});
+
+/* התלמידים שעוברים את הסינון; בכל אחד – רק המשחקים בתקופה שנבחרה */
+function filtered() {
+  var sc = $("fSchool").value, cl = $("fCls").value, days = +$("fDays").value, q = norm($("fName").value);
+  var from = days ? (days === 1 ? new Date().setHours(0, 0, 0, 0) : Date.now() - days * 864e5) : 0, out = [];
+  Object.keys(STU).forEach(function (k) {
+    var s = STU[k];
+    if (!norm(s.name) || (sc && s.school !== sc) || (cl && s.cls !== cl) || (q && norm(s.name).indexOf(q) < 0)) return;
+    var games = {}, n = 0;
+    Object.keys(s.games).forEach(function (g) { if (s.games[g].last >= from) { games[g] = s.games[g]; n++; } });
+    if (!n) return;
+    var pts = 0, done = 0, fails = 0, wrongs = 0;
+    Object.keys(games).forEach(function (g) {
+      var G = games[g]; if (G.best) { pts += G.best.score; done++; }
+      G.att.forEach(function (a) { if (!a.passed) fails++; wrongs += a.wrong.length; });
+    });
+    out.push({ s: s, games: games, started: n, done: done, pts: pts, fails: fails, wrongs: wrongs, last: s.last });
+  });
+  return out;
+}
+
+/* ---------- תצוגה ---------- */
+function render() {
+  if (!RAW) return;
+  var rows = filtered();
+  var act7 = rows.filter(function (r) { return Date.now() - r.last < 7 * 864e5; }).length;
+  var done = 0, started = 0, pts = 0;
+  rows.forEach(function (r) { done += r.done; started += r.started; pts += r.pts; });
+  $("stats").innerHTML = [
+    [rows.length, "תַּלְמִידִים"], [act7, "פְּעִילִים בַּשָּׁבוּעַ"], [started, "חִידוֹנִים שֶׁהֻתְחֲלוּ"],
+    [done, "חִידוֹנִים שֶׁהֻשְׁלְמוּ"], [rows.length ? Math.round(pts / rows.length) : 0, "נְקֻדּוֹת בַּמְּמֻצָּע"]
+  ].map(function (x) { return '<div class="stat"><b>' + x[0] + "</b><span>" + x[1] + "</span></div>"; }).join("");
+  if (OPEN) return renderStudent(rows.filter(function (r) { return r.s.k === OPEN; })[0]);
+  if (VIEW === "students") return renderStudents(rows);
+  if (VIEW === "quizzes") return renderQuizzes(rows);
+  return renderQuestions(rows);
+}
+function stageText(G) {
+  if (G.best) return '<span class="pill p-ok">✅ סִיֵּם</span>';
+  if (G.stage <= 0) return '<span class="pill p-soft">הִתְחִיל</span>';
+  return '<span class="pill p-warn">עָבַר רָמָה ' + ["", "א׳", "ב׳", "ג׳"][G.stage] + "</span>";
+}
+function renderStudents(rows) {
+  var k = SORT.k, d = SORT.d;
+  rows.sort(function (a, b) {
+    var x = k === "name" ? a.s.name.localeCompare(b.s.name, "he") : k === "cls" ? (a.s.cls + a.s.school).localeCompare(b.s.cls + b.s.school, "he") : a[k] - b[k];
+    return x * (k === "name" || k === "cls" ? -d : d);
+  });
+  var head = [["name", "תַּלְמִיד"], ["cls", "כִּתָּה"], ["started", "הִתְחִיל"], ["done", "סִיֵּם"], ["pts", "נְקֻדּוֹת"], ["fails", "רָמוֹת שֶׁנִּכְשַׁל"], ["last", "פָּעִיל"]];
+  $("view").innerHTML = (rows.length ? "" : '<p class="muted">אֵין תַּלְמִידִים בַּסִּנּוּן הַזֶּה.</p>') +
+    '<div class="tw"><table><thead><tr>' + head.map(function (h) { return '<th data-k="' + h[0] + '">' + h[1] + (SORT.k === h[0] ? (SORT.d < 0 ? " ▼" : " ▲") : "") + "</th>"; }).join("") +
+    "</tr></thead><tbody>" + rows.map(function (r) {
+      var stuck = Object.keys(r.games).filter(function (g) { return !r.games[g].best; }).length;
+      return '<tr class="row" data-k="' + esc(r.s.k) + '"><td><b>' + esc(r.s.name) + "</b></td><td>" + esc(r.s.cls) + '<div class="muted">' + esc(r.s.school) + "</div></td><td>" + r.started +
+        "</td><td>" + r.done + (stuck ? ' <span class="pill p-warn">' + stuck + " בָּאֶמְצַע</span>" : "") + "</td><td><b>" + r.pts + "</b></td><td>" +
+        (r.fails ? '<span class="pill p-bad">' + r.fails + "</span>" : '<span class="muted">–</span>') + '</td><td class="muted">' + ago(r.last) + "</td></tr>";
+    }).join("") + "</tbody></table></div>" +
+    '<p style="text-align:left;margin:10px 0 0"><button class="btn ghost" id="csv">⬇️ הוֹרָדָה לְאֶקְסֶל (CSV)</button></p>';
+  Array.prototype.forEach.call($("view").querySelectorAll("th"), function (th) {
+    th.onclick = function () { SORT = { k: th.dataset.k, d: SORT.k === th.dataset.k ? -SORT.d : -1 }; render(); };
+  });
+  Array.prototype.forEach.call($("view").querySelectorAll("tr.row"), function (tr) { tr.onclick = function () { OPEN = tr.dataset.k; render(); window.scrollTo(0, 0); }; });
+  $("csv").onclick = function () { csv(rows); };
+}
+function csv(rows) {
+  var lines = [["תלמיד", "כיתה", "בית ספר", "חידון", "מצב", "ציון", "רמה א", "רמה ב", "רמה ג", "ניסיונות שנכשלו", "שאלות שטעה", "פעילות אחרונה"]];
+  rows.forEach(function (r) {
+    Object.keys(r.games).forEach(function (g) {
+      var G = r.games[g], b = G.best || {};
+      lines.push([r.s.name, r.s.cls, r.s.school, title(g), G.best ? "סיים" : G.stage > 0 ? "עבר רמה " + "אבג"[G.stage - 1] : "התחיל",
+        b.score == null ? "" : b.score, b.a == null ? "" : b.a, b.b == null ? "" : b.b, b.c == null ? "" : b.c,
+        G.att.filter(function (a) { return !a.passed; }).length, G.att.reduce(function (n, a) { return n + a.wrong.length; }, 0),
+        new Date(G.last).toLocaleString("he-IL")]);
+    });
+  });
+  var text = "﻿" + lines.map(function (l) { return l.map(function (c) { c = String(c); return /[",\n]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(","); }).join("\n");
+  var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+  a.download = "מעקב-חידוני-הלכה.csv"; document.body.appendChild(a); a.click(); a.remove();
+}
+function renderStudent(r) {
+  if (!r) { OPEN = null; return render(); }
+  var games = Object.keys(r.games).sort(function (a, b) { return r.games[b].last - r.games[a].last; });
+  $("view").innerHTML = '<button class="btn ghost back" id="back">→ חֲזָרָה לְכָל הַתַּלְמִידִים</button>' +
+    "<h2 style=\"margin:4px 0\">👤 " + esc(r.s.name) + '</h2><div class="muted">' + esc(r.s.cls) + " · " + esc(r.s.school) + " · " + r.pts + " נְקֻדּוֹת · פָּעִיל " + ago(r.last) + "</div>" +
+    games.map(function (g) {
+      var G = r.games[g], b = G.best;
+      var byLv = {};
+      G.att.forEach(function (a) { (byLv[a.lv] = byLv[a.lv] || []).push(a); });
+      var lv = ["a", "b", "c"].filter(function (x) { return byLv[x]; }).map(function (x) {
+        var A = byLv[x], ok = A.filter(function (a) { return a.passed; }).length, bad = A.length - ok, last = A[A.length - 1];
+        return '<span class="pill ' + (ok ? "p-ok" : "p-bad") + '">רָמָה ' + LV_HE[x] + ": " + last.right + "/" + last.n + (bad ? " · " + bad + " נִכְשַׁל" : "") + (ok ? " ✅" : "") + "</span>";
+      }).join("");
+      var wr = {};
+      G.att.forEach(function (a) { a.wrong.forEach(function (w) { var k = a.lv + ":" + w.i; (wr[k] = wr[k] || { lv: a.lv, i: w.i, p: w.p, n: 0 }).n++; }); });
+      var wl = Object.keys(wr).map(function (k) { return wr[k]; }).sort(function (a, b) { return b.n - a.n; });
+      return '<div class="qrow"><h4>' + esc(title(g)) + " " + stageText(G) + "</h4>" +
+        (b ? '<div class="muted">צִיּוּן טוֹב: <b>' + b.score + "</b> (א׳ " + b.a + " · ב׳ " + b.b + " · ג׳ " + b.c + ")" + (G.plays > 1 ? " · שִׂחֵק " + G.plays + " פְּעָמִים" : "") + "</div>" : "") +
+        (lv ? '<div class="lvls">' + lv + "</div>" : "") +
+        (wl.length ? '<details><summary>❌ ' + wl.length + " שְׁאֵלוֹת שֶׁטָּעָה בָּהֶן</summary><ul class=\"wrongs\">" + wl.map(function (w) {
+          return "<li>רָמָה " + LV_HE[w.lv] + ", שְׁאֵלָה " + (w.i + 1) + ": " + esc(w.p) + (w.n > 1 ? ' <span class="pill p-bad">×' + w.n + "</span>" : "") + "</li>";
+        }).join("") + "</ul></details>" : "") +
+        '<div class="muted">' + ago(G.last) + "</div></div>";
+    }).join("");
+  $("back").onclick = function () { OPEN = null; render(); };
+}
+function renderQuizzes(rows) {
+  var Q = {};
+  rows.forEach(function (r) {
+    Object.keys(r.games).forEach(function (g) {
+      var G = r.games[g], q = Q[g] || (Q[g] = { g: g, n: 0, st: [0, 0, 0, 0], done: 0, sum: 0, fails: 0 });
+      q.n++; for (var i = 1; i <= Math.max(0, G.stage); i++) q.st[i]++;
+      if (G.best) { q.done++; q.sum += G.best.score; }
+      G.att.forEach(function (a) { if (!a.passed) q.fails++; });
+    });
+  });
+  var list = Object.keys(Q).map(function (k) { return Q[k]; }).sort(function (a, b) { return b.n - a.n; });
+  $("view").innerHTML = list.length ? '<div class="tw"><table><thead><tr><th>חִידוֹן</th><th>הִתְחִילוּ</th><th>עָבְרוּ א׳</th><th>עָבְרוּ ב׳</th><th>סִיְּמוּ</th><th class="hide-sm">צִיּוּן מְמֻצָּע</th><th class="hide-sm">נִכְשְׁלוּ בְּרָמָה</th></tr></thead><tbody>' +
+    list.map(function (q) {
+      var pct = q.n ? Math.round(100 * q.done / q.n) : 0;
+      return "<tr><td><a href=\"" + esc(q.g) + '.html" target="_blank">' + esc(title(q.g)) + "</a></td><td>" + q.n + "</td><td>" + q.st[1] + "</td><td>" + q.st[2] +
+        '</td><td><div class="bar"><i style="width:' + pct + '%"></i></div><span class="muted">' + q.done + " (" + pct + "%)</span></td><td class=\"hide-sm\">" +
+        (q.done ? Math.round(q.sum / q.done) : "–") + '</td><td class="hide-sm">' + (q.fails || "–") + "</td></tr>";
+    }).join("") + "</tbody></table></div>" : '<p class="muted">אֵין נְתוּנִים בַּסִּנּוּן הַזֶּה.</p>';
+}
+function renderQuestions(rows) {
+  var Q = {}, tries = {};
+  rows.forEach(function (r) {
+    Object.keys(r.games).forEach(function (g) {
+      r.games[g].att.forEach(function (a) {
+        var tk = g + ":" + a.lv; tries[tk] = (tries[tk] || 0) + 1;
+        a.wrong.forEach(function (w) {
+          var k = tk + ":" + w.i, q = Q[k] || (Q[k] = { g: g, lv: a.lv, i: w.i, p: w.p, n: 0, who: {} });
+          q.n++; q.who[r.s.name] = 1;
+        });
+      });
+    });
+  });
+  var list = Object.keys(Q).map(function (k) { var q = Q[k]; q.pct = Math.round(100 * q.n / tries[q.g + ":" + q.lv]); return q; })
+    .sort(function (a, b) { return b.pct - a.pct || b.n - a.n; }).slice(0, 60);
+  $("view").innerHTML = list.length ? '<p class="muted" style="margin-top:0">הַשְּׁאֵלוֹת שֶׁהֲכִי הַרְבֵּה תַּלְמִידִים טָעוּ בָּהֶן – כְּדַאי לַחֲזֹר עֲלֵיהֶן בַּשִּׁעוּר.</p>' +
+    list.map(function (q) {
+      var who = Object.keys(q.who);
+      return '<div class="qrow"><h4>' + esc(q.p) + '</h4><div class="muted">' + esc(title(q.g)) + " · רָמָה " + LV_HE[q.lv] + " · שְׁאֵלָה " + (q.i + 1) + "</div>" +
+        '<div class="lvls"><span class="pill p-bad">' + q.pct + "% טָעוּ (" + q.n + " מִתּוֹךְ " + tries[q.g + ":" + q.lv] + " נִסְיוֹנוֹת)</span></div>" +
+        '<details><summary class="muted">מִי טָעָה (' + who.length + ")</summary>" + esc(who.join(", ")) + "</details></div>";
+    }).join("") : '<p class="muted">עוֹד אֵין נְתוּנִים עַל שְׁאֵלוֹת. הֵם נֶאֱסָפִים מֵ-5.11.2026, מִכָּל רָמָה שֶׁתַּלְמִיד רָשׁוּם מְסַיֵּם.</p>';
+}
+</script>
+</body>
+</html>
