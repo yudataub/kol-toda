@@ -46,6 +46,10 @@ input[type=text]:focus,select:focus{outline:0;border-color:var(--c3)}
 .lb summary{cursor:pointer;font-weight:700;color:var(--c1)}
 .resume{background:#fff6d6;border:2px solid #f0b400;border-radius:16px;padding:10px 14px;margin-bottom:12px;text-align:center}
 .resume p{margin:4px 0}
+.hello{text-align:center;font-weight:800;font-size:1.15em;margin:4px 0 10px}
+.levelsPick{background:#eef7ff;border:2px solid #5b9cfa;border-radius:16px;padding:10px 14px;margin-bottom:12px;text-align:center}
+.levelsPick .resume-t{margin:4px 0;font-weight:700}
+.levelsPick .crow{flex-wrap:wrap}
 .note{color:var(--soft);font-size:.85em}
 .levels-map{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
 .levels-map span{padding:6px 14px;border-radius:30px;background:#f1ecff;font-weight:700;font-size:.9em}
@@ -190,6 +194,167 @@ body.inq .pic img.gen{max-height:max(200px, 42vh)}
   <div class="sub" id="sub"></div>
   <div class="src" id="srcline"></div>
 </header>
+<!-- מסך רישום משותף (build.py מכניס אותו במקום __REG__ בדף הבית, בחידונים ובדף "שלי") – מ-5.11.2026.
+     שומר ב-localStorage "hq-me" = {name, cls, school, grade}. אותם שם+כיתה+בית ספר בכל מחשב = אותו תלמיד בשרת.
+     "דילוג" נשמר ב-"hq-skip". הכפתור בפינה הימנית (.me-btn, או #regChip שנוצר כאן) מציג את השם ופותח את המסך. -->
+<style>
+#regScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#fff3e6,#f1ebff);display:none;align-items:center;justify-content:center;padding:16px;overflow:auto}
+#regScreen.on{display:flex}
+#regScreen .rbox{background:#fff;border-radius:26px;box-shadow:0 10px 40px rgba(60,40,120,.18);padding:26px 22px;max-width:440px;width:100%;text-align:center;font-family:Rubik,Arial,sans-serif;color:#2b2340;line-height:1.7}
+#regScreen h2{margin:0 0 4px;font-size:1.7em}
+#regScreen .rsub{color:#6b6385;margin:0 0 16px}
+#regScreen label{display:block;text-align:right;font-weight:700;margin:10px 0 4px}
+#regScreen input,#regScreen select{width:100%;font:inherit;font-size:1.1em;padding:10px 14px;border:2px solid #cfc3ff;border-radius:14px;outline:none;background:#fff}
+#regScreen input:focus,#regScreen select:focus{border-color:#7b5cff}
+#regScreen .rrow{display:flex;gap:10px}
+#regScreen .rrow>div{flex:1}
+#regScreen .rgo{margin-top:18px;width:100%;border:0;border-radius:16px;padding:13px;font:inherit;font-size:1.2em;font-weight:800;color:#fff;cursor:pointer;background:linear-gradient(120deg,#ff9a3c,#ff5e7e 55%,#7b5cff)}
+#regScreen .rskip{margin-top:10px;background:none;border:0;color:#6b6385;font:inherit;text-decoration:underline;cursor:pointer}
+#regScreen .rmsg{color:#c0392b;font-weight:700;min-height:1.4em;margin-top:6px}
+#regScreen .rnote{font-size:.88em;color:#6b6385;margin-top:12px}
+#regChip{position:absolute;top:10px;right:12px;background:rgba(255,255,255,.92);color:#5a3fd6;font-weight:700;font-size:.8em;border-radius:999px;padding:5px 12px;text-decoration:none;cursor:pointer;border:0;font-family:inherit;z-index:5}
+.top{position:relative}
+.me-btn.named{max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.inq .me-btn.named{display:inline-block;font-size:.72em;top:6px;padding:3px 10px}
+#lbBtn{position:absolute;top:44px;right:12px;background:rgba(255,255,255,.92);color:#b7791f;font-weight:800;font-size:.8em;border-radius:999px;padding:5px 12px;border:0;cursor:pointer;font-family:inherit;z-index:5}
+body.inq #lbBtn{top:6px;right:auto;left:50%;transform:translateX(-50%);font-size:.72em;padding:3px 10px}
+header.top.hasreg{padding-top:84px}
+body.inq header.top.hasreg{padding-top:34px}
+#lbScreen{position:fixed;inset:0;z-index:9998;background:rgba(30,20,60,.55);display:none;align-items:flex-start;justify-content:center;padding:16px;overflow:auto}
+#lbScreen.on{display:flex}
+#lbScreen .rbox{background:#fff;border-radius:24px;max-width:520px;width:100%;padding:20px 18px;font-family:Rubik,Arial,sans-serif;color:#2b2340;line-height:1.6;margin-top:20px}
+#lbScreen h2{margin:0 0 8px;text-align:center}
+#lbScreen h3{margin:14px 0 4px;font-size:1.05em}
+#lbScreen ol{margin:0;padding-inline-start:26px}
+#lbScreen li{padding:3px 0;border-bottom:1px dashed #eee}
+#lbScreen li.me{background:#fff6c2;font-weight:800;border-radius:8px}
+#lbScreen li .p{float:left;font-weight:800;color:#7b5cff}
+#lbScreen li .c{color:#6b6385;font-size:.85em}
+#lbScreen .x{display:block;margin:14px auto 0;border:0;border-radius:14px;padding:10px 26px;font:inherit;font-weight:800;color:#fff;background:#7b5cff;cursor:pointer}
+</style>
+<div id="lbScreen" role="dialog" aria-modal="true" aria-labelledby="lbTtl">
+  <div class="rbox">
+    <h2 id="lbTtl">🏆 לוּחַ הַמְּצֻיָּנִים</h2>
+    <div id="lbQuizWrap" style="display:none"><h3>🎯 בַּחִידוֹן הַזֶּה</h3><ol id="lbQuiz"></ol></div>
+    <h3>⭐ הַכִּי הַרְבֵּה נְקֻדּוֹת – כָּל הַחִידוֹנִים</h3><ol id="lbAll"></ol>
+    <h3>🏫 הַכִּתּוֹת הַמּוֹבִילוֹת</h3><ol id="lbCls"></ol>
+    <button class="x" id="lbClose">סְגִירָה</button>
+  </div>
+</div>
+<div id="regScreen" role="dialog" aria-modal="true" aria-labelledby="regTtl">
+  <div class="rbox">
+    <h2 id="regTtl">👋 שָׁלוֹם וּבְרוּכִים הַבָּאִים!</h2>
+    <p class="rsub">לִפְנֵי שֶׁמַּתְחִילִים – מִי אַתֶּם?</p>
+    <label for="regName">הַשֵּׁם שֶׁלִּי</label>
+    <input id="regName" maxlength="30" autocomplete="off" placeholder="שֵׁם פְּרָטִי וְשֵׁם מִשְׁפָּחָה">
+    <label for="regSchool">בֵּית הַסֵּפֶר</label>
+    <input id="regSchool" maxlength="40" autocomplete="off" placeholder="שֵׁם בֵּית הַסֵּפֶר וְהָעִיר">
+    <div class="rrow">
+      <div>
+        <label for="regGrade">כִּתָּה</label>
+        <select id="regGrade">
+          <option value="">— בַּחֲרוּ —</option>
+          <option value="a">א׳</option><option value="b">ב׳</option><option value="c">ג׳</option><option value="d">ד׳</option>
+          <option value="e">ה׳</option><option value="f">ו׳</option><option value="g">ז׳</option><option value="h">ח׳</option>
+        </select>
+      </div>
+      <div>
+        <label for="regNum">מִסְפַּר כִּתָּה</label>
+        <input id="regNum" maxlength="3" inputmode="numeric" autocomplete="off" placeholder="לְמָשָׁל 2">
+      </div>
+    </div>
+    <div class="rmsg" id="regMsg"></div>
+    <button class="rgo" id="regGo">✅ נִרְשָׁמִים וּמַתְחִילִים</button>
+    <button class="rskip" id="regSkip">לְדַלֵּג – לְשַׂחֵק בְּלִי שֵׁם</button>
+    <button class="rskip" id="regOther" style="display:none">🔄 תַּלְמִיד אַחֵר – לְהִתְחִיל מֵחָדָשׁ</button>
+    <p class="rnote">💡 בְּכָל מַחְשֵׁב בָּעוֹלָם: כּוֹתְבִים אוֹתוֹ שֵׁם, אוֹתוֹ בֵּית סֵפֶר וְאוֹתָהּ כִּתָּה – וּמַמְשִׁיכִים מֵהַמָּקוֹם שֶׁעֲצַרְתֶּם, עִם כָּל הַנְּקֻדּוֹת.</p>
+  </div>
+</div>
+<script>
+(function () {
+  var GR = { a: "א", b: "ב", c: "ג", d: "ד", e: "ה", f: "ו", g: "ז", h: "ח" };
+  function g(id) { return document.getElementById(id); }
+  function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function put(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
+  function me() { try { return JSON.parse(get("hq-me") || "null") || {}; } catch (e) { return {}; } }
+  function registered(m) { return !!(m && m.name && m.cls && m.school); }
+  function gradeOf(cls) {   // "ד׳ 2" -> d (תלמידים שנרשמו לפני המסך הזה)
+    var h = String(cls || "").replace(/[^א-ת]/g, "").charAt(0);
+    for (var k in GR) if (GR[k] === h) return k;
+    return "";
+  }
+  function open() {
+    var m = me();
+    g("regName").value = m.name || ""; g("regSchool").value = m.school || "";
+    g("regGrade").value = m.grade || gradeOf(m.cls); g("regNum").value = (String(m.cls || "").match(/\d+/) || [""])[0];
+    g("regOther").style.display = registered(m) ? "" : "none";
+    g("regSkip").textContent = registered(m) ? "סְגִירָה" : "לְדַלֵּג – לְשַׂחֵק בְּלִי שֵׁם";
+    g("regMsg").textContent = "";
+    g("regScreen").classList.add("on");
+    setTimeout(function () { (registered(m) ? g("regGo") : g("regName")).focus(); }, 50);
+  }
+  function close() { g("regScreen").classList.remove("on"); }
+  function save() {
+    var n = g("regName").value.trim(), s = g("regSchool").value.trim(), gr = g("regGrade").value, num = g("regNum").value.replace(/\D/g, "");
+    if (!n) { g("regMsg").textContent = "✍️ כִּתְבוּ אֶת הַשֵּׁם"; g("regName").focus(); return; }
+    if (!s) { g("regMsg").textContent = "✍️ כִּתְבוּ אֶת שֵׁם בֵּית הַסֵּפֶר"; g("regSchool").focus(); return; }
+    if (!gr) { g("regMsg").textContent = "✍️ בַּחֲרוּ כִּתָּה"; g("regGrade").focus(); return; }
+    var old = me(), cls = GR[gr] + "׳" + (num ? " " + num : "");
+    put("hq-me", JSON.stringify({ name: n, cls: cls, school: s, grade: gr }));
+    put("hq-skip", null);
+    if (old.name !== n || old.cls !== cls || old.school !== s) location.reload(); else close();
+  }
+  function chip() {
+    var m = me(), b = document.querySelector(".me-btn"), label = registered(m) ? "👤 " + m.name : "👤 הַרְשָׁמָה";
+    if (!b) {   // דפים בלי כפתור "שלי" (דף הבית): כפתור משלנו בפינה הימנית
+      var top = document.querySelector("header.top"); if (!top) return;
+      b = document.createElement("a"); b.id = "regChip"; b.href = "profile.html"; top.appendChild(b);
+    }
+    if (registered(m)) { b.textContent = label; b.title = "הַכִּתָּה: " + m.cls + " · " + m.school + " (לְהַחְלָפָה – ✏️)"; b.classList.add("named"); }
+    if (!registered(m)) { b.textContent = label; b.onclick = function (e) { e.preventDefault(); open(); }; return; }
+    var pen = document.createElement("button"); pen.type = "button"; pen.textContent = "✏️"; pen.title = "לְהַחְלִיף שֵׁם / כִּתָּה";
+    pen.style.cssText = "background:none;border:0;cursor:pointer;font-size:1em;margin-inline-start:4px;padding:0";
+    pen.onclick = function (e) { e.preventDefault(); e.stopPropagation(); open(); };
+    b.appendChild(pen);
+  }
+  g("regGo").onclick = save;
+  g("regSkip").onclick = function () { if (!registered(me())) put("hq-skip", "1"); close(); };
+  g("regOther").onclick = function () {
+    put("hq-me", null); put("hq-skip", null);
+    g("regName").value = g("regSchool").value = g("regNum").value = ""; g("regGrade").value = "";
+    g("regOther").style.display = "none"; g("regName").focus();
+  };
+  ["regName", "regSchool", "regNum"].forEach(function (id) { g(id).addEventListener("keydown", function (e) { if (e.key === "Enter") save(); }); });
+  /* לוח המצוינים – תמיד אפשר לפתוח (כפתור 🏆 בכותרת) */
+  function nk(x) { return String(x || "").toLowerCase().replace(/[^א-תa-z0-9]/g, ""); }
+  function esc2(x) { var d = document.createElement("div"); d.textContent = x == null ? "" : String(x); return d.innerHTML; }
+  function li(r, v, mine) { return '<li class="' + (mine ? "me" : "") + '"><span class="p">' + v + "</span>" + esc2(r.name || r.cls) + ' <span class="c">' + esc2(r.name ? [r.cls, r.school].filter(Boolean).join(", ") : r.school + " · " + r.students + " תַּלְמִידִים") + "</span></li>"; }
+  function fill(id, url, row) {
+    g(id).innerHTML = "<li>טוֹעֵן…</li>";
+    fetch(url).then(function (r) { return r.json(); }).then(function (d) {
+      g(id).innerHTML = (d.top || []).map(row).join("") || "<li>עוֹד אֵין כָּאן אַף אֶחָד – אוּלַי אַתֶּם הָרִאשׁוֹנִים? 🙂</li>";
+    }).catch(function () { g(id).innerHTML = "<li>לֹא נִטְעַן כָּרֶגַע</li>"; });
+  }
+  function openLb() {
+    var api = window.API_URL, m = me(), isMe = function (r) { return registered(m) && nk(r.name) === nk(m.name) && nk(r.cls) === nk(m.cls) && nk(r.school) === nk(m.school); };
+    g("lbScreen").classList.add("on");
+    if (!api) { g("lbAll").innerHTML = g("lbCls").innerHTML = "<li>הַלּוּחַ יִפָּתַח בְּקָרוֹב</li>"; return; }
+    if (window.QUIZ && QUIZ.id) { g("lbQuizWrap").style.display = ""; fill("lbQuiz", api + "?action=board&limit=10&game=" + encodeURIComponent(QUIZ.id), function (r) { return li(r, r.score, isMe(r)); }); }
+    fill("lbAll", api + "?action=points&limit=10", function (r) { return li(r, r.points, isMe(r)); });
+    fill("lbCls", api + "?action=classes&limit=10", function (r) { return li(r, r.avg, registered(m) && nk(r.cls) === nk(m.cls) && nk(r.school) === nk(m.school)); });
+  }
+  (function () {
+    var top = document.querySelector("header.top"); if (!top) return;
+    var b = document.createElement("button"); b.id = "lbBtn"; b.type = "button"; b.textContent = "🏆 לוּחַ הַמְּצֻיָּנִים"; b.onclick = openLb; top.appendChild(b); top.classList.add("hasreg");
+    g("lbClose").onclick = function () { g("lbScreen").classList.remove("on"); };
+    g("lbScreen").addEventListener("click", function (e) { if (e.target.id === "lbScreen") g("lbScreen").classList.remove("on"); });
+  })();
+  window.HQREG = { openLb: openLb, open: open, me: me, registered: registered, gradeOf: gradeOf };
+  chip();
+  if (!registered(me()) && !get("hq-skip")) open();
+})();
+</script>
+
 <main class="wrap" id="gameContainer">
 
   <section class="screen on" id="sStart">
@@ -200,7 +365,9 @@ body.inq .pic img.gen{max-height:max(200px, 42vh)}
         <p class="note">לֹא אַתָּה? בַּחֲרוּ כִּתָּה וְהַתְחִילוּ מֵהַהַתְחָלָה 👇</p>
       </div>
       <div class="levels-map" id="map0"></div>
-      <label for="inGrade">שָׁלוֹם! 🌟 אֲנִי בְּכִתָּה</label>
+      <p class="hello" id="hello" style="display:none"></p>
+      <div class="levelsPick" id="levelsPick" style="display:none"></div>
+      <label for="inGrade" id="gradeLbl">שָׁלוֹם! 🌟 אֲנִי בְּכִתָּה</label>
       <select id="inGrade">
         <option value="">— בְּחַרוּ כִּתָּה —</option>
         <option value="a">א׳</option>
@@ -209,12 +376,15 @@ body.inq .pic img.gen{max-height:max(200px, 42vh)}
         <option value="d">ד׳</option>
         <option value="e">ה׳</option>
         <option value="f">ו׳</option>
+        <option value="g">ז׳</option>
+        <option value="h">ח׳</option>
       </select>
       <p class="note" id="gradeMsg" style="display:none;color:#c0392b;font-weight:700"></p>
       <p class="note" id="myPts"></p>
       <p class="note badge-line" id="myBadge"></p>
       <div class="center"><button class="btn" id="goBtn">🚀 מַתְחִילִים!</button></div>
-      <details class="lb" id="lbBox">
+      <p class="note center" id="regAsk" style="display:none"><a href="#" id="regAskA">📝 רוֹצִים לִצְבֹּר נְקֻדּוֹת וּלְהַמְשִׁיךְ מִכָּל מַחְשֵׁב? הִרָּשְׁמוּ כָּאן</a></p>
+      <details class="lb" id="lbBox" style="display:none">
         <summary>🏆 רוֹצִים לִהְיוֹת בְּלוּחַ הַמּוֹבִילִים? (לֹא חוֹבָה)</summary>
         <label for="inName">הַשֵּׁם שֶׁלְּךָ</label>
         <input type="text" id="inName" maxlength="30" autocomplete="off">
@@ -509,7 +679,7 @@ function badgeText(pts) { var b = badgeFor(pts); return b.cur.emoji + " " + b.cu
 // "הגעתי לכאן" – גם למי שלא מסיים (יודע מי מתחיל ונעצר, ובאיזו רמה); לא חוסם ולא מציג שגיאה לתלמיד
 function pingProgress(stage) {
   if (!API_URL || !S.real) return;
-  var data = { action: "progress", name: S.name, cls: S.cls, school: S.school, game: QUIZ.id, stage: stage };
+  var data = { action: "progress", name: S.name, cls: S.cls, school: S.school, game: QUIZ.id, stage: stage, s: S.scores, m: S.maxes };
   fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(data) }).catch(function () {});
 }
 function showProgress(pts, gain) {
@@ -584,7 +754,15 @@ function init() {
   $("srcline").textContent = "📖 " + QUIZ.source;
   document.documentElement.style.setProperty("--c1", QUIZ.theme[0]);
   var saved = store("hq-me");
-  if (saved) { try { var m = JSON.parse(saved); $("inName").value = m.name || ""; $("inCls").value = m.cls || ""; $("inSchool").value = m.school || ""; $("inGrade").value = m.grade || ""; } catch (e) {} }
+  if (saved) { try { var m = JSON.parse(saved); $("inName").value = m.name || ""; $("inCls").value = m.cls || ""; $("inSchool").value = m.school || ""; $("inGrade").value = m.grade || (window.HQREG ? HQREG.gradeOf(m.cls) : ""); } catch (e) {} }
+  var reg = window.HQREG && HQREG.registered(HQREG.me());
+  if (reg && $("inGrade").value) {   // נרשם במסך הפתיחה: לא שואלים שוב כיתה ושם
+    $("inGrade").style.display = "none"; $("gradeLbl").style.display = "none";
+    $("hello").style.display = ""; $("hello").textContent = "שָׁלוֹם, " + $("inName").value + "! 🌟 כִּתָּה " + $("inCls").value + ", " + $("inSchool").value;
+  } else if (window.HQREG) {
+    $("regAsk").style.display = "";
+    $("regAskA").onclick = function (e) { e.preventDefault(); HQREG.open(); };
+  }
   drawMap($("map0"));
   loadMyPoints();
   var me0 = readMe();
@@ -613,8 +791,33 @@ function loadMyPoints() {
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d && d.ok) { S.base = Number(d.points) || 0; S.prevBest = Number((d.games || {})[QUIZ.id]) || 0; drawPts(); }
+      if (d && d.ok && d.stages && d.stages[QUIZ.id] && !readRun()) offerLevels(d.stages[QUIZ.id]);
       if (d && d.ok && d.points) { $("myPts").textContent = "⭐ צָבַרְתָּ עַד עַכְשָׁו " + d.points + " נְקֻדּוֹת. כָּל הַכָּבוֹד!"; $("myBadge").textContent = badgeText(d.points); } })
     .catch(function () {});
+}
+/* מַמְשִׁיכִים מִכָּל מַחְשֵׁב: הַשָּׁרָת יוֹדֵעַ עַד אֵיזוֹ רָמָה עָבַר הַתַּלְמִיד בְּחִידוֹן הַזֶּה (st.r: 1 = עָבַר א׳, 2 = ב׳, 3 = ג׳)
+   וְאֶת הַנְּקֻדּוֹת שֶׁל הָרָמוֹת שֶׁעָבַר (st.s / st.m). אֶפְשָׁר לְהַתְחִיל בְּכָל רָמָה עַד הָרָמָה שֶׁאַחֲרֵי הָאַחֲרוֹנָה שֶׁעָבַר. מ-5.11.2026 */
+var ABC = ["a", "b", "c"];
+function offerLevels(st) {
+  if (!st || !st.r || QUIZ.levels.slice(0, 3).some(function (L, i) { return L.key !== ABC[i]; })) return;
+  var m = readMe(), young = YOUNG_GRADES.indexOf(m.grade) !== -1, n = young ? 2 : Math.min(3, QUIZ.levels.length);
+  var upto = Math.min(st.r, n - 1), done = st.r >= n, he = ["א׳", "ב׳", "ג׳"];
+  var html = '<p class="resume-t">📌 ' + (done ? "כְּבָר סִיַּמְתָּ אֶת הַחִידוֹן הַזֶּה! 🏆 רוֹצֶה לְשַׂחֵק שׁוּב? בְּחַר רָמָה:" :
+    "בַּפַּעַם הַקּוֹדֶמֶת עָבַרְתָּ אֶת רָמָה " + he[st.r - 1] + ". מֵאֵיפֹה מַמְשִׁיכִים?") + '</p><div class="crow">';
+  for (var i = done ? 0 : upto; i >= 0; i--) html += '<button class="btn' + (i === upto && !done ? "" : " ghost") + '" data-lv="' + i + '">▶️ רָמָה ' + he[i] + (i === upto && !done ? " – מַמְשִׁיכִים" : "") + "</button>";
+  html += "</div>";
+  var box = $("levelsPick"); box.innerHTML = html; box.style.display = "";
+  Array.prototype.forEach.call(box.querySelectorAll("button"), function (b) { b.onclick = function () { startAt(+b.dataset.lv, st); }; });
+  if (!done) $("goBtn").textContent = "🔁 מַתְחִילִים מֵרָמָה א׳";
+}
+function startAt(k, st) {
+  start();
+  if (!k || !$("sStudy").classList.contains("on")) return;   // רָמָה א׳, אוֹ שֶׁלֹּא נִבְחֲרָה כִּתָּה
+  S.scores = {}; S.maxes = {}; S.pts = 0;
+  for (var i = 0; i < k; i++) { var key = ABC[i]; S.scores[key] = Number((st.s || {})[key]) || 0; S.maxes[key] = Number((st.m || {})[key]) || 0; S.pts += S.scores[key]; }
+  S.lv = k;
+  drawPts();
+  openStudy();
 }
 function readMe() {
   var n = $("inName").value.trim(), c = $("inCls").value.trim(), s = $("inSchool").value.trim(), g = $("inGrade").value;
