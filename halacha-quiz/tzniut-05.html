@@ -835,7 +835,7 @@ function plain(s) { return s.replace(/[֑-ׇ]/g, ""); }
 function renderLetters(q, L) {
   // שאלה רגילה: answer. שאלת מנהגים: answers = [{label, answer}, ...] – שורת משבצות לכל מנהג, מחסן אותיות אחד
   var rows = q.answers ? q.answers : [{ label: "", answer: q.answer }];
-  var words = [], letters = [];
+  var words = [], letters = [], shown = [];   // shown: איך האריח נראה – אות סופית בצורתה הסופית
   var extra = (q.extra || "").split("");
   var html = '<div id="slots">', pos = 0;
   rows.forEach(function (r) {
@@ -844,15 +844,15 @@ function renderLetters(q, L) {
     ws.forEach(function (w) {
       words.push(w);
       html += '<div class="word">';
-      for (var i = 0; i < w.length; i++) { letters.push(norm(w[i])); html += '<button class="slot" data-p="' + pos + '" data-last="' + (i === w.length - 1 ? 1 : 0) + '"></button>'; pos++; }
+      for (var i = 0; i < w.length; i++) { letters.push(norm(w[i])); shown.push(i === w.length - 1 && TO_FINAL[norm(w[i])] ? TO_FINAL[norm(w[i])] : norm(w[i])); html += '<button class="slot" data-p="' + pos + '" data-last="' + (i === w.length - 1 ? 1 : 0) + '"></button>'; pos++; }
       html += "</div>";
     });
     html += "</div></div>";
   });
   html += "</div>";
   var C = S.c = { words: words, need: letters, slots: [], tries: 0, hints: 0, done: false };
-  var bank = shuffleArray(letters.concat(extra));
-  html += '<div class="bank" id="bank">' + bank.map(function (ch, i) { return '<button class="tile" data-t="' + i + '" data-ch="' + ch + '">' + ch + "</button>"; }).join("") + "</div>";
+  var bank = shuffleArray(letters.map(function (ch, i) { return [ch, shown[i]]; }).concat(extra.map(function (ch) { return [norm(ch), ch]; })));
+  html += '<div class="bank" id="bank">' + bank.map(function (b, i) { return '<button class="tile" data-t="' + i + '" data-ch="' + b[0] + '">' + b[1] + "</button>"; }).join("") + "</div>";
   html += '<div class="kbd-hint">⌨️ אֶפְשָׁר גַּם לְהַקְלִיד בַּמִּקְלֶדֶת – Enter לִבְדִיקָה</div>';
   html += '<div class="crow"><button class="btn" id="cCheck" disabled>✔️ בְּדֹק</button><button class="btn ghost" id="cHint">💡 רֶמֶז (‎-2)</button><button class="btn ghost" id="cClear">🧹 נַקֵּה</button></div>';
   $("qBody").innerHTML = html;
