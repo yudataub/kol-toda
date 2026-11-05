@@ -682,6 +682,12 @@ function pingProgress(stage) {
   var data = { action: "progress", name: S.name, cls: S.cls, school: S.school, game: QUIZ.id, stage: stage, s: S.scores, m: S.maxes };
   fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(data) }).catch(function () {});
 }
+// כָּל נִסָּיוֹן בְּרָמָה (גַּם שֶׁנִּכְשַׁל) – לְדַף הַמַּעֲקָב שֶׁל הַמּוֹרֶה: כַּמָּה נָכוֹן וְעַל אֵילּוּ שְׁאֵלוֹת טָעָה. מ-5.11.2026
+function pingAttempt(lv, right, n, passed) {
+  if (!API_URL || !S.real) return;
+  var data = { action: "attempt", name: S.name, cls: S.cls, school: S.school, game: QUIZ.id, lv: lv, right: right, n: n, passed: passed, wrong: S.wrong || [] };
+  fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(data) }).catch(function () {});
+}
 function showProgress(pts, gain) {
   var box = $("fProgress"); if (!box) return;
   box.style.display = "";
@@ -887,7 +893,7 @@ function openStudy() {
 function startLevelQuestions() {
   var L = QUIZ.levels[S.lv];
   S.list = L.questions.slice();
-  S.q = 0; S.right = 0;
+  S.q = 0; S.right = 0; S.wrong = [];   // הַשְּׁאֵלוֹת שֶׁטָּעָה בָּהֶן בַּנִּסָּיוֹן הַזֶּה – נִשְׁלָחוֹת לְדַף הַמּוֹרֶה
   if (!S.retry) { S.scores[L.key] = 0; S.maxes[L.key] = L.points * L.questions.length; }
   renderQuestion();
   show("sQuiz");
@@ -944,6 +950,7 @@ function feedback(ok, q, pts, hints) {
   S.answered++;
   var lvl = Math.min(S.answered, 10);
   fb.classList.remove("l3", "l7", "l10");
+  if (!ok && S.wrong) S.wrong.push({ i: S.q, p: String(q.prompt || "").replace(/[֑-ׇ]/g, "").slice(0, 110) });
   if (ok) {
     S.right++; S.streak++;
     if (!S.retry) S.scores[QUIZ.levels[S.lv].key] += pts;
@@ -1133,6 +1140,7 @@ function checkLetters() {
 /* ---------- סוף רמה ---------- */
 function levelEnd() {
   var L = QUIZ.levels[S.lv], n = S.list.length, ratio = S.right / n;
+  pingAttempt(L.key, S.right, n, ratio >= PASS);
   $("qBar").style.width = "100%";
   if (ratio >= PASS) {
     S.lv++; S.retry = false;
