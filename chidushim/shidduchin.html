@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מה׳ יצא הדבר</title>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700&amp;family=Heebo:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+/* ═══ INK & PAPER ════════════════════════════════════════════════════════
+   The adult skin. Loaded INSTEAD OF book.css, never alongside it — same class
+   names throughout, so book.js and the builder are untouched by the choice.
+
+   The whole argument of this stylesheet is restraint: one accent, paper and
+   ink, a serif that can hold 2,000 words without tiring, and a measure that
+   stops around 34em because a line of Hebrew wider than that loses the reader
+   on the way back to the start of the next one. */
+:root {
+  --paper:  #f7f4ee;
+  --paper2: #fffdf8;
+  --ink:    #23201c;
+  --ink2:   #55504a;
+  --rule:   #ddd6c9;
+  --accent: #8a4b3c;   /* one accent, used for links, marks and the rule under a title */
+  --accent-soft: #f0e4df;
+  /* Aliases so anything written against the Candy Pop variables still resolves
+     to something sane instead of falling back to black on white. */
+  --pink: var(--accent); --blue: var(--ink2); --yellow: var(--accent-soft);
+  --red: var(--accent); --green: var(--ink2); --purple: var(--accent);
+  --dark: var(--ink);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Frank Ruhl Libre', 'Noto Serif Hebrew', 'David Libre', Georgia, serif;
+  background: var(--paper);
+  color: var(--ink);
+  direction: rtl;
+  font-size: 18px;
+  line-height: 1.9;
+  min-height: 100vh;
+}
+
+/* No confetti. It is the single loudest childish signal a page can carry, and
+   the builder omits it for adults — this rule is here so that a book converted
+   from a kids spec does not keep raining candy. */
+.confetti { display: none !important; }
+
+/* ═══ ICONS ══════════════════════════════════════════════════════════════
+   Inline Lucide sprite; stroke inherits the text color, so an icon is never
+   a second color decision. */
+.icon { width: 1.05em; height: 1.05em; flex: none; vertical-align: -.15em;
+        fill: none; stroke: currentColor; stroke-width: 1.75;
+        stroke-linecap: round; stroke-linejoin: round; }
+.icon-sprite { display: none; }
+
+/* ═══ HERO ═══════════════════════════════════════════════════════════════ */
+.hero {
+  padding: 4.5rem 1.5rem 3rem; text-align: center;
+  border-bottom: 1px solid var(--rule); background: var(--paper2);
+}
+.hero-title { font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 700; letter-spacing: -.01em; }
+.hero-subtitle { margin-top: .9rem; color: var(--ink2); font-size: 1.05rem; font-style: italic; }
+.hero-stats { display: flex; gap: 1.6rem; justify-content: center; flex-wrap: wrap;
+              margin-top: 1.8rem; color: var(--ink2); font-size: .85rem; }
+.stat-bubble { display: inline-flex; align-items: center; gap: .4rem;
+               letter-spacing: .04em; text-transform: none; }
+.stat-bubble + .stat-bubble::before { content: '·'; margin-inline-end: 1.6rem; opacity: .5; }
+
+/* ═══ LAYOUT ═════════════════════════════════════════════════════════════ */
+.layout { display: flex; max-width: 1360px; margin: 0 auto; }
+.sidebar {
+  width: 330px; flex: none; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  padding: 1.6rem 1.2rem; background: var(--paper2);
+  border-inline-start: 1px solid var(--rule);
+  font-family: 'Heebo', system-ui, sans-serif; font-size: .9rem; line-height: 1.6;
+}
+.sidebar-title { font-family: inherit; font-size: .78rem; letter-spacing: .14em;
+                 text-transform: uppercase; color: var(--ink2); margin-bottom: 1rem; }
+
+/* ═══ SEARCH ═════════════════════════════════════════════════════════════ */
+.search-wrap { position: relative; margin-bottom: 1.4rem; }
+#searchBox {
+  width: 100%; padding: .6rem 2.2rem .6rem .8rem; font: inherit;
+  background: var(--paper); color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 3px;
+}
+#searchBox:focus { outline: none; border-color: var(--accent); }
+.search-icon { position: absolute; right: .7rem; top: 50%; transform: translateY(-50%);
+               pointer-events: none; color: var(--ink2); }
+#searchResults {
+  display: none; position: absolute; inset-inline: 0; top: calc(100% + 4px); z-index: 60;
+  max-height: 60vh; overflow-y: auto; background: var(--paper2);
+  border: 1px solid var(--rule); border-radius: 3px; box-shadow: 0 8px 26px rgba(0,0,0,.09);
+}
+.sr-item { padding: .6rem .8rem; cursor: pointer; border-bottom: 1px solid var(--rule); }
+.sr-item:last-child { border-bottom: none; }
+.sr-item:hover { background: var(--accent-soft); }
+.sr-item small { color: var(--ink2); }
+mark { background: var(--accent-soft); color: inherit; padding: 0 .1em; }
+
+/* ═══ CONTENTS ═══════════════════════════════════════════════════════════ */
+.era-jump { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.2rem; }
+.era-jump a { color: var(--ink2); text-decoration: none; font-size: .8rem;
+              border-bottom: 1px solid var(--rule); padding-bottom: .1rem; }
+.era-jump a:hover { color: var(--accent); border-color: var(--accent); }
+.toc-era { margin: 1.4rem 0 .5rem; display: flex; justify-content: space-between;
+           align-items: baseline; font-size: .74rem; letter-spacing: .12em;
+           text-transform: uppercase; color: var(--ink2);
+           border-bottom: 1px solid var(--rule); padding-bottom: .3rem; }
+.toc-era-count { opacity: .7; }
+.toc-chapter { margin-bottom: .1rem; border: none; border-radius: 0; }
+.toc-chapter-title {
+  display: flex; align-items: center; gap: .5rem; cursor: pointer;
+  padding: .45rem .2rem; color: var(--ink); background: none !important;
+  border-bottom: 1px solid transparent;
+}
+.toc-chapter-title:hover { border-bottom-color: var(--rule); }
+.toc-sage-link { color: inherit; text-decoration: none; flex: 1; font-weight: 600; }
+.toc-count { color: var(--ink2); font-size: .75rem; white-space: nowrap;
+             background: none; padding: 0; }
+.toc-arrow { transition: transform .2s; color: var(--ink2); font-size: .7rem; }
+.toc-chapter.open .toc-arrow { transform: rotate(180deg); }
+.toc-stories { list-style: none; counter-reset: tocline; max-height: 0; overflow: hidden;
+               transition: max-height .3s ease; background: none; }
+.toc-chapter.open .toc-stories { max-height: 2200px; padding: .2rem 0 .6rem; }
+.toc-stories li { display: flex; align-items: center; gap: .3rem;
+                  padding: .28rem .2rem .28rem 0; }
+/* The numeral is the adult book's navigation handle, in place of an emoji. */
+.toc-stories li { counter-increment: tocline; }
+.toc-stories a { color: var(--ink2); text-decoration: none; flex: 1; }
+.toc-stories a::before { content: counter(tocline) '.'; color: var(--rule);
+                         margin-inline-end: .45rem; font-variant-numeric: tabular-nums; }
+.toc-stories a:hover { color: var(--accent); }
+.toc-copy-link { border: none; background: none; cursor: pointer; opacity: .35;
+                 padding: 0 .2rem; color: inherit; font-size: .8rem; }
+.toc-copy-link:hover { opacity: 1; }
+.toc-chapter.flash .toc-chapter-title { background: var(--accent-soft) !important; }
+
+/* ═══ THE PAGE ═══════════════════════════════════════════════════════════ */
+.main { flex: 1; min-width: 0; padding: 3rem 2rem 4rem; }
+.era-block { margin-bottom: 4rem; scroll-margin-top: 1rem; }
+.era-banner {
+  background: none !important; display: flex; align-items: baseline; gap: .8rem;
+  border-bottom: 2px solid var(--ink); padding-bottom: .6rem; margin-bottom: 2.4rem;
+  max-width: 34em; margin-inline: auto;
+}
+.era-banner-icon { font-size: 1.2rem; color: var(--accent); }
+.era-banner-title { font-size: 1.5rem; font-weight: 700; color: var(--ink); }
+.era-banner-sub { color: var(--ink2); font-size: .82rem; }
+.chapter-section { margin-bottom: 3rem; scroll-margin-top: 1rem; }
+.chapter-header {
+  background: none !important; display: flex; align-items: baseline; gap: .7rem;
+  max-width: 34em; margin: 0 auto 1.6rem; padding-bottom: .4rem;
+  border-bottom: 1px solid var(--rule);
+}
+.chapter-icon { color: var(--accent); font-size: 1rem; }
+.chapter-title { font-size: 1.22rem; font-weight: 700; color: var(--ink); }
+.chapter-subtitle { color: var(--ink2); font-size: .8rem; }
+
+/* One column, never a card grid: a 2,000-word story in a 330px tile is
+   unreadable, and two of them side by side is a newspaper, not a book. */
+.card-grid { display: block; }
+
+/* ═══ A STORY ════════════════════════════════════════════════════════════ */
+.story-card {
+  background: var(--paper2); border: none; border-top: 1px solid var(--rule) !important;
+  border-radius: 0; box-shadow: none; max-width: 34em; margin: 0 auto 3.5rem;
+  padding: 2.4rem 0 0; scroll-margin-top: 1rem;
+}
+.story-card:hover { transform: none; box-shadow: none; }
+.story-header {
+  background: none !important; display: flex; align-items: baseline;
+  gap: .7rem; flex-wrap: wrap; padding: 0 0 .2rem;
+}
+.story-num {
+  background: none !important; color: var(--ink2); padding: 0; font-size: .78rem;
+  font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: .06em;
+}
+.story-title { font-size: 1.6rem; font-weight: 700; line-height: 1.45;
+               color: var(--ink); flex-basis: 100%; margin: .2rem 0 .3rem; }
+.story-subtitle { color: var(--ink2); font-style: italic; font-size: .98rem;
+                  padding: 0 0 .8rem; }
+.story-meta { display: flex; gap: 1rem; color: var(--ink2); font-size: .78rem;
+              font-family: 'Heebo', system-ui, sans-serif;
+              border-bottom: 1px solid var(--rule); padding-bottom: .9rem;
+              margin-bottom: 1.6rem; }
+.story-meta .icon { stroke-width: 1.5; }
+.copy-story-link {
+  margin-inline-start: auto; background: none; border: 1px solid var(--rule);
+  border-radius: 3px; color: var(--ink2); cursor: pointer;
+  font: inherit; font-size: .75rem; padding: .15rem .55rem;
+  font-family: 'Heebo', system-ui, sans-serif;
+}
+.copy-story-link:hover { border-color: var(--accent); color: var(--accent); }
+.story-body { padding: 0; display: block; }
+.story-body p { margin-bottom: 1.15rem; text-align: justify; text-justify: inter-word; }
+.story-body p.lede { font-size: 1.12rem; color: var(--ink); }
+.story-body p.lede::first-letter { float: right; font-size: 3.1rem; line-height: .82;
+                                   margin: .18rem 0 0 .35rem; color: var(--accent); }
+.bold-para { font-weight: 700; }
+.section-heading { font-size: 1.05rem; font-weight: 700; color: var(--ink);
+                   margin: 2.2rem 0 .9rem; letter-spacing: .01em; }
+/* A scene break with no heading: three centred asterisks, the way print does it. */
+.scene-break { text-align: center; color: var(--ink2); margin: 2rem 0; letter-spacing: .8em; }
+.scene-break::before { content: '***'; }
+.story-list { margin: 0 1.2rem 1.15rem 0; }
+.story-list li { margin-bottom: .5rem; }
+.pull-quote {
+  margin: 1.8rem 0; padding-inline-start: 1.1rem;
+  border-inline-start: 2px solid var(--accent);
+  font-size: 1.15rem; font-style: italic; color: var(--ink2); line-height: 1.7;
+}
+.source-box { background: none; border: none; border-top: 1px solid var(--rule);
+              border-radius: 0; padding: 1rem 0 0; margin: 1.8rem 0 0; }
+.source-ref { color: var(--ink2); font-size: .82rem; font-weight: 700; }
+.source-quote { color: var(--ink2); font-size: .95rem; margin-top: .4rem; }
+.source-link a { color: var(--accent); }
+.source-note { color: var(--ink2); font-size: .82rem; font-style: italic;
+               margin-top: 1.6rem; padding-top: .8rem; border-top: 1px solid var(--rule); }
+.story-navigation { display: flex; justify-content: space-between; gap: .6rem;
+                    padding: 1.6rem 0 0; font-size: .82rem;
+                    font-family: 'Heebo', system-ui, sans-serif; }
+.story-navigation a { color: var(--ink2); text-decoration: none; background: none;
+                      padding: 0; border-bottom: 1px solid var(--rule); }
+.story-navigation a:hover { color: var(--accent); border-color: var(--accent); }
+.back-to-toc-nav { order: 2; }
+/* A shared link lands here — say so without flashing the page. */
+.highlight-story { animation: ink-settle 2.4s ease forwards; }
+@keyframes ink-settle {
+  0%, 60% { background: var(--accent-soft); }
+  100%    { background: var(--paper2); }
+}
+
+/* ═══ NIGHT READING ══════════════════════════════════════════════════════
+   Adults read long-form at night. Follows the system setting; the builder can
+   also stamp data-theme when the reader picks one. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #16151a; --paper2: #1c1b21; --ink: #e8e3da; --ink2: #a49d92;
+    --rule: #34313a; --accent: #d9a08c; --accent-soft: #33272a;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #16151a; --paper2: #1c1b21; --ink: #e8e3da; --ink2: #a49d92;
+  --rule: #34313a; --accent: #d9a08c; --accent-soft: #33272a;
+}
+
+#backTop {
+  position: fixed; bottom: 2rem; left: 2rem; z-index: 100; display: none;
+  align-items: center; justify-content: center; width: 42px; height: 42px;
+  border-radius: 50%; border: 1px solid var(--rule); cursor: pointer;
+  background: var(--paper2); color: var(--ink2);
+}
+.book-footer { text-align: center; padding: 2.5rem 1rem 4rem;
+               color: var(--ink2); font-size: .82rem; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ═══ LONG BOOKS ═════════════════════════════════════════════════════════
+   Adult stories run several times longer than children's, so these are NOT
+   the Candy Pop numbers. Measure your own book and replace them — a value
+   below the real median makes the page grow under the reader and throws off
+   every #story-N landing. */
+.story-card { content-visibility: auto; contain-intrinsic-size: auto 14000px; }
+@media (max-width: 900px) { .story-card { contain-intrinsic-size: auto 26000px; } }
+@media print { .story-card { content-visibility: visible; } }
+
+/* ═══ RESPONSIVE ═════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  body { font-size: 17px; }
+  .layout { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: relative;
+             border-inline-start: none; border-bottom: 1px solid var(--rule); }
+  .main { padding: 1.6rem 1.1rem 3rem; }
+  .story-title { font-size: 1.35rem; }
+}
+
+/* ═══ PRINT ══════════════════════════════════════════════════════════════
+   Adult books get printed far more often than children's ones. */
+@media print {
+  @page { size: A4; margin: 18mm 17mm; }
+  body { background: #fff; font-size: 11pt; line-height: 1.5; }
+  .sidebar, #backTop, .story-navigation, .copy-story-link, .search-wrap,
+  .hero-stats, .source-link { display: none !important; }
+  .main { padding: 0; }
+  .layout { display: block; }
+  .story-card { max-width: none; break-before: page; border-top: none !important; }
+  .story-card:first-of-type { break-before: auto; }
+  .section-heading, .story-title { break-after: avoid; }
+  .story-body p { orphans: 3; widows: 3; }
+  .pull-quote, .source-box, .story-list { break-inside: avoid; }
+}
+
+:root { --accent: #8a4b3c; --accent-soft: #f0e4df; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --accent: #8a4b3c; --accent-soft: #f0e4df; } }
+:root[data-theme="dark"] { --accent: #8a4b3c; --accent-soft: #f0e4df; }
+
+
+:root{--accent:#8a5a2b;--accent-soft:#f4e9d8}
+.hero{position:relative;padding-top:0}
+.cover-img{display:block;width:100%;max-height:430px;object-fit:cover;object-position:center 72%;margin-bottom:2rem}
+.story-card{padding:1.8rem 2.2rem 1.4rem;contain-intrinsic-size:auto 1300px}
+@media (max-width:900px){.story-card{padding:1.2rem 1.05rem 1rem;contain-intrinsic-size:auto 1600px}}
+.hero-byline{color:var(--ink2);font-size:.95rem;margin-top:.6rem}
+.part-img{margin:0 0 1.8rem}
+.part-img img{display:block;width:100%;height:auto;border-radius:3px}
+.part-img figcaption{color:var(--ink2);font-size:.85rem;text-align:center;margin-top:.5rem}
+.pasuk{margin:1.1rem 0 1.3rem;padding:.8rem 1.1rem;background:var(--accent-soft);border-radius:4px;font-size:1.13rem;line-height:1.95}
+.pasuk-ref{display:block;font-size:.76rem;color:var(--ink2);margin-bottom:.15rem;letter-spacing:.02em}
+.rule{margin:1.1rem 0;padding:.75rem 1rem;border-inline-start:3px solid var(--rc);background:color-mix(in srgb,var(--rc) 8%,transparent);border-radius:0 4px 4px 0;break-inside:avoid}
+.rule b{display:block;color:var(--rc);font-size:.8rem;letter-spacing:.03em;margin-bottom:.15rem}
+.rule p{margin:0!important;font-size:1rem;line-height:1.75}
+.rule-h{--rc:#7a2e2e}.rule-n{--rc:#8a5a2b}.rule-m{--rc:#2f6f5e}.rule-q{--rc:#3f5f8f}.rule-a{--rc:#b03a5b}
+.prayer{margin:1.3rem 0;padding:1.3rem 1.2rem;text-align:center;border-block:1px solid var(--rule);font-size:1.12rem;line-height:2}
+.prayer p{margin:.25rem 0!important}
+.journal{display:grid;gap:.8rem}
+.journal div{min-height:6.5rem;border:1px solid var(--rule);border-radius:4px;padding:.55rem .8rem}
+.journal b{font-size:.9rem;color:var(--ink2)}
+.sig{max-width:42rem;margin:2rem auto 3rem;padding:1.2rem 1.3rem;border-radius:6px;background:var(--accent-soft);line-height:1.9;text-align:center}
+.sig a{color:var(--accent);font-weight:700;word-break:break-word}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#d9b07c;--accent-soft:#2e2619}
+ :root:not([data-theme="light"]) .rule-h{--rc:#e09a9a}:root:not([data-theme="light"]) .rule-n{--rc:#d9b07c}:root:not([data-theme="light"]) .rule-m{--rc:#7fc8b4}:root:not([data-theme="light"]) .rule-q{--rc:#9db8e3}:root:not([data-theme="light"]) .rule-a{--rc:#ee8fa8}}
+:root[data-theme="dark"]{--accent:#d9b07c;--accent-soft:#2e2619}
+:root[data-theme="dark"] .rule-h{--rc:#e09a9a}:root[data-theme="dark"] .rule-n{--rc:#d9b07c}:root[data-theme="dark"] .rule-m{--rc:#7fc8b4}:root[data-theme="dark"] .rule-q{--rc:#9db8e3}:root[data-theme="dark"] .rule-a{--rc:#ee8fa8}
+@media print{.rule,.pasuk{-webkit-print-color-adjust:exact;print-color-adjust:exact}.sig a::after{content:none!important}}
+</style>
+<style>.chapter-illustration{margin:0 0 1.35rem;overflow:hidden;border-radius:5px}.chapter-illustration img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}@media print{.chapter-illustration{break-inside:avoid}.chapter-illustration img{max-height:8cm;object-fit:cover}}</style><meta property="og:title" content="מה׳ יצא הדבר">
+<meta property="og:description" content="מה׳ יצא הדבר">
+<meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-chidushim-shidduchin.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/chidushim/shidduchin.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://www.kol-toda.co.il/chidushim/shidduchin.html">
+<script async src="https://www.kol-toda.co.il/a.js"></script>
+</head>
+<body>
+<!-- Icons from Lucide (https://lucide.dev) - ISC License -->
+<svg class="icon-sprite" aria-hidden="true"><symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></symbol><symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol><symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"/></symbol><symbol id="i-footprints" viewBox="0 0 24 24"><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/></symbol><symbol id="i-gem" viewBox="0 0 24 24"><path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/></symbol><symbol id="i-house" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol><symbol id="i-message-circle" viewBox="0 0 24 24"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></symbol><symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></symbol></svg>
+
+<header class="hero"><img class="cover-img" src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-1.webp" alt="שני צמידים ונזם זהב על שפת באר">
+  <h1 class="hero-title">מֵה׳ יָצָא הַדָּבָר</h1>
+  <p class="hero-subtitle">הלכות והנהגות שידוכין מן התורה · מלווה לזוג לפני הפגישות ובתוכן</p><p class="hero-byline">על פי חידושי הרב יהודה טאוב לפרשת חיי שרה</p>
+  <div class="hero-stats"><div class="stat-bubble">37 סימנים</div><div class="stat-bubble">8 פרקים</div><div class="stat-bubble">קישור ישיר לכל סימן</div></div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" id="toc">
+    <div class="sidebar-title">תוכן העניינים</div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchBox" placeholder="חפש סימן או נושא..." oninput="doSearch(this.value)">
+      <div id="searchResults"></div>
+    </div>
+<div class="toc-chapter" style="border-color:#8a4b3c">
+<div class="toc-chapter-title" style="background:#8a4b3c" onclick="toggleTocChapter(this)"><span class="toc-icon"><svg class="icon" aria-hidden="true"><use href="#i-book-open"/></svg></span><a href="#chapter-פתח-דבר" class="toc-sage-link">פתח דבר</a><span class="toc-count">סימן אחד</span><span class="toc-arrow">▼</span></div>
+<ul class="toc-stories">
+<li><a href="#story-1">שישים ושבעה פסוקים על שידוך אחד</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-1', this)" title="העתק קישור">🔗</button></li>
+</ul></div>
+<div class="toc-chapter" style="border-color:#8a4b3c">
+<div class="toc-chapter-title" style="background:#8a4b3c" onclick="toggleTocChapter(this)"><span class="toc-icon"><svg class="icon" aria-hidden="true"><use href="#i-footprints"/></svg></span><a href="#chapter-חלק-א-לפני-שיוצאים-לדרך" class="toc-sage-link">חלק א · לפני שיוצאים לדרך</a><span class="toc-count">6 סימנים</span><span class="toc-arrow">▼</span></div>
+<ul class="toc-stories">
+<li><a href="#story-2">ההחלטה שעליה משביעים</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-2', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-3">בת פלוני לפלוני</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-3', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-4">הקרה נא לפני היום</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-4', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-5">לא תיבעי רחמי הכי</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-5', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-6">מי מייעץ לכם?</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-6', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-7">להכין כבר עכשיו את הדרשה</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-7', this)" title="העתק קישור">🔗</button></li>
+</ul></div>
+<div class="toc-chapter" style="border-color:#8a4b3c">
+<div class="toc-chapter-title" style="background:#8a4b3c" onclick="toggleTocChapter(this)"><span class="toc-icon"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg></span><a href="#chapter-חלק-ב-מה-בעצם-מחפשים" class="toc-sage-link">חלק ב · מה בעצם מחפשים</a><span class="toc-count">6 סימנים</span><span class="toc-arrow">▼</span></div>
+<ul class="toc-stories">
+<li><a href="#story-8">קודם כל, המידות והבית</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-8', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-9">הבדיקה היחידה</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-9', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-10">מבחן הכד</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-10', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-11">ואיש לא ידעה</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-11', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-12">שני לוחות מצומדים</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-12', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-13">כולן שוות לטובה</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-13', this)" title="העתק קישור">🔗</button></li>
+</ul></div>
+<div class="toc-chapter" style="border-color:#8a4b3c">
+<div class="toc-chapter-title" style="background:#8a4b3c" onclick="toggleTocChapter(this)"><span class="toc-icon"><svg class="icon" aria-hidden="true"><use href="#i-message-circle"/></svg></span><a href="#chapter-חלק-ג-בתוך-הפגישות" class="toc-sage-link">חלק ג · בתוך הפגישות</a><span class="toc-count">8 סימנים</span><span class="toc-arrow">▼</span></div>
+<ul class="toc-stories">
+<li><a href="#story-14">אסור לקדש עד שיראנה</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-14', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-15">מחריש לדעת</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-15', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-16">שתה אדוני</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-16', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-17">תודה לנהג האוטובוס</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-17', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-18">אותה ריצה, שני עולמות</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-18', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-19">ביני ובינך מה היא</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-19', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-20">אין דבר כזה פראייר</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-20', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-21">על מה מדברים</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-21', this)" title="העתק קישור">🔗</button></li>
+</ul></div>
+<div class="toc-chapter" style="border-color:#8a4b3c">
+<div class="toc-chapter-title" style="background:#8a4b3c" onclick="toggleTocChapter(this)"><span class="toc-icon"><svg class="icon" aria-hidden="true"><use href="#i-compass"/></svg></span><a href="#chapter-חלק-ד-רגע-ההחלטה" class="toc-sage-link">חלק ד · רגע ההחלטה</a><span class="toc-count">4 סימנים</span><span class="toc-arrow">▼</span></div>
+<ul class="toc-stories">
+<li><a href="#story-22">מה׳ יצא הדבר</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-22', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-23">אל תאחרו אותי</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-23', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-24">ונשאלה את פיה</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-24', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-25">מכאן שמודים על בשורה טובה</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-25', this)" title="העתק קישור">🔗</button></li>
+</ul></div>
+<div class="toc-chapter" style="border-color:#8a4b3c">
+<div class="toc-chapter-title" style="background:#8a4b3c" onclick="toggleTocChapter(this)"><span class="toc-icon"><svg class="icon" aria-hidden="true"><use href="#i-gem"/></svg></span><a href="#chapter-חלק-ה-מן-ה״כן״-אל-החופה" class="toc-sage-link">חלק ה · מן ה״כן״ אל החופה</a><span class="toc-count">5 סימנים</span><span class="toc-arrow">▼</span></div>
+<ul class="toc-stories">
+<li><a href="#story-26">קיחה קיחה משדה עפרון</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-26', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-27">לא אוכל עד אם דיברתי דברי</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-27', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-28">עשרה זהובים</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-28', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-29">לשבח את הכלה</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-29', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-30">הקול החמישי</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-30', this)" title="העתק קישור">🔗</button></li>
+</ul></div>
+<div class="toc-chapter" style="border-color:#8a4b3c">
+<div class="toc-chapter-title" style="background:#8a4b3c" onclick="toggleTocChapter(this)"><span class="toc-icon"><svg class="icon" aria-hidden="true"><use href="#i-house"/></svg></span><a href="#chapter-חלק-ו-הבית-שנבנה" class="toc-sage-link">חלק ו · הבית שנבנה</a><span class="toc-count">3 סימנים</span><span class="toc-arrow">▼</span></div>
+<ul class="toc-stories">
+<li><a href="#story-31">בקע</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-31', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-32">החסד הגדול ביותר</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-32', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-33">ויאהבה</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-33', this)" title="העתק קישור">🔗</button></li>
+</ul></div>
+<div class="toc-chapter" style="border-color:#8a4b3c">
+<div class="toc-chapter-title" style="background:#8a4b3c" onclick="toggleTocChapter(this)"><span class="toc-icon"><svg class="icon" aria-hidden="true"><use href="#i-scroll-text"/></svg></span><a href="#chapter-נספחים-לדרך" class="toc-sage-link">נספחים לדרך</a><span class="toc-count">4 סימנים</span><span class="toc-arrow">▼</span></div>
+<ul class="toc-stories">
+<li><a href="#story-34">כרטיס הכיס</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-34', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-35">שאלות לשיחה לפי שלבים</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-35', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-36">תפילה קצרה לפני פגישה</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-36', this)" title="העתק קישור">🔗</button></li>
+<li><a href="#story-37">פנקס החסד שלי</a><button class="toc-copy-link" onclick="event.preventDefault(); copyStoryLink('story-37', this)" title="העתק קישור">🔗</button></li>
+</ul></div>
+  </aside>
+  <main class="main">
+<section class="chapter-section" id="chapter-פתח-דבר">
+<div class="chapter-header" style="background:linear-gradient(135deg,#8a4b3c,#f0e4df)"><div class="chapter-icon"><svg class="icon" aria-hidden="true"><use href="#i-book-open"/></svg></div><div><h2 class="chapter-title">פתח דבר</h2><div class="chapter-subtitle">סימן אחד</div></div></div>
+<div class="card-grid">
+<article class="story-card" id="story-1" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-2.webp" alt="איור לסימן: שישים ושבעה פסוקים על שידוך אחד" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#1</span><h3 class="story-title">שישים ושבעה פסוקים על שידוך אחד</h3><button class="copy-story-link" onclick="copyStoryLink('story-1', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">למה הספר הזה נכתב, ואיך קוראים בו</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> 2 דקות קריאה</span></div>
+<div class="story-body"><p class="lede">הלכות סוכה והלכות גט כתובות בתורה בפסוקים ספורים. הרבה הלכות נלמדות מאות אחת, מרמז, מריבוי של מילה. ואז מגיעה התורה אל עבד אחד שיוצא למצוא אשה לבן אדוניו, ועוצרת: שישים ושבעה פסוקים. כל מחשבה, כל מילה, כל גמל. וכשהסיפור נגמר, התורה מספרת אותו שוב מההתחלה.</p>
+<p>חז״ל הרגישו בזה ואמרו משפט מפתיע: ״יפה שיחתן של עבדי בתי אבות מתורתן של בנים״. פרשתו של אליעזר חוזרת על עצמה דפים שלמים, ואילו דין גדול כמו טומאת דם השרץ נלמד רק מריבוי של מילה.</p>
+<p>מה יש בשיחה הזאת שגדול מגופי תורה? הרי התורה לא כתבה את שאר השיחות של אליעזר. אלא שבשיחה הזאת דווקא יש את מה שכל התורה רוצה להביא אליו: אדם שיוצא לדרך, מתפלל, רואה את יד ה׳ מובילה אותו צעד אחרי צעד, ואינו יכול לשתוק. שיחה בלשון חז״ל היא סיפור נפלאות, ״שיחו בכל נפלאותיו״. והזיווג הוא אחד המקומות בעולם שבהם רואים את היד הזאת הכי קרוב.</p>
+<h3 class="section-heading">למי הספר</h3>
+<p>הספר נכתב למי שנמצא בתקופה הזאת ממש: לקראת פגישה ראשונה, באמצע פגישות, או כבר קרוב להחלטה. אולי לבד, ואולי יחד עם מי שיושב מולך. תקופה של תקווה ושל בלבול, של טלפונים ובירורים ולילות בלי שינה. הפרשה הזאת כתובה בדיוק עליה, והיא מעשית הרבה יותר ממה שנדמה.</p>
+<p>הסדר בספר הוא סדר הדרך של אליעזר: ההכנה, מה מחפשים, מה רואים בתוך הפגישות, רגע ההחלטה, הימים שבין ה״כן״ לחופה, והבית שנבנה אחריה. אפשר לקרוא ברצף, ואפשר לפתוח בפרק שמתאים למה שעובר עליכם השבוע.</p>
+<h3 class="section-heading">איך קוראים</h3>
+<ul class="story-list"><li><b>הלכה</b> היא דין שנלמד ממקור בגמרא או ברש״י.</li><li><b>הנהגה</b> היא דרך חיים שלומדים מן הפרשה, והיא נכונה ברוב המקרים, לא בכולם.</li><li><b>בפגישה הקרובה</b> הוא דבר אחד קטן שאפשר לעשות או לשים לב אליו כבר בפעם הבאה.</li><li><b>לשיחה ביניכם</b> היא שאלה שאפשר לשאול זה את זה כשהקשר כבר מרשה.</li></ul>
+<p>הספר הזה הוא לימוד ולא פסק. שאלה הלכתית למעשה, ובוודאי החלטה על קשר מסוים, מביאים אל רב שמכיר אתכם ואל מי שמלווה אתכם. ועוד דבר: רוב הלשון בפרשה מדברת על בחירת כלה, כי התורה מספרת על שליח שיצא לחפש כלה. המידות שבודקים נכונות לשני הצדדים באותה מידה.</p>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>״עם זו יצרתי לי, תהלתי יספרו״. ה׳ ברא אותנו כדי שנספר עליו. מי שעובר את תקופת השידוכים בעיניים פתוחות, יגיע לחופה עם סיפור של אהבה בין אדם לבוראו, ולא רק עם כתובת חדשה.</p></aside>
+<p class="source-note">בראשית רבה ס, ח; רש״י בראשית כד, מב; תהלים קה, ב; ישעיה מג, כא.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-2">הבא →</a></nav>
+</article>
+</div></section>
+<section class="chapter-section" id="chapter-חלק-א-לפני-שיוצאים-לדרך">
+<div class="chapter-header" style="background:linear-gradient(135deg,#8a4b3c,#f0e4df)"><div class="chapter-icon"><svg class="icon" aria-hidden="true"><use href="#i-footprints"/></svg></div><div><h2 class="chapter-title">חלק א · לפני שיוצאים לדרך</h2><div class="chapter-subtitle">6 סימנים</div></div></div>
+<div class="card-grid">
+<article class="story-card" id="story-2" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-3.webp" alt="איור לסימן: ההחלטה שעליה משביעים" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#2</span><h3 class="story-title">ההחלטה שעליה משביעים</h3><button class="copy-story-link" onclick="copyStoryLink('story-2', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">כל הרכוש בלי שבועה, והשידוך רק בשבועה</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><figure class="part-img"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-4.webp" alt="״וַיֹּאמַר ה׳ אֱלֹהֵי אֲדֹנִי אַבְרָהָם״: הדרך מתחילה בתפילה" loading="lazy"><figcaption>״וַיֹּאמַר ה׳ אֱלֹהֵי אֲדֹנִי אַבְרָהָם״: הדרך מתחילה בתפילה</figcaption></figure>
+<p class="lede">אליעזר הוא ״המושל בכל אשר לו״. כל הכסף, כל העדרים, כל המשק של אברהם עוברים דרך ידיו, ואברהם לא ביקש ממנו מעולם שבועה על אף שקל. ויום אחד הוא קורא לו, ועל דבר אחד בלבד הוא דורש שבועה: מי תהיה אשתו של יצחק.</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, ב</span>וַיֹּאמֶר אַבְרָהָם אֶל־עַבְדּוֹ זְקַן בֵּיתוֹ הַמֹּשֵׁל בְּכָל־אֲשֶׁר־לוֹ שִׂים־נָא יָדְךָ תַּחַת יְרֵכִי</blockquote>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, ג</span>וְאַשְׁבִּיעֲךָ בַּה׳ אֱלֹהֵי הַשָּׁמַיִם וֵאלֹהֵי הָאָרֶץ אֲשֶׁר לֹא־תִקַּח אִשָּׁה לִבְנִי מִבְּנוֹת הַכְּנַעֲנִי אֲשֶׁר אָנֹכִי יוֹשֵׁב בְּקִרְבּוֹ</blockquote>
+<p>על כל רכושו האמין לו בלי שבועה, ועל זיווג טוב ליצחק לא האמין לו בלי שבועה. ללמדך שכל רכושו של אדם אינו שווה כנגד זיווג הגון.</p>
+<p>אנשים יכולים להשקיע חודשים בבחירת דירה, ולהחליט על הזיווג לפי תחושה משיחה אחת. אברהם מלמד איפה המשקל האמיתי.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>לא חוסכים בשידוך במחשבה, בבירור ובתפילה. זו ההחלטה החשובה ביותר שתחליטו.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>ה׳ מזווג זיווגים בעצמו, כי הדבר יקר בעיניו. מי שמתייחס לשידוך ביראה ובכבוד, נוגע בדבר שה׳ עצמו מטפל בו.</p></aside>
+<p class="source-note">בראשית כד, ב–ג. על פי ״פניני הודיה לנישואין״ ו״הדרך המהירה לזיווג הגון במהרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-1">← הקודם</a><a href="#story-3">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-3" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-5.webp" alt="איור לסימן: בת פלוני לפלוני" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#3</span><h3 class="story-title">בת פלוני לפלוני</h3><button class="copy-story-link" onclick="copyStoryLink('story-3', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">מי שיודע מי מזווג, נושם אחרת</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">בכל יום, אומרת הגמרא, יוצאת בת קול ואומרת: בת פלוני לפלוני. שלוש פעמים בתנ״ך נכתב אותו דבר, בתורה, בנביאים ובכתובים: ״מה׳ אשה לאיש״. מן התורה, מפיהם של לבן ובתואל דווקא: ״מה׳ יצא הדבר״.</p>
+<p>וכאן השאלה הטובה: הרי הכל מאת ה׳. מה מיוחד בזיווג? התשובה היא שבזיווגים ההשגחה גלויה הרבה יותר.</p>
+<p>אליעזר חי את הידיעה הזאת. עלי מוטלת ההשתדלות, ואת התוצאה ה׳ מנהל. ומי שחי כך, קורים לו שני דברים שנראים הפוכים זה מזה. הוא אינו נלחץ כששידוך מתבטל, כי פשוט זו לא הכתובת. והוא גם אינו מבטל הצעה בגלל דברים קטנים, כי הוא אינו מחפש בעצמו שלמות שתרגיע אותו.</p>
+<blockquote class="pull-quote">כששידוך מתבטל, לא נסגרה דלת. התברר שזו לא הכתובת.</blockquote>
+<p>נראה שאליעזר מצא את הזיווג מהר כל כך משום שהרגיש בכל לבו שרק ה׳ מזווג. וככל שמרגישים כך, מוצאים מהר יותר.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>עושים השתדלות מלאה, ומשאירים את התוצאה לה׳. שידוך שלא יצא אינו כישלון שלכם ואינו הוכחה לשום דבר עליכם.</p></aside>
+<aside class="rule rule-m"><b>בפגישה הקרובה</b><p>לפני שיוצאים מהבית, אמרו בלב משפט אחד: ״אני הולך להשתדל, והתוצאה בידיים טובות״. שימו לב כמה הלחץ בגוף יורד.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>הזיווג הוא אחד המקומות שבהם רואים הכי חזק את יד ה׳. מי שמרגיש שה׳ מטפל בו אישית, מרגיש נאהב עוד לפני שמצא את זיווגו.</p></aside>
+<p class="source-note">מועד קטן יח, ב; בראשית כד, נ. על פי ״הדרך המהירה לזיווג הגון במהרה״ ו״דרשה לשבע ברכות״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-2">← הקודם</a><a href="#story-4">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-4" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-6.webp" alt="איור לסימן: הקרה נא לפני היום" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#4</span><h3 class="story-title">הקרה נא לפני היום</h3><button class="copy-story-link" onclick="copyStoryLink('story-4', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">ההשתדלות החזקה ביותר</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">אליעזר עומד ליד הבאר, אחרי מסע, עם עשרה גמלים ואחריות על עתיד כל עם ישראל. יש לו תכנית טובה ויש לו מבחן חכם. והדבר הראשון שהוא עושה הוא לפתוח את הפה ולהתפלל.</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, יב</span>וַיֹּאמַר ה׳ אֱלֹהֵי אֲדֹנִי אַבְרָהָם הַקְרֵה־נָא לְפָנַי הַיּוֹם וַעֲשֵׂה־חֶסֶד עִם אֲדֹנִי אַבְרָהָם</blockquote>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, יד</span>וְהָיָה הַנַּעֲרָ אֲשֶׁר אֹמַר אֵלֶיהָ הַטִּי־נָא כַדֵּךְ וְאֶשְׁתֶּה וְאָמְרָה שְׁתֵה וְגַם־גְּמַלֶּיךָ אַשְׁקֶה אֹתָהּ הֹכַחְתָּ לְעַבְדְּךָ לְיִצְחָק וּבָהּ אֵדַע כִּי־עָשִׂיתָ חֶסֶד עִם־אֲדֹנִי</blockquote>
+<p>שימו לב למילה שחוזרת. פעמיים בתפילה הקצרה הזאת הוא מזכיר חסד: פותח בחסד ומסיים בחסד. וגם כשהוא מודה בסוף: ״אשר לא עזב חסדו ואמיתו״. הוא לא חשב שמגיע לו.</p>
+<p>החידושי הרי״ם אמר דבר נפלא. האוצר של מתנת חינם הוא הגדול והמשופע מכל האוצרות. ולמה אין נותנים ממנו לכולם? כי נותנים ממנו רק למי שמכיר היטב שבחינם ניתן לו, ורוב בני האדם, כשמקבלים משהו, חושבים שמגיע להם. והרי אברהם ראוי גם בדין! אלא שאברהם היה רבי טוב, והכניס בלב תלמידיו שאין לאדם כלום אצל בוראו, רק חסד.</p>
+<h3 class="section-heading">״ובה אדע״: הבקשה שאינה מובנת מאליה</h3>
+<p>רש״י מפרש ״ובה אדע״ בלשון תחינה: הודע לי בה. ומכאן עצה נפלאה. לא לבקש רק ״תן לי״, אלא לבקש לראות את החסד עצמו:</p>
+<blockquote class="pull-quote">ריבונו של עולם, אני רוצה להכיר את חסדך. הודע לי בזיווגי שעשית עמדי חסד, ואפרסם אותו לעיני כולם.</blockquote>
+<aside class="rule rule-n"><b>הנהגה</b><p>מתפללים על הזיווג בלשון של בקשת חסד ולא בלשון של ״מגיע לי״, ומבקשים לראות דרכו את אהבת ה׳.</p></aside>
+<aside class="rule rule-m"><b>בפגישה הקרובה</b><p>לפני הפגישה, דקה אחת של תפילה במילים שלכם. לא על ״שזה יצליח״, אלא על ״שאדע מה נכון, ושאהיה טוב אל מי שיושב מולי״.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>מי שיודע שהכל חסד, חי בתודה מתמדת, וה׳ פותח לו את האוצר הגדול מכולם.</p></aside>
+<p class="source-note">בראשית כד, יב, יד, כז; רש״י שם, יד; חידושי הרי״ם, מובא בשפתי צדיק ואתחנן אות ז. על פי ״הדרך המהירה לזיווג הגון במהרה״ ו״יפה שיחתן של עבדי אבות״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-3">← הקודם</a><a href="#story-5">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-5" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-7.webp" alt="איור לסימן: לא תיבעי רחמי הכי" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#5</span><h3 class="story-title">לא תיבעי רחמי הכי</h3><button class="copy-story-link" onclick="copyStoryLink('story-5', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">על מה לא מתפללים</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">רבא שמע פעם אדם מתפלל: ״תזדמן לי פלונית״. ריבונו של עולם, דווקא היא. עצר אותו רבא ואמר לו: אל תתפלל כך. אם היא ראויה לך, לא תלך ממך. ואם לא, כפרת בה׳.</p>
+<p>כמה מדויק. מי שמתאהב ברעיון על אדם מסוים ומתחיל לדרוש, כבר אינו מבקש חסד. הוא מכתיב.</p>
+<p>ועם זאת, אותה סוגיה עצמה מלמדת שתפילה איננה מילים ריקות. בת הקול כבר הכריזה, ובכל זאת התירו חכמים לארס אשה בחול המועד, ״שמא יקדמנו אחר ברחמים״, שמא אדם אחר יקדים בתפילה.</p>
+<p>שתי האמיתות יחד הן הדרך. מתפללים הרבה, ומתפללים פתוח.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>כשמתקדמים עם אדם מסוים, מתפללים ״אם זה הטוב בעיניך, סלול את הדרך, ואם לא, הראה לי בעדינות״. לא דורשים מה׳ ״דווקא זה״.</p></aside>
+<aside class="rule rule-q"><b>לשיחה ביניכם</b><p>מה יהיה קשה לכל אחד מכם לומר בתפילה הזאת בכנות? לפעמים התשובה מלמדת מה קורה בלב.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>תפילה פתוחה היא מעשה של אמון. היא אומרת: אתה יודע מה טוב לי יותר ממני, כי אתה אוהב אותי יותר ממני.</p></aside>
+<p class="source-note">מועד קטן יח, ב.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-4">← הקודם</a><a href="#story-6">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-6" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-8.webp" alt="איור לסימן: מי מייעץ לכם?" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#6</span><h3 class="story-title">מי מייעץ לכם?</h3><button class="copy-story-link" onclick="copyStoryLink('story-6', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">הבת של אליעזר</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">יש בפרשה פרט קטן שאפשר לעבור עליו בלי לראות. כשאליעזר מספר בבית לבן על השיחה עם אברהם, הוא אומר ״אֻלַי לא תלך האשה אחרי״, והמילה כתובה בלי וי״ו. אפשר לקרוא אותה ״אלי״, אלי. רש״י מגלה מה עמד מאחוריה: לאליעזר הייתה בת. הוא חיזר למצוא עילה שאברהם יאמר לו לפנות אליו ולהשיא את בתו ליצחק.</p>
+<p>האיש הנאמן ביותר בבית אברהם היה בעל עניין. ולא ממזימה. הוא פשוט אב שרוצה טוב לבתו.</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, לט</span>וָאֹמַר אֶל־אֲדֹנִי אֻלַי לֹא־תֵלֵךְ הָאִשָּׁה אַחֲרָי</blockquote>
+<p>וזה מה שגדול בו: הוא ידע, הוא שאל, הוא קיבל תשובה, ואחר כך יצא לדרך ועשה את השליחות בשלמות, נגד הנגיעה של עצמו. כך נראה שליח.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>כששומעים עצה בשידוכים, שואלים מה הנגיעה של היועץ. גם יועץ נאמן ואוהב יכול להיות נוגע, ואין בזה עלבון. מתייעצים עם מי שרוצה רק את טובתכם, ועם רב שאינו נוגע בדבר.</p></aside>
+<aside class="rule rule-m"><b>בפגישה הקרובה</b><p>עברו בראש על מי שמשפיע עליכם עכשיו. מי מהם ייהנה מ״כן״ ומי מ״לא״? זה לא פוסל אף אחד. זה רק עוזר לשמוע נכון.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>ה׳ הוא היועץ היחיד שאין לו שום נגיעה מלבד טובתכם. לכן ההתייעצות הראשונה היא איתו.</p></aside>
+<p class="source-note">בראשית כד, לט; רש״י שם.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-5">← הקודם</a><a href="#story-7">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-7" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-9.webp" alt="איור לסימן: להכין כבר עכשיו את הדרשה" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#7</span><h3 class="story-title">להכין כבר עכשיו את הדרשה</h3><button class="copy-story-link" onclick="copyStoryLink('story-7', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">העצה המוזרה ביותר בספר</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">הנה עצה שנשמעת כמעט מוגזמת למי שעוד לא פגש אף אחד: להכין כבר עכשיו את הדרשה לשבע ברכות. הדרשה שבה תודו ותספרו את חסדי ה׳ בזיווג שלכם.</p>
+<p>למה עכשיו? כי ההודיה הנפלאה של אליעזר כשמצא את רבקה לא באה מהתלהבות של רגע. הייתה לה הכנה גדולה. ודווקא עכשיו, כשמרגישים את המצוקה, אפשר לדמיין חזק יותר את הברכה שבבניין בית. ככל שנכיר שאין ה׳ חייב לנו כלום, ושעל עצם המציאות הנפלאה של חתן וכלה יש להודות יום ולילה, כך נהיה כלי מוכן להודיה, ובעזרת ה׳ נמצא מהר.</p>
+<h3 class="section-heading">פנקס החסד</h3>
+<p>ובינתיים: פנקס. רושמים בו את כל שלבי החסד המתגלגל עד יום החתונה. מי הציע, איזה צירוף מקרים קרה, איזו תפילה נענתה, איזו הצעה נפלה והתברר אחר כך למה. כדאי לאדם לרשום לעצמו מתי הועילה לו תפילה, כי צריך להאמין לא רק שתפילה מועילה, אלא שהתפילה שלי מועילה.</p>
+<p>ביום קשה קוראים בפנקס. וביום השבע ברכות, הוא כבר כתוב.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>מתחילים לרשום. בסוף הספר יש עמוד שאפשר להתחיל בו.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>מי שמתחיל להודות על מה שעוד לא בא, כבר חי בתוך הקשר עם ה׳, ולא רק מחכה לתוצאה.</p></aside>
+<p class="source-note">על פי ״הדרך המהירה לזיווג הגון במהרה״ ו״יפה שיחתן של עבדי אבות״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-6">← הקודם</a><a href="#story-8">הבא →</a></nav>
+</article>
+</div></section>
+<section class="chapter-section" id="chapter-חלק-ב-מה-בעצם-מחפשים">
+<div class="chapter-header" style="background:linear-gradient(135deg,#8a4b3c,#f0e4df)"><div class="chapter-icon"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg></div><div><h2 class="chapter-title">חלק ב · מה בעצם מחפשים</h2><div class="chapter-subtitle">6 סימנים</div></div></div>
+<div class="card-grid">
+<article class="story-card" id="story-8" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-10.webp" alt="איור לסימן: קודם כל, המידות והבית" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#8</span><h3 class="story-title">קודם כל, המידות והבית</h3><button class="copy-story-link" onclick="copyStoryLink('story-8', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">למה אברהם העדיף עובדי עבודה זרה</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><figure class="part-img"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-11.webp" alt="״וַיַּבְרֵךְ הַגְּמַלִּים מִחוּץ לָעִיר אֶל בְּאֵר הַמָּיִם״" loading="lazy"><figcaption>״וַיַּבְרֵךְ הַגְּמַלִּים מִחוּץ לָעִיר אֶל בְּאֵר הַמָּיִם״</figcaption></figure>
+<p class="lede">אברהם אבינו, שמסר את נפשו נגד עבודה זרה, שולח את אליעזר אל בית שעובדים בו עבודה זרה. ובנות כנען, ממש ליד הבית, פסולות. זו אחת השאלות החזקות בפרשה.</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, ג</span>וְאַשְׁבִּיעֲךָ בַּה׳ אֱלֹהֵי הַשָּׁמַיִם וֵאלֹהֵי הָאָרֶץ אֲשֶׁר לֹא־תִקַּח אִשָּׁה לִבְנִי מִבְּנוֹת הַכְּנַעֲנִי אֲשֶׁר אָנֹכִי יוֹשֵׁב בְּקִרְבּוֹ</blockquote>
+<p>הכלי יקר מבאר: מידות רעות התלויות בגוף, כמו תאווה, קמצנות וקנאה, עוברות מן האבות לבנים. עבודה זרה תלויה בשכל, והשכל והנשמה באים מן הקדוש ברוך הוא, ולכן אינה עוברת בירושה. הכנענים היו שטופים במידות רעות, ובית בתואל היה פגום רק בעבודה זרה. דעה אפשר לשנות. מידה עמוקה הרבה יותר קשה.</p>
+<p>ויהודי יקר הוסיף: הכלי יקר מקשה, וכי לא ידענו שאברהם יושב בקרב הכנעני? אלא ״אנכי יושב בקרבו״: האנוכיות יושבת בקרבו. זו הסיבה שאין לקחת משם.</p>
+<h3 class="section-heading">אבל לא גזר דין</h3>
+<p>ומיד צריך לומר את הצד השני. רבקה עצמה יצאה מבית של לבן ובתואל. רש״י בפרשה הבאה כותב בשבחה: ״שהיתה בת רשע ואחות רשע ומקומה אנשי רשע, ולא למדה ממעשיהם״. הבית הוא מידע חשוב. הוא אינו פסק דין על האדם שיושב מולכם, ויש שגדולתם היא בדיוק במה שהם עשו עם מה שקיבלו.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>בבירורים שואלים קודם כל על המידות ועל אווירת הבית: איך מדברים שם זה אל זה, איך נוהגים בכעס ובכסף. אחר כך על שאר הדברים. ועל האדם עצמו שופטים לפי מה שהוא, ולא רק לפי מאין בא.</p></aside>
+<aside class="rule rule-q"><b>לשיחה ביניכם</b><p>מה קיבלתם מהבית שבו גדלתם ואתם רוצים להמשיך? ומה הייתם רוצים לעשות אחרת?</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>ה׳ נתן לכל יהודי נשמה טהורה שמתחברת אליו. המידות הן הכלי, ומי שמתקן אותן מפנה מקום לאהבה הזאת לזרום.</p></aside>
+<p class="source-note">כלי יקר בראשית כד, ג; בשם אבי מורי; רש״י בראשית כה, כ. על פי ״פרשת חיי שרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-7">← הקודם</a><a href="#story-9">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-9" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-12.webp" alt="איור לסימן: הבדיקה היחידה" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#9</span><h3 class="story-title">הבדיקה היחידה</h3><button class="copy-story-link" onclick="copyStoryLink('story-9', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">למה אליעזר לא בדק אמונה וצניעות</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">אליעזר מחפש אם לעם ישראל, אשה ליצחק אבינו. היינו מצפים לרשימה ארוכה. מה רמתה ביראת שמים? איך היא בצניעות? מה דעותיה? והוא בודק דבר אחד: האם היא תשקה את הגמלים.</p>
+<p>רש״י כותב זאת במפורש, ״ראויה היא לו שתהא גומלת חסדים, וכדאי ליכנס בביתו של אברהם״. תעודת הכניסה לבית אברהם היא חסד.</p>
+<p>רבי יחזקאל לוינשטיין מבאר למה זה מספיק. כל יהודי מטבעו מאמין בבוראו. מה שמפריע לאמונה הוא בעיקר הגאווה, ״כוחי ועוצם ידי״. כשראה אליעזר נערה שמציעה מעצמה, ולא רק מציעה אלא שואבת בעצמה לכל הגמלים, אף שעומדים שם עשרה עבדים, הבין שזה נובע מביטול עצמי. ומי שאין בה גאווה, אין לה מפריע לאמונה.</p>
+<p>ובאותה דרך מובן למה לא בדק צניעות. מהות הצניעות היא חוסר התבלטות, וביטול האנוכיות הוא גם מה שמוליד את החסד. הצניעות היא אחותה התאומה של החסד.</p>
+<p>בספר ייטב לב דרשו: ״אנכי עומד בין ה׳ וביניכם״. ה״אנכי״, מה שהאדם חשוב בעיני עצמו, הוא שעומד ומפסיק בין ה׳ לבינו.</p>
+<blockquote class="pull-quote">ענווה ונדיבות הן השורש. מתוכן צומחות האמונה, הצניעות ושלום הבית.</blockquote>
+<aside class="rule rule-n"><b>הנהגה</b><p>מי שמחפש בן או בת זוג, יחפש קודם כל ענווה ונדיבות. שאר הדברים חשובים, ורבים מהם יוצאים מן השורש הזה.</p></aside>
+<aside class="rule rule-m"><b>בפגישה הקרובה</b><p>הכינו לעצמכם שאלה אחת שאינה ״מה את חושבת על...״, אלא ״ספרי לי על משהו שעשית בשביל מישהו״. שימו לב אם התשובה מדברת על האחר, או על הנותן.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>ה׳ שוכן היכן שה״אני״ מפנה לו מקום. ענווה וחסד הן שתי דלתות לאותו בית. ״את דכא ושפל רוח אשכון״.</p></aside>
+<p class="source-note">רש״י בראשית כד, יד; בשם רבי יחזקאל לוינשטיין, מובא ב״לתתך עליון״ עמ׳ קצה; ייטב לב תולדות; דברים ה, ה; ישעיה נז, טו. על פי ״פרשת חיי שרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-8">← הקודם</a><a href="#story-10">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-10" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-13.webp" alt="איור לסימן: מבחן הכד" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#10</span><h3 class="story-title">מבחן הכד</h3><button class="copy-story-link" onclick="copyStoryLink('story-10', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">שלוש מידות בפעולה אחת</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">למה דווקא הגמלים? הבית הלוי מגלה שהמבחן של אליעזר היה מבריק הרבה יותר ממה שנראה.</p>
+<p>אדם זר מבקש לשתות מהכד של נערה, ושותה מעט. עכשיו נשארו בכד מים שהוא שתה מהם. מה תעשה בהם?</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, יז</span>וַיָּרָץ הָעֶבֶד לִקְרָאתָהּ וַיֹּאמֶר הַגְמִיאִינִי נָא מְעַט־מַיִם מִכַּדֵּךְ</blockquote>
+<ul class="story-list"><li><b>לב טוב:</b> האם תיתן לזר לשתות מכדה בכלל.</li><li><b>שכל:</b> היא לא תביא הביתה שאריות שזר שתה מהן.</li><li><b>דרך ארץ:</b> היא לא תשפוך אותן בפניו ותבזה אותו.</li></ul>
+<p>הפתרון היחיד שעונה על שלושתם: להשקות את הגמלים. נערה שאומרת ״וגם גמליך אשקה״ הוכיחה בשנייה אחת לב, שכל ועדינות.</p>
+<p>ובכל זאת ידע אליעזר ששלוש המידות האלה אינן עדיין ראיה שהיא ראויה לבית אברהם, ולכן התפלל שה׳ יראה לו. גם המבחן החכם בעולם אינו מחליף תפילה.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>לב טוב בלי שכל אינו מספיק, ושכל בלי עדינות אינו מספיק. מחפשים אדם שהטוב שלו חכם ועדין.</p></aside>
+<aside class="rule rule-m"><b>בפגישה הקרובה</b><p>אל תציבו מבחנים ואל תשחקו משחקים. אליעזר לא הטעה את רבקה, הוא רק ביקש מים. פשוט שימו לב למצבים שקורים ממילא: טעות של מלצר, איחור, מישהו שמבקש עזרה.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>מי שרואה טוב לב אמיתי באדם, רואה ניצוץ מטובו של ה׳, שהטיב עם בריותיו בלב ובחכמה יחד.</p></aside>
+<p class="source-note">בית הלוי בראשית כד, יד. על פי ״פרשת חיי שרה״ ו״יפה שיחתן של עבדי אבות״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-9">← הקודם</a><a href="#story-11">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-11" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-14.webp" alt="איור לסימן: ואיש לא ידעה" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#11</span><h3 class="story-title">ואיש לא ידעה</h3><button class="copy-story-link" onclick="copyStoryLink('story-11', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">הכבוד ששומר על אדם</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">התורה כבר אמרה ״בתולה״. מה מוסיפות המילים ״ואיש לא ידעה״?</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, טז</span>וְהַנַּעֲרָ טֹבַת מַרְאֶה מְאֹד בְּתוּלָה וְאִישׁ לֹא יְדָעָהּ וַתֵּרֶד הָעַיְנָה וַתְּמַלֵּא כַדָּהּ וַתָּעַל</blockquote>
+<p>רבי שמשון רפאל הירש מבאר שהביטוי הזה אינו חוזר בשום מקום אחר בתורה. פירושו שהייתה צנועה כל כך, ששום אדם לא העז מעודו להתקרב אליה בקלות ראש. יש אנשים שכבודם העצמי יוצר סביבם מרחב, ולידם גם הקל שבפרחחים אינו מעז לנבל את פיו. בארם של אותם ימים זה היה דבר מיוחד במינו.</p>
+<p>והמלבי״ם מוסיף פרט יפה: גם כשיצאה, לא הסתכלה סביב. רק ירדה העינה ומילאה את כדה. היא באה לעשות את מה שבאה לעשות.</p>
+<p>צניעות איננה חולשה ואינה ביישנות. היא אדם שיודע מה ערכו, ולכן אינו צריך שיסתכלו עליו. וזה נכון לבחור כמו לבחורה: מי שמכבד את עצמו, גם אחרים מכבדים אותו.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>בודקים איך האדם נוהג כשאיש אינו רואה, ועד כמה הוא זקוק שיסתכלו עליו.</p></aside>
+<aside class="rule rule-m"><b>בפגישה הקרובה</b><p>שמרו על כבוד בפגישה: בלשון, בקצב, בגבולות שקבעתם לעצמכם על פי ההלכה וההדרכה שקיבלתם. קשר שמתחיל בכבוד נשען על יסוד טוב.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>צניעות היא שמירה על הפנימיות, וה׳ אוהב את מה שבפנים. ״כל כבודה בת מלך פנימה״.</p></aside>
+<p class="source-note">רש״ר הירש בראשית כד, טז; מלבי״ם שם. על פי ״פרשת חיי שרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-10">← הקודם</a><a href="#story-12">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-12" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-15.webp" alt="איור לסימן: שני לוחות מצומדים" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#12</span><h3 class="story-title">שני לוחות מצומדים</h3><button class="copy-story-link" onclick="copyStoryLink('story-12', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">חסד שלא מחובר למקור</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">אליעזר נותן לרבקה שני צמידים, ורש״י אומר שהם רומזים לשני הלוחות, ״מצומדות״. למה לרמוז לה על הלוחות דווקא ברגע הזה, ולמה חשוב שהם צמודים?</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, כב</span>וַיְהִי כַּאֲשֶׁר כִּלּוּ הַגְּמַלִּים לִשְׁתּוֹת וַיִּקַּח הָאִישׁ נֶזֶם זָהָב בֶּקַע מִשְׁקָלוֹ וּשְׁנֵי צְמִידִים עַל־יָדֶיהָ עֲשָׂרָה זָהָב מִשְׁקָלָם</blockquote>
+<p>בלקח טוב מבואר שאליעזר רצה לומר לה: חסד את עושה נפלא, ואצלנו יש עוד חלק. שהחסד יהיה מחובר לעבודת ה׳. שני לוחות צמודים: מה שבין אדם לחברו הולך צמוד למה שבין אדם למקום.</p>
+<p>חסד כזה פירושו שאדם מתבונן: כמו שה׳ גומל איתי חסד, כמו שה׳ נותן לי כבוד, כך אני הולך בדרכיו. יש אנשים טובים מאוד שאין להם קשר חי עם ה׳, ויש אנשים אדוקים שקשה לחיות לידם. הבית של יצחק ורבקה נבנה על שני הלוחות יחד.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>מחפשים את שני הלוחות באותו אדם: יראת שמים שעושה אותו טוב יותר לבני אדם, וטוב לב שמקרב אותו לה׳.</p></aside>
+<aside class="rule rule-q"><b>לשיחה ביניכם</b><p>מה מחזק אתכם בעבודת ה׳ היום? ואיך אתם רואים שזה משפיע על האופן שבו אתם מתנהגים עם אנשים?</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>החסד שאני נותן הוא המשך של החסד שאני מקבל מה׳. כשאני מרגיש את זה, כל נתינה מקרבת אותי אליו.</p></aside>
+<p class="source-note">רש״י בראשית כד, כב; לקח טוב; משלי כא, כא. על פי ״פרשת חיי שרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-11">← הקודם</a><a href="#story-13">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-13" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-16.webp" alt="איור לסימן: כולן שוות לטובה" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#13</span><h3 class="story-title">כולן שוות לטובה</h3><button class="copy-story-link" onclick="copyStoryLink('story-13', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">איך אדם מספר על ימים קשים</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">רש״י אומר על שנותיה של שרה: ״כולן שוין לטובה״. איך ייתכן? היא הייתה עקרה עד גיל תשעים, גלתה ממקום למקום, ונלקחה פעמיים לבית מלכים.</p>
+<p>בעל ״אש דת״ מפרש: לא שכל ימיה היו קלים, אלא שכל ימיה היו שווים בעיניה לטובה. השוויון לא היה במציאות, אלא בלב שלה.</p>
+<p>ואת שרה הזאת ממלאת רבקה באוהל. לכן שווה לשים לב למידה הזאת בתקופת הפגישות. כל אדם עבר דברים. השאלה היא איך הוא מספר עליהם: כקרבן שכולם חייבים לו, או כמי שמחפש מה ה׳ רוצה ממנו. החיים המשותפים יביאו גם ימים קשים, ואיתם תחיו.</p>
+<p>גם זה קשור לענווה. בזוהר נדרש על שנות חייה ש״מי שקטן הוא גדול״: התורה הקטינה את המספר הגדול וכתבה ״שנה״, והגדילה את הקטן וכתבה ״שנים״. מי שאינו צריך להיות הכי גדול בחדר, הוא זה שאפשר לחיות איתו.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>שמים לב איך האדם מדבר על קשיים, על הורים, על מורים, על שידוכים קודמים. בלי לחקור, פשוט מקשיבים.</p></aside>
+<aside class="rule rule-q"><b>לשיחה ביניכם</b><p>מה היה הדבר הקשה שעברתם, ומה הוא נתן לכם? (זו שאלה לשלב מתקדם, כשכבר יש אמון.)</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>מי שרואה הכל כטובה, חי בתוך חיבוק מתמיד של הבורא. זו אהבה שאינה תלויה במצב.</p></aside>
+<p class="source-note">רש״י בראשית כג, א; אש דת; זוהר, תוספתא חיי שרה קכב, ב. על פי ״פרשת חיי שרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-12">← הקודם</a><a href="#story-14">הבא →</a></nav>
+</article>
+</div></section>
+<section class="chapter-section" id="chapter-חלק-ג-בתוך-הפגישות">
+<div class="chapter-header" style="background:linear-gradient(135deg,#8a4b3c,#f0e4df)"><div class="chapter-icon"><svg class="icon" aria-hidden="true"><use href="#i-message-circle"/></svg></div><div><h2 class="chapter-title">חלק ג · בתוך הפגישות</h2><div class="chapter-subtitle">8 סימנים</div></div></div>
+<div class="card-grid">
+<article class="story-card" id="story-14" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-17.webp" alt="איור לסימן: אסור לקדש עד שיראנה" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#14</span><h3 class="story-title">אסור לקדש עד שיראנה</h3><button class="copy-story-link" onclick="copyStoryLink('story-14', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">ההלכה שבזכותה בכלל נפגשים</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><figure class="part-img"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-18.webp" alt="״וַתְּמַהֵר וַתְּעַר כַּדָּהּ אֶל הַשֹּׁקֶת״" loading="lazy"><figcaption>״וַתְּמַהֵר וַתְּעַר כַּדָּהּ אֶל הַשֹּׁקֶת״</figcaption></figure>
+<p class="lede">הגמרא בקידושין קובעת דין ברור: ״אסור לאדם שיקדש את האשה עד שיראנה, שמא יראה בה דבר מגונה ותתגנה עליו, ורחמנא אמר: ואהבת לרעך כמוך״.</p>
+<p>הפגישה אינה רק מנהג של הדור, והיא גם אינה ״ראיון עבודה״. לפי הגמרא, יש בה קיום של ואהבת לרעך כמוך. מי שמתחתן בלי שראה, מסכן את הזולת: הוא עלול לגלות אחר כך שהלב אינו שם, ומי שישלם על כך הוא האדם שמולו.</p>
+<p>התורה עצמה לא התביישה לכתוב על רבקה ״טובת מראה מאוד״. משיכה ואהבה הם חלק מן הבניין. ואם בפגישה מרגישים דחייה ממשית, אין זה ״לא רוחני״ לומר זאת. זו ההלכה.</p>
+<p>מצד שני, אין זה היתר לחפש שלמות. בין ״תתגנה עליו״ ובין ״לא בדיוק מה שדמיינתי״ יש מרחק גדול. והזכרנו את מי שאינו מבטל הצעה בגלל דברים קטנים.</p>
+<aside class="rule rule-h"><b>הלכה</b><p>אסור לאדם לקדש אשה עד שיראה אותה, כדי שלא תתגנה עליו. הטעם: ואהבת לרעך כמוך.</p></aside>
+<aside class="rule rule-n"><b>הנהגה</b><p>הולכים לפגישה מתוך מחשבה על טובת שניכם. מי שמרגיש ספק אמיתי בלב, מדבר עם מי שמלווה אותו, ולא מתעלם וגם לא בורח.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>גם הפגישה הראשונה היא מצווה בין אדם לחברו. מי שיושב מולכם הוא צלם אלוקים, ודרך הכבוד שאתם נותנים לו אתם מכבדים את בוראו.</p></aside>
+<p class="source-note">קידושין מא, א; בראשית כד, טז.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-13">← הקודם</a><a href="#story-15">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-15" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-19.webp" alt="איור לסימן: מחריש לדעת" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#15</span><h3 class="story-title">מחריש לדעת</h3><button class="copy-story-link" onclick="copyStoryLink('story-15', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">התרגשות אינה מסקנה</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">הנערה רצה. המים זורמים. עשרה גמלים שותים. זה עובד! זה בדיוק מה שאליעזר התפלל עליו, מילה במילה, ועוד לפני שגמר להתפלל. אדם רגיל היה קופץ ממקומו. ומה עושה אליעזר?</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, כא</span>וְהָאִישׁ מִשְׁתָּאֵה לָהּ מַחֲרִישׁ לָדַעַת הַהִצְלִיחַ ה׳ דַּרְכּוֹ אִם־לֹא</blockquote>
+<p>רש״י מתאר את הרגע: ״משתומם ומתבהל על שראה דברו קרוב להצליח, אבל אינו יודע אם ממשפחת אברהם היא אם לאו״. הלב שלו דופק, ובכל זאת הוא מחריש. והוא ממשיך לשאול: ״בת מי את״. רק אחרי התשובה הוא כורע ומודה.</p>
+<p>אלה שני כוחות שצריכים לחיות יחד. לב שמתרגש, ומי שאינו מתרגש כנראה אינו בקשר. ושכל שעוצר, בודק ושואל. המילה ״מחריש״ מלמדת שגם בתוך ההתלהבות יש מקום לשתיקה.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>פגישה מוצלחת מאוד היא סיבה לשמוח ולהמשיך, ולא תחליף לבירור. ופגישה בינונית אינה סיבה לסגור. נותנים לדברים להתברר.</p></aside>
+<aside class="rule rule-m"><b>בפגישה הקרובה</b><p>אחרי הפגישה, לפני שמתקשרים לספר, שבו חמש דקות לבד. מה ראיתי באמת, ומה רק קיוויתי לראות?</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>גם ברגע הסוער ביותר אליעזר מחכה לראות ״ההצליח ה׳ דרכו אם לא״. הוא אינו מחליט במקום ה׳. הוא מקשיב לו.</p></aside>
+<p class="source-note">בראשית כד, כא; רש״י שם.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-14">← הקודם</a><a href="#story-16">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-16" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-20.webp" alt="איור לסימן: שתה אדוני" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#16</span><h3 class="story-title">שתה אדוני</h3><button class="copy-story-link" onclick="copyStoryLink('story-16', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">לתת בלי שהשני ירגיש</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">אליעזר ביקש סימן: שהנערה תאמר ״שתה וגם גמליך אשקה״. ורבקה לא אמרה כך. היא אמרה רק ״שתה אדוני״, ורק אחרי שסיים הוסיפה ״גם לגמליך אשאב״. לכאורה טעות. למה היא שינתה?</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, יח</span>וַתֹּאמֶר שְׁתֵה אֲדֹנִי וַתְּמַהֵר וַתֹּרֶד כַּדָּהּ עַל־יָדָהּ וַתַּשְׁקֵהוּ</blockquote>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, יט</span>וַתְּכַל לְהַשְׁקֹתוֹ וַתֹּאמֶר גַּם לִגְמַלֶּיךָ אֶשְׁאָב עַד אִם־כִּלּוּ לִשְׁתֹּת</blockquote>
+<p>כי רבקה רצתה שאליעזר ישתה בהרגשה טובה. אילו אמרה מיד ״וגם גמליך אשקה״, היה נלחץ: לא נעים לשתות הרבה כשיודעים שהמים צריכים להספיק גם לגמלים. לכן אמרה ״שתה״, והוא שתה בנחת, ורק כשגמר אמרה מה שאמרה.</p>
+<p>על זה נאמר ״אשרי משכיל אל דל״. לא מספיק לתת לעני, צריך לתת לו בשכל, שלא יתבייש כלל. ורבקה גם אמרה ״אשאב״, מים חדשים, כדי שלא יחשוב שהיא שופכת לשוקת את השארית כי אינה רוצה לשתות אחריו.</p>
+<blockquote class="pull-quote">חסד טוב הוא חסד שהמקבל יכול לקבל בנחת ובכבוד.</blockquote>
+<p>כל זה קרה בשני משפטים, מול זר, ליד באר. אדם שחושב כך באופן טבעי על הרגשתו של זר, יחשוב כך על בן זוגו בעוד שלושים שנה.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>לפני שעוזרים, חושבים איך השני ירגיש. בפגישות מחפשים ומתרגלים את העדינות הזאת.</p></aside>
+<aside class="rule rule-m"><b>בפגישה הקרובה</b><p>אם קשה למי שמולכם בשיחה, אל תמהרו ״להציל״ בקול. פנו מקום בעדינות: החליפו נושא, הציעו הפסקה. ושימו לב אם גם אליכם מתנהגים כך.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>ה׳ נותן לנו בעדינות כזאת, שלפעמים איננו מרגישים שקיבלנו. מי שנותן בעדינות, לומד את דרכו.</p></aside>
+<p class="source-note">תהלים מא, ב; אור החיים בראשית כד, יח. על פי ״פרשת חיי שרה״ ו״יפה שיחתן של עבדי אבות״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-15">← הקודם</a><a href="#story-17">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-17" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-21.webp" alt="איור לסימן: תודה לנהג האוטובוס" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#17</span><h3 class="story-title">תודה לנהג האוטובוס</h3><button class="copy-story-link" onclick="copyStoryLink('story-17', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">הרגע שאומר הכל</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">מה אני מרגיש כשאני אומר תודה לנהג אוטובוס או למוכר בחנות, שכל כוונתם לטובת עצמם?</p>
+<p>רבי חיים שמואלביץ מביא מקורות רבים שיש מצוות הכרת הטוב גם כשלמטיב לא הייתה שום כוונה להטיב. ונראה שכל אדם שמטיב לנו, גם הנהג וגם המוכר, הוא חלון שדרכו עבר טוב ה׳ אלינו. כשאני אומר לו תודה, אני אומר: תודה לה׳, ותודה גם לך, כפי המידה שאתה משקף את טובו.</p>
+<p>כאן נמצאת אחת הבדיקות הפשוטות ביותר בפגישה, והיא אינה עולה כלום. איך מי שמולכם מתנהג עם המלצר? עם השומר בכניסה? עם הנהג? אליכם הוא מתאמץ להיות נחמד. אל מי שאינו יכול לתת לו דבר, הוא מראה מי הוא.</p>
+<p>אברהם השתחווה ל״עם הארץ״, ובמדרש אמרו שגם זו הייתה הודיה לה׳. הוא ראה בכל אדם את כבוד השמים, ולא היה צריך שתי הודאות. אדם שמכיר טובה בקטנות, יכיר טובה לאשתו ולבעלו על ארוחת ערב ביום שלישי רגיל. ומי שהכל מגיע לו בחוץ, הכל יגיע לו גם בבית.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>מרגילים את עצמנו להגיד תודה לכל אדם, ובלב להוסיף ״תודה לה׳ ששלח אותו״.</p></aside>
+<aside class="rule rule-m"><b>בפגישה הקרובה</b><p>שימו לב למלצר, לנהג, לשומר. גם בעצמכם.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>״מלוא כל הארץ כבודו״. מי שמודה על כל דבר, רואה בכל מקום חלון לאהבת ה׳.</p></aside>
+<p class="source-note">שיחות מוסר לרבי חיים שמואלביץ (תשל״ב, ״הכרת הטוב״); בראשית רבה נח, ו. על פי ״הכרת הטוב כשאין כוונה להטיב״ ו״פרשת חיי שרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-16">← הקודם</a><a href="#story-18">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-18" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-22.webp" alt="איור לסימן: אותה ריצה, שני עולמות" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#18</span><h3 class="story-title">אותה ריצה, שני עולמות</h3><button class="copy-story-link" onclick="copyStoryLink('story-18', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">אחרי מה אדם רץ</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">שלוש פעמים בשלושה פסוקים: ״ותמהר״, ״ותמהר״, ״ותרץ״. התורה רוצה שנראה את רבקה בתנועה. היא אינה רק נותנת, היא ממהרת ורצה.</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, כ</span>וַתְּמַהֵר וַתְּעַר כַּדָּהּ אֶל־הַשֹּׁקֶת וַתָּרָץ עוֹד אֶל־הַבְּאֵר לִשְׁאֹב וַתִּשְׁאַב לְכָל־גְּמַלָּיו</blockquote>
+<p>ואז, עשרה פסוקים אחר כך, עוד ריצה. אחיה.</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, כט</span>וּלְרִבְקָה אָח וּשְׁמוֹ לָבָן וַיָּרָץ לָבָן אֶל־הָאִישׁ הַחוּצָה אֶל־הָעָיִן</blockquote>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, ל</span>וַיְהִי כִּרְאֹת אֶת־הַנֶּזֶם וְאֶת־הַצְּמִדִים עַל־יְדֵי אֲחֹתוֹ וּכְשָׁמְעוֹ אֶת־דִּבְרֵי רִבְקָה אֲחֹתוֹ לֵאמֹר כֹּה־דִבֶּר אֵלַי הָאִישׁ וַיָּבֹא אֶל־הָאִישׁ וְהִנֵּה עֹמֵד עַל־הַגְּמַלִּים עַל־הָעָיִן</blockquote>
+<p>לבן ראה את רבקה עם הצמידים, וחשב שמחלקים תכשיטים בחינם, ורץ לקבל גם. תוך כדי ריצה שמע שהאיש דיבר על שידוך, הבין שזה לא בחינם וצריך לבוא בחשבון, ולכן ״ויבא״. הריצה נגמרה.</p>
+<p>רבקה רצה לחסד, ולבן רץ לבצע. המשנה באבות אומרת ״הוי רץ למצווה קלה״, והיעב״ץ מבאר שמצווה גוררת מצווה רק כשהיא נעשית בשמחה, והריצה היא הדרך לשמחה.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>בודקים אחרי מה האדם רץ, ומתי הוא פתאום מאט. התלהבות שנגמרת ברגע שמתברר שהעניין עולה משהו, מלמדת הרבה.</p></aside>
+<aside class="rule rule-q"><b>לשיחה ביניכם</b><p>על מה אתם מוכנים להשכים בבוקר בלי שאף אחד יבקש? ומה בחיים שלכם אתם עושים מהר ובשמחה?</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>מי שרץ לה׳, רץ גם כשאין לו מה להרוויח. זו ריצה של אוהב.</p></aside>
+<p class="source-note">אבות ד, ב; יעב״ץ שם; רש״י בראשית כד, כט. על פי ״פרשת חיי שרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-17">← הקודם</a><a href="#story-19">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-19" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-23.webp" alt="איור לסימן: ביני ובינך מה היא" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#19</span><h3 class="story-title">ביני ובינך מה היא</h3><button class="copy-story-link" onclick="copyStoryLink('story-19', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">שני אוהבים ושיחה על כסף</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">עפרון אומר לאברהם ״ארץ ארבע מאות שקל כסף ביני ובינך מה היא״, ורש״י מפרש: ״בין שני אוהבים כמונו״. ממתי אברהם ועפרון אוהבים?</p>
+<p>יש על כך וורט חסידי יפה. עפרון אמר: שנינו אוהבים. אני אוהב כסף, ואתה אוהב מצוות. לאוהב כסף, מה הם ארבע מאות שקל? ״אוהב כסף לא ישבע כסף״, וכל סכום קטן בעיניו. ולאוהב מצוות, מה הם ארבע מאות? בשביל מצווה הוא מוכן לתת הכל.</p>
+<p>וההבדל בין שני האוהבים מכריע. אהבת הכסף משאירה את האדם רעב תמיד, ואהבת המצוות משאירה אותו שבע ושמח.</p>
+<p>בתקופת השידוכים מדברים על כסף, וטוב שכך. אבל מתחת למספרים יש שאלה אחרת: על מה קל לאדם הזה לוותר, ועל מה קשה לו? שם נמצא הלב.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>לא בורחים משיחה כנה על כסף, ומקשיבים למה שנמצא מתחת לשיחה: מה חשוב, ממה מפחדים, מה מוכנים לתת.</p></aside>
+<aside class="rule rule-q"><b>לשיחה ביניכם</b><p>אם היה לכם סכום גדול שלא תכננתם, מה הדבר הראשון שהייתם עושים בו?</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>אברהם הוא אוהב מצוות, ולכן כל מחיר שמשלמים בשביל ה׳ נראה לו קטן. כך מרגיש מי שאוהב.</p></aside>
+<p class="source-note">בראשית כג, טו; רש״י שם; קהלת ה, ט. וורט חסידי. על פי ״פרשת חיי שרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-18">← הקודם</a><a href="#story-20">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-20" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-24.webp" alt="איור לסימן: אין דבר כזה פראייר" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#20</span><h3 class="story-title">אין דבר כזה פראייר</h3><button class="copy-story-link" onclick="copyStoryLink('story-20', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">ומתי כן צריך לעצור</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">נערה צעירה שואבת מים לעשרה גמלים, כשעומדים לידה עשרה עבדים בריאים. גמל צמא שותה הרבה מאוד. והם עומדים ומסתכלים. האם זה לא קצת ״פראייר״?</p>
+<p>בספר ״זכו״ מסופר על בחור צעיר שדרש בחתונה שאדם בבית צריך להיות בעל חסד, ״אבל לא פראייר״. אחרי הדרשה ניגש אליו הרב דיאמנט ואמר לו: נערה קטנה מול עשרה עבדים, ומשקה את כל הגמלים. האם זה לא ״פראייר״? ובכל זאת התורה שיבחה את המעשה הזה מאוד. ללמדך שבחסד אין ״פראייר״.</p>
+<p>בתוך הבית, החשבון ״מי עשה יותר״ הוא בדיוק מה שהורס את החסד. מי שמתחיל לספור כבר הפסיד.</p>
+<h3 class="section-heading">והגבול</h3>
+<p>אבל יש תנאי: שהשני אינו מנצל. התורה אומרת ״עזוב תעזוב עמו״, עם בעל הבהמה, כשהוא עוזר גם הוא. נתינה שמחה בין שני אנשים שנותנים היא הבית של אברהם. מצב שבו צד אחד נותן והשני רק לוקח, דורש, מזלזל או מפחיד, אינו חסד.</p>
+<p>מי שמרגיש בפגישות שמקטינים אותו, ששולטים בו, שמתעלמים מרצונו, או שהוא מפחד להגיד את דעתו, לא יפתור את זה בעוד נתינה. מדברים על כך מיד עם רב, עם הורים או עם מי שמלווה, גם אם האדם נראה מצוין מבחוץ.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>בבית לא סופרים. ובשלב הפגישות בודקים אם גם השני נותן, גם בלי שביקשו ממנו.</p></aside>
+<aside class="rule rule-q"><b>לשיחה ביניכם</b><p>מה הדבר הקטן שאתם עושים בשביל אחרים בלי שאיש יודע?</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>ה׳ נותן לנו בלי חשבון, גם כשאיננו מחזירים. מי שנותן כך, מתדמה לבוראו.</p></aside>
+<p class="source-note">ספר ״זכו״; בשם הרב דיאמנט; חוברת ״בחכמה יבנה בית״ עמ׳ 19; שמות כג, ה. על פי ״פרשת חיי שרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-19">← הקודם</a><a href="#story-21">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-21" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-25.webp" alt="איור לסימן: על מה מדברים" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#21</span><h3 class="story-title">על מה מדברים</h3><button class="copy-story-link" onclick="copyStoryLink('story-21', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">יפה שיחתן</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">הגענו אל הלב. למה התורה כותבת את שיחתו של אליעזר פעמיים? כי יש שיחה אחת ששווה יותר מגופי תורה. אליעזר ישב בבית לבן וסיפר איך התפלל, ואיך ״טרם אכלה לדבר״ והנה רבקה יוצאת. הסיפור היה חזק כל כך, שגם לבן ובתואל אמרו ״מה׳ יצא הדבר״.</p>
+<p>ורש״י מביא את ״יפה שיחתן״ דווקא על הפסוק ״ואבא היום אל העין״, ״היום יצאתי והיום באתי, מכאן שקפצה לו הארץ״. ובפירוש נחלת יעקב ביאר: דווקא בפסוק הזה נזכר הנס, ללמד שבזה חפץ ה׳, לספר את מעשיו ונפלאותיו.</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, מב</span>וָאָבֹא הַיּוֹם אֶל־הָעָיִן וָאֹמַר ה׳ אֱלֹהֵי אֲדֹנִי אַבְרָהָם אִם־יֶשְׁךָ־נָּא מַצְלִיחַ דַּרְכִּי אֲשֶׁר אָנֹכִי הֹלֵךְ עָלֶיהָ</blockquote>
+<p>איך יודעים מה בוער בלבו של רב? מסתכלים על התלמידים שלו ורואים מה נדבק בהם. שאברהם התנהג כך אין זה חידוש. אבל כשרואים איך אליעזר מתנהג, יודעים איזו אש הייתה בבית אברהם. וכך גם אתם: מי שרוצה לדעת מה בוער במי שמולו, שיקשיב על מה הוא מספר כשהוא מתלהב.</p>
+<h3 class="section-heading">להאריך</h3>
+<p>ואם מספרים, מספרים בפרטים. כשמספרים חסדי ה׳ צריך להאריך ולפרט. פעם הייתי בסעודת הודיה. יהודי קם להודות לה׳ על שהצילו, ואמר בקיצור: הייתי במינוס של שנים עשר אלף, וה׳ עזר ונכנס הכסף. ולא התרגשתי בכלל. כי כשמקצרים, לא רואים את היד שהובילה כל צעד.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>מכניסים לשיחה בין בני הזוג גם את הדברים הגדולים באמת: איפה ראיתם את יד ה׳ בחיים שלכם.</p></aside>
+<aside class="rule rule-q"><b>לשיחה ביניכם</b><p>ספרו זה לזה על רגע אחד בחיים שבו הרגשתם שה׳ מוביל אתכם. עם כל הפרטים.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>ה׳ ברא אותנו כדי שנספר עליו. כל פעם שאנו מספרים חסד שלו, אנו ממלאים את הסיבה שבשבילה נבראנו, ומתמלאים באהבתו.</p></aside>
+<p class="source-note">בראשית רבה ס, ח; רש״י בראשית כד, מב; נחלת יעקב שם. על פי ״יפה שיחתן של עבדי אבות״ ו״פרשת חיי שרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-20">← הקודם</a><a href="#story-22">הבא →</a></nav>
+</article>
+</div></section>
+<section class="chapter-section" id="chapter-חלק-ד-רגע-ההחלטה">
+<div class="chapter-header" style="background:linear-gradient(135deg,#8a4b3c,#f0e4df)"><div class="chapter-icon"><svg class="icon" aria-hidden="true"><use href="#i-compass"/></svg></div><div><h2 class="chapter-title">חלק ד · רגע ההחלטה</h2><div class="chapter-subtitle">4 סימנים</div></div></div>
+<div class="card-grid">
+<article class="story-card" id="story-22" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-26.webp" alt="איור לסימן: מה׳ יצא הדבר" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#22</span><h3 class="story-title">מה׳ יצא הדבר</h3><button class="copy-story-link" onclick="copyStoryLink('story-22', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">איך ה׳ מדבר בלי נבואה</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><figure class="part-img"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-27.webp" alt="״וַיִּקַּח הָעֶבֶד אֶת רִבְקָה וַיֵּלַךְ״" loading="lazy"><figcaption>״וַיִּקַּח הָעֶבֶד אֶת רִבְקָה וַיֵּלַךְ״</figcaption></figure>
+<p class="lede">לבן ובתואל, שני אנשים שאיש לא יחשוד בהם בצדקות, עונים לאליעזר בשתי מילים שהפכו למקור של כל שידוך בעולם. והם מוסיפים: ״כאשר דיבר ה׳״. היכן דיבר ה׳? איש מהם לא שמע נבואה.</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, נ</span>וַיַּעַן לָבָן וּבְתוּאֵל וַיֹּאמְרוּ מֵה׳ יָצָא הַדָּבָר לֹא נוּכַל דַּבֵּר אֵלֶיךָ רַע אוֹ־טוֹב</blockquote>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, נא</span>הִנֵּה־רִבְקָה לְפָנֶיךָ קַח וָלֵךְ וּתְהִי אִשָּׁה לְבֶן־אֲדֹנֶיךָ כַּאֲשֶׁר דִּבֶּר ה׳</blockquote>
+<p>הנצי״ב אומר: כשרואים השגחה פרטית גלויה כל כך, זה נקרא שה׳ דיבר. ה׳ לא צריך להופיע בנבואה כדי לדבר אלינו. הוא מדבר דרך מה שהוא מסדר.</p>
+<p>ולכן, כשהדברים מתחברים באופן מופלא, כדאי לעצור ולשאול: ה׳ מדבר אלי עכשיו, מה הוא רוצה לומר?</p>
+<p>אבל שימו לב מה קדם לזה: אליעזר התפלל, ראה בעיניו מעשי חסד, שאל ״בת מי את״, ברר את המשפחה, ורק אז אמרו ״מה׳ יצא הדבר״. סיפור יפה על איך נפגשתם לא מחליף את כל אלה. ההשגחה מופיעה בתוך הבירור, ולא במקומו.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>קוראים את ההשגחה יחד עם השכל והעצה, לא במקומם. כשהכל נפתח ברוגע, כשהלב והשכל והמלווים אומרים אותו דבר, זו שפה שה׳ מדבר בה.</p></aside>
+<aside class="rule rule-q"><b>לשיחה ביניכם</b><p>מה הרגע בקשר שלכם שבו הרגשתם שזה לא רק אתם?</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>ה׳ מדבר אלינו כל הזמן, בשפה של מאורעות. מי שלומד להקשיב, מגלה שאינו לבד לרגע.</p></aside>
+<p class="source-note">העמק דבר בראשית כד, נא; מועד קטן יח, ב. על פי ״יפה שיחתן של עבדי אבות״, ״הדרך המהירה לזיווג הגון במהרה״ ו״דרשה לשבע ברכות״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-21">← הקודם</a><a href="#story-23">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-23" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-28.webp" alt="איור לסימן: אל תאחרו אותי" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#23</span><h3 class="story-title">אל תאחרו אותי</h3><button class="copy-story-link" onclick="copyStoryLink('story-23', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">כשהחלון פתוח</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">המשפחה מבקשת עוד כמה ימים. בקשה סבירה לגמרי. ואליעזר, האיש העדין והמנומס, אומר: לא.</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, נה</span>וַיֹּאמֶר אָחִיהָ וְאִמָּהּ תֵּשֵׁב הַנַּעֲרָ אִתָּנוּ יָמִים אוֹ עָשׂוֹר אַחַר תֵּלֵךְ</blockquote>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, נו</span>וַיֹּאמֶר אֲלֵהֶם אַל־תְּאַחֲרוּ אֹתִי וַה׳ הִצְלִיחַ דַּרְכִּי שַׁלְּחוּנִי וְאֵלְכָה לַאדֹנִי</blockquote>
+<p>מה הקשר? אם ה׳ הצליח, למה למהר? המלבי״ם מבאר: מכך שמיד בבואי נזדמנה רבקה בדרך נס, מבואר שלא רק גוף הזיווג הוא מאת ה׳, אלא גם הזמן קבוע מאתו. ואם אתעכב, אתם מאחרים את הזמן שקבעה ההשגחה.</p>
+<p>ובשם רבי ירוחם ממיר מבואר ״חפזון דשכינה״: השגחת ה׳ גלויה כשאדם עושה במהירות, וכשהוא מתמהמה השכינה מסתלקת.</p>
+<p>גם ההלכה יודעת דחיפות כזאת. שמואל אמר שמותר לארס אשה בחול המועד, ״שמא יקדמנו אחר״. ועם זאת לא עושים אז סעודת אירוסין, והנישואין עצמם ממתינים. מה שדחוף הוא לא לתת להזדמנות טובה לחמוק.</p>
+<h3 class="section-heading">לא לבלבל</h3>
+<p>״אל תאחרו״ נאמר אחרי הבירור והתפילה, ולא במקומם. אברהם השביע על השידוך ולא על המהירות. מי שעוד לא יודע, אינו ״מאחר״, הוא עדיין בודק. ואסור ללחוץ על אדם להחליט. האיחור שהפרשה מדברת עליו הוא אחר: מי שכבר ברור לו, והוא דוחה מפחד, מהרגל של בחירה, או מרצון לראות אם יש עוד משהו.</p>
+<aside class="rule rule-h"><b>הלכה</b><p>מותר לארס בחול המועד כדי שלא יקדים אחר, בלי סעודת אירוסין. (לשאלה למעשה שואלים רב.)</p></aside>
+<aside class="rule rule-n"><b>הנהגה</b><p>כשהדברים ברורים, לא דוחים. ספק אמיתי מבררים ביסודיות, ופחד סתמי לא מאכילים. כדאי לדבר עם מי שמלווה אתכם כדי לדעת מה מהם יש לכם.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>הזריזות היא הדרך להישאר צמודים לה׳ כשהוא מוביל. מי שאוהב, הולך מיד אחרי מי שאוהב אותו.</p></aside>
+<p class="source-note">מלבי״ם בראשית כד, נו; בשם רבי ירוחם ממיר; מועד קטן יח, ב. על פי ״פרשת חיי שרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-22">← הקודם</a><a href="#story-24">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-24" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-29.webp" alt="איור לסימן: ונשאלה את פיה" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#24</span><h3 class="story-title">ונשאלה את פיה</h3><button class="copy-story-link" onclick="copyStoryLink('story-24', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">אף אחד לא מחליט במקומכם</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">הכל כבר סגור, לכאורה. האבא הסכים, האח הסכים, יש מתנות, יש ״מה׳ יצא הדבר״. ואז עוצרים ואומרים משפט אחד קטן, ועליו נשען דין לכל הדורות.</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, נז</span>וַיֹּאמְרוּ נִקְרָא לַנַּעֲרָ וְנִשְׁאֲלָה אֶת־פִּיהָ</blockquote>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, נח</span>וַיִּקְרְאוּ לְרִבְקָה וַיֹּאמְרוּ אֵלֶיהָ הֲתֵלְכִי עִם־הָאִישׁ הַזֶּה וַתֹּאמֶר אֵלֵךְ</blockquote>
+<p>רש״י: ״מכאן שאין משיאין את האשה אלא מדעתה״. כל הניסים שבעולם, כל ההשגחה הגלויה, ועדיין: קוראים לה, ושואלים אותה. וגם הגמרא בקידושין אומרת שלא יקדש אדם את בתו ״עד שתגדיל ותאמר: בפלוני אני רוצה״.</p>
+<p>ורבקה עונה מילה אחת: ״אלך״. ורש״י מוסיף: ״מעצמי, ואף אם אינכם רוצים״. התשובה הזאת באה מתוכה. לא היא הולכת כי אמרו לה, אלא משום שהיא רוצה.</p>
+<p>הורים, רבנים, שדכנים וחברים יכולים לעזור מאוד. אבל שני אנשים יחיו את החיים האלה. כל ״כן״ שיוצא מלחץ, מפחד מה יגידו, מעייפות או מרצון לשמח מישהו, איננו ה״אלך״ של רבקה.</p>
+<aside class="rule rule-h"><b>הלכה</b><p>אין משיאין אשה אלא מדעתה. הרצון של בני הזוג עצמם הוא תנאי, והוא אינו נדחה מפני רצון המשפחה.</p></aside>
+<aside class="rule rule-n"><b>הנהגה</b><p>לפני ״כן״, כל אחד שואל את עצמו בשקט: אם כולם היו שותקים, האם הייתי אומר אלך?</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>ה׳ רוצה בנו בוחרים. כמו שברית בינו לבין עם ישראל נכרתה ב״נעשה ונשמע״, גם הברית שלכם צריכה מילה שיוצאת מהלב.</p></aside>
+<p class="source-note">בראשית כד, נז–נח; רש״י שם; קידושין מא, א.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-23">← הקודם</a><a href="#story-25">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-25" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-30.webp" alt="איור לסימן: מכאן שמודים על בשורה טובה" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#25</span><h3 class="story-title">מכאן שמודים על בשורה טובה</h3><button class="copy-story-link" onclick="copyStoryLink('story-25', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">גם על חצי דבר</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">אליעזר משתחווה לה׳ פעמיים. פעם אחת כשהוא שומע שרבקה ממשפחת אברהם, ופעם שנייה כשהמשפחה מסכימה. ורש״י כותב ״מכאן שמודים על בשורה טובה״ רק על הפעם השנייה. למה?</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, כו</span>וַיִּקֹּד הָאִישׁ וַיִּשְׁתַּחוּ לַה׳</blockquote>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, נב</span>וַיְהִי כַּאֲשֶׁר שָׁמַע עֶבֶד אַבְרָהָם אֶת־דִּבְרֵיהֶם וַיִּשְׁתַּחוּ אַרְצָה לַה׳</blockquote>
+<p>בעל נחלת דוד מבאר: בפעם הראשונה כתוב מה אמר אליעזר. בפעם השנייה כתוב רק ״וישתחו ארצה לה׳״, בלי פירוט, כי זה מובן מאליו. מן הפעם הראשונה היינו אומרים שאליעזר צדיק. מן השנייה למדנו שכל אחד חייב.</p>
+<p>ויש לדון: האם מודים גם על חצי דבר? הרי בפעם הראשונה עוד לא הסכימו לשידוך. ואבי מורי אמר שלכן כתב רש״י ״מכאן״ דווקא בפעם השנייה: על חצי דבר אין חובה, אולי רשות.</p>
+<p>רשות, ואיזו רשות יפה. פגישה טובה היא חצי דבר. שיחה שבה הרגשתם שהבינו אתכם היא חצי דבר. אפשר להודות עליה בלי להחליט כלום, ואפילו אם בסוף זה לא ימשיך.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>על כל בשורה טובה, עוד לפני שמספרים לאחרים, עוצרים ואומרים ״תודה לה׳״. גם על צעד קטן בדרך.</p></aside>
+<aside class="rule rule-m"><b>בפגישה הקרובה</b><p>בסיום פגישה טובה, לפני שמוציאים את הטלפון: תודה לה׳ על השעתיים האלה.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>כל טוב שמגיע אלינו דרך אדם, מגיע בעצם מה׳. מי שמרגיש כך, רואה את אהבתו בכל פנים שמחייכות אליו.</p></aside>
+<p class="source-note">רש״י בראשית כד, נב; מזרחי; נחלת דוד. על פי ״פרשת חיי שרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-24">← הקודם</a><a href="#story-26">הבא →</a></nav>
+</article>
+</div></section>
+<section class="chapter-section" id="chapter-חלק-ה-מן-ה״כן״-אל-החופה">
+<div class="chapter-header" style="background:linear-gradient(135deg,#8a4b3c,#f0e4df)"><div class="chapter-icon"><svg class="icon" aria-hidden="true"><use href="#i-gem"/></svg></div><div><h2 class="chapter-title">חלק ה · מן ה״כן״ אל החופה</h2><div class="chapter-subtitle">5 סימנים</div></div></div>
+<div class="card-grid">
+<article class="story-card" id="story-26" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-31.webp" alt="איור לסימן: קיחה קיחה משדה עפרון" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#26</span><h3 class="story-title">קיחה קיחה משדה עפרון</h3><button class="copy-story-link" onclick="copyStoryLink('story-26', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">מה בין קידושין לקניית מערה</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><figure class="part-img"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-32.webp" alt="״כִּי יִקַּח אִישׁ אִשָּׁה״: הלשון שנלמדת משדה עפרון" loading="lazy"><figcaption>״כִּי יִקַּח אִישׁ אִשָּׁה״: הלשון שנלמדת משדה עפרון</figcaption></figure>
+<p class="lede">מסכת קידושין נפתחת בשאלה מפתיעה. מניין שאשה מתקדשת בכסף? והתשובה היא: משדה עפרון. ״גמר קיחה קיחה משדה עפרון: כתיב הכא כי יקח איש אשה, וכתיב התם נתתי כסף השדה קח ממני״.</p>
+<p>מה הקשר בין קידושי אשה לקניית מערת קבורה? אשה אינה נקנית כמו עבד, בקניין ממוני בלבד. עיקר הקניין הוא ברית של אהבה ואחווה, שלום ורעות. ובדיוק כך ארץ ישראל: אינה רק נכס, אלא ״כלה״ שמתחברים אליה בנפש. ולא לחינם קנה אברהם דווקא בחברון, מלשון חיבור. מטרת הקניין היא להתחבר.</p>
+<h3 class="section-heading">למה לא בחינם</h3>
+<p>עפרון הציע את המערה במתנה, ואברהם התעקש: ״בכסף מלא״. למה? כי דבר שאדם משלם עליו הוא מתחבר אליו. רש״י על ״עם זו קנית״ אומר: ״כחפץ הקנוי בדמים יקרים שחביב על האדם״. ולא לחינם נקרא הכסף כסף, מלשון כיסופים.</p>
+<p>מי שרוצה לאהוב צריך לתת מעצמו. לא מחכים שהאהבה תגיע ואז נותנים. נותנים, והיא גדלה.</p>
+<aside class="rule rule-h"><b>הלכה</b><p>אשה מתקדשת בכסף, ולומדים זאת מלשון ״קיחה״ שנאמרה בקניית שדה עפרון. פרטי הקידושין נעשים על ידי רב המסדר קידושין.</p></aside>
+<aside class="rule rule-n"><b>הנהגה</b><p>את הבית ואת הארץ בונים באותה דרך: לא רק בקניין, אלא באהבה שמתחדשת כל יום. מה שמשקיעים בו, אוהבים.</p></aside>
+<aside class="rule rule-q"><b>לשיחה ביניכם</b><p>מה כל אחד מכם כבר ויתר או השקיע בשביל הקשר הזה? איך זה הרגיש?</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>ה׳ קורא לעם ישראל כלה ולעצמו חתן. כל חיבור של אהבה שאנו בונים הוא דוגמה קטנה לברית שלו איתנו.</p></aside>
+<p class="source-note">קידושין ב, א; ארץ צבי לרבי אריה צבי פרומר; דברים כד, א; בראשית כג, יג; רש״י שמות טו, טז. על פי ״קיחה קיחה משדה עפרון״ ו״להתחתן עם ארץ ישראל״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-25">← הקודם</a><a href="#story-27">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-27" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-33.webp" alt="איור לסימן: לא אוכל עד אם דיברתי דברי" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#27</span><h3 class="story-title">לא אוכל עד אם דיברתי דברי</h3><button class="copy-story-link" onclick="copyStoryLink('story-27', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">מה עושים בזמן הייחוד</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">סיפור קטן לפני הרציני. המגיד מדובנא התאכסן פעם אצל קמצן גדול, שבאותו לילה ערך סעודת אירוסין. אחרי הסעודה פרץ ויכוח בין המחותנים מי צריך לשלם עליה, כי ״כשישבנו לאכול כבר היינו מחותנים״. אמר המגיד: עכשיו אני מבין למה סירב אליעזר לאכול לפני שיגמור את השידוך. חשש שאם יאכל קודם, מי יודע כמה יבקשו ממנו...</p>
+<p>הטעם האמיתי: הייתה מוטלת עליו חובה לספר את חסדי ה׳, כי חלק מן ההודיה הוא לספר. הוא הגיע מדרך ארוכה, האוכל כבר על השולחן, והוא לא יכול לאכול לפני כן.</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, לג</span>וַיּוּשַׂם לְפָנָיו לֶאֱכֹל וַיֹּאמֶר לֹא אֹכַל עַד אִם־דִּבַּרְתִּי דְּבָרָי וַיֹּאמֶר דַּבֵּר</blockquote>
+<p>ובתרגום יונתן מובא שבתבשיל ששמו לפניו היה סם המוות. ומה חשב שיעזור לו הדיבור? כשאדם מספר נס שקרה לו, עושים לו נס נוסף. בזמן שסיפר הוחלפו הקערות. וכן כתב הפלא יועץ: מי שנעשה לו נס ואומר שירה, שכרו שעושים לו נס אחר.</p>
+<h3 class="section-heading">הלכה למעשה בחתונה</h3>
+<p>וחשבתי ללמוד מכאן למעשה: בכל חתונה, בזמן שהחתן והכלה בחדר הייחוד וכולם עומדים ומחכים, יעמוד אבי החתן או אבי הכלה, או יהודי אחר, ויקיים ״לא אוכל עד אם דיברתי דברי״. יספר את חסדי ה׳ שליוו את השידוך הזה.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>בסעודת אירוסין ובחתונה, לפני האוכל, מספרים. כל שמחה היא הזדמנות לספר מה ה׳ עשה.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>מי שמקדים את הסיפור על חסד ה׳ לצרכי עצמו, מראה שה׳ חשוב לו מכל. וה׳ משיב לו בנס אחר נס.</p></aside>
+<p class="source-note">בראשית כד, לג; תרגום יונתן שם; פלא יועץ ערך הילול; תהלים נ, כג. על פי ״פניני הודיה לנישואין״, ״הדרך המהירה לזיווג הגון במהרה״ ו״דרשה לשבע ברכות״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-26">← הקודם</a><a href="#story-28">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-28" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-34.webp" alt="איור לסימן: עשרה זהובים" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#28</span><h3 class="story-title">עשרה זהובים</h3><button class="copy-story-link" onclick="copyStoryLink('story-28', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">ברכה שיוצאת מהלב</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">למה התורה כותבת שאליעזר ״לקח״ את הצמידים, ולא שנתן אותם? האור זרוע מביא בשם רבי יהודה החסיד: ברכה שווה עשרה זהובים. התורה לא כתבה ״ויתן״, כדי שלא נחשוב שזו הייתה מתנה. אליעזר אמר בלבו: הנערה הזאת גרמה לי שאברך את ה׳. לכן אני חייב לתת לה עשרה זהובים.</p>
+<p>והרי אליעזר בירך את ה׳ כל יום! במה זיכתה אותו רבקה? אלא שאינה דומה ברכה עם התעוררות הלב לברכה קרה ויבשה. ״רחמנא ליבא בעי״. בעקבות מעשיה של רבקה, לבו התמלא הכרת טוב.</p>
+<p>גם בתקופת הפגישות זה קורה: לפעמים האדם שפגשתם גורם לכם לברך את ה׳ אחרת. וזה סימן טוב.</p>
+<h3 class="section-heading">מה עושה גדול בשעת צרה</h3>
+<p>גדול אחד, שחלה במחלה מסוכנת, שאל את רבי שלמה זלמן אויערבך איך להתחזק. ענה לו: איני ראוי לומר זאת לאחרים, אבל אומר לך מה הייתי עושה בעצמי. הייתי מתחזק באמירת מאה ברכות, שתהיה אמירת ״ברוך״ כמו שצריך, ו״אתה״ כמו שצריך, והשם כמו שצריך.</p>
+<p>ומעל הכל: אליעזר, שנקרא ״ארור״ ושאברהם אמר עליו ״אין ארור מתדבק בברוך״, שומע פתאום את לבן קורא לו ״בוא ברוך ה׳״. מי שמברך את ה׳ בכל לבו, ה׳ מברך אותו.</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, לא</span>וַיֹּאמֶר בּוֹא בְּרוּךְ ה׳ לָמָּה תַעֲמֹד בַּחוּץ וְאָנֹכִי פִּנִּיתִי הַבַּיִת וּמָקוֹם לַגְּמַלִּים</blockquote>
+<aside class="rule rule-n"><b>הנהגה</b><p>בתקופת האירוסין, מברכים לאט לפחות ברכה אחת ביום, ומודים בה על הדרך שעברתם.</p></aside>
+<aside class="rule rule-q"><b>לשיחה ביניכם</b><p>מה במי שמולכם גורם לכם להודות לה׳? אמרו את זה בקול.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>הברכה היא הדבר היחיד שאנו יכולים ״לתת״ לה׳. וה׳ מקבל אותה באהבה, ומחזיר ברכה כפולה.</p></aside>
+<p class="source-note">אור זרוע חלק א, הלכות כיסוי הדם סימן שצט, בשם רבי יהודה החסיד; זוהר שלח קנח, א; מכתב מאליהו; ספר ״מצות מאה ברכות כהלכתה״. על פי ״פרשת חיי שרה״ ו״פניני הודיה לנישואין״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-27">← הקודם</a><a href="#story-29">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-29" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-35.webp" alt="איור לסימן: לשבח את הכלה" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#29</span><h3 class="story-title">לשבח את הכלה</h3><button class="copy-story-link" onclick="copyStoryLink('story-29', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">כיצד מרקדין</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">בכל פרשת השידוך כמעט אין שבח על יצחק, ועל רבקה יש הרבה מאוד. היופי, הצניעות, החסד, הזריזות, השכל. למה?</p>
+<p>חז״ל דנים ״כיצד מרקדין לפני הכלה״, ונחלקו בית שמאי ובית הלל מה אומרים. ולמה לא דנו כיצד מרקדים לפני החתן? ללמדך שעיקר החתונה הוא לשבח את הכלה, להתפעל מן החסד שה׳ ברא במתנה של הכלה. התורה מלמדת את החתן ואת כל המשתתפים במה להתבונן.</p>
+<p>ההרגל הזה מתחיל עכשיו, הרבה לפני החתונה. מי שמתרגל למצוא מה טוב במי שמולו ולומר זאת בקול, לא יצטרך בעוד עשר שנים לחפש מה נעלם.</p>
+<aside class="rule rule-h"><b>הלכה</b><p>נוהגים לרקד ולשבח את הכלה בחתונתה. כך דנו חז״ל בכתובות, והוא חלק ממצוות שמחת חתן וכלה.</p></aside>
+<aside class="rule rule-n"><b>הנהגה</b><p>בחתונה ובכל יום אחריה אומרים בקול את מעלותיו של בן הזוג. השבח בונה את הבית.</p></aside>
+<aside class="rule rule-m"><b>בפגישה הקרובה</b><p>בסוף פגישה מוצלחת אמרו דבר אחד אמיתי וספציפי שהערכתם. לא מחמאה כללית, אלא משהו שראיתם.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>כל מעלה בבן הזוג היא מתנת חסד מה׳. מי שמשבח אותה, מודה לנותן.</p></aside>
+<p class="source-note">כתובות טז, ב – יז, א. על פי ״פניני הודיה לנישואין״ ו״הדרך המהירה לזיווג הגון במהרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-28">← הקודם</a><a href="#story-30">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-30" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-36.webp" alt="איור לסימן: הקול החמישי" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#30</span><h3 class="story-title">הקול החמישי</h3><button class="copy-story-link" onclick="copyStoryLink('story-30', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">ה״א אחת שנוספת בחתונה</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">בכל הפרשה נכתבת המילה ״נער״ בלי ה״א, ונקראת ״נערה״. כבר עמד על כך החזקוני. ויש מי שביאר שהה״א מגיעה לה כשהיא נישאת, ומודים לה׳ עליה. ״איש ואשה זכו, שכינה ביניהם״: היו״ד שבאיש והה״א שבאשה מצטרפות לשם ה׳.</p>
+<p>ובירמיהו נאמר שבגאולה יישמעו ״קול ששון וקול שמחה, קול חתן וקול כלה, קול אומרים הודו את ה׳ צבאות״. ארבעה קולות של חתונה, ועוד אחד. הקול החמישי הוא קול התודה.</p>
+<p>ונחלקו המפרשים אם הוא הולך על שמחת חתן וכלה או על שיבת ציון. ובאמת שניהם אמת: יש חתונה עם אשה ויש חתונה עם ארץ ישראל, ובשתיהן מודים. ולכן בפרשתנו יש הודיה כפולה, בקניית הארץ ובשידוך: אברהם משתחווה פעמיים, ואליעזר משתחווה פעמיים.</p>
+<p>אדם שראה נס חייב בשני דברים: להודות ולפרסם. ״יודו לה׳ חסדו ונפלאותיו לבני אדם״. כך עושה אליעזר. משתחווה, ואינו אוכל עד שסיפר.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>בכל שמחה, ובראשונה בחתונה שלכם, דואגים שהקול החמישי יישמע: תודה לה׳ בינו לביניכם, וסיפור לאחרים כדי שגם הם יתחזקו.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>הודיה ופרסום הם שני צדדים של אותה אהבה. האחד אומר לה׳ ״אני אוהב אותך״, והשני אומר לעולם ״תראו כמה הוא אוהב אותנו״.</p></aside>
+<p class="source-note">חזקוני דברים כב, יט; ספר הפרשיות; ירמיה לג, יא; סוטה יז, א; תהלים קז. על פי ״פניני הודיה לנישואין״, ״להתחתן עם ארץ ישראל״ ו״דרשה לשבע ברכות״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-29">← הקודם</a><a href="#story-31">הבא →</a></nav>
+</article>
+</div></section>
+<section class="chapter-section" id="chapter-חלק-ו-הבית-שנבנה">
+<div class="chapter-header" style="background:linear-gradient(135deg,#8a4b3c,#f0e4df)"><div class="chapter-icon"><svg class="icon" aria-hidden="true"><use href="#i-house"/></svg></div><div><h2 class="chapter-title">חלק ו · הבית שנבנה</h2><div class="chapter-subtitle">3 סימנים</div></div></div>
+<div class="card-grid">
+<article class="story-card" id="story-31" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-37.webp" alt="איור לסימן: בקע" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#31</span><h3 class="story-title">בקע</h3><button class="copy-story-link" onclick="copyStoryLink('story-31', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">למה הנזם שקל חצי</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><figure class="part-img"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-38.webp" alt="״וַיְבִאֶהָ יִצְחָק הָאֹהֱלָה שָׂרָה אִמּוֹ״" loading="lazy"><figcaption>״וַיְבִאֶהָ יִצְחָק הָאֹהֱלָה שָׂרָה אִמּוֹ״</figcaption></figure>
+<p class="lede">התורה טורחת לציין את משקל הנזם: ״בקע״. ורש״י אומר שהוא רומז לשקלי ישראל. מה הקשר בין מחצית השקל לשידוך?</p>
+<p>״בקע״ הוא מחצית השקל, והאבן עזרא מבאר שנקרא כך כי הוא השקל כשהוא ״נבקע״ לשניים. נראה שאליעזר רמז לרבקה: את עכשיו בקע, חצי. את צריכה את יצחק שישלים אותך. ויצחק צריך אותה באותה מידה.</p>
+<p>ויש לזה רמז במשכן. לכל קרש היו שני אדנים מתחתיו, אף שקרש אחד לכאורה צריך בסיס אחד. וחז״ל אומרים שמחצית השקל היא שעשתה את האדנים. המשכן רומז ליהודי: כל יהודי הוא קרש אחד, נשמה אחת. כשירדה לעולם הזה נחתכה לשניים, והוא נצטווה לחבר אותן לאחד.</p>
+<blockquote class="pull-quote">״איש ואשה זכו, שכינה ביניהם״.</blockquote>
+<aside class="rule rule-n"><b>הנהגה</b><p>בן הזוג אינו עוד אדם בחיים. הוא החצי השני. בונים את הבית כמי שמשלים את עצמו, ולא כשני שותפים שסוגרים חשבונות.</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>כשהשניים מתאחדים באמת, ה׳ שורה ביניהם. האחדות בבית היא משכן קטן לשכינה.</p></aside>
+<p class="source-note">בראשית כד, כב; רש״י שם ושמות לח, כו; אבן עזרא שם; סוטה יז, א. על פי ״פרשת חיי שרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-30">← הקודם</a><a href="#story-32">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-32" style="border-top:6px solid #8a4b3c">
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#32</span><h3 class="story-title">החסד הגדול ביותר</h3><button class="copy-story-link" onclick="copyStoryLink('story-32', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">מה שחשוב בבית אינו נראה</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">המדרש מחפש את החסד הגדול של אברהם, איש החסד, האיש עם האוהל הפתוח לארבע רוחות. ומוצא אותו בדבר מפתיע: שקבר את שרה אשתו. והרי כל בעל עושה זאת!</p>
+<p>הסבא מסלבודקה היה מרבה לחזור על המדרש הזה, ואמר שיש בו ידיעה מרעישה. אנחנו רגילים לחשוב שחסד הוא ללכת ולהיטיב עם הזולת. אבל כל הטבה שאדם עושה, עם זולתו, עם בני ביתו, ואפילו עם עצמו, היא חסד והליכה בדרכי ה׳. אברהם היה דבוק בקונו כל כך, שאפילו פעולה טבעית שכל בעל מחויב בה עשה לא מחמת טבעו, אלא מחמת הרצון ללכת בדרכי ה׳.</p>
+<p>יש אנשים שמשקיעים בחוץ את כל הסבלנות שלהם, ובבית לא נשאר. אברהם מלמד היכן החסד הגדול. ובמיוחד כתוב אחרי הקבורה ״וה׳ ברך את אברהם בכל״. החסד והכבוד שבתוך הבית משפיעים על כל העולם יותר מכל דבר אחר.</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, א</span>וְאַבְרָהָם זָקֵן בָּא בַּיָּמִים וַה׳ בֵּרַךְ אֶת־אַבְרָהָם בַּכֹּל</blockquote>
+<p>בכל יום אנו עושים מאות מעשי חסד: כוס שתייה, עזרה קטנה, מילה טובה. עם קצת מחשבה אפשר לרומם את כולם, לדעת שבכל אחד מהם אני מקיים ״והלכת בדרכיו״. אותה פעולה, ערך אחר לגמרי.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>מכוונים בכל עזרה בבית: ״אני עושה חסד, כמו שה׳ עושה חסד״. לא מזלזלים בקטן שבבית.</p></aside>
+<aside class="rule rule-q"><b>לשיחה ביניכם</b><p>מה הבית שלכם צריך שיהיה בו בשביל שתרגישו שזה בית של חסד?</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>ה׳ גומל חסד עם כל בריה בכל רגע. מי שהופך כל מעשה טוב בביתו לחסד לשם שמים, דומה לו ונעשה קרוב אליו.</p></aside>
+<p class="source-note">בראשית רבה נח, ט; בשם הסבא מסלבודקה (נתיבי חיים, שמות עמ׳ כג); בבא בתרא טז, ב; רמב״ן בראשית כד, א. על פי ״פרשת חיי שרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-31">← הקודם</a><a href="#story-33">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-33" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-39.webp" alt="איור לסימן: ויאהבה" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#33</span><h3 class="story-title">ויאהבה</h3><button class="copy-story-link" onclick="copyStoryLink('story-33', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">איפה האהבה נמצאת בפסוק</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">הנה הפסוק האחרון בפרשה, ושימו לב לסדר המילים.</p>
+<blockquote class="pasuk"><span class="pasuk-ref">בראשית כד, סז</span>וַיְבִאֶהָ יִצְחָק הָאֹהֱלָה שָׂרָה אִמּוֹ וַיִּקַּח אֶת־רִבְקָה וַתְּהִי־לוֹ לְאִשָּׁה וַיֶּאֱהָבֶהָ וַיִּנָּחֵם יִצְחָק אַחֲרֵי אִמּוֹ</blockquote>
+<p>קודם ״ויביאה האהלה״. אחר כך ״ויקח״. אחר כך ״ותהי לו לאשה״. ורק אז ״ויאהבה״. בפגישות יש התרגשות, יש הערכה, יש הרגשה ש״זה זה״. והכל חשוב. אבל התורה שמה את המילה הגדולה בסוף, ולא בהתחלה. האהבה העמוקה נבנית בתוך הבית.</p>
+<p>ומה יצחק ראה באוהל? רש״י מספר: כל זמן ששרה קיימת היה נר דלוק מערב שבת לערב שבת, וברכה מצויה בעיסה, וענן קשור על האוהל. ומשמתה פסקו. וכשבאה רבקה חזרו.</p>
+<p>לא נאמר כאן דבר על פאר. נר, לחם, והרגשה ששכינה יושבת כאן. זה הבית שאתם הולכים לבנות. ״ויאהבה וינחם יצחק אחרי אמו״: מי שאיבד, נחם. הבית הטוב הוא גם המקום שבו שני אנשים מרפאים זה את זה.</p>
+<aside class="rule rule-n"><b>הנהגה</b><p>לא מחכים שתהיה לכם אהבה גדולה מוכנה לפני החופה. מחפשים אדם שאפשר לבנות איתו, שנעים לכם לידו, ושאתם מכבדים. והאהבה גדלה בכל יום של נתינה.</p></aside>
+<aside class="rule rule-q"><b>לשיחה ביניכם</b><p>אילו שלושה דברים תרצו שיהיו תמיד בבית שלכם, כמו הנר, העיסה והענן?</p></aside>
+<aside class="rule rule-a"><b>אהבת ה׳</b><p>הנר, הברכה והענן הם שלושה אופנים של אותו דבר: ה׳ גר בבית. אהבה בין איש לאשתו היא המקום שבו זה קורה.</p></aside>
+<p class="source-note">בראשית כד, סז; רש״י שם.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-32">← הקודם</a><a href="#story-34">הבא →</a></nav>
+</article>
+</div></section>
+<section class="chapter-section" id="chapter-נספחים-לדרך">
+<div class="chapter-header" style="background:linear-gradient(135deg,#8a4b3c,#f0e4df)"><div class="chapter-icon"><svg class="icon" aria-hidden="true"><use href="#i-scroll-text"/></svg></div><div><h2 class="chapter-title">נספחים לדרך</h2><div class="chapter-subtitle">4 סימנים</div></div></div>
+<div class="card-grid">
+<article class="story-card" id="story-34" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-40.webp" alt="איור לסימן: כרטיס הכיס" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#34</span><h3 class="story-title">כרטיס הכיס</h3><button class="copy-story-link" onclick="copyStoryLink('story-34', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">עשרים כללים בקצרה</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">לקריאה מהירה בדרך לפגישה.</p>
+<h3 class="section-heading">לפני הדרך</h3>
+<ol class="story-list"><li>זו ההחלטה החשובה בחייכם. משקיעים בה מחשבה, בירור ותפילה.</li><li>מה׳ אשה לאיש. שידוך שנפל פשוט לא היה הכתובת.</li><li>מתפללים בלשון חסד, לא בלשון ״מגיע לי״.</li><li>לא מכתיבים לה׳ ״דווקא זה״.</li><li>בודקים את הנגיעה של כל יועץ, גם האהוב.</li><li>כותבים פנקס חסדים.</li></ol>
+<h3 class="section-heading">מה מחפשים</h3>
+<ol class="story-list" start="7"><li>מידות ואווירת בית לפני הכל. ובכל זאת שופטים את האדם, לא את משפחתו.</li><li>ענווה ונדיבות הן השורש.</li><li>לב טוב, שכל ועדינות יחד.</li><li>שני לוחות: יראת שמים וטוב לב באדם אחד.</li></ol>
+<h3 class="section-heading">בפגישות</h3>
+<ol class="story-list" start="11"><li>חובה לראות זה את זה. זו הלכה ו״ואהבת לרעך״.</li><li>התרגשות אינה מסקנה. שותקים רגע ובודקים.</li><li>שימו לב למלצר.</li><li>אחרי מה האדם רץ, ומתי הוא מאט.</li><li>בחסד אין פראייר. אבל חד־צדדיות, זלזול או פחד הם תמרור עצור.</li><li>דברו על יד ה׳ בחיים שלכם.</li></ol>
+<h3 class="section-heading">ההחלטה ואחריה</h3>
+<ol class="story-list" start="17"><li>ההשגחה מופיעה בתוך הבירור, לא במקומו.</li><li>כשברור, לא מאחרים. כשלא ברור, אל תיתנו ללחוץ עליכם.</li><li>״אלך״ חייב לבוא מכם.</li><li>מודים על כל צעד, ומספרים.</li></ol>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-33">← הקודם</a><a href="#story-35">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-35" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-41.webp" alt="איור לסימן: שאלות לשיחה לפי שלבים" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#35</span><h3 class="story-title">שאלות לשיחה לפי שלבים</h3><button class="copy-story-link" onclick="copyStoryLink('story-35', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">מה מתאים מתי</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">לא צריך לעבור על הרשימה. בחרו שאלה אחת שמעניינת אתכם באמת. אנשים מרגישים כשעורכים להם ראיון.</p>
+<h3 class="section-heading">בפגישות הראשונות</h3>
+<ul class="story-list"><li>ספר/י לי על משהו שעשית בשביל מישהו.</li><li>על מה אתה יכול לדבר שעות?</li><li>מי האדם שהכי השפיע עליך, ולמה?</li><li>מה עושה לך טוב ביום רגיל?</li></ul>
+<h3 class="section-heading">כשכבר יש היכרות</h3>
+<ul class="story-list"><li>מה קיבלת מהבית ותרצה להמשיך, ומה תרצה לעשות אחרת?</li><li>איך את מתנהגת כשאת כועסת? ומה עוזר לך להירגע?</li><li>מה מחזק אותך בעבודת ה׳ היום?</li><li>ספר/י על רגע שבו הרגשת שה׳ מוביל אותך.</li><li>אם היה לך סכום גדול שלא תכננת, מה היית עושה בו?</li></ul>
+<h3 class="section-heading">לקראת החלטה</h3>
+<ul class="story-list"><li>איך נראה יום רגיל בבית שלנו בעוד חמש שנים?</li><li>מה יהיה קשה בינינו, ואיך נתמודד עם זה?</li><li>למי נפנה כשלא נסכים?</li><li>מה הם הנר, העיסה והענן של הבית שלנו?</li></ul>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-34">← הקודם</a><a href="#story-36">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-36" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-42.webp" alt="איור לסימן: תפילה קצרה לפני פגישה" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#36</span><h3 class="story-title">תפילה קצרה לפני פגישה</h3><button class="copy-story-link" onclick="copyStoryLink('story-36', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">במילים של הפרשה</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">זו אינה תפילה קבועה. היא נבנתה מלשון הפסוקים, ואפשר לומר אותה או לשנות אותה למילים שלכם.</p>
+<div class="prayer"><p>ריבונו של עולם,</p><p>הַקְרֵה נָא לְפָנַי הַיּוֹם, וַעֲשֵׂה חֶסֶד.</p><p>אני יודע שאינך חייב לי דבר, וכל מה שאקבל, חסד הוא.</p><p>תן לי לב שרואה, ושכל שבודק, ופה שמדבר בעדינות.</p><p>שאהיה טוב אל מי שיושב מולי, גם אם דרכינו ייפרדו.</p><p>אם זה הטוב בעיניך, סלול את הדרך. ואם לא, הראה לי בעדינות.</p><p>הודע לי בזיווגי שעשית עמדי חסד, ואספר אותו לעיני כולם.</p></div>
+<p>ובלשון נקבה: ״אני יודעת... שאהיה טובה״.</p>
+<p class="source-note">על פי בראשית כד, יב, יד; ״הדרך המהירה לזיווג הגון במהרה״.</p>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-35">← הקודם</a><a href="#story-37">הבא →</a></nav>
+</article>
+<article class="story-card" id="story-37" style="border-top:6px solid #8a4b3c"><figure class="chapter-illustration"><img src="https://yudataub.github.io/kol-toda-img/chidushim/img/sh-43.webp" alt="איור לסימן: פנקס החסד שלי" loading="lazy"></figure>
+<div class="story-header" style="background:#8a4b3c22">
+<span class="story-num">#37</span><h3 class="story-title">פנקס החסד שלי</h3><button class="copy-story-link" onclick="copyStoryLink('story-37', this)">🔗 העתק קישור</button>
+</div>
+<div class="story-subtitle">עמוד להדפסה ולמילוי</div>
+<div class="story-meta"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg> דקת קריאה</span></div>
+<div class="story-body"><p class="lede">רשמו כאן, או בפנקס משלכם, את שלבי החסד. ביום השבע ברכות הדרשה כבר תהיה כתובה.</p>
+<div class="journal"><div><b>מי הציע, ואיך זה הגיע אלי</b></div><div><b>צירוף שלא יכולתי לתכנן</b></div><div><b>תפילה שנענתה</b></div><div><b>דבר שנפל, ואחר כך הבנתי למה</b></div><div><b>אדם שה׳ שלח לי בדרך</b></div><div><b>על מה אני מודה היום</b></div></div>
+</div>
+<nav class="story-navigation"><a class="back-to-toc-nav" href="#toc">☰ לתוכן</a><a href="#story-36">← הקודם</a></nav>
+</article>
+</div></section>
+  </main>
+</div>
+<button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="לראש הדף">↑</button>
+<div class="sig">📚 עוד חומרי לימוד על פרשת חיי שרה – חינם, במאגר הקול החמישי:<br>
+<a href="https://www.kol-toda.co.il/chidushim/chayei-sara.html">https://www.kol-toda.co.il/chidushim/chayei-sara.html</a><br>
+המאגר המלא: <a href="https://www.kol-toda.co.il/">https://www.kol-toda.co.il/</a></div>
+<script>
+
+const searchData = [{"id": "story-1", "title": "שישים ושבעה פסוקים על שידוך אחד", "body": "פתח דבר — הלכות סוכה והלכות גט כתובות בתורה בפסוקים ספורים. הרבה הלכות נלמדות מאות אחת, מרמז, מריבוי של מילה. ואז מגיעה התורה אל עבד אחד שיוצא למצוא אשה לבן אדוניו, ועוצרת: שישים ושבעה פסוקים. כל מחשבה, כל מילה, כל גמל. וכשהסיפור נגמר, התורה מספרת אותו שוב מההתחלה. חז״ל הרגישו בזה ואמרו משפט מפתיע: ״יפה שיחתן של עבדי בתי אבות מתורתן של בנים״. פרשתו של אליעזר חוזרת על עצמה דפים שלמים, ואילו דין גדול כמו טומאת דם השרץ נלמד רק מריבוי של מילה. מה יש בשיחה הזאת שגדול מגופי תורה? הרי התורה לא כתבה את שאר השיחות של אליעזר. אלא שבשיחה הזאת דווקא יש את מה שכל התורה רוצה להביא אליו: אדם שיוצא לדרך, מתפלל, רואה את יד ה׳ מובילה אותו צעד אחרי צעד, ואינו יכול לשתוק. שיחה בלשון חז״ל היא סיפור נפלאות, ״שיחו בכל נפלאותיו״. והזיווג הוא אחד המקומות בעולם שבהם רואים את היד הזאת הכי קרוב. למי הספר הספר נכתב למי שנמצא בתקופה הזאת ממש: לקראת פגישה ראשונה, באמצע פגישות, או כבר קרוב להחלטה. אולי לבד, ואולי יחד עם מי שיושב מולך. תקופה של תקווה ושל בלבול, של טלפונים ובירורים ולילות בלי שינה. הפרשה הזאת כתובה בדיוק עליה, והיא מעשית הרבה יותר ממה שנדמה. הסדר בספר הוא סדר הדרך של אליעזר: ההכנה, מה מחפשים, מה רואים בתוך הפגישות, רגע ההחלטה, הימים שבין ה״כן״ לחופה, והבית שנבנה אחריה. אפשר לקרוא ברצף, ואפשר לפתוח "}, {"id": "story-2", "title": "ההחלטה שעליה משביעים", "body": "חלק א · לפני שיוצאים לדרך — ״וַיֹּאמַר ה׳ אֱלֹהֵי אֲדֹנִי אַבְרָהָם״: הדרך מתחילה בתפילה אליעזר הוא ״המושל בכל אשר לו״. כל הכסף, כל העדרים, כל המשק של אברהם עוברים דרך ידיו, ואברהם לא ביקש ממנו מעולם שבועה על אף שקל. ויום אחד הוא קורא לו, ועל דבר אחד בלבד הוא דורש שבועה: מי תהיה אשתו של יצחק. בראשית כד, ב וַיֹּאמֶר אַבְרָהָם אֶל־עַבְדּוֹ זְקַן בֵּיתוֹ הַמֹּשֵׁל בְּכָל־אֲשֶׁר־לוֹ שִׂים־נָא יָדְךָ תַּחַת יְרֵכִי בראשית כד, ג וְאַשְׁבִּיעֲךָ בַּה׳ אֱלֹהֵי הַשָּׁמַיִם וֵאלֹהֵי הָאָרֶץ אֲשֶׁר לֹא־תִקַּח אִשָּׁה לִבְנִי מִבְּנוֹת הַכְּנַעֲנִי אֲשֶׁר אָנֹכִי יוֹשֵׁב בְּקִרְבּוֹ על כל רכושו האמין לו בלי שבועה, ועל זיווג טוב ליצחק לא האמין לו בלי שבועה. ללמדך שכל רכושו של אדם אינו שווה כנגד זיווג הגון. אנשים יכולים להשקיע חודשים בבחירת דירה, ולהחליט על הזיווג לפי תחושה משיחה אחת. אברהם מלמד איפה המשקל האמיתי. הנהגה לא חוסכים בשידוך במחשבה, בבירור ובתפילה. זו ההחלטה החשובה ביותר שתחליטו. אהבת ה׳ ה׳ מזווג זיווגים בעצמו, כי הדבר יקר בעיניו. מי שמתייחס לשידוך ביראה ובכבוד, נוגע בדבר שה׳ עצמו מטפל בו."}, {"id": "story-3", "title": "בת פלוני לפלוני", "body": "חלק א · לפני שיוצאים לדרך — בכל יום, אומרת הגמרא, יוצאת בת קול ואומרת: בת פלוני לפלוני. שלוש פעמים בתנ״ך נכתב אותו דבר, בתורה, בנביאים ובכתובים: ״מה׳ אשה לאיש״. מן התורה, מפיהם של לבן ובתואל דווקא: ״מה׳ יצא הדבר״. וכאן השאלה הטובה: הרי הכל מאת ה׳. מה מיוחד בזיווג? התשובה היא שבזיווגים ההשגחה גלויה הרבה יותר. אליעזר חי את הידיעה הזאת. עלי מוטלת ההשתדלות, ואת התוצאה ה׳ מנהל. ומי שחי כך, קורים לו שני דברים שנראים הפוכים זה מזה. הוא אינו נלחץ כששידוך מתבטל, כי פשוט זו לא הכתובת. והוא גם אינו מבטל הצעה בגלל דברים קטנים, כי הוא אינו מחפש בעצמו שלמות שתרגיע אותו. כששידוך מתבטל, לא נסגרה דלת. התברר שזו לא הכתובת. נראה שאליעזר מצא את הזיווג מהר כל כך משום שהרגיש בכל לבו שרק ה׳ מזווג. וככל שמרגישים כך, מוצאים מהר יותר. הנהגה עושים השתדלות מלאה, ומשאירים את התוצאה לה׳. שידוך שלא יצא אינו כישלון שלכם ואינו הוכחה לשום דבר עליכם. בפגישה הקרובה לפני שיוצאים מהבית, אמרו בלב משפט אחד: ״אני הולך להשתדל, והתוצאה בידיים טובות״. שימו לב כמה הלחץ בגוף יורד. אהבת ה׳ הזיווג הוא אחד המקומות שבהם רואים הכי חזק את יד ה׳. מי שמרגיש שה׳ מטפל בו אישית, מרגיש נאהב עוד לפני שמצא את זיווגו."}, {"id": "story-4", "title": "הקרה נא לפני היום", "body": "חלק א · לפני שיוצאים לדרך — אליעזר עומד ליד הבאר, אחרי מסע, עם עשרה גמלים ואחריות על עתיד כל עם ישראל. יש לו תכנית טובה ויש לו מבחן חכם. והדבר הראשון שהוא עושה הוא לפתוח את הפה ולהתפלל. בראשית כד, יב וַיֹּאמַר ה׳ אֱלֹהֵי אֲדֹנִי אַבְרָהָם הַקְרֵה־נָא לְפָנַי הַיּוֹם וַעֲשֵׂה־חֶסֶד עִם אֲדֹנִי אַבְרָהָם בראשית כד, יד וְהָיָה הַנַּעֲרָ אֲשֶׁר אֹמַר אֵלֶיהָ הַטִּי־נָא כַדֵּךְ וְאֶשְׁתֶּה וְאָמְרָה שְׁתֵה וְגַם־גְּמַלֶּיךָ אַשְׁקֶה אֹתָהּ הֹכַחְתָּ לְעַבְדְּךָ לְיִצְחָק וּבָהּ אֵדַע כִּי־עָשִׂיתָ חֶסֶד עִם־אֲדֹנִי שימו לב למילה שחוזרת. פעמיים בתפילה הקצרה הזאת הוא מזכיר חסד: פותח בחסד ומסיים בחסד. וגם כשהוא מודה בסוף: ״אשר לא עזב חסדו ואמיתו״. הוא לא חשב שמגיע לו. החידושי הרי״ם אמר דבר נפלא. האוצר של מתנת חינם הוא הגדול והמשופע מכל האוצרות. ולמה אין נותנים ממנו לכולם? כי נותנים ממנו רק למי שמכיר היטב שבחינם ניתן לו, ורוב בני האדם, כשמקבלים משהו, חושבים שמגיע להם. והרי אברהם ראוי גם בדין! אלא שאברהם היה רבי טוב, והכניס בלב תלמידיו שאין לאדם כלום אצל בוראו, רק חסד. ״ובה אדע״: הבקשה שאינה מובנת מאליה רש״י מפרש ״ובה אדע״ בלשון תחינה: הודע לי בה. ומכאן עצה נפלאה. לא לבקש רק ״תן לי״, אלא לבקש לראות את החסד עצמו: ריבונו של עולם, אני רוצה להכיר את חסדך. הודע לי בזיווגי שעשית עמדי חסד, ואפרסם א"}, {"id": "story-5", "title": "לא תיבעי רחמי הכי", "body": "חלק א · לפני שיוצאים לדרך — רבא שמע פעם אדם מתפלל: ״תזדמן לי פלונית״. ריבונו של עולם, דווקא היא. עצר אותו רבא ואמר לו: אל תתפלל כך. אם היא ראויה לך, לא תלך ממך. ואם לא, כפרת בה׳. כמה מדויק. מי שמתאהב ברעיון על אדם מסוים ומתחיל לדרוש, כבר אינו מבקש חסד. הוא מכתיב. ועם זאת, אותה סוגיה עצמה מלמדת שתפילה איננה מילים ריקות. בת הקול כבר הכריזה, ובכל זאת התירו חכמים לארס אשה בחול המועד, ״שמא יקדמנו אחר ברחמים״, שמא אדם אחר יקדים בתפילה. שתי האמיתות יחד הן הדרך. מתפללים הרבה, ומתפללים פתוח. הנהגה כשמתקדמים עם אדם מסוים, מתפללים ״אם זה הטוב בעיניך, סלול את הדרך, ואם לא, הראה לי בעדינות״. לא דורשים מה׳ ״דווקא זה״. לשיחה ביניכם מה יהיה קשה לכל אחד מכם לומר בתפילה הזאת בכנות? לפעמים התשובה מלמדת מה קורה בלב. אהבת ה׳ תפילה פתוחה היא מעשה של אמון. היא אומרת: אתה יודע מה טוב לי יותר ממני, כי אתה אוהב אותי יותר ממני."}, {"id": "story-6", "title": "מי מייעץ לכם?", "body": "חלק א · לפני שיוצאים לדרך — יש בפרשה פרט קטן שאפשר לעבור עליו בלי לראות. כשאליעזר מספר בבית לבן על השיחה עם אברהם, הוא אומר ״אֻלַי לא תלך האשה אחרי״, והמילה כתובה בלי וי״ו. אפשר לקרוא אותה ״אלי״, אלי. רש״י מגלה מה עמד מאחוריה: לאליעזר הייתה בת. הוא חיזר למצוא עילה שאברהם יאמר לו לפנות אליו ולהשיא את בתו ליצחק. האיש הנאמן ביותר בבית אברהם היה בעל עניין. ולא ממזימה. הוא פשוט אב שרוצה טוב לבתו. בראשית כד, לט וָאֹמַר אֶל־אֲדֹנִי אֻלַי לֹא־תֵלֵךְ הָאִשָּׁה אַחֲרָי וזה מה שגדול בו: הוא ידע, הוא שאל, הוא קיבל תשובה, ואחר כך יצא לדרך ועשה את השליחות בשלמות, נגד הנגיעה של עצמו. כך נראה שליח. הנהגה כששומעים עצה בשידוכים, שואלים מה הנגיעה של היועץ. גם יועץ נאמן ואוהב יכול להיות נוגע, ואין בזה עלבון. מתייעצים עם מי שרוצה רק את טובתכם, ועם רב שאינו נוגע בדבר. בפגישה הקרובה עברו בראש על מי שמשפיע עליכם עכשיו. מי מהם ייהנה מ״כן״ ומי מ״לא״? זה לא פוסל אף אחד. זה רק עוזר לשמוע נכון. אהבת ה׳ ה׳ הוא היועץ היחיד שאין לו שום נגיעה מלבד טובתכם. לכן ההתייעצות הראשונה היא איתו."}, {"id": "story-7", "title": "להכין כבר עכשיו את הדרשה", "body": "חלק א · לפני שיוצאים לדרך — הנה עצה שנשמעת כמעט מוגזמת למי שעוד לא פגש אף אחד: להכין כבר עכשיו את הדרשה לשבע ברכות. הדרשה שבה תודו ותספרו את חסדי ה׳ בזיווג שלכם. למה עכשיו? כי ההודיה הנפלאה של אליעזר כשמצא את רבקה לא באה מהתלהבות של רגע. הייתה לה הכנה גדולה. ודווקא עכשיו, כשמרגישים את המצוקה, אפשר לדמיין חזק יותר את הברכה שבבניין בית. ככל שנכיר שאין ה׳ חייב לנו כלום, ושעל עצם המציאות הנפלאה של חתן וכלה יש להודות יום ולילה, כך נהיה כלי מוכן להודיה, ובעזרת ה׳ נמצא מהר. פנקס החסד ובינתיים: פנקס. רושמים בו את כל שלבי החסד המתגלגל עד יום החתונה. מי הציע, איזה צירוף מקרים קרה, איזו תפילה נענתה, איזו הצעה נפלה והתברר אחר כך למה. כדאי לאדם לרשום לעצמו מתי הועילה לו תפילה, כי צריך להאמין לא רק שתפילה מועילה, אלא שהתפילה שלי מועילה. ביום קשה קוראים בפנקס. וביום השבע ברכות, הוא כבר כתוב. הנהגה מתחילים לרשום. בסוף הספר יש עמוד שאפשר להתחיל בו. אהבת ה׳ מי שמתחיל להודות על מה שעוד לא בא, כבר חי בתוך הקשר עם ה׳, ולא רק מחכה לתוצאה."}, {"id": "story-8", "title": "קודם כל, המידות והבית", "body": "חלק ב · מה בעצם מחפשים — ״וַיַּבְרֵךְ הַגְּמַלִּים מִחוּץ לָעִיר אֶל בְּאֵר הַמָּיִם״ אברהם אבינו, שמסר את נפשו נגד עבודה זרה, שולח את אליעזר אל בית שעובדים בו עבודה זרה. ובנות כנען, ממש ליד הבית, פסולות. זו אחת השאלות החזקות בפרשה. בראשית כד, ג וְאַשְׁבִּיעֲךָ בַּה׳ אֱלֹהֵי הַשָּׁמַיִם וֵאלֹהֵי הָאָרֶץ אֲשֶׁר לֹא־תִקַּח אִשָּׁה לִבְנִי מִבְּנוֹת הַכְּנַעֲנִי אֲשֶׁר אָנֹכִי יוֹשֵׁב בְּקִרְבּוֹ הכלי יקר מבאר: מידות רעות התלויות בגוף, כמו תאווה, קמצנות וקנאה, עוברות מן האבות לבנים. עבודה זרה תלויה בשכל, והשכל והנשמה באים מן הקדוש ברוך הוא, ולכן אינה עוברת בירושה. הכנענים היו שטופים במידות רעות, ובית בתואל היה פגום רק בעבודה זרה. דעה אפשר לשנות. מידה עמוקה הרבה יותר קשה. ויהודי יקר הוסיף: הכלי יקר מקשה, וכי לא ידענו שאברהם יושב בקרב הכנעני? אלא ״אנכי יושב בקרבו״: האנוכיות יושבת בקרבו. זו הסיבה שאין לקחת משם. אבל לא גזר דין ומיד צריך לומר את הצד השני. רבקה עצמה יצאה מבית של לבן ובתואל. רש״י בפרשה הבאה כותב בשבחה: ״שהיתה בת רשע ואחות רשע ומקומה אנשי רשע, ולא למדה ממעשיהם״. הבית הוא מידע חשוב. הוא אינו פסק דין על האדם שיושב מולכם, ויש שגדולתם היא בדיוק במה שהם עשו עם מה שקיבלו. הנהגה בבירורים שואלים קודם כל על המידות ועל אווירת הבית: איך מדברים שם זה אל זה, איך נוהגים בכעס ובכסף. אחר כך "}, {"id": "story-9", "title": "הבדיקה היחידה", "body": "חלק ב · מה בעצם מחפשים — אליעזר מחפש אם לעם ישראל, אשה ליצחק אבינו. היינו מצפים לרשימה ארוכה. מה רמתה ביראת שמים? איך היא בצניעות? מה דעותיה? והוא בודק דבר אחד: האם היא תשקה את הגמלים. רש״י כותב זאת במפורש, ״ראויה היא לו שתהא גומלת חסדים, וכדאי ליכנס בביתו של אברהם״. תעודת הכניסה לבית אברהם היא חסד. רבי יחזקאל לוינשטיין מבאר למה זה מספיק. כל יהודי מטבעו מאמין בבוראו. מה שמפריע לאמונה הוא בעיקר הגאווה, ״כוחי ועוצם ידי״. כשראה אליעזר נערה שמציעה מעצמה, ולא רק מציעה אלא שואבת בעצמה לכל הגמלים, אף שעומדים שם עשרה עבדים, הבין שזה נובע מביטול עצמי. ומי שאין בה גאווה, אין לה מפריע לאמונה. ובאותה דרך מובן למה לא בדק צניעות. מהות הצניעות היא חוסר התבלטות, וביטול האנוכיות הוא גם מה שמוליד את החסד. הצניעות היא אחותה התאומה של החסד. בספר ייטב לב דרשו: ״אנכי עומד בין ה׳ וביניכם״. ה״אנכי״, מה שהאדם חשוב בעיני עצמו, הוא שעומד ומפסיק בין ה׳ לבינו. ענווה ונדיבות הן השורש. מתוכן צומחות האמונה, הצניעות ושלום הבית. הנהגה מי שמחפש בן או בת זוג, יחפש קודם כל ענווה ונדיבות. שאר הדברים חשובים, ורבים מהם יוצאים מן השורש הזה. בפגישה הקרובה הכינו לעצמכם שאלה אחת שאינה ״מה את חושבת על...״, אלא ״ספרי לי על משהו שעשית בשביל מישהו״. שימו לב אם התשובה מדברת על האחר, או על הנותן. אהבת ה׳ ה׳ שוכן היכן שה״אני״ מפנה "}, {"id": "story-10", "title": "מבחן הכד", "body": "חלק ב · מה בעצם מחפשים — למה דווקא הגמלים? הבית הלוי מגלה שהמבחן של אליעזר היה מבריק הרבה יותר ממה שנראה. אדם זר מבקש לשתות מהכד של נערה, ושותה מעט. עכשיו נשארו בכד מים שהוא שתה מהם. מה תעשה בהם? בראשית כד, יז וַיָּרָץ הָעֶבֶד לִקְרָאתָהּ וַיֹּאמֶר הַגְמִיאִינִי נָא מְעַט־מַיִם מִכַּדֵּךְ לב טוב: האם תיתן לזר לשתות מכדה בכלל. שכל: היא לא תביא הביתה שאריות שזר שתה מהן. דרך ארץ: היא לא תשפוך אותן בפניו ותבזה אותו. הפתרון היחיד שעונה על שלושתם: להשקות את הגמלים. נערה שאומרת ״וגם גמליך אשקה״ הוכיחה בשנייה אחת לב, שכל ועדינות. ובכל זאת ידע אליעזר ששלוש המידות האלה אינן עדיין ראיה שהיא ראויה לבית אברהם, ולכן התפלל שה׳ יראה לו. גם המבחן החכם בעולם אינו מחליף תפילה. הנהגה לב טוב בלי שכל אינו מספיק, ושכל בלי עדינות אינו מספיק. מחפשים אדם שהטוב שלו חכם ועדין. בפגישה הקרובה אל תציבו מבחנים ואל תשחקו משחקים. אליעזר לא הטעה את רבקה, הוא רק ביקש מים. פשוט שימו לב למצבים שקורים ממילא: טעות של מלצר, איחור, מישהו שמבקש עזרה. אהבת ה׳ מי שרואה טוב לב אמיתי באדם, רואה ניצוץ מטובו של ה׳, שהטיב עם בריותיו בלב ובחכמה יחד."}, {"id": "story-11", "title": "ואיש לא ידעה", "body": "חלק ב · מה בעצם מחפשים — התורה כבר אמרה ״בתולה״. מה מוסיפות המילים ״ואיש לא ידעה״? בראשית כד, טז וְהַנַּעֲרָ טֹבַת מַרְאֶה מְאֹד בְּתוּלָה וְאִישׁ לֹא יְדָעָהּ וַתֵּרֶד הָעַיְנָה וַתְּמַלֵּא כַדָּהּ וַתָּעַל רבי שמשון רפאל הירש מבאר שהביטוי הזה אינו חוזר בשום מקום אחר בתורה. פירושו שהייתה צנועה כל כך, ששום אדם לא העז מעודו להתקרב אליה בקלות ראש. יש אנשים שכבודם העצמי יוצר סביבם מרחב, ולידם גם הקל שבפרחחים אינו מעז לנבל את פיו. בארם של אותם ימים זה היה דבר מיוחד במינו. והמלבי״ם מוסיף פרט יפה: גם כשיצאה, לא הסתכלה סביב. רק ירדה העינה ומילאה את כדה. היא באה לעשות את מה שבאה לעשות. צניעות איננה חולשה ואינה ביישנות. היא אדם שיודע מה ערכו, ולכן אינו צריך שיסתכלו עליו. וזה נכון לבחור כמו לבחורה: מי שמכבד את עצמו, גם אחרים מכבדים אותו. הנהגה בודקים איך האדם נוהג כשאיש אינו רואה, ועד כמה הוא זקוק שיסתכלו עליו. בפגישה הקרובה שמרו על כבוד בפגישה: בלשון, בקצב, בגבולות שקבעתם לעצמכם על פי ההלכה וההדרכה שקיבלתם. קשר שמתחיל בכבוד נשען על יסוד טוב. אהבת ה׳ צניעות היא שמירה על הפנימיות, וה׳ אוהב את מה שבפנים. ״כל כבודה בת מלך פנימה״."}, {"id": "story-12", "title": "שני לוחות מצומדים", "body": "חלק ב · מה בעצם מחפשים — אליעזר נותן לרבקה שני צמידים, ורש״י אומר שהם רומזים לשני הלוחות, ״מצומדות״. למה לרמוז לה על הלוחות דווקא ברגע הזה, ולמה חשוב שהם צמודים? בראשית כד, כב וַיְהִי כַּאֲשֶׁר כִּלּוּ הַגְּמַלִּים לִשְׁתּוֹת וַיִּקַּח הָאִישׁ נֶזֶם זָהָב בֶּקַע מִשְׁקָלוֹ וּשְׁנֵי צְמִידִים עַל־יָדֶיהָ עֲשָׂרָה זָהָב מִשְׁקָלָם בלקח טוב מבואר שאליעזר רצה לומר לה: חסד את עושה נפלא, ואצלנו יש עוד חלק. שהחסד יהיה מחובר לעבודת ה׳. שני לוחות צמודים: מה שבין אדם לחברו הולך צמוד למה שבין אדם למקום. חסד כזה פירושו שאדם מתבונן: כמו שה׳ גומל איתי חסד, כמו שה׳ נותן לי כבוד, כך אני הולך בדרכיו. יש אנשים טובים מאוד שאין להם קשר חי עם ה׳, ויש אנשים אדוקים שקשה לחיות לידם. הבית של יצחק ורבקה נבנה על שני הלוחות יחד. הנהגה מחפשים את שני הלוחות באותו אדם: יראת שמים שעושה אותו טוב יותר לבני אדם, וטוב לב שמקרב אותו לה׳. לשיחה ביניכם מה מחזק אתכם בעבודת ה׳ היום? ואיך אתם רואים שזה משפיע על האופן שבו אתם מתנהגים עם אנשים? אהבת ה׳ החסד שאני נותן הוא המשך של החסד שאני מקבל מה׳. כשאני מרגיש את זה, כל נתינה מקרבת אותי אליו."}, {"id": "story-13", "title": "כולן שוות לטובה", "body": "חלק ב · מה בעצם מחפשים — רש״י אומר על שנותיה של שרה: ״כולן שוין לטובה״. איך ייתכן? היא הייתה עקרה עד גיל תשעים, גלתה ממקום למקום, ונלקחה פעמיים לבית מלכים. בעל ״אש דת״ מפרש: לא שכל ימיה היו קלים, אלא שכל ימיה היו שווים בעיניה לטובה. השוויון לא היה במציאות, אלא בלב שלה. ואת שרה הזאת ממלאת רבקה באוהל. לכן שווה לשים לב למידה הזאת בתקופת הפגישות. כל אדם עבר דברים. השאלה היא איך הוא מספר עליהם: כקרבן שכולם חייבים לו, או כמי שמחפש מה ה׳ רוצה ממנו. החיים המשותפים יביאו גם ימים קשים, ואיתם תחיו. גם זה קשור לענווה. בזוהר נדרש על שנות חייה ש״מי שקטן הוא גדול״: התורה הקטינה את המספר הגדול וכתבה ״שנה״, והגדילה את הקטן וכתבה ״שנים״. מי שאינו צריך להיות הכי גדול בחדר, הוא זה שאפשר לחיות איתו. הנהגה שמים לב איך האדם מדבר על קשיים, על הורים, על מורים, על שידוכים קודמים. בלי לחקור, פשוט מקשיבים. לשיחה ביניכם מה היה הדבר הקשה שעברתם, ומה הוא נתן לכם? (זו שאלה לשלב מתקדם, כשכבר יש אמון.) אהבת ה׳ מי שרואה הכל כטובה, חי בתוך חיבוק מתמיד של הבורא. זו אהבה שאינה תלויה במצב."}, {"id": "story-14", "title": "אסור לקדש עד שיראנה", "body": "חלק ג · בתוך הפגישות — ״וַתְּמַהֵר וַתְּעַר כַּדָּהּ אֶל הַשֹּׁקֶת״ הגמרא בקידושין קובעת דין ברור: ״אסור לאדם שיקדש את האשה עד שיראנה, שמא יראה בה דבר מגונה ותתגנה עליו, ורחמנא אמר: ואהבת לרעך כמוך״. הפגישה אינה רק מנהג של הדור, והיא גם אינה ״ראיון עבודה״. לפי הגמרא, יש בה קיום של ואהבת לרעך כמוך. מי שמתחתן בלי שראה, מסכן את הזולת: הוא עלול לגלות אחר כך שהלב אינו שם, ומי שישלם על כך הוא האדם שמולו. התורה עצמה לא התביישה לכתוב על רבקה ״טובת מראה מאוד״. משיכה ואהבה הם חלק מן הבניין. ואם בפגישה מרגישים דחייה ממשית, אין זה ״לא רוחני״ לומר זאת. זו ההלכה. מצד שני, אין זה היתר לחפש שלמות. בין ״תתגנה עליו״ ובין ״לא בדיוק מה שדמיינתי״ יש מרחק גדול. והזכרנו את מי שאינו מבטל הצעה בגלל דברים קטנים. הלכה אסור לאדם לקדש אשה עד שיראה אותה, כדי שלא תתגנה עליו. הטעם: ואהבת לרעך כמוך. הנהגה הולכים לפגישה מתוך מחשבה על טובת שניכם. מי שמרגיש ספק אמיתי בלב, מדבר עם מי שמלווה אותו, ולא מתעלם וגם לא בורח. אהבת ה׳ גם הפגישה הראשונה היא מצווה בין אדם לחברו. מי שיושב מולכם הוא צלם אלוקים, ודרך הכבוד שאתם נותנים לו אתם מכבדים את בוראו."}, {"id": "story-15", "title": "מחריש לדעת", "body": "חלק ג · בתוך הפגישות — הנערה רצה. המים זורמים. עשרה גמלים שותים. זה עובד! זה בדיוק מה שאליעזר התפלל עליו, מילה במילה, ועוד לפני שגמר להתפלל. אדם רגיל היה קופץ ממקומו. ומה עושה אליעזר? בראשית כד, כא וְהָאִישׁ מִשְׁתָּאֵה לָהּ מַחֲרִישׁ לָדַעַת הַהִצְלִיחַ ה׳ דַּרְכּוֹ אִם־לֹא רש״י מתאר את הרגע: ״משתומם ומתבהל על שראה דברו קרוב להצליח, אבל אינו יודע אם ממשפחת אברהם היא אם לאו״. הלב שלו דופק, ובכל זאת הוא מחריש. והוא ממשיך לשאול: ״בת מי את״. רק אחרי התשובה הוא כורע ומודה. אלה שני כוחות שצריכים לחיות יחד. לב שמתרגש, ומי שאינו מתרגש כנראה אינו בקשר. ושכל שעוצר, בודק ושואל. המילה ״מחריש״ מלמדת שגם בתוך ההתלהבות יש מקום לשתיקה. הנהגה פגישה מוצלחת מאוד היא סיבה לשמוח ולהמשיך, ולא תחליף לבירור. ופגישה בינונית אינה סיבה לסגור. נותנים לדברים להתברר. בפגישה הקרובה אחרי הפגישה, לפני שמתקשרים לספר, שבו חמש דקות לבד. מה ראיתי באמת, ומה רק קיוויתי לראות? אהבת ה׳ גם ברגע הסוער ביותר אליעזר מחכה לראות ״ההצליח ה׳ דרכו אם לא״. הוא אינו מחליט במקום ה׳. הוא מקשיב לו."}, {"id": "story-16", "title": "שתה אדוני", "body": "חלק ג · בתוך הפגישות — אליעזר ביקש סימן: שהנערה תאמר ״שתה וגם גמליך אשקה״. ורבקה לא אמרה כך. היא אמרה רק ״שתה אדוני״, ורק אחרי שסיים הוסיפה ״גם לגמליך אשאב״. לכאורה טעות. למה היא שינתה? בראשית כד, יח וַתֹּאמֶר שְׁתֵה אֲדֹנִי וַתְּמַהֵר וַתֹּרֶד כַּדָּהּ עַל־יָדָהּ וַתַּשְׁקֵהוּ בראשית כד, יט וַתְּכַל לְהַשְׁקֹתוֹ וַתֹּאמֶר גַּם לִגְמַלֶּיךָ אֶשְׁאָב עַד אִם־כִּלּוּ לִשְׁתֹּת כי רבקה רצתה שאליעזר ישתה בהרגשה טובה. אילו אמרה מיד ״וגם גמליך אשקה״, היה נלחץ: לא נעים לשתות הרבה כשיודעים שהמים צריכים להספיק גם לגמלים. לכן אמרה ״שתה״, והוא שתה בנחת, ורק כשגמר אמרה מה שאמרה. על זה נאמר ״אשרי משכיל אל דל״. לא מספיק לתת לעני, צריך לתת לו בשכל, שלא יתבייש כלל. ורבקה גם אמרה ״אשאב״, מים חדשים, כדי שלא יחשוב שהיא שופכת לשוקת את השארית כי אינה רוצה לשתות אחריו. חסד טוב הוא חסד שהמקבל יכול לקבל בנחת ובכבוד. כל זה קרה בשני משפטים, מול זר, ליד באר. אדם שחושב כך באופן טבעי על הרגשתו של זר, יחשוב כך על בן זוגו בעוד שלושים שנה. הנהגה לפני שעוזרים, חושבים איך השני ירגיש. בפגישות מחפשים ומתרגלים את העדינות הזאת. בפגישה הקרובה אם קשה למי שמולכם בשיחה, אל תמהרו ״להציל״ בקול. פנו מקום בעדינות: החליפו נושא, הציעו הפסקה. ושימו לב אם גם אליכם מתנהגים כך. אהבת ה׳ ה׳ נותן לנו בעדינות כזאת, שלפעמים איננו מרגישים"}, {"id": "story-17", "title": "תודה לנהג האוטובוס", "body": "חלק ג · בתוך הפגישות — מה אני מרגיש כשאני אומר תודה לנהג אוטובוס או למוכר בחנות, שכל כוונתם לטובת עצמם? רבי חיים שמואלביץ מביא מקורות רבים שיש מצוות הכרת הטוב גם כשלמטיב לא הייתה שום כוונה להטיב. ונראה שכל אדם שמטיב לנו, גם הנהג וגם המוכר, הוא חלון שדרכו עבר טוב ה׳ אלינו. כשאני אומר לו תודה, אני אומר: תודה לה׳, ותודה גם לך, כפי המידה שאתה משקף את טובו. כאן נמצאת אחת הבדיקות הפשוטות ביותר בפגישה, והיא אינה עולה כלום. איך מי שמולכם מתנהג עם המלצר? עם השומר בכניסה? עם הנהג? אליכם הוא מתאמץ להיות נחמד. אל מי שאינו יכול לתת לו דבר, הוא מראה מי הוא. אברהם השתחווה ל״עם הארץ״, ובמדרש אמרו שגם זו הייתה הודיה לה׳. הוא ראה בכל אדם את כבוד השמים, ולא היה צריך שתי הודאות. אדם שמכיר טובה בקטנות, יכיר טובה לאשתו ולבעלו על ארוחת ערב ביום שלישי רגיל. ומי שהכל מגיע לו בחוץ, הכל יגיע לו גם בבית. הנהגה מרגילים את עצמנו להגיד תודה לכל אדם, ובלב להוסיף ״תודה לה׳ ששלח אותו״. בפגישה הקרובה שימו לב למלצר, לנהג, לשומר. גם בעצמכם. אהבת ה׳ ״מלוא כל הארץ כבודו״. מי שמודה על כל דבר, רואה בכל מקום חלון לאהבת ה׳."}, {"id": "story-18", "title": "אותה ריצה, שני עולמות", "body": "חלק ג · בתוך הפגישות — שלוש פעמים בשלושה פסוקים: ״ותמהר״, ״ותמהר״, ״ותרץ״. התורה רוצה שנראה את רבקה בתנועה. היא אינה רק נותנת, היא ממהרת ורצה. בראשית כד, כ וַתְּמַהֵר וַתְּעַר כַּדָּהּ אֶל־הַשֹּׁקֶת וַתָּרָץ עוֹד אֶל־הַבְּאֵר לִשְׁאֹב וַתִּשְׁאַב לְכָל־גְּמַלָּיו ואז, עשרה פסוקים אחר כך, עוד ריצה. אחיה. בראשית כד, כט וּלְרִבְקָה אָח וּשְׁמוֹ לָבָן וַיָּרָץ לָבָן אֶל־הָאִישׁ הַחוּצָה אֶל־הָעָיִן בראשית כד, ל וַיְהִי כִּרְאֹת אֶת־הַנֶּזֶם וְאֶת־הַצְּמִדִים עַל־יְדֵי אֲחֹתוֹ וּכְשָׁמְעוֹ אֶת־דִּבְרֵי רִבְקָה אֲחֹתוֹ לֵאמֹר כֹּה־דִבֶּר אֵלַי הָאִישׁ וַיָּבֹא אֶל־הָאִישׁ וְהִנֵּה עֹמֵד עַל־הַגְּמַלִּים עַל־הָעָיִן לבן ראה את רבקה עם הצמידים, וחשב שמחלקים תכשיטים בחינם, ורץ לקבל גם. תוך כדי ריצה שמע שהאיש דיבר על שידוך, הבין שזה לא בחינם וצריך לבוא בחשבון, ולכן ״ויבא״. הריצה נגמרה. רבקה רצה לחסד, ולבן רץ לבצע. המשנה באבות אומרת ״הוי רץ למצווה קלה״, והיעב״ץ מבאר שמצווה גוררת מצווה רק כשהיא נעשית בשמחה, והריצה היא הדרך לשמחה. הנהגה בודקים אחרי מה האדם רץ, ומתי הוא פתאום מאט. התלהבות שנגמרת ברגע שמתברר שהעניין עולה משהו, מלמדת הרבה. לשיחה ביניכם על מה אתם מוכנים להשכים בבוקר בלי שאף אחד יבקש? ומה בחיים שלכם אתם עושים מהר ובשמחה? אהבת ה׳ מי שרץ לה׳, רץ גם כשאין לו מה להרוויח. זו ריצה של אוהב"}, {"id": "story-19", "title": "ביני ובינך מה היא", "body": "חלק ג · בתוך הפגישות — עפרון אומר לאברהם ״ארץ ארבע מאות שקל כסף ביני ובינך מה היא״, ורש״י מפרש: ״בין שני אוהבים כמונו״. ממתי אברהם ועפרון אוהבים? יש על כך וורט חסידי יפה. עפרון אמר: שנינו אוהבים. אני אוהב כסף, ואתה אוהב מצוות. לאוהב כסף, מה הם ארבע מאות שקל? ״אוהב כסף לא ישבע כסף״, וכל סכום קטן בעיניו. ולאוהב מצוות, מה הם ארבע מאות? בשביל מצווה הוא מוכן לתת הכל. וההבדל בין שני האוהבים מכריע. אהבת הכסף משאירה את האדם רעב תמיד, ואהבת המצוות משאירה אותו שבע ושמח. בתקופת השידוכים מדברים על כסף, וטוב שכך. אבל מתחת למספרים יש שאלה אחרת: על מה קל לאדם הזה לוותר, ועל מה קשה לו? שם נמצא הלב. הנהגה לא בורחים משיחה כנה על כסף, ומקשיבים למה שנמצא מתחת לשיחה: מה חשוב, ממה מפחדים, מה מוכנים לתת. לשיחה ביניכם אם היה לכם סכום גדול שלא תכננתם, מה הדבר הראשון שהייתם עושים בו? אהבת ה׳ אברהם הוא אוהב מצוות, ולכן כל מחיר שמשלמים בשביל ה׳ נראה לו קטן. כך מרגיש מי שאוהב."}, {"id": "story-20", "title": "אין דבר כזה פראייר", "body": "חלק ג · בתוך הפגישות — נערה צעירה שואבת מים לעשרה גמלים, כשעומדים לידה עשרה עבדים בריאים. גמל צמא שותה הרבה מאוד. והם עומדים ומסתכלים. האם זה לא קצת ״פראייר״? בספר ״זכו״ מסופר על בחור צעיר שדרש בחתונה שאדם בבית צריך להיות בעל חסד, ״אבל לא פראייר״. אחרי הדרשה ניגש אליו הרב דיאמנט ואמר לו: נערה קטנה מול עשרה עבדים, ומשקה את כל הגמלים. האם זה לא ״פראייר״? ובכל זאת התורה שיבחה את המעשה הזה מאוד. ללמדך שבחסד אין ״פראייר״. בתוך הבית, החשבון ״מי עשה יותר״ הוא בדיוק מה שהורס את החסד. מי שמתחיל לספור כבר הפסיד. והגבול אבל יש תנאי: שהשני אינו מנצל. התורה אומרת ״עזוב תעזוב עמו״, עם בעל הבהמה, כשהוא עוזר גם הוא. נתינה שמחה בין שני אנשים שנותנים היא הבית של אברהם. מצב שבו צד אחד נותן והשני רק לוקח, דורש, מזלזל או מפחיד, אינו חסד. מי שמרגיש בפגישות שמקטינים אותו, ששולטים בו, שמתעלמים מרצונו, או שהוא מפחד להגיד את דעתו, לא יפתור את זה בעוד נתינה. מדברים על כך מיד עם רב, עם הורים או עם מי שמלווה, גם אם האדם נראה מצוין מבחוץ. הנהגה בבית לא סופרים. ובשלב הפגישות בודקים אם גם השני נותן, גם בלי שביקשו ממנו. לשיחה ביניכם מה הדבר הקטן שאתם עושים בשביל אחרים בלי שאיש יודע? אהבת ה׳ ה׳ נותן לנו בלי חשבון, גם כשאיננו מחזירים. מי שנותן כך, מתדמה לבוראו."}, {"id": "story-21", "title": "על מה מדברים", "body": "חלק ג · בתוך הפגישות — הגענו אל הלב. למה התורה כותבת את שיחתו של אליעזר פעמיים? כי יש שיחה אחת ששווה יותר מגופי תורה. אליעזר ישב בבית לבן וסיפר איך התפלל, ואיך ״טרם אכלה לדבר״ והנה רבקה יוצאת. הסיפור היה חזק כל כך, שגם לבן ובתואל אמרו ״מה׳ יצא הדבר״. ורש״י מביא את ״יפה שיחתן״ דווקא על הפסוק ״ואבא היום אל העין״, ״היום יצאתי והיום באתי, מכאן שקפצה לו הארץ״. ובפירוש נחלת יעקב ביאר: דווקא בפסוק הזה נזכר הנס, ללמד שבזה חפץ ה׳, לספר את מעשיו ונפלאותיו. בראשית כד, מב וָאָבֹא הַיּוֹם אֶל־הָעָיִן וָאֹמַר ה׳ אֱלֹהֵי אֲדֹנִי אַבְרָהָם אִם־יֶשְׁךָ־נָּא מַצְלִיחַ דַּרְכִּי אֲשֶׁר אָנֹכִי הֹלֵךְ עָלֶיהָ איך יודעים מה בוער בלבו של רב? מסתכלים על התלמידים שלו ורואים מה נדבק בהם. שאברהם התנהג כך אין זה חידוש. אבל כשרואים איך אליעזר מתנהג, יודעים איזו אש הייתה בבית אברהם. וכך גם אתם: מי שרוצה לדעת מה בוער במי שמולו, שיקשיב על מה הוא מספר כשהוא מתלהב. להאריך ואם מספרים, מספרים בפרטים. כשמספרים חסדי ה׳ צריך להאריך ולפרט. פעם הייתי בסעודת הודיה. יהודי קם להודות לה׳ על שהצילו, ואמר בקיצור: הייתי במינוס של שנים עשר אלף, וה׳ עזר ונכנס הכסף. ולא התרגשתי בכלל. כי כשמקצרים, לא רואים את היד שהובילה כל צעד. הנהגה מכניסים לשיחה בין בני הזוג גם את הדברים הגדולים באמת: איפה ראיתם את יד ה׳ בחיים שלכם. לשיחה ביניכם"}, {"id": "story-22", "title": "מה׳ יצא הדבר", "body": "חלק ד · רגע ההחלטה — ״וַיִּקַּח הָעֶבֶד אֶת רִבְקָה וַיֵּלַךְ״ לבן ובתואל, שני אנשים שאיש לא יחשוד בהם בצדקות, עונים לאליעזר בשתי מילים שהפכו למקור של כל שידוך בעולם. והם מוסיפים: ״כאשר דיבר ה׳״. היכן דיבר ה׳? איש מהם לא שמע נבואה. בראשית כד, נ וַיַּעַן לָבָן וּבְתוּאֵל וַיֹּאמְרוּ מֵה׳ יָצָא הַדָּבָר לֹא נוּכַל דַּבֵּר אֵלֶיךָ רַע אוֹ־טוֹב בראשית כד, נא הִנֵּה־רִבְקָה לְפָנֶיךָ קַח וָלֵךְ וּתְהִי אִשָּׁה לְבֶן־אֲדֹנֶיךָ כַּאֲשֶׁר דִּבֶּר ה׳ הנצי״ב אומר: כשרואים השגחה פרטית גלויה כל כך, זה נקרא שה׳ דיבר. ה׳ לא צריך להופיע בנבואה כדי לדבר אלינו. הוא מדבר דרך מה שהוא מסדר. ולכן, כשהדברים מתחברים באופן מופלא, כדאי לעצור ולשאול: ה׳ מדבר אלי עכשיו, מה הוא רוצה לומר? אבל שימו לב מה קדם לזה: אליעזר התפלל, ראה בעיניו מעשי חסד, שאל ״בת מי את״, ברר את המשפחה, ורק אז אמרו ״מה׳ יצא הדבר״. סיפור יפה על איך נפגשתם לא מחליף את כל אלה. ההשגחה מופיעה בתוך הבירור, ולא במקומו. הנהגה קוראים את ההשגחה יחד עם השכל והעצה, לא במקומם. כשהכל נפתח ברוגע, כשהלב והשכל והמלווים אומרים אותו דבר, זו שפה שה׳ מדבר בה. לשיחה ביניכם מה הרגע בקשר שלכם שבו הרגשתם שזה לא רק אתם? אהבת ה׳ ה׳ מדבר אלינו כל הזמן, בשפה של מאורעות. מי שלומד להקשיב, מגלה שאינו לבד לרגע."}, {"id": "story-23", "title": "אל תאחרו אותי", "body": "חלק ד · רגע ההחלטה — המשפחה מבקשת עוד כמה ימים. בקשה סבירה לגמרי. ואליעזר, האיש העדין והמנומס, אומר: לא. בראשית כד, נה וַיֹּאמֶר אָחִיהָ וְאִמָּהּ תֵּשֵׁב הַנַּעֲרָ אִתָּנוּ יָמִים אוֹ עָשׂוֹר אַחַר תֵּלֵךְ בראשית כד, נו וַיֹּאמֶר אֲלֵהֶם אַל־תְּאַחֲרוּ אֹתִי וַה׳ הִצְלִיחַ דַּרְכִּי שַׁלְּחוּנִי וְאֵלְכָה לַאדֹנִי מה הקשר? אם ה׳ הצליח, למה למהר? המלבי״ם מבאר: מכך שמיד בבואי נזדמנה רבקה בדרך נס, מבואר שלא רק גוף הזיווג הוא מאת ה׳, אלא גם הזמן קבוע מאתו. ואם אתעכב, אתם מאחרים את הזמן שקבעה ההשגחה. ובשם רבי ירוחם ממיר מבואר ״חפזון דשכינה״: השגחת ה׳ גלויה כשאדם עושה במהירות, וכשהוא מתמהמה השכינה מסתלקת. גם ההלכה יודעת דחיפות כזאת. שמואל אמר שמותר לארס אשה בחול המועד, ״שמא יקדמנו אחר״. ועם זאת לא עושים אז סעודת אירוסין, והנישואין עצמם ממתינים. מה שדחוף הוא לא לתת להזדמנות טובה לחמוק. לא לבלבל ״אל תאחרו״ נאמר אחרי הבירור והתפילה, ולא במקומם. אברהם השביע על השידוך ולא על המהירות. מי שעוד לא יודע, אינו ״מאחר״, הוא עדיין בודק. ואסור ללחוץ על אדם להחליט. האיחור שהפרשה מדברת עליו הוא אחר: מי שכבר ברור לו, והוא דוחה מפחד, מהרגל של בחירה, או מרצון לראות אם יש עוד משהו. הלכה מותר לארס בחול המועד כדי שלא יקדים אחר, בלי סעודת אירוסין. (לשאלה למעשה שואלים רב.) הנהגה כשהדברים ברורים, לא דוחים. ספק "}, {"id": "story-24", "title": "ונשאלה את פיה", "body": "חלק ד · רגע ההחלטה — הכל כבר סגור, לכאורה. האבא הסכים, האח הסכים, יש מתנות, יש ״מה׳ יצא הדבר״. ואז עוצרים ואומרים משפט אחד קטן, ועליו נשען דין לכל הדורות. בראשית כד, נז וַיֹּאמְרוּ נִקְרָא לַנַּעֲרָ וְנִשְׁאֲלָה אֶת־פִּיהָ בראשית כד, נח וַיִּקְרְאוּ לְרִבְקָה וַיֹּאמְרוּ אֵלֶיהָ הֲתֵלְכִי עִם־הָאִישׁ הַזֶּה וַתֹּאמֶר אֵלֵךְ רש״י: ״מכאן שאין משיאין את האשה אלא מדעתה״. כל הניסים שבעולם, כל ההשגחה הגלויה, ועדיין: קוראים לה, ושואלים אותה. וגם הגמרא בקידושין אומרת שלא יקדש אדם את בתו ״עד שתגדיל ותאמר: בפלוני אני רוצה״. ורבקה עונה מילה אחת: ״אלך״. ורש״י מוסיף: ״מעצמי, ואף אם אינכם רוצים״. התשובה הזאת באה מתוכה. לא היא הולכת כי אמרו לה, אלא משום שהיא רוצה. הורים, רבנים, שדכנים וחברים יכולים לעזור מאוד. אבל שני אנשים יחיו את החיים האלה. כל ״כן״ שיוצא מלחץ, מפחד מה יגידו, מעייפות או מרצון לשמח מישהו, איננו ה״אלך״ של רבקה. הלכה אין משיאין אשה אלא מדעתה. הרצון של בני הזוג עצמם הוא תנאי, והוא אינו נדחה מפני רצון המשפחה. הנהגה לפני ״כן״, כל אחד שואל את עצמו בשקט: אם כולם היו שותקים, האם הייתי אומר אלך? אהבת ה׳ ה׳ רוצה בנו בוחרים. כמו שברית בינו לבין עם ישראל נכרתה ב״נעשה ונשמע״, גם הברית שלכם צריכה מילה שיוצאת מהלב."}, {"id": "story-25", "title": "מכאן שמודים על בשורה טובה", "body": "חלק ד · רגע ההחלטה — אליעזר משתחווה לה׳ פעמיים. פעם אחת כשהוא שומע שרבקה ממשפחת אברהם, ופעם שנייה כשהמשפחה מסכימה. ורש״י כותב ״מכאן שמודים על בשורה טובה״ רק על הפעם השנייה. למה? בראשית כד, כו וַיִּקֹּד הָאִישׁ וַיִּשְׁתַּחוּ לַה׳ בראשית כד, נב וַיְהִי כַּאֲשֶׁר שָׁמַע עֶבֶד אַבְרָהָם אֶת־דִּבְרֵיהֶם וַיִּשְׁתַּחוּ אַרְצָה לַה׳ בעל נחלת דוד מבאר: בפעם הראשונה כתוב מה אמר אליעזר. בפעם השנייה כתוב רק ״וישתחו ארצה לה׳״, בלי פירוט, כי זה מובן מאליו. מן הפעם הראשונה היינו אומרים שאליעזר צדיק. מן השנייה למדנו שכל אחד חייב. ויש לדון: האם מודים גם על חצי דבר? הרי בפעם הראשונה עוד לא הסכימו לשידוך. ואבי מורי אמר שלכן כתב רש״י ״מכאן״ דווקא בפעם השנייה: על חצי דבר אין חובה, אולי רשות. רשות, ואיזו רשות יפה. פגישה טובה היא חצי דבר. שיחה שבה הרגשתם שהבינו אתכם היא חצי דבר. אפשר להודות עליה בלי להחליט כלום, ואפילו אם בסוף זה לא ימשיך. הנהגה על כל בשורה טובה, עוד לפני שמספרים לאחרים, עוצרים ואומרים ״תודה לה׳״. גם על צעד קטן בדרך. בפגישה הקרובה בסיום פגישה טובה, לפני שמוציאים את הטלפון: תודה לה׳ על השעתיים האלה. אהבת ה׳ כל טוב שמגיע אלינו דרך אדם, מגיע בעצם מה׳. מי שמרגיש כך, רואה את אהבתו בכל פנים שמחייכות אליו."}, {"id": "story-26", "title": "קיחה קיחה משדה עפרון", "body": "חלק ה · מן ה״כן״ אל החופה — ״כִּי יִקַּח אִישׁ אִשָּׁה״: הלשון שנלמדת משדה עפרון מסכת קידושין נפתחת בשאלה מפתיעה. מניין שאשה מתקדשת בכסף? והתשובה היא: משדה עפרון. ״גמר קיחה קיחה משדה עפרון: כתיב הכא כי יקח איש אשה, וכתיב התם נתתי כסף השדה קח ממני״. מה הקשר בין קידושי אשה לקניית מערת קבורה? אשה אינה נקנית כמו עבד, בקניין ממוני בלבד. עיקר הקניין הוא ברית של אהבה ואחווה, שלום ורעות. ובדיוק כך ארץ ישראל: אינה רק נכס, אלא ״כלה״ שמתחברים אליה בנפש. ולא לחינם קנה אברהם דווקא בחברון, מלשון חיבור. מטרת הקניין היא להתחבר. למה לא בחינם עפרון הציע את המערה במתנה, ואברהם התעקש: ״בכסף מלא״. למה? כי דבר שאדם משלם עליו הוא מתחבר אליו. רש״י על ״עם זו קנית״ אומר: ״כחפץ הקנוי בדמים יקרים שחביב על האדם״. ולא לחינם נקרא הכסף כסף, מלשון כיסופים. מי שרוצה לאהוב צריך לתת מעצמו. לא מחכים שהאהבה תגיע ואז נותנים. נותנים, והיא גדלה. הלכה אשה מתקדשת בכסף, ולומדים זאת מלשון ״קיחה״ שנאמרה בקניית שדה עפרון. פרטי הקידושין נעשים על ידי רב המסדר קידושין. הנהגה את הבית ואת הארץ בונים באותה דרך: לא רק בקניין, אלא באהבה שמתחדשת כל יום. מה שמשקיעים בו, אוהבים. לשיחה ביניכם מה כל אחד מכם כבר ויתר או השקיע בשביל הקשר הזה? איך זה הרגיש? אהבת ה׳ ה׳ קורא לעם ישראל כלה ולעצמו חתן. כל חיבור של אהבה שאנו בונים הוא דוגמה קטנה לב"}, {"id": "story-27", "title": "לא אוכל עד אם דיברתי דברי", "body": "חלק ה · מן ה״כן״ אל החופה — סיפור קטן לפני הרציני. המגיד מדובנא התאכסן פעם אצל קמצן גדול, שבאותו לילה ערך סעודת אירוסין. אחרי הסעודה פרץ ויכוח בין המחותנים מי צריך לשלם עליה, כי ״כשישבנו לאכול כבר היינו מחותנים״. אמר המגיד: עכשיו אני מבין למה סירב אליעזר לאכול לפני שיגמור את השידוך. חשש שאם יאכל קודם, מי יודע כמה יבקשו ממנו... הטעם האמיתי: הייתה מוטלת עליו חובה לספר את חסדי ה׳, כי חלק מן ההודיה הוא לספר. הוא הגיע מדרך ארוכה, האוכל כבר על השולחן, והוא לא יכול לאכול לפני כן. בראשית כד, לג וַיּוּשַׂם לְפָנָיו לֶאֱכֹל וַיֹּאמֶר לֹא אֹכַל עַד אִם־דִּבַּרְתִּי דְּבָרָי וַיֹּאמֶר דַּבֵּר ובתרגום יונתן מובא שבתבשיל ששמו לפניו היה סם המוות. ומה חשב שיעזור לו הדיבור? כשאדם מספר נס שקרה לו, עושים לו נס נוסף. בזמן שסיפר הוחלפו הקערות. וכן כתב הפלא יועץ: מי שנעשה לו נס ואומר שירה, שכרו שעושים לו נס אחר. הלכה למעשה בחתונה וחשבתי ללמוד מכאן למעשה: בכל חתונה, בזמן שהחתן והכלה בחדר הייחוד וכולם עומדים ומחכים, יעמוד אבי החתן או אבי הכלה, או יהודי אחר, ויקיים ״לא אוכל עד אם דיברתי דברי״. יספר את חסדי ה׳ שליוו את השידוך הזה. הנהגה בסעודת אירוסין ובחתונה, לפני האוכל, מספרים. כל שמחה היא הזדמנות לספר מה ה׳ עשה. אהבת ה׳ מי שמקדים את הסיפור על חסד ה׳ לצרכי עצמו, מראה שה׳ חשוב לו מכל. וה׳ משיב לו בנס אחר נ"}, {"id": "story-28", "title": "עשרה זהובים", "body": "חלק ה · מן ה״כן״ אל החופה — למה התורה כותבת שאליעזר ״לקח״ את הצמידים, ולא שנתן אותם? האור זרוע מביא בשם רבי יהודה החסיד: ברכה שווה עשרה זהובים. התורה לא כתבה ״ויתן״, כדי שלא נחשוב שזו הייתה מתנה. אליעזר אמר בלבו: הנערה הזאת גרמה לי שאברך את ה׳. לכן אני חייב לתת לה עשרה זהובים. והרי אליעזר בירך את ה׳ כל יום! במה זיכתה אותו רבקה? אלא שאינה דומה ברכה עם התעוררות הלב לברכה קרה ויבשה. ״רחמנא ליבא בעי״. בעקבות מעשיה של רבקה, לבו התמלא הכרת טוב. גם בתקופת הפגישות זה קורה: לפעמים האדם שפגשתם גורם לכם לברך את ה׳ אחרת. וזה סימן טוב. מה עושה גדול בשעת צרה גדול אחד, שחלה במחלה מסוכנת, שאל את רבי שלמה זלמן אויערבך איך להתחזק. ענה לו: איני ראוי לומר זאת לאחרים, אבל אומר לך מה הייתי עושה בעצמי. הייתי מתחזק באמירת מאה ברכות, שתהיה אמירת ״ברוך״ כמו שצריך, ו״אתה״ כמו שצריך, והשם כמו שצריך. ומעל הכל: אליעזר, שנקרא ״ארור״ ושאברהם אמר עליו ״אין ארור מתדבק בברוך״, שומע פתאום את לבן קורא לו ״בוא ברוך ה׳״. מי שמברך את ה׳ בכל לבו, ה׳ מברך אותו. בראשית כד, לא וַיֹּאמֶר בּוֹא בְּרוּךְ ה׳ לָמָּה תַעֲמֹד בַּחוּץ וְאָנֹכִי פִּנִּיתִי הַבַּיִת וּמָקוֹם לַגְּמַלִּים הנהגה בתקופת האירוסין, מברכים לאט לפחות ברכה אחת ביום, ומודים בה על הדרך שעברתם. לשיחה ביניכם מה במי שמולכם גורם לכם להודות לה׳? אמרו את זה בקול. אהב"}, {"id": "story-29", "title": "לשבח את הכלה", "body": "חלק ה · מן ה״כן״ אל החופה — בכל פרשת השידוך כמעט אין שבח על יצחק, ועל רבקה יש הרבה מאוד. היופי, הצניעות, החסד, הזריזות, השכל. למה? חז״ל דנים ״כיצד מרקדין לפני הכלה״, ונחלקו בית שמאי ובית הלל מה אומרים. ולמה לא דנו כיצד מרקדים לפני החתן? ללמדך שעיקר החתונה הוא לשבח את הכלה, להתפעל מן החסד שה׳ ברא במתנה של הכלה. התורה מלמדת את החתן ואת כל המשתתפים במה להתבונן. ההרגל הזה מתחיל עכשיו, הרבה לפני החתונה. מי שמתרגל למצוא מה טוב במי שמולו ולומר זאת בקול, לא יצטרך בעוד עשר שנים לחפש מה נעלם. הלכה נוהגים לרקד ולשבח את הכלה בחתונתה. כך דנו חז״ל בכתובות, והוא חלק ממצוות שמחת חתן וכלה. הנהגה בחתונה ובכל יום אחריה אומרים בקול את מעלותיו של בן הזוג. השבח בונה את הבית. בפגישה הקרובה בסוף פגישה מוצלחת אמרו דבר אחד אמיתי וספציפי שהערכתם. לא מחמאה כללית, אלא משהו שראיתם. אהבת ה׳ כל מעלה בבן הזוג היא מתנת חסד מה׳. מי שמשבח אותה, מודה לנותן."}, {"id": "story-30", "title": "הקול החמישי", "body": "חלק ה · מן ה״כן״ אל החופה — בכל הפרשה נכתבת המילה ״נער״ בלי ה״א, ונקראת ״נערה״. כבר עמד על כך החזקוני. ויש מי שביאר שהה״א מגיעה לה כשהיא נישאת, ומודים לה׳ עליה. ״איש ואשה זכו, שכינה ביניהם״: היו״ד שבאיש והה״א שבאשה מצטרפות לשם ה׳. ובירמיהו נאמר שבגאולה יישמעו ״קול ששון וקול שמחה, קול חתן וקול כלה, קול אומרים הודו את ה׳ צבאות״. ארבעה קולות של חתונה, ועוד אחד. הקול החמישי הוא קול התודה. ונחלקו המפרשים אם הוא הולך על שמחת חתן וכלה או על שיבת ציון. ובאמת שניהם אמת: יש חתונה עם אשה ויש חתונה עם ארץ ישראל, ובשתיהן מודים. ולכן בפרשתנו יש הודיה כפולה, בקניית הארץ ובשידוך: אברהם משתחווה פעמיים, ואליעזר משתחווה פעמיים. אדם שראה נס חייב בשני דברים: להודות ולפרסם. ״יודו לה׳ חסדו ונפלאותיו לבני אדם״. כך עושה אליעזר. משתחווה, ואינו אוכל עד שסיפר. הנהגה בכל שמחה, ובראשונה בחתונה שלכם, דואגים שהקול החמישי יישמע: תודה לה׳ בינו לביניכם, וסיפור לאחרים כדי שגם הם יתחזקו. אהבת ה׳ הודיה ופרסום הם שני צדדים של אותה אהבה. האחד אומר לה׳ ״אני אוהב אותך״, והשני אומר לעולם ״תראו כמה הוא אוהב אותנו״."}, {"id": "story-31", "title": "בקע", "body": "חלק ו · הבית שנבנה — ״וַיְבִאֶהָ יִצְחָק הָאֹהֱלָה שָׂרָה אִמּוֹ״ התורה טורחת לציין את משקל הנזם: ״בקע״. ורש״י אומר שהוא רומז לשקלי ישראל. מה הקשר בין מחצית השקל לשידוך? ״בקע״ הוא מחצית השקל, והאבן עזרא מבאר שנקרא כך כי הוא השקל כשהוא ״נבקע״ לשניים. נראה שאליעזר רמז לרבקה: את עכשיו בקע, חצי. את צריכה את יצחק שישלים אותך. ויצחק צריך אותה באותה מידה. ויש לזה רמז במשכן. לכל קרש היו שני אדנים מתחתיו, אף שקרש אחד לכאורה צריך בסיס אחד. וחז״ל אומרים שמחצית השקל היא שעשתה את האדנים. המשכן רומז ליהודי: כל יהודי הוא קרש אחד, נשמה אחת. כשירדה לעולם הזה נחתכה לשניים, והוא נצטווה לחבר אותן לאחד. ״איש ואשה זכו, שכינה ביניהם״. הנהגה בן הזוג אינו עוד אדם בחיים. הוא החצי השני. בונים את הבית כמי שמשלים את עצמו, ולא כשני שותפים שסוגרים חשבונות. אהבת ה׳ כשהשניים מתאחדים באמת, ה׳ שורה ביניהם. האחדות בבית היא משכן קטן לשכינה."}, {"id": "story-32", "title": "החסד הגדול ביותר", "body": "חלק ו · הבית שנבנה — המדרש מחפש את החסד הגדול של אברהם, איש החסד, האיש עם האוהל הפתוח לארבע רוחות. ומוצא אותו בדבר מפתיע: שקבר את שרה אשתו. והרי כל בעל עושה זאת! הסבא מסלבודקה היה מרבה לחזור על המדרש הזה, ואמר שיש בו ידיעה מרעישה. אנחנו רגילים לחשוב שחסד הוא ללכת ולהיטיב עם הזולת. אבל כל הטבה שאדם עושה, עם זולתו, עם בני ביתו, ואפילו עם עצמו, היא חסד והליכה בדרכי ה׳. אברהם היה דבוק בקונו כל כך, שאפילו פעולה טבעית שכל בעל מחויב בה עשה לא מחמת טבעו, אלא מחמת הרצון ללכת בדרכי ה׳. יש אנשים שמשקיעים בחוץ את כל הסבלנות שלהם, ובבית לא נשאר. אברהם מלמד היכן החסד הגדול. ובמיוחד כתוב אחרי הקבורה ״וה׳ ברך את אברהם בכל״. החסד והכבוד שבתוך הבית משפיעים על כל העולם יותר מכל דבר אחר. בראשית כד, א וְאַבְרָהָם זָקֵן בָּא בַּיָּמִים וַה׳ בֵּרַךְ אֶת־אַבְרָהָם בַּכֹּל בכל יום אנו עושים מאות מעשי חסד: כוס שתייה, עזרה קטנה, מילה טובה. עם קצת מחשבה אפשר לרומם את כולם, לדעת שבכל אחד מהם אני מקיים ״והלכת בדרכיו״. אותה פעולה, ערך אחר לגמרי. הנהגה מכוונים בכל עזרה בבית: ״אני עושה חסד, כמו שה׳ עושה חסד״. לא מזלזלים בקטן שבבית. לשיחה ביניכם מה הבית שלכם צריך שיהיה בו בשביל שתרגישו שזה בית של חסד? אהבת ה׳ ה׳ גומל חסד עם כל בריה בכל רגע. מי שהופך כל מעשה טוב בביתו לחסד לשם שמים, דומה לו ונעשה קרוב אליו."}, {"id": "story-33", "title": "ויאהבה", "body": "חלק ו · הבית שנבנה — הנה הפסוק האחרון בפרשה, ושימו לב לסדר המילים. בראשית כד, סז וַיְבִאֶהָ יִצְחָק הָאֹהֱלָה שָׂרָה אִמּוֹ וַיִּקַּח אֶת־רִבְקָה וַתְּהִי־לוֹ לְאִשָּׁה וַיֶּאֱהָבֶהָ וַיִּנָּחֵם יִצְחָק אַחֲרֵי אִמּוֹ קודם ״ויביאה האהלה״. אחר כך ״ויקח״. אחר כך ״ותהי לו לאשה״. ורק אז ״ויאהבה״. בפגישות יש התרגשות, יש הערכה, יש הרגשה ש״זה זה״. והכל חשוב. אבל התורה שמה את המילה הגדולה בסוף, ולא בהתחלה. האהבה העמוקה נבנית בתוך הבית. ומה יצחק ראה באוהל? רש״י מספר: כל זמן ששרה קיימת היה נר דלוק מערב שבת לערב שבת, וברכה מצויה בעיסה, וענן קשור על האוהל. ומשמתה פסקו. וכשבאה רבקה חזרו. לא נאמר כאן דבר על פאר. נר, לחם, והרגשה ששכינה יושבת כאן. זה הבית שאתם הולכים לבנות. ״ויאהבה וינחם יצחק אחרי אמו״: מי שאיבד, נחם. הבית הטוב הוא גם המקום שבו שני אנשים מרפאים זה את זה. הנהגה לא מחכים שתהיה לכם אהבה גדולה מוכנה לפני החופה. מחפשים אדם שאפשר לבנות איתו, שנעים לכם לידו, ושאתם מכבדים. והאהבה גדלה בכל יום של נתינה. לשיחה ביניכם אילו שלושה דברים תרצו שיהיו תמיד בבית שלכם, כמו הנר, העיסה והענן? אהבת ה׳ הנר, הברכה והענן הם שלושה אופנים של אותו דבר: ה׳ גר בבית. אהבה בין איש לאשתו היא המקום שבו זה קורה."}, {"id": "story-34", "title": "כרטיס הכיס", "body": "נספחים לדרך — לקריאה מהירה בדרך לפגישה. לפני הדרך זו ההחלטה החשובה בחייכם. משקיעים בה מחשבה, בירור ותפילה. מה׳ אשה לאיש. שידוך שנפל פשוט לא היה הכתובת. מתפללים בלשון חסד, לא בלשון ״מגיע לי״. לא מכתיבים לה׳ ״דווקא זה״. בודקים את הנגיעה של כל יועץ, גם האהוב. כותבים פנקס חסדים. מה מחפשים מידות ואווירת בית לפני הכל. ובכל זאת שופטים את האדם, לא את משפחתו. ענווה ונדיבות הן השורש. לב טוב, שכל ועדינות יחד. שני לוחות: יראת שמים וטוב לב באדם אחד. בפגישות חובה לראות זה את זה. זו הלכה ו״ואהבת לרעך״. התרגשות אינה מסקנה. שותקים רגע ובודקים. שימו לב למלצר. אחרי מה האדם רץ, ומתי הוא מאט. בחסד אין פראייר. אבל חד־צדדיות, זלזול או פחד הם תמרור עצור. דברו על יד ה׳ בחיים שלכם. ההחלטה ואחריה ההשגחה מופיעה בתוך הבירור, לא במקומו. כשברור, לא מאחרים. כשלא ברור, אל תיתנו ללחוץ עליכם. ״אלך״ חייב לבוא מכם. מודים על כל צעד, ומספרים."}, {"id": "story-35", "title": "שאלות לשיחה לפי שלבים", "body": "נספחים לדרך — לא צריך לעבור על הרשימה. בחרו שאלה אחת שמעניינת אתכם באמת. אנשים מרגישים כשעורכים להם ראיון. בפגישות הראשונות ספר/י לי על משהו שעשית בשביל מישהו. על מה אתה יכול לדבר שעות? מי האדם שהכי השפיע עליך, ולמה? מה עושה לך טוב ביום רגיל? כשכבר יש היכרות מה קיבלת מהבית ותרצה להמשיך, ומה תרצה לעשות אחרת? איך את מתנהגת כשאת כועסת? ומה עוזר לך להירגע? מה מחזק אותך בעבודת ה׳ היום? ספר/י על רגע שבו הרגשת שה׳ מוביל אותך. אם היה לך סכום גדול שלא תכננת, מה היית עושה בו? לקראת החלטה איך נראה יום רגיל בבית שלנו בעוד חמש שנים? מה יהיה קשה בינינו, ואיך נתמודד עם זה? למי נפנה כשלא נסכים? מה הם הנר, העיסה והענן של הבית שלנו?"}, {"id": "story-36", "title": "תפילה קצרה לפני פגישה", "body": "נספחים לדרך — זו אינה תפילה קבועה. היא נבנתה מלשון הפסוקים, ואפשר לומר אותה או לשנות אותה למילים שלכם. ריבונו של עולם, הַקְרֵה נָא לְפָנַי הַיּוֹם, וַעֲשֵׂה חֶסֶד. אני יודע שאינך חייב לי דבר, וכל מה שאקבל, חסד הוא. תן לי לב שרואה, ושכל שבודק, ופה שמדבר בעדינות. שאהיה טוב אל מי שיושב מולי, גם אם דרכינו ייפרדו. אם זה הטוב בעיניך, סלול את הדרך. ואם לא, הראה לי בעדינות. הודע לי בזיווגי שעשית עמדי חסד, ואספר אותו לעיני כולם. ובלשון נקבה: ״אני יודעת... שאהיה טובה״."}, {"id": "story-37", "title": "פנקס החסד שלי", "body": "נספחים לדרך — רשמו כאן, או בפנקס משלכם, את שלבי החסד. ביום השבע ברכות הדרשה כבר תהיה כתובה. מי הציע, ואיך זה הגיע אלי צירוף שלא יכולתי לתכנן תפילה שנענתה דבר שנפל, ואחר כך הבנתי למה אדם שה׳ שלח לי בדרך על מה אני מודה היום"}];
+const VOCAB = {"one": "סימן אחד", "plural": "סימנים", "openPrompt": "פתח את הרשימה שבצד ובחר סימן"};
+
+// ── TOC toggle ──────────────────────────────────────────────────────────
+function toggleTocChapter(el) {
+  el.closest('.toc-chapter').classList.toggle('open');
+}
+// open the first chapter by default -- unless the reader arrived on a shared
+// link, where the chapter holding that story is the one to open instead.
+if (!window.location.hash) document.querySelectorAll('.toc-chapter')[0]?.classList.add('open');
+
+// ── Story numbers the reader can follow ─────────────────────────────────
+// The badge shows where a story sits in the reading order. Its id is a
+// different thing -- a permanent address people paste into WhatsApp
+// (#story-191) -- and the two drift apart on purpose: a new story takes the
+// next free id but is placed beside its sage, mid-book. So the badge is
+// numbered here, at load, and nobody has to renumber anything by hand.
+// The markup keeps the id as the badge text, which is what a reader sees if
+// this script never runs: a real number rather than a blank.
+document.querySelectorAll('.story-card').forEach((card, i) => {
+  const badge = card.querySelector('.story-num');
+  if (badge) badge.textContent = '#' + (i + 1);
+});
+
+// ── Back to top ─────────────────────────────────────────────────────────
+const btn = document.getElementById('backTop');
+window.addEventListener('scroll', () => {
+  btn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+});
+
+// ── Search ──────────────────────────────────────────────────────────────
+// The stories are vocalized but nobody types nikud into a search box, so
+// comparing the two directly finds nothing. Match on text with the points
+// stripped, keeping a map back into the original string so the highlight still
+// lands on the right characters -- including their vowels.
+const NIKUD = /[֑-ׇ]/;
+
+// Pointed Hebrew is written defectively -- סיפור is pointed סִפּוּר -- so a
+// reader typing the everyday spelling does not match a pointed title letter
+// for letter. When the direct comparison fails, run it again with vav and yod
+// dropped from both sides, which brings the two spellings together.
+const MATRES = /[וי]/;
+
+function fold(text, loose) {
+  let plain = '';
+  const map = [];
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (NIKUD.test(ch)) continue;
+    if (loose && MATRES.test(ch)) continue;
+    plain += ch; map.push(i);
+  }
+  map.push(text.length);
+  return { plain, map };
+}
+
+function findFolded(text, query, loose) {
+  const f = fold(text, loose);
+  const i = f.plain.indexOf(query);
+  if (i < 0) return null;
+  return { start: f.map[i], end: f.map[i + query.length] };
+}
+
+// The loose spelling of the query, used only as a second chance: on its own it
+// is too blunt a key to search by.
+function looseQuery(query) {
+  const bare = query.replace(/[וי]/g, '');
+  return bare.length >= 3 ? bare : null;
+}
+function matchIn(text, query, loose) {
+  return findFolded(text, query) || (loose ? findFolded(text, loose, true) : null);
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+}
+
+// Marking by slice rather than by regex keeps a query like "(" from blowing up
+// the whole search, which building a RegExp out of raw input would do.
+function markSlice(text, hit) {
+  if (!hit) return escapeHtml(text);
+  return escapeHtml(text.slice(0, hit.start))
+       + '<mark>' + escapeHtml(text.slice(hit.start, hit.end)) + '</mark>'
+       + escapeHtml(text.slice(hit.end));
+}
+
+// The contents sidebar already lists every sage and every story under them,
+// so the search can offer the sage themselves without a second list to keep
+// in step with the book. Read it from the DOM once, on the first search.
+let sageIndex = null;
+function sageChapters() {
+  if (!sageIndex) {
+    sageIndex = [...document.querySelectorAll('.toc-chapter')].map(chapter => {
+      const link = chapter.querySelector('.toc-sage-link');
+      return {
+        name: link.textContent.trim(),
+        href: link.getAttribute('href'),
+        count: chapter.querySelectorAll('.toc-stories > li').length,
+      };
+    });
+  }
+  return sageIndex;
+}
+
+function doSearch(raw) {
+  const box = document.getElementById('searchResults');
+  const query = raw.trim().replace(new RegExp(NIKUD.source, 'g'), '');
+  if (query.length < 2) { box.style.display = 'none'; return; }
+
+  // Sages first. Someone typing a sage's name wants that sage, not whichever
+  // of their stories happens to match first -- and with a prolific one the
+  // twenty-story cap below would bury the rest entirely.
+  const loose = looseQuery(query);
+  const sages = sageChapters()
+    .map(c => ({ c, hit: matchIn(c.name, query, loose) }))
+    .filter(s => s.hit)
+    .slice(0, 3);
+
+  const hits = [];
+  for (const d of searchData) {
+    const inTitle = matchIn(d.title, query, loose);
+    const inBody = matchIn(d.body, query, loose);
+    if (inTitle || inBody) hits.push({ d, inTitle, inBody });
+    if (hits.length >= 20) break;
+  }
+
+  if (!sages.length && !hits.length) {
+    box.innerHTML = '<div class="sr-item">לא נמצאו תוצאות</div>';
+    box.style.display = 'block';
+    return;
+  }
+
+  box.innerHTML = sages.map(s => `<div class="sr-item sr-chapter" onclick="openChapterInToc('${s.c.href}')">
+      <strong>📚 ${markSlice(s.c.name, s.hit)}</strong> — ${s.c.count === 1 ? VOCAB.one : s.c.count + ' ' + VOCAB.plural}<br>
+      <small>${VOCAB.openPrompt}</small>
+    </div>`).join('')
+    + hits.map(h => `<div class="sr-item" onclick="jumpTo('${h.d.id}')">
+      <strong>${markSlice(h.d.title, h.inTitle)}</strong><br>
+      <small>${getSnippet(h.d.body, h.inBody)}</small>
+    </div>`).join('');
+  box.style.display = 'block';
+}
+
+// Clicking the sage row: hand the reader the whole chapter in the contents,
+// open, in view and briefly flashing, so they can choose a story themselves.
+function openChapterInToc(href) {
+  document.getElementById('searchResults').style.display = 'none';
+  document.getElementById('searchBox').value = '';
+  const link = document.querySelector('.toc-sage-link[href="' + href + '"]');
+  if (link) revealInToc(link.closest('.toc-chapter'), true);
+}
+
+function getSnippet(text, hit) {
+  if (!hit) return escapeHtml(text.slice(0, 80)) + '...';
+  const start = Math.max(0, hit.start - 30);
+  const end = Math.min(text.length, hit.end + 50);
+  return (start > 0 ? '...' : '')
+       + escapeHtml(text.slice(start, hit.start))
+       + '<mark>' + escapeHtml(text.slice(hit.start, hit.end)) + '</mark>'
+       + escapeHtml(text.slice(hit.end, end))
+       + (end < text.length ? '...' : '');
+}
+
+function jumpTo(id) {
+  document.getElementById('searchResults').style.display = 'none';
+  document.getElementById('searchBox').value = '';
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({behavior:'smooth', block:'start'});
+  el.classList.add('highlight-story');
+  setTimeout(() => el.classList.remove('highlight-story'), 2200);
+  // Open the sage's chapter alongside, so the reader lands on their story and
+  // can still see what else that sage has. The page keeps going to the card,
+  // so this must not scroll it -- hence allowPageScroll = false.
+  revealInToc(tocChapterFor(id), false);
+}
+
+// close search when clicking outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap'))
+    document.getElementById('searchResults').style.display = 'none';
+});
+
+// copy a direct, shareable link to one story ("...#story-133") to the clipboard
+// The page may be rendered inside a viewer's iframe, where location.href is the
+// iframe's internal address rather than the address the reader sees and can share.
+// In that case document.referrer holds the containing page's URL, which is the one
+// worth copying.
+function shareableBaseUrl() {
+  let base = window.location.href;
+  if (window.self !== window.top && document.referrer && /^https?:/i.test(document.referrer)) {
+    base = document.referrer;
+  }
+  return base.split('#')[0];
+}
+
+function copyStoryLink(storyId, button) {
+  const storyUrl = shareableBaseUrl() + '#' + storyId;
+
+  function showCopied() {
+    const oldText = button.innerHTML;
+    button.innerHTML = button.classList.contains('toc-copy-link') ? '✅' : '✅ הקישור הועתק';
+    setTimeout(() => { button.innerHTML = oldText; }, 1800);
+  }
+
+  function fallbackCopy() {
+    // navigator.clipboard is blocked in some embedded/sandboxed viewers —
+    // fall back to a hidden textarea + execCommand, and finally to a prompt
+    // the user can copy from by hand.
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = storyUrl;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (ok) { showCopied(); return; }
+    } catch (err) { /* fall through */ }
+    window.prompt('העתק את הקישור:', storyUrl);
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(storyUrl).then(showCopied, fallbackCopy);
+  } else {
+    fallbackCopy();
+  }
+}
+
+// jump straight to the story named in the URL hash (e.g. #story-134) and highlight it,
+// even if it arrives inside an artifact viewer that renders the page after initial load
+// Arriving on a shared link, the browser starts its own smooth scroll toward the
+// anchor — across a book this long that animation runs for seconds, and anything
+// we do mid-flight just fights it. So when the page opens with a hash, switch
+// scroll-behavior off before that animation can start; it goes back to smooth
+// once we have landed, in time for in-page clicks.
+const arrivedOnStory = !!window.location.hash;
+if (arrivedOnStory) document.documentElement.style.scrollBehavior = 'auto';
+
+function storyFromHash() {
+  const id = window.location.hash.replace('#', '');
+  return id ? document.getElementById(id) : null;
+}
+
+function scrollToHashStory() {
+  const story = storyFromHash();
+  if (story) story.scrollIntoView({block: 'start'});
+}
+
+function highlightCurrentStory(jump) {
+  const story = storyFromHash();
+  if (!story) return;
+  if (jump) scrollToHashStory();
+  story.classList.add('highlight-story');
+  setTimeout(() => story.classList.remove('highlight-story'), 3000);
+}
+
+// Landing on the right story, once, and staying there.
+//
+// Two fixed timers used to do this, and they were a guess about when layout
+// finishes. With content-visibility on the cards that guess became wrong in the
+// worst way: the stories above the target are laid out only as the viewport
+// reaches them, so the document grows *underneath* the reader after the scroll
+// and the story drifts off screen again. A timer that fires before that has
+// settled lands nowhere in particular.
+//
+// So re-assert until the target stops moving instead of until a clock runs out:
+// each frame, if the card is not where it should be, scroll again. Bounded, so
+// a page that never settles (a stuck lazy image) gives up rather than spinning.
+function settleOnHashStory(done) {
+  const LIMIT = 60;          // ~1s at 60fps; long enough for late layout
+  const TOLERANCE = 2;       // px — subpixel drift is not movement
+  let frames = 0, stable = 0, last = null;
+
+  (function step() {
+    const story = storyFromHash();
+    if (!story) { done(); return; }
+    const off = story.getBoundingClientRect().top;
+    if (Math.abs(off) <= TOLERANCE) {
+      // Two consecutive still frames, not one: the first can be the frame
+      // before the cards below get laid out.
+      if (++stable >= 2) { done(); return; }
+    } else if (last !== null && Math.abs(off - last) <= TOLERANCE) {
+      // Asked to scroll and nothing moved: the page has no more room. The last
+      // story in the book cannot reach the top of the viewport, and spinning
+      // for a full second over that is a second of a jittering page.
+      done(); return;
+    } else {
+      stable = 0;
+      story.scrollIntoView({block: 'start'});
+    }
+    last = off;
+    if (++frames < LIMIT) requestAnimationFrame(step); else done();
+  })();
+}
+
+window.addEventListener('load', () => {
+  if (!arrivedOnStory) return;
+  highlightCurrentStory(true);
+  // Hand smooth scrolling back only once we have landed — restoring it early
+  // means our own re-assertions animate, and they fight each other.
+  settleOnHashStory(() => { document.documentElement.style.scrollBehavior = ''; });
+});
+
+// An in-page click: the browser scrolls smoothly on its own, the highlight is ours.
+window.addEventListener('hashchange', () => highlightCurrentStory(false));
+
+// ── Keep the sidebar in step with the story being read ──────────────────
+// A shared link lands on one story; its sage's chapter in the contents should
+// already be open, otherwise the reader sees a closed list and cannot tell
+// where they are.
+function tocChapterFor(id) {
+  const link = document.querySelector('.toc-stories a[href="#' + id + '"]');
+  return link ? link.closest('.toc-chapter') : null;
+}
+
+// Open a chapter in the contents and make sure the reader can actually see it.
+// On a wide screen the sidebar is sticky with a scrollbar of its own, so moving
+// its scrollTop leaves the page where it is. Below 900px the sidebar is an
+// ordinary block at the top of the page and the only way to show it is to
+// scroll the page itself -- which fights a jump already heading for a story.
+// So callers that are sending the reader somewhere pass allowPageScroll false.
+function revealInToc(chapter, allowPageScroll) {
+  if (!chapter) return;
+  chapter.classList.add('open');
+  const sidebar = document.getElementById('toc');
+  if (sidebar.scrollHeight > sidebar.clientHeight) {
+    sidebar.scrollTop += chapter.getBoundingClientRect().top
+                       - sidebar.getBoundingClientRect().top
+                       - sidebar.clientHeight / 3;
+  } else if (allowPageScroll) {
+    chapter.scrollIntoView({behavior: 'smooth', block: 'center'});
+  }
+  chapter.classList.add('flash');
+  setTimeout(() => chapter.classList.remove('flash'), 2000);
+}
+
+function syncTocWithHash() {
+  const id = window.location.hash.replace('#', '');
+  if (id) revealInToc(tocChapterFor(id), false);
+}
+syncTocWithHash();
+window.addEventListener('hashchange', syncTocWithHash);
+
+</script>
+</body>
+</html>
