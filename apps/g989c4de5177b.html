@@ -123,6 +123,35 @@
             background-color: #dc3545 !important;
         }
 
+        /* מַחְמָאוֹת וְצְלִילִים – כְּמוֹ בְּחִידוֹנֵי הַדִּינִים */
+        #game-container { position: relative; }
+        #mute-btn {
+            position: absolute; top: 10px; left: 10px; width: 42px; height: 42px;
+            border: none; border-radius: 50%; background: #f1f8e9; font-size: 1.3em;
+            cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .feedback {
+            margin-top: 12px; padding: 12px 16px; border-radius: 12px; font-size: 1.15em;
+            line-height: 1.6; animation: fb-pop 0.35s ease-out;
+        }
+        .feedback.ok { background: var(--correct-bg); color: var(--correct-text); }
+        .feedback.bad { background: #fff3cd; color: #856404; }
+        .feedback b { display: block; font-size: 1.15em; }
+        .feedback .love { display: block; margin-top: 4px; font-size: 0.92em; }
+        .streak-badge {
+            display: inline-block; margin-top: 6px; padding: 2px 12px; border-radius: 20px;
+            background: #ff9800; color: white; font-size: 0.85em; font-weight: bold;
+        }
+        .lesson-summary {
+            margin-top: 18px; padding: 14px; border-radius: 12px; font-size: 1.25em; font-weight: bold;
+            background: #fffde7; border: 2px dashed #ffc107; animation: fb-pop 0.4s ease-out;
+        }
+        @keyframes fb-pop {
+            0% { transform: scale(0.85); opacity: 0; }
+            70% { transform: scale(1.04); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
         #end-screen {
             padding: 30px;
             border: 8px solid gold;
@@ -202,6 +231,7 @@
 <body>
 
     <div id="game-container">
+        <button id="mute-btn" type="button" title="צְלִילִים">🔊</button>
         <!-- Welcome Screen -->
         <div id="welcome-screen">
             <h1>מִשְׂחַק הַתּוֹדָה: הַמַּסָּע שֶׁל אֱלִיעֶזֶר</h1>
@@ -525,11 +555,22 @@
                 btn.disabled = true;
             });
 
+            totalAnswered++;
+            const fb = document.createElement('div');
             if (isCorrect) {
-                playCorrectSound();
+                streak++;
+                soundStreak(streak);
                 correctAnswersInLesson++;
                 event.target.classList.add('correct');
+                const head = totalAnswered < FB_OK.length ? FB_OK[totalAnswered] : draw('ok10', FB_OK_10);
+                fb.className = 'feedback ok';
+                fb.innerHTML = `<b>${head}</b><span class="love">${draw('love', LOVE_OK)}</span>` +
+                    (streak >= 3 ? `<span class="streak-badge">🔥 ${streak} בָּרֶצֶף!</span>` : '');
             } else {
+                streak = 0;
+                soundBad();
+                fb.className = 'feedback bad';
+                fb.innerHTML = `<b>${draw('oops', OOPS)}</b><span class="love">${draw('loveBad', LOVE_BADS)}</span>`;
                 event.target.classList.add('incorrect');
                 // Highlight the correct answer
                 answerButtons.forEach(btn => {
@@ -539,7 +580,8 @@
                     }
                 });
             }
-            
+            questionBlock.appendChild(fb);
+
             questionsAnswered++;
             if (questionsAnswered === gameData[currentLessonIndex].questions.length) {
                 setTimeout(endLesson, 1500);
@@ -551,6 +593,22 @@
             const passed = (correctAnswersInLesson / totalQuestions) >= 0.66;
             
             nextLessonBtn.classList.remove('hidden');
+
+            const old = quizContainer.querySelector('.lesson-summary');
+            if (old) old.remove();
+            const sum = document.createElement('div');
+            sum.className = 'lesson-summary';
+            if (correctAnswersInLesson === totalQuestions) {
+                sum.textContent = `🏆 ${correctAnswersInLesson} מִתּוֹךְ ${totalQuestions} – הַכֹּל נָכוֹן! ${draw('perfect', PERFECT)}`;
+                soundWin();
+            } else if (passed) {
+                sum.textContent = `⭐ ${correctAnswersInLesson} מִתּוֹךְ ${totalQuestions} – ${draw('pass', PASS)}`;
+                soundWin();
+            } else {
+                sum.textContent = `🌱 ${correctAnswersInLesson} מִתּוֹךְ ${totalQuestions} – עוֹד נִסָּיוֹן קָטָן וְאַתָּה שָׁם! מִי שֶׁמִּשְׁתַּדֵּל – ה' שָׂמֵחַ בּוֹ 💛`;
+                soundOk();
+            }
+            quizContainer.appendChild(sum);
 
             if (passed) {
                 if (currentLessonIndex < gameData.length - 1) {
@@ -581,36 +639,106 @@
         function showEndScreen() {
             lessonScreen.classList.add('hidden');
             endScreen.classList.remove('hidden');
+            window.scrollTo(0, 0);
+            soundGrand();
         }
 
-        function playCorrectSound() {
-            if (!audioCtx) {
-                try {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                } catch (e) {
-                    console.error("Web Audio API is not supported in this browser");
-                    return;
-                }
-            }
-            
-            const notes = [261.63, 329.63, 392.00]; // C4, E4, G4
-            let startTime = audioCtx.currentTime;
+        /* ---------- צְלִילִים (מִתּוֹךְ חִידוֹנֵי הַדִּינִים) ---------- */
+        let streak = 0, totalAnswered = 0;
+        function muted() { try { return localStorage.getItem('todah-mute') === '1'; } catch (e) { return false; } }
+        const muteBtn = document.getElementById('mute-btn');
+        function drawMute() { muteBtn.textContent = muted() ? '🔇' : '🔊'; }
+        muteBtn.addEventListener('click', () => {
+            try { localStorage.setItem('todah-mute', muted() ? '0' : '1'); } catch (e) {}
+            drawMute();
+        });
+        drawMute();
+        function tone(freqs, step) {
+            if (muted()) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                freqs.forEach((f, i) => {
+                    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                    o.type = 'sine'; o.frequency.value = f; o.connect(g); g.connect(audioCtx.destination);
+                    const t = audioCtx.currentTime + i * step;
+                    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+                    g.gain.exponentialRampToValueAtTime(0.0001, t + step * 0.95);
+                    o.start(t); o.stop(t + step);
+                });
+            } catch (e) {}
+        }
+        function soundOk() { tone([523, 659, 784], 0.13); }
+        /* כָּל תְּשׁוּבָה נְכוֹנָה בָּרֶצֶף מוֹסִיפָה תָּו וְעוֹלָה בַּסֻּלָּם; 10 בָּרֶצֶף – מַנְגִּינָה חֲגִיגִית */
+        const SCALE = [523, 587, 659, 698, 784, 880, 988, 1047, 1175, 1319, 1397, 1568];
+        function soundStreak(n) {
+            if (n >= 10) { tone([523, 659, 784, 1047, 1319, 1047, 1319, 1568], 0.12); return; }
+            const k = Math.min(n + 1, 9), base = Math.min(n - 1, 3);
+            tone(SCALE.slice(base, base + k), Math.max(0.07, 0.14 - n * 0.008));
+        }
+        function soundBad() { tone([330, 262], 0.18); }
+        function soundWin() { tone([523, 659, 784, 1047, 784, 659], 0.14); }
+        function song(seq) {
+            if (muted()) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                let t = audioCtx.currentTime + 0.05;
+                seq.forEach(n => {
+                    n[0].forEach((f, j) => {
+                        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                        o.type = j ? 'sine' : 'triangle'; o.frequency.value = f; o.connect(g); g.connect(audioCtx.destination);
+                        const v = j ? 0.09 : 0.2;
+                        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.03);
+                        g.gain.exponentialRampToValueAtTime(0.0001, t + n[1] * 0.98);
+                        o.start(t); o.stop(t + n[1]);
+                    });
+                    t += n[1];
+                });
+            } catch (e) {}
+        }
+        /* מַנְגִּינַת הַתְּעוּדָה (כ-5 שְׁנִיּוֹת) */
+        function soundGrand() {
+            const C4 = 262, E4 = 330, G4 = 392, C5 = 523, D5 = 587, E5 = 659, F5 = 698, G5 = 784, A5 = 880, B5 = 988, C6 = 1047;
+            song([[[G4], .16], [[C5, E4], .16], [[E5, G4], .16], [[G5, C5], .38],
+                  [[E5, C5], .16], [[G5, E5], .5],
+                  [[A5, F5], .16], [[G5, E5], .16], [[F5, D5], .16], [[E5, C5], .16], [[D5, B5 / 2], .16], [[E5, C5], .38],
+                  [[G4], .14], [[C5], .14], [[E5], .14], [[G5], .14], [[C6, E5], .14], [[E5], .14], [[G5], .14], [[C6, G5], .3],
+                  [[B5, G5], .16], [[C6, E5, G5, C5], 1.4]]);
+        }
 
-            notes.forEach((note, i) => {
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(note, startTime + i * 0.15);
-                gainNode.gain.setValueAtTime(0.3, startTime + i * 0.15);
-                gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + i * 0.15 + 0.1);
-
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                
-                oscillator.start(startTime + i * 0.15);
-                oscillator.stop(startTime + i * 0.15 + 0.12);
-            });
+        /* ---------- מַחְמָאוֹת: מִתְפַּתְּחוֹת לְפִי מִסְפַּר הַתְּשׁוּבוֹת, וְאַחַר כָּךְ מִתְחַלְּפוֹת בְּלִי חֲזָרוֹת ---------- */
+        const FB_OK = ["", "נָכוֹן ✓", "הִצְלַחְתָּ! ✓", "מְצֻיָּן! ⭐", "כָּל הַכָּבוֹד! 🎯", "אֲנִי רוֹאֶה שֶׁהִשְׁקַעְתָּ מַחֲשָׁבָה! 💪",
+            "עוֹד צַעַד בַּמַּסָּע שֶׁל אֱלִיעֶזֶר! 🐪", "מַדְהִים לִרְאוֹת אֶת הַהַתְמָדָה שֶׁלְּךָ! 🎉", "מַמָּשׁ אַלּוּף! 🏆",
+            "וָאוּ! 💫 אַתָּה כְּבָר מֵבִין אֶת סוֹד הַתּוֹדָה!"];
+        const FB_OK_10 = ["אַשְׁרֶיךָ! 🌍 כָּל תְּשׁוּבָה מְקָרֶבֶת אוֹתְךָ לְהַשֵּׁם",
+            "אֵין עָלֶיךָ! 👑 אַתָּה מַמָּשׁ אַלּוּף הַתּוֹדָה",
+            "כֹּחַ גָּדוֹל! 🔥 הָרֶצֶף שֶׁלְּךָ מַרְשִׁים מְאוֹד",
+            "אוֹצָר! 💎 כָּל תְּשׁוּבָה נְכוֹנָה הִיא עוֹד אֶבֶן יְקָרָה",
+            "וָאוּ! 🚀 אַתָּה מַמְרִיא קָדִימָה",
+            "יֵשׁ לְךָ רֹאשׁ שֶׁל תַּלְמִיד חָכָם! 🧠✨",
+            "חֲתִיכַת תַּלְמִיד! 📚 מַמָּשׁ נֶהֱנֶה לִרְאוֹת"];
+        const LOVE_OK = ["כְּשֶׁאוֹמְרִים תּוֹדָה, הַלֵּב מִתְמַלֵּא בְּשִׂמְחָה 💖",
+            "הַשֵּׁם שָׂמֵחַ כְּשֶׁאַתָּה לוֹמֵד לְהוֹדוֹת לוֹ ✨",
+            "״הוֹדוּ לַה' כִּי טוֹב״ – וְאַתָּה כְּבָר יוֹדֵעַ לָמָּה! 🙏",
+            "כָּל תּוֹדָה קְטַנָּה הִיא עוֹד חִבּוּק לְהַשֵּׁם 🤗",
+            "יְהוּדִי – מִלְּשׁוֹן הוֹדָיָה, וְאַתָּה מְמַלֵּא אֶת הַשֵּׁם שֶׁלְּךָ! 💎",
+            "כְּמוֹ אֱלִיעֶזֶר – מִתְפַּלְּלִים לִפְנֵי, וּמוֹדִים אַחֲרֵי 🐪",
+            "הַתּוֹרָה הִיא מַתָּנָה מֵהַשֵּׁם – וְאַתָּה פּוֹתֵחַ אוֹתָהּ! 🎁",
+            "הַשֵּׁם אוֹהֵב אֶת הַלֵּב שֶׁלְּךָ שֶׁרוֹצֶה לָדַעַת 💗",
+            "מִי שֶׁאוֹמֵר תּוֹדָה רוֹאֶה כַּמָּה טוֹב יֵשׁ סְבִיבוֹ 🌅",
+            "כָּל דְּבַר תּוֹרָה שֶׁלָּמַדְתָּ נִשְׁאָר אִתְּךָ לְתָמִיד 📖"];
+        const OOPS = ["לֹא בְּדִיּוּק... 🤔", "כִּמְעַט! 🌱", "הַשְּׁאֵלָה הַזֹּאת קְצָת מְאַתְגֶּרֶת 💡",
+            "הַטָּעוּת הַזֹּאת מְלַמֶּדֶת מַשֶּׁהוּ חָשׁוּב 🌱", "גַּם חֲכָמִים גְּדוֹלִים לָמְדוּ מִטָּעֻיּוֹת 📚"];
+        const LOVE_BADS = ["גַּם כְּשֶׁטּוֹעִים – לוֹמְדִים! הַשֵּׁם אוֹהֵב אוֹתְךָ 💡",
+            "הַשֵּׁם רוֹאֶה אֶת הַמַּאֲמָץ שֶׁלְּךָ – וְהוּא שָׂמֵחַ בּוֹ 💛",
+            "הַתְּשׁוּבָה הַנְּכוֹנָה מְסֻמֶּנֶת בַּיָּרֹק – עַכְשָׁו כְּבָר תִּזְכֹּר אוֹתָהּ! ✅",
+            "הַשֵּׁם לֹא מְחַכֶּה שֶׁנִּהְיֶה מֻשְׁלָמִים – הוּא שָׂמֵחַ שֶׁאֲנַחְנוּ מִשְׁתַּדְּלִים 🤍",
+            "מַמְשִׁיכִים! כָּל טָעוּת הִיא צַעַד לְהַצְלָחָה 🌱"];
+        const PERFECT = ["אַתָּה אַלּוּף הַתּוֹדָה! 🎉", "מֻשְׁלָם! הַשֵּׁם שָׂמֵחַ בְּךָ 💖", "פְּצָצָה שֶׁל שִׁעוּר! 🎯"];
+        const PASS = ["כָּל הַכָּבוֹד, עָבַרְתָּ אֶת הַשִּׁעוּר! 💪", "יָפֶה מְאוֹד, מַמְשִׁיכִים בַּמַּסָּע! 🐪", "מְצֻיָּן, הִתְקַדַּמְתָּ! 🌟"];
+        const BAG = {};
+        function draw(key, list) {   // בְּלִי חֲזָרוֹת: מִשְׁפָּט חוֹזֵר רַק אַחֲרֵי שֶׁכָּל הַשְּׁאָר הֻצְּגוּ
+            if (!BAG[key] || !BAG[key].length) BAG[key] = shuffleArray(list.slice());
+            return BAG[key].pop();
         }
     </script>
 </body>
