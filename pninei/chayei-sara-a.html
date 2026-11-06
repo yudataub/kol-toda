@@ -1053,6 +1053,7 @@ function renderScholars() {
   var people = {};
   scholars.forEach(function(r){
     if ((Number(r.score) || 0) < CONFIG.PASS_SCORE) return;
+    if (normalize(r.name).replace(/[^א-תa-zA-Z]/g, '').length <= 2) return;   // 6.11 (המשתמש): שמות של עד 2 אותיות ("בב") לא מוצגים
     var k = studentKey(r.name, r.cls, r.school);
     if (!people[k]) people[k] = { name: String(r.name), cls: String(r.cls), school: String(r.school), games: {}, n: 0 };
     if (!people[k].games[r.game]) { people[k].games[r.game] = 1; people[k].n++; }
@@ -1095,12 +1096,44 @@ function parashaOf(game) {
 function dayStart(iso) { var p = iso.split('-'); return new Date(+p[0], p[1] - 1, +p[2]).getTime(); }
 function dm(iso) { var p = iso.split('-'); return (+p[2]) + '.' + (+p[1]); }
 // כל תלמיד שעבר מבדק בבית = כתר לכיתה שלו, פעם אחת בכל פרשה
+// 6.11 (המשתמש): שם קצר ושם מלא באותה כיתה = תלמיד אחד ("נהוראי" = "נהוראי דנינו", "שמואל ג" = "שמואל גטהון").
+// מאחדים רק כשיש שם מלא אחד בלבד שמתאים; כששניים מתאימים (נהוראי דנינו / נהוראי כהן) - לא מאחדים.
+function nameCovers(a, b) {   // האם השם a הוא קיצור של b
+  var A = a.split(' '), B = b.split(' ');
+  if (A.length > B.length || a === b) return false;
+  for (var i = 0; i < A.length; i++) {
+    if (A[i] === B[i]) continue;
+    if (i === A.length - 1 && A.length > 1 && B[i].indexOf(A[i]) === 0) continue;   // אות ראשונה של שם המשפחה
+    return false;
+  }
+  return true;
+}
+function mergedNames(rows) {
+  var byCls = {};
+  rows.forEach(function(r){
+    var ck = String(r.cls == null ? '' : r.cls).trim() + '|' + schoolKey(r.school), n = normalize(r.name);
+    (byCls[ck] = byCls[ck] || {})[n] = 1;
+  });
+  var map = {};
+  Object.keys(byCls).forEach(function(ck){
+    var names = Object.keys(byCls[ck]);
+    var full = names.filter(function(b){ return !names.some(function(c){ return nameCovers(b, c); }); });
+    names.forEach(function(a){
+      var hits = full.filter(function(b){ return nameCovers(a, b); });
+      if (hits.length === 1) map[a + '|' + ck] = hits[0];
+    });
+  });
+  return function(r){
+    var ck = String(r.cls == null ? '' : r.cls).trim() + '|' + schoolKey(r.school), n = normalize(r.name);
+    return (map[n + '|' + ck] || n) + '|' + ck;
+  };
+}
 function classGroups(rows, keep) {
-  var seen = {}, groups = {};
+  var seen = {}, groups = {}, who = mergedNames(rows);
   rows.forEach(function(r){
     if ((Number(r.score) || 0) < CONFIG.PASS_SCORE || (keep && !keep(r))) return;
     if (!isNoam(r.school)) return;   // 3.11 (המשתמש): בלוחות הכיתות - רק כיתות נעם קרית אתא
-    var sk = studentKey(r.name, r.cls, r.school) + '|' + parashaOf(r.game);
+    var sk = who(r) + '|' + parashaOf(r.game);
     if (seen[sk]) return;
     seen[sk] = 1;
     var gk = String(r.cls) + '|' + schoolKey(r.school);
