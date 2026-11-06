@@ -272,6 +272,9 @@ body.inq #climb{height:min(calc(100vh - 90px),660px)}
 @keyframes twFloat{50%{transform:translateY(-8px)}}
 #torahWin h2{margin:6px 0;font-size:1.7em;color:#5a3fd6}
 #torahWin p{margin:6px 0;color:#2b2340;font-size:1.08em}
+.fullmat{display:inline-block;margin-top:8px;font-weight:800;font-size:.92em;color:#fff;background:linear-gradient(120deg,var(--c1),var(--c2));padding:4px 14px;border-radius:30px;text-decoration:none}
+.hl{background:#fff1a8;border-radius:4px;padding:0 3px;font-weight:800}
+.nm{font-weight:800;color:#5b3fd0}
 .term{color:#c2185b;font-weight:800;background:linear-gradient(transparent 55%,#ffe08a 55%);border-radius:3px;padding:0 2px}
 
 /* תְּמוּנָה + תְּשׁוּבוֹת בְּחַלּוֹן אֶחָד (מ-6.11) */
@@ -662,6 +665,13 @@ var QUIZ = {"id": "mekorhaim-101", "num": 101, "series": "mekorhaim", "title": "
 function hebNum(s){var v={"א":1,"ב":2,"ג":3,"ד":4,"ה":5,"ו":6,"ז":7,"ח":8,"ט":9,"י":10,"כ":20,"ך":20,"ל":30,"מ":40,"ם":40,"נ":50,"ן":50,"ס":60,"ע":70,"פ":80,"ף":80,"צ":90,"ץ":90,"ק":100,"ר":200,"ש":300,"ת":400};
   var n=0;String(s||"").replace(/[^א-ת]/g,"").split("").forEach(function(c){n+=v[c]||0});return n;}
 function srcLinks(src){
+  if(QUIZ.vurl) return String(src||"").split(";").map(function(part){   // חומש: "פֶּרֶק ה׳, פְּסוּקִים כ׳–כ״ד" -> הַחֻמָּשׁ בְּאֲתַר הַסְּפָרִים, #v-5-20-24 (6.11.2026)
+    var pl=part.replace(/[֑-ׇ]/g,"").replace(/\([^)]*\)/g,"");
+    var ch=pl.match(/פרק(?:ים)?\s+([א-ת"'״׳]+)/), v=pl.match(/פסוק(?:ים)?\s+([א-ת"'״׳]+)(?:\s*[–-]\s*([א-ת"'״׳]+))?/);
+    if(!ch) return escapeHtml(part);
+    var c=hebNum(ch[1]), h=v?"#v-"+c+"-"+hebNum(v[1])+(v[2]?"-"+hebNum(v[2]):""):"#ch-"+c;
+    return '<a href="'+QUIZ.vurl+h+'" target="_blank" rel="noopener" title="לַפָּסוּק בַּחֻמָּשׁ">'+escapeHtml(part)+"</a>";
+  }).join(";");
   if(!QUIZ.sefer) return escapeHtml(src);
   return String(src||"").split(";").map(function(part){
     var plain=part.replace(/[֑-ׇ]/g,"");
@@ -1117,8 +1127,19 @@ var TERM_RE = (function () {
   });
   return new RegExp("(^|[^א-ת֑-ׇ])((?:[ובלמהשכ]" + NIK + "){0,2}(?:" + alts.join("|") + "))(?![א-ת])", "g");
 })();
-function hlTerms(html) { return TERM_RE ? html.replace(TERM_RE, '$1<span class="term">$2</span>') : html; }
-function hlHead(html) { return TERM_ON ? html.replace(HEAD_RE, '$1$2<span class="term">$3</span>$4') : html; }
+function hlTerms(html) { return emph(TERM_RE ? html.replace(TERM_RE, '$1<span class="term">$2</span>') : html); }
+function hlHead(html) { return emph(TERM_ON ? html.replace(HEAD_RE, '$1$2<span class="term">$3</span>$4') : html); }
+/* הַדְגָּשׁוֹת (6.11.2026, בקשת המשתמש): **טֶקְסְט** בְּכַרְטִיס / הֶסְבֵּר -> מֻדְגָּשׁ עִם רֶקַע צָהֹב;
+   בְּחִידוֹנֵי תַּנַ״ךְ (devarim-, shoftim-) גַּם שְׁמוֹת הַמְּפָרְשִׁים מֻדְגָּשִׁים מֵעַצְמָם */
+var EMPH_NAMES = /^(devarim|shoftim)-/.test(QUIZ.id) ? (function () {
+  var NK = "[֑-ׇ]*";
+  var names = ["רש״י", "רמב״ם", "רמב״ן", "ספר החינוך", "אונקלוס", "אבן עזרא", "ספורנו", "חזקוני", "אור החיים", "רלב״ג", "מצודות", "רד״ק", "מלבי״ם", "אברבנאל", "חז״ל"];
+  return new RegExp("(" + names.map(function (n) { return n.split("").map(function (ch) { return ch === " " ? "\\s+" : /[וי]/.test(ch) ? "(?:" + ch + NK + ")?" : ch.replace(/[״]/, "[״\"]") + NK; }).join(""); }).join("|") + ")", "g");
+})() : null;
+function emph(html) {
+  html = html.replace(/\*\*(.+?)\*\*/g, '<b class="hl">$1</b>').replace(/\s*\n\s*/g, "<br>");   // \n: נוֹשֵׂא חָדָשׁ בְּשׁוּרָה חֲדָשָׁה (6.11)
+  return EMPH_NAMES ? html.replace(EMPH_NAMES, '<b class="nm">$1</b>') : html;
+}
 /* ---------- לימוד ---------- */
 var CARD_COLORS = ["#ff6b6b", "#ff9f1c", "#2ec4b6", "#5b7cfa", "#b45cff", "#e0559b"];
 /* כַּרְטִיס מְיֻמָּנֻיּוֹת: הַהֲלָכָה מְפֹרֶקֶת – מִקְרֶה, דִּין, טַעַם, מָקוֹר, מֻשָּׂג */
@@ -1137,9 +1158,10 @@ function openStudy() {
       (c.text ? "<div>" + hlTerms(escapeHtml(c.text)) + "</div>" : "") + skillRows(c) +
       (c.mark ? '<div class="mark">' + hlHead(escapeHtml(c.mark)) + "</div>" : "") +
       '<div class="ahava">💛 <b>אַהֲבַת הַשֵּׁם:</b> ' + escapeHtml(c.ahava) + "</div>" +
-      (c.src ? '<div class="src">📖 ' + escapeHtml(QUIZ.book || "פְּנִינֵי הֲלָכָה – תְּפִלָּה") + ", " + srcLinks(c.src) + "</div>" : "") + "</div>";
+      (c.src ? '<div class="src">📖 ' + escapeHtml(QUIZ.book || "פְּנִינֵי הֲלָכָה – תְּפִלָּה") + ", " + srcLinks(c.src) + "</div>" : "") +
+      (QUIZ.learn && c.full ? '<a class="fullmat" href="' + QUIZ.learn + "#" + c.full + '" target="_blank" rel="noopener">📚 לַחֹמֶר הַמָּלֵא ←</a>' : "") + "</div>";   // דַּף הַשִּׁעוּר הַמָּלֵא (devarim_learn.py, 6.11)
   }).join("");
-  $("studyInspire").innerHTML = "💭 <b>שְׁאֵלָה לַלֵּב:</b> " + escapeHtml(L.inspire);
+  $("studyInspire").innerHTML = "💭 <b>שְׁאֵלָה לַלֵּב:</b> " + emph(escapeHtml(L.inspire));
   saveRun("study");
   show("sStudy");
 }
@@ -1239,7 +1261,7 @@ function feedback(ok, q, pts, hints) {
   saveRun("quiz", S.q + 1);
 }
 /* 🤔 לָמָּה? – הַטַּעַם שֶׁל הַהֲלָכָה (שָׂדֶה why בַּשְּׁאֵלָה) */
-function whyBox(q) { return q.why ? '<div class="why">💡 <b>טַעַם הַדִּין:</b> ' + escapeHtml(q.why) + "</div>" : ""; }
+function whyBox(q) { return q.why ? '<div class="why">💡 <b>טַעַם הַדִּין:</b> ' + emph(escapeHtml(q.why)) + "</div>" : ""; }
 /* רֶמֶז אַחֲרֵי טָעוּת בְּרָמָה ב׳: כַּרְטִיס הַלִּמּוּד שֶׁל אוֹתָהּ הֲלָכָה (לְפִי src) */
 function srcKeys(src) {   // "פֶּרֶק ב׳, הֲלָכוֹת א׳–ג׳; פֶּרֶק ג׳, הֲלָכָה ה׳" -> ["ב:א","ב:ב","ב:ג","ג:ה"]
   var out = [], heb = "אבגדהוזחטיכלמנסעפצקרשת", val = [1,2,3,4,5,6,7,8,9,10,20,30,40,50,60,70,80,90,100,200,300,400];
@@ -1261,7 +1283,7 @@ function hintCard(q) {
     if (!c && srcKeys(k.src).some(function (x) { return want.indexOf(x) >= 0; })) c = k; }); });
   if (!c) return "";
   return '<button class="hintBtn" type="button">💡 רֶמֶז מֵהַכַּרְטִיס</button><div class="hintBox"><b>' + escapeHtml(c.title || "") + "</b><div>" +
-    escapeHtml(c.text || "") + "</div></div>";
+    emph(escapeHtml(c.text || "")) + "</div></div>";
 }
 function nextQuestion() {
   S.q++;
@@ -1278,7 +1300,7 @@ function gPlain(t) { return plain(String(t || "")).replace(/[^א-ת ]/g, "").rep
 function gStart(q, L, html, check) {
   S.c = null;
   var G = S.g = { tries: 0, done: false, q: q, L: L, check: check };
-  $("qBody").innerHTML = (q.say ? '<div class="g-say">' + gEsc(q.say) + "</div>" : "") + html +
+  $("qBody").innerHTML = (q.say ? '<div class="g-say">' + emph(gEsc(q.say)) + "</div>" : "") + html +
     '<div class="crow"><button class="btn" id="gCheck" disabled>✔️ בְּדֹק</button></div>';
   $("gCheck").onclick = function () { if (!G.done) check(); };
   return G;
@@ -1493,7 +1515,9 @@ GAMES.diff = function (q, L) {
   var html = '<div class="g-ref"><b>' + gEsc(q.a.label) + "</b>" + gEsc(q.a.text) + "</div>" +
     '<div class="g-ref" style="background:var(--yellow);border-color:var(--c3)"><b style="color:var(--c3)">' + gEsc(q.b.label) + "</b>" +
     words.map(function (w, i) { return '<button class="g-word" data-i="' + i + '">' + gEsc(w) + "</button>"; }).join(" ") + "</div>" +
-    '<div class="g-say">👆 לוֹחֲצִים עַל ' + (need === 1 ? "הַמִּלָּה" : need + " הַמִּלִּים") + ' שֶׁיֵּשׁ רַק בַּפָּסוּק הַצָּהֹב <span id="gCnt">(0/' + need + ")</span></div>";
+    '<div class="g-say">👆 לוֹחֲצִים עַל ' + (need === 1 ? "הַמִּלָּה" : need + " הַמִּלִּים") + ' שֶׁיֵּשׁ רַק בַּפָּסוּק הַצָּהֹב' +
+      (q.find ? ": " + q.find.map(function (f) { return "<b class=\"hl\">" + gEsc(f) + "</b>"; }).join(" ") : "") +   // find: מָה מְחַפְּשִׂים ("פֹּעַל", "רְכוּשׁ") – 6.11
+      ' <span id="gCnt">(0/' + need + ")</span></div>";
   function isWant(i) { return want.indexOf(gPlain(words[i])) >= 0; }
   var G = gStart(q, L, html, function () {
     var on = Array.prototype.filter.call($("qBody").querySelectorAll(".g-word.in"), function () { return true; });
