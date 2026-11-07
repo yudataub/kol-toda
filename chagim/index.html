@@ -482,14 +482,14 @@ function loadData() {
     const h = decodeURIComponent(location.hash.slice(1)), tg = {}; d.tabs.forEach(t => { if (t.g) tg[t.k] = t.g; });
     const g = (d.groups || []).some(x => x.k === h) ? h : tg[h] || tg[d.start] || d.start, first = d.parts.find(p => p.g === g) || d.parts[0];
     const get = p => fetch(p.u).then(r => r.json());
-    d.loading = true;
-    d.rest = Promise.all(d.parts.filter(p => p !== first).map(get));
+    d.loading = true;   // the other parts start only after this one is shown: together they took its bandwidth (7.11)
+    d.rest = () => Promise.all(d.parts.filter(p => p !== first).map(get));
     return get(first).then(a => { d.items = d.items.concat(a); return d; });
   });
 }
 function loadRest() {
   if (!D.rest) return;
-  D.rest.then(parts => {
+  D.rest().then(parts => {
     const before = visibleItems().length;
     parts.forEach(a => a.forEach(i => { D.items.push(i); BYKEY[keyOf(i)] = i; }));   // each material is in one part only
     D.loading = false; markOwn(false);
