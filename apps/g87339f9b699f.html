@@ -330,6 +330,7 @@
 <body>
     <div class="game-container" id="gameContainer"></div>
     
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         // הגדרות
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec';
@@ -625,7 +626,7 @@
         
         // שאלת שם
         function askUserName() {
-            const name = prompt("אֵיזֶה שֵׁם נִרְשֹׁם לְךָ בִּתְעוּדָה? 💫");
+            const name = (window.KT && KT.name()) || prompt("אֵיזֶה שֵׁם נִרְשֹׁם לְךָ בִּתְעוּדָה? 💫");
             userName = name && name.trim() ? name.trim() : "תַּלְמִיד יָקָר";
         }
         
@@ -747,7 +748,7 @@
             
             const feedbackDiv = document.getElementById('feedback');
             if (isCorrect) {
-                playCorrectSound();
+                window.KT ? KT.ok(1, currentLesson + "-" + qIndex) : playCorrectSound();
                 score++;
                 lessonScore++;
                 feedbackDiv.className = 'feedback correct';
@@ -757,6 +758,7 @@
                     <p><strong>הַשֵּׁם שָׂמֵחַ מֵאִתְּךָ וְאוֹהֵב אוֹתְךָ! 💖</strong></p>
                 `;
             } else {
+                window.KT&&KT.bad();
                 feedbackDiv.className = 'feedback wrong';
                 feedbackDiv.innerHTML = `
                     <p><strong>לֹא בְּדִיּוּק... 🤔</strong></p>
@@ -812,7 +814,7 @@
                         <h2>בּוֹא נְנַסֶּה שׁוּב 💪</h2>
                         <p>בְּאַהֲבָה וּבְסַבְלָנוּת - נִלְמַד עוֹד פַּעַם! 💖</p>
                         <p style="font-size: 1.3em; margin: 20px 0;">צִיּוּן שִׁיעוּר: ${lessonScore}/3</p>
-                        <button class="action-btn" onclick="renderLesson(${currentLesson})">נְנַסֶּה שׁוּב 🔄</button>
+                        <button class="action-btn" onclick="score -= lessonScore; renderLesson(${currentLesson})">נְנַסֶּה שׁוּב 🔄</button>
                     </div>
                 `;
             }
@@ -830,7 +832,7 @@
         
         // תעודה וסיום
         function showCertificate() {
-            playVictorySound();
+            window.KT ? KT.end() : playVictorySound();
             const percentage = Math.round((score / 12) * 100);
             
             document.getElementById('gameContainer').innerHTML = `
@@ -875,6 +877,7 @@
         
         // התחלה
         renderIntro();
+        window.KT&&KT.init({ id: "g87339f9b699f", title: "חסד של אמת – וירא", again: () => { location.reload(); } });
     </script>
 </body>
 </html>

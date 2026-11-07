@@ -58,6 +58,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:4px solid #2563
 .typebox input:focus{border-color:var(--c1)}
 .hintline{font-size:18px;text-align:center;color:#7a3d00;min-height:28px}
 
+@media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
 </style>
 <meta property="og:title" content="השלם את המילה - וילך | הקול החמישי">
 <meta property="og:description" content="השלם את המילה - וילך | הקול החמישי">
@@ -113,6 +114,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:4px solid #2563
 <p class="sig">הקול החמישי - הרב יהודה טאוב</p>
 </section>
 </main>
+<script src="kt-game.js"></script>
 <script>
 "use strict";
 const SLUG="vayelech";
@@ -158,6 +160,7 @@ function finish(score,max){
   $("endQ").textContent=QUESTION;
   showBest();
   show("end");
+  window.KT&&KT.end();
 }
 
 const DATA=[
@@ -200,11 +203,11 @@ function check(){
   if(it.a.some(x=>norm(x)===v)){
     done=true;
     let p=10-(hinted?3:0)-3*wrongs;if(p<2)p=2;
-    score+=p;setScore(score);
+    score+=p;setScore(score);window.KT&&KT.ok();
     const bl=$("blank");bl.textContent=it.a[0];bl.classList.add("full");
     say(praise(),"good");end(it);
   }else{
-    wrongs++;say(retry(),"try");
+    wrongs++;say(retry(),"try");window.KT&&KT.bad();
     if(wrongs>=2)$("showBtn").hidden=false;
     $("ans").classList.add("shake");setTimeout(()=>$("ans").classList.remove("shake"),450);$("ans").select();
   }
@@ -233,6 +236,7 @@ $("cont").addEventListener("click",()=>{
 showBest();
 $("startBtn").addEventListener("click",()=>{show("play");startGame();});
 $("againBtn").addEventListener("click",()=>{show("play");startGame();});
+window.KT&&KT.init({id:"vayelech",title:"השלם את המילה – וילך",again:()=>{show("play");startGame();}});
 </script>
 </body>
 </html>

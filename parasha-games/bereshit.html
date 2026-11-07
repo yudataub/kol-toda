@@ -48,6 +48,7 @@ button.alt,.btn.alt{background:var(--soft);color:var(--ink);box-shadow:0 3px 0 r
 .collect span{background:var(--soft);border-radius:10px;padding:2px 10px;font-size:.9rem}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media (max-width:480px){body{font-size:17px}header h1{font-size:1.4rem}.card .mv{display:flex}}
+@media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
 </style>
 <meta property="og:title" content="בראשית - סידור הבריאה">
 <meta property="og:description" content="בראשית - סידור הבריאה">
@@ -101,19 +102,20 @@ button.alt,.btn.alt{background:var(--soft);color:var(--ink);box-shadow:0 3px 0 r
 </section>
 <p style="text-align:center"><a href="index.html">חזרה לכל הפרשות</a></p>
 </main>
+<script src="kt-game.js"></script>
 <script>
 "use strict";
 /* ===== DATA: אפשר לערוך כאן. הכרטיסים רשומים בסדר הנכון ===== */
 const DATA = {
   rounds: [
     {title:"שבעת ימי הבריאה", hint:"מי נברא קודם ומי אחר כך? סדרו מיום ראשון עד שבת.", cards:[
-      {t:"יום 1: האור ✨", f:"אין אור אלא מתוך חושך. החושך בא קודם, כמו קליפה לפני הפרי."},
-      {t:"יום 2: השמיים והמים 🌊", f:"ביום שני המים נפרדו. הגלים שואפים למעלה, כי הם רוצים לחזור אל ה׳."},
-      {t:"יום 3: היבשה והצמחים 🌱", f:"היבשה נעשית ״ארץ״, מלשון רצון. היא רוצה להצמיח."},
-      {t:"יום 4: שמש, ירח וכוכבים ☀️", f:"שלושת הימים הראשונים הכינו את שלושת הבאים. האור והחושך התמלאו במאורות."},
-      {t:"יום 5: דגים ועופות 🐟", f:"לכן אוכלים דגים בשבת. יש ברכה בדגים, באדם ובשבת."},
-      {t:"יום 6: האדם 🧒", f:"לפני שנברא האדם, ה׳ נמלך במלאכים. זה מלמד אותנו ענווה: גם הגדול שואל את הקטן."},
-      {t:"יום 7: שבת 🕯️", f:"ה׳ קידש את השבת בסימן: בערב שבת ירד מן כפול."}
+      {t:"האור ✨", f:"אין אור אלא מתוך חושך. החושך בא קודם, כמו קליפה לפני הפרי."},
+      {t:"השמיים והמים 🌊", f:"ביום שני המים נפרדו. הגלים שואפים למעלה, כי הם רוצים לחזור אל ה׳."},
+      {t:"היבשה והצמחים 🌱", f:"היבשה נעשית ״ארץ״, מלשון רצון. היא רוצה להצמיח."},
+      {t:"שמש, ירח וכוכבים ☀️", f:"שלושת הימים הראשונים הכינו את שלושת הבאים. האור והחושך התמלאו במאורות."},
+      {t:"דגים ועופות 🐟", f:"לכן אוכלים דגים בשבת. יש ברכה בדגים, באדם ובשבת."},
+      {t:"האדם 🧒", f:"לפני שנברא האדם, ה׳ נמלך במלאכים. זה מלמד אותנו ענווה: גם הגדול שואל את הקטן."},
+      {t:"שבת 🕯️", f:"ה׳ קידש את השבת בסימן: בערב שבת ירד מן כפול."}
     ]},
     {title:"מן החושך אל האור", hint:"סדרו את מה שקרה בתחילת הבריאה.", cards:[
       {t:"הארץ הייתה תהו ובהו", f:"לפני האור היה חושך. כל הצלחה גדולה מתחילה ברגע קשה, כמו קליפה לפני הפרי."},
@@ -235,7 +237,7 @@ $("checkBtn").addEventListener("click",()=>{
   const ok=order.every((v,i)=>v===i);
   const items=[...$("list").children];
   if(ok){
-    const pts=tries===1?10:tries===2?6:3;score+=pts;
+    const pts=tries===1?10:tries===2?6:3;score+=pts;window.KT&&KT.ok();
     const r=DATA.rounds[ri];r.cards.forEach(c=>collected.push(c.t.replace(/^יום \d: /,"")));
     items.forEach(li=>{li.classList.remove("good");li.classList.add("done");li.removeAttribute("tabindex");});
     $("msg").textContent=nextPraise()+" (+"+pts+")";$("msg").className="msg ok";
@@ -248,6 +250,7 @@ $("checkBtn").addEventListener("click",()=>{
     const good=order.filter((v,i)=>v===i).length;
     $("msg").textContent=nextRetry()+(good?" "+good+" כרטיסים כבר במקום הנכון (בירוק).":"");
     $("msg").className="msg no";
+    window.KT&&KT.bad();
   }
 });
 $("nextBtn").addEventListener("click",()=>{ri++;if(ri>=DATA.rounds.length)finish();else loadRound();});
@@ -262,10 +265,12 @@ function finish(){
   $("talk").textContent="💬 לשיחה: "+DATA.talk;
   const c=$("collect");c.innerHTML="";
   collected.forEach(t=>{const s=document.createElement("span");s.textContent=t;c.appendChild(s);});
+  window.KT&&KT.end();
 }
 $("startBtn").addEventListener("click",startGame);
 $("againBtn").addEventListener("click",()=>{showBest();startGame();});
 showBest();
+window.KT&&KT.init({id:"bereshit",title:"בראשית – סידור הבריאה",again:()=>{showBest();startGame();}});
 </script>
 </body>
 </html>

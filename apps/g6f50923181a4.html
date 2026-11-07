@@ -343,6 +343,7 @@
 <body>
     <div id="root"></div>
 
+    <script src="../parasha-games/kt-game.js"></script>
     <script type="text/babel">
         const { useState, useEffect } = React;
 
@@ -867,12 +868,13 @@
 
                 const feedbackLevel = getFeedbackLevel(totalQuestionsAnswered + 1);
 
+                if (window.KT) { isCorrect ? KT.ok(1, currentLesson + "-" + currentQuestion) : KT.bad(); }
                 if (isCorrect) {
                     setLessonScore(prev => prev + 1);
                     setTotalScore(prev => prev + 1);
                     
                     // Play sound from level 4+
-                    if (feedbackLevel >= 4) {
+                    if (!window.KT && feedbackLevel >= 4) {
                         if (feedbackLevel === 10) {
                             playSound([523, 659, 784, 1047, 784, 659], 1.8); // Celebratory
                         } else {
@@ -911,6 +913,7 @@
                         } else {
                             // Game complete
                             setGameComplete(true);
+                            window.KT&&KT.end();
                             playSound([523, 659, 784, 1047, 1319, 1568], 2.5);
                         }
                     } else {
@@ -1148,6 +1151,7 @@
         };
 
         ReactDOM.render(<AhavatChesedGame />, document.getElementById('root'));
+        window.KT&&KT.init({ id: "g6f50923181a4", title: "אהבת חסד אברהם בפתח האוהל – וירא", again: () => { location.reload(); } });
     </script>
 </body>
 </html>

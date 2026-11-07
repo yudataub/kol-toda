@@ -65,6 +65,7 @@ footer{text-align:center;padding:18px 12px 30px;color:#7c2d00;font-size:.95rem}
 .key.right{background:#d3f9d8;border-color:#2b8a3e;color:#1b5e20}
 .key.miss{background:#ffe8cc;border-color:#e8590c;opacity:.7}
 
+@media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
 </style>
 <meta property="og:title" content="פרשת צו: בונים מזבח">
 <meta property="og:description" content="פרשת צו: בונים מזבח">
@@ -99,6 +100,7 @@ footer{text-align:center;padding:18px 12px 30px;color:#7c2d00;font-size:.95rem}
 <section id="end" class="screen" aria-label="סיום"><div class="card"><div class="big-emoji" aria-hidden="true">🎉</div><h2 class="center" tabindex="-1">סיימנו! כל הכבוד!</h2><div class="score-big" id="endScore"></div><div class="stars" id="endStars" role="img"></div><p class="center" id="endBest"></p><p class="love" id="endBless"></p><div class="talk"><b>שיחה קצרה בבית או בכיתה:</b><br><span id="endQ"></span></div><div class="row"><button class="btn primary" id="againBtn" aria-label="לשחק שוב">לשחק שוב 🔁</button><a class="back" href="index.html" aria-label="חזרה לכל הפרשות">חזרה לכל הפרשות</a></div><p class="sign">הקול החמישי - הרב יהודה טאוב</p></div></section>
 </main>
 <footer>הקול החמישי - הרב יהודה טאוב</footer>
+<script src="kt-game.js"></script>
 <script>
 
 var SLUG = 'tzav';
@@ -206,6 +208,7 @@ function finishGame(o) {
   $('#endBless').textContent = o.bless || BLESSING;
   $('#endQ').textContent = DISCUSSION;
   showScreen('end');
+  window.KT&&KT.end();
 }
 function escapeText(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
@@ -286,7 +289,7 @@ function guess(L) {
     if (allDone()) return finishWord();
     showMsg('good', 'לבנה נוספה למזבח! ' + nextLove());
   } else {
-    wrongs++;
+    wrongs++; window.KT&&KT.bad();
     var b = document.querySelector('.key[data-l="' + L + '"]');
     if (b) { b.className = 'btn key miss'; b.disabled = true; }
     if (wrongs >= 3) {
@@ -304,7 +307,7 @@ function guess(L) {
 function finishWord() {
   locked = true;
   var pts = Math.max(3, 10 - wrongs);
-  score += pts; doneWords++;
+  score += pts; doneWords++; window.KT&&KT.ok();
   $$('.key').forEach(function (b) { b.disabled = true; });
   drawAltar(); hud(); setProgress(idx + 1, ROUNDS);
   showMsg('good', 'המילה היא: ' + order[idx].w + '. ' + nextLove() + ' (+' + pts + ')');
@@ -328,6 +331,7 @@ document.addEventListener('keydown', function (e) {
 
 document.getElementById('startBtn').addEventListener('click', function () { startGame(); });
 document.getElementById('againBtn').addEventListener('click', function () { startGame(); });
+window.KT&&KT.init({id:"tzav",title:"פרשת צו: בונים מזבח",again:()=>{startGame();}});
 </script>
 </body>
 </html>

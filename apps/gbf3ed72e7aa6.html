@@ -325,6 +325,7 @@
 </head>
 <body>
 <div id="gameContainer"></div>
+<script src="../parasha-games/kt-game.js"></script>
 <script>
     const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec';
     let audioContext = null;
@@ -552,7 +553,7 @@
             '<small style="color:rgba(240,192,64,0.7)">שמות כב, ל</small></div>' +
             '<div class="name-input-box">' +
             '<label for="nameInput">✏️ מָה שִׁמְךָ?</label>' +
-            '<input type="text" id="nameInput" placeholder="כִּתְבוּ אֶת הַשֵּׁם כָּאן..." maxlength="30" autofocus>' +
+            '<input type="text" id="nameInput" placeholder="כִּתְבוּ אֶת הַשֵּׁם כָּאן..." maxlength="30" autofocus value="' + (window.KT ? KT.name() : '') + '">' +
             '<button class="start-btn" id="startBtn">🚀 יַאלָּה, מַתְחִילִים!</button>' +
             '</div></div>';
         document.getElementById('startBtn').addEventListener('click', handleStartGame);
@@ -563,7 +564,7 @@
 
     function handleStartGame() {
         var input = document.getElementById('nameInput');
-        userName = input.value.trim();
+        userName = input.value.trim() || (window.KT ? KT.name() : "");
         if (!userName) userName = "תַּלְמִיד יָקָר";
         currentLesson = 0; score = 0;
         renderLesson(0);
@@ -628,7 +629,7 @@
         if (isCorrect) {
             btn.classList.add('correct', 'pop');
             score++; lessonScore++;
-            playCorrectSound();
+            window.KT ? KT.ok(1, lessonIdx + "-" + questionIdx) : playCorrectSound();
             feedbackEl.innerHTML = '<div class="feedback-box feedback-correct">' +
                 '<div class="feedback-title">' + getCorrectText() + '</div>' +
                 '<div>' + q.explanation + '</div>' +
@@ -636,7 +637,7 @@
                 '</div>';
         } else {
             btn.classList.add('wrong');
-            playWrongSound();
+            window.KT ? KT.bad() : playWrongSound();
             var block = btn.closest('.question-block');
             block.classList.add('shake');
             setTimeout(function() { block.classList.remove('shake'); }, 500);
@@ -723,10 +724,11 @@
             '<strong>הָרַב יְהוּדָה טָאוּב מִקִּרְיַת אַתָּא</strong> 📞 0527139520' +
             '</div></div></div>';
 
-        sendScoreToTeacher();
+        sendScoreToTeacher(); window.KT&&KT.end();
     }
 
     showWelcomeScreen();
+        window.KT&&KT.init({ id: "gbf3ed72e7aa6", title: "סוגיית הכלב הכרת הטוב – משפטים", again: () => { showWelcomeScreen(); } });
 </script>
 </body>
 </html>

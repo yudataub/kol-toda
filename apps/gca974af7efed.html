@@ -313,6 +313,7 @@
 <body>
     <div class="game-container" id="gameContainer"></div>
 
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         // הגדרות
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec";
@@ -608,7 +609,7 @@
         // שאלת שם והתחלה
         function askNameAndStart() {
             initAudio(); // אתחול אודיו אחרי אינטראקציה ראשונה
-            userName = prompt("מַה שִּׁמְךָ, יָקָר? 💫");
+            userName = (window.KT ? KT.name() : "") || prompt("מַה שִּׁמְךָ, יָקָר? 💫");
             if (!userName || userName.trim() === "") {
                 userName = "תַּלְמִיד יָקָר";
             }
@@ -705,7 +706,7 @@
             if (isCorrect) {
                 score++;
                 lessonScore++;
-                playCorrectSound();
+                window.KT ? KT.ok(1, lessonIndex + "-" + questionIndex) : playCorrectSound();
                 
                 const randomEncouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
                 
@@ -716,6 +717,7 @@
                     <p class="highlight">הַשֵּׁם שָׂמֵחַ כְּשֶׁאַתָּה לוֹמֵד בְּאַהֲבָה, ${userName}! 💖</p>
                 `;
             } else {
+                window.KT&&KT.bad();
                 feedbackDiv.className = "feedback incorrect";
                 feedbackDiv.innerHTML = `
                     <p><strong>לֹא בְּדִיּוּק, ${userName}... 🤔</strong></p>
@@ -771,6 +773,7 @@
 
         // ניסיון חוזר
         function retryLesson() {
+            score -= lessonScore;
             lessonScore = 0;
             renderLesson(currentLesson);
             window.scrollTo(0, 0);
@@ -781,7 +784,7 @@
             playFinishSound();
             
             // שליחה אוטומטית של הציון
-            sendScoreToTeacher();
+            sendScoreToTeacher(); window.KT&&KT.end();
 
             const percentage = Math.round((score / totalQuestions) * 100);
             const container = document.getElementById("gameContainer");
@@ -832,6 +835,7 @@
 
         // התחלה
         renderIntro();
+        window.KT&&KT.init({ id: "gca974af7efed", title: "השם תמיד לידי – וישב", again: () => { renderIntro(); } });
     </script>
 </body>
 </html>

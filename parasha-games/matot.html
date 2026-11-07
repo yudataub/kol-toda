@@ -54,6 +54,7 @@ h3.q{margin:0 0 8px;font-size:1.2rem}
 .piece:disabled{opacity:.35}
 .built{margin:8px 0;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#dcfce7,#fef9c3);border:3px solid var(--good);font-weight:bold;animation:pop .4s}
 
+@media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
 </style>
 <meta property="og:title" content="בונה משפט">
 <meta property="og:description" content="בונה משפט">
@@ -100,6 +101,7 @@ h3.q{margin:0 0 8px;font-size:1.2rem}
 </section>
 </main>
 <footer>הקול החמישי - הרב יהודה טאוב</footer>
+<script src="kt-game.js"></script>
 <script>
 const DATA={
 slug:"matot",
@@ -151,6 +153,7 @@ function finish(score,max){
   $('#endTalk').textContent=DATA.talk;
   window.scrollTo(0,0);
   $('#againBtn').focus();
+  window.KT&&KT.end();
 }
 function begin(){
   $('#intro').hidden=true;$('#end').hidden=true;$('#play').hidden=false;
@@ -202,7 +205,7 @@ function startGame(){
         const k=selA;
         btnA[k].disabled=true;btnB[k].disabled=true;
         btnA[k].classList.remove('sel');btnB[k].classList.remove('sel');
-        if(!mistakes.has(k))score++;
+        if(!mistakes.has(k))score++;window.KT&&KT.ok();
         setScore(score);
         builtBox.appendChild(el('div','built',set[k].a+' '+set[k].b));
         say(true);showKnow(set[k].know);
@@ -212,7 +215,7 @@ function startGame(){
           ctl(r>=rounds.length?'לסיום':'לסבב הבא',round);
         }
       }else{
-        mistakes.add(selA);mistakes.add(selB);
+        mistakes.add(selA);mistakes.add(selB);window.KT&&KT.bad();
         const a=btnA[selA],b2=btnB[selB];
         a.classList.add('shake');b2.classList.add('shake');
         setTimeout(()=>{a.classList.remove('shake');b2.classList.remove('shake');},400);
@@ -225,6 +228,7 @@ function startGame(){
   round();
 }
 
+window.KT&&KT.init({id:"matot",title:"בונה משפט",again:()=>{begin();}});
 </script>
 </body>
 </html>

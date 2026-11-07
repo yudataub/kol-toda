@@ -59,6 +59,7 @@ footer .back:hover{background:#ffe3ec}
 .tile{width:58px;height:62px;border:0;border-radius:14px;background:linear-gradient(135deg,#ffb347,#ff6f61);color:#fff;font:inherit;font-size:34px;font-weight:bold;cursor:pointer;box-shadow:0 4px 0 rgba(120,50,20,.35)}
 .tile:disabled{opacity:.25;box-shadow:none;cursor:default}
 .tools{text-align:center}
+@media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
 </style>
 <meta property="og:title" content="נשא: אותיות מסודרות">
 <meta property="og:description" content="נשא: אותיות מסודרות">
@@ -105,6 +106,7 @@ footer .back:hover{background:#ffe3ec}
 <footer>
 <a class="back" href="index.html" aria-label="חזרה לכל הפרשות">→ חזרה לכל הפרשות</a>
 </footer>
+<script src="kt-game.js"></script>
 <script>
 "use strict";
 const DATA={
@@ -180,6 +182,7 @@ function finish(score,max,question,extra){
   show("end");
   $("#againBtn").addEventListener("click",function(){fb("",null);show("game");startGame();});
   $("#againBtn").focus();
+  window.KT&&KT.end();
 }
 (function(){
   const b=parseInt(sget(GAME_KEY+"_best")||"0",10)||0;
@@ -244,7 +247,7 @@ function check(){
   if(got===st.target.join("")){
     st.locked=true;
     const pts=(st.tries===0&&!st.hint)?3:(st.tries<=1?2:1);
-    st.score+=pts;
+    st.score+=pts;window.KT&&KT.ok();
     $$(".slot").forEach(function(s){s.classList.add("good");});
     fb(praise()+" (+"+pts+")",true);
     $("#hintBtn").disabled=true;$("#clearBtn").disabled=true;
@@ -257,7 +260,7 @@ function check(){
       else loadWord();
     });
   }else{
-    st.tries++;
+    st.tries++;window.KT&&KT.bad();
     fb(oops(),false);
     st.slotsVal=new Array(st.target.length).fill(null);
     render();
@@ -279,6 +282,7 @@ document.addEventListener("keydown",function(e){
     for(let k=st.slotsVal.length-1;k>=0;k--){if(st.slotsVal[k]!==null){st.slotsVal[k]=null;render();break;}}
   }
 });
+window.KT&&KT.init({id:"naso",title:"נשא: אותיות מסודרות",again:()=>{fb("",null);show("game");startGame();}});
 </script>
 </body>
 </html>

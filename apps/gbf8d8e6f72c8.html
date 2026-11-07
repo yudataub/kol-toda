@@ -375,6 +375,7 @@
 <body>
     <div class="game-container" id="gameContainer"></div>
     
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec";
         
@@ -665,7 +666,7 @@
                     </div>
                     <div class="name-input-container">
                         <p style="font-size: 1.3em; color: #6c5ce7; font-weight: bold;">מַה שִׁמְךָ? 💫</p>
-                        <input type="text" class="name-input" id="nameInput" placeholder="כְּתֹב אֶת הַשֵּׁם שֶׁלְּךָ..." autofocus>
+                        <input type="text" class="name-input" id="nameInput" placeholder="כְּתֹב אֶת הַשֵּׁם שֶׁלְּךָ..." value="${window.KT ? KT.name() : ''}" autofocus>
                     </div>
                     <button class="btn btn-primary" onclick="startGame()">🚀 בּוֹאוּ נַתְחִיל לִלְמֹד!</button>
                 </div>
@@ -679,7 +680,7 @@
         function startGame() {
             initAudio();
             const nameInput = document.getElementById("nameInput");
-            userName = nameInput ? nameInput.value.trim() : "";
+            userName = (nameInput ? nameInput.value.trim() : "") || (window.KT ? KT.name() : "");
             if (!userName) userName = "תַּלְמִיד יָקָר";
             currentLesson = 0;
             currentQuestion = 0;
@@ -791,7 +792,7 @@
             const randomPraise = praises[Math.floor(Math.random() * praises.length)];
             
             if (isCorrect) {
-                playCorrectSound();
+                window.KT ? KT.ok(1, currentLesson + "-" + currentQuestion) : playCorrectSound();
                 score++;
                 lessonScore++;
                 feedbackContainer.innerHTML = `
@@ -802,7 +803,7 @@
                     </div>
                 `;
             } else {
-                playWrongSound();
+                window.KT ? KT.bad() : playWrongSound();
                 feedbackContainer.innerHTML = `
                     <div class="feedback feedback-wrong">
                         <p style="font-size: 1.3em;">לֹא בְּדִיּוּק, ${userName}... 🤔</p>
@@ -905,7 +906,7 @@
         }
         
         function showCertificate() {
-            playCelebrationSound();
+            window.KT ? KT.end() : playCelebrationSound();
             const container = document.getElementById("gameContainer");
             const percentage = Math.round((score / TOTAL_QUESTIONS) * 100);
             
@@ -959,6 +960,7 @@
         }
         
         renderIntro();
+        window.KT&&KT.init({ id: "gbf8d8e6f72c8", title: "החיוך שמציל נפשות – ויחי", again: () => { location.reload(); } });
     </script>
 </body>
 </html>

@@ -63,6 +63,7 @@ footer .back:hover{background:#ffe3ec}
 .mon b{font-size:19px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
 .chip{background:#fff;color:var(--ink);border-radius:12px;padding:2px 8px;font-size:15px;font-weight:bold;width:100%}
 .chip small{display:block;font-weight:normal;color:#555}
+@media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
 </style>
 <meta property="og:title" content="אמור: ציר הזמן של השנה">
 <meta property="og:description" content="אמור: ציר הזמן של השנה">
@@ -105,6 +106,7 @@ footer .back:hover{background:#ffe3ec}
 <footer>
 <a class="back" href="index.html" aria-label="חזרה לכל הפרשות">→ חזרה לכל הפרשות</a>
 </footer>
+<script src="kt-game.js"></script>
 <script>
 "use strict";
 const DATA={
@@ -177,6 +179,7 @@ function finish(score,max,question,extra){
   show("end");
   $("#againBtn").addEventListener("click",function(){fb("",null);show("game");startGame();});
   $("#againBtn").focus();
+  window.KT&&KT.end();
 }
 (function(){
   const b=parseInt(sget(GAME_KEY+"_best")||"0",10)||0;
@@ -225,7 +228,7 @@ function attempt(id,mi){
   st.tries[id]=(st.tries[id]||0)+1;
   if(it.month===mi){
     st.placed[id]=mi;
-    if(st.tries[id]===1)st.score++;
+    if(st.tries[id]===1)st.score++;window.KT&&KT.ok();
     const slot=$$(".mon")[mi].querySelector(".slot");
     const c=document.createElement("div");c.className="chip pop";
     c.innerHTML=esc(it.emoji+" "+it.name)+'<small>'+esc(it.date)+'</small>';
@@ -239,6 +242,7 @@ function attempt(id,mi){
       setTimeout(function(){finish(st.score,DATA.items.length,DATA.talk,"סידרתם את כל החגים על ציר השנה!");},1600);
     }
   }else{
+    window.KT&&KT.bad();
     fb(oops()+" (רמז: "+it.name+" נמצא ב"+(mi<it.month?"חודש מאוחר יותר":"חודש מוקדם יותר")+")",false);
     const card=$('.hcard[data-id="'+id+'"]');
     if(card){card.classList.remove("shake");void card.offsetWidth;card.classList.add("shake");}
@@ -249,6 +253,7 @@ function upd(){
   setProgress(n,DATA.items.length);
   setScore("⭐ "+st.score+" | חגים במקום: "+n+"/"+DATA.items.length);
 }
+window.KT&&KT.init({id:"emor",title:"אמור: ציר הזמן של השנה",again:()=>{fb("",null);show("game");startGame();}});
 </script>
 </body>
 </html>

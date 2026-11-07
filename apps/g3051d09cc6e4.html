@@ -333,6 +333,7 @@
 <body>
     <div class="game-container" id="gameContainer"></div>
 
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec";
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -612,7 +613,7 @@
         }
 
         function startGame() {
-            userName = prompt("מָה שִׁמְךָ? 💫");
+            userName = (window.KT ? KT.name() : "") || prompt("מָה שִׁמְךָ? 💫");
             if (!userName || userName.trim() === "") {
                 userName = "תַּלְמִיד יָקָר";
             }
@@ -717,7 +718,7 @@
                 selectedButton.classList.add("correct");
                 score++;
                 lessonScore++;
-                playSound([261.63, 329.63, 392.00]);
+                window.KT ? KT.ok(1, currentLesson + "-" + currentQuestionIndex) : playSound([261.63, 329.63, 392.00]);
 
                 const encouragements = [
                     `מְצֻיָּן, ${userName}! ⭐`,
@@ -743,6 +744,7 @@
                 `;
             } else {
                 selectedButton.classList.add("incorrect");
+                window.KT&&KT.bad();
 
                 document.getElementById("feedbackContainer").innerHTML = `
                     <div class="feedback incorrect">
@@ -800,7 +802,7 @@
                         <strong>בּוֹא נְנַסֶּה שׁוּב, ${userName}! 🤗</strong><br>
                         לִפְעָמִים צְרִיכִים עוֹד נִסָּיוֹן אֶחָד... 💡<br>
                         בְּאַהֲבָה וּבְסַבְלָנוּת - הַכֹּל אֶפְשָׁרִי! 💖<br><br>
-                        <button class="retry-button" onclick="renderLesson(${currentLesson})">
+                        <button class="retry-button" onclick="score -= lessonScore; renderLesson(${currentLesson})">
                             נְנַסֶּה שׁוּב בְּאַהֲבָה 🔄
                         </button>
                     </div>
@@ -863,9 +865,11 @@
             `;
 
             sendScoreToTeacher();
+            window.KT&&KT.end();
         }
 
         renderIntro();
+        window.KT&&KT.init({ id: "g3051d09cc6e4", title: "מדוע שרים אחרי הדלקת נרות – חנוכה", again: () => { renderIntro(); } });
     </script>
 </body>
 </html>

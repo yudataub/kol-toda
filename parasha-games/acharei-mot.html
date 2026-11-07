@@ -58,6 +58,7 @@ footer{text-align:center;padding:18px 12px 30px;color:#7c2d00;font-size:.95rem}
 .chip.bad{background:#ffe8cc;border-color:#e8590c}
 .chip.fixed{background:#e7f5ff;border-color:#1971c2}
 
+@media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
 </style>
 <meta property="og:title" content="פרשת אחרי מות: מסדרים משפט">
 <meta property="og:description" content="פרשת אחרי מות: מסדרים משפט">
@@ -94,6 +95,7 @@ footer{text-align:center;padding:18px 12px 30px;color:#7c2d00;font-size:.95rem}
 <section id="end" class="screen" aria-label="סיום"><div class="card"><div class="big-emoji" aria-hidden="true">🎉</div><h2 class="center" tabindex="-1">סיימנו! כל הכבוד!</h2><div class="score-big" id="endScore"></div><div class="stars" id="endStars" role="img"></div><p class="center" id="endBest"></p><p class="love" id="endBless"></p><div class="talk"><b>שיחה קצרה בבית או בכיתה:</b><br><span id="endQ"></span></div><div class="row"><button class="btn primary" id="againBtn" aria-label="לשחק שוב">לשחק שוב 🔁</button><a class="back" href="index.html" aria-label="חזרה לכל הפרשות">חזרה לכל הפרשות</a></div><p class="sign">הקול החמישי - הרב יהודה טאוב</p></div></section>
 </main>
 <footer>הקול החמישי - הרב יהודה טאוב</footer>
+<script src="kt-game.js"></script>
 <script>
 
 var SLUG = 'acharei-mot';
@@ -195,6 +197,7 @@ function finishGame(o) {
   $('#endBless').textContent = o.bless || BLESSING;
   $('#endQ').textContent = DISCUSSION;
   showScreen('end');
+  window.KT&&KT.end();
 }
 function escapeText(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
@@ -267,7 +270,7 @@ $('#checkBtn').addEventListener('click', function () {
   var states = line.map(function (x, k) { return x.w === exp[k] ? 'ok' : 'bad'; });
   var all = states.every(function (s) { return s === 'ok'; });
   if (all) {
-    solved = true;
+    solved = true; window.KT&&KT.ok();
     var pts = Math.max(2, 10 - 2 * wrongs - 2 * hints);
     score += pts;
     render(states);
@@ -279,7 +282,7 @@ $('#checkBtn').addEventListener('click', function () {
     nb.textContent = (idx + 1 >= order.length) ? 'לסיום 🎉' : 'הלאה ⬅';
     nb.focus();
   } else {
-    wrongs++;
+    wrongs++; window.KT&&KT.bad();
     render(states);
     showMsg('try', nextTry() + ' המילים באדום לא במקום הנכון, לחצו עליהן כדי להזיז.');
   }
@@ -299,6 +302,7 @@ document.addEventListener('keydown', function (e) {
 
 document.getElementById('startBtn').addEventListener('click', function () { startGame(); });
 document.getElementById('againBtn').addEventListener('click', function () { startGame(); });
+window.KT&&KT.init({id:"acharei-mot",title:"פרשת אחרי מות: מסדרים משפט",again:()=>{startGame();}});
 </script>
 </body>
 </html>

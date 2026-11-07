@@ -408,6 +408,7 @@
         <!-- תוכן דינמי יוזן כאן -->
     </div>
     
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         // ================== הגדרות ומשתנים ==================
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec';
@@ -713,7 +714,7 @@
         // ================== בקשת שם ==================
         function askUserName() {
             initAudio();
-            userName = prompt("מַה שִׁמְךָ? 💫");
+            userName = (window.KT ? KT.name() : "") || prompt("מַה שִׁמְךָ? 💫");
             if (!userName || userName.trim() === "") {
                 userName = "תַּלְמִיד יָקָר";
             }
@@ -840,7 +841,7 @@
             
             if (isCorrect) {
                 selectedBtn.classList.add('correct');
-                playCorrectSound();
+                window.KT ? KT.ok(1, currentLesson + "-" + currentQuestion) : playCorrectSound();
                 score++;
                 lessonScore++;
                 
@@ -863,7 +864,7 @@
                 selectedBtn.classList.add('wrong');
                 const correctBtn = document.getElementById('answer-' + correctDisplayIndex);
                 correctBtn.classList.add('correct');
-                playWrongSound();
+                window.KT ? KT.bad() : playWrongSound();
                 
                 feedback.innerHTML = `
                     <strong>לֹא בְּדִיּוּק, ${userName}... 🤔</strong><br><br>
@@ -1018,10 +1019,12 @@
             
             // שליחת הציון אוטומטית
             sendScoreToTeacher();
+            window.KT&&KT.end();
         }
         
         // ================== התחלה ==================
         renderIntro();
+        window.KT&&KT.init({ id: "g906fc738d225", title: "שבח פירות ארץ ישראל – טו בשבט", again: () => { renderIntro(); } });
     </script>
 </body>
 </html>

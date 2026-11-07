@@ -40,6 +40,7 @@
     <div id="toast" class="toast" style="visibility:hidden"></div>
   </div>
 
+  <script src="../parasha-games/kt-game.js"></script>
   <script>
     // 40 שאלות
     const questions = [
@@ -122,11 +123,11 @@
 
     function checkAnswer(chosen, correct){
       if (chosen === correct){
-        score++; streak++; correctSound.currentTime = 0; correctSound.play();
+        score++; streak++; if (window.KT) KT.ok(1, order[current]); else { correctSound.currentTime = 0; correctSound.play(); }
         setToast('נכון מאוד! ✨', true);
         next();
       } else {
-        streak = 0; setToast('לא מדויק, נסי שוב 😊', false);
+        streak = 0; window.KT&&KT.bad(); setToast('לא מדויק, נסי שוב 😊', false);
       }
       document.getElementById('score').innerText = score;
       document.getElementById('streak').innerText = streak;
@@ -136,6 +137,7 @@
       current++;
       if (current >= questions.length){
         document.getElementById('bar').style.width = '100%';
+        window.KT&&KT.end();
         setToast('כל הכבוד! סיימת את כל השאלות 🎉', true);
         // אתחל סבב חדש
         setTimeout(()=>{ start(); }, 1200);
@@ -147,6 +149,7 @@
     function start(){ shuffle(order); current = 0; score = 0; streak = 0; loadQuestion(); }
 
     window.onload = start;
+        window.KT&&KT.init({ id: "g21bb4fce5ca6", title: "משחק הנאות – גוף שכל ונשמה", again: () => { start(); } });
   </script>
 </body>
 </html>

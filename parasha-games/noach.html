@@ -43,6 +43,7 @@ svg.ark{width:100%;max-height:200px}
 .sig{text-align:center;font-weight:700;color:#5a4fcf;margin-top:12px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media (max-width:520px){#grid{grid-template-columns:repeat(4,1fr);gap:5px}.mc{min-height:92px;font-size:.78rem;padding:3px}}
+@media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
 </style>
 <meta property="og:title" content="נח - זוגות בתיבה">
 <meta property="og:description" content="נח - זוגות בתיבה">
@@ -93,6 +94,7 @@ svg.ark{width:100%;max-height:200px}
 </section>
 <p style="text-align:center"><a href="index.html">חזרה לכל הפרשות</a></p>
 </main>
+<script src="kt-game.js"></script>
 <script>
 "use strict";
 /* ===== DATA: כל זוג = חידוש (q) + הסבר (a) + ידעת (f). בכל משחק נבחרים 8 זוגות מתוך הרשימה ===== */
@@ -159,7 +161,7 @@ function flip(i,b){
   if(cards[x.i].id===cards[y.i].id&&cards[x.i].kind!==cards[y.i].kind){
     setTimeout(()=>{
       [x,y].forEach(o=>{o.b.classList.remove("open");o.b.classList.add("found");o.b.disabled=true;});
-      found++;const c=cards[x.i];
+      found++;const c=cards[x.i];window.KT&&KT.ok();
       addAnimal(c.animal);
       $("msg").textContent=DATA.praise[pi++%DATA.praise.length];$("msg").className="msg ok";
       $("did").textContent="ידעת? "+c.p.f;
@@ -167,7 +169,7 @@ function flip(i,b){
       if(found===total)setTimeout(finish,1200);
     },350);
   }else{
-    mistakes++;
+    mistakes++;window.KT&&KT.bad();
     $("msg").textContent=DATA.retry[qi++%DATA.retry.length];$("msg").className="msg no";
     setTimeout(()=>{
       [x,y].forEach(o=>{o.b.classList.remove("open");o.b.setAttribute("aria-label","קלף "+(o.i+1)+", הפוך");});
@@ -189,10 +191,12 @@ function finish(){
   const b=+getBest()||0;let extra="";if(sc>b){setBest(sc);extra=" - שיא חדש!";}
   $("finalScore").textContent="הציון שלך: "+sc+" מתוך "+max+" (טעויות: "+mistakes+")"+extra;
   $("talk").textContent="💬 לשיחה: "+DATA.talk;
+  window.KT&&KT.end();
 }
 $("startBtn").addEventListener("click",startGame);
 $("againBtn").addEventListener("click",()=>{showBest();startGame();});
 showBest();
+window.KT&&KT.init({id:"noach",title:"נח – זוגות בתיבה",again:()=>{showBest();startGame();}});
 </script>
 </body>
 </html>

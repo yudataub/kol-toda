@@ -58,6 +58,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:4px solid #2563
 .cell.on::after{content:" ✓"}
 .cell.win{background:linear-gradient(135deg,#7ee0a0,#38b36b);border-color:#1f8f4e;color:#fff;animation:bounce .8s}
 
+@media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
 </style>
 <meta property="og:title" content="בינגו כי תבוא | הקול החמישי">
 <meta property="og:description" content="בינגו כי תבוא | הקול החמישי">
@@ -107,6 +108,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:4px solid #2563
 <p class="sig">הקול החמישי - הרב יהודה טאוב</p>
 </section>
 </main>
+<script src="kt-game.js"></script>
 <script>
 "use strict";
 const SLUG="ki-tavo";
@@ -152,6 +154,7 @@ function finish(score,max){
   $("endQ").textContent=QUESTION;
   showBest();
   show("end");
+  window.KT&&KT.end();
 }
 
 const DATA=[
@@ -203,7 +206,7 @@ function pick(i){
   if(marked.has(i)){say("את המשבצת הזאת כבר סימנו. בחרו אחרת","try");return;}
   if(i===queue[0]){
     marked.add(i);queue.shift();correct++;
-    score+=missed?5:10;setScore(score);
+    score+=missed?5:10;setScore(score);window.KT&&KT.ok();
     btn.classList.add("on");btn.setAttribute("aria-label","סומן: "+board[i].t);
     say(praise(),"good");
     const f=$("fact");f.hidden=false;f.innerHTML="";const b=document.createElement("b");b.textContent="ידעת? ";f.appendChild(b);f.appendChild(document.createTextNode(board[i].f));
@@ -216,7 +219,7 @@ function pick(i){
     }
     nextClue();
   }else{
-    wrong++;missed=true;say(retry(),"try");btn.classList.add("shake");setTimeout(()=>btn.classList.remove("shake"),450);
+    wrong++;missed=true;say(retry(),"try");window.KT&&KT.bad();btn.classList.add("shake");setTimeout(()=>btn.classList.remove("shake"),450);
   }
 }
 $("skip").addEventListener("click",()=>{if(over)return;if(queue.length>1){queue.push(queue.shift());}nextClue();say("","");});
@@ -225,6 +228,7 @@ $("fin").addEventListener("click",()=>{finish(score,Math.max(correct*10,10));});
 showBest();
 $("startBtn").addEventListener("click",()=>{show("play");startGame();});
 $("againBtn").addEventListener("click",()=>{show("play");startGame();});
+window.KT&&KT.init({id:"ki-tavo",title:"בינגו כי תבוא",again:()=>{show("play");startGame();}});
 </script>
 </body>
 </html>

@@ -531,6 +531,7 @@
         </div>
     </div>
     
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         // Global variables
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec";
@@ -880,7 +881,7 @@
                 
                 <div class="name-input-container">
                     <p style="font-size: 1.3em; font-weight: 600;">מָה שִׁמְךָ? 💫</p>
-                    <input type="text" class="name-input" id="nameInput" placeholder="כִּתְבוּ אֶת הַשֵּׁם שֶׁלָּכֶם..." maxlength="30">
+                    <input type="text" class="name-input" id="nameInput" placeholder="כִּתְבוּ אֶת הַשֵּׁם שֶׁלָּכֶם..." maxlength="30" value="${window.KT ? KT.name() : ''}">
                 </div>
                 
                 <button class="btn-primary" onclick="startGame()">בּוֹאוּ נַתְחִיל! 🚀</button>
@@ -901,7 +902,7 @@
         function startGame() {
             initAudio();
             const nameInput = document.getElementById("nameInput");
-            userName = nameInput.value.trim() || "תַּלְמִיד יָקָר";
+            userName = nameInput.value.trim() || (window.KT ? KT.name() : "") || "תַּלְמִיד יָקָר";
             currentLesson = 0;
             currentQuestion = 0;
             score = 0;
@@ -990,7 +991,7 @@
             
             if (isCorrect) {
                 btn.classList.add("correct");
-                playCorrectSound();
+                window.KT ? KT.ok(1, currentLesson + "-" + currentQuestion) : playCorrectSound();
                 score++;
                 lessonScore++;
                 
@@ -1018,7 +1019,7 @@
                         b.classList.add("correct");
                     }
                 });
-                playWrongSound();
+                window.KT ? KT.bad() : playWrongSound();
                 
                 feedbackArea.innerHTML = `
                     <div class="feedback-box feedback-wrong">
@@ -1118,7 +1119,7 @@
         
         // Show certificate
         function showCertificate() {
-            playVictorySound();
+            window.KT ? KT.end() : playVictorySound();
             
             const percentage = Math.round((score / totalQuestions) * 100);
             let gradeText = "";
@@ -1203,6 +1204,7 @@
         
         // Initialize game
         renderIntro();
+        window.KT&&KT.init({ id: "gfd05082c66ef", title: "טו בשבט ואהבת ארץ ישראל – טו בשבט", again: () => { location.reload(); } });
     </script>
 </body>
 </html>

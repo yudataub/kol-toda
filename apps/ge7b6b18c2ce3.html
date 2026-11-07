@@ -255,6 +255,7 @@
 <body>
     <div class="game-container" id="gameContainer"></div>
 
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         // הגדרות קבועות
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec';
@@ -577,7 +578,7 @@
         }
 
         function startGame() {
-            userName = prompt("מָה שִׁמְךָ? 💫");
+            userName = (window.KT && KT.name()) || prompt("מָה שִׁמְךָ? 💫");
             if (!userName || userName.trim() === "") {
                 userName = "תַּלְמִיד יָקָר";
             }
@@ -674,7 +675,7 @@
                 score++;
                 lessonScore++;
                 answeredQuestions[questionIndex] = true;
-                playSound([523.25, 659.25, 783.99]); // C-E-G
+                window.KT ? KT.ok(1, lessonIndex + "-" + questionIndex) : playSound([523.25, 659.25, 783.99]); // C-E-G
                 
                 const randomEncouragement = encouragingWords[Math.floor(Math.random() * encouragingWords.length)];
                 
@@ -688,6 +689,7 @@
                     </div>
                 `;
             } else {
+                window.KT&&KT.bad();
                 feedbackDiv.innerHTML = `
                     <div class="feedback wrong">
                         <div style="font-size: 1.3em; margin-bottom: 15px;">לֹא בְּדִיּוּק, ${userName}... 🤔</div>
@@ -733,7 +735,7 @@
                             הַשֵּׁם אוֹהֵב אוֹתְךָ גַּם כְּשֶׁטּוֹעִים - הָעִקָּר לִלְמֹד! 🙏
                         </p>
                         <div style="text-align: center;">
-                            <button class="btn" onclick="renderLesson(${lessonIndex})">בּוֹא נְנַסֶּה שׁוּב! 🔄</button>
+                            <button class="btn" onclick="score -= lessonScore; renderLesson(${lessonIndex})">בּוֹא נְנַסֶּה שׁוּב! 🔄</button>
                         </div>
                     </div>
                 `;
@@ -809,10 +811,12 @@
             
             // שליחת הציון למורה
             sendScoreToTeacher();
+            window.KT&&KT.end();
         }
 
         // התחלת המשחק
         renderIntro();
+        window.KT&&KT.init({ id: "ge7b6b18c2ce3", title: "מהדרין מן המהדרין – חנוכה", again: () => { location.reload(); } });
     </script>
 </body>
 </html>

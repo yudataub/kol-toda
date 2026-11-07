@@ -231,7 +231,6 @@
 <body>
 
     <div id="game-container">
-        <button id="mute-btn" type="button" title="צְלִילִים">🔊</button>
         <!-- Welcome Screen -->
         <div id="welcome-screen">
             <h1>מִשְׂחַק הַתּוֹדָה: הַמַּסָּע שֶׁל אֱלִיעֶזֶר</h1>
@@ -269,6 +268,7 @@
         </div>
     </div>
 
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         const gameData = [
             {
@@ -556,21 +556,14 @@
             });
 
             totalAnswered++;
-            const fb = document.createElement('div');
             if (isCorrect) {
                 streak++;
-                soundStreak(streak);
+                window.KT ? KT.ok(1, currentLessonIndex + "-" + questionIndex) : soundStreak(streak);
                 correctAnswersInLesson++;
                 event.target.classList.add('correct');
-                const head = totalAnswered < FB_OK.length ? FB_OK[totalAnswered] : draw('ok10', FB_OK_10);
-                fb.className = 'feedback ok';
-                fb.innerHTML = `<b>${head}</b><span class="love">${draw('love', LOVE_OK)}</span>` +
-                    (streak >= 3 ? `<span class="streak-badge">🔥 ${streak} בָּרֶצֶף!</span>` : '');
             } else {
                 streak = 0;
-                soundBad();
-                fb.className = 'feedback bad';
-                fb.innerHTML = `<b>${draw('oops', OOPS)}</b><span class="love">${draw('loveBad', LOVE_BADS)}</span>`;
+                window.KT ? KT.bad() : soundBad();
                 event.target.classList.add('incorrect');
                 // Highlight the correct answer
                 answerButtons.forEach(btn => {
@@ -580,8 +573,6 @@
                     }
                 });
             }
-            questionBlock.appendChild(fb);
-
             questionsAnswered++;
             if (questionsAnswered === gameData[currentLessonIndex].questions.length) {
                 setTimeout(endLesson, 1500);
@@ -640,19 +631,12 @@
             lessonScreen.classList.add('hidden');
             endScreen.classList.remove('hidden');
             window.scrollTo(0, 0);
-            soundGrand();
+            window.KT ? KT.end() : soundGrand();
         }
 
         /* ---------- צְלִילִים (מִתּוֹךְ חִידוֹנֵי הַדִּינִים) ---------- */
         let streak = 0, totalAnswered = 0;
-        function muted() { try { return localStorage.getItem('todah-mute') === '1'; } catch (e) { return false; } }
-        const muteBtn = document.getElementById('mute-btn');
-        function drawMute() { muteBtn.textContent = muted() ? '🔇' : '🔊'; }
-        muteBtn.addEventListener('click', () => {
-            try { localStorage.setItem('todah-mute', muted() ? '0' : '1'); } catch (e) {}
-            drawMute();
-        });
-        drawMute();
+        function muted() { try { return localStorage.getItem('hq-mute') === '1'; } catch (e) { return false; } }   // הַשְׁתָּקָה מִכַּפְתּוֹר הַ-🔊 שֶׁל kt-game.js
         function tone(freqs, step) {
             if (muted()) return;
             try {
@@ -740,6 +724,7 @@
             if (!BAG[key] || !BAG[key].length) BAG[key] = shuffleArray(list.slice());
             return BAG[key].pop();
         }
+        window.KT&&KT.init({ id: "g989c4de5177b", title: "משחק התודה – חיי שרה", again: () => { location.reload(); } });
     </script>
 </body>
 </html>

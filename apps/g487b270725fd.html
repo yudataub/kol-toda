@@ -226,6 +226,7 @@
 <body>
     <div class="game-container" id="gameContainer"></div>
     
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         // קבועים
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec';
@@ -574,7 +575,7 @@
         
         // פונקציה לתחילת המשחק
         function startGame() {
-            userName = prompt("מַה שִׁמְךָ? 💫");
+            userName = (window.KT && KT.name()) || prompt("מַה שִׁמְךָ? 💫");
             if (!userName || userName.trim() === "") {
                 userName = "תַּלְמִיד יָקָר";
             }
@@ -668,7 +669,7 @@
             if (isCorrect) {
                 lessonScore++;
                 score++;
-                playSound([523.25, 659.25, 783.99]); // C-E-G
+                window.KT ? KT.ok(1, currentLesson + "-" + currentQuestionIndex) : playSound([523.25, 659.25, 783.99]); // C-E-G
                 
                 const feedbackMessages = [
                     `מְצֻיָּן, ${userName}! ⭐`,
@@ -683,7 +684,7 @@
                     true
                 );
             } else {
-                playSound([392, 349.23]); // G-F
+                window.KT ? KT.bad() : playSound([392, 349.23]); // G-F
                 
                 showFeedback(
                     `לֹא בְּדִיּוּק, ${userName}... 🤔<br><br>${question.explanation}<br><br><span class="highlight">גַּם כְּשֶׁטּוֹעִים - לוֹמְדִים! הַשֵּׁם אוֹהֵב אוֹתְךָ, ${userName}! 💡</span>`,
@@ -756,7 +757,7 @@
                     html += `<button class="btn-primary pulse" onclick="showCertificate()">לִסְיוּם הַמִּשְׂחָק! 🎓</button>`;
                 }
             } else {
-                html += `<button class="btn-primary" onclick="renderLesson(${currentLesson})">נְנַסֶּה שׁוּב 🔄</button>`;
+                html += `<button class="btn-primary" onclick="score -= lessonScore; renderLesson(${currentLesson})">נְנַסֶּה שׁוּב 🔄</button>`;
             }
             
             container.innerHTML = html;
@@ -765,6 +766,7 @@
         // פונקציה להצגת תעודה
         function showCertificate() {
             sendScoreToTeacher(); // שליחה אוטומטית!
+            window.KT&&KT.end();
             
             const container = document.getElementById('gameContainer');
             const percentage = Math.round((score / 12) * 100);
@@ -833,6 +835,7 @@
         
         // התחלה
         renderIntro();
+        window.KT&&KT.init({ id: "g487b270725fd", title: "לשמור את השער פתוח – ויגש", again: () => { location.reload(); } });
     </script>
 </body>
 </html>

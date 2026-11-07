@@ -480,6 +480,7 @@
 <body>
     <div class="game-container" id="gameContainer"></div>
 
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         // ===== הגדרות גלובליות =====
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec";
@@ -733,7 +734,7 @@
                         <label for="nameInput">✏️ מָה שִׁמְךָ?</label>
                         <input type="text" id="nameInput" 
                                placeholder="כִּתְבוּ אֶת הַשֵּׁם כָּאן..." 
-                               maxlength="30" autofocus>
+                               maxlength="30" autofocus value="${window.KT ? KT.name() : ''}">
                         <button class="start-btn" id="startBtn">
                             🚀 יַלָּה, מַתְחִילִים!
                         </button>
@@ -749,7 +750,7 @@
 
         function handleStartGame() {
             const input = document.getElementById("nameInput");
-            userName = input.value.trim();
+            userName = input.value.trim() || (window.KT ? KT.name() : "");
             if (!userName) userName = "תַּלְמִיד יָקָר";
             currentLesson = 0;
             score = 0;
@@ -948,7 +949,7 @@
                 clickedBtn.classList.add("correct");
                 score++;
                 lessonScore++;
-                playCorrectSound();
+                window.KT ? KT.ok(1, currentLesson + "-" + qIndex) : playCorrectSound();
 
                 const msg = correctMessages[Math.floor(Math.random() * correctMessages.length)];
                 const love = loveMessages[Math.floor(Math.random() * loveMessages.length)];
@@ -964,7 +965,7 @@
                     </div>
                 `;
             } else {
-                clickedBtn.classList.add("wrong");
+                clickedBtn.classList.add("wrong"); window.KT&&KT.bad();
                 // הראה את הנכונה
                 btns.forEach(b => {
                     if (parseInt(b.getAttribute("data-answer")) === question.correct) {
@@ -1110,11 +1111,12 @@
             `;
 
             // שליחה אוטומטית
-            sendScoreToTeacher();
+            sendScoreToTeacher(); window.KT&&KT.end();
         }
 
         // ===== התחלה =====
         showWelcomeScreen();
+        window.KT&&KT.init({ id: "g681ef9b14d82", title: "הודיה מהלב – משפטים", again: () => { showWelcomeScreen(); } });
     </script>
 </body>
 </html>

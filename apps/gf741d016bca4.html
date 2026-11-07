@@ -362,6 +362,7 @@
         <!-- תוכן דינמי יוכנס כאן -->
     </div>
 
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         // הגדרות
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec';
@@ -720,7 +721,7 @@
                     <p style="font-size: 1.4em; margin-bottom: 15px; font-weight: bold;">
                         אֵיזֶה שֵׁם נִרְשֹׁם לְךָ בִּתְעוּדָה? 💫
                     </p>
-                    <input type="text" id="nameInput" class="name-input" placeholder="הַכְנֵס אֶת שִׁמְךָ כָּאן..." />
+                    <input type="text" id="nameInput" class="name-input" placeholder="הַכְנֵס אֶת שִׁמְךָ כָּאן..." value="${window.KT ? KT.name() : ''}" />
                 </div>
                 
                 <button class="start-btn" onclick="startGame()">🚀 בּוֹאוּ נַתְחִיל בְּשִׂמְחָה! 💖</button>
@@ -729,7 +730,7 @@
 
         function startGame() {
             const nameInput = document.getElementById('nameInput');
-            userName = nameInput ? nameInput.value.trim() : "";
+            userName = (nameInput ? nameInput.value.trim() : "") || (window.KT ? KT.name() : "");
             
             if (!userName) {
                 alert("בְּבַקָּשָׁה הַכְנֵס אֶת שִׁמְךָ כְּדֵי לְהַתְחִיל! 😊");
@@ -831,7 +832,7 @@
             if (selectedIndex === correctIndex) {
                 lessonScore++;
                 totalScore += 10;
-                playCorrectSound();
+                window.KT ? KT.ok(1, currentLesson + "-" + questionNumber) : playCorrectSound();
                 
                 const encouragements = [
                     "מְצֻיָּן! ⭐",
@@ -850,6 +851,7 @@
                     </div>
                 `;
             } else {
+                window.KT&&KT.bad();
                 feedbackDiv.className = 'feedback incorrect fade-in';
                 feedbackDiv.innerHTML = `
                     <div style="font-size: 1.5em; margin-bottom: 10px;">לֹא בְּדִיּוּק... 🤔</div>
@@ -937,7 +939,7 @@
                             הַשֵּׁם אוֹהֵב אוֹתְךָ וּמַאֲמִין בְּךָ! ✨<br>
                             בּוֹא נְנַסֶּה שׁוּב בְּאַהֲבָה וּבְשִׂמְחָה! 🌟
                         </div>
-                        <button class="retry-btn" onclick="renderLesson()">
+                        <button class="retry-btn" onclick="totalScore -= lessonScore * 10; renderLesson()">
                             🔄 בּוֹא נְנַסֶּה שׁוּב בְּאַהֲבָה! 💖
                         </button>
                     </div>
@@ -954,7 +956,7 @@
             playCompleteSound();
             
             // שליחת נתונים לגוגל
-            sendScoreToTeacher();
+            sendScoreToTeacher(); window.KT&&KT.end();
             
             const container = document.getElementById('gameContainer');
             const finalPercentage = Math.round((totalScore / (lessons.length * 30)) * 100);
@@ -1025,6 +1027,7 @@
 
         // אתחול
         renderIntro();
+        window.KT&&KT.init({ id: "gf741d016bca4", title: "סוד התפילה שמביאה ישועות – וירא", again: () => { renderIntro(); } });
     </script>
 </body>
 </html>

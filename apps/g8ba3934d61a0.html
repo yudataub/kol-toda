@@ -652,6 +652,7 @@ body {
 
 <div class="game-container" id="gameContainer"></div>
 
+<script src="../parasha-games/kt-game.js"></script>
 <script>
 // ======= GLOBAL =======
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec';
@@ -1020,7 +1021,7 @@ function showWelcomeScreen() {
       </div>
       <div class="name-input-box">
         <label for="nameInput">✏️ מָה שִׁמְךָ?</label>
-        <input type="text" id="nameInput" placeholder="כִּתְבוּ אֶת הַשֵּׁם כָּאן..." maxlength="30" autofocus>
+        <input type="text" id="nameInput" placeholder="כִּתְבוּ אֶת הַשֵּׁם כָּאן..." maxlength="30" value="${window.KT ? KT.name() : ''}" autofocus>
         <button class="start-btn" id="startBtn">🚀 יַלָּה, מַתְחִילִים!</button>
       </div>
     </div>
@@ -1033,7 +1034,7 @@ function showWelcomeScreen() {
 
 function handleStartGame() {
   const input = document.getElementById('nameInput');
-  userName = input.value.trim();
+  userName = input.value.trim() || (window.KT ? KT.name() : "");
   if (!userName) userName = "תַּלְמִיד יָקָר";
   currentLesson = 0;
   score = 0;
@@ -1153,7 +1154,7 @@ function handleAnswer(lessonIdx, qi, correct, btnEl) {
     score++;
     currentLessonScore++;
     lessonData[lessonIdx].score++;
-    playCorrectSound();
+    window.KT ? KT.ok(1, lessonIdx + "-" + qi) : playCorrectSound();
     const title = msg(rand(correctMessages));
     const explain = lesson.questions[qi].explanation;
     const love = lesson.questions[qi].loveMsg;
@@ -1169,7 +1170,7 @@ function handleAnswer(lessonIdx, qi, correct, btnEl) {
     if (sb) sb.style.width = Math.round((score / (lessons.length * 3)) * 100) + '%';
     document.querySelectorAll('.score-badge').forEach(el => el.textContent = '⭐ ' + score + ' / ' + (lessons.length * 3));
   } else {
-    playWrongSound();
+    window.KT ? KT.bad() : playWrongSound();
     const title = msg(rand(wrongMessages));
     const explain = lesson.questions[qi].explanation;
     fbArea.innerHTML = `
@@ -1260,7 +1261,7 @@ async function sendScoreToTeacher() {
 }
 
 function showCertificate() {
-  playCompletionSound();
+  window.KT ? KT.end() : playCompletionSound();
   const total = lessons.length * 3;
   const pct = Math.round((score / total) * 100);
   let star = score === total ? '🏆' : score >= total * 0.8 ? '⭐' : '💪';
@@ -1318,6 +1319,7 @@ function showCertificate() {
 
 // ======= START =======
 showWelcomeScreen();
+window.KT&&KT.init({ id: "g8ba3934d61a0", title: "קריעת ים סוף – בשלח", again: () => { location.reload(); } });
 </script>
 </body>
 </html>

@@ -59,6 +59,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:4px solid #2563
 .modes{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
 .modes .btn.on{background:linear-gradient(135deg,#2f9e44,#1b7a34);color:#fff}
 
+@media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
 </style>
 <meta property="og:title" content="חידות וזאת הברכה | הקול החמישי">
 <meta property="og:description" content="חידות וזאת הברכה | הקול החמישי">
@@ -120,6 +121,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:4px solid #2563
 <p class="sig">הקול החמישי - הרב יהודה טאוב</p>
 </section>
 </main>
+<script src="kt-game.js"></script>
 <script>
 "use strict";
 const SLUG="vezot-habracha";
@@ -165,6 +167,7 @@ function finish(score,max){
   $("endQ").textContent=QUESTION;
   showBest();
   show("end");
+  window.KT&&KT.end();
 }
 
 const DATA=[
@@ -178,7 +181,7 @@ const DATA=[
 {r:"משה ראה בשמיים אוצרות. הגדול מכולם שמור למי שאין לו זכויות. איך קוראים לו? אוצר מתנת ___.",a:["חינם","מתנת חינם"],o:["חינם","זהב","כסף","שבת"],h:"משהו שמקבלים בלי לשלם",f:"מי שמקבל את דרכי ה' בלי תלונה מקבל מתנת חינם מאהבתו של ה'."},
 {r:"הלוחות השניים נעשו בידי אדם. כל אחד מכין לוח משלו - איפה? לוח ה___.",a:["לב"],o:["לב","בית","ספר","שולחן"],h:"הוא פועם בתוך החזה",f:"הרב שקופ: כל אחד מכין לוח בלב שלו במאמץ, והתורה נקנית לפי הכלי שלו."},
 {r:"אני נראית כמו חיסרון, אבל אני ברכה: בגללי חוזרים וחוזרים על הלימוד. מי אני?",a:["שכחה","השכחה"],o:["שכחה","שינה","עייפות","ריצה"],h:"משהו שקורה כשלא זוכרים",f:"אילו זכרנו הכול מיד, לא היינו חוזרים. כל חזרה מעמיקה את הלימוד בלב."},
-{r:"התורה נגמרת ומתחילה מיד מחדש. באיזה חג זה קורה?",a:["שמחת תורה"],o:["שמחת תורה","פורים","פסח","ל״ג בעומר"],h:"רוקדים בו עם ספרי התורה",f:"מסיימים את וזאת הברכה ומיד מתחילים בראשית. לימוד לא נגמר אף פעם."},
+{r:"התורה נגמרת ומתחילה מיד מחדש. באיזה חג זה קורה?",a:["שמחת תורה"],o:["שמחת תורה","חג מתן תורה","פסח","ל״ג בעומר"],h:"רוקדים בו עם ספרי התורה",f:"מסיימים את וזאת הברכה ומיד מתחילים בראשית. לימוד לא נגמר אף פעם."},
 {r:"הגר״א אמר: הברכה באה כששניים נעשים אחד. איך קוראים לזה? ___.",a:["אחדות","אחדות."],o:["אחדות","מחלוקת","תחרות","בדידות"],h:"מילה שמתחילה באות א",f:"העולם נברא בזוגות, והברכה באה מאחדות - כששניים נעשים אחד."}
 ];
 
@@ -208,7 +211,7 @@ function load(){
   setMode(mode);setProg(idx,items.length);
 }
 function ok(it){
-  done=true;let p=10-(hinted?3:0)-2*wrongs;if(p<2)p=2;score+=p;setScore(score);
+  done=true;let p=10-(hinted?3:0)-2*wrongs;if(p<2)p=2;score+=p;setScore(score);window.KT&&KT.ok();
   say(praise(),"good");
   $("ans").disabled=true;$("chk").disabled=true;$("hintBtn").disabled=true;$("mChoice").disabled=true;$("mType").disabled=true;
   [...$("opts").children].forEach(x=>{x.disabled=true;if(it.a.some(y=>norm(y)===norm(x.textContent)))x.classList.add("right");});
@@ -216,7 +219,7 @@ function ok(it){
   setProg(idx+1,items.length);
   $("cont").textContent=(idx+1>=items.length)?"לסיום":"לחידה הבאה";$("cont").hidden=false;$("cont").focus();
 }
-function bad(){wrongs++;say(retry(),"try");}
+function bad(){wrongs++;say(retry(),"try");window.KT&&KT.bad();}
 function pickOpt(b,t){
   if(done)return;const it=items[idx];
   if(it.a.some(y=>norm(y)===norm(t))){ok(it);}
@@ -238,6 +241,7 @@ $("cont").addEventListener("click",()=>{idx++;if(idx>=items.length){finish(score
 showBest();
 $("startBtn").addEventListener("click",()=>{show("play");startGame();});
 $("againBtn").addEventListener("click",()=>{show("play");startGame();});
+window.KT&&KT.init({id:"vezot-habracha",title:"חידות וזאת הברכה",again:()=>{show("play");startGame();}});
 </script>
 </body>
 </html>

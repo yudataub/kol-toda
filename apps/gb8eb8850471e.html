@@ -180,6 +180,7 @@
     <div class="confetti" id="confetti"></div>
   </div>
 
+<script src="../parasha-games/kt-game.js"></script>
 <script>
 const DATA = [
   // הכל מנוסח בקצרה וברור לתלמידים
@@ -217,6 +218,7 @@ let idx = 0;
 let score = 0;
 let wrong = 0;
 let showExplain = true;
+let locked = false; // one answer per card (a fast double click used to count twice)
 
 const qText = document.getElementById('qText');
 const explainBox = document.getElementById('explainBox');
@@ -249,9 +251,11 @@ function setQuestion(){
     qText.textContent = "סיימתם את כל הכרטיסים! כל הכבוד 🎉";
     kingBtn.disabled = true; govBtn.disabled = true;
     celebrate();
+    window.KT&&KT.end();
     return;
   }
   const q = queue[idx];
+  locked = false;
   qText.textContent = q.text;
   explainBox.textContent = showExplain ? "לחצו על אחד הכפתורים: מלך או מושל." : "";
   kingBtn.classList.remove('ok','bad');
@@ -296,12 +300,14 @@ function celebrate(){
   popToast("מעולה! סיום המשחק ✨", true);
 }
 function answer(sel){
+  if(locked || idx >= queue.length) return;
+  locked = true;
   const q = queue[idx];
   const isKing = sel === "מלך";
   const ok = q.correct === sel;
 
-  if(ok){ score++; blip(true); }
-  else { wrong++; blip(false); }
+  if(ok){ score++; window.KT ? KT.ok(1, q.text) : blip(true); }
+  else { wrong++; window.KT ? KT.bad() : blip(false); }
 
   scoreBox.textContent = `ניקוד: ${score} ✔︎ | שגיאות: ${wrong} ✖︎`;
   const btnOk = q.correct === "מלך" ? kingBtn : govBtn;
@@ -338,6 +344,7 @@ toggleExplain.addEventListener('click', ()=>{
 });
 
 init();
+        window.KT&&KT.init({ id: "gb8eb8850471e", title: "מלך או מושל – מלכות", again: () => { kingBtn.disabled = false; govBtn.disabled = false; init(); } });
 </script>
 </body>
 </html>

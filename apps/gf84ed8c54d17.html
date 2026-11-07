@@ -258,6 +258,7 @@
         <!-- תוכן המשחק הדינאמי יופיע כאן -->
     </div>
 
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         // --- גלובליים והגדרות ---
         const gameContainer = document.getElementById('gameContainer');
@@ -490,7 +491,7 @@
                 <div class="welcome-screen">
                     <h1>הָאֹכֶל כְּמַפְתֵּחַ לִבְרָכָה 💖</h1>
                     <p>אֵיזֶה שֵׁם נִרְשֹׁם לְךָ? 💫</p>
-                    <input type="text" id="nameInput" placeholder="הַכְנֵס אֶת שִׁמְךָ...">
+                    <input type="text" id="nameInput" placeholder="הַכְנֵס אֶת שִׁמְךָ..." value="${window.KT ? KT.name() : ''}">
                     <button class="primary-button" id="startBtn">בּוֹא נַתְחִיל! 💪</button>
                     <div id="introContainer" style="display: none; margin-top: 1.5em;"></div>
                 </div>
@@ -501,7 +502,7 @@
             const introContainer = document.getElementById('introContainer');
 
             startBtn.addEventListener('click', () => {
-                userName = nameInput.value.trim();
+                userName = nameInput.value.trim() || (window.KT ? KT.name() : '');
                 if (userName === '') {
                     alert('נָא לְהַכְנִיס שֵׁם כְּדֵי לְהַתְחִיל.');
                     return;
@@ -596,6 +597,7 @@
             let feedbackHTML;
             if (isCorrect) {
                 score++;
+                window.KT&&KT.ok(1, currentLessonIndex + "-" + currentQuestionIndex);
                 clickedButton.classList.add('correct-selection');
                 feedbackHTML = `
                     <div class="feedback correct">
@@ -604,6 +606,7 @@
                     </div>`;
             } else {
                 clickedButton.classList.add('incorrect-selection');
+                window.KT&&KT.bad();
                 feedbackHTML = `
                     <div class="feedback incorrect">
                         <h4>תְּשׁוּבָה שְׁגוּיָה... 😔</h4>
@@ -674,10 +677,12 @@
                 </div>
             `;
             sendScore();
+            window.KT&&KT.end();
         }
 
         // --- התחלת המשחק ---
         window.onload = displayWelcomeScreen;
+        window.KT&&KT.init({ id: "gf84ed8c54d17", title: "האוכל כמפתח לברכה – תולדות", again: () => { score = 0; currentLessonIndex = 0; currentQuestionIndex = 0; displayWelcomeScreen(); } });
     </script>
 </body>
 </html>

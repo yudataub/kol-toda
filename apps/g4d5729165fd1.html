@@ -117,6 +117,7 @@
   <footer><div class="mini">טיפ: אפשר ללמד גם דרך "מחשבים" — לחצו דין/מנהג וראו פידבק מיידי עם צליל וקונפטי.</div></footer>
 </div>
 
+<script src="../parasha-games/kt-game.js"></script>
 <script>
 /* ------------------------ תוכן השאלות (מהחוברות) ------------------------ */
 /* הערה: "correct" = "din" או "minhag" */
@@ -225,7 +226,10 @@ function drawConfetti(){
 drawConfetti();
 
 /* ------------------------------- הצגת שאלה ------------------------------ */
+let answered = false;
 function render(){
+  answered = false;
+  els.btnDin.disabled = false; els.btnMinhag.disabled = false;
   const q = QUESTIONS[i];
   els.qNum.textContent = i+1;
   els.qText.textContent = q.t;
@@ -237,17 +241,19 @@ render();
 
 /* --------------------------- בדיקת תשובה ולוגיקה ----------------------- */
 function answer(kind){
+  if(answered) return;
+  answered = true;
   const q = QUESTIONS[i];
   const isCorrect = (kind === q.correct);
   if(isCorrect){
     score++; els.score.textContent = score;
     els.fb.className = 'feedback show ok';
     els.fb.textContent = 'נכון! 🎯';
-    correctSound(); spawnConfetti(35);
+    window.KT ? KT.ok(1, i) : correctSound(); spawnConfetti(35);
   }else{
     els.fb.className = 'feedback show no';
     els.fb.textContent = 'לא נכון... נסו לחשוב שוב 📚';
-    wrongSound();
+    window.KT ? KT.bad() : wrongSound();
   }
   // כפתור "שאלה הבאה"
   const nextBtn = document.createElement('button');
@@ -259,11 +265,11 @@ function answer(kind){
   els.fb.appendChild(nextBtn);
   // נטרול לחיצה כפולה לפני מעבר
   els.btnDin.disabled = true; els.btnMinhag.disabled = true;
-  setTimeout(()=>{ els.btnDin.disabled=false; els.btnMinhag.disabled=false; }, 220);
 }
 function next(){
+  if(answered !== true) return;
   if(i<total-1){ i++; render(); }
-  else { finish(); }
+  else { answered = 'end'; finish(); }
 }
 els.btnDin.addEventListener('click', ()=>answer('din'));
 els.btnMinhag.addEventListener('click', ()=>answer('minhag'));
@@ -277,6 +283,7 @@ function finish(){
   els.finalTitle.textContent = pct>=90 ? 'אלופים! 🌟' : pct>=70 ? 'יפה מאוד! 🙌' : 'כל התחלה קשה 🙂';
   els.finalScore.textContent = `עניתם נכון על ${score} מתוך ${total} (${pct}%).`;
   winSound(); spawnConfetti(120);
+  window.KT&&KT.end();
 }
 els.again.onclick = ()=>{ i=0; score=0; els.score.textContent=0; els.end.style.display='none'; els.game.style.display='block'; render(); };
 els.showKey.onclick = ()=>{
@@ -294,6 +301,7 @@ window.addEventListener('keydown', (e)=>{
   if(e.key==='2' || e.key==='ArrowLeft') answer('minhag');
   if(e.key==='Enter') next();
 });
+window.KT&&KT.init({ id: "g4d5729165fd1", title: "דין או מנהג – חגי תשרי", again: () => { els.again.click(); } });
 </script>
 </body>
 </html>

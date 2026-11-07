@@ -54,6 +54,7 @@ h3.q{margin:0 0 8px;font-size:1.2rem}
 .sentence.bless .w{background:#fcd34d}
 .jar{text-align:center;font-size:1.1rem;margin:6px 0}
 
+@media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
 </style>
 <meta property="og:title" content="הפוך לברכה">
 <meta property="og:description" content="הפוך לברכה">
@@ -100,17 +101,18 @@ h3.q{margin:0 0 8px;font-size:1.2rem}
 </section>
 </main>
 <footer>הקול החמישי - הרב יהודה טאוב</footer>
+<script src="kt-game.js"></script>
 <script>
 const DATA={
 slug:"balak",
 talk:"למי תרצו לומר היום ברכה מתוך הכרת הטוב? איך תגידו לו אותה?",
 items:[
 {before:"מי שמסתכל על אחרים בעין [רעה] לא יכול לברך באמת.",after:"מי שמסתכל על אחרים בעין [טובה] יכול לברך באמת.",opts:["טובה","קטנה","עצובה"],know:"בלעם היה בעל עין רעה ולכן לא יכול היה לברך באמת. ברכה אמיתית יוצאת מאהבה."},
-{before:"מי שפגע בי? אני [אקלל אותו].",after:"מי שפגע בי? אני [אתפלל לטובתו].",opts:["אתפלל לטובתו","אצעק עליו","אברח ממנו"],know:"קללה אסורה. גם על מי שפגע בנו מתפללים לטובה ולא מקללים."},
+{before:"מי שפגע בי? אני [אקלל אותו].",after:"מי שפגע בי? אני [אתפלל לטובתו].",opts:["אתפלל לטובתו","אחזיר לו בדיוק מה שעשה לי","אברח ממנו"],know:"קללה אסורה. גם על מי שפגע בנו מתפללים לטובה ולא מקללים."},
 {before:"ברכה צריכה לצאת מלב [שונא].",after:"ברכה צריכה לצאת מלב [אוהב].",opts:["אוהב","עייף","כועס"],know:"כשהלב אוהב, הברכה אמיתית. לכן ברכה של מי שאוהב אותנו חשובה במיוחד."},
 {before:"בלק ביקש קללה, ובפי בלעם יצאה [קללה].",after:"בלק ביקש קללה, ובפי בלעם יצאה [ברכה].",opts:["ברכה","שתיקה","מלחמה"],know:"ה׳ הכניס דיבור קדוש דרך פיו של בלעם, כך שהברכה הגיעה לישראל נקייה מהרוע שבו."},
 {before:"עם ישראל הוא כמו [עפר] שלא שווה כלום.",after:"עם ישראל: כל יהודי הוא [עולם מלא].",opts:["עולם מלא","אבן קטנה","ענן עובר"],know:"׳מי מנה עפר יעקב׳ - ישראל מקדשים גם את החומר הנמוך ביותר, וכל יהודי הוא עולם מלא."},
-{before:"קדושה היא [לברוח מהעולם].",after:"קדושה היא [לסור מרע ולעשות טוב].",opts:["לסור מרע ולעשות טוב","להיות לבד תמיד","לא לדבר עם אף אחד"],know:"קדושה אינה בריחה מהעולם. היא סור מרע ועשה טוב, ושמירה על הפנים של הלב."},
+{before:"קדושה היא [לברוח מהעולם].",after:"קדושה היא [לסור מרע ולעשות טוב].",opts:["לסור מרע ולעשות טוב","להיות לבד תמיד","לשבת לבד ולא לדבר עם אף אחד"],know:"קדושה אינה בריחה מהעולם. היא סור מרע ועשה טוב, ושמירה על הפנים של הלב."},
 {before:"ה׳ מתאווה [להעניש] את ישראל.",after:"ה׳ מתאווה [לברך] את ישראל.",opts:["לברך","לשכוח","לדחות"],know:"ה׳ אוהב אותנו, והוא מתאווה לברך אותנו. מי שמסתכל בעין טובה ומברך, משפיע שפע."},
 {before:"בבית ששומרים בו על צניעות ופרטיות [אין שום דבר מיוחד].",after:"בבית ששומרים בו על צניעות ופרטיות [שורה השכינה].",opts:["שורה השכינה","נהיה רועש","נהיה גדול יותר"],know:"׳מה טובו אוהליך׳ - ה׳ השרה שכינתו על בתים שבהם שומרים על צניעות ופרטיות."}
 ]};
@@ -147,6 +149,7 @@ function finish(score,max){
   $('#endTalk').textContent=DATA.talk;
   window.scrollTo(0,0);
   $('#againBtn').focus();
+  window.KT&&KT.end();
 }
 function begin(){
   $('#intro').hidden=true;$('#end').hidden=true;$('#play').hidden=false;
@@ -183,8 +186,9 @@ function startGame(){
     const wrap=el('div');
     shuffle(it.opts).forEach(o=>{
       const b=optBtn(o,()=>{
-        if(o!==it.opts[0]){b.disabled=true;b.classList.add('wrong');firstTry=false;say(false);return;}
+        if(o!==it.opts[0]){b.disabled=true;b.classList.add('wrong');firstTry=false;say(false);window.KT&&KT.bad();return;}
         if(firstTry)score++;
+        window.KT&&KT.ok();
         blessings++;
         setScore(score);
         wrap.querySelectorAll('button').forEach(x=>x.disabled=true);
@@ -202,6 +206,7 @@ function startGame(){
   round();
 }
 
+window.KT&&KT.init({id:"balak",title:"הפוך לברכה",again:()=>{begin();}});
 </script>
 </body>
 </html>

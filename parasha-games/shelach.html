@@ -59,6 +59,7 @@ footer .back:hover{background:#ffe3ec}
 .found span{background:#d7f5e3;border:2px solid var(--good);border-radius:999px;padding:2px 12px;font-size:15px;font-weight:bold}
 .pulse{animation:pls 1s ease-in-out infinite alternate}
 @keyframes pls{from{opacity:.3}to{opacity:1}}
+@media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
 </style>
 <meta property="og:title" content="שלח: מחפשים בארץ הטובה">
 <meta property="og:description" content="שלח: מחפשים בארץ הטובה">
@@ -129,6 +130,7 @@ footer .back:hover{background:#ffe3ec}
 <footer>
 <a class="back" href="index.html" aria-label="חזרה לכל הפרשות">→ חזרה לכל הפרשות</a>
 </footer>
+<script src="kt-game.js"></script>
 <script>
 "use strict";
 const DATA={
@@ -198,6 +200,7 @@ function finish(score,max,question,extra){
   show("end");
   $("#againBtn").addEventListener("click",function(){fb("",null);show("game");startGame();});
   $("#againBtn").focus();
+  window.KT&&KT.end();
 }
 (function(){
   const b=parseInt(sget(GAME_KEY+"_best")||"0",10)||0;
@@ -276,7 +279,7 @@ function search(x,y){
   const it=cur();
   const d=Math.hypot(x-it.x,y-it.y);
   if(d<=it.r){found(it);return;}
-  st.miss++;
+  st.miss++;window.KT&&KT.bad();
   let w;
   if(d<110)w="חם מאוד! כמעט שם 🔥";
   else if(d<200)w="חם, אתם בכיוון הנכון ☀️";
@@ -287,7 +290,7 @@ function search(x,y){
 function found(it){
   st.locked=true;
   const pts=(st.hints===0&&st.miss<=2)?3:(st.miss<=5&&st.hints<=1?2:1);
-  st.score+=pts;
+  st.score+=pts;window.KT&&KT.ok();
   const ring=document.createElementNS(NS,"circle");
   ring.setAttribute("cx",it.x);ring.setAttribute("cy",it.y);ring.setAttribute("r",Math.min(it.r,34));
   ring.setAttribute("fill","none");ring.setAttribute("stroke","#1f9d5b");ring.setAttribute("stroke-width","5");
@@ -338,6 +341,7 @@ sc.addEventListener("keydown",function(e){
   }
 });
 sc.addEventListener("blur",function(){$("#cur").setAttribute("visibility","hidden");});
+window.KT&&KT.init({id:"shelach",title:"שלח: מחפשים בארץ הטובה",again:()=>{fb("",null);show("game");startGame();}});
 </script>
 </body>
 </html>

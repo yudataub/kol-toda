@@ -399,6 +399,7 @@
         <!-- תוכן דינמי יוצג כאן -->
     </div>
 
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         // הגדרות
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec';
@@ -678,7 +679,7 @@
                     <p style="font-size: 1.3em; line-height: 2; margin: 20px 0;">
                         אֵיזֶה שֵׁם נִרְשֹׁם לְךָ בִּתְעוּדַת הַהִצְטַיְּנוּת? 🏆✨
                     </p>
-                    <input type="text" id="nameInput" class="name-input" placeholder="הַכְנֵס אֶת שִׁמְךָ כָּאן 📝">
+                    <input type="text" id="nameInput" class="name-input" placeholder="הַכְנֵס אֶת שִׁמְךָ כָּאן 📝" value="${window.KT ? KT.name() : ''}">
                     <button class="btn" onclick="startGameWithName()">מוּכָן! בּוֹא נַתְחִיל! 🚀</button>
                 </div>
             `;
@@ -698,7 +699,7 @@
 
         function startGameWithName() {
             const nameInput = document.getElementById('nameInput');
-            userName = nameInput.value.trim();
+            userName = nameInput.value.trim() || (window.KT ? KT.name() : "");
             
             if (!userName) {
                 alert("אוֹי! שָׁכַחְתָּ לִכְתֹּב אֶת שִׁמְךָ! 😊");
@@ -822,7 +823,7 @@
                 selectedButton.classList.add('correct');
                 lessonScore++;
                 totalScore += 10;
-                playCorrectSound();
+                window.KT ? KT.ok(1, currentLesson + "-" + currentQuestion) : playCorrectSound();
                 
                 const randomEncouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
                 const randomLoveMessage = loveMessages[Math.floor(Math.random() * loveMessages.length)];
@@ -837,6 +838,7 @@
                 `;
             } else {
                 selectedButton.classList.add('incorrect');
+                window.KT&&KT.bad();
                 
                 feedbackDiv.innerHTML = `
                     <div class="feedback incorrect">
@@ -895,7 +897,7 @@
                 ` : passed && currentLesson === lessons.length - 1 ? `
                     <button class="btn" onclick="showFinalCertificate()">לִתְעוּדַת הַהִצְטַיְּנוּת! 🎓✨</button>
                 ` : `
-                    <button class="btn" onclick="startLesson(${currentLesson})">נְנַסֶּה שׁוּב 🔄💪</button>
+                    <button class="btn" onclick="totalScore -= lessonScore * 10; startLesson(${currentLesson})">נְנַסֶּה שׁוּב 🔄💪</button>
                 `}
             `;
         }
@@ -932,6 +934,7 @@
             
             // שליחת הציון אוטומטית
             sendScoreToTeacher();
+            window.KT&&KT.end();
             
             const percentage = Math.round((totalScore/120)*100);
             
@@ -978,6 +981,7 @@
 
         // אתחול המשחק
         renderIntro();
+        window.KT&&KT.init({ id: "ge8358aa6a137", title: "עקדת יצחק – וירא", again: () => { renderIntro(); } });
     </script>
 </body>
 </html>

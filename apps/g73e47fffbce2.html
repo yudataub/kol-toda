@@ -159,6 +159,7 @@
         <!-- Game content is rendered here by JavaScript -->
     </div>
 
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         const gameContainer = document.getElementById('gameContainer');
         let userName = "";
@@ -411,7 +412,7 @@
                 <h1>מַסָּע אֶל סוֹד הַמִּסְפָּר שְׁמוֹנֶה 🕎✨</h1>
                 <p>לִפְנֵי שֶׁנַּתְחִיל אֶת הַהַרְפַּתְקָה הַמֻּפְלָאָה שֶׁלָּנוּ, נִשְׂמַח לָדַעַת אֶת שִׁמְךָ.</p>
                 <label for="nameInput"><h3>אֵיזֶה שֵׁם נִרְשֹׁם לְךָ בִּתְעוּדָה? 💫</h3></label>
-                <input type="text" id="nameInput" placeholder="הַשֵּׁם שֶׁלִּי הוּא..." onkeydown="if(event.key==='Enter') submitName()">
+                <input type="text" id="nameInput" placeholder="הַשֵּׁם שֶׁלִּי הוּא..." value="${window.KT ? KT.name() : ''}" onkeydown="if(event.key==='Enter') submitName()">
                 <button class="start-button" onclick="submitName()">מַתְחִילִים!</button>
             `;
             document.getElementById('nameInput').focus();
@@ -419,7 +420,7 @@
 
         function submitName() {
             const nameInput = document.getElementById('nameInput');
-            userName = nameInput.value.trim();
+            userName = nameInput.value.trim() || (window.KT ? KT.name() : "");
             if (userName) {
                 populateLessonsData();
                 currentLessonIndex = 0;
@@ -470,7 +471,7 @@
             let feedbackHTML;
             if (isCorrect) {
                 score++;
-                playSound('correct');
+                window.KT ? KT.ok(1, currentLessonIndex + "-" + questionIdx) : playSound('correct');
                 feedbackHTML = `
                     <div class="feedback correct">
                         <p><strong>מְצֻיָּן, ${userName}! ⭐</strong></p>
@@ -480,7 +481,7 @@
                     </div>
                 `;
             } else {
-                playSound('wrong');
+                window.KT ? KT.bad() : playSound('wrong');
                 const correctAnswer = questionData.answers.find(a => a.isCorrect).text;
                 feedbackHTML = `
                     <div class="feedback incorrect">
@@ -523,6 +524,7 @@
         }
 
         function showEndScreen() {
+            window.KT&&KT.end();
             const totalQuestions = lessonsData.reduce((acc, l) => acc + l.questions.length, 0);
             gameContainer.innerHTML = `
                 <div class="certificate">
@@ -549,6 +551,7 @@
         }
 
         startGame();
+        window.KT&&KT.init({ id: "g73e47fffbce2", title: "מסע אל סוד המספר שמונה – חנוכה", again: () => { startGame(); } });
     </script>
 </body>
 </html>

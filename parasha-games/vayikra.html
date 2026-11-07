@@ -132,6 +132,7 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:4px solid 
 </section>
 </main>
 </div>
+<script src="kt-game.js"></script>
 <script>
 const CONFIG = {
   "slug": "vayikra",
@@ -321,6 +322,7 @@ function finish(score, max, extraLine, opt) {
   if (score > best) { best = score; Store.set(BEST_KEY, String(score)); $('#bestMsg').textContent = 'שיא חדש! 🎉'; }
   else { $('#bestMsg').textContent = best > 0 ? 'השיא שלך: ' + best : ''; }
   show('end');
+  window.KT&&KT.end();
 }
 function initShell() {
   $('#loveLine').textContent = CONFIG.love;
@@ -498,7 +500,7 @@ function checkWord(wi) {
   const ks = wordCells[wi];
   if (!ks.every(function (k) { return cells[k].val; })) return;
   if (ks.every(function (k) { return cells[k].val === cells[k].ans; })) {
-    w.done = true; solved++;
+    w.done = true; solved++; window.KT&&KT.ok();
     ks.forEach(function (k) { cells[k].locked = true; cells[k].bad = false; });
     updateScore();
     say(praise(), 'good');
@@ -513,7 +515,7 @@ function checkWord(wi) {
     }
     paint();
   } else {
-    say(retry() + ' בדקו את האותיות במילה.', 'soft');
+    say(retry() + ' בדקו את האותיות במילה.', 'soft'); window.KT&&KT.bad();
   }
 }
 
@@ -572,6 +574,7 @@ document.addEventListener('keydown', function (e) {
 
 initShell();
 
+window.KT&&KT.init({id:"vayikra",title:"תשבץ – ויקרא",again:()=>{startGame();}});
 </script>
 </body>
 </html>

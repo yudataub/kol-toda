@@ -336,6 +336,7 @@
         <!-- תוכן דינמי יוצג כאן -->
     </div>
 
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         // 🎵 Web Audio API - יצירת צלילים
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -665,7 +666,7 @@
                         <p style="font-size: 1.2em; text-align: center; margin-bottom: 15px;">
                             <strong>אֵיךְ לִקְרֹא לְךָ? 💫</strong>
                         </p>
-                        <input type="text" id="nameInput" class="name-input" placeholder="הַקְלֵד/י אֶת שִׁמְךָ כָּאן...">
+                        <input type="text" id="nameInput" class="name-input" placeholder="הַקְלֵד/י אֶת שִׁמְךָ כָּאן..." value="${window.KT ? KT.name() : ''}">
                     </div>
                     
                     <button class="btn-primary" onclick="startGame()">בּוֹאוּ נַתְחִיל! 🚀</button>
@@ -676,7 +677,7 @@
         // התחלת המשחק
         function startGame() {
             const nameInput = document.getElementById('nameInput');
-            userName = nameInput ? nameInput.value.trim() : '';
+            userName = (nameInput ? nameInput.value.trim() : '') || (window.KT ? KT.name() : '');
             
             if (!userName) {
                 alert('אָנָּא הַזֵּן/הַזִּינִי אֶת שִׁמְךָ לִפְנֵי הַהַתְחָלָה! 💫');
@@ -800,8 +801,9 @@
                         <em>הַשֵּׁם שָׂמֵחַ כְּשֶׁאַתָּה/אַתְּ לוֹמֵד/ת בְּאַהֲבָה! 💖</em>
                     </div>
                 `;
-                playSound([523.25, 659.25, 783.99]); // C-E-G
+                window.KT ? KT.ok(1, currentLesson + "-" + currentQuestionIndex) : playSound([523.25, 659.25, 783.99]); // C-E-G
             } else {
+                window.KT&&KT.bad();
                 feedbackArea.innerHTML = `
                     <div class="feedback wrong">
                         <strong>לֹא בְּדִיּוּק... 🤔</strong><br><br>
@@ -855,7 +857,7 @@
                         קִבַּלְתָּ/קִבַּלְתְּ ${lessonScore}/3 נָכוֹן.<br>
                         צָרִיךְ לְפָחוֹת 2 נְכוֹנוֹת כְּדֵי לְהַמְשִׁיךְ.<br><br>
                         <em>לִפְעָמִים גַּם בַּדֶּרֶךְ לִטְעוֹת אָנוּ לוֹמְדִים לְאַהֵב אֶת הַשֵּׁם 💖</em><br><br>
-                        <button class="btn-primary" onclick="renderLesson(${currentLesson})">נַסֶּה שׁוּב בְּאַהֲבָה 💪</button>
+                        <button class="btn-primary" onclick="score -= lessonScore; renderLesson(${currentLesson})">נַסֶּה שׁוּב בְּאַהֲבָה 💪</button>
                     </div>
                 `;
             }
@@ -928,11 +930,12 @@
             `;
             
             // שליחת נתונים
-            sendScoreToTeacher();
+            sendScoreToTeacher(); window.KT&&KT.end();
         }
 
         // התחלה
         renderIntro();
+        window.KT&&KT.init({ id: "gf3ec4456a64a", title: "ההודיה היא הדלת אל השם – חנוכה", again: () => { renderIntro(); } });
     </script>
 </body>
 </html>

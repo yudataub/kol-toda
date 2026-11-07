@@ -56,6 +56,7 @@ h3.q{margin:0 0 8px;font-size:1.2rem}
 .cardItem.drag{opacity:.85;z-index:99;position:fixed;width:min(80vw,380px);margin:0}
 .pinTxt{font-size:15px;fill:#3b2412;font-weight:bold}
 
+@media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
 </style>
 <meta property="og:title" content="מפת חלוקה">
 <meta property="og:description" content="מפת חלוקה">
@@ -102,6 +103,7 @@ h3.q{margin:0 0 8px;font-size:1.2rem}
 </section>
 </main>
 <footer>הקול החמישי - הרב יהודה טאוב</footer>
+<script src="kt-game.js"></script>
 <script>
 const DATA={
 slug:"pinchas",
@@ -161,6 +163,7 @@ function finish(score,max){
   $('#endTalk').textContent=DATA.talk;
   window.scrollTo(0,0);
   $('#againBtn').focus();
+  window.KT&&KT.end();
 }
 function begin(){
   $('#intro').hidden=true;$('#end').hidden=true;$('#play').hidden=false;
@@ -220,13 +223,13 @@ function startGame(){
     if(locked||i>=items.length)return;
     const it=items[i];
     if(zid!==it.z){
-      firstTry=false;say(false);
+      firstTry=false;say(false);window.KT&&KT.bad();
       const g=svg.querySelector('[data-zone="'+zid+'"]');
       if(g){g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),400);}
       return;
     }
     locked=true;
-    if(firstTry)score++;
+    if(firstTry)score++;window.KT&&KT.ok();
     counts[zid]++;
     pinsG[zid].textContent='📍 '+counts[zid]+' כרטיסים';
     setScore(score);
@@ -269,6 +272,7 @@ function startGame(){
   next();
 }
 
+window.KT&&KT.init({id:"pinchas",title:"מפת חלוקה",again:()=>{begin();}});
 </script>
 </body>
 </html>

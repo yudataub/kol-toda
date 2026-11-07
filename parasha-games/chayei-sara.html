@@ -41,6 +41,7 @@ ul.clues li b{display:inline-block;min-width:1.2em}
 .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px}
 .sig{text-align:center;font-weight:700;color:var(--c1);margin-top:12px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
 </style>
 <meta property="og:title" content="חיי שרה - תפזורת">
 <meta property="og:description" content="חיי שרה - תפזורת">
@@ -93,6 +94,7 @@ ul.clues li b{display:inline-block;min-width:1.2em}
 </section>
 <p style="text-align:center"><a href="index.html">חזרה לכל הפרשות</a></p>
 </main>
+<script src="kt-game.js"></script>
 <script>
 "use strict";
 /* ===== DATA: מילה (w), רמז (h), ידעת (f). בכל משחק נבחרות 8 מילים מתוך הרשימה ===== */
@@ -197,7 +199,7 @@ function evaluate(a,b){
   const rev=str.split("").reverse().join("");
   const idx=words.findIndex((o,i)=>!foundSet.has(i)&&(o.w===str||o.w===rev));
   if(idx>=0){
-    foundSet.add(idx);
+    foundSet.add(idx);window.KT&&KT.ok();
     const col=DATA.colors[idx%DATA.colors.length];
     l.forEach(p=>{const el=cellAt(p.r,p.c);el.classList.add("found");el.style.background=col;});
     const li=$("cl"+idx);li.classList.add("done");li.innerHTML="";li.appendChild(document.createTextNode("✔ "+words[idx].w+" - "+words[idx].h));
@@ -206,6 +208,7 @@ function evaluate(a,b){
     update();
     if(foundSet.size===words.length)setTimeout(finish,1300);
   }else{
+    window.KT&&KT.bad();
     $("msg").textContent=DATA.retry[qi++%DATA.retry.length];$("msg").className="msg no";
   }
 }
@@ -259,10 +262,12 @@ function finish(){
   const b=+getBest()||0;let extra="";if(sc>b){setBest(sc);extra=" - שיא חדש!";}
   $("finalScore").textContent="הציון שלך: "+sc+" מתוך "+max+extra;
   $("talk").textContent="💬 לשיחה: "+DATA.talk;
+  window.KT&&KT.end();
 }
 $("startBtn").addEventListener("click",startGame);
 $("againBtn").addEventListener("click",()=>{showBest();startGame();});
 showBest();
+window.KT&&KT.init({id:"chayei-sara",title:"חיי שרה – תפזורת",again:()=>{showBest();startGame();}});
 </script>
 </body>
 </html>

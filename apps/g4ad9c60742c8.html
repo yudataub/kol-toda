@@ -179,6 +179,7 @@ button:disabled {
     <div id="gameContainer"></div>
 
     <!-- אזור ה-JavaScript -->
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         // מבנה הנתונים הראשי המכיל את כל שיעורי המשחק.
         const gameData = [
@@ -382,7 +383,7 @@ button:disabled {
 
         // קבלת שם המשתמש
         function askName() {
-            userName = prompt('אֵיזֶה שֵׁם נִרְשֹׁם לְךָ בִּתְעוּדָה? 💫', 'אורח/ת');
+            userName = (window.KT ? KT.name() : '') || prompt('אֵיזֶה שֵׁם נִרְשֹׁם לְךָ בִּתְעוּדָה? 💫', 'אורח/ת');
             if (!userName) {
                 userName = 'אורח/ת';
             }
@@ -463,7 +464,7 @@ button:disabled {
                 button.classList.add('correct');
                 explanationElement.classList.add('correct');
                 score += 10;
-                playSound(true);
+                window.KT ? KT.ok(1, lessonIndex + "-" + questionIndex) : playSound(true);
             } else {
                 button.classList.add('incorrect');
                 explanationElement.classList.add('incorrect');
@@ -473,7 +474,7 @@ button:disabled {
                          btn.classList.add('correct');
                      }
                 }
-                playSound(false);
+                window.KT ? KT.bad() : playSound(false);
             }
             
             explanationElement.style.display = 'block';
@@ -518,6 +519,7 @@ button:disabled {
         function renderFinalScreen() {
             const totalQuestions = gameData.reduce((acc, lesson) => acc + lesson.questions.length, 0);
             const percentage = Math.round((score / (totalQuestions * 10)) * 100);
+            window.KT&&KT.end();
 
             gameContainer.innerHTML = `
                 <div class="final-card">
@@ -559,6 +561,7 @@ button:disabled {
 
         // התחלת המשחק עם טעינת הדף
         document.addEventListener('DOMContentLoaded', startGame);
+        window.KT&&KT.init({ id: "g4ad9c60742c8", title: "יושב תהילות ישראל – הודאה ושבח", again: () => { restartGame(); } });
     </script>
 </body>
 </html>

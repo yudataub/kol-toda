@@ -203,6 +203,7 @@
   </div>
 </div>
 
+<script src="../parasha-games/kt-game.js"></script>
 <script>
 const scenarios = [
   {
@@ -271,6 +272,8 @@ let currentIndex = 0;
 let score = 0;
 let answered = false;
 
+function shuffleScenarios() { for (let k = scenarios.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [scenarios[k], scenarios[j]] = [scenarios[j], scenarios[k]]; } }
+shuffleScenarios();
 document.getElementById('total').textContent = scenarios.length;
 
 function loadScenario() {
@@ -293,6 +296,7 @@ function handleAnswer(choice) {
   const s = scenarios[currentIndex];
   const correct = (choice === s.answer);
   if (correct) score++;
+  if (window.KT) { if (correct) KT.ok(1, currentIndex); else KT.bad(); }
 
   document.getElementById('score').textContent = score;
   document.getElementById('kingBtn').disabled = true;
@@ -335,9 +339,11 @@ function showFinal() {
     msg = "שווה לחזור על הנקודות המרכזיות: מלך זה מי שממליכים אותו מרצון ואהבה, ומושל זה מי שמצייתים לו מפחד או חובה. איך אתם רוצים להמליך את ה'?";
   }
   document.getElementById('finalMessage').textContent = msg;
+  window.KT&&KT.end();
 }
 
 document.getElementById('restartBtn').addEventListener('click', () => {
+  shuffleScenarios();
   currentIndex = 0;
   score = 0;
   document.getElementById('score').textContent = 0;
@@ -347,6 +353,7 @@ document.getElementById('restartBtn').addEventListener('click', () => {
 });
 
 loadScenario();
+window.KT&&KT.init({ id: "g8585c176742c", title: "מלך או מושל – המלכת ה'", again: () => { document.getElementById('restartBtn').click(); } });
 </script>
 </body>
 </html>

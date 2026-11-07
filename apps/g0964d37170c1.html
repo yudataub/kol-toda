@@ -252,6 +252,7 @@
 <body>
     <div id="gameContainer"></div>
 
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         let userName = "";
         let currentLessonIndex = -1;
@@ -392,6 +393,7 @@
             nameInput.type = 'text';
             nameInput.id = 'nameInput';
             nameInput.placeholder = 'הַכְנֵס אֶת שִׁמְךָ...';
+            nameInput.value = window.KT ? KT.name() : '';
 
             const startBtn = document.createElement('button');
             startBtn.id = 'startGameBtn';
@@ -400,7 +402,7 @@
             gameContainer.append(title, introP, nameH3, nameInput, startBtn);
 
             const handleStart = () => {
-                userName = nameInput.value.trim();
+                userName = nameInput.value.trim() || (window.KT ? KT.name() : '');
                 if (userName) {
                     startLessons();
                 } else {
@@ -559,12 +561,12 @@
             if (clickedButton.textContent === correctAnswer) {
                 clickedButton.classList.add('correct');
                 score++;
-                playSound('correct');
+                window.KT ? KT.ok(1, currentLessonIndex + "-" + questionObj.questionText) : playSound('correct');
                 let personalizedEncouragement = questionObj.encouragement.replace('!', `, ${userName}!`);
                 encouragementP.innerHTML = `מְצֻיָּן, ${userName}! ⭐ <br/> ${personalizedEncouragement}`;
             } else {
                 clickedButton.classList.add('incorrect');
-                playSound('incorrect');
+                window.KT ? KT.bad() : playSound('incorrect');
                 allButtons.forEach(btn => {
                     if (btn.textContent === correctAnswer) {
                         btn.classList.add('correct');
@@ -637,6 +639,7 @@
             certificateDiv.append(certTitle, certAwardP, scoreH3, hr, verseH4, verseP, questionsH4, questionsOl, br, raffleLink, contactP);
             gameContainer.appendChild(certificateDiv);
             playSound('correct');
+            window.KT&&KT.end();
         }
 
         function shuffleArray(array) {
@@ -681,6 +684,7 @@
         }
 
         initGame();
+        window.KT&&KT.init({ id: "g0964d37170c1", title: "כוחה של ההודיה – חנוכה", again: () => { score = 0; currentLessonIndex = -1; initGame(); } });
     </script>
 </body>
 </html>

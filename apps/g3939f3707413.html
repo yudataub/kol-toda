@@ -79,6 +79,7 @@
         <div class="content" id="content"></div>
     </div>
 
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-wgLUmHzqneFw1r4S_pdkcc398yoLMlJfu3CJUvbcZTMI8QZMkGB_42Evl7L0BJxF/exec";
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -230,7 +231,7 @@
         }
 
         function askUserName() {
-            userName = prompt("מָה שִׁמְךָ? 💫");
+            userName = (window.KT && KT.name()) || prompt("מָה שִׁמְךָ? 💫");
             if (!userName || userName.trim() === "") userName = "תַּלְמִיד יָקָר";
         }
 
@@ -300,8 +301,8 @@
             if (isCorrect) {
                 score++;
                 currentLessonCorrect++;
-                playSound([523, 659, 784]);
-            }
+                window.KT ? KT.ok(1, currentLesson + "-" + currentQuestion) : playSound([523, 659, 784]);
+            } else { window.KT&&KT.bad(); }
             const lesson = lessons[currentLesson];
             const question = lesson.questions[currentQuestion];
             const feedback = document.getElementById("feedback");
@@ -346,6 +347,7 @@
         }
 
         function retryLesson() {
+            score -= currentLessonCorrect;
             currentQuestion = 0;
             currentLessonCorrect = 0;
             displayLesson();
@@ -356,7 +358,7 @@
             const finalPercentage = Math.round((score / totalQuestions) * 100);
             document.getElementById("content").innerHTML = `<div style="text-align: center; padding: 40px;"><h2 style="color: #667eea; font-size: 2.8em; margin-bottom: 30px;">🎉 כָּל הַכָּבוֹד, ${userName}! סִיַּמְתָּ אֶת הַמַּסָּע! 🎉</h2><div class="certificate"><h3>🏆 תְּעוּדַת הִצְטַיְּנוּת 🏆</h3><p style="font-size: 1.4em; margin: 20px 0;"><strong>${userName}</strong><br>סִיֵּם בְּהַצְלָחָה אֶת מַסַּע הַלִּמּוּד<br><strong style="font-size: 1.2em;">"נֵס חֲנֻכָּה: מַסַּע שֶׁל אַהֲבָה וְאוֹר"</strong></p><p style="font-size: 2em; color: #d84315; font-weight: bold; margin: 25px 0;">צִיּוּן סוֹפִי: ${score}/${totalQuestions} (${finalPercentage}%)</p><p style="font-size: 1.2em; color: #5d4037; font-style: italic; margin-top: 20px;">"וְאָהַבְתָּ אֵת ה' אֱלֹקֶיךָ בְּכָל לְבָבְךָ וּבְכָל נַפְשְׁךָ וּבְכָל מְאֹדֶךָ"</p></div><div class="reflection"><h4>💭 שְׁאֵלוֹת לְמַחְשָׁבָה עֲמֻקָּה:</h4><p style="text-align: right;">• אֵיךְ תַּדְלִיק הַלַּיְלָה אֶת הַנֵּרוֹת אַחֶרֶת, עִם הֲבָנָה חֲדָשָׁה? 🕯️<br><br>• אֵיזוֹ הוֹדָיָה אִישִׁית אַתָּה מַרְגִּישׁ עַכְשָׁיו עַל נֵס חֲנֻכָּה? 🙏<br><br>• מָה הַהֶבְדֵּל בֵּין "לְקַיֵּם מִצְוָה" לְ"לִחְיוֹת אֶת הַמִּצְוָה"? 💖</p></div><p style="font-size: 1.5em; color: #f5576c; font-weight: bold; margin: 40px 0;">🎉 מַזָּל טוֹב, ${userName}! נִכְנַסְתָּ לְהַגְרָלָה נוֹשֵׂאת פְּרָסִים! 🎁</p><a href="https://forms.gle/A66uubei4XSX6SG2A" target="_blank" class="raffle-link">👉 לְרִשּׁוּם לְהַגְרָלָה לְחַץ כָּאן</a><div class="credits"><hr style="margin: 30px 0; border: none; border-top: 3px solid #667eea;"><p><strong>נִבְנָה בְּאַהֲבָה עַל יְדֵי:</strong><br><strong style="font-size: 1.5em; color: #667eea;">הָרַב יְהוּדָה טָאוּב מִקִּרְיַת אַתָּא</strong><br>📞 <strong>לִפְרָטִים: 0527139520</strong></p></div></div>`;
             sendScoreToTeacher();
-            playSound([523, 659, 784, 1047, 784, 659], 0.3);
+            window.KT ? KT.end() : playSound([523, 659, 784, 1047, 784, 659], 0.3);
         }
 
         function updateProgress() {
@@ -377,6 +379,7 @@
         window.onload = function() {
             displayIntro();
         };
+        window.KT&&KT.init({ id: "g3939f3707413", title: "נס חנוכה מסע של אהבה ואור – חנוכה", again: () => { location.reload(); } });
     </script>
 </body>
 </html>

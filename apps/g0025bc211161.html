@@ -315,6 +315,7 @@ body {
 <div class="float-badge" id="float-badge">✅ מצוין!</div>
 <div class="gen-celebrate" id="gen-celebrate"><div class="gc-big">🎊 דור הושלם!</div><div class="gc-small"></div></div>
 
+<script src="../parasha-games/kt-game.js"></script>
 <script>
 // ══════════════════════════════════════════════
 // DATA — חכמים, דורות וסיפורי תקופה
@@ -640,7 +641,7 @@ function placeCard(cardId,dropZone) {
   const dzPeriod=dropZone.getAttribute('data-period');
   const dzGen=parseInt(dropZone.getAttribute('data-gen'));
 
-  if(sage.period!==dzPeriod){ showFeedback('❌ החכם הזה שייך לתקופה אחרת!','error'); return; }
+  if(sage.period!==dzPeriod){ window.KT&&KT.bad(); showFeedback('❌ החכם הזה שייך לתקופה אחרת!','error'); return; }
 
   // remove from current spot
   const existing=document.getElementById(`card-${cardId}`);
@@ -667,8 +668,9 @@ function placeCard(cardId,dropZone) {
     card.classList.remove('placed-wrong');
     dropZone.classList.add('just-correct');
     dropZone.addEventListener('animationend',()=>dropZone.classList.remove('just-correct'),{once:true});
-    playCorrect(); showFloatingBadge();
+    window.KT ? KT.ok(1, cardId) : playCorrect(); showFloatingBadge();
   } else {
+    window.KT&&KT.bad();
     state.correct.delete(cardId);
     card.classList.add('placed-wrong'); // shows return button + red border
   }
@@ -794,6 +796,7 @@ function showWin() {
   document.getElementById('win-stars').textContent=stars;
   document.getElementById('win-msg').innerHTML=msg+`<br><small style="opacity:.6">זמן: ${fmt(t)}</small>`;
   document.getElementById('win-overlay').classList.add('show');
+  if(!state.revealed) window.KT&&KT.end();
 }
 function showGenCelebrate(label) {
   const c=document.getElementById('gen-celebrate');
@@ -853,6 +856,7 @@ function fmt(s){ return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
 
 // ── INIT ──
 buildGame();
+window.KT&&KT.init({ id: "g0025bc211161", title: "סדר את החכמים לפי הדורות – חכמי ישראל", again: () => { resetGame(); } });
 </script>
 </body>
 </html>

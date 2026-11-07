@@ -129,6 +129,7 @@
         </div>
     </div>
 
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         const conceptsData = [
             { concept: "קרא חדתא", explanation: "דלעת חדשה שמתחדשת משנה לשנה" },
@@ -151,6 +152,7 @@
         let currentCards = [];
         let flippedCardIndex = null;
         let score = 0;
+        let solvedCards = new Set(); // cards already answered correctly cannot be flipped again
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -163,6 +165,8 @@
         function shuffleCards() {
             currentCards = shuffleArray([...conceptsData]).slice(0, 12);
             flippedCardIndex = null;
+            solvedCards = new Set();
+            window.ktSeen = new Set();
             document.getElementById('score').textContent = '0';
             score = 0;
             renderCards();
@@ -182,13 +186,14 @@
                 } else {
                     cardElement.innerHTML = `<span style="font-size: 24px; font-weight: bold;">${index + 1}</span>`;
                 }
+                if (solvedCards.has(index) && flippedCardIndex !== index) { cardElement.style.opacity = '0.45'; cardElement.style.cursor = 'default'; }
                 cardElement.onclick = () => flipCard(index);
                 grid.appendChild(cardElement);
             });
         }
 
         function flipCard(index) {
-            if (flippedCardIndex === null) {
+            if (flippedCardIndex === null && !solvedCards.has(index)) {
                 flippedCardIndex = index;
                 renderCards();
                 showOptions(currentCards[index].concept);
@@ -218,17 +223,21 @@
         }
 
         function checkAnswer(selectedOption, correctOption) {
+            if (flippedCardIndex === null || solvedCards.has(flippedCardIndex)) return;
             const isCorrect = selectedOption === correctOption;
             const message = document.getElementById('message');
             const nextBtn = document.getElementById('nextBtn');
             
             if (isCorrect) {
+                solvedCards.add(flippedCardIndex);
                 score++;
+                if (window.KT) { KT.ok(1, correctOption); (window.ktSeen = window.ktSeen || new Set()).add(correctOption); if (ktSeen.size === currentCards.length) KT.end(); }
                 document.getElementById('score').textContent = score;
                 message.className = 'message success';
                 message.textContent = 'כל הכבוד! תשובה נכונה';
                 nextBtn.style.display = 'inline-block';
             } else {
+                window.KT&&KT.bad();
                 message.className = 'message error';
                 message.textContent = 'טעות. נסה שוב';
             }
@@ -254,6 +263,7 @@
 
         // Initialize the game
         shuffleCards();
+        window.KT&&KT.init({ id: "g7a1082e17f4b", title: "ברכת שהחיינו מושגים ומשמעותם – ברכות", again: () => { shuffleCards(); } });
     </script>
 </body>
 </html>
