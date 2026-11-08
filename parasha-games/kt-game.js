@@ -214,6 +214,16 @@
     R.pts += PER_RIGHT * n; if (n) R.right++; R.answered++; R.streak++;
     soundStreak(R.streak);
     var head = R.answered < FB_OK.length ? FB_OK[R.answered] : draw("ok10", FB_OK_10);
+    if (G.praise && G.praise.tiers) {   // מַחְמָאוֹת שֶׁל סִדְרָה (מִשְׂחֲקֵי הַשַּׁ"ס, 8.11): עוֹלוֹת לְפִי כָּל הַתְּשׁוּבוֹת הַנְּכוֹנוֹת שֶׁל הַיֶּלֶד בְּכָל הַמִּשְׂחָקִים
+      var cnt = (Number(get("kt-right")) || 0) + 1; put("kt-right", String(cnt));
+      var eff = Math.max(cnt, Math.floor(total() / PER_RIGHT)), at = G.praise.at || [0], t = 0;
+      for (var i = 0; i < at.length; i++) if (eff >= at[i]) t = i;
+      t = Math.min(t, G.praise.tiers.length - 1);
+      head = draw("pr" + t, G.praise.tiers[t]);
+      if (G.praise.audio && !muted()) {   // הַקְלָטָה שֶׁל הַמַּחְמָאָה (Gemini TTS): <audio>p<מַדְרֵגָה>-<מִסְפָּר>.mp3
+        try { if (G.voice) G.voice.pause(); G.voice = new Audio(G.praise.audio + "p" + t + "-" + G.praise.tiers[t].indexOf(head) + ".mp3"); G.voice.play().catch(function () {}); } catch (e) {}
+      }
+    }
     toast("ok", "<b>" + nm(head) + "</b><small>" + draw("love", LOVE_OK) + "</small>" +
       (R.streak >= 3 ? '<span class="st">🔥 ' + R.streak + " בָּרֶצֶף!</span>" : "") + (n ? ' <span class="st" style="background:#7b5cff">+' + PER_RIGHT * n + "</span>" : ""));
     drawBar();
@@ -289,7 +299,8 @@
     G.id = String((o && o.id) || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 40);
     G.title = (o && o.title) || document.title || "";
     G.again = o && o.again;
-    G.home = o && o.home; G.homeTxt = o && o.homeTxt;   // משחק מחוץ לפרשה (כמו ketuvim/): לאן מוביל "לכל המשחקים"
+    G.home = o && o.home; G.homeTxt = o && o.homeTxt;
+    G.praise = o && o.praise;   // {at:[0,10,…], tiers:[[…],[…]]} – מַחְמָאוֹת מִשֶּׁלָּהּ, בִּמְקוֹם FB_OK (מִשְׂחֲקֵי הַשַּׁ"ס: shas-games/praise.js)   // משחק מחוץ לפרשה (כמו ketuvim/): לאן מוביל "לכל המשחקים"
     var go = function () { if (!$("ktBar")) build(); drawBar(); fetchBase(); if (!me().name) openReg(); };
     if (document.body) go(); else document.addEventListener("DOMContentLoaded", go);
   }
