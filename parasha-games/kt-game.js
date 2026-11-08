@@ -106,6 +106,51 @@
     "גַּם חֲכָמִים גְּדוֹלִים לָמְדוּ מִטָּעֻיּוֹת 📚",
     "הַשֵּׁם לֹא מְחַכֶּה שֶׁנִּהְיֶה מֻשְׁלָמִים – הוּא שָׂמֵחַ שֶׁאֲנַחְנוּ מִשְׁתַּדְּלִים 🤍",
     "כָּל טָעוּת הִיא צַעַד לְהַצְלָחָה. מַמְשִׁיכִים! 🌱"];
+  /* מַחְמָאוֹת הַמִּשְׁתַּמֵּשׁ (8.11.2026) עִם הַקְלָטָה בְּקוֹל גֶּבֶר (Gemini TTS, קוֹל Iapetus, torah-game/parasha-games-server/tts_praise.py).
+     רַק בְּמִשְׂחֲקֵי הַפָּרָשָׁה (parasha-games/, apps/), מֵהַתְּשׁוּבָה הַשְּׁלִישִׁית. כְּתוֹבוֹת הַקּוֹל מְפֹרָשׁוֹת – kol/offload.py מַחְלִיף אוֹתָן לְכְתוֹבֶת מְלֵאָה. */
+  var PRAISE = [
+    "כַּמָּה נַחַת רוּחַ עָשִׂיתָ עַכְשָׁו לְהַשֵּׁם עִם הַתְּשׁוּבָה הַזֹּאת! 😊",
+    "הַקָּדוֹשׁ בָּרוּךְ הוּא כָּל כָּךְ שָׂמֵחַ לִשְׁמֹעַ אוֹתְךָ לוֹמֵד וּמֵבִין אֶת הַתּוֹרָה שֶׁלּוֹ! 💖",
+    "אֵיזֶה חִיּוּךְ וְשִׂמְחָה הֵבֵאתָ עַכְשָׁו לְאָבִינוּ שֶׁבַּשָּׁמַיִם! 😊",
+    "כַּמָּה שֶׁהַשֵּׁם אוֹהֵב אוֹתְךָ וְאֶת הַתּוֹרָה הַטְּהוֹרָה שֶׁיּוֹצֵאת מֵהַפֶּה שֶׁלְּךָ! 💗",
+    "אַשְׁרֶיךָ! הַתְּשׁוּבָה שֶׁלְּךָ עוֹלָה יָשָׁר וּמְשַׂמַּחַת אֶת בּוֹרֵא עוֹלָם! ✨",
+    "אֵיזֶה יֹפִי – מַמָּשׁ רוֹאִים כַּמָּה הַמִּלִּים שֶׁל הַתּוֹרָה מְתוּקוֹת מִדְּבַשׁ אֶצְלְךָ! 🍯",
+    "אֵיזֶה תַּעֲנוּג לִשְׁמֹעַ אוֹתְךָ! כַּמָּה כֵּיף וּמְשַׂמֵּחַ לִלְמֹד אֶת פָּרָשַׁת הַשָּׁבוּעַ! 🎉",
+    "הַתְּשׁוּבָה הַנְּכוֹנָה הַזֹּאת מַמָּשׁ מְאִירָה אֶת כָּל הַכִּתָּה בְּאוֹר שֶׁל תּוֹרָה! 💡",
+    "זָכִיתָ לְהָבִין בְּדִיּוּק אֶת הַמֶּסֶר הַנִּפְלָא שֶׁהַשֵּׁם רָצָה לְלַמֵּד אוֹתָנוּ בַּפָּרָשָׁה! 🌟",
+    "דִּבְרֵי הַתּוֹרָה שֶׁלְּךָ נִשְׁמָעִים כָּל כָּךְ יָפֶה וּמְאִירִים אֶת הַלֵּב! 💛",
+    "הַשֵּׁם נָתַן לְךָ שֵׂכֶל וּבִינָה, וְאֵיזֶה יֹפִי אַתָּה מִשְׁתַּמֵּשׁ בָּהֶם לַתּוֹרָה שֶׁלּוֹ! 🧠",
+    "בְּדִיּוּק בִּשְׁבִיל מִלִּים קְדוֹשׁוֹת וּמְאִירוֹת כָּאֵלֶּה קִבַּלְנוּ אֶת כֹּחַ הַדִּבּוּר! 🗣️",
+    "אֵיזוֹ נְשָׁמָה טְהוֹרָה – מַרְגִּישִׁים שֶׁהַתְּשׁוּבָה שֶׁלְּךָ מַגִּיעָה יָשָׁר מֵהַלֵּב! 💖",
+    "רוֹאִים שֶׁהִשְׁקַעְתָּ מַחֲשָׁבָה, וְזֶה בְּדִיּוּק מָה שֶׁהַשֵּׁם כָּל כָּךְ אוֹהֵב לִרְאוֹת! 💪",
+    "תְּשׁוּבָה שֶׁל תַּלְמִיד חָכָם אֲמִתִּי שֶׁמְּחֻבָּר לַתּוֹרָה שֶׁל הַשֵּׁם! 📚",
+    "מָתוֹק מִדְּבַשׁ – תַּעֲנוּג לְהַשֵּׁם וּלְכֻלָּנוּ! 🍯",
+    "אַשְׁרֶיךָ! עָשִׂיתָ עַכְשָׁו קִדּוּשׁ הַשֵּׁם בַּכִּתָּה! ✨",
+    "תְּשׁוּבָה קוֹלַעַת – רוֹאִים שֶׁהַתּוֹרָה אֲהוּבָה וִיקָרָה עָלֶיךָ! 🎯",
+    "נִפְלָא בְּיוֹתֵר! הַשֵּׁם בֶּטַח גֵּאֶה בַּבֵּן שֶׁלּוֹ עַכְשָׁו! 👑",
+    "אַשְׁרֵי הַיֶּלֶד שֶׁמְּשַׂמֵּחַ אֶת הַבּוֹרֵא בְּעוֹד דִּבְרֵי תּוֹרָה חַיִּים! 🌱",
+    "אֵיזוֹ נַחַת רוּחַ עָשִׂיתָ עַכְשָׁו לְהַשֵּׁם יִתְבָּרַךְ! 😊",
+    "הַתְּשׁוּבָה הַזֹּאת הֵאִירָה אֶת הַנְּשָׁמָה הַטְּהוֹרָה שֶׁלְּךָ! ✨",
+    "רוֹאִים בְּחוּשׁ כַּמָּה אַתָּה אוֹהֵב אֶת הַתּוֹרָה הַקְּדוֹשָׁה! 📖",
+    "אַשְׁרֶיךָ, הַקָּדוֹשׁ בָּרוּךְ הוּא שָׂמֵחַ בְּךָ וּבַלִּמּוּד שֶׁלְּךָ בָּרֶגַע הַזֶּה! 💖",
+    "כַּמָּה מְתִיקוּת יֵשׁ בְּדִבְרֵי הַתּוֹרָה שֶׁיָּצְאוּ מֵהַפֶּה שֶׁלְּךָ! 🍯",
+    "אֵיזֶה יֹפִי, חִבַּרְתָּ אֶת כֻּלָּנוּ בְּאַהֲבָה לְפָרָשַׁת הַשָּׁבוּעַ! 🤝",
+    "רוֹאִים שֶׁהַתְּשׁוּבָה הַזֹּאת הִגִּיעָה יָשָׁר מֵעֹמֶק הַלֵּב הַיְּהוּדִי שֶׁלְּךָ! 💗",
+    "זָכִיתָ לְשַׂמֵּחַ אֶת הַבּוֹרֵא בַּתּוֹרָה שֶׁלָּמַדְתָּ! 🌟",
+    "אֵיזֶה עֹנֶג וְשִׂמְחָה לִשְׁמֹעַ אוֹתְךָ עוֹנֶה מִתּוֹךְ קְדֻשָּׁה כָּזֹאת! ✨",
+    "הַשֵּׁם יִתְבָּרַךְ מִתְפָּאֵר בְּךָ וּבַחֵשֶׁק שֶׁלְּךָ לַתּוֹרָה! 👑",
+    "הַתְּשׁוּבָה הַזֹּאת מַרְאָה כַּמָּה הַקְּדֻשָּׁה קְרוֹבָה וַאֲהוּבָה עָלֶיךָ! 💎",
+    "הֵבֵאתָ עַכְשָׁו אוֹר וּבְרָכָה עֲצוּמָה לְכָל הַכִּתָּה! 💡",
+    "מַמָּשׁ שׁוֹמְעִים אֶת הַנִּגּוּן וְהָאַהֲבָה שֶׁל הַתּוֹרָה בַּקּוֹל שֶׁלְּךָ! 🎶",
+    "אֵיזֶה גִּבּוֹר שֶׁל הַשֵּׁם – עָמַלְתָּ, זָכַרְתָּ וְעָנִיתָ נִפְלָא! 💪",
+    "עָשִׂיתָ קִדּוּשׁ הַשֵּׁם אֲמִתִּי בַּתְּשׁוּבָה הַמְּדֻיֶּקֶת הַזֹּאת! 🎯",
+    "הַשִּׂמְחָה שֶׁלְּךָ בַּלִּמּוּד עוֹשָׂה שִׂמְחָה גְּדוֹלָה בְּכָל הָעוֹלָמוֹת! 🌍",
+    "זָכִיתָ לִטְעֹם אֶת הַמְּתִיקוּת הָאֲמִתִּית שֶׁל דִּבְרֵי הַשֵּׁם! 🍯",
+    "הַלֵּב שֶׁלְּךָ מָלֵא בְּיִרְאַת שָׁמַיִם וּבְאַהֲבַת תּוֹרָה – אַשְׁרֶיךָ! 💖",
+    "הַקָּדוֹשׁ בָּרוּךְ הוּא אוֹהֵב אוֹתְךָ מְאוֹד עַל הַהַשְׁקָעָה וְהַחֵשֶׁק הַזֶּה! 💗",
+    "הוֹסַפְתָּ עַכְשָׁו עוֹד יַהֲלוֹם מֵאִיר בַּכֶּתֶר שֶׁל מֶלֶךְ מַלְכֵי הַמְּלָכִים! 💎"];
+  var PRAISE_AUDIO = ["https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise01.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise02.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise03.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise04.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise05.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise06.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise07.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise08.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise09.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise10.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise11.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise12.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise13.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise14.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise15.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise16.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise17.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise18.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise19.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise20.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise21.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise22.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise23.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise24.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise25.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise26.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise27.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise28.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise29.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise30.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise31.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise32.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise33.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise34.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise35.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise36.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise37.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise38.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise39.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise40.mp3"];
+  var PARASHA_PAGE = /\/(parasha-games|apps)\//.test(location.pathname);
   var BADGES = [{ min: 0, e: "🌱", n: "מַתְחִיל" }, { min: 50, e: "🥉", n: "לוֹמֵד מַתְמִיד" }, { min: 200, e: "🥈", n: "לוֹמֵד מְצֻיָּן" },
     { min: 500, e: "🥇", n: "חָכָם צָעִיר" }, { min: 1000, e: "💎", n: "תַּלְמִיד חָכָם" }, { min: 2500, e: "👑", n: "אַלּוּף הַפָּרָשָׁה" }];
   function badge(p) { var c = BADGES[0], nx = null; for (var i = 0; i < BADGES.length; i++) { if (p >= BADGES[i].min) c = BADGES[i]; else { nx = BADGES[i]; break; } } return { c: c, nx: nx }; }
@@ -196,7 +241,8 @@
     var t = $("ktToast"); if (!t) return;
     t.className = cls; t.innerHTML = html;
     void t.offsetWidth; t.classList.add("on");
-    clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove("on"); }, ms || 2600);
+    clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove("on"); },   // מַחְמָאָה אֲרֻכָּה נִשְׁאֶרֶת עַד שֶׁהַקּוֹל גּוֹמֵר
+      ms || Math.max(2600, Math.min(6000, t.textContent.replace(/[֑-ׇ]/g, "").length * 70)));
   }
   function newRunIfEnded() { if (R.ended) R = { pts: 0, right: 0, streak: 0, answered: 0, ended: false, started: false }; }
   function ping(stage) {
@@ -224,7 +270,13 @@
         try { if (G.voice) G.voice.pause(); G.voice = new Audio(G.praise.audio + "p" + t + "-" + G.praise.tiers[t].indexOf(head) + ".mp3"); G.voice.play().catch(function () {}); } catch (e) {}
       }
     }
-    toast("ok", "<b>" + nm(head) + "</b><small>" + draw("love", LOVE_OK) + "</small>" +
+    var love = draw("love", LOVE_OK);
+    if (!(G.praise && G.praise.tiers) && PARASHA_PAGE && R.answered >= 3) {   // מַחְמָאוֹת הַמִּשְׁתַּמֵּשׁ + הַקְלָטָה
+      var pi = PRAISE.indexOf(draw("praise", PRAISE));
+      head = PRAISE[pi]; love = "";
+      if (!muted()) { try { if (G.voice) G.voice.pause(); G.voice = new Audio(PRAISE_AUDIO[pi]); G.voice.play().catch(function () {}); } catch (e) {} }
+    }
+    toast("ok", "<b>" + nm(head) + "</b>" + (love ? "<small>" + love + "</small>" : "") +
       (R.streak >= 3 ? '<span class="st">🔥 ' + R.streak + " בָּרֶצֶף!</span>" : "") + (n ? ' <span class="st" style="background:#7b5cff">+' + PER_RIGHT * n + "</span>" : ""));
     drawBar();
   }
