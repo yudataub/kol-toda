@@ -3,7 +3,13 @@
    ההקלטות: neviim/praise_tts.py (בריפו parasha-games-server) -> audio/p<מדרגה>-<מספר>.mp3 ליד הקובץ הזה. */
 window.KT_PRAISE = {
   at: [0, 10, 30, 60],
-  audio: (function () { var c = document.currentScript; return c ? c.src.replace(/[^\/]*$/, "") + "audio/" : "../audio/"; })(),
+  /* the build (kol/offload.py) moves every mp3 to kol-toda-files and rewrites only literal links, so on the site the recordings
+     are read from there, at the same path; on the computer (file:, localhost) from audio/ beside this file */
+  audio: (function () {
+    var c = document.currentScript, dir = c ? c.src.replace(/[^\/]*$/, "") : "../";
+    var m = /^https?:\/\/(www\.)?kol-toda\.co\.il\/(.*)$/.exec(dir);
+    return (m ? "https://yudataub.github.io/kol-toda-files/" + m[2] : dir) + "audio/";
+  })(),
   tiers: [
     [ /* שֵׂכֶל וְזִכָּרוֹן – מַתָּנָה מֵה' */
       "כְּמוֹ יְהוֹשֻׁעַ, הַתּוֹרָה לֹא מָשָׁה מִפִּיךָ!",
