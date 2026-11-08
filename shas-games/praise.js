@@ -3,7 +3,10 @@
    הילד רשום – לפי הנקודות שלו בשרת; לא רשום – לפי הספירה במכשיר. בכל מדרגה נבחרת מחמאה בלי חזרה עד שעוברים על כולן. */
 window.KT_PRAISE = {
   at: [0, 10, 30, 60],
-  audio: (function () { var c = document.currentScript; return c ? c.src.replace(/[^\/]*$/, "") + "audio/" : "../audio/"; })(),   /* הַהַקְלָטוֹת לְיַד הַקֹּבֶץ הַזֶּה (praise_tts.py, Gemini 2.5 Flash TTS, קוֹל Achernar) – עוֹבֵד מִכָּל דַּף שֶׁטּוֹעֵן אוֹתוֹ */
+  /* הַהַקְלָטוֹת (praise_tts.py, Gemini 2.5 Flash TTS, קוֹל Achernar). בָּאֲתָר הַבְּנִיָּה (kol/offload.py) מַעֲבִירָה קִבְצֵי mp3 לְרֵיפּוֹ הַקְּבָצִים,
+     וְהַנָּתִיב כָּאן מֻרְכָּב, לָכֵן הוּא לֹא מְשֻׁכְתָּב – הַכְּתֹבֶת שָׁם כְּתוּבָה בִּמְלוֹאָהּ. מִחוּץ לָאֲתָר (בְּדִיקָה): הַתִּיקִיָּה שֶׁלְּיַד הַקֹּבֶץ. */
+  audio: /(^|\.)kol-toda\.co\.il$/.test(location.hostname) ? "https://yudataub.github.io/kol-toda-files/shas-games/audio/"
+    : (function () { var c = document.currentScript; return c ? c.src.replace(/[^\/]*$/, "") + "audio/" : "../audio/"; })(),
   tiers: [
     [ /* הַכָּרַת הַטּוֹב עַל הַשֵּׂכֶל */
       "אֵיזֶה שֵׂכֶל נִפְלָא וּבָהִיר נָתַן לְךָ ה'!",
