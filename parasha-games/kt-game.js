@@ -255,7 +255,7 @@
     if (G.id) h += "<h3>🎯 בַּמִּשְׂחָק הַזֶּה</h3><ol id=\"ktBGame\"></ol>";
     h += "<h3>⭐ הַכִּי הַרְבֵּה נְקֻדּוֹת – כָּל הַמִּשְׂחָקִים</h3><ol id=\"ktBAll\"></ol><h3>🏫 הַכִּתּוֹת הַמּוֹבִילוֹת</h3><ol id=\"ktBCls\"></ol>";
     h += '<div class="row">' + (isEnd ? '<button type="button" id="ktAgain">עוֹד פַּעַם 🔁</button>' : "") +
-      '<a class="alt" href="' + HOME + '">🎲 לְכָל מִשְׂחֲקֵי הַפָּרָשָׁה</a><button type="button" class="alt" id="ktX">סְגִירָה</button></div>';
+      '<a class="alt" href="' + esc(G.home || HOME) + '">' + esc(G.homeTxt || "🎲 לְכָל מִשְׂחֲקֵי הַפָּרָשָׁה") + '</a><button type="button" class="alt" id="ktX">סְגִירָה</button></div>';
     $("ktEndBox").innerHTML = h;
     $("ktX").onclick = function () { $("ktEnd").classList.remove("on"); };
     if ($("ktAgain")) $("ktAgain").onclick = function () { $("ktEnd").classList.remove("on"); if (typeof G.again === "function") G.again(); };
@@ -289,6 +289,7 @@
     G.id = String((o && o.id) || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 40);
     G.title = (o && o.title) || document.title || "";
     G.again = o && o.again;
+    G.home = o && o.home; G.homeTxt = o && o.homeTxt;   // משחק מחוץ לפרשה (כמו ketuvim/): לאן מוביל "לכל המשחקים"
     var go = function () { if (!$("ktBar")) build(); drawBar(); fetchBase(); if (!me().name) openReg(); };
     if (document.body) go(); else document.addEventListener("DOMContentLoaded", go);
   }
