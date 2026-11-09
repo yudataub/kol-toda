@@ -128,6 +128,8 @@ details.reg summary{cursor:pointer;font-weight:700;min-height:32px}
 @media print{body *{visibility:hidden}.cert,.cert *{visibility:visible}.cert{position:absolute;inset:20px auto auto 20px;width:calc(100% - 40px)}}
 @media (max-width:520px){.boards{grid-template-columns:1fr}}
 @media (max-width:520px){.topics{grid-template-columns:repeat(2,1fr)}.how{gap:6px}.how div{padding:8px 4px;font-size:13px;line-height:1.35}.how b{font-size:24px}.two{flex-direction:column;gap:0}.opts button{font-size:15px}}
+.deep h1,.deep .lead,.deep .how,.deep .tabs{display:none}
+.linkbtn{display:block;margin:12px auto 0;background:none;border:1.5px dashed var(--line);border-radius:12px;padding:8px 14px;font:inherit;font-size:15px;color:var(--muted);cursor:pointer}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 <meta property="og:title" content="ילדים כותבים חידות – הקול החמישי">
@@ -199,11 +201,27 @@ function sset(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
 function focusTop(){ var h = screen.querySelector('h2'); if (h){ h.setAttribute('tabindex','-1'); h.focus(); } }
 function apiReady(){ return API.indexOf('__') !== 0; }
 
+// ---------- כתובות (9.11): לכל חידון ולכל תנא כתובת קבועה שאפשר לשלוח לילדים ----------
+// ?s=story-N – חידון של סיפור · ?t=<תנא> – הסיפורים של התנא · ?q=<נושא>&sub=<תחום> – כל החידות על נושא.
+// כתובת בלי # (גם #s=story-N הישן עובד): היא לא נעלמת בוואטסאפ, בסינון או בהפניה.
+function setUrl(q){ try { history.replaceState(null, '', location.pathname + (q || '')); } catch(e){} }
+function linkOf(q){ return location.origin + location.pathname + q; }
+function copyBtn(q){ return '<button class="linkbtn" type="button" data-link="' + esc(q) + '">🔗 העתקת קישור לשלוח לילדים</button>'; }
+screen.addEventListener('click', function(ev){
+  var b = ev.target.closest('[data-link]'); if (!b) return;
+  var u = linkOf(b.getAttribute('data-link'));
+  function done(){ b.textContent = '✅ הקישור הועתק – אפשר להדביק בוואטסאפ'; }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(done, function(){ prompt('העתיקו את הקישור:', u); });
+  else prompt('העתיקו את הקישור:', u);
+});
+// נכנסו מקישור לחידון או לתנא: מסתירים את הכותרת הכללית, כדי שהחידון יהיה בראש הדף.
+function deep(on){ document.body.classList.toggle('deep', !!on); }
+
 // ---------- לשוניות ----------
 function setTab(which){
   document.getElementById('tabPlay').setAttribute('aria-selected', which === 'play');
   document.getElementById('tabWrite').setAttribute('aria-selected', which === 'write');
-  try { history.replaceState(null, '', which === 'write' ? '#write' : '#play'); } catch(e){}
+  setUrl(which === 'write' ? '#write' : '#play'); deep(false);
 }
 document.getElementById('tabPlay').addEventListener('click', function(){ setTab('play'); renderTopics(); });
 document.getElementById('tabWrite').addEventListener('click', function(){ setTab('write'); renderForm(); });
@@ -223,7 +241,7 @@ screen.addEventListener('click', function(ev){
 
 // ---------- לפתור: בחירת נושא ----------
 function renderTopics(){
-  try { history.replaceState(null, '', '#play'); } catch(e){}
+  setUrl('#play'); deep(false);
   var count = {};
   RIDDLES.forEach(function(r){ count[r.topic] = (count[r.topic] || 0) + 1; });
   if (!RIDDLES.length) {
@@ -259,23 +277,25 @@ function topicIcon(topic){ var t = TOPICS.filter(function(x){ return x[0] === to
 function gameId(s){ return 'chidot-' + s; }
 function quizStory(id){
   var s = STORIES.filter(function(x){ return x.id === id; })[0]; if (!s) return null;
-  return { key: gameId(id), title: s.title, sub: s.topic, story: s, read: BOOK + '#' + id, hash: '#s=' + id,
+  return { key: gameId(id), title: s.title, sub: s.topic, story: s, read: BOOK + '#' + id, hash: '?s=' + id,
            list: ALL.filter(function(r){ return r.story === id; }), back: function(){ renderStories(s.topic); } };
 }
 function quizTopic(topic){
   var si = SUBJECT_NAMES.indexOf(SUBJECT), ti = TOPICS.map(function(t){ return t[0]; }).indexOf(topic);
   return { key: gameId('s' + si + '-t' + ti), title: topic, sub: SUBJECT, list: RIDDLES.filter(function(r){ return r.topic === topic; }),
+           hash: '?q=' + encodeURIComponent(topic) + '&sub=' + encodeURIComponent(SUBJECT),
            back: storiesOf(topic).length ? function(){ renderStories(topic); } : renderTopics };
 }
 function quizExtra(topic){
-  var q = quizTopic(topic); q.key += '-x'; q.title = 'חידות נוספות על ' + topic;
+  var q = quizTopic(topic); q.key += '-x'; q.title = 'חידות נוספות על ' + topic; q.hash += '&x=1';
   q.list = q.list.filter(function(r){ return !r.story; }); return q;
 }
 function quizAll(){
   return { key: '', title: 'כל החידות ב' + SUBJECT, sub: SUBJECT, list: RIDDLES.slice(), back: renderTopics };
 }
 function renderStories(topic){
-  try { history.replaceState(null, '', '#play'); } catch(e){}
+  var link = '?t=' + encodeURIComponent(topic);
+  setUrl(link);
   var ss = storiesOf(topic), extra = RIDDLES.filter(function(r){ return r.topic === topic && !r.story; }).length;
   var all = RIDDLES.filter(function(r){ return r.topic === topic; }).length;
   screen.innerHTML = '<button class="back" id="back" type="button">→ חזרה לכל התנאים</button>' +
@@ -287,7 +307,8 @@ function renderStories(topic){
         '<span class="n">' + n + ' חידות</span></button></li>';
     }).join('') +
     (extra ? '<li><button type="button" data-s="+"><span class="ic">✏️</span>חידות נוספות שחיברו ילדים<span class="n">' + extra + ' חידות</span></button></li>' : '') +
-    '<li><button type="button" data-s="*"><span class="ic">🎲</span>כל החידות על ' + esc(topic) + '<span class="n">' + all + ' חידות</span></button></li></ul>';
+    '<li><button type="button" data-s="*"><span class="ic">🎲</span>כל החידות על ' + esc(topic) + '<span class="n">' + all + ' חידות</span></button></li></ul>' +
+    copyBtn(link);
   document.getElementById('back').addEventListener('click', renderTopics);
   document.getElementById('stories').addEventListener('click', function(ev){
     var b = ev.target.closest('button'); if (!b) return;
@@ -367,7 +388,7 @@ function clearRun(Q){ try { localStorage.removeItem(runKey(Q)); } catch(e){} }
 // ---------- מסך פתיחה של חידון ----------
 function renderIntro(Q){
   if (!Q || !Q.list.length) return renderTopics();
-  try { history.replaceState(null, '', Q.hash || '#play'); } catch(e){}
+  setUrl(Q.hash || '#play');
   var m = me(), run = readRun(Q);
   screen.innerHTML = '<button class="back" id="back" type="button">→ חזרה</button>' +
     '<h2>' + topicIcon(Q.sub) + ' ' + esc(Q.title) + '</h2>' +
@@ -380,7 +401,8 @@ function renderIntro(Q){
       '<p class="note">כדי להיכנס ללוח המובילים ולצבור נקודות – אותן נקודות כמו בחידוני ההלכה באתר.</p>' +
       '<label for="iName">השם שלך</label><input type="text" id="iName" maxlength="30" autocomplete="given-name">' +
       '<div class="two"><div><label for="iCls">כיתה</label><input type="text" id="iCls" maxlength="15" placeholder="למשל: ג׳2"></div>' +
-      '<div><label for="iSchool">בית ספר</label><input type="text" id="iSchool" maxlength="40"></div></div></details>';
+      '<div><label for="iSchool">בית ספר</label><input type="text" id="iSchool" maxlength="40"></div></div></details>' +
+    (Q.hash ? copyBtn(Q.hash) : '');
   var $ = function(id){ return document.getElementById(id); };
   $('iName').value = m.name || ''; $('iCls').value = m.cls || ''; $('iSchool').value = m.school || '';
   if (real(m)) $('iName').closest('details').open = false;
@@ -692,15 +714,28 @@ function waitFor(p){
 }
 
 // ---------- פתיחה ----------
-// קישור קבוע לחידון של סיפור: #s=story-14 (מהכרטיס בספר "כה עשו תנאינו")
+// קישורים קבועים: ?s=story-14 (וגם #s=story-14 מהכרטיס בספר "כה עשו תנאינו"), ?t=<תנא>, ?q=<נושא>&sub=<תחום>
 function route(){
-  var m = /^#s=(story-\d+)/.exec(location.hash), Q = m && quizStory(m[1]);
-  if (Q) { setTab('play'); setSubject(STORIES_SUBJECT); mine(); try { history.replaceState(null, '', Q.hash); } catch(e){} renderIntro(Q); return true; }
+  var P = new URLSearchParams(location.search), m = /^#s=(story-\d+)/.exec(location.hash);
+  var sid = m ? m[1] : P.get('s'), t = P.get('t'), q = P.get('q');
+  if (sid) {
+    var Q = quizStory(sid);
+    if (Q && Q.list.length) { setTab('play'); setSubject(STORIES_SUBJECT); mine(); deep(true); renderIntro(Q); return true; }
+  }
+  if (t) {
+    setSubject(STORIES_SUBJECT); mine();
+    if (storiesOf(t).length) { setTab('play'); deep(true); renderStories(t); return true; }
+  }
+  if (q) {
+    setSubject(P.get('sub') || STORIES_SUBJECT); mine();
+    var QT = P.get('x') ? quizExtra(q) : quizTopic(q);
+    if (QT.list.length) { setTab('play'); deep(true); renderIntro(QT); return true; }
+  }
   return false;
 }
 setSubject(sget('kr_subject')); mine();
 if (!route()) { if (location.hash === '#write') { setTab('write'); renderForm(); } else { renderTopics(); } }
-window.addEventListener('hashchange', function(){ if (/^#s=/.test(location.hash) && (!G || location.hash !== G.Q.hash)) route(); });
+window.addEventListener('hashchange', function(){ if (/^#s=/.test(location.hash)) route(); });
 </script>
 </body>
 </html>
