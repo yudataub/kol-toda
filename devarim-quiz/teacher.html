@@ -341,7 +341,7 @@ function renderStudent(r) {
   if (!r) { OPEN = null; return render(); }
   var games = Object.keys(r.games).sort(function (a, b) { return r.games[b].last - r.games[a].last; });
   $("view").innerHTML = '<button class="btn ghost back" id="back">→ חֲזָרָה לְכָל הַתַּלְמִידִים</button>' +
-    "<h2 style=\"margin:4px 0\">👤 " + esc(r.s.name) + '</h2><div class="muted">' + esc(r.s.cls) + " · " + esc(r.s.school) + " · " + r.pts + " נְקֻדּוֹת · פָּעִיל " + ago(r.last) + "</div>" +
+    "<h2 style=\"margin:4px 0\">👤 " + esc(r.s.name) + '</h2><div class="muted">' + esc(r.s.cls) + " · " + esc(r.s.school) + " · " + r.pts + " נְקֻדּוֹת · פָּעִיל " + ago(r.last) + "</div>" + wfBar() +
     games.map(function (g) {
       var G = r.games[g], b = G.best;
       var byLv = {};
@@ -354,23 +354,36 @@ function renderStudent(r) {
       G.att.forEach(function (a) { a.wrong.forEach(function (w) { var k = a.lv + ":" + w.i; (wr[k] = wr[k] || { lv: a.lv, i: w.i, p: w.p, n: 0 }).n++; }); });
       var wl = Object.keys(wr).map(function (k) { var w = wr[k]; w.fixed = fixedLater(G, w.lv, w.i, w.p); return w; })
         .sort(function (a, b) { return (a.fixed - b.fixed) || (b.n - a.n); });
-      var nFixed = wl.filter(function (w) { return w.fixed; }).length;
+      var nFixed = wl.filter(function (w) { return w.fixed; }).length, nAll = wl.length;
+      wl = wl.filter(function (w) { return wfKeep(w.fixed); });
       var u = gameUrl(g), cn = (CATS.filter(function (c) { return c[0] === cat(g); })[0] || ["", ""])[1];
       return '<div class="qrow"><h4>' + (u ? '<a href="' + esc(u) + '" target="_blank">' + esc(title(g)) + "</a>" : esc(title(g))) + " " + stageText(G) + "</h4>" +
         '<div class="muted">' + cn + "</div>" +
         (G.pct ? "" : b && b.a + b.b + b.c === 0 ? '<div class="muted">צִיּוּן טוֹב: <b>' + b.score + "</b> נְקֻדּוֹת" + (G.plays > 1 ? " · שִׂחֵק " + G.plays + " פְּעָמִים" : "") + "</div>" :
         b ? '<div class="muted">צִיּוּן טוֹב: <b>' + b.score + "</b> (א׳ " + b.a + " · ב׳ " + b.b + " · ג׳ " + b.c + ")" + (G.plays > 1 ? " · שִׂחֵק " + G.plays + " פְּעָמִים" : "") + "</div>" : "") +
         (lv ? '<div class="lvls">' + lv + "</div>" : "") +
-        (wl.length ? '<details><summary>❌ ' + wl.length + " שְׁאֵלוֹת שֶׁטָּעָה בָּהֶן" + (nFixed ? " · ✅ " + nFixed + " מֵהֶן עָנָה נָכוֹן אַחַר כָּךְ" : "") + "</summary><ul class=\"wrongs\">" + wl.map(function (w) {
+        (wl.length ? '<details' + (WF === "all" ? "" : " open") + '><summary>❌ ' + nAll + " שְׁאֵלוֹת שֶׁטָּעָה בָּהֶן" + (nFixed ? " · ✅ " + nFixed + " מֵהֶן עָנָה נָכוֹן אַחַר כָּךְ" : "") + (WF === "all" ? "" : " · מוּצָגוֹת " + wl.length) + "</summary><ul class=\"wrongs\">" + wl.map(function (w) {
           return "<li>רָמָה " + LV_HE[w.lv] + ", שְׁאֵלָה " + (w.i + 1) + ": " + esc(w.p) + (w.n > 1 ? ' <span class="pill p-bad">טָעָה ×' + w.n + "</span>" : "") +
             (w.fixed ? ' <span class="pill p-ok">✅ אַחַר כָּךְ עָנָה נָכוֹן</span>' : ' <span class="pill p-warn">עוֹד לֹא תִּקֵּן</span>') + "</li>";
         }).join("") + "</ul></details>" : "") +
         '<div class="muted">' + ago(G.last) + "</div></div>";
     }).join("");
   $("back").onclick = function () { OPEN = null; render(); };
+  wfBind();
 }
 /* תיקן? כל ניסיון ברמה עובר על כל השאלות שלה (startLevelQuestions), ונשלח רק בסוף הרמה. לכן ניסיון מאוחר יותר
    באותה רמה, שהשאלה לא בין הטעויות שלו, פירושו שענה עליה נכון. השאלה מזוהה לפי הנוסח, ואם אין – לפי המספר. */
+/* בורר הטעויות (9.11.2026): all = הכול, open = רק מה שעוד לא תוקן, fixed = רק מה שתוקן אחר כך */
+var WF = "all";
+function wfBar() {
+  return '<div class="lvls" id="wfBar" style="margin:8px 0">' + [["all", "כָּל הַטָּעֻיּוֹת"], ["open", "❌ רַק מָה שֶׁעוֹד לֹא תֻּקַּן"], ["fixed", "✅ רַק מָה שֶׁתֻּקַּן אַחַר כָּךְ"]].map(function (x) {
+    return '<button class="tab' + (WF === x[0] ? " on" : "") + '" data-wf="' + x[0] + '">' + x[1] + "</button>";
+  }).join("") + "</div>";
+}
+function wfBind() {
+  Array.prototype.forEach.call(document.querySelectorAll("#wfBar .tab"), function (b) { b.onclick = function () { WF = b.dataset.wf; render(); }; });
+}
+function wfKeep(fixed) { return WF === "all" || (WF === "fixed") === !!fixed; }
 function fixedLater(G, lv, i, p) {
   function same(w) { return p ? w.p === p : w.i === i; }
   var lastWrong = -1, lastAtt = -1;
@@ -466,17 +479,19 @@ function renderQuestions(rows) {
     });
   });
   var list = Object.keys(Q).map(function (k) { var q = Q[k]; q.pct = Math.round(100 * q.n / tries[q.g + ":" + q.lv]); return q; })
+    .filter(function (q) { return Object.keys(q.who).some(function (n) { return wfKeep(q.who[n]); }); })
     .sort(function (a, b) { return b.pct - a.pct || b.n - a.n; }).slice(0, 60);
-  $("view").innerHTML = list.length ? '<p class="muted" style="margin-top:0">הַשְּׁאֵלוֹת שֶׁהֲכִי הַרְבֵּה תַּלְמִידִים טָעוּ בָּהֶן – כְּדַאי לַחֲזֹר עֲלֵיהֶן בַּשִּׁעוּר.</p>' +
+  $("view").innerHTML = wfBar() + (list.length ? '<p class="muted" style="margin-top:0">הַשְּׁאֵלוֹת שֶׁהֲכִי הַרְבֵּה תַּלְמִידִים טָעוּ בָּהֶן – כְּדַאי לַחֲזֹר עֲלֵיהֶן בַּשִּׁעוּר.</p>' +
     list.map(function (q) {
-      var who = Object.keys(q.who), fx = who.filter(function (n) { return q.who[n]; }), nf = who.filter(function (n) { return !q.who[n]; });
+      var who = Object.keys(q.who), fx = WF === "open" ? [] : who.filter(function (n) { return q.who[n]; }), nf = WF === "fixed" ? [] : who.filter(function (n) { return !q.who[n]; });
       return '<div class="qrow"><h4>' + esc(q.p) + '</h4><div class="muted">' + esc(title(q.g)) + " · רָמָה " + LV_HE[q.lv] + " · שְׁאֵלָה " + (q.i + 1) + "</div>" +
         '<div class="lvls"><span class="pill p-bad">' + q.pct + "% טָעוּ (" + q.n + " מִתּוֹךְ " + tries[q.g + ":" + q.lv] + " נִסְיוֹנוֹת)</span>" +
         (fx.length ? ' <span class="pill p-ok">✅ ' + fx.length + " תִּקְּנוּ אַחַר כָּךְ</span>" : "") + "</div>" +
-        '<details><summary class="muted">מִי טָעָה (' + who.length + ")</summary>" +
+        '<details' + (WF === "all" ? "" : " open") + '><summary class="muted">מִי טָעָה (' + who.length + ")</summary>" +
         (nf.length ? "<div>❌ עוֹד לֹא תִּקְּנוּ: " + esc(nf.join(", ")) + "</div>" : "") +
         (fx.length ? "<div>✅ עָנוּ נָכוֹן אַחַר כָּךְ: " + esc(fx.join(", ")) + "</div>" : "") + "</details></div>";
-    }).join("") : '<p class="muted">עוֹד אֵין נְתוּנִים עַל שְׁאֵלוֹת. הֵם נֶאֱסָפִים מֵ-5.11.2026, מִכָּל רָמָה שֶׁתַּלְמִיד רָשׁוּם מְסַיֵּם.</p>';
+    }).join("") : WF !== "all" ? '<p class="muted">אֵין שְׁאֵלוֹת בַּבְּחִירָה הַזּוֹ.</p>' : '<p class="muted">עוֹד אֵין נְתוּנִים עַל שְׁאֵלוֹת. הֵם נֶאֱסָפִים מֵ-5.11.2026, מִכָּל רָמָה שֶׁתַּלְמִיד רָשׁוּם מְסַיֵּם.</p>');
+  wfBind();
 }
 </script>
 </body>
