@@ -707,7 +707,7 @@ function store(k, v) { try { if (v === undefined) return localStorage.getItem(k)
 var RUN_KEY = "hq-run-" + QUIZ.id, RUN_DAYS = 14;
 function saveRun(phase, q) {
   store(RUN_KEY, JSON.stringify({ t: Date.now(), phase: phase, q: q || 0, lv: S.lv, right: S.right, retry: S.retry,
-    scores: S.scores, maxes: S.maxes, pts: S.pts, answered: S.answered, streak: S.streak,
+    scores: S.scores, maxes: S.maxes, pts: S.pts, answered: S.answered, streak: S.streak, cur: S.cur, curPts: S.curPts, lvPts: S.lvPts,
     name: S.name, cls: S.cls, school: S.school, real: S.real, young: S.young }));
 }
 function clearRun() { try { localStorage.removeItem(RUN_KEY); } catch (e) {} }
@@ -1042,7 +1042,7 @@ function fetchBase() {
   else { S.base = null; S.prevBest = 0; }
 }
 function resumeRun(r) {
-  ["lv", "right", "retry", "scores", "maxes", "pts", "answered", "streak", "name", "cls", "school", "real", "young"].forEach(function (k) { if (r[k] != null) S[k] = r[k]; });
+  ["lv", "right", "retry", "scores", "maxes", "pts", "answered", "streak", "cur", "curPts", "lvPts", "name", "cls", "school", "real", "young"].forEach(function (k) { if (r[k] != null) S[k] = r[k]; });
   tone([660], 0.08);
   fetchBase();
   drawPts();
@@ -1176,7 +1176,8 @@ function startLevelQuestions() {
   var L = QUIZ.levels[S.lv];
   S.list = L.questions.slice();
   S.q = 0; S.right = 0; S.wrong = [];   // הַשְּׁאֵלוֹת שֶׁטָּעָה בָּהֶן בַּנִּסָּיוֹן הַזֶּה – נִשְׁלָחוֹת לְדַף הַמּוֹרֶה
-  if (!S.retry) { S.scores[L.key] = 0; S.maxes[L.key] = L.points * L.questions.length; }
+  if (!S.retry) { S.scores[L.key] = 0; S.maxes[L.key] = L.points * L.questions.length; S.lvPts = S.lvPts || {}; S.lvPts[L.key] = 0; }
+  S.cur = 0; S.curPts = 0;   // הַנִּסָּיוֹן הַזֶּה בָּרָמָה. בַּחֲזָרָה נִסְפֶּרֶת הַתּוֹצָאָה הַטּוֹבָה מִבֵּין הַנִּסְיוֹנוֹת (בַּקָּשַׁת הַמִּשְׁתַּמֵּשׁ, 9.11.2026)
   renderQuestion();
   show("sQuiz");
 }
@@ -1241,16 +1242,20 @@ function feedback(ok, q, pts, hints) {
   if (!ok && S.wrong) S.wrong.push({ i: S.q, p: String(q.prompt || "").replace(/[֑-ׇ]/g, "").slice(0, 110) });
   if (ok) {
     S.right++; S.streak++;
-    if (!S.retry) S.scores[QUIZ.levels[S.lv].key] += pts;
+    var lk = QUIZ.levels[S.lv].key; S.lvPts = S.lvPts || {};
+    S.cur = (S.cur || 0) + pts; S.curPts = (S.curPts || 0) + gain;
+    if (S.cur > (S.scores[lk] || 0)) S.scores[lk] = S.cur;
+    var extra = Math.max(0, S.curPts - (S.lvPts[lk] || 0));   // רַק מַה שֶּׁהַנִּסָּיוֹן הַזֶּה מוֹסִיף מֵעֵבֶר לַטּוֹב שֶׁבַּקּוֹדְמִים
+    if (extra) S.lvPts[lk] = S.curPts;
     if (lvl >= 4) soundStreak(S.streak); else if (lvl >= 2) tone([659, 784], 0.1);
     var k10 = lvl >= 10 ? draw("fbok10", FB_OK_10.map(function (_, i) { return i; })) : -1;   // אותה מחמאה בטקסט ובקול
     speakFb(lvl, k10 >= 0 ? FB_AUDIO_10[k10] : null);
     fb.className = "fb on ok" + (lvl >= 10 ? " l10" : lvl >= 7 ? " l7" : lvl >= 3 ? " l3" : "");
     var love = true ? '<div class="love">' + nm(draw("ok", LOVE_OK)) + "</div>" : "";
-    fb.innerHTML = '<div class="t">' + (lvl >= 3 ? '<span class="star">⭐</span>' : "") + (k10 >= 0 ? nm(FB_OK_10[k10]) : nm(FB_OK[lvl])) + (S.retry ? "" : " +" + gain + " ⭐") + "</div>" +
+    fb.innerHTML = '<div class="t">' + (lvl >= 3 ? '<span class="star">⭐</span>' : "") + (k10 >= 0 ? nm(FB_OK_10[k10]) : nm(FB_OK[lvl])) + (extra ? " +" + extra + " ⭐" : "") + "</div>" +
       (lvl >= 8 ? love + "<div>" + hlTerms(escapeHtml(q.explain)) + "</div>" + whyBox(q) : "<div>" + hlTerms(escapeHtml(q.explain)) + "</div>" + whyBox(q) + love) +
       '<div class="src">📖 ' + srcLinks(q.src) + "</div>";
-    if (!S.retry && gain) addPts(gain);
+    if (extra) addPts(extra);
   } else {
     S.streak = 0;
     if (lvl >= 2) soundBad();
@@ -1928,7 +1933,7 @@ function levelEnd() {
     S.retry = true;
     $("lvIcon").textContent = "🌱";
     $("lvTitle").innerHTML = nm("בּוֹא נְנַסֶּה שׁוּב, {n}, בְּאַהֲבָה וּבְסַבְלָנוּת 💖");
-    $("lvText").textContent = S.right + " מִתּוֹךְ " + n + " נָכוֹן. כְּדֵי לַעֲלוֹת רָמָה צָרִיךְ לְפָחוֹת " + Math.ceil(n * PASS) + ". נַחֲזֹר רֶגַע עַל הַלִּמּוּד – וְנַצְלִיחַ! (הַנְּקֻדּוֹת נִסְפָּרוֹת מֵהַנִּסָּיוֹן הָרִאשׁוֹן)";
+    $("lvText").textContent = S.right + " מִתּוֹךְ " + n + " נָכוֹן. כְּדֵי לַעֲלוֹת רָמָה צָרִיךְ לְפָחוֹת " + Math.ceil(n * PASS) + ". נַחֲזֹר רֶגַע עַל הַלִּמּוּד – וְנַצְלִיחַ! (נִסְפֶּרֶת הַתּוֹצָאָה הַטּוֹבָה מִבֵּין הַנִּסְיוֹנוֹת)";
     $("lvBtn").textContent = "חוֹזְרִים עַל הַלִּמּוּד 📜";
     $("lvBtn").onclick = openStudy;
   }
