@@ -153,23 +153,56 @@ body{background:linear-gradient(135deg,#ffe0a8,#ffc2b4)}
 <footer class="foot">📚 חלק ממאגר הקול החמישי – <a href="https://www.kol-toda.co.il/">kol-toda.co.il</a></footer>
 <script>var STORE="sb-devarim-56-b";
 (function(){
-var P=[].slice.call(document.querySelectorAll(".pg")),D=[].slice.call(document.querySelectorAll(".dt")),cur=0,n=P.length;
+var P=[].slice.call(document.querySelectorAll(".pg")),D=[].slice.call(document.querySelectorAll(".dt")),cur=0,n=P.length,locked=false;
 function go(i,noscroll){i=Math.max(0,Math.min(n-1,i));var back=i<cur;cur=i;
  P.forEach(function(p,k){p.classList.toggle("on",k===cur);p.classList.toggle("back",k===cur&&back)});
  D.forEach(function(d,k){d.classList.toggle("on",k===cur)});
  document.getElementById("prv").disabled=cur===0;document.getElementById("nxt").disabled=cur===n-1;
  document.getElementById("cnt").textContent=cur===0?"כריכה":cur===n-1?"הסוף":"עמוד "+cur+" מתוך "+(n-2);
  if(!noscroll){var t=document.getElementById("book").getBoundingClientRect().top;if(t<0)scrollTo({top:scrollY+t-10,behavior:"smooth"})}
- try{localStorage.setItem(STORE,cur)}catch(e){}
+ try{if(!locked)localStorage.setItem(STORE,cur)}catch(e){}
 }
-document.getElementById("prv").onclick=function(){go(cur-1)};document.getElementById("nxt").onclick=function(){go(cur+1)};
-document.querySelectorAll("[data-go]").forEach(function(b){b.addEventListener("click",function(){if(document.body.classList.contains("flow")){P[+b.dataset.go].scrollIntoView({behavior:"smooth"});return}go(+b.dataset.go)})});
-document.addEventListener("keydown",function(e){if(document.body.classList.contains("flow"))return;if(e.key==="ArrowLeft")go(cur+1);if(e.key==="ArrowRight")go(cur-1)});
+// כל דפדוף של התלמיד עובר כאן. כשהמורה מוביל (lock), הוא לא עושה כלום.
+function user(i){if(!locked)go(i)}
+document.getElementById("prv").onclick=function(){user(cur-1)};document.getElementById("nxt").onclick=function(){user(cur+1)};
+document.querySelectorAll("[data-go]").forEach(function(b){b.addEventListener("click",function(){if(locked)return;if(document.body.classList.contains("flow")){P[+b.dataset.go].scrollIntoView({behavior:"smooth"});return}go(+b.dataset.go)})});
+document.addEventListener("keydown",function(e){if(document.body.classList.contains("flow"))return;if(e.key==="ArrowLeft")user(cur+1);if(e.key==="ArrowRight")user(cur-1)});
 var sx=null;var bk=document.getElementById("book");bk.addEventListener("touchstart",function(e){sx=e.touches[0].clientX},{passive:true});
-bk.addEventListener("touchend",function(e){if(sx===null)return;var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>70)go(dx>0?cur+1:cur-1);sx=null});
-var al=document.getElementById("all");al.onclick=function(){var on=document.body.classList.toggle("flow");al.setAttribute("aria-pressed",on?"true":"false");al.textContent=on?"📕 חזרה למצב ספר":"📜 כל העמודים ברצף"};
-var start=0;if(location.hash){var el=document.getElementById(location.hash.slice(1));if(el)start=+el.dataset.n}else{try{start=+localStorage.getItem(STORE)||0}catch(e){}}
+bk.addEventListener("touchend",function(e){if(sx===null)return;var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>70)user(dx>0?cur+1:cur-1);sx=null});
+var al=document.getElementById("all");function flow(on){document.body.classList.toggle("flow",on);al.setAttribute("aria-pressed",on?"true":"false");al.textContent=on?"📕 חזרה למצב ספר":"📜 כל העמודים ברצף"}
+al.onclick=function(){if(!locked)flow(!document.body.classList.contains("flow"))};
+
+// המורה מוביל: הקיוסק (או מצב ?class=) קורא ל-KolBook.lock(true) ול-KolBook.go(n).
+var st=document.createElement("style");st.textContent=".kb-lock .ctl .arw,.kb-lock #all,.kb-lock .dt,.kb-lock .startb[data-go]{visibility:hidden}.kb-lock .dots{pointer-events:none}"+
+ "#kbBadge{position:fixed;top:10px;left:10px;z-index:99;background:#1e3a8a;color:#fff;border-radius:20px;padding:5px 14px;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.25)}";
+document.head.appendChild(st);
+function lock(on){locked=!!on;document.body.classList.toggle("kb-lock",locked);if(locked)flow(false)}
+function badge(t){var b=document.getElementById("kbBadge");if(!t){if(b)b.remove();return}if(!b){b=document.createElement("div");b.id="kbBadge";document.body.appendChild(b)}b.textContent=t}
+window.KolBook={n:n,cur:function(){return cur},go:function(i){go(i,true)},lock:lock,locked:function(){return locked}};
+
+var start=0,cls=(location.search.match(/[?&]class=(\d{5})\b/)||[])[1];
+if(location.hash){var el=document.getElementById(location.hash.slice(1));if(el)start=+el.dataset.n}else if(!cls){try{start=+localStorage.getItem(STORE)||0}catch(e){}}
 go(start,true);
+
+// מצב "מורה מוביל" בלי קיוסק: ?class=12345 → הספר עוקב אחרי הדף שהמורה הצמיד בלוח (kol-kiosk-class.web.app).
+if(cls&&window.EventSource&&window.fetch){
+ var DB="https://kol-kiosk-class-default-rtdb.europe-west1.firebasedatabase.app/classes/"+cls+"/state/lesson.json";
+ var key=function(u){try{var x=new URL(u,location.href);return x.host.replace(/^www\./,"")+decodeURIComponent(x.pathname).replace(/\/index\.html$/,"").replace(/\/$/,"").toLowerCase()}catch(e){return u}};
+ var me=key(location.href),lastPg=-1;
+ var apply=function(L){
+  if(L&&L.mode==="page"&&key(L.url||"")===me){
+   var pg=+L.pg||0;
+   if(L.free){lock(false);badge("👨‍🏫 המורה פתח דפדוף חופשי");if(pg!==lastPg)go(pg,true)}
+   else{lock(true);badge("👨‍🏫 המורה מדפדף");if(pg!==cur)go(pg,true)}
+   lastPg=pg;
+  }else{lock(true);lastPg=-1;if(cur!==0)go(0,true);badge("⏳ ממתינים למורה…")}
+ };
+ var load=function(){fetch(DB,{cache:"no-store"}).then(function(r){return r.json()}).then(apply).catch(function(){})};
+ lock(true);badge("⏳ מתחברים לכיתה…");
+ var es=new EventSource(DB);
+ es.addEventListener("put",load);es.addEventListener("patch",load);
+ es.onerror=function(){badge("⚠️ אין חיבור לכיתה – מנסים שוב…")};
+}
 })();
 </script>
 </body>
