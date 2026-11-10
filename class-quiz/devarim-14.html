@@ -93,8 +93,11 @@ document.body.classList.toggle("student", STUDENT);
 $("tt").textContent = CQ.title + " – " + CQ.sub;
 
 // עמוד → שאלה ושלב (0 שאלה, 1 תשובות, 2 תוצאות, 3 הסבר)
-// התשובה של שאלה q נחשפה = הלוח כבר שלח את המונים שלה (רק כשהמורה הגיע לעמוד התוצאות). תלמיד לא רואה תוצאות/הסבר לפני כן.
-const revealed = q => !!(L.cnt && L.cnt[q] != null);
+// הלוח כבר שלח את המונים של שאלה q = המורה הגיע לעמוד התוצאות שלה. אחרי זה אי אפשר לענות עליה.
+const cntRev = q => !!(L.cnt && L.cnt[q] != null);
+// תלמיד רואה תוצאות/הסבר רק כשהדף נעול (רק המורה מדפדף, כך שהגיעו לשם בגללו) או אחרי שהלוח חשף.
+// בדפדוף חופשי התלמיד יכול לדפדף לבד – ואז מחכים לחשיפה, כדי שלא יציץ בתשובה ויחזור לענות.
+const revealed = q => cntRev(q) || locked;
 const where = p => p <= 0 ? { cover: true } : p >= PAGES - 1 ? { end: true } : { q: Math.floor((p - 1) / 4), s: (p - 1) % 4 };
 function loadMine() { try { mine = JSON.parse(localStorage.getItem("cq:" + CQ.id + ":" + run) || "{}") || {}; } catch (e) { mine = {}; } }
 function saveMine() { try { localStorage.setItem("cq:" + CQ.id + ":" + run, JSON.stringify(mine)); } catch (e) {} }
@@ -169,7 +172,7 @@ function render() {
 }
 $("stage").addEventListener("click", e => {
   const b = e.target.closest(".ans .opt"), w = where(pg);
-  if (!b || !STUDENT || w.s !== 1 || revealed(w.q)) return;
+  if (!b || !STUDENT || w.s !== 1 || cntRev(w.q)) return;
   const k = +b.dataset.k;
   mine[w.q] = k; saveMine(); render();
   try { W.postMessage(JSON.stringify({ kk: "cq", id: CQ.id, q: w.q, a: k })); } catch (e) {}
@@ -207,8 +210,9 @@ if (window.parent !== window) {
     if (d.pg != null) { KolBook.lock(true); go(d.pg); }
   });
 }
-// טאבלט / מקרן בלי התוכנה: ?class=12345 – עוקבים ישר אחרי הדף המוצמד לכיתה (לא בתוך הלוח, ששולח בעצמו).
-if (CLS && window.parent === window && window.EventSource) {
+// ?class=12345 – עוקבים ישר אחרי הדף המוצמד לכיתה: טאבלט או מקרן בלי התוכנה, וגם התצוגה בלוח
+// (לוח ישן שלא שולח עמוד; בקבוצה הדף לא ב-state/lesson, ואז רק הלוח מעביר עמודים).
+if (CLS && window.EventSource) {
   const es = new EventSource(`https://kol-kiosk-class-default-rtdb.europe-west1.firebasedatabase.app/classes/${CLS}/state/lesson.json`);
   let les = null;
   const same = u => { try { return new URL(u).pathname === location.pathname; } catch (e) { return false; } };
