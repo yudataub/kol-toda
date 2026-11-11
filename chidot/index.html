@@ -115,6 +115,22 @@ details.reg summary{cursor:pointer;font-weight:700;min-height:32px}
 .plus{direction:ltr;unicode-bidi:isolate;position:fixed;z-index:60;font:800 26px Heebo,sans-serif;color:#E8892B;pointer-events:none;transform:translate(-50%,0);animation:up 1.1s ease-out forwards}
 @keyframes up{to{transform:translate(-50%,-70px);opacity:0}}
 .fb .praise{display:block;font-size:19px;margin-bottom:4px}
+/* 👤 שם התלמיד – תמיד בימין למעלה; לחיצה = הדף שלי (11.11) */
+.topline{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg);padding:6px 0;margin:-6px 0 4px}
+.mechip{display:inline-flex;align-items:center;gap:6px;max-width:62%;border:2px solid var(--main);background:var(--paper);color:var(--main-dark);border-radius:999px;
+  padding:5px 12px;font:inherit;font-size:15.5px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px var(--shadow);min-height:40px}
+.mechip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mechip.anon{border-style:dashed;color:var(--muted);font-weight:500}
+.who{background:var(--soft);border:2px solid var(--main);border-radius:16px;padding:14px;margin-top:12px}
+.who .hi{font-size:20px} .who .hi small{display:block;font-size:15px;color:var(--muted);font-weight:500}
+.who .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px} .who .row button{flex:1;min-width:150px;margin:0}
+.skip{display:block;margin:10px auto 0;background:none;border:0;color:var(--muted);text-decoration:underline;font:inherit;font-size:15px;cursor:pointer;min-height:36px}
+.mylist{list-style:none;margin:8px 0 0;padding:0}
+.mylist li{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-bottom:1px solid var(--line)}
+.mylist li b{color:var(--main-dark);white-space:nowrap}
+.mystats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.mystats div{background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:8px;text-align:center;font-size:14px;color:var(--muted)}
+.mystats b{display:block;font-size:24px;color:var(--main-dark)}
 .fb .love{margin-top:6px;font-size:15px;font-weight:500;opacity:.92}
 /* 🗺️ המסע שלי בתנאים (11.11) */
 .jbtn{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 14px;padding:12px 14px;border-radius:16px;border:2px solid var(--accent);
@@ -175,7 +191,7 @@ details.reg summary{cursor:pointer;font-weight:700;min-height:32px}
 </head>
 <body>
 <div class="wrap">
-  <div class="crumbs"><a href="/">הקול החמישי</a> › חידות התנאים</div>
+  <div class="topline"><button type="button" class="mechip" id="meChip"></button><div class="crumbs"><a href="/">הקול החמישי</a> › חידות התנאים</div></div>
   <h1>✏️ חידות התנאים</h1>
   <p class="lead">חידות שחיברו ילדים, עם ציור ועם השם שלהם. אפשר לפתור, ואפשר לחבר חידה בעצמכם!</p>
   <div class="how">
@@ -270,7 +286,7 @@ screen.addEventListener('click', function(ev){
 
 // ---------- לפתור: בחירת נושא ----------
 function renderTopics(){
-  setUrl('#play'); deep(false);
+  G = null; renderChip(); setUrl('#play'); deep(false);
   var count = {};
   RIDDLES.forEach(function(r){ count[r.topic] = (count[r.topic] || 0) + 1; });
   if (!RIDDLES.length) {
@@ -327,6 +343,7 @@ function quizAll(){
   return { key: '', title: 'כל החידות ב' + SUBJECT, sub: SUBJECT, list: RIDDLES.slice(), back: renderTopics };
 }
 function renderStories(topic){
+  G = null; renderChip();
   var link = '?t=' + encodeURIComponent(topic);
   setUrl(link);
   var ss = storiesOf(topic), extra = RIDDLES.filter(function(r){ return r.topic === topic && !r.story; }).length;
@@ -338,7 +355,7 @@ function renderStories(topic){
       return '<p class="note" style="margin:-6px 0 12px;font-size:15.5px">' + (x.won ? '🚩 כבשתם את ' + esc(topic) + '!' : '⛺ ' + x.done + ' מתוך ' + x.total + ' חידונים – גמרו את כולם ותכבשו את ' + esc(topic) + ' 🚩') +
         ' · <a href="?map=1" id="toMap">🗺️ המסע שלי</a></p>'; })() +
     '<ul class="stories" id="stories">' + ss.map(function(s){
-      var n = ALL.filter(function(r){ return r.story === s.id; }).length, done = sget('kr-done-' + gameId(s.id));
+      var n = ALL.filter(function(r){ return r.story === s.id; }).length, done = isDone(gameId(s.id));
       return '<li><button type="button" data-s="' + esc(s.id) + '"' + (done ? ' class="done"' : '') + '><span class="ic">' + (done ? '✅' : '📖') + '</span>' + esc(s.title) +
         '<span class="n">' + n + ' חידות</span></button></li>';
     }).join('') +
@@ -372,7 +389,18 @@ function journey(){
   });
   return out;
 }
-function isDone(key){ return !!sget('kr-done-' + key); }
+// לכל תלמיד מסע משלו (גם כששני אחים משחקים באותו מחשב): kr-done-<שם|כיתה|בית ספר>|<game>; בלי שם – kr-done-<game>
+function whoTag(){ if (G && G.anon) return ''; var m = me(); return m.name ? [m.name, m.cls || '', m.school || ''].join('|').toLowerCase() + '|' : ''; }
+function isDone(key){ return !!sget('kr-done-' + whoTag() + key); }
+function markDone(key, score){
+  sset('kr-done-' + whoTag() + key, '1');
+  var b = Number(sget('kr-best-' + whoTag() + key)) || 0; if (score > b) sset('kr-best-' + whoTag() + key, String(score));
+}
+function bestOf(key){ return Number(sget('kr-best-' + whoTag() + key)) || 0; }
+(function(){   // פעם אחת: מה שנעשה לפני 11.11 (בלי שם) שייך לתלמיד שהשם שלו שמור במחשב
+  if (sget('kr-mig-1')) return; sset('kr-mig-1', '1'); var tag = whoTag(); if (!tag) return;
+  try { Object.keys(localStorage).forEach(function(k){ var m = /^kr-done-(chidot-.*)$/.exec(k); if (m && m[1].indexOf('|') < 0) sset('kr-done-' + tag + m[1], '1'); }); } catch(e){}
+})();
 function jStats(J){
   var open = J.filter(function(x){ return x.total; }), won = open.filter(function(x){ return x.won; }).length;
   var q = 0, qd = 0; open.forEach(function(x){ q += x.total; qd += x.done; });
@@ -389,7 +417,7 @@ function syncDone(cb){
   srvSynced = Date.now();
   getJson(HQ_API + '?action=me&name=' + encodeURIComponent(m.name) + '&cls=' + encodeURIComponent(m.cls) + '&school=' + encodeURIComponent(m.school)).then(function(d){
     var added = false;
-    if (d && d.games) for (var g in d.games) if (/^chidot-/.test(g) && !isDone(g)) { sset('kr-done-' + g, '1'); added = true; }
+    if (d && d.games) for (var g in d.games) if (/^chidot-/.test(g) && (!isDone(g) || bestOf(g) < d.games[g])) { if (!isDone(g)) added = true; markDone(g, Number(d.games[g]) || 0); }
     if (cb) cb(added);
   }).catch(function(){ if (cb) cb(false); });
 }
@@ -400,6 +428,7 @@ function journeyBtn(){
     '<span class="meter"><i style="width:' + Math.round(S.pct * 100) + '%"></i></span></span></button>';
 }
 function renderJourney(){
+  G = null; renderChip();
   setTab('play'); setSubject(STORIES_SUBJECT); mine(); setUrl('?map=1'); deep(true);
   var J = journey(), S = jStats(J), r = rankOf(S.pct), m = me(), grp = null, nxt = S.next;
   var nm = m.name ? esc(m.name) : '';
@@ -431,6 +460,80 @@ function renderJourney(){
     var t = b.getAttribute('data-t'); go(J.filter(function(x){ return x.name === t; })[0]);
   });
   syncDone(function(added){ if (added && /map=1/.test(location.search)) renderJourney(); });
+  focusTop();
+}
+// ---------- 👤 השם בימין למעלה + הדף שלי (11.11, בקשת המשתמש): הציונים שלי בתנאים וכמה עשיתי עד היום ----------
+function renderChip(){
+  var c = document.getElementById('meChip'), m = me();
+  if (G && G.anon) { c.className = 'mechip anon'; c.innerHTML = '<span>👤 משחקים בלי שם</span>'; c.title = 'לחצו כדי לכתוב שם'; return; }
+  if (!m.name) { c.className = 'mechip anon'; c.innerHTML = '<span>👤 מי משחק? לחצו כאן</span>'; c.title = ''; return; }
+  var S = jStats(journey());
+  c.className = 'mechip'; c.innerHTML = '<span>👤 ' + esc(m.name) + '</span><span>🚩 ' + S.won + '</span>';
+  c.title = 'הדף שלי: הציונים והמסע בתנאים';
+}
+document.getElementById('meChip').addEventListener('click', function(){ if (G && G.cleanup) G.cleanup(); if (voice) try { voice.pause(); } catch(e){} renderMe(); });
+function quizName(key){   // chidot-story-N → שם הסיפור; chidot-sI-tJ → כל החידות על התנא
+  var m = /^chidot-(story-\d+)$/.exec(key);
+  if (m) { var s = STORIES.filter(function(x){ return x.id === m[1]; })[0]; return s ? { t: s.title, tn: s.topic, n: ALL.filter(function(r){ return r.story === s.id; }).length, go: function(){ renderIntro(quizStory(s.id)); } } : null; }
+  m = /^chidot-s(\d+)-t(\d+)$/.exec(key);
+  if (m && Number(m[1]) === TANNA_SI) { var tp = tannaTopics()[Number(m[2])]; if (tp) return { t: 'כל החידות על ' + tp[0], tn: tp[0], n: ALL.filter(function(r){ return r.subject === STORIES_SUBJECT && r.topic === tp[0]; }).length, go: function(){ renderIntro(quizTopic(tp[0])); } }; }
+  return null;
+}
+function renderMe(edit){
+  G = null; setTab('play'); setSubject(STORIES_SUBJECT); mine(); setUrl('?me=1'); deep(true); renderChip();
+  var m = me(), $ = function(id){ return document.getElementById(id); };
+  if (edit || !m.name) {
+    screen.innerHTML = '<button class="back" id="back" type="button">→ לכל התנאים</button><h2>👤 ' + (m.name ? 'מי משחק עכשיו?' : 'מה השם שלך?') + '</h2>' +
+      '<label for="iName">השם שלך</label><input type="text" id="iName" maxlength="30" autocomplete="off">' +
+      '<div class="two"><div><label for="iCls">כיתה</label><input type="text" id="iCls" maxlength="15" placeholder="למשל: ג׳2"></div>' +
+      '<div><label for="iSchool">בית ספר</label><input type="text" id="iSchool" maxlength="40"></div></div>' +
+      '<p class="note">🏆 עם כיתה ובית ספר נכנסים ללוח המובילים, והמסע בתנאים נשמר גם במחשב אחר.</p><p class="msg" id="whoMsg" role="alert"></p>' +
+      '<button class="primary" id="save" type="button">✅ זה אני</button>';
+    $('back').addEventListener('click', function(){ renderTopics(); });
+    $('save').addEventListener('click', function(){
+      var n = { name: $('iName').value.trim(), cls: $('iCls').value.trim(), school: $('iSchool').value.trim() };
+      if (!n.name) { $('whoMsg').textContent = 'כתבו את השם שלכם.'; $('iName').focus(); return; }
+      sset('hq-me', JSON.stringify(n)); srvSynced = 0; renderMe();
+    });
+    $('iName').focus();
+    return;
+  }
+  var J = journey(), S = jStats(J), r = rankOf(S.pct), rows = [], sum = 0;
+  J.forEach(function(x){
+    var keys = x.stories.map(function(s){ return gameId(s.id); }).concat([gameId('s' + TANNA_SI + '-t' + tannaTopics().map(function(t){ return t[0]; }).indexOf(x.name))]);
+    keys.forEach(function(k){ if (!isDone(k)) return; var q = quizName(k); if (!q) return; var b = bestOf(k); sum += b; rows.push({ k: k, q: q, b: b }); });
+  });
+  screen.innerHTML = '<button class="back" id="back" type="button">→ לכל התנאים</button>' +
+    '<h2>👤 ' + esc(m.name) + '</h2><p style="margin:-8px 0 6px;color:var(--muted)">' + [m.cls ? 'כיתה ' + esc(m.cls) : '', esc(m.school || '')].filter(Boolean).join(' · ') +
+      ' · <button class="skip" style="display:inline;margin:0;padding:0;min-height:0" id="notMe" type="button">✏️ זה לא אני / לשנות</button></p>' +
+    '<div class="mystats"><div><b>🚩 ' + S.won + '</b>תנאים שכבשתי מתוך ' + S.open + '</div><div><b>🧩 ' + rows.length + '</b>חידונים שגמרתי</div>' +
+      '<div><b id="myPts">⭐ ' + sum + '</b><span id="myPtsL">נקודות בחידוני התנאים</span></div></div>' +
+    '<button type="button" class="jbtn" id="jbtn"><span class="big">' + r.e + '</span><span style="flex:1"><b>המסע שלי בתנאים · ' + r.n + '</b>' +
+      '<small>' + (S.next ? 'היעד הבא: ' + esc(S.next.name) + ' · לחצו למפה 🗺️' : '👑 כבשת את כל התנאים!') + '</small>' +
+      '<span class="meter"><i style="width:' + Math.round(S.pct * 100) + '%"></i></span></span></button>' +
+    '<h3>📋 הציונים שלי בחידוני התנאים</h3>' +
+    (rows.length ? '<ul class="mylist" id="mylist">' + rows.map(function(x, i){
+      return '<li><span><a href="#" data-i="' + i + '">' + esc(x.q.t) + '</a><br><small style="color:var(--muted)">' + esc(x.q.tn) + '</small></span>' +
+        '<b>' + (x.b ? x.b + ' / ' + x.q.n * 10 : '✅') + '</b></li>'; }).join('') + '</ul>'
+      : '<p>עוד לא גמרת חידון בתנאים. מתחילים משמעון הצדיק? 🕍</p>') +
+    (!real(m) ? '<p class="note">💡 הוסיפו כיתה ובית ספר (״לשנות״ למעלה) – ואז הציונים נשמרים גם בשרת ונכנסים ללוח המובילים.</p>' : '') +
+    '<button class="primary" id="goNext" type="button">' + (S.next ? '▶️ ממשיכים במסע: ' + esc(S.next.name) : '🎮 לבחור חידון') + '</button>';
+  $('back').addEventListener('click', function(){ renderTopics(); });
+  $('notMe').addEventListener('click', function(){ renderMe(true); });
+  $('jbtn').addEventListener('click', renderJourney);
+  $('goNext').addEventListener('click', function(){
+    if (!S.next) return renderTopics();
+    var s = S.next.stories.filter(function(s){ return !isDone(gameId(s.id)); })[0];
+    if (s) renderIntro(quizStory(s.id)); else if (S.next.stories.length) renderStories(S.next.name); else renderIntro(quizTopic(S.next.name));
+  });
+  var ml = $('mylist'); if (ml) ml.addEventListener('click', function(e){ var a = e.target.closest('a[data-i]'); if (!a) return; e.preventDefault(); rows[Number(a.getAttribute('data-i'))].q.go(); });
+  if (real(m) && HQ_API) getJson(HQ_API + '?action=me&name=' + encodeURIComponent(m.name) + '&cls=' + encodeURIComponent(m.cls) + '&school=' + encodeURIComponent(m.school)).then(function(d){
+    if (!d || !d.ok || !$('myPts')) return;
+    $('myPts').textContent = '⭐ ' + (Number(d.points) || 0); $('myPtsL').textContent = 'נקודות בכל האתר';
+    var added = false;
+    for (var g in d.games) if (/^chidot-/.test(g) && (!isDone(g) || bestOf(g) < d.games[g])) { added = true; markDone(g, Number(d.games[g]) || 0); }
+    if (added && /me=1/.test(location.search)) renderMe();
+  }).catch(function(){});
   focusTop();
 }
 // תנא שהחידון הזה שייך אליו (לסוף החידון: "כבשתם את X!")
@@ -555,6 +658,7 @@ function clearRun(Q){ try { localStorage.removeItem(runKey(Q)); } catch(e){} }
 // ---------- מסך פתיחה של חידון ----------
 function renderIntro(Q){
   if (!Q || !Q.list.length) return renderTopics();
+  G = null; renderChip();
   setUrl(Q.hash || '#play');
   var m = me(), run = readRun(Q);
   screen.innerHTML = '<button class="back" id="back" type="button">→ חזרה</button>' +
@@ -562,34 +666,58 @@ function renderIntro(Q){
     '<p style="margin:-6px 0 4px;color:var(--muted)">' + esc(Q.sub) + ' · ' + Q.list.length + (Q.list.length === 1 ? ' חידה' : ' חידות') + ' עם ציור · 10 נקודות לתשובה בניסיון הראשון</p>' +
     (Q.img ? '<img class="intro-img" src="' + esc(Q.img) + '" alt="' + esc(Q.title) + '" width="900" height="600">' : '') +
     (Q.read ? '<a class="intro-read" href="' + esc(Q.read) + '" target="_blank" rel="noopener">📖 לקריאת הסיפור בספר „כה עשו תנאינו“</a>' : '') +
-    (run ? '<div class="resume">▶️ כבר התחלתם את החידון הזה' + (m.name ? ', ' + esc(m.name) : '') + ' – הגעתם לחידה ' + (run.i + 1) + ' מתוך ' + run.n + '.' +
-      '<button class="primary" id="resume" type="button">▶️ ממשיכים מהמקום שלי</button></div>' : '') +
-    '<button class="primary" id="go" type="button" style="font-size:20px">' + (run ? 'מתחילים מההתחלה 🔄' : 'מתחילים! 🎮') + '</button>' +
-    '<details class="reg"><summary>🏆 לוח המובילים (לא חובה)</summary>' +
-      '<p class="note">כדי להיכנס ללוח המובילים ולצבור נקודות – אותן נקודות כמו בחידוני ההלכה באתר.</p>' +
-      '<label for="iName">השם שלך</label><input type="text" id="iName" maxlength="30" autocomplete="given-name">' +
-      '<div class="two"><div><label for="iCls">כיתה</label><input type="text" id="iCls" maxlength="15" placeholder="למשל: ג׳2"></div>' +
-      '<div><label for="iSchool">בית ספר</label><input type="text" id="iSchool" maxlength="40"></div></div></details>' +
+    '<div class="who" id="whoBox"></div>' +
     (Q.hash ? copyBtn(Q.hash) : '');
   var $ = function(id){ return document.getElementById(id); };
-  $('iName').value = m.name || ''; $('iCls').value = m.cls || ''; $('iSchool').value = m.school || '';
-  if (real(m)) $('iName').closest('details').open = false;
-  function who(){
-    var n = { name: $('iName').value.trim(), cls: $('iCls').value.trim(), school: $('iSchool').value.trim() };
-    var old = me(); old.name = n.name; old.cls = n.cls; old.school = n.school; sset('hq-me', JSON.stringify(old));
-    return n;
-  }
   $('back').addEventListener('click', function(){ Q.back(); });
-  $('go').addEventListener('click', function(){ who(); clearRun(Q); startGame(Q); });
-  if (run) $('resume').addEventListener('click', function(){ who(); startGame(Q, run); });
+  // 11.11 (בקשת המשתמש): לפני כל משחק המחשב שואל את הילד מה שמו. שם שנשמר – מוצג, והילד מאשר שזה הוא. אפשר לדלג.
+  function begin(fromStart){ if (fromStart) clearRun(Q); startGame(Q, fromStart ? null : run); }
+  function confirmMode(){
+    var who = esc(m.name) + '<small>' + [m.cls ? 'כיתה ' + esc(m.cls) : '', esc(m.school || '')].filter(Boolean).join(' · ') + '</small>';
+    $('whoBox').innerHTML = '<div class="hi">👋 שלום, <b>' + who + '</b></div><p style="margin:8px 0 0;font-weight:700">זה אתה?</p>' +
+      (run ? '<p class="note" style="margin:4px 0 0">▶️ כבר התחלת את החידון הזה – הגעת לחידה ' + (run.i + 1) + ' מתוך ' + run.n + '.</p>' : '') +
+      '<div class="row">' + (run ? '<button class="primary" id="resume" type="button">✅ כן – ממשיכים מהמקום שלי ▶️</button>' : '') +
+      '<button class="' + (run ? 'secondary' : 'primary') + '" id="go" type="button" style="font-size:19px">✅ כן, זה אני – ' + (run ? 'מההתחלה 🔄' : 'מתחילים! 🎮') + '</button>' +
+      '<button class="secondary" id="notMe" type="button">✏️ זה לא אני</button></div>' +
+      '<button class="skip" id="skip" type="button">לדלג – לשחק בלי שם</button>';
+    $('go').addEventListener('click', function(){ begin(true); });
+    if (run) $('resume').addEventListener('click', function(){ begin(false); });
+    $('notMe').addEventListener('click', function(){ formMode(true); });
+    $('skip').addEventListener('click', function(){ startGame(Q, null, true); });
+    var f = $(run ? 'resume' : 'go'); if (f) f.focus({ preventScroll: true });
+  }
+  function formMode(other){
+    $('whoBox').innerHTML = '<div class="hi">👋 ' + (other ? 'אז מי משחק עכשיו?' : 'מה השם שלך?') + '</div>' +
+      '<label for="iName">השם שלך</label><input type="text" id="iName" maxlength="30" autocomplete="off">' +
+      '<div class="two"><div><label for="iCls">כיתה</label><input type="text" id="iCls" maxlength="15" placeholder="למשל: ג׳2"></div>' +
+      '<div><label for="iSchool">בית ספר</label><input type="text" id="iSchool" maxlength="40"></div></div>' +
+      '<p class="note" style="margin:6px 0 0">🏆 עם כיתה ובית ספר נכנסים גם ללוח המובילים, והמסע בתנאים נשמר גם במחשב אחר.</p>' +
+      '<p class="msg" id="whoMsg" role="alert"></p>' +
+      '<div class="row"><button class="primary" id="go" type="button" style="font-size:19px">מתחילים! 🎮</button></div>' +
+      '<button class="skip" id="skip" type="button">לדלג – לשחק בלי שם</button>';
+    if (!other) { $('iName').value = m.name || ''; $('iCls').value = m.cls || ''; $('iSchool').value = m.school || ''; }
+    $('go').addEventListener('click', function(){
+      var n = { name: $('iName').value.trim(), cls: $('iCls').value.trim(), school: $('iSchool').value.trim() };
+      if (!n.name) { $('whoMsg').textContent = 'כתבו את השם שלכם – או לחצו "לדלג".'; $('iName').focus(); return; }
+      var same = n.name === m.name && n.cls === (m.cls || '') && n.school === (m.school || '');
+      var old = other ? {} : me(); old.name = n.name; old.cls = n.cls; old.school = n.school; sset('hq-me', JSON.stringify(old));
+      if (!same) srvSynced = 0;
+      renderChip(); begin(!(same && run));
+    });
+    $('skip').addEventListener('click', function(){ startGame(Q, null, true); });
+    $('iName').addEventListener('keydown', function(e){ if (e.key === 'Enter') $('go').click(); });
+    $('iName').focus({ preventScroll: true });
+  }
+  if (m.name) confirmMode(); else formMode(false);
   focusTop();
 }
 
 // ---------- לפתור: המשחק ----------
 var G = null;
-function startGame(Q, run){
-  var m = me();
-  G = { Q: Q, list: Q.list, title: Q.title, i: 0, points: 0, first: 0, streak: 0, best: 0, name: m.name || '', real: real(m), m: m };
+function startGame(Q, run, anon){   // anon: הילד לחץ "לדלג" – משחק בלי שם
+  var m = anon ? {} : me();
+  G = { Q: Q, list: Q.list, title: Q.title, i: 0, points: 0, first: 0, streak: 0, best: 0, name: m.name || '', real: real(m), m: m, anon: !!anon };
+  renderChip();
   if (run) { G.i = run.i; G.points = run.points; G.first = run.first; G.streak = run.streak || 0; G.best = run.best || 0; }
   else if (G.real && Q.key && HQ_API) {   // "התחיל" – כמו בחידוני ההלכה
     fetch(HQ_API, { method: 'POST', headers: { 'Content-Type': 'text/plain' },
@@ -689,10 +817,11 @@ function renderEnd(){
   var max = G.list.length * 10, s = G.points / max, pct = Math.round(s * 100), stars = s >= .9 ? 3 : s >= .6 ? 2 : 1;
   var nm = G.name ? esc(G.name) : '', nx = nextStory(), today = new Date().toLocaleDateString('he-IL');
   var tn = tannaOfQuiz(G.Q), before = tn ? journey().filter(function(x){ return x.name === tn; })[0] : null;
-  if (G.Q.key) sset('kr-done-' + G.Q.key, '1');
+  if (G.Q.key) markDone(G.Q.key, G.points);
   var after = tn ? journey().filter(function(x){ return x.name === tn; })[0] : null;
   var conquered = !!(before && after && !before.won && after.won), JS = tn ? jStats(journey()) : null;
   if (conquered || pct === 100) soundGrand(); else soundWin();
+  renderChip();
   var jbox = !JS ? '' : conquered ?
       '<div class="won-box"><span class="big">🚩</span>כבשתם את ' + esc(tn) + '!' + (JS.won === JS.open ? '<br>👑 וזה היה האחרון – כבשתם את כל התנאים, משמעון הצדיק ועד סוף התנאים!' :
         '<br><span style="font-weight:500;font-size:16px">כבר ' + JS.won + ' מתוך ' + JS.open + ' תנאים. היעד הבא: ' + esc(JS.next.name) + '</span>') + '</div>' :
@@ -897,6 +1026,7 @@ function route(){
   var P = new URLSearchParams(location.search), m = /^#s=(story-\d+)/.exec(location.hash);
   var sid = m ? m[1] : P.get('s'), t = P.get('t'), q = P.get('q');
   if (P.get('map')) { renderJourney(); return true; }
+  if (P.get('me')) { renderMe(); return true; }
   if (sid) {
     var Q = quizStory(sid);
     if (Q && Q.list.length) { setTab('play'); setSubject(STORIES_SUBJECT); mine(); deep(true); renderIntro(Q); return true; }
@@ -912,7 +1042,7 @@ function route(){
   }
   return false;
 }
-setSubject(sget('kr_subject')); mine();
+setSubject(sget('kr_subject')); mine(); tannaTopics(); renderChip();
 if (!route()) { if (location.hash === '#write') { setTab('write'); renderForm(); } else { renderTopics(); } }
 window.addEventListener('hashchange', function(){ if (/^#s=/.test(location.hash)) route(); });
 </script>
