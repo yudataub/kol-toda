@@ -783,9 +783,16 @@ function renderQ(){
       fb.className = 'fb ok'; fb.innerHTML = head + esc(q.explain) + '<div class="love">' + esc(drawText('love', LOVE)) + '</div>';
       G.i++; saveRun();
       var nx = document.createElement('button'); nx.className = 'primary'; nx.type = 'button';
-      nx.textContent = G.i < G.list.length ? 'לחידה הבאה ⬅' : 'לסיום 🏁';
-      nx.addEventListener('click', function(){ if (voice) try { voice.pause(); } catch(e){} if (G.i < G.list.length) renderQ(); else renderEnd(); });
-      screen.appendChild(nx); nx.focus({ preventScroll: true });
+      // 11.11 (בקשת המשתמש): אחרי 12 שניות עוברים לבד לחידה הבאה (המונה רץ על הכפתור; לחיצה עוברת מיד)
+      var label = G.i < G.list.length ? 'לחידה הבאה ⬅' : 'לסיום 🏁', left = 12, timer = null, gone = false;
+      function go(){ if (gone) return; gone = true; clearInterval(timer); if (voice) try { voice.pause(); } catch(e){} if (G.i < G.list.length) renderQ(); else renderEnd(); }
+      function show(){ nx.textContent = label + ' (' + left + ')'; }
+      nx.addEventListener('click', go);
+      screen.appendChild(nx); show(); nx.focus({ preventScroll: true });
+      timer = setInterval(function(){
+        if (!document.body.contains(nx) || !G) { clearInterval(timer); return; }   // יצאו מהמסך (🏠 / השם / ⚙️ לא עוצר)
+        if (--left <= 0) go(); else show();
+      }, 1000);
       fb.scrollIntoView({ block: 'nearest' });
     } else {
       soundBad();
