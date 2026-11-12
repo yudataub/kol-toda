@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="כלים חינמיים למורה בעברית: עורך ספרים, הופך ל-HTML, ממיר קבצים לטקסט, לוח ניקוד חיובי, מבחן כיתתי מוקרן, זוכר שמות תלמידים, משחקים שהתלמידים יוצרים ועוד.">
+<meta property="og:title" content="ארגז הכלים למורה – הקול החמישי">
+<meta property="og:description" content="כלים חינמיים למורה: להכין חומרים, להפעיל את הכיתה ולתת לתלמידים ליצור.">
+<title>ארגז הכלים למורה – הקול החמישי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Rubik:wght@400;500;700&display=swap">
+<style>
+/* Layout: a teacher's planner page. Ruled hero, then a filter bar and a grid of tool cards grouped by when the teacher uses them. */
+:root{
+  --paper:#fbfaf6; --sheet:#ffffff; --ink:#1d2a44; --muted:#5d667a;
+  --rule:#d9e1ee; --blue:#2348a8; --blue-soft:#e7edfb;
+  --green:#1f7a4d; --green-soft:#e3f3ea; --red:#b3362b; --red-soft:#fbe8e5;
+  --amber:#8a5a00; --amber-soft:#fbf0d9;
+  --display:"Secular One","Rubik",system-ui,sans-serif;
+  --body:"Rubik",system-ui,"Segoe UI",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#12161f; --sheet:#1a2030; --ink:#e8ecf5; --muted:#a3abbd;
+  --rule:#2b3447; --blue:#8fb0ff; --blue-soft:#22305a;
+  --green:#6fd3a0; --green-soft:#173628; --red:#ff9a8e; --red-soft:#3d1f1c;
+  --amber:#f0c36b; --amber-soft:#3a2d12; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#12161f; --sheet:#1a2030; --ink:#e8ecf5; --muted:#a3abbd;
+  --rule:#2b3447; --blue:#8fb0ff; --blue-soft:#22305a;
+  --green:#6fd3a0; --green-soft:#173628; --red:#ff9a8e; --red-soft:#3d1f1c;
+  --amber:#f0c36b; --amber-soft:#3a2d12; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;direction:rtl}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+header.hero{border-bottom:2px solid var(--blue);
+  background:repeating-linear-gradient(to bottom,transparent 0 31px,var(--rule) 31px 32px);}
+header.hero .wrap{padding-block:48px 32px;position:relative}
+header.hero .wrap::before{content:"";position:absolute;top:0;bottom:0;inset-inline-start:max(4px,calc(env(safe-area-inset-right,0px)));width:2px;background:var(--red);opacity:.55}
+.eyebrow{font-size:.85rem;letter-spacing:.06em;color:var(--blue);font-weight:500}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(2.1rem,6vw,3.4rem);line-height:1.15;margin:.2em 0 .3em;text-wrap:balance}
+.lead{max-width:62ch;font-size:1.1rem;color:var(--muted);margin:0}
+.count{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.95rem;font-variant-numeric:tabular-nums}
+.count b{font-family:var(--display);font-weight:400;font-size:1.25rem;color:var(--ink)}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--rule)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.bar .wrap{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding-block:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 auto}
+.chip{font:inherit;font-size:.92rem;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:6px 14px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:var(--sheet)}
+.chip:focus-visible,.search:focus-visible,.go:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.search{font:inherit;font-size:.95rem;flex:0 1 240px;min-width:0;padding:7px 12px;border:1px solid var(--rule);border-radius:8px;background:var(--sheet);color:var(--ink)}
+
+main .wrap{padding-block:28px 40px;display:flex;flex-direction:column;gap:40px}
+section h2{font-family:var(--display);font-weight:400;font-size:1.55rem;margin:0 0 4px}
+section .sub{color:var(--muted);margin:0 0 16px;max-width:65ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px}
+.card{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h3{margin:0;font-size:1.15rem;font-weight:700;text-wrap:balance}
+.card p{margin:0;color:var(--muted)}
+.card ul{margin:0;padding-inline-start:18px;font-size:.93rem}
+.card ul li{margin:2px 0}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.pill{flex:none;font-size:.78rem;font-weight:500;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.s-live{background:var(--green-soft);color:var(--green)}
+.s-dl{background:var(--blue-soft);color:var(--blue)}
+.s-soon{background:var(--amber-soft);color:var(--amber)}
+.foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-top:6px;border-top:1px dashed var(--rule)}
+.where{font-size:.82rem;color:var(--muted)}
+.go{font:inherit;font-size:.92rem;font-weight:500;text-decoration:none;color:var(--sheet);background:var(--blue);padding:7px 14px;border-radius:8px}
+.go:hover{filter:brightness(1.08)}
+.go.off{background:transparent;color:var(--muted);border:1px solid var(--rule);cursor:default}
+.empty{color:var(--muted);text-align:center;padding:30px 0}
+
+.sig{border:2px solid var(--blue);background:var(--blue-soft);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:6px}
+.sig a{color:var(--blue);font-weight:500}
+footer .wrap{padding-block:0 40px}
+@media (prefers-reduced-motion:no-preference){.card{transition:transform .15s ease}.card:hover{transform:translateY(-2px)}}
+</style>
+
+<meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-teacher-tools-index.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/teacher-tools/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://www.kol-toda.co.il/teacher-tools/">
+<script async src="https://www.kol-toda.co.il/a.js"></script>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">הקול החמישי · למורים ולמחנכים</div>
+    <h1>ארגז הכלים למורה</h1>
+    <p class="lead">כלים שבנינו לעבודה היומיומית בכיתה: להכין חומרים, להפעיל את הכיתה, לתת לתלמידים ליצור בעצמם ולחסוך זמן מול המחשב. הכול בעברית וחינם.</p>
+    <div class="count" id="count"></div>
+  </div>
+</header>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="chips" id="chips" role="group" aria-label="סינון לפי מצב"></div>
+    <input class="search" id="q" type="search" placeholder="חיפוש כלי…" aria-label="חיפוש כלי">
+  </div>
+</div>
+
+<main><div class="wrap" id="list"></div></main>
+
+<footer>
+  <div class="wrap">
+    <div class="sig">
+      <div>📚 עוד חומרי לימוד לכיתה – חינם, במאגר הקול החמישי: <a href="https://www.kol-toda.co.il/search/" target="_blank" rel="noopener">www.kol-toda.co.il/search</a></div>
+      <div>המאגר המלא: <a href="https://www.kol-toda.co.il/" target="_blank" rel="noopener">https://www.kol-toda.co.il/</a></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+const GROUPS=[
+ {id:"prep",name:"הכנת חומרים",sub:"דפי עבודה, חוברות וקבצים לפני השיעור."},
+ {id:"class",name:"בתוך הכיתה",sub:"להקרין, לנהל ולהכיר את התלמידים."},
+ {id:"kids",name:"התלמידים יוצרים",sub:"המורה פותח כיתה ורושם נושאים, התלמידים כותבים בעצמם, והחומר נבדק ומתפרסם."},
+ {id:"ready",name:"חידונים וספרים מוכנים",sub:"חומרי לימוד שאפשר לשלוח לתלמידים כבר היום."},
+ {id:"pc",name:"למחשב של המורה",sub:"תוכנות קטנות להורדה, ל-Windows."}
+];
+const STATUS={live:["פתוח עכשיו","s-live"],dl:["להורדה","s-dl"],soon:["בהכנה","s-soon"]};
+const TOOLS=[
+ {g:"prep",name:"הופך ל-HTML",st:"live",url:"html/",what:"מדביקים קוד של דף (למשל ממה שכתב Claude או ChatGPT), רואים מיד איך הוא נראה, ומתקנים טקסט ישר על הדף כמו בוורד.",pts:["עריכה ישירה על התצוגה, בלי לגעת בקוד","הורדת קובץ HTML מוכן לשליחה או להעלאה"]},
+ {g:"prep",name:"עורך ספרים",st:"live",url:"sefer/",what:"כותבים ספר או חוברת, והעורך מסדר פרקים, כותרות ועמודים בעיצוב אחיד ומוכן להדפסה.",pts:["ייבוא מ-Word, ושמירה ל-Word או ל-PDF","שער, תוכן עניינים והערות שוליים"]},
+ {g:"prep",name:"ממיר ל-Markdown",st:"live",dl:true,url:"to-markdown/",what:"הופך קובצי Word, PDF ותמונות לטקסט נקי לפני שמעלים אותם ל-Claude, ל-ChatGPT או ל-NotebookLM.",pts:["עברית תקינה, גם מ-PDF הפוך","קריאת טקסט מתמונות סרוקות (OCR)","הכול נשאר במחשב שלכם"]},
+ {g:"prep",name:"דחיסת PDF",st:"soon",dl:true,what:"מקטין קובצי PDF כבדים, כמו דפי עבודה עם תמונות, כדי שיעברו במייל ובוואטסאפ.",pts:["גרירה של קובץ ובחירת רמת דחיסה","דוח לפני ואחרי"]},
+ {g:"prep",name:"מקליט שיעורים",st:"soon",what:"תוסף לכרום שמקליט את המסך ואת המצלמה יחד, גוזר את ההתחלה והסוף ומעלה ישר ליוטיוב.",pts:["חלון מצלמה עגול על המצגת","העלאה לרשימת השמעה שבוחרים"]},
+ {g:"prep",name:"אוסף למורה",st:"live",url:"https://www.kol-toda.co.il/osef-lamore/",what:"אוסף חומרים למורה בהמון נושאים, מסודר לפי נושא, עם חיפוש."},
+ {g:"class",name:"מבחן כיתתי מוקרן",st:"live",url:"https://www.kol-toda.co.il/class-quiz/",what:"מקרינים על הלוח שאלה גדולה, חושפים תשובה ולוחצים על שם התלמיד שענה. הנקודות נשמרות מיד.",pts:["שאלות בשלוש רמות: הבנה, עיון ואתגר","טבלת ניקוד לכל הכיתה"]},
+ {g:"class",name:"זוכר שמות תלמידים",st:"live",url:"https://yudataub.github.io/students-app/",what:"לומדים את שמות התלמידים בתחילת השנה: כרטיסים עם תמונות, מבחני זיכרון וסידור ישיבה.",pts:["ניקוד התנהגות חיובי","הנתונים נשמרים בדפדפן של המורה"]},
+ {g:"class",name:"לוח ניקוד חיובי",st:"live",url:"score/",what:"לוח נקודות לתלמידים שמקרינים בכיתה, לחיזוק התנהגות טובה.",pts:["חיזוקים והערות בלחיצה, עם ביטול","כמה כיתות, ייבוא רשימה וייצוא לאקסל"]},
+ {g:"class",name:"הקול החמישי – כיתה",st:"live",dl:true,url:"https://www.kol-toda.co.il/class-kiosk/",what:"דפדפן נעול למחשבי הכיתה: התלמידים גולשים רק באתר הקול החמישי, והמורה שולט מלוח בקרה.",pts:["יציאה רק בקוד של המורה","חידונים כיתתיים ועבודה בקבוצות"]},
+ {g:"kids",name:"ילדים יוצרים משחק",st:"live",url:"https://www.kol-toda.co.il/yotzrim/",what:"התלמיד בוחר נושא וסוג משחק, כותב את החומר, משחק במשחק של עצמו ושולח. החומר נבדק תוך דקה ונכנס לגלריה של הכיתה."},
+ {g:"kids",name:"חידות התנאים",st:"live",url:"https://www.kol-toda.co.il/chidot/",what:"ילדים מחברים חידה בהלכה או בסיפורי התנאים. חידה נכונה מקבלת איור ונכנסת למשחק באתר עם שם הכותב."},
+ {g:"ready",name:"חידוני הלכה",st:"live",url:"https://www.kol-toda.co.il/halacha-quiz/",what:"חידונים מאוירים בהלכה בשלוש רמות, מכיתות נמוכות ועד גבוהות."},
+ {g:"ready",name:"פניני הפרשה",st:"live",url:"https://www.kol-toda.co.il/pninei/",what:"מבדקים על פרשת השבוע, מסודרים לפי כיתות."},
+ {g:"ready",name:"ספר ההלכה לחגים",st:"live",url:"https://www.kol-toda.co.il/halacha-book-chagim/",what:"ספר הלכות מאויר לחגים, לקריאה בכיתה ובבית."},
+ {g:"pc",name:"FastFind",st:"live",dl:true,url:"https://www.kol-toda.co.il/fastfind/",what:"חיפוש מהיר של קבצים בכל המחשב: מקלידים חלק מהשם והקובץ מופיע מיד.",pts:["גם לפי קישור או נתיב שהודבק"]}
+];
+
+let filter="all",q="";
+const FILTERS=[["all","הכול"],["live","פתוח עכשיו"],["dl","להורדה"],["soon","בהכנה"]];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function matches(t){
+  if(filter==="dl"&&!t.dl)return false;
+  if(filter!=="all"&&filter!=="dl"&&t.st!==filter)return false;
+  if(q){const hay=(t.name+" "+t.what+" "+(t.pts||[]).join(" ")).toLowerCase();if(!hay.includes(q))return false}
+  return true;
+}
+function card(t){
+  const [label,cls]=t.dl&&t.st!=="soon"?STATUS.dl:STATUS[t.st];
+  const pts=t.pts?`<ul>${t.pts.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:"";
+  const where=t.url&&!/^https?:/.test(t.url)?"kol-toda.co.il/teacher-tools/"+esc(t.url.replace(/\/$/,"")):t.url?esc(t.url.replace(/^https?:\/\/(www\.)?/,"").replace(/\/$/,"")):(t.dl?"תוכנה להורדה":"יעלה לאתר בקרוב");
+  const btn=t.url?`<a class="go" href="${esc(t.url)}" target="_blank" rel="noopener">${t.dl?"להורדה ולמדריך":"לפתיחה"}</a>`:`<span class="go off">בקרוב</span>`;
+  return `<article class="card"><div class="top"><h3>${esc(t.name)}</h3><span class="pill ${cls}">${label}</span></div><p>${esc(t.what)}</p>${pts}<div class="foot"><span class="where">${where}</span>${btn}</div></article>`;
+}
+function render(){
+  const list=document.getElementById("list");let html="",n=0;
+  for(const g of GROUPS){
+    const items=TOOLS.filter(t=>t.g===g.id&&matches(t));if(!items.length)continue;n+=items.length;
+    html+=`<section><h2>${esc(g.name)}</h2><p class="sub">${esc(g.sub)}</p><div class="grid">${items.map(card).join("")}</div></section>`;
+  }
+  list.innerHTML=html||`<p class="empty">לא נמצא כלי שמתאים לחיפוש.</p>`;
+}
+function renderChips(){
+  document.getElementById("chips").innerHTML=FILTERS.map(([id,l])=>`<button class="chip" id="f-${id}" aria-pressed="${filter===id}" data-f="${id}">${l}</button>`).join("");
+}
+document.getElementById("chips").addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(!b)return;filter=b.dataset.f;renderChips();render()});
+document.getElementById("q").addEventListener("input",e=>{q=e.target.value.trim().toLowerCase();render()});
+const live=TOOLS.filter(t=>t.st==="live").length,soon=TOOLS.filter(t=>t.st==="soon").length;
+document.getElementById("count").innerHTML=`<span><b>${TOOLS.length}</b> כלים</span><span><b>${live}</b> פתוחים עכשיו</span><span><b>${soon}</b> בהכנה</span>`;
+renderChips();render();
+</script>
+
+</body>
+</html>
