@@ -59,6 +59,23 @@
   #nav span { min-width:90px; text-align:center; font-weight:700; }
   .lock #nav { display:none; }
   .hidden { display:none !important; }
+  /* דף לימוד (L) ושעון לשאלה (sec) */
+  .learn { width:min(1100px,100%); display:flex; flex-direction:column; gap:14px; text-align:right; }
+  .learn h2 { margin:0; text-align:center; font-size:clamp(28px,4vw,52px); }
+  .learn .src { text-align:center; color:var(--c2); font-weight:700; font-size:clamp(16px,1.8vw,22px); }
+  .learn .vs { background:rgba(255,255,255,.12); border-radius:18px; padding:16px 22px; font-size:clamp(22px,2.6vw,36px); font-weight:700; line-height:1.6; text-align:center; }
+  .learn .box { width:auto; white-space:pre-line; }
+  .tmr { display:flex; align-items:center; gap:12px; font-size:clamp(26px,3vw,40px); font-weight:800; }
+  .tmr .bar { width:min(420px,60vw); height:14px; border-radius:7px; background:rgba(255,255,255,.2); overflow:hidden; }
+  .tmr .bar i { display:block; height:100%; background:var(--c2); border-radius:7px; }
+  .tmr.low, .tmr.end { color:#fca5a5; } .tmr.low .bar i { background:var(--bad); }
+  .closed .opt { opacity:.7; cursor:default !important; }
+  #nm { position:fixed; inset:0; z-index:9; background:rgba(8,20,40,.92); display:flex; align-items:center; justify-content:center; padding:16px; }
+  #nm form { background:#fff; color:var(--ink); border-radius:18px; padding:22px; width:min(420px,100%); display:flex; flex-direction:column; gap:12px; text-align:center; }
+  #nm input { font:inherit; font-size:22px; padding:10px 12px; border:2px solid #cbd5e1; border-radius:12px; text-align:center; }
+  #nm button { font:inherit; font-size:20px; font-weight:700; padding:10px; border:0; border-radius:12px; background:var(--c1); color:#fff; cursor:pointer; }
+  #chg { font:inherit; font-size:14px; border:0; border-radius:16px; padding:3px 10px; background:rgba(255,255,255,.18); color:#fff; cursor:pointer; }
+  #nm button.v { background:#e8ecf3; color:var(--ink); font-size:16px; font-weight:400; }
 </style>
 <meta property="og:title" content="פָּרָשַׁת שְׁמַע – חידון כיתתי">
 <meta property="og:description" content="פָּרָשַׁת שְׁמַע – חידון כיתתי">
@@ -83,10 +100,26 @@ const N = CQ.qs.length, PAGES = 2 + 4 * N, LET = "אבגד";
 const W = window.chrome && window.chrome.webview;            // בתוך תוכנת הכיתה: תלמיד שעונה
 const params = new URLSearchParams(location.search);
 const CLS = /^\d{5}$/.test(params.get("class") || "") ? params.get("class") : "";
-const STUDENT = !!W;
-let pg = 0, locked = STUDENT, L = {}, mine = {}, run = "", lastHtml = "";
-if (STUDENT) document.body.classList.add("lock");
+const DB = "https://kol-kiosk-class-default-rtdb.europe-west1.firebasedatabase.app";
+// תלמיד בלי התוכנה: דפדפן רגיל עם ?class= (לא בתוך הלוח, ולא ?view=1). נותן שם פעם אחת, ועונה ישר ל-Firebase.
+const ls = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } };
+const WEB = !W && !!CLS && window.parent === window && params.get("view") !== "1" && ls("cq:view") !== "1";
+let webName = WEB ? (ls("cq:name") || "") : "", webId = WEB ? (ls("cq:wid") || "") : "";
+const newId = () => { webId = Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(16).padStart(2, "0")).join(""); ls("cq:wid", webId); };
+if (WEB && !/^[0-9a-f]{16}$/.test(webId)) newId();
+let failNote = false;
+let STUDENT = !!W || (WEB && !!webName);
+let pg = 0, locked = STUDENT || WEB, L = {}, mine = {}, run = "", lastHtml = "";
+if (locked) document.body.classList.add("lock");
 const $ = id => document.getElementById(id);
+// שעון לשאלה: sec בשאלה או בחידון. מתחיל כשהמכשיר מגיע לעמוד התשובות של השאלה (המורה מדפדף לכולם יחד).
+const T0 = {};
+const t0Key = q => "cq:t0:" + CQ.id + ":" + run + ":" + q;
+function startT0(q) { if (T0[q] != null) return; let t = 0; try { t = +sessionStorage.getItem(t0Key(q)) || 0; } catch (e) {} T0[q] = t && t <= Date.now() ? t : Date.now(); try { sessionStorage.setItem(t0Key(q), T0[q]); } catch (e) {} }
+function resetT0(q) { delete T0[q]; delete wasUp[q]; try { sessionStorage.removeItem(t0Key(q)); } catch (e) {} }
+const secOf = q => +(CQ.qs[q].sec != null ? CQ.qs[q].sec : CQ.sec || 0);
+const left = q => { const s = secOf(q); return !s ? Infinity : T0[q] == null ? s : Math.max(0, s - (Date.now() - T0[q]) / 1000); };
+const timeUp = q => left(q) <= 0;
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";");
 const rich = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
 document.body.classList.toggle("student", STUDENT);
@@ -119,6 +152,26 @@ function optsHtml(q, mode) {   // mode: "ans" (אפשר לענות) / "res" (ת�
     return `<button class="${c}" data-k="${k}">${pc >= 0 ? `<span class="fill" style="width:${pc}%"></span>` : ""}<span class="l">${LET[k]}</span><span class="tx">${esc(o)}${mode === "res" && k === Q.c ? " ✔" : ""}</span>${pc >= 0 ? `<span class="pc">${pc}%</span>` : ""}</button>`;
   }).join("") + `</div>`;
 }
+// שמות השלבים: עם דף לימוד – לימוד, שאלה, תוצאות, הסבר; בלי – כמו בגרסה 28.
+const LB = Q => Q.L ? ["לִמּוּד", "שְׁאֵלָה", "תּוֹצָאוֹת", "הֶסְבֵּר"] : ["שְׁאֵלָה", "עוֹנִים", "תּוֹצָאוֹת", "הֶסְבֵּר"];
+// L = { h: כותרת, src, v: פסוק, x: הסבר, r: [מפרש, דבריו], n: הערה }
+function learnHtml(D) {
+  const r = Array.isArray(D.r) ? D.r : null;
+  return `<div class="learn">${D.h ? `<h2>${rich(D.h)}</h2>` : ""}${D.src ? `<div class="src">📖 ${esc(D.src)}</div>` : ""}` +
+    (D.v ? `<div class="vs">׳${rich(D.v)}׳</div>` : "") + (D.x ? `<div class="box">${rich(D.x)}</div>` : "") +
+    (r ? `<div class="box m"><h3>📜 ${esc(r[0])}</h3>${rich(r[1])}</div>` : "") + (D.n ? `<div class="box">${rich(D.n)}</div>` : "") + `</div>`;
+}
+// השעון מתעדכן בלי לבנות את הדף מחדש; כשהזמן נגמר – render אחד שסוגר את התשובות.
+let wasUp = {};
+function tick() {
+  const w = where(pg), el = $("tmr");
+  if (!el || w.q == null || w.s !== 1) return;
+  const s = secOf(w.q), l = left(w.q), up = l <= 0;
+  el.className = "tmr" + (up ? " end" : l <= 10 ? " low" : "");
+  el.innerHTML = up ? "⏰ הַזְּמַן נִגְמַר!" : `⏱ ${Math.ceil(l)}<span class="bar"><i style="width:${(l * 100 / s).toFixed(1)}%"></i></span>`;
+  if (up && !wasUp[w.q]) { wasUp[w.q] = 1; render(); }
+}
+setInterval(tick, 250);
 function render() {
   const w = where(pg);
   let h = "", who = "";
@@ -141,14 +194,18 @@ function render() {
     $("prog").textContent = "";
   } else {
     const Q = CQ.qs[w.q];
-    $("chip").textContent = ["שְׁאֵלָה", "עוֹנִים", "תּוֹצָאוֹת", "הֶסְבֵּר"][w.s];
+    $("chip").textContent = LB(Q)[w.s];
     $("prog").textContent = `שְׁאֵלָה ${w.q + 1} מִתּוֹךְ ${N}` + (Q.book ? ` · סֵפֶר ${Q.book}׳` : "");
-    h = `<div class="q">${rich(Q.t)}</div>`;
-    if (w.s === 0) h += `<div class="wait">⏳ עוֹד רֶגַע יוֹפִיעוּ הַתְּשׁוּבוֹת…</div>`;
+    h = w.s === 0 && Q.L ? "" : `<div class="q">${rich(Q.t)}</div>`;
+    if (w.s === 0 && Q.L && T0[w.q] != null && !cntRev(w.q) && mine[w.q] == null) resetT0(w.q);   // המורה חזר ללמד – השעון יתחיל מחדש
+    if (w.s === 0) h += Q.L ? learnHtml(Q.L) : `<div class="wait">⏳ עוֹד רֶגַע יוֹפִיעוּ הַתְּשׁוּבוֹת…</div>`;
     if (w.s >= 2 && STUDENT && !revealed(w.q)) w.s = -1, h += `<div class="wait">⏳ רֶגַע…</div>`;
     if (w.s === 1) {
-      h += optsHtml(w.q, "ans");
-      if (STUDENT) h += `<div class="note">${mine[w.q] != null ? "✓ הַתְּשׁוּבָה נִשְׁלְחָה – אֶפְשָׁר לְשַׁנּוֹת עַד שֶׁהַמּוֹרֶה יַחְשֹׂף" : "בַּחֲרוּ תְּשׁוּבָה"}</div>`;
+      const open = !cntRev(w.q), up = open && timeUp(w.q);
+      if (open && secOf(w.q)) { startT0(w.q); h += `<div class="tmr" id="tmr"></div>`; }
+      h += optsHtml(w.q, "ans").replace('class="opts ans"', up ? 'class="opts closed"' : 'class="opts ans"');
+      if (STUDENT && failNote) h += `<div class="note bad">⚠ הַשְּׁלִיחָה נִכְשְׁלָה – נַסּוּ שׁוּב</div>`;
+      if (STUDENT) h += `<div class="note">${up ? (mine[w.q] != null ? "⏰ הַזְּמַן נִגְמַר – הַתְּשׁוּבָה שֶׁלְּךָ נִשְׁלְחָה" : "⏰ הַזְּמַן נִגְמַר – לֹא הִסְפַּקְתָּ לַעֲנוֹת") : mine[w.q] != null ? `✓ הַתְּשׁוּבָה נִשְׁלְחָה – אֶפְשָׁר לְשַׁנּוֹת עַד ${secOf(w.q) ? "שֶׁהַזְּמַן נִגְמָר" : "שֶׁהַמּוֹרֶה יַחְשֹׂף"}` : "בַּחֲרוּ תְּשׁוּבָה"}</div>`;
       who = whoHtml(true);
     }
     if (w.s === 2) {
@@ -163,7 +220,9 @@ function render() {
         (Q.m ? `<div class="box m"><h3>🌱 מָה לוֹמְדִים מִזֶּה?</h3>${rich(Q.m)}</div>` : "");
     }
   }
+  if (WEB && STUDENT && !run) h += `<div class="wait">⏳ מְחַכִּים שֶׁהַמּוֹרֶה יַצְמִיד אֶת הַחִידוֹן לַכִּתָּה…</div>`;
   if (h !== lastHtml) { lastHtml = h; $("stage").innerHTML = h; }   // בלי לבנות מחדש כשאין שינוי (גלילה, ריחוף)
+  tick();
   if ($("who").innerHTML !== who) $("who").innerHTML = who;
   $("who").classList.toggle("hidden", !who);
   $("stage").style.top = (who ? 48 + $("who").offsetHeight : 48) + "px";
@@ -172,11 +231,41 @@ function render() {
 }
 $("stage").addEventListener("click", e => {
   const b = e.target.closest(".ans .opt"), w = where(pg);
-  if (!b || !STUDENT || w.s !== 1 || cntRev(w.q)) return;
+  if (!b || !STUDENT || w.s !== 1 || cntRev(w.q) || timeUp(w.q)) return;
+  if (!W && !run) return;                       // בלי התוכנה: עוד לא הגיעו הנתונים מהכיתה
   const k = +b.dataset.k;
-  mine[w.q] = k; saveMine(); render();
-  try { W.postMessage(JSON.stringify({ kk: "cq", id: CQ.id, q: w.q, a: k })); } catch (e) {}
+  const q = w.q;
+  mine[q] = k; failNote = false; saveMine(); render();
+  if (W) { try { W.postMessage(JSON.stringify({ kk: "cq", id: CQ.id, q: w.q, a: k })); } catch (e) {} return; }
+  // בלי התוכנה: כותבים ישר לכיתה, כמו שהקיוסק כותב (cqa/<run>/<q>/<id> = { a, s, ts }).
+  fetch(`${DB}/classes/${CLS}/cqa/${run}/${q}/${webId}.json`, { method: "PUT", body: JSON.stringify({ a: k, s: webName.slice(0, 30), ts: { ".sv": "timestamp" } }) })
+    .then(r => { if (!r.ok) throw 0; }).catch(() => { if (mine[q] === k) { delete mine[q]; saveMine(); failNote = true; lastHtml = ""; render(); } });
 });
+// תלמיד בלי התוכנה: שם פעם אחת (נשמר בדפדפן). "רק צפייה" – למקרן או לצופה (או ?view=1 בקישור).
+function askName() {
+  const d = document.createElement("div");
+  d.id = "nm";
+  d.innerHTML = `<form><b style="font-size:22px">🎯 ${esc(CQ.title)}</b><span>כִּתְבוּ אֶת הַשֵּׁם שֶׁלָּכֶם כְּדֵי לַעֲנוֹת</span>
+    <input maxlength="30" placeholder="שֵׁם פְּרָטִי וּמִשְׁפָּחָה" required><button>✓ כְּנִיסָה לַחִידוֹן</button>
+    <button type="button" class="v">👁 רַק צְפִיָּה (מְקַרֵן), בְּלִי לַעֲנוֹת</button></form>`;
+  document.body.appendChild(d);
+  d.querySelector("form").onsubmit = e => {
+    e.preventDefault();
+    const n = d.querySelector("input").value.replace(/\s+/g, " ").trim();
+    if (!n) return;
+    webName = n; ls("cq:name", n); STUDENT = true; document.body.classList.add("student"); d.remove(); nameBar(); lastHtml = ""; render();
+  };
+  d.querySelector(".v").onclick = () => { ls("cq:view", "1"); d.remove(); };
+}
+if (WEB && !STUDENT) askName(); else nameBar();
+// "לא אני?" – טאבלט משותף: שם חדש ומזהה חדש
+function nameBar() {
+  if (!WEB || !STUDENT || $("chg")) return;
+  const a = document.createElement("button");
+  a.id = "chg"; a.textContent = "👤 " + webName + " · לֹא אֲנִי?";
+  a.onclick = () => { ls("cq:name", null); webName = ""; newId(); mine = {}; STUDENT = false; document.body.classList.remove("student"); a.remove(); lastHtml = ""; render(); askName(); };
+  $("top").appendChild(a);
+}
 function go(i) { i = Math.max(0, Math.min(PAGES - 1, +i || 0)); if (i !== pg) { pg = i; render(); } }
 $("nxt").onclick = () => { if (!locked) go(pg + 1); };
 $("prv").onclick = () => { if (!locked) go(pg - 1); };
@@ -200,7 +289,7 @@ window.KolQuiz = {
 };
 // בתוך הלוח של המורה (תצוגה מקדימה / מקרן): מודיעים מה התשובות הנכונות, ומקבלים עמוד ונתונים חיים.
 if (window.parent !== window) {
-  const hello = () => { try { window.parent.postMessage({ kolCQ: { id: CQ.id, t: CQ.title, N, c: CQ.qs.map(Q => Q.c), pod: !!CQ.pod } }, "*"); } catch (e) {} };
+  const hello = () => { try { window.parent.postMessage({ kolCQ: { id: CQ.id, t: CQ.title, N, c: CQ.qs.map(Q => Q.c), pod: !!CQ.pod, lb: LB(CQ.qs[0] || {}), sec: CQ.qs.map((Q, i) => secOf(i)) } }, "*"); } catch (e) {} };
   hello(); setTimeout(hello, 1500);
   addEventListener("message", e => {
     const d = e.data && e.data.kolCQ;
