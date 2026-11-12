@@ -317,7 +317,7 @@
     if (G.id) h += "<h3>🎯 בַּמִּשְׂחָק הַזֶּה</h3><ol id=\"ktBGame\"></ol>";
     h += "<h3>⭐ הַכִּי הַרְבֵּה נְקֻדּוֹת – כָּל הַמִּשְׂחָקִים</h3><ol id=\"ktBAll\"></ol><h3>🏫 הַכִּתּוֹת הַמּוֹבִילוֹת</h3><ol id=\"ktBCls\"></ol>";
     h += '<div class="row">' + (isEnd ? '<button type="button" id="ktAgain">עוֹד פַּעַם 🔁</button>' : "") +
-      '<a class="alt" href="' + esc(G.home || HOME) + '">' + esc(G.homeTxt || "🎲 לְכָל מִשְׂחֲקֵי הַפָּרָשָׁה") + '</a><button type="button" class="alt" id="ktX">סְגִירָה</button></div>';
+      (G.road ? '<a href="' + esc(G.road) + '">🏰 הַדֶּרֶךְ אֶל הָאַרְמוֹן</a>' : "") + '<a class="alt" href="' + esc(G.home || HOME) + '">' + esc(G.homeTxt || "🎲 לְכָל מִשְׂחֲקֵי הַפָּרָשָׁה") + '</a><button type="button" class="alt" id="ktX">סְגִירָה</button></div>';
     $("ktEndBox").innerHTML = h;
     $("ktX").onclick = function () { $("ktEnd").classList.remove("on"); };
     if ($("ktAgain")) $("ktAgain").onclick = function () { $("ktEnd").classList.remove("on"); if (typeof G.again === "function") G.again(); };
@@ -336,6 +336,7 @@
     if (!real(m)) { openBoard(true, "✍️ כְּדֵי לְהִכָּנֵס לְלוּחַ הַמְּצֻיָּנִים – הוֹסִיפוּ כִּתָּה וּבֵית סֵפֶר (👤 לְמַעְלָה)."); return; }
     if (!R.pts) { openBoard(true, ""); return; }
     var pts = R.pts;
+    put("ktp-" + G.id, "1");   // הַדֶּרֶךְ אֶל הָאַרְמוֹן (neviim-games/palace.html): מִשְׂחָק שֶׁהוּשְׁלַם, גַּם לְיֶלֶד בְּלִי רִשּׁוּם
     openBoard(true, "שׁוֹמֵר אֶת הַנְּקֻדּוֹת…");
     fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain" },
       body: JSON.stringify({ name: m.name, cls: m.cls, school: m.school, game: G.id, score: pts, a: 0, b: 0, c: 0 }) })
@@ -351,11 +352,11 @@
     G.id = String((o && o.id) || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 40);
     G.title = (o && o.title) || document.title || "";
     G.again = o && o.again;
-    G.home = o && o.home; G.homeTxt = o && o.homeTxt;
+    G.home = o && o.home; G.homeTxt = o && o.homeTxt; G.road = o && o.road;
     G.praise = o && o.praise;   // {at:[0,10,…], tiers:[[…],[…]]} – מַחְמָאוֹת מִשֶּׁלָּהּ, בִּמְקוֹם FB_OK (מִשְׂחֲקֵי הַשַּׁ"ס: shas-games/praise.js)   // משחק מחוץ לפרשה (כמו ketuvim/): לאן מוביל "לכל המשחקים"
     var go = function () { if (!$("ktBar")) build(); drawBar(); fetchBase(); if (!me().name) openReg(); };
     if (document.body) go(); else document.addEventListener("DOMContentLoaded", go);
   }
-  window.KT = { init: init, ok: ok, bad: bad, end: end, points: function () { return R.pts; }, api: API_URL,
+  window.KT = { init: init, ok: ok, bad: bad, end: end, openReg: openReg, grand: soundGrand, tone: tone,  points: function () { return R.pts; }, api: API_URL,
     name: function () { return me().name || ""; } };   // name: לְמִלּוּי שְׂדֵה הַשֵּׁם שֶׁל מִשְׂחָק יָשָׁן (תְּעוּדָה)
 })();
