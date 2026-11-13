@@ -17,7 +17,7 @@
   #who .c { background:rgba(255,255,255,.14); border-radius:20px; padding:3px 12px; font-size:15px; }
   #who .c.ok { background:var(--ok); }
   #who .c.n { background:none; font-weight:800; }
-  #stage { position:fixed; inset:48px 0 0 0; overflow:auto; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; padding:24px 24px 90px; text-align:center; }
+  #stage { position:fixed; inset:48px 0 0 0; overflow:auto; display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:20px; padding:24px 24px 90px; text-align:center; }
   .q { font-size:clamp(24px,3.6vw,48px); font-weight:800; line-height:1.45; max-width:1100px; }
   .q b { color:var(--c2); } .box b { color:var(--c1); }
   .wait { font-size:22px; opacity:.85; }
@@ -54,6 +54,12 @@
   .me { background:var(--c2); color:var(--ink); border-radius:16px; padding:10px 22px; font-size:clamp(20px,2.3vw,30px); font-weight:800; }
   .sig { background:rgba(255,255,255,.1); border-radius:14px; padding:10px 16px; font-size:15px; }
   .sig a { color:#fde68a; }
+  .cps { width:min(1100px,100%); margin:10px auto 0; background:rgba(255,255,255,.12); border-radius:18px; padding:12px 20px; text-align:right; font-size:clamp(15px,1.6vw,23px); font-weight:700; line-height:1.55; }
+  .cover:has(.cps) h1 { font-size:clamp(28px,3.6vw,48px); }
+  .cps .src { text-align:center; color:var(--c2); font-size:.8em; margin-bottom:6px; }
+  .cps .pn { color:var(--c2); font-size:.62em; margin-inline-end:6px; vertical-align:middle; }
+  .sod { width:min(1100px,100%); text-align:center; }
+  .sod img { width:100%; max-height:62vh; object-fit:contain; border-radius:16px; box-shadow:0 6px 24px rgba(0,0,0,.35); display:block; margin:6px auto 0; }
   #nav { position:fixed; bottom:14px; left:50%; transform:translateX(-50%); display:flex; gap:12px; align-items:center; background:rgba(0,0,0,.35); border-radius:30px; padding:6px 10px; z-index:3; }
   #nav button { font:inherit; font-size:22px; width:52px; height:44px; border:0; border-radius:22px; background:var(--c2); color:var(--ink); cursor:pointer; }
   #nav span { min-width:90px; text-align:center; font-weight:700; }
@@ -65,6 +71,8 @@
   .learn .src { text-align:center; color:var(--c2); font-weight:700; font-size:clamp(16px,1.8vw,22px); }
   .learn .vs { background:rgba(255,255,255,.12); border-radius:18px; padding:16px 22px; font-size:clamp(22px,2.6vw,36px); font-weight:700; line-height:1.6; text-align:center; }
   .learn .box { width:auto; white-space:pre-line; }
+  .learn .ps { text-align:right; font-size:clamp(20px,2.3vw,32px); }
+  .learn .ps .pn { color:var(--c2); font-size:.62em; margin-inline-end:6px; vertical-align:middle; }
   .tmr { display:flex; align-items:center; gap:12px; font-size:clamp(26px,3vw,40px); font-weight:800; }
   .tmr .bar { width:min(420px,60vw); height:14px; border-radius:7px; background:rgba(255,255,255,.2); overflow:hidden; }
   .tmr .bar i { display:block; height:100%; background:var(--c2); border-radius:7px; }
@@ -75,6 +83,13 @@
   #nm input { font:inherit; font-size:22px; padding:10px 12px; border:2px solid #cbd5e1; border-radius:12px; text-align:center; }
   #nm button { font:inherit; font-size:20px; font-weight:700; padding:10px; border:0; border-radius:12px; background:var(--c1); color:#fff; cursor:pointer; }
   #chg { font:inherit; font-size:14px; border:0; border-radius:16px; padding:3px 10px; background:rgba(255,255,255,.18); color:#fff; cursor:pointer; }
+  body.solo #nav, body.solo #who { display:none; }
+  .solo-go { font:inherit; font-size:clamp(18px,2vw,26px); font-weight:700; border:0; border-radius:16px; padding:12px 26px; background:var(--c2); color:#1b1b1b; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.3); }
+  .solo-go.alt { background:rgba(255,255,255,.18); color:#fff; font-size:clamp(16px,1.7vw,22px); }
+  .sbtns { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+  .sdots { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; font-size:20px; }
+  .sdots span { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); }
+  .sdots .y { background:#1f9d55; } .sdots .x { background:#c0392b; }
   #nm button.v { background:#e8ecf3; color:var(--ink); font-size:16px; font-weight:400; }
 </style>
 <meta property="og:title" content="פָּרָשַׁת שְׁמַע – חידון כיתתי">
@@ -107,7 +122,7 @@ const WEB = !W && !!CLS && window.parent === window && params.get("view") !== "1
 let webName = WEB ? (ls("cq:name") || "") : "", webId = WEB ? (ls("cq:wid") || "") : "";
 const newId = () => { webId = Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(16).padStart(2, "0")).join(""); ls("cq:wid", webId); };
 if (WEB && !/^[0-9a-f]{16}$/.test(webId)) newId();
-let failNote = false;
+let failNote = false, SOLO = null;   // SOLO – תרגול לבד, ראו soloRender
 let STUDENT = !!W || (WEB && !!webName);
 let pg = 0, locked = STUDENT || WEB, L = {}, mine = {}, run = "", lastHtml = "";
 if (locked) document.body.classList.add("lock");
@@ -154,11 +169,13 @@ function optsHtml(q, mode) {   // mode: "ans" (אפשר לענות) / "res" (ת�
 }
 // שמות השלבים: עם דף לימוד – לימוד, שאלה, תוצאות, הסבר; בלי – כמו בגרסה 28.
 const LB = Q => Q.L ? ["לִמּוּד", "שְׁאֵלָה", "תּוֹצָאוֹת", "הֶסְבֵּר"] : ["שְׁאֵלָה", "עוֹנִים", "תּוֹצָאוֹת", "הֶסְבֵּר"];
-// L = { h: כותרת, src, v: פסוק, x: הסבר, r: [מפרש, דבריו], n: הערה }
+// CQ.pesukim = {src, p:[[מספר, פסוק], …]} – כל פסוקי השיעור בדף הפתיחה.  CQ.sod – תמונת סוד השיעור בדף הסיום.
+// L = { h: כותרת, src, v: פסוק (קיצור), p: [[מספר, פסוק מלא], …] – גובר על v, x: הסבר, r: [מפרש, דבריו], n: הערה }
 function learnHtml(D) {
   const r = Array.isArray(D.r) ? D.r : null;
   return `<div class="learn">${D.h ? `<h2>${rich(D.h)}</h2>` : ""}${D.src ? `<div class="src">📖 ${esc(D.src)}</div>` : ""}` +
-    (D.v ? `<div class="vs">׳${rich(D.v)}׳</div>` : "") + (D.x ? `<div class="box">${rich(D.x)}</div>` : "") +
+    (Array.isArray(D.p) && D.p.length ? `<div class="vs ps">${D.p.map(x => `<span class="pn">(${esc(x[0])})</span>${esc(x[1])}`).join(" ")}</div>`
+      : D.v ? `<div class="vs">׳${rich(D.v)}׳</div>` : "") + (D.x ? `<div class="box">${rich(D.x)}</div>` : "") +
     (r ? `<div class="box m"><h3>📜 ${esc(r[0])}</h3>${rich(r[1])}</div>` : "") + (D.n ? `<div class="box">${rich(D.n)}</div>` : "") + `</div>`;
 }
 // השעון מתעדכן בלי לבנות את הדף מחדש; כשהזמן נגמר – render אחד שסוגר את התשובות.
@@ -173,11 +190,12 @@ function tick() {
 }
 setInterval(tick, 250);
 function render() {
+  if (SOLO) return soloRender();
   const w = where(pg);
   let h = "", who = "";
   $("chip").classList.toggle("hidden", !("q" in w));
   if (w.cover) {
-    h = `<div class="cover"><div class="sub">🎯 ${esc(CQ.sub)}</div><h1>${esc(CQ.title)}</h1><div class="verse">${esc(CQ.verse || "")}</div></div>
+    h = `<div class="cover"><div class="sub">🎯 ${esc(CQ.sub)}</div><h1>${esc(CQ.title)}</h1>${CQ.pesukim && Array.isArray(CQ.pesukim.p) ? `<div class="cps"><div class="src">📖 הַפְּסוּקִים שֶׁל הַשִּׁעוּר${CQ.pesukim.src ? " – " + esc(CQ.pesukim.src) : ""}</div>${CQ.pesukim.p.map(x => `<span class="pn">(${esc(x[0])})</span>${esc(x[1])}`).join(" ")}</div>` : `<div class="verse">${esc(CQ.verse || "")}</div>`}</div>
       <div class="big">${esc(CQ.intro || N + " שְׁאֵלוֹת")}</div><div class="wait">הַחִידוֹן יַתְחִיל בְּעוֹד רֶגַע…</div>`;
     who = whoHtml(false);
     $("prog").textContent = "";
@@ -189,6 +207,8 @@ function render() {
     const pod = Array.isArray(S.pod) ? S.pod : [];
     if (CQ.pod && pod.length) h += `<div class="pod">${[1, 0, 2].filter(i => pod[i]).map(i => `<div class="p${i + 1}">${["🥇", "🥈", "🥉"][i]}<br>${esc(pod[i][0])}<small>${+pod[i][1]} מִתּוֹךְ ${N}</small></div>`).join("")}</div>`;
     if (Array.isArray(S.aw) && S.aw.length) h += `<div class="aw">${S.aw.map(a => `<div>${esc(a[0])} <b>${esc(a[1])}</b>${a[2] ? `<small>${esc(a[2])}</small>` : ""}</div>`).join("")}</div>`;
+    if (window.parent === window) h += `<button class="solo-go" data-solo="start">🔁 לַעֲשׂוֹת שׁוּב אֶת הַחִידוֹן לְבַד – וּלְקַבֵּל צִיּוּן</button>`;
+    if (CQ.sod) h += `<div class="sod"><div class="note">🔑 סוֹד הַשִּׁעוּר – הַכֹּל בִּתְמוּנָה אַחַת</div><img src="${esc(CQ.sod)}" alt="${esc(CQ.title)} – סִכּוּם הַשִּׁעוּר" loading="lazy"></div>`;
     const sg = CQ.sig || { topic: "חֹמֶר תּוֹרָנִי", url: "https://www.kol-toda.co.il/search/" };
     h += `<div class="sig">📚 עוֹד חָמְרֵי לִמּוּד עַל ${esc(sg.topic)} – חִנָּם, בְּמַאֲגַר הַקּוֹל הַחֲמִישִׁי: <a href="${esc(sg.url)}" target="_blank" rel="noopener">${esc(sg.url.replace("https://www.", ""))}</a> · הַמַּאֲגָר הַמָּלֵא: <a href="https://www.kol-toda.co.il/" target="_blank" rel="noopener">kol-toda.co.il</a></div>`;
     $("prog").textContent = "";
@@ -231,7 +251,7 @@ function render() {
 }
 $("stage").addEventListener("click", e => {
   const b = e.target.closest(".ans .opt"), w = where(pg);
-  if (!b || !STUDENT || w.s !== 1 || cntRev(w.q) || timeUp(w.q)) return;
+  if (SOLO || !b || !STUDENT || w.s !== 1 || cntRev(w.q) || timeUp(w.q)) return;
   if (!W && !run) return;                       // בלי התוכנה: עוד לא הגיעו הנתונים מהכיתה
   const k = +b.dataset.k;
   const q = w.q;
@@ -266,7 +286,51 @@ function nameBar() {
   a.onclick = () => { ls("cq:name", null); webName = ""; newId(); mine = {}; STUDENT = false; document.body.classList.remove("student"); a.remove(); lastHtml = ""; render(); askName(); };
   $("top").appendChild(a);
 }
-function go(i) { i = Math.max(0, Math.min(PAGES - 1, +i || 0)); if (i !== pg) { pg = i; render(); } }
+function go(i) { i = Math.max(0, Math.min(PAGES - 1, +i || 0)); if (SOLO) { pg = i; return; } if (i !== pg) { pg = i; render(); } }   // בתרגול: זוכרים את עמוד המורה, לא מציגים
+// תרגול לבד (מדף הסיום): כל תלמיד עושה שוב את החידון במכשיר שלו – בלי מורה, בלי שעון, משוב והסבר אחרי כל שאלה, וציון בסוף.
+// לא נשלח לכיתה; השיא נשמר בדפדפן (cq:solo:<id>).
+const soloBest = v => { const k = "cq:solo:" + CQ.id; if (v == null) return +ls(k) || 0; if (v > (+ls(k) || 0)) ls(k, String(v)); };
+function soloRender() {
+  const S = SOLO;
+  $("chip").classList.remove("hidden"); $("chip").textContent = "תִּרְגּוּל";
+  let h = "";
+  if (S.q >= N) {
+    const right = CQ.qs.filter((Q, i) => S.a[i] === Q.c).length, pc = Math.round(right * 100 / N);
+    if (S.prev == null) { S.prev = soloBest(); soloBest(pc); }
+    const best = S.prev;
+    $("prog").textContent = "";
+    h = `<div class="big">${pc === 100 ? "🏆 מֻשְׁלָם!" : pc >= 85 ? "🌟 מְצֻיָּן!" : pc >= 70 ? "👍 טוֹב מְאוֹד" : "💪 כְּדַאי לְנַסּוֹת שׁוּב"}</div>` +
+      `<div class="pct">${pc}</div><div class="me">עֲנִיתֶם נָכוֹן עַל ${right} מִתּוֹךְ ${N}</div>` +
+      `<div class="sdots">${CQ.qs.map((Q, i) => `<span class="${S.a[i] === Q.c ? "y" : "x"}">${i + 1}</span>`).join("")}</div>` +
+      (best ? `<div class="note">${pc > best ? "🎉 שִׂיא חָדָשׁ! (הַקּוֹדֵם: " + best + ")" : "הַשִּׂיא שֶׁלָּכֶם: " + Math.max(best, pc)}</div>` : "") +
+      `<div class="sbtns"><button class="solo-go" data-solo="start">🔁 עוֹד פַּעַם</button><button class="solo-go alt" data-solo="exit">↩ חֲזָרָה לַחִידוֹן</button></div>`;
+  } else {
+    const Q = CQ.qs[S.q], k = S.a[S.q], done = k != null;
+    $("prog").textContent = `תִּרְגּוּל · שְׁאֵלָה ${S.q + 1} מִתּוֹךְ ${N}`;
+    if (S.learn && Q.L) h += learnHtml(Q.L);
+    h += `<div class="q">${rich(Q.t)}</div><div class="opts${done ? "" : " sopts"}">` + Q.o.map((o, j) =>
+      `<button class="opt${done ? (j === Q.c ? " right" : j === k ? " wrong" : " dim") : ""}" data-sk="${j}"><span class="l">${LET[j]}</span><span class="tx">${esc(o)}${done && j === Q.c ? " ✔" : ""}</span></button>`).join("") + `</div>`;
+    if (!done) h += `<div class="sbtns">${Q.L && !S.learn ? `<button class="solo-go alt" data-solo="learn">📖 לְהַצִּיג אֶת דַּף הַלִּמּוּד</button>` : ""}<button class="solo-go alt" data-solo="exit">✕ יְצִיאָה מֵהַתִּרְגּוּל</button></div>`;
+    else h += (k === Q.c ? `<div class="note ok">✔ נָכוֹן! כׇּל הַכָּבוֹד</div>` : `<div class="note bad">✘ לֹא הַפַּעַם – הַתְּשׁוּבָה הַנְּכוֹנָה בַּיָּרֹק</div>`) +
+      (Q.ex ? `<div class="box"><h3>💡 לָמָּה זוֹ הַתְּשׁוּבָה?</h3>${rich(Q.ex)}</div>` : "") + (Q.m ? `<div class="box m"><h3>🌱 מָה לוֹמְדִים מִזֶּה?</h3>${rich(Q.m)}</div>` : "") +
+      `<button class="solo-go" data-solo="next">${S.q + 1 < N ? "לַשְּׁאֵלָה הַבָּאָה ←" : "🏁 לַצִּיּוּן"}</button>`;
+  }
+  if (h !== lastHtml) { lastHtml = h; $("stage").innerHTML = h; $("stage").scrollTop = 0; }
+  $("stage").style.top = "48px";
+}
+$("stage").addEventListener("click", e => {
+  const b = e.target.closest("[data-solo]");
+  if (b) {
+    const act = b.dataset.solo;
+    if (act === "start") { SOLO = { q: 0, a: {}, learn: false }; document.body.classList.add("solo"); }
+    else if (act === "exit") { SOLO = null; document.body.classList.remove("solo"); }
+    else if (act === "next" && SOLO) { SOLO.q++; SOLO.learn = false; }
+    else if (act === "learn" && SOLO) SOLO.learn = true;
+    lastHtml = ""; render(); return;
+  }
+  const o = SOLO && e.target.closest(".sopts .opt");
+  if (o && SOLO.a[SOLO.q] == null) { SOLO.a[SOLO.q] = +o.dataset.sk; lastHtml = ""; render(); }
+});
 $("nxt").onclick = () => { if (!locked) go(pg + 1); };
 $("prv").onclick = () => { if (!locked) go(pg - 1); };
 document.addEventListener("keydown", e => {
