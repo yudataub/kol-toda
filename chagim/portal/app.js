@@ -206,5 +206,5 @@ readHash();
 loadData().then(a => { prep(a);
   document.getElementById("sub").textContent = `${ITEMS.length.toLocaleString()} חומרים ל${PAGE.forWhat} – מסודרים לפי נושא, לפי סוג ולפי כיתה`;
   render();
-}).catch(() => { main.innerHTML = `<div class="empty"><span class="em">🕯️</span>לא הצלחנו לטעון את החומרים. <a href="../#${PAGE.hash}" style="text-decoration:underline">לקטלוג המלא</a></div>`; });
+}).catch(() => { main.innerHTML = `<div class="empty"><span class="em">🕯️</span>לא הצלחנו לטעון את החומרים. <a href="../?full=1#${PAGE.hash}" style="text-decoration:underline">לקטלוג המלא</a></div>`; });
 fetch("https://www.kol-toda.co.il/search/mine.json").then(r => r.json()).then(a => { OWN = new Set(a); markOwn(); if (ITEMS.some(i => i._own)) render(); }).catch(() => {});
