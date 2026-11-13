@@ -210,27 +210,30 @@ function ceremony(first){
   if(first&&!real(m)){alert('כדי לקבל את הבונוס ולהיכנס לרשימת האלופים צריך להירשם: שם, כיתה ובית ספר. לוחצים על 👤 למעלה.');if(window.KT)KT.openReg();return;}
   const nm=m.name||'חבר יקר';
   const steps=[
-    ['<span class="big">🚪</span><br>השער נפתח!<br>'+esc(nm)+', עברתם את כל הדרך של '+esc(B[1])],
-    ['כל אחד מ-'+N+' המשחקים הוסיף עוד צעד, ועכשיו אתם כאן, בפנים.'],
-    ['מי שלומד את דברי הנביאים לומד להכיר את המלך ולאהוב אותו.'],
-    ['<span class="big">👑</span><br>ברוכים הבאים אל ארמון מלך העולם!'],
-    first?['<span class="big">⭐</span><br>בונוס מיוחד: '+BONUS+' נקודות!<br><small id="bs">שומר…</small>']:['שמכם כתוב ברשימת האלופים של הארמון.'],
-    ['שמכם נכנס לרשימת אלופי הארמון.<br>כל הכבוד, '+esc(nm)+'! 🌟']
+    ['<span class="big">🚪</span><br>השער נפתח!<br>'+esc(nm)+', עברתם את כל הדרך של '+esc(B[1]),0],
+    ['כל אחד מ-'+N+' המשחקים הוסיף עוד צעד, ועכשיו אתם כאן, בפנים.',1],
+    ['מי שלומד את דברי הנביאים לומד להכיר את המלך ולאהוב אותו.',2],
+    ['<span class="big">👑</span><br>ברוכים הבאים אל ארמון מלך העולם!',3],
+    first?['<span class="big">⭐</span><br>בונוס מיוחד: '+BONUS+' נקודות!<br><small id="bs">שומר…</small>',4]
+         :['שמכם כתוב ברשימת אלופי הארמון.<br>כל הכבוד, '+esc(nm)+'! 🌟',4]
   ];
-  if(!first)steps.splice(4,1);
+  if(first)steps.push(['שמכם נכנס לרשימת אלופי הארמון.<br>כל הכבוד, '+esc(nm)+'! 🌟',null]);
   let k=0; const c=$('cer');
   c.classList.add('on');c.classList.remove('open');
   if(window.KT&&KT.grand&&localStorage.getItem('hq-mute')!=='1')KT.grand();
   setTimeout(()=>c.classList.add('open'),400);
   confetti();
   function show(){
-    $('ct').innerHTML=steps[k][0]; $('cn').textContent=k===steps.length-1?'סיום ✔':'המשך ▶';
+    $('ct').innerHTML=steps[k][0];voice(steps[k][1]); $('cn').textContent=k===steps.length-1?'סיום ✔':'המשך ▶';
     if(k>0){say([659,784,1047],.12);if(k===3)confetti();}
     if(first&&k===4)bonus();
   }
-  $('cn').onclick=()=>{ if(k<steps.length-1){k++;show();} else {c.classList.remove('on');location.reload();} };
+  $('cn').onclick=()=>{ if(k<steps.length-1){k++;show();} else {if(au)au.pause();c.classList.remove('on');location.reload();} };
   show();
 }
+const ADIR=(function(){const d=location.href.replace(/[^\/]*$/,''),m=/^https?:\/\/(www\.)?kol-toda\.co\.il\/(.*)$/.exec(d);return (m?'https://yudataub.github.io/kol-toda-files/'+m[2]:d)+'audio-palace/'})();
+let au=null;
+function voice(i){try{if(au){au.pause();au=null}if(i==null||lget('hq-mute')==='1')return;au=new Audio(ADIR+'c'+i+'.mp3');au.play().catch(()=>{})}catch(e){}}
 let posting=false;
 function bonus(){
   if(posting||(PID in SRV))return; posting=true;
