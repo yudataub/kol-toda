@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>חֲזָרָה לְמִבְחָן: דְּבָרִים וָאֶתְחַנַּן – חידון כיתתי</title>
+<style>
+  :root { --c1:#1f4e5f; --c2:#f2b134; --c3:#7a3e9d; --ink:#1b2333; --ok:#16a34a; --bad:#dc2626; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; }
+  body { font-family:"Rubik","Segoe UI",Arial,sans-serif; background:linear-gradient(160deg,var(--c1),#0f2747); color:#fff; overflow:hidden; }
+  #top { position:fixed; top:0; left:0; right:0; display:flex; align-items:center; gap:12px; padding:10px 18px; background:rgba(0,0,0,.25); font-size:18px; z-index:2; }
+  #top .t { font-weight:800; }
+  #top .chip { background:var(--c2); color:#1b2333; border-radius:20px; padding:3px 12px; font-weight:700; font-size:15px; }
+  #top .grow { flex:1; }
+  #who { position:fixed; top:48px; left:0; right:0; display:flex; flex-wrap:wrap; gap:6px; padding:8px 18px; background:rgba(0,0,0,.15); z-index:2; max-height:30vh; overflow:auto; }
+  #who .c { background:rgba(255,255,255,.14); border-radius:20px; padding:3px 12px; font-size:15px; }
+  #who .c.ok { background:var(--ok); }
+  #who .c.n { background:none; font-weight:800; }
+  #stage { position:fixed; inset:48px 0 0 0; overflow:auto; display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:20px; padding:24px 24px 90px; text-align:center; }
+  .q { font-size:clamp(24px,3.6vw,48px); font-weight:800; line-height:1.45; max-width:1100px; }
+  .q b { color:var(--c2); } .box b { color:var(--c1); }
+  .wait { font-size:22px; opacity:.85; }
+  .opts { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr)); gap:14px; width:min(1150px,100%); }
+  .opt { position:relative; overflow:hidden; display:flex; align-items:center; gap:14px; text-align:right; background:#fff; color:var(--ink);
+         border:4px solid transparent; border-radius:18px; padding:16px 20px; font:inherit; font-size:clamp(19px,2.2vw,30px); font-weight:700; cursor:default; min-height:84px; }
+  .opt .l { flex:none; width:46px; height:46px; border-radius:50%; background:var(--c1); color:#fff; display:flex; align-items:center; justify-content:center; font-size:24px; }
+  .opt .tx { position:relative; flex:1; line-height:1.4; }
+  .opt .pc { position:relative; font-size:24px; font-weight:800; }
+  .opt .fill { position:absolute; inset:0 0 0 auto; background:rgba(29,78,137,.14); transition:width .6s; }
+  .student .ans .opt { cursor:pointer; }
+  .student .ans .opt:hover { border-color:var(--c2); }
+  .opt.mine { border-color:var(--c2); background:#fff7e0; }
+  .opt.right { background:#dcfce7; border-color:var(--ok); }
+  .opt.right .l { background:var(--ok); }
+  .opt.wrong { background:#ffe8d6; border-color:#f4a261; }
+  .opt.dim { opacity:.55; }
+  .big { font-size:clamp(22px,2.8vw,38px); font-weight:800; }
+  .note { font-size:clamp(18px,2vw,26px); font-weight:700; }
+  .note.ok { color:#86efac; } .note.bad { color:#fdba74; }
+  .box { width:min(1100px,100%); background:#fff; color:var(--ink); border-radius:18px; padding:18px 24px; font-size:clamp(18px,2.1vw,28px); line-height:1.6; text-align:right; }
+  .box.m { background:#fff7e0; border-inline-start:8px solid var(--c2); }
+  .box h3 { margin:0 0 6px; font-size:.85em; color:var(--c1); }
+  .cover h1 { font-size:clamp(34px,5vw,64px); margin:0; }
+  .cover .sub { font-size:clamp(20px,2.4vw,30px); color:var(--c2); font-weight:700; }
+  .cover .verse { font-size:clamp(20px,2.2vw,28px); opacity:.9; }
+  .pct { font-size:clamp(60px,10vw,130px); font-weight:800; color:var(--c2); line-height:1; }
+  .pod { display:flex; align-items:flex-end; gap:14px; justify-content:center; }
+  .pod div { background:#fff; color:var(--ink); border-radius:16px 16px 0 0; width:min(220px,28vw); padding:12px; font-weight:800; font-size:clamp(18px,2vw,26px); }
+  .pod .p1 { min-height:190px; background:#fde68a; } .pod .p2 { min-height:145px; } .pod .p3 { min-height:110px; }
+  .pod small, .aw small { display:block; font-weight:400; font-size:.75em; }
+  .aw { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
+  .aw div { background:rgba(255,255,255,.12); border-radius:16px; padding:12px 18px; font-size:clamp(17px,1.9vw,24px); }
+  .me { background:var(--c2); color:var(--ink); border-radius:16px; padding:10px 22px; font-size:clamp(20px,2.3vw,30px); font-weight:800; }
+  .sig { background:rgba(255,255,255,.1); border-radius:14px; padding:10px 16px; font-size:15px; }
+  .sig a { color:#fde68a; }
+  .cps { width:min(1100px,100%); margin:10px auto 0; background:rgba(255,255,255,.12); border-radius:18px; padding:12px 20px; text-align:right; font-size:clamp(15px,1.6vw,23px); font-weight:700; line-height:1.55; }
+  .cover:has(.cps) h1 { font-size:clamp(28px,3.6vw,48px); }
+  .cps .src { text-align:center; color:var(--c2); font-size:.8em; margin-bottom:6px; }
+  .cps .pn { color:var(--c2); font-size:.62em; margin-inline-end:6px; vertical-align:middle; }
+  .sod { width:min(1100px,100%); text-align:center; }
+  .sod img { width:100%; max-height:62vh; object-fit:contain; border-radius:16px; box-shadow:0 6px 24px rgba(0,0,0,.35); display:block; margin:6px auto 0; }
+  #nav { position:fixed; bottom:14px; left:50%; transform:translateX(-50%); display:flex; gap:12px; align-items:center; background:rgba(0,0,0,.35); border-radius:30px; padding:6px 10px; z-index:3; }
+  #nav button { font:inherit; font-size:22px; width:52px; height:44px; border:0; border-radius:22px; background:var(--c2); color:var(--ink); cursor:pointer; }
+  #nav span { min-width:90px; text-align:center; font-weight:700; }
+  .lock #nav { display:none; }
+  .hidden { display:none !important; }
+  /* דף לימוד (L) ושעון לשאלה (sec) */
+  .learn { width:min(1100px,100%); display:flex; flex-direction:column; gap:14px; text-align:right; }
+  .learn h2 { margin:0; text-align:center; font-size:clamp(28px,4vw,52px); }
+  .learn .src { text-align:center; color:var(--c2); font-weight:700; font-size:clamp(16px,1.8vw,22px); }
+  .learn .vs { background:rgba(255,255,255,.12); border-radius:18px; padding:16px 22px; font-size:clamp(22px,2.6vw,36px); font-weight:700; line-height:1.6; text-align:center; }
+  .learn .box { width:auto; white-space:pre-line; }
+  .learn .ps { text-align:right; font-size:clamp(20px,2.3vw,32px); }
+  .learn .ps .pn { color:var(--c2); font-size:.62em; margin-inline-end:6px; vertical-align:middle; }
+  .tmr { display:flex; align-items:center; gap:12px; font-size:clamp(26px,3vw,40px); font-weight:800; }
+  .tmr .bar { width:min(420px,60vw); height:14px; border-radius:7px; background:rgba(255,255,255,.2); overflow:hidden; }
+  .tmr .bar i { display:block; height:100%; background:var(--c2); border-radius:7px; }
+  .tmr.low, .tmr.end { color:#fca5a5; } .tmr.low .bar i { background:var(--bad); }
+  .closed .opt { opacity:.7; cursor:default !important; }
+  #nm { position:fixed; inset:0; z-index:9; background:rgba(8,20,40,.92); display:flex; align-items:center; justify-content:center; padding:16px; }
+  #nm form { background:#fff; color:var(--ink); border-radius:18px; padding:22px; width:min(420px,100%); display:flex; flex-direction:column; gap:12px; text-align:center; }
+  #nm input { font:inherit; font-size:22px; padding:10px 12px; border:2px solid #cbd5e1; border-radius:12px; text-align:center; }
+  #nm button { font:inherit; font-size:20px; font-weight:700; padding:10px; border:0; border-radius:12px; background:var(--c1); color:#fff; cursor:pointer; }
+  #chg { font:inherit; font-size:14px; border:0; border-radius:16px; padding:3px 10px; background:rgba(255,255,255,.18); color:#fff; cursor:pointer; }
+  body.solo #nav, body.solo #who { display:none; }
+  #map { position:fixed; top:48px; left:0; right:0; z-index:2; display:flex; align-items:center; gap:10px; padding:5px 14px; background:rgba(0,0,0,.18); font-size:14px; }
+  #map .trk { flex:1; position:relative; display:flex; align-items:center; gap:3px; min-width:0; }
+  #map .trk::before { content:""; position:absolute; left:6px; right:6px; top:50%; height:6px; margin-top:-3px; border-radius:3px; background:rgba(255,255,255,.18); }
+  #map .fill { position:absolute; right:6px; top:50%; height:6px; margin-top:-3px; border-radius:3px; background:linear-gradient(270deg,var(--c2),#ffe08a); transition:width .5s; }
+  #map .st { position:relative; flex:1; display:flex; justify-content:center; }
+  #map .st i { font-style:normal; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; background:#3b4660; color:#cbd5e1; border:2px solid rgba(255,255,255,.25); transition:all .3s; }
+  #map .st.d i { background:var(--c3); color:#fff; border-color:transparent; }
+  #map .st.y i { background:#1f9d55; color:#fff; border-color:transparent; }
+  #map .st.x i { background:#f4a261; color:#3b2412; border-color:transparent; }
+  #map .st.c i { background:var(--c2); color:#1b2333; border-color:#fff; transform:scale(1.25); box-shadow:0 0 0 4px rgba(255,255,255,.18); }
+  #map .ends { font-size:18px; }
+  #map .pt { white-space:nowrap; font-weight:700; color:var(--c2); min-width:0; }
+  #map .pt small { color:#fff; opacity:.8; font-weight:400; margin-inline-start:6px; }
+  @media (max-width:600px) { #map .st i { width:16px; height:16px; font-size:0; } #map .pt small { display:none; } #map { gap:6px; padding:5px 8px; } }
+  #snd { font:inherit; font-size:18px; border:0; background:rgba(255,255,255,.15); border-radius:50%; width:34px; height:34px; cursor:pointer; flex:none; }
+  #ms { position:fixed; left:50%; bottom:96px; transform:translate(-50%,20px); opacity:0; z-index:5; background:#fff; color:var(--ink); font-weight:700; font-size:clamp(18px,2.2vw,28px); padding:10px 26px; border-radius:30px; box-shadow:0 8px 30px rgba(0,0,0,.35); transition:all .4s; pointer-events:none; }
+  #ms.on { opacity:1; transform:translate(-50%,0); }
+  .solo-go { font:inherit; font-size:clamp(18px,2vw,26px); font-weight:700; border:0; border-radius:16px; padding:12px 26px; background:var(--c2); color:#1b1b1b; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.3); }
+  .solo-go.alt { background:rgba(255,255,255,.18); color:#fff; font-size:clamp(16px,1.7vw,22px); }
+  .sbtns { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+  .sdots { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; font-size:20px; }
+  .sdots span { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); }
+  .sdots .y { background:#1f9d55; } .sdots .x { background:#f4a261; color:#3b2412; }
+  #nm button.v { background:#e8ecf3; color:var(--ink); font-size:16px; font-weight:400; }
+</style>
+<meta property="og:title" content="חֲזָרָה לְמִבְחָן: דְּבָרִים וָאֶתְחַנַּן – חידון כיתתי">
+<meta property="og:description" content="חֲזָרָה לְמִבְחָן: דְּבָרִים וָאֶתְחַנַּן – חידון כיתתי">
+<meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-class-quiz-devarim-review-1.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/class-quiz/devarim-review-1.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://www.kol-toda.co.il/class-quiz/devarim-review-1.html">
+<script async src="https://www.kol-toda.co.il/a.js"></script>
+</head>
+<body>
+<div id="top"><span class="t" id="tt"></span><span class="chip hidden" id="chip"></span><span class="grow"></span><span id="prog"></span><button id="snd" title="צְלִילִים">🔊</button></div>
+<div id="map"></div><div id="ms"></div>
+<div id="who" class="hidden"></div>
+<div id="stage"></div>
+<div id="nav"><button id="prv" title="הקודם">→</button><span id="cnt"></span><button id="nxt" title="הבא">←</button></div>
+<script>
+const CQ = {"id": "devarim-review-1-cq", "title": "חֲזָרָה לְמִבְחָן: דְּבָרִים וָאֶתְחַנַּן", "sub": "חִידוֹן אֶתְגָּר כִּתָּתִי", "intro": "14 שְׁאֵלוֹת כְּמוֹ בַּמְּשִׂימָה הָאַרְצִית · לִמּוּד קָצָר ← שְׁאֵלָה לְדַקָּה ← תּוֹצָאוֹת ← הֶסְבֵּר", "source": "חומש דברים, פרקים א׳–ו׳ – חזרה לקראת משימת ההערכה של חמ״ד", "verse": "שְׁמַע יִשְׂרָאֵל ה׳ אֱלֹהֵינוּ ה׳ אֶחָד", "theme": ["#1f4e5f", "#f2b134", "#7a3e9d"], "pod": false, "sec": 60, "sig": {"topic": "פָּרָשַׁת הַשָּׁבוּעַ", "url": "https://www.kol-toda.co.il/t/parasha.html"}, "qs": [{"L": {"h": "📅 מָתַי דִּבֵּר מֹשֶׁה?", "src": "פֶּרֶק א׳, פָּסוּק ג׳", "p": [["ג׳", "וַיְהִי בְּאַרְבָּעִים שָׁנָה בְּעַשְׁתֵּי עָשָׂר חֹדֶשׁ בְּאֶחָד לַחֹדֶשׁ דִּבֶּר מֹשֶׁה אֶל בְּנֵי יִשְׂרָאֵל כְּכֹל אֲשֶׁר צִוָּה ה׳ אֹתוֹ אֲלֵהֶם"]], "x": "׳בְּעַשְׁתֵּי עָשָׂר חֹדֶשׁ׳ – **הַחֹדֶשׁ הָאַחַד עָשָׂר**. סוֹפְרִים מִנִּיסָן, הַחֹדֶשׁ הָרִאשׁוֹן, וְהַחֹדֶשׁ הָאַחַד עָשָׂר הוּא **שְׁבָט**.\n׳בְּאַרְבָּעִים שָׁנָה׳ – הַשָּׁנָה הָאַרְבָּעִים **לִיצִיאַת מִצְרַיִם**, הַשָּׁנָה הָאַחֲרוֹנָה בַּמִּדְבָּר. עֲדַיִן לֹא נִכְנְסוּ לָאָרֶץ.", "r": ["רַשִׁ״י", "מֹשֶׁה הוֹכִיחַ אֶת יִשְׂרָאֵל **סָמוּךְ לְמִיתָתוֹ** – כְּמוֹ יַעֲקֹב, שֶׁהוֹכִיחַ אֶת בָּנָיו רַק לִפְנֵי מוֹתוֹ."]}, "t": "לְפִי פֶּרֶק א׳, בְּאֵיזֶה תַּאֲרִיךְ נָאַם מֹשֶׁה אֶת נְאוּמוֹ בְּסֵפֶר דְּבָרִים?", "o": ["א׳ בְּנִיסָן, בַּשָּׁנָה הָאַרְבָּעִים לִיצִיאַת מִצְרַיִם", "י״ב בַּאֲדָר, בַּשָּׁנָה הָאַרְבָּעִים לַכְּנִיסָה לָאָרֶץ", "א׳ בִּשְׁבָט, בַּשָּׁנָה הָאַרְבָּעִים לִיצִיאַת מִצְרַיִם", "א׳ בְּנִיסָן, בַּשָּׁנָה הָאַרְבָּעִים לַכְּנִיסָה לָאָרֶץ"], "c": 2, "ex": "׳בְּעַשְׁתֵּי עָשָׂר חֹדֶשׁ בְּאֶחָד לַחֹדֶשׁ׳ – **רֹאשׁ חֹדֶשׁ שְׁבָט**. ׳בְּאַרְבָּעִים שָׁנָה׳ – לִיצִיאַת מִצְרַיִם, כִּי עֲדַיִן לֹא נִכְנְסוּ לָאָרֶץ. נִיסָן הוּא הַחֹדֶשׁ הָרִאשׁוֹן, וַאֲדָר – הַשְּׁנֵים עָשָׂר.", "m": "מֹשֶׁה הִקְדִּישׁ אֶת הַשָּׁבוּעוֹת הָאַחֲרוֹנִים שֶׁל חַיָּיו לְלַמֵּד אֶת עַמּוֹ – כָּךְ אוֹהֵב מַנְהִיג אֶת עַמּוֹ 💛"}, {"L": {"h": "⚖️ לֹא אוּכַל לְבַדִּי", "src": "פֶּרֶק א׳, פְּסוּקִים ט׳–י״ג", "p": [["ט׳", "וָאֹמַר אֲלֵכֶם בָּעֵת הַהִוא לֵאמֹר לֹא אוּכַל לְבַדִּי שְׂאֵת אֶתְכֶם"], ["י״ג", "הָבוּ לָכֶם אֲנָשִׁים חֲכָמִים וּנְבֹנִים וִידֻעִים לְשִׁבְטֵיכֶם וַאֲשִׂימֵם בְּרָאשֵׁיכֶם"]], "x": "הָעָם גָּדַל מְאֹד, וּמֹשֶׁה לְבַדּוֹ לֹא יָכֹל לָשֵׂאת אֶת כָּל הַדִּינִים וְהַוִּכּוּחִים.\nהַפִּתְרוֹן: **לְמַנּוֹת דַּיָּנִים וְשָׂרִים** לְכָל שֵׁבֶט – שָׂרֵי אֲלָפִים, שָׂרֵי מֵאוֹת, שָׂרֵי חֲמִשִּׁים וְשָׂרֵי עֲשָׂרוֹת.", "r": ["רַשִׁ״י", "וְכִי מֹשֶׁה, שֶׁקָּרַע לָהֶם אֶת הַיָּם וְהוֹרִיד אֶת הַמָּן, לֹא יָכֹל לָדוּן אוֹתָם? אֶלָּא כָּךְ אָמַר לָהֶם: **׳ה׳ אֱלֹהֵיכֶם הִרְבָּה אֶתְכֶם׳**."]}, "t": "מֹשֶׁה אָמַר: ׳לֹא אוּכַל לְבַדִּי שְׂאֵת אֶתְכֶם׳. מָה הָיָה הַפִּתְרוֹן לַבְּעָיָה?", "o": ["לְמַנּוֹת שׁוֹפְטִים חֲכָמִים וּנְבוֹנִים לְכָל שֵׁבֶט", "שֶׁאַהֲרֹן הַכֹּהֵן יָדוּן אֶת הָעָם בִּמְקוֹם מֹשֶׁה", "לְחַלֵּק אֶת הָעָם לִשְׁנֵי מַחֲנוֹת נִפְרָדִים", "שֶׁכָּל אֶחָד יִשְׁפֹּט אֶת עַצְמוֹ לְבַד"], "c": 0, "ex": "׳הָבוּ לָכֶם אֲנָשִׁים חֲכָמִים וּנְבֹנִים וִידֻעִים לְשִׁבְטֵיכֶם, וַאֲשִׂימֵם בְּרָאשֵׁיכֶם׳ – **שׁוֹפְטִים וְשָׂרִים לְכָל שֵׁבֶט**. אַהֲרֹן לֹא מֻנָּה לְדַיָּן, וְהָעָם לֹא נֶחְלַק לְמַחֲנוֹת.", "m": "גַּם מַנְהִיג גָּדוֹל צָרִיךְ עֶזְרָה – וְחָכָם מִי שֶׁיּוֹדֵעַ לְשַׁתֵּף אֲחֵרִים 🤝"}, {"L": {"h": "⛰️ אֲחֵיכֶם בְּנֵי עֵשָׂו", "src": "פֶּרֶק ב׳, פְּסוּקִים ד׳–ה׳", "p": [["ד׳", "וְאֶת הָעָם צַו לֵאמֹר אַתֶּם עֹבְרִים בִּגְבוּל אֲחֵיכֶם בְּנֵי עֵשָׂו הַיֹּשְׁבִים בְּשֵׂעִיר וְיִירְאוּ מִכֶּם וְנִשְׁמַרְתֶּם מְאֹד"], ["ה׳", "אַל תִּתְגָּרוּ בָם כִּי לֹא אֶתֵּן לָכֶם מֵאַרְצָם עַד מִדְרַךְ כַּף רָגֶל כִּי יְרֻשָּׁה לְעֵשָׂו נָתַתִּי אֶת הַר שֵׂעִיר"]], "x": "בְּנֵי עֵשָׂו – **אֱדוֹם** – יוֹשְׁבִים בְּהַר שֵׂעִיר. עֵשָׂו הוּא אָחִיו שֶׁל יַעֲקֹב, וְלָכֵן הַתּוֹרָה קוֹרֵאת לָהֶם ׳אֲחֵיכֶם׳.\nה׳ אָמַר ׳אַל תִּתְגָּרוּ בָם׳, וְנָתַן נִמּוּק: **׳כִּי יְרֻשָּׁה לְעֵשָׂו נָתַתִּי אֶת הַר שֵׂעִיר׳**.", "r": ["רַשִׁ״י", "׳יְרֻשָּׁה לְעֵשָׂו׳ – **מֵאַבְרָהָם**. ה׳ הִבְטִיחַ לְאַבְרָהָם עֲשָׂרָה עַמִּים: שִׁבְעָה לְיִשְׂרָאֵל, אֶחָד לְעֵשָׂו וּשְׁנַיִם לִבְנֵי לוֹט."]}, "t": "לָמָּה אָסוּר הָיָה לִבְנֵי יִשְׂרָאֵל לָצֵאת לְמִלְחָמָה נֶגֶד אֶרֶץ אֱדוֹם?", "o": ["כִּי בְּנֵי אֱדוֹם הָיוּ חֲזָקִים מִדַּי", "כִּי לֹא הָיָה לָהֶם נֶשֶׁק בַּמִּדְבָּר", "כִּי מֹשֶׁה כְּבָר כָּרַת עִמָּם בְּרִית שָׁלוֹם", "כִּי ה׳ נָתַן אֶת הַר שֵׂעִיר יְרֻשָּׁה לְעֵשָׂו"], "c": 3, "ex": "׳אַל תִּתְגָּרוּ בָם, כִּי לֹא אֶתֵּן לָכֶם מֵאַרְצָם עַד מִדְרַךְ כַּף רָגֶל, **כִּי יְרֻשָּׁה לְעֵשָׂו נָתַתִּי אֶת הַר שֵׂעִיר**׳. הַסִּבָּה הִיא לֹא כֹּחַ וְלֹא נֶשֶׁק – ה׳ נָתַן לָהֶם אֶת הָאָרֶץ.", "m": "מָה שֶׁה׳ נָתַן לְאַחֵר – אֵינוֹ שֶׁלִּי, גַּם כְּשֶׁאֲנִי חָזָק 🙏"}, {"L": {"h": "⚔️ סִיחוֹן וְעוֹג", "src": "פֶּרֶק ב׳, פָּסוּק ל״ב – פֶּרֶק ג׳, פָּסוּק י׳", "p": [["י׳", "כֹּל עָרֵי הַמִּישֹׁר וְכָל הַגִּלְעָד וְכָל הַבָּשָׁן עַד סַלְכָה וְאֶדְרֶעִי עָרֵי מַמְלֶכֶת עוֹג בַּבָּשָׁן"]], "x": "שְׁנֵי מַלְכֵי הָאֱמֹרִי, **סִיחוֹן** מֶלֶךְ חֶשְׁבּוֹן וְ**עוֹג** מֶלֶךְ הַבָּשָׁן, יָצְאוּ לְהִלָּחֵם בְּיִשְׂרָאֵל – וּבְנֵי יִשְׂרָאֵל נִצְּחוּ.\nכָּךְ נִכְבַּשׁ **עֵבֶר הַיַּרְדֵּן הַמִּזְרָחִי**: ׳כָּל הַגִּלְעָד וְכָל הַבָּשָׁן׳. אֶת הָאָרֶץ קִבְּלוּ רְאוּבֵן, גָּד וַחֲצִי שֵׁבֶט מְנַשֶּׁה.", "n": "🗺️ הַבָּשָׁן – רָמַת הַגּוֹלָן שֶׁל הַיּוֹם. הַגִּלְעָד – הֶהָרִים שֶׁמִּמִּזְרַח לַיַּרְדֵּן, מִדָּרוֹם לַבָּשָׁן."}, "t": "אֵילוּ שְׁנֵי חַבְלֵי אֶרֶץ נִכְבְּשׁוּ בְּמִלְחֲמוֹת סִיחוֹן וְעוֹג?", "o": ["הַנֶּגֶב וְהָעֲרָבָה", "הַגִּלְעָד וְהַבָּשָׁן", "אַרְצוֹת עַמּוֹן וּמוֹאָב", "הַמִּדְבָּר וְהָעֲרָבָה"], "c": 1, "ex": "׳כֹּל עָרֵי הַמִּישֹׁר **וְכָל הַגִּלְעָד וְכָל הַבָּשָׁן**׳. אֶת אַרְצוֹת עַמּוֹן וּמוֹאָב אָסוּר הָיָה לִכְבֹּשׁ – ה׳ נְתָנָן לִבְנֵי לוֹט. הַנֶּגֶב נִמְצָא בִּדְרוֹם אֶרֶץ כְּנַעַן, לֹא בְּעֵבֶר הַיַּרְדֵּן.", "m": "׳אֶת הַכֹּל נָתַן ה׳ אֱלֹהֵינוּ לְפָנֵינוּ׳ – הַנִּצָּחוֹן הוּא מַתָּנָה מֵה׳ 💛"}, {"L": {"h": "🙏 וָאֶתְחַנַּן", "src": "פֶּרֶק ג׳, פְּסוּקִים כ״ג–כ״ו", "p": [["כ״ה", "אֶעְבְּרָה נָּא וְאֶרְאֶה אֶת הָאָרֶץ הַטּוֹבָה אֲשֶׁר בְּעֵבֶר הַיַּרְדֵּן הָהָר הַטּוֹב הַזֶּה וְהַלְּבָנוֹן"], ["כ״ו", "וַיִּתְעַבֵּר ה׳ בִּי לְמַעַנְכֶם וְלֹא שָׁמַע אֵלָי וַיֹּאמֶר ה׳ אֵלַי רַב לָךְ אַל תּוֹסֶף דַּבֵּר אֵלַי עוֹד בַּדָּבָר הַזֶּה"]], "x": "אַחֲרֵי כִּבּוּשׁ סִיחוֹן וְעוֹג, מֹשֶׁה **הִתְפַּלֵּל וְהִתְחַנֵּן**: ׳אֶעְבְּרָה נָּא וְאֶרְאֶה אֶת הָאָרֶץ הַטּוֹבָה׳.\nה׳ עָנָה לוֹ: **׳רַב לָךְ, אַל תּוֹסֶף דַּבֵּר אֵלַי עוֹד בַּדָּבָר הַזֶּה׳**.", "r": ["רַשִׁ״י", "׳אֶעְבְּרָה נָּא׳ – **׳נָא׳ הוּא לְשׁוֹן בַּקָּשָׁה**. ׳הָהָר הַטּוֹב הַזֶּה׳ – זוֹ יְרוּשָׁלַיִם. ׳וְהַלְּבָנוֹן׳ – זֶה בֵּית הַמִּקְדָּשׁ."]}, "t": "עַל מָה הִתְחַנֵּן מֹשֶׁה לִפְנֵי ה׳ בִּתְחִלַּת פָּרָשַׁת וָאֶתְחַנַּן?", "o": ["לַעֲבֹר אֶת הַיַּרְדֵּן וְלִרְאוֹת אֶת הָאָרֶץ הַטּוֹבָה", "שֶׁיְּהוֹשֻׁעַ לֹא יִצְטָרֵךְ לְהִלָּחֵם בְּעַמֵּי הָאָרֶץ", "שֶׁיִּסָּלַח לְיִשְׂרָאֵל עַל חֵטְא הָעֵגֶל", "לִחְיוֹת עוֹד שָׁנִים רַבּוֹת בַּמִּדְבָּר"], "c": 0, "ex": "׳אֶעְבְּרָה נָּא וְאֶרְאֶה אֶת הָאָרֶץ הַטּוֹבָה אֲשֶׁר בְּעֵבֶר הַיַּרְדֵּן׳ – מֹשֶׁה בִּקֵּשׁ **לְהִכָּנֵס לְאֶרֶץ יִשְׂרָאֵל**, לִרְאוֹת אֶת יְרוּשָׁלַיִם וְאֶת בֵּית הַמִּקְדָּשׁ.", "m": "מֹשֶׁה רַבֵּנוּ הִשְׁתּוֹקֵק לְאֶרֶץ יִשְׂרָאֵל – וַאֲנַחְנוּ זוֹכִים לִחְיוֹת בָּהּ 🌿"}, {"L": {"h": "🏔️ עֲלֵה רֹאשׁ הַפִּסְגָּה", "src": "פֶּרֶק ג׳, פְּסוּקִים כ״ז–כ״ח", "p": [["כ״ז", "עֲלֵה רֹאשׁ הַפִּסְגָּה וְשָׂא עֵינֶיךָ יָמָּה וְצָפֹנָה וְתֵימָנָה וּמִזְרָחָה וּרְאֵה בְעֵינֶיךָ כִּי לֹא תַעֲבֹר אֶת הַיַּרְדֵּן הַזֶּה"], ["כ״ח", "וְצַו אֶת יְהוֹשֻׁעַ וְחַזְּקֵהוּ וְאַמְּצֵהוּ כִּי הוּא יַעֲבֹר לִפְנֵי הָעָם הַזֶּה וְהוּא יַנְחִיל אוֹתָם אֶת הָאָרֶץ אֲשֶׁר תִּרְאֶה"]], "x": "ה׳ לֹא נָתַן לְמֹשֶׁה לַעֲבֹר אֶת הַיַּרְדֵּן – אֲבָל **נָתַן לוֹ לִרְאוֹת אֶת כָּל הָאָרֶץ**, לְכָל הַצְּדָדִים: יָמָּה, צָפֹנָה, תֵּימָנָה וּמִזְרָחָה.\nאֶת הָעָם יַכְנִיס לָאָרֶץ **יְהוֹשֻׁעַ**.", "r": ["רַשִׁ״י", "׳וּרְאֵה בְעֵינֶיךָ׳ – בִּקַּשְׁתָּ מִמֶּנִּי ׳וְאֶרְאֶה אֶת הָאָרֶץ הַטּוֹבָה׳ – **אֲנִי מַרְאֶה לְךָ אֶת כֻּלָּהּ**."]}, "t": "לָמָּה צִוָּה ה׳ עַל מֹשֶׁה לַעֲלוֹת אֶל ׳רֹאשׁ הַפִּסְגָּה׳?", "o": ["כְּדֵי שֶׁיִּלָּחֵם מִשָּׁם בָּאוֹיְבִים שֶׁבַּמִּזְרָח", "כְּדֵי שֶׁיִּכְתֹּב שָׁם אֶת סֵפֶר הַתּוֹרָה", "כְּדֵי שֶׁיִּרְאֶה בְּעֵינָיו אֶת כָּל הָאָרֶץ", "כְּדֵי שֶׁיִּסְפֹּר מִשָּׁם אֶת הָעָם"], "c": 2, "ex": "׳וְשָׂא עֵינֶיךָ... **וּרְאֵה בְעֵינֶיךָ** כִּי לֹא תַעֲבֹר אֶת הַיַּרְדֵּן הַזֶּה׳. חֵלֶק מִן הַבַּקָּשָׁה נַעֲנָה: מֹשֶׁה לֹא נִכְנַס, אֲבָל רָאָה אֶת כָּל הָאָרֶץ.", "m": "גַּם כְּשֶׁה׳ אוֹמֵר ׳לֹא׳, הוּא נוֹתֵן מַתָּנָה אַחֶרֶת בְּאַהֲבָה 💛"}, {"L": {"h": "🏙️ שָׁלֹשׁ עָרִים", "src": "פֶּרֶק ד׳, פְּסוּקִים מ״א–מ״ג", "p": [["מ״א", "אָז יַבְדִּיל מֹשֶׁה שָׁלֹשׁ עָרִים בְּעֵבֶר הַיַּרְדֵּן מִזְרְחָה שָׁמֶשׁ"], ["מ״ב", "לָנֻס שָׁמָּה רוֹצֵחַ אֲשֶׁר יִרְצַח אֶת רֵעֵהוּ בִּבְלִי דַעַת וְהוּא לֹא שֹׂנֵא לוֹ מִתְּמוֹל שִׁלְשׁוֹם וְנָס אֶל אַחַת מִן הֶעָרִים הָאֵל וָחָי"], ["מ״ג", "אֶת בֶּצֶר בַּמִּדְבָּר בְּאֶרֶץ הַמִּישֹׁר לָרֻאוּבֵנִי וְאֶת רָאמֹת בַּגִּלְעָד לַגָּדִי וְאֶת גּוֹלָן בַּבָּשָׁן לַמְנַשִּׁי"]], "x": "מִי שֶׁהָרַג אָדָם **בְּלִי כַּוָּנָה** (׳בִּבְלִי דַעַת׳) בּוֹרֵחַ לְ**עִיר מִקְלָט**, וְשָׁם הוּא מוּגָן.\nמֹשֶׁה הִבְדִּיל שָׁלֹשׁ עָרִים בְּעֵבֶר הַיַּרְדֵּן הַמִּזְרָחִי: **בֶּצֶר** לָרְאוּבֵנִי, **רָאמֹת** בַּגִּלְעָד לַגָּדִי, וְ**גוֹלָן** בַּבָּשָׁן לַמְנַשִּׁי.", "r": ["רַשִׁ״י", "הֶעָרִים הָאֵלֶּה עוֹד לֹא קָלְטוּ, עַד שֶׁיַּבְדִּילוּ גַּם אֶת הֶעָרִים שֶׁבְּאֶרֶץ כְּנַעַן. וּבְכָל זֹאת אָמַר מֹשֶׁה: **׳מִצְוָה שֶׁאֶפְשָׁר לְקַיְּמָהּ – אֲקַיְּמֶנָּה׳**."]}, "t": "מָה הַנּוֹשֵׂא שֶׁל פֶּרֶק ד׳, פְּסוּקִים מ״א–מ״ג?", "o": ["כִּבּוּשׁ עֵבֶר הַיַּרְדֵּן הַמִּזְרָחִי", "קְבִיעַת עָרֵי הַמִּקְלָט בְּעֵבֶר הַיַּרְדֵּן", "תֵּאוּר הַקְּשָׁיִים שֶׁל הָרוֹצֵחַ בִּשְׁגָגָה", "בַּקָּשַׁת בְּנֵי גָּד וּרְאוּבֵן לְקַבֵּל נַחֲלָה"], "c": 1, "ex": "׳אָז יַבְדִּיל מֹשֶׁה שָׁלֹשׁ עָרִים בְּעֵבֶר הַיַּרְדֵּן... **לָנֻס שָׁמָּה רוֹצֵחַ**׳ – אֵלֶּה עָרֵי הַמִּקְלָט. הַכִּבּוּשׁ וּבַקָּשַׁת גָּד וּרְאוּבֵן כְּתוּבִים בִּמְקוֹמוֹת אֲחֵרִים, וְהַפְּסוּקִים לֹא מְתָאֲרִים אֶת הַקְּשָׁיִים שֶׁל הָרוֹצֵחַ.", "m": "מֹשֶׁה מִהֵר לְקַיֵּם מִצְוָה, אֲפִלּוּ חֵלֶק מִמֶּנָּה – מִצְוָה שֶׁבָּאָה לְיָדִי, אֲנִי לֹא מְחַכֶּה ⭐"}, {"L": {"h": "➕ לֹא תֹסִפוּ וְלֹא תִגְרְעוּ ➖", "src": "פֶּרֶק ד׳, פָּסוּק ב׳", "p": [["ב׳", "לֹא תֹסִפוּ עַל הַדָּבָר אֲשֶׁר אָנֹכִי מְצַוֶּה אֶתְכֶם וְלֹא תִגְרְעוּ מִמֶּנּוּ לִשְׁמֹר אֶת מִצְוֺת ה׳ אֱלֹהֵיכֶם אֲשֶׁר אָנֹכִי מְצַוֶּה אֶתְכֶם"]], "x": "הַתּוֹרָה **שְׁלֵמָה**, כְּמוֹ שֶׁה׳ נְתָנָהּ.\n׳לֹא תֹסִפוּ׳ – אָסוּר **לְהוֹסִיף** עַל מִצְוָה.\n׳וְלֹא תִגְרְעוּ׳ – אָסוּר **לְהַחְסִיר** מִמִּצְוָה. לְמָשָׁל: שָׁלֹשׁ צִיצִיּוֹת בִּמְקוֹם אַרְבַּע.", "r": ["רַשִׁ״י", "׳לֹא תֹסִפוּ׳ – כְּגוֹן **חָמֵשׁ פָּרָשִׁיּוֹת בַּתְּפִלִּין, חֲמֵשֶׁת מִינִין בַּלּוּלָב, וְחָמֵשׁ צִיצִיּוֹת**. וְכֵן ׳וְלֹא תִגְרְעוּ׳."]}, "t": "׳לֹא תֹסִפוּ עַל הַדָּבָר... וְלֹא תִגְרְעוּ מִמֶּנּוּ׳. אֵיזוֹ מֵהַדֻּגְמָאוֹת הִיא אִסּוּר ׳לֹא תֹסִפוּ׳?", "o": ["לְהָנִיחַ תְּפִלִּין עִם שָׁלֹשׁ פָּרָשִׁיּוֹת בִּמְקוֹם אַרְבַּע", "לִלְמֹד תּוֹרָה גַּם בַּלַּיְלָה, וְלֹא רַק בַּיּוֹם", "לִטֹּל לוּלָב בְּלִי הָעֲרָבוֹת שֶׁבּוֹ", "לְהָנִיחַ תְּפִלִּין עִם חָמֵשׁ פָּרָשִׁיּוֹת בִּמְקוֹם אַרְבַּע"], "c": 3, "ex": "רַשִׁ״י: ׳לֹא תֹסִפוּ – כְּגוֹן **חָמֵשׁ פָּרָשִׁיּוֹת בַּתְּפִלִּין**׳. שָׁלֹשׁ פָּרָשִׁיּוֹת אוֹ לוּלָב בְּלִי עֲרָבוֹת – אֵלֶּה ׳לֹא תִגְרְעוּ׳. וְלִלְמֹד תּוֹרָה בַּלַּיְלָה – מִצְוָה, וְלֹא הוֹסָפָה עַל מִצְוָה.", "m": "הַתּוֹרָה שֶׁל ה׳ מֻשְׁלֶמֶת – לֹא צָרִיךְ לְתַקֵּן אוֹתָהּ, רַק לְקַיֵּם אוֹתָהּ בְּשִׂמְחָה 💛"}, {"L": {"h": "🕯️ שַׁבָּת לְכֻלָּם", "src": "פֶּרֶק ה׳, פְּסוּקִים י״ב–ט״ז", "p": [["י״ד", "וְיוֹם הַשְּׁבִיעִי שַׁבָּת לַה׳ אֱלֹהֶיךָ לֹא תַעֲשֶׂה כָל מְלָאכָה אַתָּה וּבִנְךָ וּבִתֶּךָ וְעַבְדְּךָ וַאֲמָתֶךָ וְשׁוֹרְךָ וַחֲמֹרְךָ וְכָל בְּהֶמְתֶּךָ וְגֵרְךָ אֲשֶׁר בִּשְׁעָרֶיךָ לְמַעַן יָנוּחַ עַבְדְּךָ וַאֲמָתְךָ כָּמוֹךָ"]], "x": "בְּשַׁבָּת שׁוֹבְתִים **כֻּלָּם**: ׳אַתָּה וּבִנְךָ וּבִתֶּךָ, וְעַבְדְּךָ וַאֲמָתֶךָ, וְשׁוֹרְךָ וַחֲמֹרְךָ וְכָל בְּהֶמְתֶּךָ, וְגֵרְךָ׳.\nוּבַדִּבְּרוֹת שֶׁבְּחֻמַּשׁ דְּבָרִים נוֹסַף: **׳לְמַעַן יָנוּחַ עַבְדְּךָ וַאֲמָתְךָ כָּמוֹךָ׳**."}, "t": "לְפִי פֶּרֶק ה׳, פְּסוּקִים י״ב–ט״ז, מִי צָרִיךְ לִשְׁבֹּת בְּשַׁבָּת?", "o": ["רַק הָאָדוֹן וּבְנֵי מִשְׁפַּחְתּוֹ הַקְּרוֹבִים", "כָּל הָאֲנָשִׁים, אֲבָל לֹא הַבְּהֵמוֹת", "גַּם הָעֲבָדִים, הַבְּהֵמוֹת וְהַגֵּר – כֻּלָּם", "רַק מִי שֶׁעוֹבֵד קָשֶׁה כָּל הַשָּׁבוּעַ"], "c": 2, "ex": "הַפָּסוּק מוֹנֶה אֶת כֻּלָּם – הַבָּנִים, הָעֲבָדִים, הַבְּהֵמוֹת וְהַגֵּר – וּמְסַיֵּם: **׳לְמַעַן יָנוּחַ עַבְדְּךָ וַאֲמָתְךָ כָּמוֹךָ׳**. גַּם הָעֶבֶד נָח, בְּדִיּוּק כְּמוֹ הָאָדוֹן.", "m": "הַשַּׁבָּת הִיא מַתָּנָה שֶׁל מְנוּחָה – וְה׳ רוֹצֶה שֶׁכֻּלָּם יֵהָנוּ מִמֶּנָּה, גַּם הַחַלָּשִׁים 💛"}, {"L": {"h": "⛓️ וְזָכַרְתָּ כִּי עֶבֶד הָיִיתָ", "src": "פֶּרֶק ה׳, פָּסוּק ט״ו", "p": [["ט״ו", "וְזָכַרְתָּ כִּי עֶבֶד הָיִיתָ בְּאֶרֶץ מִצְרַיִם וַיֹּצִאֲךָ ה׳ אֱלֹהֶיךָ מִשָּׁם בְּיָד חֲזָקָה וּבִזְרֹעַ נְטוּיָה עַל כֵּן צִוְּךָ ה׳ אֱלֹהֶיךָ לַעֲשׂוֹת אֶת יוֹם הַשַׁבָּת"]], "x": "בַּדִּבְּרוֹת שֶׁבְּחֻמַּשׁ **שְׁמוֹת** הַנִּימּוּק לַשַּׁבָּת: ה׳ **בָּרָא** אֶת הָעוֹלָם בְּשִׁשָּׁה יָמִים וְשָׁבַת בַּשְּׁבִיעִי.\nבַּדִּבְּרוֹת שֶׁבְּחֻמַּשׁ **דְּבָרִים** הַנִּימּוּק אַחֵר: **׳וְזָכַרְתָּ כִּי עֶבֶד הָיִיתָ בְּאֶרֶץ מִצְרַיִם׳**.", "r": ["רַשִׁ״י", "׳וְזָכַרְתָּ כִּי עֶבֶד הָיִיתָ׳ – **עַל מְנָת כֵּן פְּדָאֲךָ**, שֶׁתִּהְיֶה לוֹ עֶבֶד וְתִשְׁמֹר מִצְוֹתָיו."]}, "t": "לְפִי הַפְּסוּקִים בְּפֶרֶק ה׳, מָה הַסִּבָּה לִשְׁמִירַת שַׁבָּת?", "o": ["כִּי הָיִינוּ עֲבָדִים בְּמִצְרַיִם, וְה׳ הוֹצִיאָנוּ מִשָּׁם", "כִּי בַּיּוֹם הַשְּׁבִיעִי שָׁבַת ה׳ מִכָּל מְלַאכְתּוֹ", "כִּי בְּשַׁבָּת נִצְּחוּ אֶת עֲמָלֵק בִּרְפִידִים", "כִּי בְּעֶרֶב שַׁבָּת יָרַד לָהֶם מָן כָּפוּל"], "c": 0, "ex": "׳וְזָכַרְתָּ כִּי עֶבֶד הָיִיתָ בְּאֶרֶץ מִצְרַיִם וַיֹּצִאֲךָ ה׳ אֱלֹהֶיךָ מִשָּׁם... **עַל כֵּן צִוְּךָ** ה׳ אֱלֹהֶיךָ לַעֲשׂוֹת אֶת יוֹם הַשַּׁבָּת׳. בְּרִיאַת הָעוֹלָם הִיא הַנִּימּוּק שֶׁבְּחֻמַּשׁ שְׁמוֹת.", "m": "מִי שֶׁהָיָה עֶבֶד יוֹדֵעַ כַּמָּה מְנוּחָה יְקָרָה – וּבְשַׁבָּת אֲנַחְנוּ בְּנֵי חוֹרִין שֶׁל ה׳ ✨"}, {"L": {"h": "📜 אַרְבַּע מִצְוֹת בִּשְׁמַע", "src": "פֶּרֶק ו׳, פְּסוּקִים ז׳–ט׳", "p": [["ז׳", "וְשִׁנַּנְתָּם לְבָנֶיךָ וְדִבַּרְתָּ בָּם בְּשִׁבְתְּךָ בְּבֵיתֶךָ וּבְלֶכְתְּךָ בַדֶּרֶךְ וּבְשָׁכְבְּךָ וּבְקוּמֶךָ"], ["ח׳", "וּקְשַׁרְתָּם לְאוֹת עַל יָדֶךָ וְהָיוּ לְטֹטָפֹת בֵּין עֵינֶיךָ"], ["ט׳", "וּכְתַבְתָּם עַל מְזוּזֹת בֵּיתֶךָ וּבִשְׁעָרֶיךָ"]], "x": "**לִמּוּד תּוֹרָה**: ׳וְשִׁנַּנְתָּם לְבָנֶיךָ וְדִבַּרְתָּ בָּם׳.\n**תְּפִלִּין שֶׁל יָד**: ׳וּקְשַׁרְתָּם לְאוֹת עַל יָדֶךָ׳.\n**תְּפִלִּין שֶׁל רֹאשׁ**: ׳וְהָיוּ לְטֹטָפֹת בֵּין עֵינֶיךָ׳.\n**מְזוּזָה**: ׳וּכְתַבְתָּם עַל מְזוּזֹת בֵּיתֶךָ וּבִשְׁעָרֶיךָ׳.", "r": ["רַשִׁ״י", "׳וּקְשַׁרְתָּם לְאוֹת עַל יָדֶךָ׳ – **אֵלּוּ תְּפִלִּין שֶׁבַּזְּרוֹעַ**. ׳וְהָיוּ לְטֹטָפֹת בֵּין עֵינֶיךָ׳ – **אֵלּוּ תְּפִלִּין שֶׁבָּרֹאשׁ**."]}, "t": "אֵילוּ מִלִּים בְּפָרָשַׁת שְׁמַע מְדַבְּרוֹת עַל הַתְּפִלִּין שֶׁבָּרֹאשׁ?", "o": ["׳וּקְשַׁרְתָּם לְאוֹת עַל יָדֶךָ׳", "׳וְשִׁנַּנְתָּם לְבָנֶיךָ׳", "׳וּכְתַבְתָּם עַל מְזוּזֹת בֵּיתֶךָ׳", "׳וְהָיוּ לְטֹטָפֹת בֵּין עֵינֶיךָ׳"], "c": 3, "ex": "רַשִׁ״י: ׳וְהָיוּ לְטֹטָפֹת בֵּין עֵינֶיךָ – **אֵלּוּ תְּפִלִּין שֶׁבָּרֹאשׁ**׳. ׳עַל יָדֶךָ׳ – תְּפִלִּין שֶׁל יָד, ׳מְזוּזֹת בֵּיתֶךָ׳ – מְזוּזָה, ׳וְשִׁנַּנְתָּם׳ – לִמּוּד תּוֹרָה.", "m": "הַתּוֹרָה מְלַוָּה אוֹתִי בְּכָל מָקוֹם: בַּבַּיִת, בַּדֶּרֶךְ, עַל הַיָּד וְעַל הָרֹאשׁ 💛"}, {"L": {"h": "🛡️ שְׁמַע יִשְׂרָאֵל", "src": "פֶּרֶק ו׳, פָּסוּק ד׳", "p": [["ד׳", "שְׁמַע יִשְׂרָאֵל ה׳ אֱלֹהֵינוּ ה׳ אֶחָד"]], "x": "בְּשִׂמְחַת תּוֹרָה תשפ״ד יָצָא **סֶרֶן אֶלְחָנָן קַלְמַנְזוֹן הי״ד** עִם אָחִיו וְאַחְיָנוֹ לְחַלֵּץ תּוֹשָׁבִים בְּקִבּוּץ בְּאֵרִי. הַתּוֹשָׁבִים פָּחֲדוּ לִפְתֹּחַ אֶת הַדֶּלֶת, כִּי לֹא יָדְעוּ מִי דּוֹפֵק.\nאֶלְחָנָן קָרָא בְּקוֹל: **׳שְׁמַע יִשְׂרָאֵל ה׳ אֱלֹהֵינוּ ה׳ אֶחָד׳** – וְרַק אָז פָּתְחוּ לוֹ.", "n": "יְהוּדִים אוֹמְרִים ׳שְׁמַע׳ בְּכָל יוֹם, בַּבֹּקֶר וּבָעֶרֶב."}, "t": "לָמָּה הַפָּסוּק ׳שְׁמַע יִשְׂרָאֵל׳ הוּא סִימַן הַהֶכֵּר שֶׁל כָּל יְהוּדִי?", "o": ["כִּי זֶה הַפָּסוּק הָרִאשׁוֹן בְּסֵפֶר דְּבָרִים", "כִּי בּוֹ מְקַבְּלִים עֹל מַלְכוּת שָׁמַיִם – ה׳ אֶחָד", "כִּי אוֹמְרִים אוֹתוֹ רַק בִּזְמַן מִלְחָמָה", "כִּי רַק הַכֹּהֲנִים אוֹמְרִים אוֹתוֹ בְּבֵית הַכְּנֶסֶת"], "c": 1, "ex": "בְּ׳שְׁמַע יִשְׂרָאֵל׳ כָּל יְהוּדִי **מְקַבֵּל עָלָיו עֹל מַלְכוּת שָׁמַיִם** וּמַכְרִיז שֶׁה׳ אֶחָד. אוֹמְרִים אוֹתוֹ כָּל יוֹם, בֹּקֶר וָעֶרֶב – לֹא רַק בְּמִלְחָמָה, וְכָל יְהוּדִי אוֹמֵר אוֹתוֹ.", "m": "כְּשֶׁאֲנִי אוֹמֵר ׳שְׁמַע יִשְׂרָאֵל׳, אֲנִי מִצְטָרֵף לְכָל הַיְּהוּדִים שֶׁבְּכָל הַדּוֹרוֹת 💛"}, {"L": {"h": "📣 כָּל מִי שֶׁיֵּשׁ לוֹ תְּשׁוּבָה – יָשִׁיב", "src": "פֶּרֶק א׳, פָּסוּק א׳ (רַשִׁ״י)", "p": [["א׳", "אֵלֶּה הַדְּבָרִים אֲשֶׁר דִּבֶּר מֹשֶׁה אֶל כָּל יִשְׂרָאֵל בְּעֵבֶר הַיַּרְדֵּן בַּמִּדְבָּר בָּעֲרָבָה מוֹל סוּף בֵּין פָּארָן וּבֵין תֹּפֶל וְלָבָן וַחֲצֵרֹת וְדִי זָהָב"]], "x": "לִפְנֵי שֶׁהוֹכִיחַ אֶת הָעָם, **מֹשֶׁה אָסַף אֶת כֻּלָּם**. לָמָּה הָיָה חָשׁוּב שֶׁכֻּלָּם יִהְיוּ שָׁם?", "r": ["רַשִׁ״י", "אִלּוּ הוֹכִיחַ מִקְצָתָן, הָיוּ אֵלּוּ שֶׁבַּשּׁוּק אוֹמְרִים: ׳אַתֶּם הֱיִיתֶם שׁוֹמְעִים מִבֶּן עַמְרָם וְלֹא הֲשִׁיבוֹתֶם דָּבָר... **אִלּוּ הָיִינוּ שָׁם, הָיִינוּ מְשִׁיבִין אוֹתוֹ!**׳ לְכָךְ כִּנְּסָם כֻּלָּם וְאָמַר לָהֶם: הֲרֵי כֻּלְּכֶם כָּאן, **כָּל מִי שֶׁיֵּשׁ לוֹ תְּשׁוּבָה – יָשִׁיב**."]}, "t": "רַשִׁ״י: ׳לְכָךְ כִּנְּסָם כֻּלָּם... כָּל מִי שֶׁיֵּשׁ לוֹ תְּשׁוּבָה – יָשִׁיב׳. אֵילוּ מִלִּים בַּפָּסוּק רַשִׁ״י מְבָאֵר?", "o": ["׳אֶל כָּל יִשְׂרָאֵל׳", "׳אֵלֶּה הַדְּבָרִים׳", "׳בְּעֵבֶר הַיַּרְדֵּן׳", "׳בַּמִּדְבָּר בָּעֲרָבָה׳"], "c": 0, "ex": "רַשִׁ״י מְבָאֵר אֶת **׳אֶל כָּל יִשְׂרָאֵל׳**: מֹשֶׁה כִּנֵּס אֶת כֻּלָּם, כְּדֵי שֶׁאִישׁ לֹא יֹאמַר אַחַר כָּךְ ׳אִלּוּ הָיִיתִי שָׁם, הָיִיתִי מֵשִׁיב׳. מֹשֶׁה לֹא פָּחַד מִתְּשׁוּבוֹת – הוּא הִזְמִין אוֹתָן.", "m": "מֹשֶׁה נָתַן לְכָל אֶחָד לְהַגִּיד אֶת דַּעְתּוֹ – כָּךְ מוֹכִיחִים בְּאֹמֶץ, בְּיֹשֶׁר וּבְכָבוֹד 🤝"}, {"L": {"h": "🏔️ אַרְבָּעָה שֵׁמוֹת לַחֶרְמוֹן", "src": "פֶּרֶק ג׳, פְּסוּקִים ח׳–ט׳ (רַשִׁ״י)", "p": [["ט׳", "צִידֹנִים יִקְרְאוּ לְחֶרְמוֹן שִׂרְיֹן וְהָאֱמֹרִי יִקְרְאוּ לוֹ שְׂנִיר"]], "x": "בְּמִלְחֶמֶת ׳חַרְבוֹת בַּרְזֶל׳ כָּבַשׁ צַהַ״ל אֶת פִּסְגוֹת **הַחֶרְמוֹן** הַסּוּרִי. הַתּוֹרָה מְסַפֶּרֶת שֶׁלָּהָר הַזֶּה כַּמָּה שֵׁמוֹת: **חֶרְמוֹן, שִׂרְיֹן, שְׂנִיר וְשִׂיאֹן**.", "r": ["רַשִׁ״י", "הֲרֵי לוֹ אַרְבָּעָה שֵׁמוֹת. לָמָּה הֻצְרְכוּ לִכָּתֵב? **לְהַגִּיד שֶׁבַח אֶרֶץ יִשְׂרָאֵל**, שֶׁהָיוּ אַרְבַּע מַלְכֻיּוֹת מִתְפָּאֲרוֹת בְּכָךְ – זוֹ אוֹמֶרֶת: עַל שְׁמִי יִקָּרֵא, וְזוֹ אוֹמֶרֶת: עַל שְׁמִי יִקָּרֵא."]}, "t": "לְפִי רַשִׁ״י, לָמָּה כָּתְבָה הַתּוֹרָה אֶת אַרְבָּעָה הַשֵּׁמוֹת שֶׁל הַחֶרְמוֹן?", "o": ["כְּדֵי שֶׁנֵּדַע אֵיךְ קוֹרְאִים לָהָר בְּכָל הַשָּׂפוֹת", "כִּי הַחֶרְמוֹן הוּא הָהָר הַגָּבוֹהַּ בְּיוֹתֵר בָּעוֹלָם", "לְהַגִּיד שֶׁבַח אֶרֶץ יִשְׂרָאֵל – כָּל מַלְכוּת רָצְתָה אוֹתוֹ", "כִּי מִשָּׁם רָאָה מֹשֶׁה אֶת כָּל הָאָרֶץ"], "c": 2, "ex": "כָּל מַלְכוּת רָצְתָה שֶׁהָהָר יִקָּרֵא עַל שְׁמָהּ – סִימָן שֶׁהָאָרֶץ יָפָה וַחֲבִיבָה. זֶה **שִׁבְחָהּ שֶׁל אֶרֶץ יִשְׂרָאֵל**. וּמֹשֶׁה רָאָה אֶת הָאָרֶץ מֵרֹאשׁ הַפִּסְגָּה, לֹא מִן הַחֶרְמוֹן.", "m": "אֶרֶץ יִשְׂרָאֵל כָּל כָּךְ יָפָה, שֶׁכָּל הַמַּלְכֻיּוֹת רָצוּ אוֹתָהּ – וְה׳ נָתַן אוֹתָהּ לָנוּ בְּמַתָּנָה 💛"}]};
+const N = CQ.qs.length, PAGES = 2 + 4 * N, LET = "אבגד";
+const W = window.chrome && window.chrome.webview;            // בתוך תוכנת הכיתה: תלמיד שעונה
+const params = new URLSearchParams(location.search);
+const CLS = /^\d{5}$/.test(params.get("class") || "") ? params.get("class") : "";
+const DB = "https://kol-kiosk-class-default-rtdb.europe-west1.firebasedatabase.app";
+// תלמיד בלי התוכנה: דפדפן רגיל עם ?class= (לא בתוך הלוח, ולא ?view=1). נותן שם פעם אחת, ועונה ישר ל-Firebase.
+const ls = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } };
+const WEB = !W && !!CLS && window.parent === window && params.get("view") !== "1" && ls("cq:view") !== "1";
+let webName = WEB ? (ls("cq:name") || "") : "", webId = WEB ? (ls("cq:wid") || "") : "";
+const newId = () => { webId = Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(16).padStart(2, "0")).join(""); ls("cq:wid", webId); };
+if (WEB && !/^[0-9a-f]{16}$/.test(webId)) newId();
+let failNote = false, SOLO = null;   // SOLO – תרגול לבד, ראו soloRender
+let STUDENT = !!W || (WEB && !!webName);
+let pg = 0, locked = STUDENT || WEB, L = {}, mine = {}, run = "", lastHtml = "";
+if (locked) document.body.classList.add("lock");
+const $ = id => document.getElementById(id);
+// שעון לשאלה: sec בשאלה או בחידון. מתחיל כשהמכשיר מגיע לעמוד התשובות של השאלה (המורה מדפדף לכולם יחד).
+const T0 = {};
+const t0Key = q => "cq:t0:" + CQ.id + ":" + run + ":" + q;
+function startT0(q) { if (T0[q] != null) return; let t = 0; try { t = +sessionStorage.getItem(t0Key(q)) || 0; } catch (e) {} T0[q] = t && t <= Date.now() ? t : Date.now(); try { sessionStorage.setItem(t0Key(q), T0[q]); } catch (e) {} }
+function resetT0(q) { delete T0[q]; delete wasUp[q]; try { sessionStorage.removeItem(t0Key(q)); } catch (e) {} }
+const secOf = q => +(CQ.qs[q].sec != null ? CQ.qs[q].sec : CQ.sec || 0);
+const left = q => { const s = secOf(q); return !s ? Infinity : T0[q] == null ? s : Math.max(0, s - (Date.now() - T0[q]) / 1000); };
+const timeUp = q => left(q) <= 0;
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";");
+const rich = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+document.body.classList.toggle("student", STUDENT);
+$("tt").textContent = CQ.title + " – " + CQ.sub;
+
+// עמוד → שאלה ושלב (0 שאלה, 1 תשובות, 2 תוצאות, 3 הסבר)
+// הלוח כבר שלח את המונים של שאלה q = המורה הגיע לעמוד התוצאות שלה. אחרי זה אי אפשר לענות עליה.
+const cntRev = q => !!(L.cnt && L.cnt[q] != null);
+// תלמיד רואה תוצאות/הסבר רק כשהדף נעול (רק המורה מדפדף, כך שהגיעו לשם בגללו) או אחרי שהלוח חשף.
+// בדפדוף חופשי התלמיד יכול לדפדף לבד – ואז מחכים לחשיפה, כדי שלא יציץ בתשובה ויחזור לענות.
+const revealed = q => cntRev(q) || locked;
+const where = p => p <= 0 ? { cover: true } : p >= PAGES - 1 ? { end: true } : { q: Math.floor((p - 1) / 4), s: (p - 1) % 4 };
+function loadMine() { try { mine = JSON.parse(localStorage.getItem("cq:" + CQ.id + ":" + run) || "{}") || {}; } catch (e) { mine = {}; } }
+function saveMine() { try { localStorage.setItem("cq:" + CQ.id + ":" + run, JSON.stringify(mine)); } catch (e) {} }
+
+function whoHtml(answeredMode) {
+  const w = Array.isArray(L.who) ? L.who : [];
+  if (!w.length) return "";
+  const n = w.filter(x => x[1]).length;
+  return `<span class="c n">${answeredMode ? `ענו ${n} מתוך ${w.length}` : `מחוברים: ${w.length}`}</span>` +
+    w.map(x => `<span class="c${answeredMode && x[1] ? " ok" : ""}">${answeredMode ? (x[1] ? "✓ " : "… ") : ""}${esc(x[0])}</span>`).join("");
+}
+function optsHtml(q, mode) {   // mode: "ans" (אפשר לענות) / "res" (תוצאות)
+  const Q = CQ.qs[q], cnt = (L.cnt || {})[q], tot = cnt ? cnt.reduce((a, b) => a + (+b || 0), 0) : 0;
+  return `<div class="opts${mode === "ans" ? " ans" : ""}">` + Q.o.map((o, k) => {
+    let c = "opt";
+    if (mode === "res") c += k === Q.c ? " right" : mine[q] === k ? " wrong" : " dim";
+    else if (mine[q] === k) c += " mine";
+    const pc = mode === "res" && cnt ? Math.round((+cnt[k] || 0) * 100 / (tot || 1)) : -1;
+    return `<button class="${c}" data-k="${k}">${pc >= 0 ? `<span class="fill" style="width:${pc}%"></span>` : ""}<span class="l">${LET[k]}</span><span class="tx">${esc(o)}${mode === "res" && k === Q.c ? " ✔" : ""}</span>${pc >= 0 ? `<span class="pc">${pc}%</span>` : ""}</button>`;
+  }).join("") + `</div>`;
+}
+// שמות השלבים: עם דף לימוד – לימוד, שאלה, תוצאות, הסבר; בלי – כמו בגרסה 28.
+const LB = Q => Q.L ? ["לִמּוּד", "שְׁאֵלָה", "תּוֹצָאוֹת", "הֶסְבֵּר"] : ["שְׁאֵלָה", "עוֹנִים", "תּוֹצָאוֹת", "הֶסְבֵּר"];
+// CQ.pesukim = {src, p:[[מספר, פסוק], …]} – כל פסוקי השיעור בדף הפתיחה.  CQ.sod – תמונת סוד השיעור בדף הסיום.
+// L = { h: כותרת, src, v: פסוק (קיצור), p: [[מספר, פסוק מלא], …] – גובר על v, x: הסבר, r: [מפרש, דבריו], n: הערה }
+function learnHtml(D) {
+  const r = Array.isArray(D.r) ? D.r : null;
+  return `<div class="learn">${D.h ? `<h2>${rich(D.h)}</h2>` : ""}${D.src ? `<div class="src">📖 ${esc(D.src)}</div>` : ""}` +
+    (Array.isArray(D.p) && D.p.length ? `<div class="vs ps">${D.p.map(x => `<span class="pn">(${esc(x[0])})</span>${esc(x[1])}`).join(" ")}</div>`
+      : D.v ? `<div class="vs">׳${rich(D.v)}׳</div>` : "") + (D.x ? `<div class="box">${rich(D.x)}</div>` : "") +
+    (r ? `<div class="box m"><h3>📜 ${esc(r[0])}</h3>${rich(r[1])}</div>` : "") + (D.n ? `<div class="box">${rich(D.n)}</div>` : "") + `</div>`;
+}
+// צלילים – נוצרים בדפדפן (Web Audio), בלי קבצים. 🔊/🔇 בפס העליון, נשמר בדפדפן.
+// ברירת מחדל: דולק במקרן/לוח ובתרגול לבד; כבוי במחשבי התלמידים בשיעור (שלושים מחשבים לא מצפצפים יחד), ואפשר להדליק.
+// טעות = צליל רך ונמוך, לא מעניש. תקתוק רק ב-10 השניות האחרונות, הולך ומתחזק.
+let AC = null;
+const sndOn = () => { const v = ls("cq:snd"); return v != null ? v === "1" : (!!SOLO || !STUDENT); };
+function note(f, t, d, type, vol) {
+  const o = AC.createOscillator(), g = AC.createGain(), t0 = AC.currentTime + t;
+  o.type = type || "sine"; o.frequency.value = f;
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol || 0.2, t0 + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+  o.connect(g).connect(AC.destination); o.start(t0); o.stop(t0 + d + 0.05);
+}
+const SFX = {
+  ok: () => [523, 659, 784, 1047].forEach((f, i) => note(f, i * 0.08, 0.35, "triangle", 0.18)),
+  bad: () => { note(330, 0, 0.25, "sine", 0.14); note(262, 0.18, 0.4, "sine", 0.12); },
+  pop: () => note(880, 0, 0.08, "sine", 0.12),
+  tick: v => note(1250, 0, 0.05, "square", 0.03 + 0.02 * v),
+  up: () => { note(392, 0, 0.9, "triangle", 0.2); note(523, 0, 0.9, "sine", 0.12); },
+  reveal: () => [784, 988, 1175].forEach((f, i) => note(f, i * 0.06, 0.5, "sine", 0.12)),
+  ms: () => [659, 784, 1047].forEach((f, i) => note(f, i * 0.1, 0.3, "triangle", 0.16)),
+  win: pc => { const seq = pc >= 85 ? [523, 659, 784, 1047, 784, 1047, 1319] : pc >= 60 ? [523, 659, 784, 1047] : [392, 523, 659];
+    seq.forEach((f, i) => note(f, i * 0.12, i === seq.length - 1 ? 0.8 : 0.25, "triangle", 0.18)); }
+};
+function sfx(n, a) {
+  if (!sndOn()) return;
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); SFX[n](a); } catch (e) {}
+}
+const sndIcon = () => { $("snd").textContent = sndOn() ? "🔊" : "🔇"; };
+$("snd").onclick = () => { ls("cq:snd", sndOn() ? "0" : "1"); sndIcon(); sfx("pop"); };
+addEventListener("pointerdown", () => { try { if (AC && AC.state === "suspended") AC.resume(); } catch (e) {} }, true);
+let lastSec = -1, sndPg = -1;
+// השעון מתעדכן בלי לבנות את הדף מחדש; כשהזמן נגמר – render אחד שסוגר את התשובות.
+let wasUp = {};
+function tick() {
+  const w = where(pg), el = $("tmr");
+  if (!el || w.q == null || w.s !== 1) return;
+  const s = secOf(w.q), l = left(w.q), up = l <= 0;
+  el.className = "tmr" + (up ? " end" : l <= 10 ? " low" : "");
+  el.innerHTML = up ? "⏰ הַזְּמַן נִגְמַר!" : `⏱ ${Math.ceil(l)}<span class="bar"><i style="width:${(l * 100 / s).toFixed(1)}%"></i></span>`;
+  const cs = Math.ceil(l);
+  if (!up && cs <= 10 && cs !== lastSec && !cntRev(w.q)) sfx("tick", (10 - cs) / 10);
+  lastSec = cs;
+  if (up && !wasUp[w.q]) { wasUp[w.q] = 1; sfx("up"); render(); }
+}
+setInterval(tick, 250);
+// מפת שלבים + סרגל התקדמות: 🚩 → עיגול לכל שאלה → 🏁, "סיימתם X% · נשארו עוד Y". ציוני דרך (רבע, חצי, שלושה רבעים, סוף) – הודעה קצרה.
+function mapHtml(cur, st, pct, left) {
+  return `<span class="ends">🚩</span><div class="trk"><span class="fill" style="width:calc(${pct}% - 12px * ${pct / 100})"></span>` +
+    CQ.qs.map((Q, i) => `<span class="st${i === cur ? " c" : st[i] ? " " + st[i] : ""}"><i>${i + 1}</i></span>`).join("") +
+    `</div><span class="ends">🏁</span><span class="pt">${pct >= 100 ? "✔ סִיַּמְתֶּם!" : `סִיַּמְתֶּם ${pct}%`}${pct < 100 ? `<small>${left === 1 ? "נִשְׁאֲרָה עוֹד שְׁאֵלָה אַחַת" : `נִשְׁאֲרוּ עוֹד ${left} שְׁאֵלוֹת`}</small>` : ""}</span>`;
+}
+let msLast = { k: "", v: 0 }, msT = 0;
+function milestone(key, pct) {
+  if (msLast.k !== key) msLast = { k: key, v: pct };    // מצב חדש (תרגול / כיתה) – בלי הודעה על מה שכבר עבר
+  const marks = [[25, "⭐ רֶבַע הַדֶּרֶךְ!"], [50, "🎯 חֲצִי הַדֶּרֶךְ!"], [75, "🚀 עוֹד רֶבַע לַסִּיּוּם!"], [100, "🏁 הִגַּעְתֶּם לַסּוֹף!"]];
+  const hit = marks.filter(m => msLast.v < m[0] && pct >= m[0]).pop();
+  msLast.v = pct;
+  if (!hit) return;
+  if (hit[0] < 100) sfx("ms");
+  const el = $("ms"); el.textContent = hit[1]; el.classList.add("on"); clearTimeout(msT); msT = setTimeout(() => el.classList.remove("on"), 2200);
+}
+function layout(whoOn) {
+  const t = $("top").offsetHeight; $("map").style.top = t + "px";
+  const m = t + $("map").offsetHeight; $("who").style.top = m + "px";
+  $("stage").style.top = (whoOn ? m + $("who").offsetHeight : m) + "px";
+}
+function classMap() {
+  const w = where(pg), cur = w.q != null ? w.q : -1, st = {};
+  CQ.qs.forEach((Q, i) => {
+    const past = w.end || (w.q != null && (i < w.q || (i === w.q && w.s >= 2)));
+    if (!past) return;
+    st[i] = STUDENT && mine[i] != null && revealed(i) ? (mine[i] === Q.c ? "y" : "x") : "d";
+  });
+  const pct = Math.round(pg * 100 / (PAGES - 1)), left = w.end ? 0 : N - (w.q == null ? 0 : w.q + (w.s >= 2 ? 1 : 0));
+  $("map").innerHTML = mapHtml(cur, st, pct, left);
+  milestone("class", pct);
+}
+function render() {
+  sndIcon();
+  if (SOLO) return soloRender();
+  const w = where(pg);
+  if (w.s !== 2) sndPg = -1;
+  let h = "", who = "";
+  $("chip").classList.toggle("hidden", !("q" in w));
+  if (w.cover) {
+    h = `<div class="cover"><div class="sub">🎯 ${esc(CQ.sub)}</div><h1>${esc(CQ.title)}</h1>${CQ.pesukim && Array.isArray(CQ.pesukim.p) ? `<div class="cps"><div class="src">📖 הַפְּסוּקִים שֶׁל הַשִּׁעוּר${CQ.pesukim.src ? " – " + esc(CQ.pesukim.src) : ""}</div>${CQ.pesukim.p.map(x => `<span class="pn">(${esc(x[0])})</span>${esc(x[1])}`).join(" ")}</div>` : `<div class="verse">${esc(CQ.verse || "")}</div>`}</div>
+      <div class="big">${esc(CQ.intro || N + " שְׁאֵלוֹת")}</div><div class="wait">הַחִידוֹן יַתְחִיל בְּעוֹד רֶגַע…</div>`;
+    who = whoHtml(false);
+    $("prog").textContent = "";
+  } else if (w.end) {
+    const S = L.sum || {}, right = CQ.qs.filter((Q, i) => mine[i] === Q.c).length, ans = Object.keys(mine).length;
+    h = `<div class="big">🏁 סִיּוּם הַחִידוֹן</div>` +
+      (S.p != null ? `<div class="pct">${+S.p}%</div><div class="note">תְּשׁוּבוֹת נְכוֹנוֹת שֶׁל כָּל הַכִּתָּה</div>` : "") +
+      (STUDENT && ans ? `<div class="me">עָנִיתָ נָכוֹן עַל ${right} מִתּוֹךְ ${N} 💛</div>` : "");
+    const pod = Array.isArray(S.pod) ? S.pod : [];
+    if (CQ.pod && pod.length) h += `<div class="pod">${[1, 0, 2].filter(i => pod[i]).map(i => `<div class="p${i + 1}">${["🥇", "🥈", "🥉"][i]}<br>${esc(pod[i][0])}<small>${+pod[i][1]} מִתּוֹךְ ${N}</small></div>`).join("")}</div>`;
+    if (Array.isArray(S.aw) && S.aw.length) h += `<div class="aw">${S.aw.map(a => `<div>${esc(a[0])} <b>${esc(a[1])}</b>${a[2] ? `<small>${esc(a[2])}</small>` : ""}</div>`).join("")}</div>`;
+    if (window.parent === window) h += `<button class="solo-go" data-solo="start">🔁 לַעֲשׂוֹת שׁוּב אֶת הַחִידוֹן לְבַד – וּלְקַבֵּל צִיּוּן</button>`;
+    if (CQ.sod) h += `<div class="sod"><div class="note">🔑 סוֹד הַשִּׁעוּר – הַכֹּל בִּתְמוּנָה אַחַת</div><img src="${esc(CQ.sod)}" alt="${esc(CQ.title)} – סִכּוּם הַשִּׁעוּר" loading="lazy"></div>`;
+    const sg = CQ.sig || { topic: "חֹמֶר תּוֹרָנִי", url: "https://www.kol-toda.co.il/search/" };
+    h += `<div class="sig">📚 עוֹד חָמְרֵי לִמּוּד עַל ${esc(sg.topic)} – חִנָּם, בְּמַאֲגַר הַקּוֹל הַחֲמִישִׁי: <a href="${esc(sg.url)}" target="_blank" rel="noopener">${esc(sg.url.replace("https://www.", ""))}</a> · הַמַּאֲגָר הַמָּלֵא: <a href="https://www.kol-toda.co.il/" target="_blank" rel="noopener">kol-toda.co.il</a></div>`;
+    $("prog").textContent = "";
+  } else {
+    const Q = CQ.qs[w.q];
+    $("chip").textContent = LB(Q)[w.s];
+    $("prog").textContent = `שְׁאֵלָה ${w.q + 1} מִתּוֹךְ ${N}` + (Q.book ? ` · סֵפֶר ${Q.book}׳` : "");
+    h = w.s === 0 && Q.L ? "" : `<div class="q">${rich(Q.t)}</div>`;
+    if (w.s === 0 && Q.L && T0[w.q] != null && !cntRev(w.q) && mine[w.q] == null) resetT0(w.q);   // המורה חזר ללמד – השעון יתחיל מחדש
+    if (w.s === 0) h += Q.L ? learnHtml(Q.L) : `<div class="wait">⏳ עוֹד רֶגַע יוֹפִיעוּ הַתְּשׁוּבוֹת…</div>`;
+    if (w.s >= 2 && STUDENT && !revealed(w.q)) w.s = -1, h += `<div class="wait">⏳ רֶגַע…</div>`;
+    if (w.s === 1) {
+      const open = !cntRev(w.q), up = open && timeUp(w.q);
+      if (open && secOf(w.q)) { startT0(w.q); h += `<div class="tmr" id="tmr"></div>`; }
+      h += optsHtml(w.q, "ans").replace('class="opts ans"', up ? 'class="opts closed"' : 'class="opts ans"');
+      if (STUDENT && failNote) h += `<div class="note bad">⚠ הַשְּׁלִיחָה נִכְשְׁלָה – נַסּוּ שׁוּב</div>`;
+      if (STUDENT) h += `<div class="note">${up ? (mine[w.q] != null ? "⏰ הַזְּמַן נִגְמַר – הַתְּשׁוּבָה שֶׁלְּךָ נִשְׁלְחָה" : "⏰ הַזְּמַן נִגְמַר – לֹא הִסְפַּקְתָּ לַעֲנוֹת") : mine[w.q] != null ? `✓ הַתְּשׁוּבָה נִשְׁלְחָה – אֶפְשָׁר לְשַׁנּוֹת עַד ${secOf(w.q) ? "שֶׁהַזְּמַן נִגְמָר" : "שֶׁהַמּוֹרֶה יַחְשֹׂף"}` : "בַּחֲרוּ תְּשׁוּבָה"}</div>`;
+      who = whoHtml(true);
+    }
+    if (w.s === 2) {
+      if (sndPg !== pg) { sndPg = pg; sfx(STUDENT && mine[w.q] != null ? (mine[w.q] === Q.c ? "ok" : "bad") : "reveal"); }
+      h += optsHtml(w.q, "res");
+      const cnt = (L.cnt || {})[w.q], tot = cnt ? cnt.reduce((a, b) => a + (+b || 0), 0) : 0;
+      if (tot) { const ok = Math.round((+cnt[Q.c] || 0) * 100 / tot); h += `<div class="big">✔ ${ok}% עָנוּ נָכוֹן · ✘ ${100 - ok}% טָעוּ</div>`; }
+      if (STUDENT) h += mine[w.q] == null ? `<div class="note">לֹא עָנִיתָ עַל הַשְּׁאֵלָה הַזֹּאת</div>` : mine[w.q] === Q.c ? `<div class="note ok">✔ צָדַקְתָּ! כׇּל הַכָּבוֹד</div>` : `<div class="note bad">✘ לֹא הַפַּעַם – הַתְּשׁוּבָה הַנְּכוֹנָה בַּיָּרֹק</div>`;
+    }
+    if (w.s === 3) {
+      h += `<div class="opts"><div class="opt right"><span class="l">${LET[Q.c]}</span><span class="tx">${esc(Q.o[Q.c])} ✔</span></div></div>` +
+        (Q.ex ? `<div class="box"><h3>💡 לָמָּה זוֹ הַתְּשׁוּבָה?</h3>${rich(Q.ex)}</div>` : "") +
+        (Q.m ? `<div class="box m"><h3>🌱 מָה לוֹמְדִים מִזֶּה?</h3>${rich(Q.m)}</div>` : "");
+    }
+  }
+  if (WEB && STUDENT && !run) h += `<div class="wait">⏳ מְחַכִּים שֶׁהַמּוֹרֶה יַצְמִיד אֶת הַחִידוֹן לַכִּתָּה…</div>`;
+  if (h !== lastHtml) { lastHtml = h; $("stage").innerHTML = h; }   // בלי לבנות מחדש כשאין שינוי (גלילה, ריחוף)
+  tick();
+  if ($("who").innerHTML !== who) $("who").innerHTML = who;
+  $("who").classList.toggle("hidden", !who);
+  classMap(); layout(!!who);
+  $("cnt").textContent = (pg + 1) + " מִתּוֹךְ " + PAGES;
+  $("prv").disabled = pg <= 0; $("nxt").disabled = pg >= PAGES - 1;
+}
+$("stage").addEventListener("click", e => {
+  const b = e.target.closest(".ans .opt"), w = where(pg);
+  if (SOLO || !b || !STUDENT || w.s !== 1 || cntRev(w.q) || timeUp(w.q)) return;
+  if (!W && !run) return;                       // בלי התוכנה: עוד לא הגיעו הנתונים מהכיתה
+  const k = +b.dataset.k;
+  const q = w.q;
+  mine[q] = k; failNote = false; saveMine(); sfx("pop"); render();
+  if (W) { try { W.postMessage(JSON.stringify({ kk: "cq", id: CQ.id, q: w.q, a: k })); } catch (e) {} return; }
+  // בלי התוכנה: כותבים ישר לכיתה, כמו שהקיוסק כותב (cqa/<run>/<q>/<id> = { a, s, ts }).
+  fetch(`${DB}/classes/${CLS}/cqa/${run}/${q}/${webId}.json`, { method: "PUT", body: JSON.stringify({ a: k, s: webName.slice(0, 30), ts: { ".sv": "timestamp" } }) })
+    .then(r => { if (!r.ok) throw 0; }).catch(() => { if (mine[q] === k) { delete mine[q]; saveMine(); failNote = true; lastHtml = ""; render(); } });
+});
+// תלמיד בלי התוכנה: שם פעם אחת (נשמר בדפדפן). "רק צפייה" – למקרן או לצופה (או ?view=1 בקישור).
+function askName() {
+  const d = document.createElement("div");
+  d.id = "nm";
+  d.innerHTML = `<form><b style="font-size:22px">🎯 ${esc(CQ.title)}</b><span>כִּתְבוּ אֶת הַשֵּׁם שֶׁלָּכֶם כְּדֵי לַעֲנוֹת</span>
+    <input maxlength="30" placeholder="שֵׁם פְּרָטִי וּמִשְׁפָּחָה" required><button>✓ כְּנִיסָה לַחִידוֹן</button>
+    <button type="button" class="v">👁 רַק צְפִיָּה (מְקַרֵן), בְּלִי לַעֲנוֹת</button></form>`;
+  document.body.appendChild(d);
+  d.querySelector("form").onsubmit = e => {
+    e.preventDefault();
+    const n = d.querySelector("input").value.replace(/\s+/g, " ").trim();
+    if (!n) return;
+    webName = n; ls("cq:name", n); STUDENT = true; document.body.classList.add("student"); d.remove(); nameBar(); lastHtml = ""; render();
+  };
+  d.querySelector(".v").onclick = () => { ls("cq:view", "1"); d.remove(); };
+}
+if (WEB && !STUDENT) askName(); else nameBar();
+// "לא אני?" – טאבלט משותף: שם חדש ומזהה חדש
+function nameBar() {
+  if (!WEB || !STUDENT || $("chg")) return;
+  const a = document.createElement("button");
+  a.id = "chg"; a.textContent = "👤 " + webName + " · לֹא אֲנִי?";
+  a.onclick = () => { ls("cq:name", null); webName = ""; newId(); mine = {}; STUDENT = false; document.body.classList.remove("student"); a.remove(); lastHtml = ""; render(); askName(); };
+  $("top").appendChild(a);
+}
+function go(i) { i = Math.max(0, Math.min(PAGES - 1, +i || 0)); if (SOLO) { pg = i; return; } if (i !== pg) { pg = i; render(); } }   // בתרגול: זוכרים את עמוד המורה, לא מציגים
+// תרגול לבד (מדף הסיום): כל תלמיד עושה שוב את החידון במכשיר שלו – בלי מורה, בלי שעון, משוב והסבר אחרי כל שאלה, וציון בסוף.
+// לא נשלח לכיתה; השיא נשמר בדפדפן (cq:solo:<id>).
+const soloBest = v => { const k = "cq:solo:" + CQ.id; if (v == null) return +ls(k) || 0; if (v > (+ls(k) || 0)) ls(k, String(v)); };
+function soloRender() {
+  const S = SOLO;
+  $("chip").classList.remove("hidden"); $("chip").textContent = "תִּרְגּוּל";
+  let h = "";
+  if (S.q >= N) {
+    const right = CQ.qs.filter((Q, i) => S.a[i] === Q.c).length, pc = Math.round(right * 100 / N);
+    if (S.prev == null) { S.prev = S.fix ? 0 : soloBest(); if (!S.fix) { soloBest(pc); S.first = pc; } sfx("win", pc); }
+    const best = S.prev, wrong = CQ.qs.map((Q, i) => i).filter(i => S.a[i] !== CQ.qs[i].c);
+    $("prog").textContent = "";
+    h = `<div class="big">${pc === 100 ? "🏆 מֻשְׁלָם!" : pc >= 85 ? "🌟 מְצֻיָּן!" : pc >= 70 ? "👍 טוֹב מְאוֹד" : "💪 כְּדַאי לְנַסּוֹת שׁוּב"}</div>` +
+      `<div class="pct">${pc}</div><div class="me">עֲנִיתֶם נָכוֹן עַל ${right} מִתּוֹךְ ${N}</div>` +
+      `<div class="sdots">${CQ.qs.map((Q, i) => `<span class="${S.a[i] === Q.c ? "y" : "x"}">${i + 1}</span>`).join("")}</div>` +
+      (S.fix ? `<div class="note">🔧 אַחֲרֵי הַתִּקּוּן${S.first != null ? " · בַּסִּבּוּב הָרִאשׁוֹן: " + S.first : ""}</div>` : "") +
+      (best ? `<div class="note">${pc > best ? "🎉 שִׂיא חָדָשׁ! (הַקּוֹדֵם: " + best + ")" : "הַשִּׂיא שֶׁלָּכֶם: " + Math.max(best, pc)}</div>` : "") +
+      `<div class="sbtns">${wrong.length ? `<button class="solo-go" data-solo="fix">🔧 לְתַקֵּן אֶת הַטָּעֻיּוֹת (${wrong.length})</button>` : ""}<button class="solo-go${wrong.length ? " alt" : ""}" data-solo="start">🔁 עוֹד פַּעַם מֵהַהַתְחָלָה</button><button class="solo-go alt" data-solo="exit">↩ חֲזָרָה לַחִידוֹן</button></div>`;
+  } else {
+    const Q = CQ.qs[S.q], k = S.a[S.q], done = k != null;
+    $("prog").textContent = `${S.fix ? "🔧 תִּקּוּן" : "תִּרְגּוּל"} · שְׁאֵלָה ${S.q + 1} מִתּוֹךְ ${N}`;
+    if (S.learn && Q.L) h += learnHtml(Q.L);
+    h += `<div class="q">${rich(Q.t)}</div><div class="opts${done ? "" : " sopts"}">` + Q.o.map((o, j) =>
+      `<button class="opt${done ? (j === Q.c ? " right" : j === k ? " wrong" : " dim") : ""}" data-sk="${j}"><span class="l">${LET[j]}</span><span class="tx">${esc(o)}${done && j === Q.c ? " ✔" : ""}</span></button>`).join("") + `</div>`;
+    if (!done) h += `<div class="sbtns">${Q.L && !S.learn ? `<button class="solo-go alt" data-solo="learn">📖 לְהַצִּיג אֶת דַּף הַלִּמּוּד</button>` : ""}<button class="solo-go alt" data-solo="exit">✕ יְצִיאָה מֵהַתִּרְגּוּל</button></div>`;
+    else h += (k === Q.c ? `<div class="note ok">✔ נָכוֹן! כׇּל הַכָּבוֹד</div>` : `<div class="note bad">✘ לֹא הַפַּעַם – הַתְּשׁוּבָה הַנְּכוֹנָה בַּיָּרֹק</div>`) +
+      (Q.ex ? `<div class="box"><h3>💡 לָמָּה זוֹ הַתְּשׁוּבָה?</h3>${rich(Q.ex)}</div>` : "") + (Q.m ? `<div class="box m"><h3>🌱 מָה לוֹמְדִים מִזֶּה?</h3>${rich(Q.m)}</div>` : "") +
+      `<button class="solo-go" data-solo="next">${S.pos + 1 < S.list.length ? (S.fix ? "לַטָּעוּת הַבָּאָה ←" : "לַשְּׁאֵלָה הַבָּאָה ←") : "🏁 לַצִּיּוּן"}</button>`;
+  }
+  if (h !== lastHtml) { lastHtml = h; $("stage").innerHTML = h; $("stage").scrollTop = 0; }
+  const st = {}; CQ.qs.forEach((Q, i) => { if (S.a[i] != null) st[i] = S.a[i] === Q.c ? "y" : "x"; });
+  const done = Object.keys(S.a).length;
+  $("map").innerHTML = mapHtml(S.q < N ? S.q : -1, st, Math.round(done * 100 / N), N - done);
+  milestone("solo", Math.round(done * 100 / N));
+  layout(false);
+}
+$("stage").addEventListener("click", e => {
+  const b = e.target.closest("[data-solo]");
+  if (b) {
+    const act = b.dataset.solo;
+    if (act === "start" || act === "fix" || act === "exit") { clearTimeout(msT); $("ms").classList.remove("on"); }
+    if (act === "start") { SOLO = { q: 0, a: {}, learn: false, list: CQ.qs.map((Q, i) => i), pos: 0 }; document.body.classList.add("solo"); }
+    else if (act === "fix" && SOLO) {   // סיבוב תיקון: רק השאלות שטעו בהן; כל תיקון הופך את העיגול לירוק. לא נכנס לשיא.
+      const a = { ...SOLO.a }, list = CQ.qs.map((Q, i) => i).filter(i => a[i] !== CQ.qs[i].c);
+      list.forEach(i => delete a[i]);
+      SOLO = { q: list[0], a, learn: false, list, pos: 0, fix: true, first: SOLO.first };
+    }
+    else if (act === "exit") { SOLO = null; document.body.classList.remove("solo"); }
+    else if (act === "next" && SOLO) { SOLO.pos++; SOLO.q = SOLO.pos < SOLO.list.length ? SOLO.list[SOLO.pos] : N; SOLO.learn = false; }
+    else if (act === "learn" && SOLO) SOLO.learn = true;
+    lastHtml = ""; render(); return;
+  }
+  const o = SOLO && e.target.closest(".sopts .opt");
+  if (o && SOLO.a[SOLO.q] == null) { SOLO.a[SOLO.q] = +o.dataset.sk; sfx(SOLO.a[SOLO.q] === CQ.qs[SOLO.q].c ? "ok" : "bad"); lastHtml = ""; render(); }
+});
+$("nxt").onclick = () => { if (!locked) go(pg + 1); };
+$("prv").onclick = () => { if (!locked) go(pg - 1); };
+document.addEventListener("keydown", e => {
+  if (locked) return;
+  if (["ArrowLeft", "PageDown", " "].includes(e.key)) { e.preventDefault(); go(pg + 1); }
+  if (["ArrowRight", "PageUp"].includes(e.key)) { e.preventDefault(); go(pg - 1); }
+});
+window.KolBook = { n: PAGES, cur: () => pg, go, lock: b => { locked = !!b; document.body.classList.toggle("lock", locked); }, locked: () => locked };
+window.KolQuiz = {
+  live(d) {
+    d = d || {};
+    const r = String(d.run || "");
+    if (r && r !== run) {
+      const early = run === "" ? mine : null;   // תשובה שנשלחה לפני שהגיעו הנתונים הראשונים – עוברת לריצה
+      run = r; loadMine();
+      if (early) { Object.assign(mine, early); saveMine(); }
+    }
+    L = d; render();
+  }
+};
+// בתוך הלוח של המורה (תצוגה מקדימה / מקרן): מודיעים מה התשובות הנכונות, ומקבלים עמוד ונתונים חיים.
+if (window.parent !== window) {
+  const hello = () => { try { window.parent.postMessage({ kolCQ: { id: CQ.id, t: CQ.title, N, c: CQ.qs.map(Q => Q.c), pod: !!CQ.pod, lb: LB(CQ.qs[0] || {}), sec: CQ.qs.map((Q, i) => secOf(i)) } }, "*"); } catch (e) {} };
+  hello(); setTimeout(hello, 1500);
+  addEventListener("message", e => {
+    const d = e.data && e.data.kolCQ;
+    if (!d || e.source !== window.parent) return;
+    if (d.hello) hello();
+    if (d.live) KolQuiz.live(d.live);
+    if (d.pg != null) { KolBook.lock(true); go(d.pg); }
+  });
+}
+// ?class=12345 – עוקבים ישר אחרי הדף המוצמד לכיתה: טאבלט או מקרן בלי התוכנה, וגם התצוגה בלוח
+// (לוח ישן שלא שולח עמוד; בקבוצה הדף לא ב-state/lesson, ואז רק הלוח מעביר עמודים).
+if (CLS && window.EventSource) {
+  const es = new EventSource(`https://kol-kiosk-class-default-rtdb.europe-west1.firebasedatabase.app/classes/${CLS}/state/lesson.json`);
+  let les = null;
+  const same = u => { try { return new URL(u).pathname === location.pathname; } catch (e) { return false; } };
+  const apply = () => { if (les && les.mode === "page" && same(les.url || "")) { KolBook.lock(true); KolQuiz.live({ ...(les.cq || {}), run: les.ts }); go(les.pg || 0); } };
+  es.addEventListener("put", e => { const m = JSON.parse(e.data); if (m.path === "/") les = m.data; else if (les) { const k = m.path.slice(1).split("/"); let o = les; for (let i = 0; i < k.length - 1; i++) o = o[k[i]] = o[k[i]] || {}; o[k[k.length - 1]] = m.data; } apply(); });
+  es.addEventListener("patch", e => { const m = JSON.parse(e.data); if (les && m.path === "/") Object.assign(les, m.data); apply(); });
+}
+render();
+</script>
+</body>
+</html>
