@@ -171,10 +171,30 @@ function go(i,noscroll){i=Math.max(0,Math.min(n-1,i));var back=i<cur;cur=i;
  if(!noscroll){var t=document.getElementById("book").getBoundingClientRect().top;if(t<0)scrollTo({top:scrollY+t-10,behavior:"smooth"})}
  try{if(!locked)localStorage.setItem(STORE,cur)}catch(e){}
 }
+// צליל דפדוף (13.11.2026): רשרוש נייר + תו מרימבה זעיר שעולה עם ההתקדמות בספר; בעמוד האחרון אקורד קטן.
+// רק בדפדוף של התלמיד (לא בפתיחה ולא כשהמורה מוביל). כפתור 🔈 משתיק, והבחירה נשמרת בדפדפן.
+var AC=null,lastSnd=0,mute=false;try{mute=localStorage.getItem("kb-snd")==="0"}catch(e){}
+function snd(to,back){if(mute)return;try{
+ var now=Date.now();if(now-lastSnd<120)return;lastSnd=now;
+ if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume();
+ var c=AC,t=c.currentTime+0.01,v=back?0.18:0.3;
+ function env(t0,a,pk,dec){var g=c.createGain();g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(pk,t0+a);g.gain.exponentialRampToValueAtTime(0.0001,t0+a+dec);return g}
+ [0,0.045].forEach(function(o,k){var len=Math.ceil(c.sampleRate*0.12),b=c.createBuffer(1,len,c.sampleRate),d=b.getChannelData(0);for(var j=0;j<len;j++)d[j]=Math.random()*2-1;
+  var s=c.createBufferSource();s.buffer=b;var f=c.createBiquadFilter();f.type="bandpass";f.Q.value=0.9;f.frequency.setValueAtTime(k?3200:1800,t+o);f.frequency.exponentialRampToValueAtTime(k?5200:3600,t+o+0.08);
+  s.connect(f).connect(env(t+o,0.004,v*(k?0.4:0.65),0.08)).connect(c.destination);s.start(t+o);s.stop(t+o+0.12)});
+ var PEN=[0,2,4,7,9,12,14,16,19,21,24],step=n>1?Math.round(to/(n-1)*(PEN.length-1)):0;
+ function tone(semi,t0,pk){var fq=392*Math.pow(2,semi/12);[1,4].forEach(function(m,k){var o=c.createOscillator();o.type="sine";o.frequency.value=fq*m;o.connect(env(t0,0.002,pk*(k?0.25:1),k?0.05:0.18)).connect(c.destination);o.start(t0);o.stop(t0+0.22)})}
+ if(to===n-1&&!back){[0,4,7].forEach(function(sm,k){tone(12+sm,t+0.03+k*0.07,v*0.4)})}else tone(PEN[step],t+0.03,v*0.36);
+}catch(e){}}
+var sb=document.createElement("button");sb.id="kbSnd";sb.type="button";
+function sbSet(){sb.textContent=mute?"🔇":"🔈";sb.title=mute?"הפעלת צליל דפדוף":"השתקת צליל דפדוף";sb.setAttribute("aria-pressed",mute?"true":"false")}
+sb.onclick=function(){mute=!mute;try{localStorage.setItem("kb-snd",mute?"0":"1")}catch(e){}sbSet()};sbSet();
+var sst=document.createElement("style");sst.textContent="#kbSnd{position:fixed;bottom:12px;left:12px;z-index:98;width:42px;height:42px;border-radius:50%;border:1px solid rgba(0,0,0,.15);background:rgba(255,255,255,.9);font-size:20px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.15)}@media print{#kbSnd{display:none}}";
+document.head.appendChild(sst);document.body.appendChild(sb);
 // כל דפדוף של התלמיד עובר כאן. כשהמורה מוביל (lock), הוא לא עושה כלום.
-function user(i){if(!locked)go(i)}
+function user(i){if(locked)return;i=Math.max(0,Math.min(n-1,i));if(i!==cur)snd(i,i<cur);go(i)}
 document.getElementById("prv").onclick=function(){user(cur-1)};document.getElementById("nxt").onclick=function(){user(cur+1)};
-document.querySelectorAll("[data-go]").forEach(function(b){b.addEventListener("click",function(){if(locked)return;if(document.body.classList.contains("flow")){P[+b.dataset.go].scrollIntoView({behavior:"smooth"});return}go(+b.dataset.go)})});
+document.querySelectorAll("[data-go]").forEach(function(b){b.addEventListener("click",function(){if(locked)return;if(document.body.classList.contains("flow")){P[+b.dataset.go].scrollIntoView({behavior:"smooth"});return}user(+b.dataset.go)})});
 document.addEventListener("keydown",function(e){if(document.body.classList.contains("flow"))return;if(e.key==="ArrowLeft")user(cur+1);if(e.key==="ArrowRight")user(cur-1)});
 var sx=null;var bk=document.getElementById("book");bk.addEventListener("touchstart",function(e){sx=e.touches[0].clientX},{passive:true});
 bk.addEventListener("touchend",function(e){if(sx===null)return;var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>70)user(dx>0?cur+1:cur-1);sx=null});
