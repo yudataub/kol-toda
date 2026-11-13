@@ -718,6 +718,30 @@ function readRun() {
     return r;
   } catch (e) { return null; }
 }
+/* זִכָּרוֹן מְקוֹמִי שֶׁל הָרָמוֹת שֶׁעָבַר (מ-13.11.2026): גַּם בְּלִי הַרְשָׁמָה וּבְלִי שָׁרָת. {r, s, m, who}.
+   who = שֵׁם|כִּתָּה|בֵּית סֵפֶר – בְּמַחְשֵׁב שֶׁל כִּתָּה תַּלְמִיד אַחֵר לֹא יְקַבֵּל אֶת הָרָמוֹת שֶׁל חֲבֵרוֹ. */
+var LV_KEY = "hq-lv-" + QUIZ.id;
+function whoKey(m) { return [m.name, m.cls, m.school].join("|"); }
+function readLv(m) {
+  try { var o = JSON.parse(store(LV_KEY) || "null"); return o && o.r && o.who === whoKey(m) ? o : null; } catch (e) { return null; }
+}
+function saveLv(passed) {   // passed = כַּמָּה רָמוֹת עָבַר עַכְשָׁו (1 = א׳, 2 = ב׳, 3 = ג׳)
+  if (!ABC[passed - 1] || QUIZ.levels.slice(0, 3).some(function (L, i) { return L.key !== ABC[i]; })) return;
+  var who = whoKey({ name: S.name, cls: S.cls, school: S.school }), o = readLv({ name: S.name, cls: S.cls, school: S.school }) || { r: 0, s: {}, m: {} };
+  o.who = who; o.r = Math.max(o.r, passed);
+  for (var i = 0; i < passed; i++) { var k = ABC[i];
+    if (S.maxes[k] != null && (S.scores[k] || 0) >= (o.s[k] || 0)) { o.s[k] = S.scores[k] || 0; o.m[k] = S.maxes[k]; } }
+  store(LV_KEY, JSON.stringify(o));
+}
+function mergeLv(a, b) {   // הַגָּבוֹהַּ מִבֵּין שְׁנֵי מְקוֹרוֹת (מְקוֹמִי / שָׁרָת / חִידוֹן שֶׁלֹּא נִגְמַר)
+  if (!a || !a.r) return b && b.r ? b : null;
+  if (!b || !b.r) return a;
+  var o = { r: Math.max(a.r, b.r), s: {}, m: {} };
+  ABC.forEach(function (k) { var x = Number((a.s || {})[k]) || 0, y = Number((b.s || {})[k]) || 0, w = x >= y ? a : b;
+    if ((w.m || {})[k] != null) { o.s[k] = Math.max(x, y); o.m[k] = w.m[k]; } });
+  return o;
+}
+var LV_ST = null;   // מָה שֶׁיָּדוּעַ עַד עַכְשָׁו עַל הָרָמוֹת שֶׁעָבַר בְּחִידוֹן הַזֶּה
 
 /* ---------- צלילים ---------- */
 var audioContext = null;
@@ -969,6 +993,11 @@ function init() {
     $("resumeBox").style.display = "";
     $("resumeBtn").onclick = function () { resumeRun(run); };
   }
+  var me1 = readMe(), fromRun = null;
+  if (run && run.lv > 0 && run.name === me1.name && (run.cls || "") === me1.cls && (run.school || "") === me1.school)
+    fromRun = { r: run.lv, s: run.scores || {}, m: run.maxes || {} };   // בְּאֶמְצַע רָמָה lv – כְּלוֹמַר עָבַר אֶת כָּל מָה שֶׁלְּפָנֶיהָ
+  LV_ST = mergeLv(readLv(me1), fromRun);
+  if (LV_ST) offerLevels(LV_ST);
   ["inName", "inCls", "inSchool"].forEach(function (id) {
     $(id).addEventListener("keydown", function (e) { if (e.key === "Enter") start(); });
   });
@@ -985,7 +1014,7 @@ function loadMyPoints() {
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d && d.ok) { S.base = Number(d.points) || 0; S.prevBest = Number((d.games || {})[QUIZ.id]) || 0; drawPts(); }
-      if (d && d.ok && d.stages && d.stages[QUIZ.id] && !readRun()) offerLevels(d.stages[QUIZ.id]);
+      if (d && d.ok && d.stages && d.stages[QUIZ.id]) { LV_ST = mergeLv(LV_ST, d.stages[QUIZ.id]); if (LV_ST) offerLevels(LV_ST); }
       if (d && d.ok && d.points) { $("myPts").textContent = "⭐ צָבַרְתָּ עַד עַכְשָׁו " + d.points + " נְקֻדּוֹת. כָּל הַכָּבוֹד!"; $("myBadge").textContent = badgeText(d.points); } })
     .catch(function () {});
 }
@@ -996,9 +1025,14 @@ function offerLevels(st) {
   if (!st || !st.r || QUIZ.levels.slice(0, 3).some(function (L, i) { return L.key !== ABC[i]; })) return;
   var m = readMe(), young = YOUNG_GRADES.indexOf(m.grade) !== -1, n = young ? 2 : Math.min(3, QUIZ.levels.length);
   var upto = Math.min(st.r, n - 1), done = st.r >= n, he = ["א׳", "ב׳", "ג׳"];
+  var hasRun = $("resumeBox").style.display !== "none";   // יֵשׁ גַּם חִידוֹן שֶׁלֹּא נִגְמַר – כָּאן מַתְחִילִים רָמָה מֵהַהַתְחָלָה
   var html = '<p class="resume-t">📌 ' + (done ? "כְּבָר סִיַּמְתָּ אֶת הַחִידוֹן הַזֶּה! 🏆 רוֹצֶה לְשַׂחֵק שׁוּב? בְּחַר רָמָה:" :
-    "בַּפַּעַם הַקּוֹדֶמֶת עָבַרְתָּ אֶת רָמָה " + he[st.r - 1] + ". מֵאֵיפֹה מַמְשִׁיכִים?") + '</p><div class="crow">';
-  for (var i = done ? 0 : upto; i >= 0; i--) html += '<button class="btn' + (i === upto && !done ? "" : " ghost") + '" data-lv="' + i + '">▶️ רָמָה ' + he[i] + (i === upto && !done ? " – מַמְשִׁיכִים" : "") + "</button>";
+    "עָבַרְתָּ אֶת רָמָה " + he[st.r - 1] + ". " + (hasRun ? "אוֹ – מַתְחִילִים רָמָה מֵהַהַתְחָלָה:" : "מֵאֵיפֹה מַמְשִׁיכִים?")) + '</p><div class="crow">';
+  for (var i = done ? n - 1 : upto; i >= 0; i--) {
+    var main = i === upto && !done && !hasRun;
+    html += '<button class="btn' + (main ? "" : " ghost") + '" data-lv="' + i + '">▶️ רָמָה ' + he[i] +
+      (main ? " – מַמְשִׁיכִים" : hasRun && i === upto && !done ? " – מֵהַהַתְחָלָה" : "") + "</button>";
+  }
   html += "</div>";
   var box = $("levelsPick"); box.innerHTML = html; box.style.display = "";
   Array.prototype.forEach.call(box.querySelectorAll("button"), function (b) { b.onclick = function () { startAt(+b.dataset.lv, st); }; });
@@ -1913,6 +1947,7 @@ function levelEnd() {
     var justDid = QUIZ.levels[S.lv - 1].key;   // כִּתּוֹת א׳-ג׳ מְסַיְּמוֹת כָּאן, אַחֲרֵי רָמָה ב׳ (בְּלִי רָמָה ג׳, הַכְּתִיבָה)
     var last = S.lv >= QUIZ.levels.length || (S.young && justDid === "b");
     pingProgress({ a: "levelA", b: "levelB", c: "levelC" }[justDid]);   // עבר את הרמה בהצלחה (לא בניסיון שנכשל)
+    saveLv(S.lv);   // זוֹכְרִים בַּמַּחְשֵׁב: בַּכְּנִיסָה הַבָּאָה אֶפְשָׁר לְהַתְחִיל מֵהָרָמָה הַבָּאָה
     $("lvIcon").textContent = S.right === n ? "🏆" : "💪";
     $("lvTitle").innerHTML = S.right === n ? nm("מַדְהִים, {n}! כָּל הַתְּשׁוּבוֹת נְכוֹנוֹת!") : nm("כִּמְעַט מֻשְׁלָם, {n}!");
     $("lvText").textContent = (S.right + " מִתּוֹךְ " + n + " נָכוֹן. ") + (last ? "סִיַּמְתָּ אֶת הַחִידוֹן! 🎉" : "עָלִיתָ רָמָה! 🚀 עַכְשָׁו – " + QUIZ.levels[S.lv].name);
