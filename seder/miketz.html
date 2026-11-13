@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>סדר את התמונות – פרשת מקץ</title>
+<meta name="description" content="משחק לכיתה א': מסדרים 6 תמונות לפי הסדר בפרשת מקץ.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@500;700;900&family=Secular+One&display=swap" rel="stylesheet">
+<style>
+:root{--sky1:#fff6df;--sky2:#ffe3b3;--ink:#3b2a1a;--brown:#8a5a2b;--gold:#f5b301;--green:#2fa84f;--red:#e0483e;
+  --card:#fffdf7;--slot:#fff3d6;--slotb:#d9b27a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:radial-gradient(circle at 50% -10%,#fffaf0 0,var(--sky1) 35%,var(--sky2) 100%) fixed;color:var(--ink);
+  font-family:'Noto Sans Hebrew',sans-serif;overflow-x:hidden;user-select:none}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px 0;max-width:1400px;margin:0 auto}
+header a.back{font-size:15px;color:var(--brown);text-decoration:none;font-weight:700;white-space:nowrap}
+header h1{flex:1;margin:0;text-align:center;font-family:'Secular One',sans-serif;font-weight:400;
+  font-size:clamp(20px,3.2vw,38px);color:var(--brown);line-height:1.15}
+header h1 small{display:block;font-size:.55em;color:#a77a45;font-family:'Noto Sans Hebrew';font-weight:700}
+#mute{background:none;border:0;font-size:26px;cursor:pointer}
+main{max-width:1400px;margin:0 auto;padding:8px 16px 16px}
+/* פס ההתקדמות – 6 כוכבים */
+#stars{display:flex;justify-content:center;gap:6px;margin:4px 0 8px}
+#stars span{font-size:clamp(20px,2.6vw,30px);filter:grayscale(1) opacity(.35);transition:.4s}
+#stars span.on{filter:none;transform:scale(1.25);animation:pop .5s}
+/* המקומות 1–6 */
+#slots{display:grid;grid-template-columns:repeat(6,1fr);gap:clamp(6px,1vw,14px);position:relative}
+.slot{position:relative;aspect-ratio:1/1.12;border:3px dashed var(--slotb);border-radius:16px;background:var(--slot);
+  display:flex;align-items:center;justify-content:center;transition:background .3s,border-color .3s}
+.slot .num{font-family:'Secular One';font-size:clamp(28px,4.5vw,64px);color:#d6b07c}
+.slot.next{border-color:var(--gold);background:#fff8e2;box-shadow:0 0 0 4px #ffe79a inset;animation:breathe 1.6s infinite}
+.slot.filled{border:3px solid var(--green);background:var(--card);padding:0}
+.slot.filled .num{display:none}
+.badge{position:absolute;top:-10px;right:-10px;width:clamp(24px,2.6vw,34px);height:clamp(24px,2.6vw,34px);border-radius:50%;
+  background:var(--green);color:#fff;font-family:'Secular One';display:flex;align-items:center;justify-content:center;
+  font-size:clamp(14px,1.5vw,19px);box-shadow:0 2px 4px #0003;z-index:2}
+.mini{width:100%;height:100%;display:flex;flex-direction:column;border-radius:13px;overflow:hidden}
+.mini img{width:100%;flex:1;min-height:0;object-fit:cover;display:block}
+.mini p{margin:0;padding:3px 4px;font-size:clamp(9px,.95vw,13px);line-height:1.3;text-align:center;font-weight:700;background:#fffdf7}
+/* הכרטיסים */
+#pool{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.3vw,18px);margin-top:clamp(12px,1.8vw,22px);
+  max-width:1000px;margin-inline:auto}
+.card{position:relative;background:var(--card);border-radius:18px;box-shadow:0 4px 0 #d9b27a,0 6px 14px #8a5a2b33;
+  cursor:pointer;overflow:hidden;transition:transform .15s,opacity .3s;touch-action:none;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-3px)}
+.card:active{transform:scale(.97)}
+.card img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;pointer-events:none}
+.card p{margin:0;padding:8px 10px 10px;font-size:clamp(15px,1.7vw,22px);font-weight:700;line-height:1.45;text-align:center;
+  min-height:3.2em;display:flex;align-items:center;justify-content:center}
+.card .say{position:absolute;top:8px;left:8px;width:44px;height:44px;border-radius:50%;border:0;background:#fffdf7e6;
+  font-size:22px;cursor:pointer;box-shadow:0 2px 6px #0003;z-index:2}
+.card.gone{visibility:hidden}
+.card.wrong{animation:shake .45s;box-shadow:0 4px 0 var(--red),0 0 0 4px var(--red)}
+.card.hint{animation:hint 1s infinite}
+.ghost{position:fixed;z-index:50;pointer-events:none;border-radius:18px;overflow:hidden;box-shadow:0 14px 30px #0005;
+  transition:none;background:var(--card)}
+.ghost img{width:100%;height:100%;object-fit:cover;display:block}
+/* מחמאה */
+#praise{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%) scale(0);z-index:75;pointer-events:none;
+  font-family:'Secular One';text-align:center;width:max-content;max-width:min(92vw,880px);padding:.5em 1.1em .6em;border-radius:34px;
+  background:#fff;box-shadow:0 10px 40px #0005;color:var(--brown);line-height:1.3;opacity:0;cursor:pointer}
+#praise.show{animation:praiseIn .6s forwards;pointer-events:auto}
+#praise.hide{pointer-events:none!important;transition:opacity .35s,transform .35s;opacity:0!important;transform:translate(-50%,-62%) scale(.9)!important}
+#praise .em{display:block;font-size:1.5em;line-height:1.1}
+#praise .w{display:block}
+#praise.l1{font-size:clamp(20px,2.6vw,32px)}
+#praise.l2{font-size:clamp(21px,2.8vw,34px);color:#1f7a3a;border:4px solid #bfe6c9}
+#praise.l3{font-size:clamp(22px,3vw,37px);color:#1a66c2;background:#eef6ff;border:4px solid #b9d6ff}
+#praise.l4{font-size:clamp(23px,3.2vw,40px);color:#8a2fc9;background:#f7efff;border:5px solid #dcc0f5}
+#praise.l5{font-size:clamp(24px,3.4vw,43px);color:#c43d14;background:#fff1e6;border:5px solid #ffc89e}
+#praise.l6{font-size:clamp(25px,3.6vw,46px);color:#fff;background:linear-gradient(135deg,#f5b301,#ff7a00);border:6px solid #fff3b0;
+  text-shadow:0 2px 3px #0003}
+#oops{position:fixed;left:50%;bottom:6%;transform:translateX(-50%);z-index:55;background:#fff;border:3px solid var(--red);
+  color:var(--red);font-weight:900;font-size:clamp(18px,2.4vw,28px);padding:.4em 1em;border-radius:999px;opacity:0;
+  transition:opacity .25s;pointer-events:none;white-space:nowrap}
+#oops.show{opacity:1}
+canvas#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:70}
+/* פתיחה וסיום */
+.screen{position:fixed;inset:0;z-index:80;background:#3b2a1acc;display:flex;align-items:center;justify-content:center;padding:16px}
+.screen[hidden]{display:none}
+.box{background:var(--card);border-radius:26px;padding:clamp(18px,3vw,36px);max-width:900px;width:100%;text-align:center;
+  box-shadow:0 20px 50px #0006;max-height:94vh;overflow:auto}
+.box h2{font-family:'Secular One';font-weight:400;color:var(--brown);font-size:clamp(26px,4vw,46px);margin:0 0 6px}
+.box p.lead{font-size:clamp(17px,2.2vw,24px);margin:6px 0 18px;font-weight:700}
+.btn{font-family:'Secular One';font-size:clamp(20px,2.6vw,30px);border:0;border-radius:999px;padding:.45em 1.4em;margin:6px;
+  cursor:pointer;background:var(--green);color:#fff;box-shadow:0 5px 0 #1d7a36;text-decoration:none;display:inline-block}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #1d7a36}
+.btn.alt{background:#fff;color:var(--brown);box-shadow:0 5px 0 #d9b27a;border:2px solid #d9b27a}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.strip .mini{border:3px solid var(--green);position:relative;aspect-ratio:1/1.05;background:#fff}
+.strip .mini.reading{border-color:var(--gold);box-shadow:0 0 0 4px #ffe79a}
+.strip .mini p{font-size:clamp(11px,1.4vw,15px)}
+.crown{font-size:clamp(50px,8vw,90px);animation:bob 1.6s infinite}
+.sig{max-width:1000px;margin:26px auto 10px;padding:14px 18px;border-radius:16px;background:#fff7e6;border:2px solid #f1d39a;
+  text-align:center;font-size:15px;line-height:1.7}
+.sig a{color:#8a4b10;font-weight:700}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+@keyframes hint{0%,100%{box-shadow:0 4px 0 #d9b27a,0 0 0 0 #f5b30100}50%{box-shadow:0 4px 0 #d9b27a,0 0 0 8px #f5b301cc}}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+@keyframes pop{0%{transform:scale(.3)}60%{transform:scale(1.6)}100%{transform:scale(1.25)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes praiseIn{0%{transform:translate(-50%,-50%) scale(0) rotate(-8deg);opacity:1}
+  60%{transform:translate(-50%,-50%) scale(1.08) rotate(1deg);opacity:1}100%{transform:translate(-50%,-50%) scale(1) rotate(0);opacity:1}}
+@media (min-width:1000px){
+  .board{display:grid;grid-template-columns:1fr 1.15fr;gap:clamp(16px,2.5vw,40px);align-items:start;
+    max-width:min(1400px,calc((100vh - 140px) * 2.55));margin:0 auto}
+  #slots{grid-template-columns:repeat(3,1fr);padding:14px;border-radius:22px;background:#ffffff80;border:2px solid #ecd2a3}
+  #pool{margin-top:0;max-width:none}
+  .mini p{font-size:clamp(10px,.9vw,14px)}
+}
+@media (max-width:700px){
+  #slots{grid-template-columns:repeat(6,1fr);gap:5px}
+  .slot{aspect-ratio:1/1;border-radius:10px;border-width:2px}
+  .slot .num{font-size:24px}
+  .slot .mini p{display:none}
+  .badge{width:20px;height:20px;font-size:12px;top:-7px;right:-7px}
+  #pool{grid-template-columns:repeat(2,1fr)}
+  .mini p{font-size:10px}
+  .card .say{width:38px;height:38px;font-size:19px}
+  .strip{grid-template-columns:repeat(2,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<meta property="og:title" content="סדר את התמונות – פרשת מקץ">
+<meta property="og:description" content="משחק לכיתה א&#x27;: מסדרים 6 תמונות לפי הסדר בפרשת מקץ.">
+<meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-seder-miketz.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/seder/miketz.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://www.kol-toda.co.il/seder/miketz.html">
+<script async src="https://www.kol-toda.co.il/a.js"></script>
+</head>
+<body>
+<header>
+  <a class="back" href="./">→ כל הפרשות</a>
+  <h1>סַדְּרוּ אֶת הַתְּמוּנוֹת לְפִי הַסֵּדֶר<small>פרשת מקץ</small></h1>
+  <button id="mute" aria-label="השתקה">🔊</button>
+</header>
+<main>
+  <div id="stars" aria-hidden="true"></div>
+  <div class="board">
+  <div id="slots"></div>
+  <div id="pool"></div>
+  </div>
+  <div class="sig">📚 עוד חומרי לימוד על פרשת השבוע – חינם, במאגר הקול החמישי:
+    <a href="https://www.kol-toda.co.il/t/parasha.html">kol-toda.co.il/t/parasha.html</a><br>
+    המאגר המלא: <a href="https://www.kol-toda.co.il/">www.kol-toda.co.il</a></div>
+</main>
+<div id="praise"></div>
+<div id="oops"></div>
+<canvas id="fx"></canvas>
+
+<div class="screen" id="start">
+  <div class="box">
+    <h2>פָּרָשַׁת מקץ</h2>
+    <p class="lead">מָה קָרָה קֹדֶם? מָה קָרָה אַחַר כָּךְ?<br>לַחֲצוּ עַל הַתְּמוּנוֹת לְפִי הַסֵּדֶר בַּפָּרָשָׁה.<br>🔊 – לִשְׁמֹעַ מָה כָּתוּב</p>
+    <button class="btn" id="go">▶ מַתְחִילִים</button>
+  </div>
+</div>
+<div class="screen" id="end" hidden>
+  <div class="box">
+    <div class="crown">👑</div>
+    <h2 id="endTitle"></h2>
+    <p class="lead">זֶה הַסֵּדֶר בַּפָּרָשָׁה:</p>
+    <div class="strip" id="strip"></div>
+    <button class="btn alt" id="listen">🔊 לִשְׁמֹעַ אֶת כָּל הַסִּפּוּר</button>
+    <button class="btn" id="again">↻ עוֹד פַּעַם</button>
+    <a class="btn alt" id="nextP" href="./">פָּרָשָׁה אַחֶרֶת ←</a>
+  </div>
+</div>
+
+<script>
+var DATA = {"key": "miketz", "name": "מקץ", "scenes": [{"t": "פַּרְעֹה חָלַם עַל פָּרוֹת וְעַל שִׁבֳּלִים", "img": "https://yudataub.github.io/kol-toda-img-4/seder/img/miketz-1.webp", "audio": "https://yudataub.github.io/kol-toda-files/seder/audio/miketz-1.mp3"}, {"t": "יוֹסֵף אָמַר לְפַרְעֹה: ה' יִפְתֹּר אֶת הַחֲלוֹם", "img": "https://yudataub.github.io/kol-toda-img-4/seder/img/miketz-2.webp", "audio": "https://yudataub.github.io/kol-toda-files/seder/audio/miketz-2.mp3"}, {"t": "יוֹסֵף אָסַף תְּבוּאָה בַּמַּחְסָנִים", "img": "https://yudataub.github.io/kol-toda-img-4/seder/img/miketz-3.webp", "audio": "https://yudataub.github.io/kol-toda-files/seder/audio/miketz-3.mp3"}, {"t": "הָאַחִים יָרְדוּ לְמִצְרַיִם לִקְנוֹת אֹכֶל", "img": "https://yudataub.github.io/kol-toda-img-4/seder/img/miketz-4.webp", "audio": "https://yudataub.github.io/kol-toda-files/seder/audio/miketz-4.mp3"}, {"t": "יַעֲקֹב שָׁלַח אֶת בִּנְיָמִין עִם הָאַחִים", "img": "https://yudataub.github.io/kol-toda-img-4/seder/img/miketz-5.webp", "audio": "https://yudataub.github.io/kol-toda-files/seder/audio/miketz-5.mp3"}, {"t": "הַגָּבִיעַ נִמְצָא בָּאַמְתַּחַת שֶׁל בִּנְיָמִין", "img": "https://yudataub.github.io/kol-toda-img-4/seder/img/miketz-6.webp", "audio": "https://yudataub.github.io/kol-toda-files/seder/audio/miketz-6.mp3"}], "praise": [["איזה יופי! התחלת נפלא – רואים שזכרת היטב את מה שלמדנו בפרשה!", "כל הכבוד! יש לך עין חדה ולב קשוב לסיפורי התורה הקדושה!", "נפלא ביותר! הקב\"ה נתן לך שכל מאיר, ואיזה כיף לראות אותך משתמש בו לתורה!", "מרגש ממש! כשאתה מסדר את הפרשה בכזו שמחה, אבא שבשמיים מביט בך ומחייך אליך!", "מדהים! אתה גורם עכשיו נחת רוח עצומה בכל העולמות – אין דבר שיותר משמח את ה' מילד שלומד את התורה שלו!", "אשריך, צדיק יקר! הקב\"ה מתפאר בך ממש ואומר למלאכים: 'ראו איזה בן אהוב יש לי, איך הוא אוהב את התורה שלי!'"], ["מצוין! שמת את התמונה בדיוק במקום הנכון!", "איזה יופי של סדר! רואים שהתורה מתוקה ונעימה לך!", "מתוק מדבש! התורה הקדושה כל כך שמחה שילד חכם וטהור כמוך לומד אותה בכזה חשק!", "איזה ברק יש לך בעיניים! הנשמה הטהורה שלך ממש מאירה כשאנחנו עוסקים בפרשה!", "פשוט מופלא! הלב שלך מלא באהבת השם, והידיים החמודות שלך מכבדות את דברי ה'!", "מושלם! דע לך שכל אות וסיפור שאתה לומד נחרטים בלבך, ואתה גדל להיות אוהב ה' אמיתי שמאיר את כל העולם!"], ["צעד ראשון נהדר! רואים שהיית מרוכז ומלא הקשבה בשיעור!", "מצוין ממש! אתה מחבר את חלקי הפרשה כמו שרשרת של פנינים יקרות!", "כל הכבוד! אתה מסדר את התמונות ביראת כבוד ובאהבה, כמו שמסדרים אוצר יקר!", "איזו זכות! הקול והמחשבה שלך מחוברים עכשיו ישר למילים של בורא עולם!", "מרגש לראות אותך! הבל הפה הטהור שלך והאהבה שלך לפרשה שומרים על כל עם ישראל!", "אתה ממש כמו 'ספר תורה חי'! ה' אוהב אותך אהבה עזה שאין לה סוף, ושמח בך תמיד!"], ["יופי של התחלה! זכרת בדיוק איך הסיפור התחיל!", "איזה דיוק נפלא! רואים כמה אכפת לך מכל פרט שה' כתב לנו בתורה!", "כל הכבוד, אהוב! ככל שאתה לומד יותר על מעשי ה', הלב שלך נהיה קרוב יותר אליו!", "פשוט תענוג! כמה נעים וטוב לדעת שיש לנו אבא כזה טוב בשמיים, וכמה כיף ללמוד עליו!", "מדהים ממש! הלימוד שלך מביא ברכה ואור לכל הכיתה ולכל הבית שלך!", "זכית במקום הכי גבוה! אתה קשור בקשר של אהבה נצחית עם הקב\"ה, והתורה הזו תלווה אותך ותשמח אותך כל החיים!"], ["כל הכבוד! הצלחת בשלב הראשון בקלות ובחיוך!", "איזה יופי של התקדמות! הסבלנות וההתמדה שלך עושות פלאים!", "יישר כוח גדול! אתה מתאמץ לכבוד התורה, ובשמיים סופרים ומחבקים כל מאמץ שלך!", "איזו מתיקות! אתה מראה לכולנו שלימוד תורה זה הדבר הכי שמח ומאושר שיש בעולם!", "נפלא ביותר! אתה לומד מתוך לב פתוח ואוהב, וזהו הכתר הכי יפה שילד יכול לשים לראשו!", "ניצחון מושלם! עלית שלב אחר שלב כמו בסולם שעולה השמיימה – מגיע לך כתר תורה, וה' אוהב אותך לנצח נצחים!"]], "praiseAudio": [["https://yudataub.github.io/kol-toda-files/seder/audio/praise-1-1.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-1-2.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-1-3.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-1-4.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-1-5.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-1-6.mp3"], ["https://yudataub.github.io/kol-toda-files/seder/audio/praise-2-1.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-2-2.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-2-3.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-2-4.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-2-5.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-2-6.mp3"], ["https://yudataub.github.io/kol-toda-files/seder/audio/praise-3-1.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-3-2.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-3-3.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-3-4.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-3-5.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-3-6.mp3"], ["https://yudataub.github.io/kol-toda-files/seder/audio/praise-4-1.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-4-2.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-4-3.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-4-4.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-4-5.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-4-6.mp3"], ["https://yudataub.github.io/kol-toda-files/seder/audio/praise-5-1.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-5-2.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-5-3.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-5-4.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-5-5.mp3", "https://yudataub.github.io/kol-toda-files/seder/audio/praise-5-6.mp3"]], "intro": "https://yudataub.github.io/kol-toda-files/seder/audio/intro.mp3", "next": {"href": "vayigash.html", "name": "ויגש"}};
+(function(){
+'use strict';
+var N = DATA.scenes.length, S = 0, step = 0, misses = 0, totalMiss = 0, muted = false, busy = false;
+var $ = function(s){return document.querySelector(s)};
+var slotsEl = $('#slots'), poolEl = $('#pool'), starsEl = $('#stars');
+function el(tag, cls, text){var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e}
+
+/* ---------- צליל ---------- */
+var AC = null;
+function ac(){ if(!AC){ try{ AC = new (window.AudioContext||window.webkitAudioContext)() }catch(e){} } return AC }
+function tone(f, t0, dur, type, vol){
+  var a=ac(); if(!a||muted) return;
+  var o=a.createOscillator(), g=a.createGain(); o.type=type||'triangle'; o.frequency.value=f;
+  g.gain.setValueAtTime(0.0001,a.currentTime+t0); g.gain.exponentialRampToValueAtTime(vol||0.25,a.currentTime+t0+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+t0+dur); o.connect(g); g.connect(a.destination);
+  o.start(a.currentTime+t0); o.stop(a.currentTime+t0+dur+0.05);
+}
+var SCALE=[523,587,659,784,880,1047,1175,1319];
+function goodSound(level){ for(var i=0;i<=level;i++) tone(SCALE[i], i*0.09, 0.25, 'triangle', 0.22); }
+function badSound(){ tone(220,0,0.18,'sine',0.2); tone(180,0.15,0.25,'sine',0.2); }
+function winSound(){ var m=[523,659,784,1047,784,1047,1319]; m.forEach(function(f,i){tone(f,i*0.13,0.3,'triangle',0.25)}); }
+var player = new Audio();
+function play(src, cb){
+  if(muted||!src){ if(cb) setTimeout(cb, 300); return }
+  player.onended = cb||null; player.onerror = cb||null; player.src = src;
+  var p = player.play(); if(p&&p.catch) p.catch(function(){ if(cb) cb() });
+}
+$('#mute').onclick = function(){ muted=!muted; this.textContent = muted?'🔇':'🔊'; if(muted) player.pause() };
+
+/* ---------- זיקוקים ---------- */
+var cv=$('#fx'), cx=cv.getContext('2d'), parts=[], raf=0;
+function resize(){ cv.width=innerWidth*devicePixelRatio; cv.height=innerHeight*devicePixelRatio; cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0) }
+addEventListener('resize', resize); resize();
+var COLORS=['#f5b301','#2fa84f','#1a66c2','#e0483e','#8a2fc9','#ff7a00','#00b3b3'];
+function burst(x, y, n, spread){
+  for(var i=0;i<n;i++){ var a=Math.random()*Math.PI*2, v=(2+Math.random()*6)*(spread||1);
+    parts.push({x:x,y:y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-3,life:60+Math.random()*40,c:COLORS[i%COLORS.length],
+      s:4+Math.random()*6,r:Math.random()*6,star:Math.random()<.35}) }
+  if(!raf) raf=requestAnimationFrame(tick);
+}
+function tick(){
+  cx.clearRect(0,0,innerWidth,innerHeight);
+  parts=parts.filter(function(p){return p.life>0});
+  parts.forEach(function(p){ p.x+=p.vx; p.y+=p.vy; p.vy+=0.22; p.vx*=0.985; p.life--; p.r+=0.1;
+    cx.globalAlpha=Math.min(1,p.life/30); cx.fillStyle=p.c; cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r);
+    if(p.star){ cx.font=(p.s*3)+'px serif'; cx.fillText('⭐',-p.s,p.s) } else cx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6);
+    cx.restore() });
+  cx.globalAlpha=1;
+  raf = parts.length ? requestAnimationFrame(tick) : 0;
+}
+
+/* ---------- בנייה ---------- */
+function mini(sc, n){
+  var m=el('div','mini'); var im=el('img'); im.src=sc.img; im.alt=''; m.appendChild(im); m.appendChild(el('p',null,sc.t));
+  return m;
+}
+function build(){
+  step=0; misses=0; totalMiss=0; busy=false;
+  var last=-1; try{ last=+(localStorage.getItem('seder-series')||-1) }catch(e){}
+  do { S=Math.floor(Math.random()*DATA.praise.length) } while(DATA.praise.length>1 && S===last);
+  try{ localStorage.setItem('seder-series', S) }catch(e){}
+  slotsEl.innerHTML=''; poolEl.innerHTML=''; starsEl.innerHTML='';
+  for(var i=0;i<N;i++){
+    var s=el('div','slot'); s.dataset.i=i; s.appendChild(el('span','num',String(i+1))); slotsEl.appendChild(s);
+    starsEl.appendChild(el('span',null,'⭐'));
+  }
+  var order=DATA.scenes.map(function(_,i){return i});
+  do { order.sort(function(){return Math.random()-.5}) } while(order.every(function(v,i){return v===i}) || order[0]===0);
+  order.forEach(function(i){
+    var sc=DATA.scenes[i], c=el('div','card'); c.dataset.i=i; c.tabIndex=0; c.setAttribute('role','button');
+    var im=el('img'); im.src=sc.img; im.alt=''; c.appendChild(im); c.appendChild(el('p',null,sc.t));
+    var b=el('button','say','🔊'); b.setAttribute('aria-label','להשמיע');
+    b.addEventListener('pointerdown',function(e){e.stopPropagation()});
+    b.onclick=function(e){ e.stopPropagation(); play(sc.audio) };
+    c.appendChild(b); bindDrag(c); poolEl.appendChild(c);
+    c.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); attempt(c) } });
+  });
+  markNext();
+}
+function markNext(){
+  [].forEach.call(slotsEl.children,function(s,i){ s.classList.toggle('next', i===step) });
+}
+
+/* ---------- לחיצה וגרירה ---------- */
+function bindDrag(c){
+  c.addEventListener('pointerdown',function(e){
+    if((busy && !praising)||c.classList.contains("gone")) return;
+    var sx=e.clientX, sy=e.clientY, ghost=null, r=c.getBoundingClientRect();
+    function move(ev){
+      var dx=ev.clientX-sx, dy=ev.clientY-sy;
+      if(!ghost && Math.hypot(dx,dy)>12){
+        ghost=el('div','ghost'); ghost.style.width=r.width*0.7+'px'; ghost.style.height=r.width*0.55+'px';
+        var im=el('img'); im.src=c.querySelector('img').src; ghost.appendChild(im); document.body.appendChild(ghost);
+        c.style.opacity=.35;
+      }
+      if(ghost){ ghost.style.left=(ev.clientX-r.width*0.35)+'px'; ghost.style.top=(ev.clientY-r.width*0.27)+'px' }
+    }
+    function up(ev){
+      removeEventListener('pointermove',move); removeEventListener('pointerup',up); removeEventListener('pointercancel',up);
+      if(!ghost){ attempt(c); return }
+      ghost.remove(); c.style.opacity='';
+      var sr=slotsEl.getBoundingClientRect();
+      if(ev.clientY>=sr.top-20 && ev.clientY<=sr.bottom+20) attempt(c);
+    }
+    addEventListener('pointermove',move); addEventListener('pointerup',up); addEventListener('pointercancel',up);
+  });
+}
+
+var oopsT=0;
+function attempt(c){
+  if(busy && praising && step<N){ praiseDone(); setTimeout(function(){ attempt(c) }, 360); return }
+  if(busy) return;
+  var i=+c.dataset.i;
+  if(i===step){ right(c) } else { wrong(c) }
+}
+function wrong(c){
+  misses++; totalMiss++; badSound();
+  c.classList.remove('wrong'); void c.offsetWidth; c.classList.add('wrong');
+  setTimeout(function(){c.classList.remove('wrong')},700);
+  var o=$('#oops'); o.textContent = step===0 ? 'נַסֵּה שׁוּב! מָה קָרָה רִאשׁוֹן?' : 'נַסֵּה שׁוּב! מָה קָרָה אַחֲרֵי זֶה?';
+  o.classList.add('show'); clearTimeout(oopsT); oopsT=setTimeout(function(){o.classList.remove('show')},1600);
+  if(misses>=2){ var good=poolEl.querySelector('.card[data-i="'+step+'"]'); if(good) good.classList.add('hint') }
+}
+function right(c){
+  busy=true; var n=step, slot=slotsEl.children[n];
+  c.classList.remove('hint');
+  var from=c.getBoundingClientRect(), to=slot.getBoundingClientRect();
+  var g=el('div','ghost'); var im=el('img'); im.src=c.querySelector('img').src; g.appendChild(im);
+  g.style.cssText+='left:'+from.left+'px;top:'+from.top+'px;width:'+from.width+'px;height:'+from.width*0.75+'px;'+
+    'transition:all .55s cubic-bezier(.3,1.3,.5,1)';
+  document.body.appendChild(g); c.classList.add('gone');
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){
+    g.style.left=to.left+'px'; g.style.top=to.top+'px'; g.style.width=to.width+'px'; g.style.height=to.height+'px';
+  })});
+  setTimeout(function(){
+    g.remove(); slot.classList.remove('next'); slot.classList.add('filled');
+    slot.appendChild(mini(DATA.scenes[n])); slot.appendChild(el('span','badge',String(n+1)));
+    starsEl.children[n].classList.add('on');
+    step++; misses=0;
+    if(step<N) markNext();
+    praise(n, to, function(){ if(step===N) finish(); else busy=false });
+  }, 560);
+}
+var praiseDone=null, praiseT=0, praising=false;
+function praise(n, rect, done){
+  var p=$('#praise'), lv=Math.min(n,5), list=DATA.praise[S], txt=list[Math.min(n,list.length-1)];
+  p.className=''; p.innerHTML='';
+  p.appendChild(el('span','em',['👍','⭐','🌟','🏅','🚀','👑'][lv]));
+  p.appendChild(el('span','w',txt));
+  void p.offsetWidth; p.className='show l'+(lv+1);
+  goodSound(lv+1);
+  var cxp=rect.left+rect.width/2, cyp=rect.top+rect.height/2;
+  burst(cxp, cyp, 14+lv*14, 0.7+lv*0.15);
+  if(lv>=3) burst(innerWidth/2, innerHeight*0.42, 20+lv*10, 1.2);
+  var fired=false; praising=true;
+  praiseDone=function(){ if(fired) return; fired=true; praising=false; clearTimeout(praiseT); player.onended=null; player.pause();
+    p.classList.add('hide'); setTimeout(done, 300) };
+  var minMs = 1200 + txt.length*45;                       // בלי קול: זמן קריאה לפי האורך
+  var a = DATA.praiseAudio && DATA.praiseAudio[S] && DATA.praiseAudio[S][lv];
+  if(muted||!a){ praiseT=setTimeout(praiseDone, Math.min(minMs, 6500)) }
+  else { setTimeout(function(){ if(!fired) play(a, function(){ setTimeout(praiseDone, 500) }) }, 450);
+         praiseT=setTimeout(praiseDone, 14000) }
+}
+$('#praise').addEventListener('click', function(){ if(praiseDone) praiseDone() });
+function finish(){
+  winSound();
+  for(var k=0;k<5;k++) setTimeout(function(){ burst(Math.random()*innerWidth, innerHeight*(0.2+Math.random()*0.4), 50, 1.5) }, k*300);
+  var t = totalMiss===0 ? 'סִדַּרְתָּ הַכֹּל בְּלִי אַף טָעוּת!' : 'סִדַּרְתָּ אֶת כָּל הַתְּמוּנוֹת!';
+  $('#endTitle').textContent=t;
+  var st=$('#strip'); st.innerHTML='';
+  DATA.scenes.forEach(function(sc,i){ var m=mini(sc); var b=el('span','badge',String(i+1)); m.appendChild(b); st.appendChild(m) });
+  if(DATA.next){ $('#nextP').href=DATA.next.href; $('#nextP').textContent='לְפָרָשַׁת '+DATA.next.name+' ←' }
+  $('#end').hidden=false;
+}
+$('#listen').onclick=function(){
+  var ms=$('#strip').children, i=0;
+  (function nx(){
+    [].forEach.call(ms,function(m){m.classList.remove('reading')});
+    if(i>=ms.length) return;
+    ms[i].classList.add('reading'); ms[i].scrollIntoView({block:'nearest',behavior:'smooth'});
+    var a=DATA.scenes[i].audio; i++; play(a, function(){ setTimeout(nx, 250) });
+  })();
+};
+$('#again').onclick=function(){ $('#end').hidden=true; player.pause(); build() };
+$('#go').onclick=function(){ ac(); $('#start').hidden=true; if(DATA.intro) play(DATA.intro) };
+build();
+})();
+</script>
+</body>
+</html>
