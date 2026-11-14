@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>העלאת שיעור לתמלול – הקול החמישי</title>
+<meta name="description" content="מעלים שיעור או שיחה, ומקבלים תמלול מלא ודף אינטרנט ערוך ישר למייל">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Royal Purple */
+  :root {
+    --bg: #f6f2fb; --card: #ffffff; --ink: #24163a; --muted: #6b5d80;
+    --brand: #5b2a86; --brand-2: #8a4fd0; --accent: #f2b544;
+    --line: #e3d9f0; --ok: #1f8a5b; --err: #c0392b; --field: #fbf9fe;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #140c1f; --card: #1f1530; --ink: #f1eaf9; --muted: #b3a5c8;
+      --brand: #b58cf0; --brand-2: #8a4fd0; --accent: #f2c063;
+      --line: #3a2b52; --ok: #4cc38a; --err: #ff7b6b; --field: #281c3c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #140c1f; --card: #1f1530; --ink: #f1eaf9; --muted: #b3a5c8;
+    --brand: #b58cf0; --brand-2: #8a4fd0; --accent: #f2c063;
+    --line: #3a2b52; --ok: #4cc38a; --err: #ff7b6b; --field: #281c3c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Heebo", Arial, sans-serif; line-height: 1.6; }
+  header { background: linear-gradient(135deg, #3d1763, #5b2a86 55%, #8a4fd0); color: #fff; padding: 44px 16px 72px; text-align: center; }
+  header h1 { margin: 0 0 8px; font-size: clamp(26px, 5vw, 38px); font-weight: 800; }
+  header p { margin: 0 auto; max-width: 560px; opacity: .92; font-size: 17px; }
+  main { max-width: 640px; margin: -48px auto 40px; padding: 0 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 26px 22px; box-shadow: 0 10px 30px rgba(61, 23, 99, .10); }
+  .steps { display: flex; gap: 8px; justify-content: space-between; margin: 0 0 22px; padding: 0; list-style: none; font-size: 14px; color: var(--muted); }
+  .steps li { flex: 1; text-align: center; }
+  .steps b { display: block; font-size: 22px; }
+  label { display: block; font-weight: 700; margin: 16px 0 6px; }
+  .hint { font-weight: 400; color: var(--muted); font-size: 14px; }
+  input[type=text], input[type=email], input[type=tel], input[type=url] {
+    width: 100%; padding: 12px 14px; font: inherit; color: var(--ink); background: var(--field);
+    border: 1.5px solid var(--line); border-radius: 12px; outline: none;
+  }
+  input:focus { border-color: var(--brand-2); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
+  .tabs { display: flex; gap: 8px; margin-top: 20px; }
+  .tabs button { flex: 1; padding: 11px; font: inherit; font-weight: 700; border-radius: 12px; cursor: pointer;
+    border: 1.5px solid var(--line); background: var(--field); color: var(--muted); }
+  .tabs button[aria-selected="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .drop { margin-top: 12px; border: 2px dashed var(--line); border-radius: 14px; padding: 26px 14px; text-align: center; cursor: pointer; background: var(--field); }
+  .drop.over { border-color: var(--brand-2); }
+  .drop strong { color: var(--brand); }
+  .file-name { margin-top: 8px; font-weight: 700; word-break: break-all; }
+  .check { display: flex; gap: 10px; align-items: flex-start; margin-top: 18px; font-size: 15px; }
+  .check input { margin-top: 5px; width: 18px; height: 18px; flex: none; }
+  input.hp[type=text] { position: absolute; right: 0; width: 1px; height: 1px; padding: 0; border: 0; opacity: 0; overflow: hidden; clip: rect(0 0 0 0); pointer-events: none; }
+  .submit { width: 100%; margin-top: 22px; padding: 15px; font: inherit; font-size: 18px; font-weight: 800; color: #fff;
+    background: linear-gradient(135deg, #5b2a86, #8a4fd0); border: 0; border-radius: 14px; cursor: pointer; }
+  .submit:disabled { opacity: .55; cursor: wait; }
+  .bar { height: 12px; background: var(--line); border-radius: 99px; overflow: hidden; margin-top: 16px; display: none; }
+  .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--brand-2), var(--accent)); transition: width .3s; }
+  .msg { margin-top: 14px; font-weight: 500; min-height: 1.6em; }
+  .msg.err { color: var(--err); } .msg.ok { color: var(--ok); }
+  .done { text-align: center; display: none; }
+  .done h2 { color: var(--ok); margin: 6px 0; }
+  .done code { background: var(--field); padding: 2px 8px; border-radius: 6px; }
+  footer { text-align: center; color: var(--muted); font-size: 14px; padding: 0 16px 30px; }
+  footer a { color: var(--brand); }
+  [hidden] { display: none !important; }
+</style>
+<meta property="og:title" content="העלאת שיעור לתמלול – הקול החמישי">
+<meta property="og:description" content="מעלים שיעור או שיחה, ומקבלים תמלול מלא ודף אינטרנט ערוך ישר למייל">
+<meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-tamlul-index.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/tamlul/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://www.kol-toda.co.il/tamlul/">
+<script async src="https://www.kol-toda.co.il/a.js"></script>
+</head>
+<body>
+<header>
+  <h1>העלאת שיעור לתמלול</h1>
+  <p>מעלים הקלטה של שיעור או שיחה, או מדביקים קישור. התמלול המלא ודף אינטרנט ערוך שנכתב מהשיעור יישלחו אליכם.</p>
+</header>
+
+<main>
+  <div class="card">
+    <form id="form" novalidate>
+      <ol class="steps">
+        <li><b>⬆️</b>מעלים</li>
+        <li><b>📝</b>מתמללים</li>
+        <li><b>📬</b>מקבלים במייל</li>
+      </ol>
+
+      <label for="title">שם השיעור <span class="hint">(יופיע בכותרת התמלול והדף)</span></label>
+      <input id="title" type="text" maxlength="120" required placeholder="לדוגמה: שיעור בפרשת וישלח">
+
+      <label for="name">השם שלך <span class="hint">(או שם המעביר)</span></label>
+      <input id="name" type="text" maxlength="60" placeholder="לא חובה">
+
+      <div class="row">
+        <div>
+          <label for="email">מייל</label>
+          <input id="email" type="email" maxlength="120" dir="ltr" placeholder="name@example.com">
+        </div>
+        <div>
+          <label for="whatsapp">ווטסאפ</label>
+          <input id="whatsapp" type="tel" maxlength="20" dir="ltr" placeholder="050-0000000">
+        </div>
+      </div>
+      <div class="hint">צריך למלא לפחות אחד מהשניים. התמלול נשלח כקובץ PDF מצורף למייל.</div>
+
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" aria-selected="true" data-mode="file">📁 קובץ</button>
+        <button type="button" role="tab" aria-selected="false" data-mode="link">🔗 קישור</button>
+      </div>
+
+      <div id="fileBox">
+        <div class="drop" id="drop" tabindex="0">
+          <div><strong>לחצו לבחירת קובץ</strong> או גררו אותו לכאן</div>
+          <div class="hint">קובץ שמע או וידאו, עד 4GB</div>
+          <div class="hint" dir="ltr">MP3 · M4A · WAV · MP4 · MOV</div>
+          <div class="file-name" id="fileName"></div>
+        </div>
+        <input id="file" type="file" accept="audio/*,video/*,.mp3,.m4a,.wav,.aac,.ogg,.opus,.flac,.mp4,.mov,.mkv,.webm" hidden>
+      </div>
+
+      <div id="linkBox" hidden>
+        <label for="url">קישור לשיעור</label>
+        <input id="url" type="url" dir="ltr" placeholder="https://youtu.be/... או קישור לדרייב">
+        <div class="hint">יוטיוב, גוגל דרייב או קישור ישיר לקובץ. קישור לדרייב חייב להיות פתוח לכל מי שיש לו את הקישור.</div>
+      </div>
+
+      <input class="hp" id="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+      <label class="check">
+        <input id="consent" type="checkbox">
+        <span>אני מאשר/ת שיש לי זכות להעלות את ההקלטה, ושהיא תתומלל ותישמר במאגר.</span>
+      </label>
+
+      <button class="submit" id="submit" type="submit">שליחה לתמלול</button>
+      <div class="bar" id="bar"><i id="barFill"></i></div>
+      <div class="msg" id="msg" role="status" aria-live="polite"></div>
+    </form>
+
+    <div class="done" id="done">
+      <div style="font-size:54px">✅</div>
+      <h2>התקבל, תודה!</h2>
+      <p>השיעור בדרך לתמלול. כשהתמלול יהיה מוכן הוא יישלח אליכם, ואחריו גם הדף הערוך.</p>
+      <p class="hint">מספר הבקשה שלך: <code id="reqId"></code></p>
+      <button class="submit" type="button" onclick="location.reload()">העלאת שיעור נוסף</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  📚 עוד חומרי לימוד – חינם, במאגר הקול החמישי: <a href="https://www.kol-toda.co.il/search/">חיפוש במאגר</a> · <a href="https://www.kol-toda.co.il/">המאגר המלא</a>
+</footer>
+
+<script>
+// הכתובת של ה-Web App מ-Apps Script (Deploy > Web app > URL)
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbx90lE79ZLZBIXpSf94bfZ0_MJbVz70Ck_somZa9-EPe2SbZvTmP9C-zOn5INdEiXef/exec';
+const CHUNK = 8 * 1024 * 1024; // חייב להיות כפולה של 256KB
+
+const $ = id => document.getElementById(id);
+let mode = 'file', file = null;
+
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+  mode = b.dataset.mode;
+  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  $('fileBox').hidden = mode !== 'file';
+  $('linkBox').hidden = mode !== 'link';
+}));
+
+const drop = $('drop');
+drop.addEventListener('click', () => $('file').click());
+drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') $('file').click(); });
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); pick(e.dataTransfer.files[0]); });
+$('file').addEventListener('change', e => pick(e.target.files[0]));
+
+function pick(f) {
+  file = f || null;
+  $('fileName').textContent = file ? file.name + ' (' + mb(file.size) + ')' : '';
+}
+const mb = n => n >= 1073741824 ? (n / 1073741824).toFixed(2) + 'GB' : (n / 1048576).toFixed(1) + 'MB';
+
+function say(text, kind) { const m = $('msg'); m.textContent = text; m.className = 'msg ' + (kind || ''); }
+function progress(p) { $('bar').style.display = 'block'; $('barFill').style.width = Math.round(p * 100) + '%'; }
+
+async function api(payload) {
+  // text/plain כדי שהדפדפן לא ישלח בקשת preflight, ש-Apps Script לא עונה עליה
+  const r = await fetch(WEBAPP_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'שגיאה בשרת');
+  return j;
+}
+
+function putChunk(url, blob, start, total) {
+  return new Promise((resolve, reject) => {
+    const x = new XMLHttpRequest();
+    x.open('PUT', url);
+    x.setRequestHeader('Content-Range', 'bytes ' + start + '-' + (start + blob.size - 1) + '/' + total);
+    x.upload.onprogress = e => progress((start + e.loaded) / total);
+    x.onload = () => resolve(x);
+    x.onerror = () => reject(new Error('network'));
+    x.send(blob);
+  });
+}
+
+// אחרי ניתוק: שואלים את גוגל כמה בתים כבר התקבלו וממשיכים משם
+function askOffset(url, total) {
+  return new Promise(resolve => {
+    const x = new XMLHttpRequest();
+    x.open('PUT', url);
+    x.setRequestHeader('Content-Range', 'bytes */' + total);
+    x.onload = () => {
+      if (x.status === 200 || x.status === 201) return resolve({ done: x });
+      const range = x.getResponseHeader('Range');
+      resolve({ offset: range ? Number(range.split('-')[1]) + 1 : 0 });
+    };
+    x.onerror = () => resolve({ offset: null });
+    x.send();
+  });
+}
+
+async function upload(url, f) {
+  let offset = 0, fails = 0;
+  while (true) {
+    try {
+      const x = await putChunk(url, f.slice(offset, Math.min(offset + CHUNK, f.size)), offset, f.size);
+      if (x.status === 200 || x.status === 201) return JSON.parse(x.responseText);
+      if (x.status === 308) {
+        const range = x.getResponseHeader('Range');
+        offset = range ? Number(range.split('-')[1]) + 1 : 0;
+        fails = 0;
+        continue;
+      }
+      throw new Error('status ' + x.status);
+    } catch (e) {
+      if (++fails > 6) throw new Error('ההעלאה נקטעה. בדקו את החיבור ונסו שוב');
+      say('החיבור נקטע, ממשיך מאותה נקודה...');
+      await new Promise(r => setTimeout(r, 2000 * fails));
+      const q = await askOffset(url, f.size);
+      if (q.done) return JSON.parse(q.done.responseText);
+      if (q.offset !== null) offset = q.offset;
+    }
+  }
+}
+
+$('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (WEBAPP_URL.startsWith('PASTE')) return say('הדף עוד לא חובר לשרת (WEBAPP_URL).', 'err');
+  const base = {
+    title: $('title').value.trim(), name: $('name').value.trim(),
+    email: $('email').value.trim(), whatsapp: $('whatsapp').value.trim(),
+    consent: $('consent').checked, website: $('website').value,
+  };
+  if (!base.title) return say('חסר שם לשיעור', 'err');
+  if (!base.email && !base.whatsapp) return say('צריך להשאיר מייל או ווטסאפ', 'err');
+  if (!base.consent) return say('צריך לאשר את תנאי ההעלאה', 'err');
+
+  $('submit').disabled = true;
+  try {
+    let id;
+    if (mode === 'link') {
+      const url = $('url').value.trim();
+      if (!/^https?:\/\//i.test(url)) throw new Error('הקישור לא תקין');
+      say('שולח...');
+      id = (await api({ action: 'link', url, ...base })).id;
+    } else {
+      if (!file) throw new Error('לא נבחר קובץ');
+      say('מתחיל העלאה...');
+      const init = await api({ action: 'init', fileName: file.name, size: file.size,
+        mimeType: file.type || 'application/octet-stream', origin: location.origin, ...base });
+      const meta = await upload(init.uploadUrl, file);
+      say('מסיים...');
+      await api({ action: 'complete', id: init.id, fileId: meta.id });
+      id = init.id;
+    }
+    $('reqId').textContent = id;
+    $('form').hidden = true;
+    $('done').style.display = 'block';
+  } catch (err) {
+    say(err.message || String(err), 'err');
+    $('submit').disabled = false;
+  }
+});
+</script>
+</body>
+</html>
