@@ -26,12 +26,25 @@
       (c.img ? `<img src="${esc(c.img)}" alt="" loading="lazy" onerror="this.remove()">` : `<span class="ph">${esc(c.ph || "📄")}</span>`) +
       (c.game ? `<span class="gb">🎮 משחק</span>` : "") + `<b>${esc(c.t)}</b></a>`;
   }
+  const banner = x => `<a class="mx" href="${esc(x[3])}"><span>${x[0]}</span><div><b>${esc(x[1])}</b><small>${esc(x[2])}</small></div><i>←</i></a>` +
+    (x[4] && x[4].length ? `<nav class="mxl">${x[4].map(l => `<a href="${esc(l[1])}">${esc(l[0])}</a>`).join("")}</nav>` : "");
+  // the banners at the top of a works page (a.feature-link, with the links under one of them), not the catalog itself
+  function featuresOf(doc, page) {
+    if (!doc) return [];
+    return [...doc.querySelectorAll("a.feature-link")].map(a => {
+      const href = abs(a.getAttribute("href"), page), nav = a.nextElementSibling;
+      const links = nav && nav.matches("nav.colls") && [...nav.querySelectorAll("a")].every(l => !l.getAttribute("href").startsWith("#"))
+        ? [...nav.querySelectorAll("a")].map(l => [l.textContent.trim(), abs(l.getAttribute("href"), page)]) : [];
+      return [(a.querySelector("span") || {}).textContent || "⭐", (a.querySelector("b") || {}).textContent || "",
+        (a.querySelector("p") || {}).textContent || "", href, links];
+    }).filter(x => x[1] && !/kol-toda\.co\.il\/chagim\/?$/.test(x[3]));
+  }
   window.renderMine = function (box, cfg) {
     if (!box || !cfg) return;
-    const extra = (cfg.extra || []).map(x => `<a class="mx" href="${esc(x[3])}"><span>${x[0]}</span><div><b>${esc(x[1])}</b><small>${esc(x[2])}</small></div><i>←</i></a>`).join("");
-    const pages = [...new Set((cfg.sections || []).map(s => s[0]))];
+    const pages = [...new Set((cfg.sections || []).map(s => s[0]).concat(cfg.features ? [cfg.features] : []))];
     Promise.all(pages.map(get)).then(docs => {
       const D = Object.fromEntries(pages.map((p, i) => [p, docs[i]]));
+      const extra = (cfg.features ? featuresOf(D[cfg.features], cfg.features) : []).concat(cfg.extra || []).map(banner).join("");
       const seen = new Set(), cards = [];
       (cfg.sections || []).forEach(([p, id]) => cardsOf(D[p], p, id).forEach(c => { if (!seen.has(c.href)) { seen.add(c.href); cards.push(c); } }));
       cards.sort((a, b) => b.game - a.game);   // games first
