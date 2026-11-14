@@ -21,6 +21,18 @@ const fmtOf = f => f.f.replace("achiya:", "");
 const keyOf = it => it.files[0].id;
 const LSK = "cat2_חגי ישראל_fav";   // the same list as the holidays catalog's "♥ השמורים שלי"
 let FAV = new Set(); try { FAV = new Set(JSON.parse(localStorage.getItem(LSK)) || []); } catch (e) {}
+// the teachers' shared ratings (ratings.js): my own stars are kept like the catalog's ("mine"), the totals come from Firestore
+const LSM = "cat2_חגי ישראל_mine";
+let MINE = {}; try { MINE = JSON.parse(localStorage.getItem(LSM)) || {}; } catch (e) {}
+const idsOf = it => it.files.map(f => f.id).concat(it.dup || []);
+function rating(it) {
+  const R = window.__ratingsApi && window.__ratingsApi.ratingsCache; let sum = 0, count = 0;
+  if (R) idsOf(it).forEach(id => { const r = R.get(id); if (r) { sum += r.sum || 0; count += r.count || 0; } });
+  return {avg: count ? sum / count : 0, count};
+}
+// a rated material goes to the top of every list, by its rating (the user, 14.11.2026); my own stars count at once
+const score = it => { const r = rating(it); return r.count ? r.avg * Math.min(r.count, 3) : (MINE[keyOf(it)] || 0); };
+const rateText = r => r.count ? `${r.avg.toFixed(1)} (${r.count})` : "דרגו";
 const saveFav = () => { try { localStorage.setItem(LSK, JSON.stringify([...FAV])); } catch (e) {} };
 
 let ITEMS = [], OWN = null, shown = 48;
@@ -88,8 +100,9 @@ function match(it, skip) {
 }
 function sorted(arr) {
   const abc = (a, b) => a.t.localeCompare(b.t, "he", {numeric: true});
-  if (state.so === "abc") return arr.sort(abc);
-  return arr.sort((a, b) => (b._own - a._own) || (state.gr ? (b._gr.length ? 1 : 0) - (a._gr.length ? 1 : 0) : 0) || (!!b._th - !!a._th) || abc(a, b));
+  arr.forEach(i => i._sc = score(i));
+  if (state.so === "abc") return arr.sort((a, b) => (b._sc - a._sc) || abc(a, b));
+  return arr.sort((a, b) => (b._sc - a._sc) || (b._own - a._own) || (state.gr ? (b._gr.length ? 1 : 0) - (a._gr.length ? 1 : 0) : 0) || (!!b._th - !!a._th) || abc(a, b));
 }
 const count = (arr, f) => { const c = {}; arr.forEach(i => f(i).forEach(k => c[k] = (c[k] || 0) + 1)); return c; };
 
@@ -120,11 +133,14 @@ function cardHtml(it) {
   const tps = it._tp.filter(x => x !== state.tp && x !== "general").slice(0, 2).map(x => `<button class="badge t" style="--c:${TP[x].c}" data-go='{"tp":"${x}"}' title="לכל החומרים בנושא">${TP[x].e} ${TP[x].l.split(/[,–]/)[0]}</button>`).join("");
   const btns = it.files.slice(0, 4).map(f => { const fk = fmtOf(f), m = FMT[fk] || FMT.web, ach = f.f.startsWith("achiya:");
     return `<a class="btn" style="color:${m[2]};background:${m[3]};border-color:${m[3]}" href="${esc(viewHref(f))}" target="_blank" rel="noopener">${ach ? "באתר אחיה" : VERB[fk] || m[1]}${f.z ? ` <span class="sz">· ${esc(f.z)}</span>` : ""}</a>`; }).join("");
+  const r = rating(it), mine = MINE[k] || 0;
+  const stars = [1, 2, 3, 4, 5].map(v => `<button class="${v <= (mine || Math.round(r.avg)) ? "on" : ""}" data-rate="${v}" aria-label="דירוג ${v} מתוך 5">★</button>`).join("");
   return `<div class="card${it._own ? " own" : ""}" data-id="${esc(k)}">${th}
     <span class="kbadge" style="--c:${kd.c}">${kd.e} ${kd.l}</span>
     <button class="fav${FAV.has(k) ? " on" : ""}" data-fav="1" title="שמירה ברשימה האישית שלי" aria-label="שמירה">${FAV.has(k) ? "♥" : "♡"}</button>
     <div class="cb"><a class="name" href="${href}" target="_blank" rel="noopener" title="${esc(it.t)}">${esc(it.t)}</a>
       <div class="meta">${it._own ? `<span class="badge o">⭐ של הקול החמישי</span>` : ""}${it._gr.slice(0, 3).map(g => `<span class="badge g">${g}</span>`).join("")}${tps}${it.s ? `<span class="badge">${esc(it.s)}</span>` : ""}</div>
+      <div class="rt${mine ? " mine" : ""}${r.count ? " has" : ""}" title="דירוג משותף של המורים – חומר מדורג עולה לראש הרשימה">${stars}<span class="rv">${rateText(r)}</span></div>
       <div class="btns">${btns}</div></div></div>`;
 }
 function mineFill() { if (window.renderMine && PAGE.mine) window.renderMine(document.getElementById("minebox"), PAGE.mine); }
@@ -142,7 +158,7 @@ function renderResults() {
         <h3>${head}<small>${items.length.toLocaleString()} חומרים${subs ? " · " + esc(subs) : ""}${tp && !state.q && !kd && !state.gr ? " · " + tp.d : ""}</small></h3>
         <div class="selects">
           <select id="gsel" aria-label="כיתה"><option value="">כל הכיתות</option>${GRADES.filter(g => cg[g] || g === state.gr).map(g => `<option${g === state.gr ? " selected" : ""} value="${g}">${g} (${cg[g] || 0})</option>`).join("")}</select>
-          <select id="ssel" aria-label="סדר"><option value="">עם תמונה תחילה</option><option value="abc"${state.so === "abc" ? " selected" : ""}>לפי א-ב</option></select></div></div>
+          <select id="ssel" aria-label="סדר"><option value="">המדורגים תחילה</option><option value="abc"${state.so === "abc" ? " selected" : ""}>לפי א-ב</option></select></div></div>
       <div class="frow"><span class="lbl">נושא</span>${chips(TOPICS, ct, "tp", state.tp)}</div>
       <div class="frow"><span class="lbl">סוג</span>${chips(KINDS, ck, "kd", state.kd)}</div></div>
     ${items.length ? `<div class="grid">${items.slice(0, shown).map(cardHtml).join("")}</div>` +
@@ -161,7 +177,17 @@ function render() {
 
 // ---- events ----
 main.addEventListener("click", e => {
-  const b = e.target.closest("[data-go],[data-quick],[data-home],[data-fav],#more"); if (!b) return;
+  const b = e.target.closest("[data-go],[data-quick],[data-home],[data-fav],[data-rate],#more"); if (!b) return;
+  if (b.dataset.rate) {
+    const card = b.closest(".card"), k = card.dataset.id, v = +b.dataset.rate, old = MINE[k] || 0, api = window.__ratingsApi;
+    if (v === old) return;
+    MINE[k] = v; try { localStorage.setItem(LSM, JSON.stringify(MINE)); } catch (err) {}
+    const box = b.closest(".rt"); box.classList.add("mine");
+    box.querySelectorAll("button").forEach(x => x.classList.toggle("on", +x.dataset.rate <= v));
+    if (api) api.submitRating(k, v, old).then(() => { const it = ITEMS.find(i => keyOf(i) === k); if (!it || !box.isConnected) return;
+      const r = rating(it); box.classList.toggle("has", !!r.count); box.querySelector(".rv").textContent = rateText(r) + " · תודה!"; }).catch(err => console.error(err));
+    return;
+  }
   if (b.id === "more") { const y = window.scrollY; shown += 48; renderResults(); window.scrollTo(0, y); return; }
   if (b.dataset.fav) { const k = b.closest(".card").dataset.id; FAV.has(k) ? FAV.delete(k) : FAV.add(k); saveFav();
     b.classList.toggle("on", FAV.has(k)); b.textContent = FAV.has(k) ? "♥" : "♡"; if (state.fav && !FAV.has(k)) render(); return; }
@@ -208,4 +234,5 @@ loadData().then(a => { prep(a);
   document.getElementById("sub").textContent = `${ITEMS.length.toLocaleString()} חומרים ל${PAGE.forWhat} – מסודרים לפי נושא, לפי סוג ולפי כיתה`;
   render();
 }).catch(() => { main.innerHTML = `<div class="empty"><span class="em">🕯️</span>לא הצלחנו לטעון את החומרים. <a href="../?full=1#${PAGE.hash}" style="text-decoration:underline">לקטלוג המלא</a></div>`; });
+window.addEventListener("ratings-ready", () => { if (ITEMS.length && !isHome()) render(); });
 fetch("https://www.kol-toda.co.il/search/mine.json").then(r => r.json()).then(a => { OWN = new Set(a); markOwn(); if (ITEMS.some(i => i._own)) render(); }).catch(() => {});
