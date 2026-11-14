@@ -97,7 +97,7 @@ const count = (arr, f) => { const c = {}; arr.forEach(i => f(i).forEach(k => c[k
 function renderHome() {
   const ct = count(ITEMS, i => i._tp), ck = count(ITEMS, i => [i._kd]), cg = count(ITEMS, i => i._gr);
   const nf = ITEMS.filter(i => FAV.has(keyOf(i))).length;
-  main.innerHTML = `
+  main.innerHTML = `<div id="minebox"></div>
     <h2>⚡ מה צריך עכשיו?</h2><p class="lead">קיצורי דרך לבקשות הנפוצות – לחיצה אחת ואתם שם</p>
     <div class="quick">${QUICK.map((q, i) => `<button data-quick="${i}"><span class="em">${q[0]}</span><span>${q[1]}<small>${q[2]}</small></span></button>`).join("")}
       ${nf ? `<button data-go='{"fav":"1"}'><span class="em">♥</span><span>השמורים שלי<small>${nf} חומרים ששמרתם</small></span></button>` : ""}</div>
@@ -127,6 +127,7 @@ function cardHtml(it) {
       <div class="meta">${it._own ? `<span class="badge o">⭐ של הקול החמישי</span>` : ""}${it._gr.slice(0, 3).map(g => `<span class="badge g">${g}</span>`).join("")}${tps}${it.s ? `<span class="badge">${esc(it.s)}</span>` : ""}</div>
       <div class="btns">${btns}</div></div></div>`;
 }
+function mineFill() { if (window.renderMine && PAGE.mine) window.renderMine(document.getElementById("minebox"), PAGE.mine); }
 function renderResults() {
   const items = sorted(ITEMS.filter(i => match(i)));
   const ct = count(ITEMS.filter(i => match(i, "tp")), i => i._tp), ck = count(ITEMS.filter(i => match(i, "kd")), i => [i._kd]);
@@ -155,7 +156,7 @@ function renderResults() {
 function render() {
   if (!ITEMS.length) return;
   document.title = (isHome() ? "" : (state.q || (TP[state.tp] || KD[state.kd] || {l: state.gr || "השמורים שלי"}).l) + " – ") + PAGE.name + " – הקול החמישי";
-  isHome() ? renderHome() : renderResults();
+  isHome() ? (renderHome(), mineFill()) : renderResults();
 }
 
 // ---- events ----
