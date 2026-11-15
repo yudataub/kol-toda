@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מסע אל בית המקדש</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0e1a;
+    font-family: "SF Hebrew", "Arial Hebrew", "Segoe UI", Arial, sans-serif; }
+  canvas { display: block; }
+
+  /* ---------- HUD ---------- */
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10;
+    opacity: 0; transition: opacity .8s; }
+
+  #kedushaWrap {
+    position: absolute; top: 14px; right: 50%; transform: translateX(50%);
+    width: min(420px, 60vw); text-align: center;
+  }
+  #kedushaLabel { color: #ffe9a8; font-size: 15px; font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0,0,0,.7); margin-bottom: 4px; }
+  #kedushaBar { height: 16px; border-radius: 10px; background: rgba(10,14,30,.55);
+    border: 1.5px solid rgba(255,215,100,.7); overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,.4); }
+  #kedushaFill { height: 100%; width: 0%;
+    background: linear-gradient(90deg, #ffdf70, #ffb347, #ffdf70);
+    background-size: 200% 100%; animation: shimmer 2.5s linear infinite;
+    border-radius: 8px; transition: width .6s ease; }
+  @keyframes shimmer { 0% {background-position: 0 0;} 100% {background-position: 200% 0;} }
+
+  #viewsBadge {
+    position: fixed; top: 14px; right: 14px; z-index: 20; display: none;
+    background: linear-gradient(160deg, rgba(24,32,58,.85), rgba(14,18,36,.85));
+    border: 1.5px solid rgba(255,215,100,.5); border-radius: 10px;
+    padding: 7px 12px; color: #ffe9a8; font-size: 13.5px; font-weight: 700;
+  }
+
+  #missionCard {
+    position: absolute; top: 70px; right: 14px; width: min(320px, 78vw);
+    background: linear-gradient(160deg, rgba(24,32,58,.88), rgba(14,18,36,.88));
+    border: 1.5px solid rgba(255,215,100,.55); border-radius: 14px;
+    padding: 12px 14px; color: #fff; box-shadow: 0 4px 18px rgba(0,0,0,.45);
+  }
+  #missionLevel { color: #9fd0ff; font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  #missionTitle { color: #ffe9a8; font-size: 17px; font-weight: 800; line-height: 1.35; }
+  #missionHint { color: #d8dff0; font-size: 13.5px; margin-top: 5px; line-height: 1.45; }
+  #missionDist { color: #ffd76e; font-size: 13px; margin-top: 6px; font-weight: 700; }
+
+  #controlsHint {
+    position: absolute; bottom: 12px; right: 14px; color: rgba(255,255,255,.75);
+    font-size: 12.5px; background: rgba(10,14,30,.5); padding: 6px 10px;
+    border-radius: 8px; line-height: 1.5;
+  }
+
+  /* שלט המזמור שהלוויים שרים כעת */
+  #psalmNow {
+    position: fixed; bottom: 52px; left: 50%; transform: translateX(-50%);
+    z-index: 14; display: none; pointer-events: none;
+    background: linear-gradient(160deg, rgba(30,26,10,.82), rgba(20,16,6,.82));
+    border: 1.5px solid rgba(255,215,100,.5); border-radius: 999px;
+    padding: 8px 20px; color: #ffe9a8; font-size: 14.5px; font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0,0,0,.7); transition: opacity .5s;
+    white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ---------- כפתורי מפה וזום ---------- */
+  .uiBtn {
+    font-family: inherit; font-weight: 800; color: #ffe9a8; cursor: pointer;
+    background: linear-gradient(160deg, rgba(24,32,58,.9), rgba(14,18,36,.9));
+    border: 1.5px solid rgba(255,215,100,.55); border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.4);
+  }
+  .uiBtn:hover { border-color: #ffd76e; }
+  #mapBtn {
+    position: fixed; top: 14px; left: 14px; z-index: 20; display: none;
+    font-size: 15px; padding: 9px 14px;
+  }
+  #voiceBtn {
+    position: fixed; top: 62px; left: 14px; z-index: 20; display: none;
+    font-size: 15px; padding: 9px 14px;
+  }
+  #ttsBtn {
+    position: fixed; top: 110px; left: 14px; z-index: 20; display: none;
+    font-size: 15px; padding: 9px 14px;
+  }
+
+  /* ---------- פאנל הגדרות קול ---------- */
+  #ttsPanel {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: min(500px, 92vw); z-index: 60; display: none;
+    background: linear-gradient(160deg, rgba(24,32,58,.97), rgba(14,18,36,.97));
+    border: 2px solid rgba(255,215,100,.6); border-radius: 16px; padding: 20px 22px;
+    color: #e8eeff; box-shadow: 0 10px 40px rgba(0,0,0,.6);
+  }
+  #ttsPanel h3 { color: #ffe9a8; font-size: 19px; margin-bottom: 10px; }
+  #ttsPanel p { font-size: 13.5px; line-height: 1.6; color: #c4d0ea; margin-bottom: 12px; }
+  #ttsPanel a { color: #9fd0ff; }
+  #ttsKey {
+    width: 100%; padding: 10px 12px; font-size: 14px; direction: ltr;
+    background: rgba(255,255,255,.08); color: #fff;
+    border: 1.5px solid rgba(255,215,100,.4); border-radius: 10px; margin-bottom: 10px;
+  }
+  #ttsVoice, #ttsEngine {
+    width: 100%; padding: 10px 12px; font-size: 14.5px; font-family: inherit;
+    background: rgba(20,26,48,1); color: #fff;
+    border: 1.5px solid rgba(255,215,100,.4); border-radius: 10px; margin-bottom: 14px;
+  }
+  #ttsVoice { margin-bottom: 14px; }
+  #ttsEngine { margin-bottom: 4px; }
+  #ttsHint { color: #ffd76e !important; }
+  .ttsRow { display: flex; gap: 10px; }
+  .ttsRow button { flex: 1; font-size: 15px; padding: 10px; }
+  #ttsStatus { margin-top: 12px; font-size: 14px; color: #ffd76e; min-height: 20px; }
+  #zoomBtns {
+    position: fixed; bottom: 80px; left: 14px; z-index: 20; display: none;
+    flex-direction: column; gap: 8px;
+  }
+  #zoomBtns button { font-size: 20px; width: 46px; height: 46px; }
+  #zoomHint { position: fixed; bottom: 46px; left: 14px; z-index: 20; display: none;
+    color: rgba(255,255,255,.7); font-size: 11.5px; background: rgba(10,14,30,.5);
+    padding: 4px 8px; border-radius: 7px; }
+
+  #mapHeader {
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 30;
+    display: none; align-items: center; gap: 12px;
+    background: linear-gradient(160deg, rgba(24,32,58,.92), rgba(14,18,36,.92));
+    border: 1.5px solid rgba(255,215,100,.6); border-radius: 12px;
+    padding: 10px 18px; color: #ffe9a8; font-size: 17px; font-weight: 800;
+  }
+  #mapClose { font-size: 16px; padding: 4px 10px; }
+
+  /* ---------- חידון ---------- */
+  #quizPanel {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: min(480px, 92vw); z-index: 40; display: none;
+    background: linear-gradient(160deg, rgba(30,26,10,.96), rgba(20,16,6,.96));
+    border: 2px solid #d9a93f; border-radius: 16px; padding: 20px 22px;
+    color: #f4e8c8; box-shadow: 0 10px 40px rgba(0,0,0,.6);
+  }
+  #quizTitle { color: #9fd0ff; font-size: 14px; font-weight: 800; margin-bottom: 8px; }
+  #quizQ { color: #ffe9a8; font-size: 19px; font-weight: 800; line-height: 1.5; margin-bottom: 14px; }
+  .ansBtn {
+    display: block; width: 100%; margin: 8px 0; padding: 12px 14px;
+    font-family: inherit; font-size: 16px; font-weight: 700; text-align: right;
+    color: #f4e8c8; background: rgba(255,255,255,.07);
+    border: 1.5px solid rgba(255,215,100,.4); border-radius: 11px; cursor: pointer;
+    transition: background .15s;
+  }
+  .ansBtn:hover { background: rgba(255,215,100,.15); }
+  .wrongAns { background: rgba(160,40,40,.5) !important; border-color: #c05050 !important;
+    animation: shake .4s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+
+  /* ---------- שליטת מגע (טלפון וטאבלט) ---------- */
+  #touchUI { display: none; }
+  body.touch #touchUI { display: block; }
+
+  #joyBase {
+    position: fixed; bottom: 26px; left: 22px; z-index: 22;
+    width: 132px; height: 132px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(24,32,58,.55), rgba(14,18,36,.72));
+    border: 2px solid rgba(255,215,100,.5);
+    box-shadow: 0 4px 18px rgba(0,0,0,.45);
+    touch-action: none; user-select: none; -webkit-user-select: none;
+  }
+  #joyKnob {
+    position: absolute; top: 50%; left: 50%; width: 58px; height: 58px;
+    margin: -29px 0 0 -29px; border-radius: 50%;
+    background: linear-gradient(180deg, #ffe27a, #ffb340);
+    border: 2px solid #fff3c4; box-shadow: 0 3px 12px rgba(255,180,60,.6);
+    pointer-events: none; transition: transform .08s ease-out;
+  }
+  #joyHint {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: rgba(255,233,168,.55); font-size: 11px; font-weight: 700;
+    pointer-events: none; white-space: nowrap; margin-top: 44px;
+  }
+
+  /* פריסה מותאמת למסך קטן */
+  body.touch #controlsHint { display: none; }
+  body.touch #zoomHint { display: none !important; }
+  body.touch #zoomBtns {
+    bottom: 30px; left: auto; right: 18px; flex-direction: column; gap: 10px;
+  }
+  body.touch #zoomBtns button { width: 54px; height: 54px; font-size: 22px; }
+  body.touch #actionBtn { bottom: 176px; font-size: 18px; padding: 13px 26px; }
+  body.touch #psalmNow { bottom: 168px; font-size: 13px; padding: 7px 14px; }
+  body.touch #infoPanel { bottom: 176px; left: 50%; transform: translateX(-50%);
+    width: min(340px, 94vw); }
+
+  @media (max-width: 620px) {
+    #missionCard { top: 62px; width: min(250px, 68vw); padding: 9px 11px; }
+    #missionTitle { font-size: 14.5px; }
+    #missionHint { font-size: 12px; }
+    #missionLevel, #missionDist { font-size: 11.5px; }
+    #kedushaWrap { width: 46vw; top: 10px; }
+    #kedushaLabel { font-size: 12.5px; }
+    #mapBtn, #voiceBtn, #ttsBtn { font-size: 12.5px; padding: 7px 10px; }
+    #voiceBtn { top: 52px; } #ttsBtn { top: 92px; }
+    #viewsBadge { font-size: 11.5px; padding: 5px 9px; }
+    #infoTitle { font-size: 16px; } #infoBody { font-size: 13.5px; }
+  }
+
+  /* ---------- Action button ---------- */
+  #actionBtn {
+    position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+    z-index: 20; display: none; pointer-events: auto;
+    font-family: inherit; font-size: 20px; font-weight: 800; color: #3a2500;
+    background: linear-gradient(180deg, #ffe27a, #ffb340);
+    border: 2px solid #fff3c4; border-radius: 999px; padding: 14px 34px;
+    cursor: pointer; box-shadow: 0 6px 22px rgba(255,180,60,.55);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { transform: translateX(-50%) scale(1);} 50% { transform: translateX(-50%) scale(1.06);} }
+
+  /* ---------- Info panel ---------- */
+  #infoPanel {
+    position: fixed; bottom: 24px; left: 18px; width: min(360px, 86vw); z-index: 15;
+    background: linear-gradient(160deg, rgba(38,30,10,.93), rgba(24,18,6,.93));
+    border: 1.5px solid #d9a93f; border-radius: 14px; padding: 14px 16px;
+    color: #f4e8c8; box-shadow: 0 6px 24px rgba(0,0,0,.5); display: none;
+  }
+  #infoTitle { color: #ffd76e; font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+  #infoBody { font-size: 14.5px; line-height: 1.6; }
+  #infoClose { position: absolute; top: 8px; left: 10px; background: none; border: none;
+    color: #ffd76e; font-size: 18px; cursor: pointer; pointer-events: auto; }
+
+  /* ---------- Toast ---------- */
+  #toast {
+    position: fixed; top: 20%; left: 50%; transform: translateX(-50%); z-index: 25;
+    color: #ffe9a8; font-size: 30px; font-weight: 900;
+    text-shadow: 0 0 18px rgba(255,200,80,.9), 0 2px 6px rgba(0,0,0,.6);
+    opacity: 0; transition: opacity .3s, transform .8s; pointer-events: none;
+  }
+
+  /* ---------- Overlays ---------- */
+  .overlay {
+    position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    background: radial-gradient(ellipse at 50% 35%, rgba(30,42,80,.96), rgba(8,10,22,.98));
+    color: #fff; padding: 24px;
+  }
+  #levelOverlay { background: rgba(8,10,22,.78); display: none; }
+  #levelOverlay h2 { font-size: clamp(30px, 6vw, 52px); color: #ffe9a8;
+    text-shadow: 0 0 30px rgba(255,200,80,.6); }
+  #levelOverlay p { font-size: 18px; color: #cdd8f0; margin-top: 10px; max-width: 560px; line-height: 1.6; }
+
+  /* מסך פתיחה שקוף — רואים את סיור המצלמה מאחור */
+  #startOverlay {
+    justify-content: space-between; pointer-events: none;
+    background: linear-gradient(180deg, rgba(8,10,22,.85) 0%, rgba(8,10,22,0) 30%,
+                rgba(8,10,22,0) 62%, rgba(8,10,22,.92) 100%);
+  }
+  #startOverlay h1 { font-size: clamp(32px, 6.5vw, 58px); color: #ffe9a8;
+    text-shadow: 0 0 34px rgba(255,200,80,.75), 0 2px 8px rgba(0,0,0,.8); margin-top: 18px; }
+  #startOverlay .sub { font-size: clamp(15px, 2.6vw, 20px); color: #cfe0ff;
+    text-shadow: 0 1px 6px rgba(0,0,0,.8); margin-top: 8px; }
+  #startOverlay .credit { font-size: clamp(13px, 2.2vw, 16px); color: #ffd76e;
+    text-shadow: 0 1px 6px rgba(0,0,0,.9); margin-top: 10px; font-weight: 700; }
+  #startBottom { display: flex; flex-direction: column; align-items: center; gap: 12px;
+    margin-bottom: 14px; }
+  .bigBtn {
+    font-family: inherit; font-size: 24px; font-weight: 900; color: #3a2500;
+    background: linear-gradient(180deg, #ffe27a, #ffb340);
+    border: 2px solid #fff3c4; border-radius: 999px; padding: 16px 56px;
+    cursor: pointer; box-shadow: 0 8px 30px rgba(255,180,60,.5); pointer-events: auto;
+  }
+  .bigBtn:hover { transform: scale(1.04); }
+  #miniInstr { color: rgba(235,240,255,.85); font-size: 14px; line-height: 1.7;
+    text-shadow: 0 1px 4px rgba(0,0,0,.8); }
+  #miniInstr b { color: #ffd76e; }
+
+  #endOverlay { display: none; }
+  #endOverlay h1 { font-size: clamp(28px, 5.5vw, 48px); color: #ffe9a8;
+    text-shadow: 0 0 34px rgba(255,200,80,.6); margin-bottom: 8px; }
+  #endScore { font-size: 24px; color: #ffd76e; font-weight: 900; margin-bottom: 16px; }
+  #endList { text-align: right; font-size: 15px; line-height: 1.9; color: #dfe7fa;
+    background: rgba(255,255,255,.05); border-radius: 14px; padding: 14px 26px;
+    margin-bottom: 22px; max-width: 560px; max-height: 42vh; overflow-y: auto; }
+</style>
+<meta property="og:title" content="מסע אל בית המקדש">
+<meta property="og:description" content="מסע אל בית המקדש">
+<meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-beit-hamikdash-index.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/beit-hamikdash/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://www.kol-toda.co.il/beit-hamikdash/">
+<script async src="https://www.kol-toda.co.il/a.js"></script>
+</head>
+<body>
+
+<div id="hud">
+  <div id="kedushaWrap">
+    <div id="kedushaLabel">✨ קדושה: <span id="kedushaNum">0</span></div>
+    <div id="kedushaBar"><div id="kedushaFill"></div></div>
+  </div>
+  <div id="missionCard">
+    <div id="missionLevel"></div>
+    <div id="missionTitle"></div>
+    <div id="missionHint"></div>
+    <div id="missionDist"></div>
+  </div>
+  <div id="controlsHint">חיצים / WASD – תנועה • גרירת עכבר – מבט • E – פעולה • גלגלת – זום • M – מפה</div>
+</div>
+
+<div id="touchUI">
+  <div id="joyBase">
+    <div id="joyKnob"></div>
+    <div id="joyHint">הזיזו להליכה</div>
+  </div>
+</div>
+
+<div id="psalmNow"></div>
+<div id="viewsBadge">👁️ ...</div>
+<button id="mapBtn" class="uiBtn">🗺️ מפה (M)</button>
+<button id="voiceBtn" class="uiBtn">🔊 קריינות</button>
+<button id="ttsBtn" class="uiBtn">🎙️ קול</button>
+
+<div id="ttsPanel">
+  <h3>🎙️ הגדרות קול הקריינות</h3>
+  <p>
+    כברירת מחדל נשמע קול הדפדפן הבסיסי. לקול <b>גבר איכותי</b> — בחרו מנוע, הדביקו מפתח,
+    ולחצו "בדיקת קול". המפתח נשמר <b>רק בדפדפן שלכם</b>, וכל משפט מוקלט פעם אחת בלבד.
+  </p>
+  <select id="ttsEngine">
+    <option value="gemini">Google AI Studio (Gemini) — חינמי וקל ⭐</option>
+    <option value="cloud">Google Cloud Text-to-Speech</option>
+  </select>
+  <p id="ttsHint" style="margin-top:8px"></p>
+  <input id="ttsKey" placeholder="AIza..." autocomplete="off">
+  <select id="ttsVoice"></select>
+  <div class="ttsRow">
+    <button id="ttsSave" class="uiBtn">💾 שמור</button>
+    <button id="ttsTest" class="uiBtn">▶️ בדיקת קול</button>
+    <button id="ttsClose" class="uiBtn">✕ סגור</button>
+  </div>
+  <button id="ttsPregen" class="uiBtn" style="width:100%; margin-top:10px; padding:11px; font-size:15px">🎧 הקלטת כל הקריינות מראש</button>
+  <button id="ttsExport" class="uiBtn" style="width:100%; margin-top:8px; padding:11px; font-size:15px">📦 ייצוא חבילת קול (לשיתוף עם אחרים)</button>
+  <div id="ttsStatus"></div>
+</div>
+<div id="zoomBtns">
+  <button id="zoomOut" class="uiBtn" title="זום החוצה">➖</button>
+  <button id="zoomIn" class="uiBtn" title="זום פנימה">➕</button>
+</div>
+<div id="zoomHint">זום: גלגלת / ➕➖</div>
+
+<div id="mapHeader">🗺️ מפת המקדש <button id="mapClose" class="uiBtn">✕ סגירה (M)</button></div>
+
+<div id="quizPanel">
+  <div id="quizTitle">📜 תחנת ידע</div>
+  <div id="quizQ"></div>
+  <div id="quizAnswers"></div>
+</div>
+
+<button id="actionBtn">✨ בצע פעולה</button>
+
+<div id="infoPanel">
+  <button id="infoClose">✕</button>
+  <div id="infoTitle"></div>
+  <div id="infoBody"></div>
+</div>
+
+<div id="toast"></div>
+
+<div id="levelOverlay" class="overlay">
+  <h2 id="levelName"></h2>
+  <p id="levelDesc"></p>
+</div>
+
+<div id="startOverlay" class="overlay">
+  <div>
+    <h1>🏛️ מסע אל בית המקדש</h1>
+    <div class="sub">התבוננו ביופיו ובתפארתו של המקדש... ואז צאו למסע של קדושה ולימוד</div>
+    <div class="credit">🛠️ המשחק נבנה על ידי יהונתן הזה</div>
+  </div>
+  <div id="startBottom">
+    <button id="startBtn" class="bigBtn">🕊️ היכנסו למקדש</button>
+    <div id="miniInstr">
+      <b>חיצים / WASD</b> תנועה • <b>עכבר</b> מבט • <b>E</b> פעולה • <b>גלגלת</b> זום למעוף ציפור • <b>M</b> מפת המקדש<br>
+      חמישה שלבים: כלי המקדש • הלשכות • עבודת המקדש • תולדות המקדש • אהבת חינם והבית השלישי
+    </div>
+  </div>
+</div>
+
+<div id="endOverlay" class="overlay">
+  <h1>🎉 כל הכבוד! השלמת את המסע</h1>
+  <div id="endScore"></div>
+  <div id="endList"></div>
+  <button id="restartBtn" class="bigBtn">🔄 שחק שוב</button>
+</div>
+
+<script type="module" src="./main.js"></script>
+</body>
+</html>
