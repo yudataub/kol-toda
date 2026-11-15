@@ -19,7 +19,7 @@ h2{font-size:19px;margin:0 0 10px}
 .tab.on{border-color:var(--acc);background:var(--acc2);color:var(--acc)}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0}
 label{font-size:15px;color:var(--muted)}
-select,input[type=text],input[type=password],input[type=url]{font:inherit;font-size:16px;padding:9px 11px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);max-width:100%}
+select,input[type=text],input[type=password],input[type=url],input[type=email],input[type=tel]{font:inherit;font-size:16px;padding:9px 11px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);max-width:100%}
 input.name{width:100%}
 button{font:inherit;cursor:pointer}
 .btn{padding:10px 16px;border:0;border-radius:10px;background:var(--acc);color:#fff;font-weight:700}
@@ -113,7 +113,8 @@ footer a{color:var(--acc);font-weight:700}
 <section class="card">
   <div class="ravbar" id="ravBar" hidden></div>
   <input class="name" id="name" type="text" aria-label="שם ההקלטה" placeholder="שם ההקלטה (לא חובה)">
-  <input class="name" id="by" type="text" aria-label="השם שלך" placeholder="השם שלך (לא חובה)" style="margin-top:8px">
+  <input class="name" id="by" type="text" aria-label="שם המרצה" placeholder="שם המרצה (יופיע בראש ספר השיעור)" style="margin-top:8px">
+  <div class="m" id="regLine" style="margin-top:6px"></div>
   <div class="row" id="audioOpts">
     <label>מיקרופון <select id="mic"><option value="">ברירת מחדל</option></select></label>
     <label>איכות <select id="kbps"><option value="64">64 (דיבור, קטן)</option><option value="96">96</option><option value="128" selected>128 (מומלץ)</option><option value="192">192 (מוזיקה)</option></select></label>
@@ -134,7 +135,7 @@ footer a{color:var(--acc);font-weight:700}
     <span style="width:58px"></span>
   </div>
   <div class="status" id="status">לחצו "הקלטה" כדי להתחיל</div>
-  <div class="notice" id="sendNote" hidden>📤 בסיום, כל הקלטה נשלחת לשמירה במאגר הקול החמישי. עותק נשאר גם אצלך במכשיר.</div>
+  <div class="notice" id="sendNote" hidden>📤 בסיום, כל הקלטה נשלחת לשמירה במאגר הקול החמישי, ונכתבים ממנה תמלול וספר שיעור שנשלחים אליך. עותק נשאר גם אצלך במכשיר.</div>
 
   <div id="review" hidden>
     <div class="t" id="revTitle"></div>
@@ -242,6 +243,23 @@ footer a{color:var(--acc);font-weight:700}
   </div>
 </dialog>
 
+<dialog id="regDlg">
+  <h2>📝 הרשמה למקליט</h2>
+  <p class="m">נרשמים פעם אחת במכשיר הזה. מכל הקלטה נכתבים תמלול וספר שיעור, והם נשלחים אליכם למייל או לווטסאפ.</p>
+  <label for="regName">השם שלך</label>
+  <input id="regName" type="text" maxlength="60" style="width:100%;margin:4px 0 10px" autocomplete="name">
+  <label for="regMail">מייל</label>
+  <input id="regMail" type="email" maxlength="120" dir="ltr" style="width:100%;margin:4px 0 10px" placeholder="name@example.com" autocomplete="email">
+  <label for="regWa">ווטסאפ</label>
+  <input id="regWa" type="tel" maxlength="20" dir="ltr" style="width:100%;margin:4px 0 6px" placeholder="050-0000000" autocomplete="tel">
+  <div class="m">חובה למלא שם, ולפחות מייל או ווטסאפ.</div>
+  <div class="status" id="regStatus"></div>
+  <div class="row" style="justify-content:flex-end">
+    <button class="btn ghost" id="regCancel" hidden>ביטול</button>
+    <button class="btn" id="regOk">הרשמה</button>
+  </div>
+</dialog>
+
 <script src="lame.min.js"></script>
 <script>
 "use strict";
@@ -259,6 +277,61 @@ const store = {
   set(k, v) { try { localStorage.setItem("ktrec." + k, v); } catch (e) {} }
 };
 const cfg = () => ({ url: store.get("url") || DRIVE_URL, code: store.get("code") });
+
+// ---------- הרשמה (חובה לפני שימוש, מ-15.11.2026) ----------
+// הפרטים נשמרים במכשיר ונשלחים לשרת התמלול (kol-toda.co.il/tamlul, C:/Users/User/kol-upload). אחרי כל העלאה
+// המקליט מדווח לשרת הזה של מי הקובץ, וכך התמלול וספר השיעור נשלחים למייל או לווטסאפ של מי שהקליט.
+const TAMLUL_URL = "https://script.google.com/macros/s/AKfycbx90lE79ZLZBIXpSf94bfZ0_MJbVz70Ck_somZa9-EPe2SbZvTmP9C-zOn5INdEiXef/exec";
+const reg = () => { try { const r = JSON.parse(store.get("reg") || "null"); return r && r.name && (r.email || r.whatsapp) ? r : null; } catch (e) { return null; } };
+async function tamlul(body) {
+  const r = await fetch(TAMLUL_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) });
+  return r.json();
+}
+function showReg() {
+  const r = reg();
+  $("regLine").innerHTML = r ? `רשום: <b>${esc(r.name)}</b> · התמלול והספר יישלחו ל-<bdi>${esc(r.email || r.whatsapp)}</bdi> <button class="btn ghost small" id="regEdit">עריכה</button>` : "";
+  if (r) { $("regEdit").onclick = () => askReg(true); if (!$("by").value) { $("by").value = r.name; store.set("by", r.name); } }
+}
+function askReg(canCancel) {
+  const r = reg() || {};
+  $("regName").value = r.name || store.get("by"); $("regMail").value = r.email || ""; $("regWa").value = r.whatsapp || "";
+  $("regStatus").textContent = ""; $("regCancel").hidden = !canCancel;
+  if (!$("regDlg").open) $("regDlg").showModal();
+}
+// בלי הרשמה אי אפשר לסגור את החלון (גם לא ב-Esc)
+function regInit() {
+  $("regDlg").addEventListener("cancel", e => { if (!reg()) e.preventDefault(); });
+  $("regCancel").onclick = () => $("regDlg").close();
+  $("regOk").onclick = async () => {
+    const name = $("regName").value.trim(), email = $("regMail").value.trim(), whatsapp = $("regWa").value.trim(), st = $("regStatus");
+    const bad = m => { st.className = "status err"; st.textContent = m; };
+    if (!name) return bad("חסר שם");
+    if (!email && !whatsapp) return bad("צריך למלא מייל או ווטסאפ");
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return bad("כתובת המייל לא תקינה");
+    if (whatsapp && whatsapp.replace(/\D/g, "").length < 9) return bad("מספר הווטסאפ לא תקין");
+    st.className = "status"; st.textContent = "נרשם…"; $("regOk").disabled = true;
+    try {
+      const j = await tamlul({ action: "register", name, email, whatsapp });
+      if (!j.ok) throw new Error(j.error);
+      store.set("reg", JSON.stringify({ name, email, whatsapp }));
+      $("regDlg").close(); showReg();
+    } catch (e) { bad("ההרשמה לא הצליחה: " + (e.message || "אין חיבור") + ". נסו שוב"); }
+    $("regOk").disabled = false;
+  };
+  showReg();
+  if (!reg()) askReg(false);
+}
+// אחרי העלאה: של מי הקובץ. שלושה ניסיונות; כישלון לא מפריע להקלטה (אז רק לא יישלחו התמלול והספר)
+async function reportOwner(fileId, rec) {
+  const r = reg(); if (!r || !fileId) return;
+  for (let i = 0; i < 3; i++) {
+    try {
+      const j = await tamlul({ action: "rec_owner", fileId, speaker: rec.by || store.get("by") || r.name, name: r.name, email: r.email, whatsapp: r.whatsapp });
+      if (j.ok || !/שעה/.test(j.error || "")) return;
+    } catch (e) {}
+    await new Promise(res => setTimeout(res, 4000 * (i + 1)));
+  }
+}
 
 // ---------- IndexedDB ----------
 let dbp;
@@ -942,7 +1015,7 @@ async function recover() {
   if (n) status("♻️ שוחזרו " + n + " הקלטות שנקטעו.", "ok");
 }
 
-$("recBtn").onclick = () => R ? finish() : begin();
+$("recBtn").onclick = () => R ? finish() : reg() ? begin() : askReg(false);
 $("pauseBtn").onclick = togglePause;
 addEventListener("beforeunload", e => { if (R || uploading || review) { e.preventDefault(); e.returnValue = ""; } });
 document.addEventListener("visibilitychange", async () => {
@@ -1186,6 +1259,7 @@ async function upload(id) {
     if (rec.rav) {   // הקלטה של רב: פתיחה לצפייה ורישום, כדי שתעלה לדף השיעורים שלו
       try { await api(Object.assign({ action: "ravDone", id: fileId }, base, { data: undefined })); } catch (e) {}
     }
+    reportOwner(fileId, rec);
     rec.drive = "https://drive.google.com/file/d/" + fileId + "/view";
     delete rec.up;
     await putRec(rec);
@@ -1195,6 +1269,7 @@ async function upload(id) {
     if (e.blocked && total <= DIRECT_MAX) {   // ההעלאה הישירה לדרייב חסומה: קובץ קטן נשלח דרך השרת
       try {
         const fid = await uploadDirect(rec, base, say);
+        reportOwner(fid, rec);
         rec = await getRec(id) || rec; rec.drive = "https://drive.google.com/file/d/" + fid + "/view"; delete rec.up;
         await putRec(rec); say("✅ נשלח ונשמר במאגר", "ok"); renderList(); listDrive(); uploading = false; return;
       } catch (e2) { e = e2; }
@@ -1310,6 +1385,7 @@ $("by").value = store.get("by");
 $("by").onchange = () => store.set("by", $("by").value.trim());
 $("sendNote").hidden = !cfg().url;
 showRav();
+regInit();
 { const want = new URLSearchParams(location.search).get("rav");
   if (want && /^[a-z0-9][a-z0-9-]{1,29}$/.test(want) && curRav()?.slug !== want && cfg().url) askRav(want); }
 showVset();
