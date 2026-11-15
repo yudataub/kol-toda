@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>קרב הבוס – פרשת ויצא – כיתה ו'</title>
+<style>
+  :root { --bg:#fbf6ec; --card:#fff; --text:#3b2f20; --soft:#7a6a55; --main:#b5651d; --main-dark:#7c4310; --gold:#d9a21b;
+    --good:#2f9e44; --good-soft:#e6f6ea; --bad:#c92a2a; --bad-soft:#fdeaea; --water:#1c7ed6; --stone:#8d8478; --border:#e8dcc6; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg:#1d1913; --card:#2a241b; --text:#f1e7d6; --soft:#bfae94; --main:#e39a4f; --main-dark:#f0b979; --border:#4a3f2e;
+    --good-soft:#1f3a27; --bad-soft:#4a2222; --stone:#a69d90; } }
+  :root[data-theme="dark"] { --bg:#1d1913; --card:#2a241b; --text:#f1e7d6; --soft:#bfae94; --main:#e39a4f; --main-dark:#f0b979;
+    --border:#4a3f2e; --good-soft:#1f3a27; --bad-soft:#4a2222; --stone:#a69d90; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family: "Segoe UI", Arial, sans-serif; line-height:1.55; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 14px 16px 40px; }
+  h1 { text-align:center; color:var(--main-dark); margin:8px 0 2px; font-size:26px; }
+  .sub { text-align:center; color:var(--soft); margin:0 0 10px; font-size:14px; }
+  .sub a { color:var(--main); font-weight:700; }
+  .card { background:var(--card); border:1.5px solid var(--border); border-radius:18px; padding:16px; box-shadow:0 4px 14px rgba(0,0,0,.06); }
+  /* זירת הבוס */
+  .arena { position:relative; height:150px; border-radius:16px; overflow:hidden; margin-bottom:12px;
+    background: linear-gradient(#ffe8b0, #f4d08a 60%, #d9b26a); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .arena { background: linear-gradient(#3b3020, #4a3a22 60%, #5a4526); } }
+  .well { position:absolute; left:50%; bottom:14px; width:150px; height:58px; margin-left:-75px; border-radius:50%;
+    background: radial-gradient(ellipse at center, #0b4f8a 0 45%, #6b5a45 47% 100%); box-shadow: inset 0 6px 10px rgba(0,0,0,.4); }
+  .water { position:absolute; left:50%; bottom:22px; width:100px; height:30px; margin-left:-50px; border-radius:50%;
+    background: radial-gradient(#74c0fc, #1c7ed6); opacity:0; transition: all 1.4s ease; }
+  .water.up { opacity:1; transform: translateY(-34px) scale(1.35); }
+  .stone { position:absolute; left:50%; bottom:20px; width:130px; height:96px; margin-left:-65px; transition: transform .7s cubic-bezier(.3,1.4,.5,1); }
+  .stone svg { width:100%; height:100%; filter: drop-shadow(0 6px 6px rgba(0,0,0,.35)); }
+  .stone.hit { animation: hit .35s; }
+  @keyframes hit { 30% { margin-left:-60px; } 60% { margin-left:-70px; } }
+  .hp { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:var(--main-dark); margin-bottom:10px; }
+  .hp .bar { flex:1; height:14px; background:var(--border); border-radius:8px; overflow:hidden; }
+  .hp .bar i { display:block; height:100%; width:0; background: linear-gradient(90deg, var(--gold), var(--main)); transition: width .6s; }
+  .round { font-size:13px; color:var(--soft); text-align:center; margin-bottom:4px; }
+  .round b { color:var(--main-dark); font-size:17px; display:block; }
+  .q { font-size:19px; font-weight:700; text-align:center; margin:10px 0 12px; }
+  .quote { font-size:20px; font-weight:700; text-align:center; background:var(--bg); border-right:5px solid var(--gold); border-radius:10px; padding:12px; margin:8px 0 12px; }
+  button { font-family:inherit; }
+  .opt { display:block; width:100%; margin:8px 0; padding:13px 14px; font-size:17px; text-align:right; color:var(--text);
+    background:var(--bg); border:2px solid var(--border); border-radius:14px; cursor:pointer; }
+  .opt:hover:not(:disabled) { border-color:var(--main); }
+  .opt.ok { background:var(--good-soft); border-color:var(--good); }
+  .opt.no { background:var(--bad-soft); border-color:var(--bad); opacity:.75; }
+  .row2 { display:flex; gap:10px; } .row2 .opt { text-align:center; font-weight:700; }
+  .fb { margin-top:10px; padding:10px 12px; border-radius:12px; font-size:15.5px; }
+  .fb.good { background:var(--good-soft); } .fb.retry { background:var(--bad-soft); }
+  .fb .love { margin-top:6px; color:var(--main-dark); font-weight:600; }
+  .primary { display:block; width:100%; margin-top:14px; padding:14px; font-size:18px; font-weight:700; color:#fff; border:0; border-radius:14px; cursor:pointer;
+    background: linear-gradient(135deg, var(--main), var(--main-dark)); text-decoration:none; text-align:center; }
+  .secondary { display:block; width:100%; margin-top:10px; padding:11px; font-size:15px; color:var(--main-dark); background:transparent;
+    border:2px solid var(--border); border-radius:12px; cursor:pointer; text-align:center; text-decoration:none; }
+  /* סידור */
+  .done-list { list-style:none; padding:0; margin:0 0 8px; counter-reset:n; }
+  .done-list li { counter-increment:n; padding:8px 10px; margin:5px 0; background:var(--good-soft); border-radius:10px; font-size:15.5px; }
+  .done-list li:before { content: counter(n) ". "; font-weight:700; }
+  .pool .opt { font-size:16px; }
+  .shake { animation: shake .4s; } @keyframes shake { 25% { transform: translateX(6px); } 75% { transform: translateX(-6px); } }
+  /* מילה מאותיות */
+  .slots { display:flex; justify-content:center; gap:6px; flex-wrap:wrap; direction:rtl; margin:8px 0 14px; }
+  .slot { width:42px; height:50px; border-bottom:3px solid var(--main); font-size:28px; font-weight:800; text-align:center; line-height:50px; cursor:pointer; }
+  .slot.fixed { color:var(--good); cursor:default; } .slot.gap { border:0; width:16px; }
+  .tiles { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; }
+  .tile { width:48px; height:52px; font-size:26px; font-weight:800; border-radius:12px; border:2px solid var(--gold); background:var(--card); color:var(--text); cursor:pointer; }
+  .tile:disabled { opacity:.2; cursor:default; }
+  .center { text-align:center; }
+  .big { font-size:54px; text-align:center; }
+  .score { font-size:48px; font-weight:800; text-align:center; color:var(--main-dark); }
+  .blessing { margin-top:12px; padding:12px; border-radius:12px; background:var(--bg); font-size:15px; }
+  .site-sig { margin-top:18px; background:var(--bad-soft); border:1.5px solid var(--gold); border-radius:14px; padding:12px 14px; font-size:13.5px; text-align:center; line-height:1.7; }
+  .site-sig a { color:var(--main-dark); font-weight:700; }
+  .mute { position:fixed; top:10px; left:10px; width:40px; height:40px; border-radius:50%; border:1.5px solid var(--border); background:var(--card); font-size:18px; cursor:pointer; }
+  .note { font-size:13.5px; color:var(--soft); text-align:center; margin-top:8px; }
+  @media (max-width:420px) { .q { font-size:17px; } .tile { width:42px; height:46px; font-size:22px; } .slot { width:34px; font-size:24px; } }
+</style>
+<meta property="og:title" content="קרב הבוס – פרשת ויצא – כיתה ו&#x27;">
+<meta property="og:description" content="קרב הבוס – פרשת ויצא – כיתה ו&#x27;">
+<meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-pninei-vayetze-boss-v.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/pninei/vayetze-boss-v.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://www.kol-toda.co.il/pninei/vayetze-boss-v.html">
+<script async src="https://www.kol-toda.co.il/a.js"></script>
+</head>
+<body>
+<button class="mute" id="mute" type="button" aria-label="צלילים">🔊</button>
+<div class="wrap">
+  <h1>🪨 קרב הבוס – פרשת ויצא</h1>
+  <p class="sub">כיתה ו' · השלב השלישי בסולם הפרשה · <a href="https://www.kol-toda.co.il/pninei/">כל המבדקים</a></p>
+  <div class="arena" aria-hidden="true">
+    <div class="well"></div><div class="water" id="water"></div>
+    <div class="stone" id="stone"><svg viewBox="0 0 130 96"><path d="M12 70 C4 40 30 8 66 8 C104 8 128 34 122 62 C118 84 94 92 64 90 C34 92 16 86 12 70Z" fill="var(--stone)"/>
+      <path d="M30 40 C42 30 58 28 70 34 M78 22 C90 26 100 36 104 48 M40 66 C56 72 80 72 96 64" stroke="rgba(0,0,0,.25)" stroke-width="3" fill="none" stroke-linecap="round"/></svg></div>
+  </div>
+  <div class="hp"><span id="hpTxt"></span><div class="bar"><i id="hpBar"></i></div></div>
+  <div class="card" id="screen"></div>
+  <div class="site-sig">📚 עוד חומרי לימוד על פרשת השבוע – חינם, במאגר הקול החמישי:
+    <a href="https://www.kol-toda.co.il/t/parasha.html" target="_blank" rel="noopener">kol-toda.co.il/t/parasha.html</a><br>
+    המאגר המלא: <a href="https://www.kol-toda.co.il/" target="_blank" rel="noopener">www.kol-toda.co.il</a></div>
+</div>
+<script>
+var CONFIG = {"API_URL": "https://script.google.com/macros/s/AKfycbwtHZ304ugUWdZ6DV5Sj-1gXMvv8ksDDLBkbZf6_XJTYXypHYAtmnkpofTzbNN0SFNb/exec", "GAME_ID": "pninei-boss-vayetze-5787-v", "CLASS_GAME_ID": "pninei-boss-vayetze-5787-v-kita", "PASS": 80, "SLUG": "vayetze", "REQUIRE": {"id": "pninei-hard-vayetze-5787-v", "url": "vayetze-kv.html", "name": "הרמה הקשה"}, "FIRST_URL": "vayetze-v.html", "MISS_KEY": "pninei-miss-vayetze-v", "BOSS": {"name": "האבן הגדולה על פי הבאר", "short": "האבן", "verb": "הזיזו את האבן", "intro": "על פי הבאר בחרן מונחת אבן ענקית. כל הרועים יחד לא הצליחו להזיז אותה – ויעקב גלל אותה לבד! כל תשובה נכונה שלכם מזיזה את האבן עוד קצת. מוכנים?", "win": "האבן התגלגלה – והמים עלו לקראתכם, כמו ליעקב אבינו! 💧"}, "BLESSING": "כל הכבוד! למדתם היום על פרשת ויצא - איך יעקב אבינו יצא לדרך, ה' הבטיח לשמור עליו ושמר עליו בכל מקום, ואיך רחל אמנו ויתרה כדי שאחותה לא תתבייש. שנזכה לסמוך על ה' בכל דרך, לשמור על כבוד כל אדם, לאהוב שלום ולא מריבה, ולאהוב את ה' בכל ליבנו. 🪜"};
+var D = {"order": {"title": "סדרו את מה שקרה ליעקב", "items": ["יעקב חולם על סולם ומלאכים", "יעקב נודר נדר ומקדש את האבן", "יעקב גולל את האבן מעל הבאר", "לבן נותן ליעקב את לאה במקום רחל", "יעקב בורח כשלבן הולך לגזוז צאנו", "מלאכים פוגשים את יעקב במחניים"], "src": "חלק א, סיפור הפרשה, עמ' 116–119"}, "who": [{"quote": "הן עוד היום גדול לא עת האסף המקנה", "speaker": "יעקב", "to": "הרועים", "options": ["יעקב", "לבן", "רחל"], "src": "חלק ד, תוכחה בנועם (כט, ז), עמ' 125"}, {"quote": "לא נוכל עד אשר יאספו כל העדרים", "speaker": "הרועים", "to": "יעקב", "options": ["לבן", "הרועים", "לאה"], "src": "חלק ד, תוכחה בנועם (כט, ח), עמ' 125"}, {"quote": "לא יעשה כן במקומנו לתת הצעירה לפני הבכירה", "speaker": "לבן", "to": "יעקב", "options": ["לאה", "רחל", "לבן"], "src": "חלק א, עמ' 118"}, {"quote": "השמר לך פן תדבר עם יעקב מטוב ועד רע", "speaker": "ה'", "to": "לבן", "options": ["ה'", "יעקב", "עשו"], "src": "חלק א, עמ' 119"}, {"quote": "טול את כספי, ואז אני אהיה חשוב כמת", "speaker": "יעקב", "to": "אליפז", "options": ["אליפז", "יעקב", "לבן"], "src": "חלק ב, \"וילך חרנה\", עמ' 121"}], "tiles": [{"clue": "יעקב נדר לעשות את האבן שלמראשותיו למזבח ול...", "answer": "מצבה", "src": "חלק א, הנדר, עמ' 117"}, {"clue": "העיר שאליה הלך יעקב, שם גר לבן", "answer": "חרן", "src": "חלק א, עמ' 116"}, {"clue": "השם שנתן יעקב למקום על שם מחנהו ומחנה המלאכים", "answer": "מחניים", "src": "חלק א, עמ' 119"}, {"clue": "בנו של עשו שלקח מיעקב את כל ממונו", "answer": "אליפז", "src": "חלק ב, עמ' 121"}, {"clue": "הבן שילדה רחל אחרי שנים רבות של עקרות", "answer": "יוסף", "src": "חלק א, עמ' 118"}], "tf": [{"s": "יעקב הגיע לחרן ביום שיצא מביתו, בזכות קפיצת הדרך.", "ok": true, "fix": "נכון! זה אחד מחמשת הניסים שקרו ליעקב באותו היום.", "src": "חלק א, חמישה ניסים, עמ' 116"}, {"s": "יעקב עבד בשביל רחל שלוש שנים בלבד.", "ok": false, "fix": "יעקב עבד שבע שנים בשביל רחל, ואחרי שקיבל את לאה עבד עוד שבע שנים.", "src": "חלק א, עמ' 117–118"}, {"s": "רחל ילדה את יוסף מיד אחרי החתונה.", "ok": false, "fix": "רחל ילדה את יוסף לאחר שנים רבות של עקרות.", "src": "חלק א, עמ' 118"}, {"s": "לבן רימה את יעקב גם בהסכם על הצאן, אבל ה' עשה ליעקב נס.", "ok": true, "fix": "נכון! נולדו כבשים רבים ששייכים ליעקב, \"ויפרוץ האיש מאוד מאוד\".", "src": "חלק א, ההסכם על הצאן, עמ' 118"}, {"s": "יעקב ברח מלבן בזמן שלבן ישב לסעוד עם אורחיו.", "ok": false, "fix": "יעקב ברח בזמן שלבן הלך לגזוז את צאנו.", "src": "חלק א, עמ' 119"}, {"s": "לאה ילדה שישה בנים ובת אחת, שקראו לה דינה.", "ok": true, "fix": "נכון! ראובן, שמעון, לוי, יהודה, יששכר וזבולון, ודינה.", "src": "חלק א, עמ' 118"}], "love": ["ה' שמר על יעקב בכל הדרך – וגם עליך הוא שומר 💛", "יעקב היה לבד בלילה על ההר, וה' היה איתו. ה' איתך גם כשאתה מרגיש לבד 💛", "אפילו האבנים רצו להיות קרובות לצדיק – ה' אוהב את מי שמתקרב אליו 💛", "ה' שלח מלאכים ללוות את יעקב בכל מקום – ובכל מקום אתה לא לבד 💛"], "personal": {"lead": "יעקב קיבל על עצמו נדר טוב, והאישה בסיפור עשתה יותר ממה שהייתה חייבת – גם אתה יכול לקבל קבלה קטנה.", "choices": ["לעזור בבית בדבר אחד שלא ביקשו ממני", "להעיר לחבר בעדינות ובחיוך, לא בצעקות", "לתת צדקה קטנה מדמי הכיס שלי", "לומר תודה לה' כל בוקר כשאני קם"]}, "hard": [{"q": "לפי החוברת, מדוע הפכו האבנים שיעקב שם למראשותיו לאבן אחת?", "options": ["כי כל אבן רצתה שהצדיק יניח עליה את ראשו", "כי יעקב ביקש מה' משכב נוח יותר", "כי ה' רצה שתהיה ליעקב אבן אחת גדולה לעשות ממנה מצבה", "כי הרועים לא יכלו להזיז אבנים רבות"], "correct": 0, "hint": "האבנים רבו ביניהן.", "explain": "האבנים רבו על מי יניח הצדיק את ראשו, וה' פייס אותן והפך אותן לאבן אחת."}, {"q": "מדוע בחלום הסולם עלו מלאכים וירדו מלאכים אחרים?", "options": ["כי המלאכים באו לבשר ליעקב שיתחתן", "כי מלאכי ארץ ישראל עלו ומלאכי חוץ לארץ ירדו ללוות אותו", "כי המלאכים באו להילחם בעשו", "כי המלאכים הביאו לו לחם ובגד לדרך"], "correct": 1, "hint": "יעקב עוזב את הארץ – מי ילווה אותו מעכשיו?", "explain": "מלאכי ארץ ישראל ליוו את יעקב עד הגבול, ומלאכי חוץ לארץ ירדו ללוות אותו משם."}, {"q": "לפי רש\"י, לאן הלך יעקב לפני שהגיע לחרן, וכמה זמן?", "options": ["לבית לבן, לשבע שנים", "לבית יצחק, לשנה אחת", "לבית מדרשם של שם ועבר, לארבע עשרה שנה", "להר המוריה, כדי להתפלל שם עשרים שנה ברציפות"], "correct": 2, "hint": "שני צדיקים שהיה להם בית מדרש.", "explain": "יעקב שינה את תוכניתו ולמד תורה ארבע עשרה שנה בבית מדרשם של שם ועבר, ורק אחר כך הלך לחרן."}, {"q": "מדוע שינה יעקב את תוכניתו והלך קודם ללמוד תורה?", "options": ["כי לבן לא היה בביתו", "כי אמו רבקה ציוותה עליו", "כי חלם חלום שהורה לו", "כי אליפז לקח את כל רכושו, והעניים לומדים לפני החתונה"], "correct": 3, "hint": "מה קרה לו בדרך, ומה נוהגים העניים?", "explain": "יעקב יצא עשיר, ועשירים מתחתנים קודם. כשאליפז לקח את כל ממונו, נעשה עני, והלך ללמוד תורה כדרך העניים."}, {"q": "מה אמר יעקב לאליפז, שבא להורגו במצוות עשו?", "options": ["טול את כספי, ואז אהיה חשוב כמת", "שוב אל עשו אביך, כי ה' שומר עליי בכל הדרך", "בוא איתי לבית לבן ותקבל שכר", "אתן לך מעשר מכל אשר לי"], "correct": 0, "hint": "עני חשוב כמת.", "explain": "יעקב נתן לאליפז את כל כספו, וכך אליפז קיים כביכול את מצוות אביו בלי להרוג אותו."}, {"q": "לפי רש\"י, איך הבטיח ה' ליעקב \"הארץ אשר אתה שוכב עליה\"?", "options": ["ה' הראה לו את כל הארץ מראש ההר", "ה' קיפל את כל ארץ ישראל והניח אותה מתחתיו", "ה' שלח מלאכים שימדדו ליעקב את כל גבולות הארץ", "ה' כתב לו את גבולות הארץ על האבן"], "correct": 1, "hint": "כל הארץ כולה הייתה מתחת ליעקב.", "explain": "רש\"י אומר שה' קיפל את כל ארץ ישראל מתחת ליעקב, ולכן נאמר \"הארץ אשר אתה שוכב עליה\"."}, {"q": "מה ענה לבן ליעקב כשגילה בבוקר שקיבל את לאה?", "options": ["שרחל עוד צעירה מדי לחתונה", "שיעקב לא השלים עדיין את כל שבע שנות העבודה שהבטיח", "לא יעשה כן במקומנו לתת הצעירה לפני הבכירה", "שלאה ביקשה להתחתן ראשונה"], "correct": 2, "hint": "מנהג המקום.", "explain": "לבן טען שבמקומו לא מחתנים את הקטנה לפני הגדולה, כי זה נחשב שם לדבר מגונה."}, {"q": "מדוע לא רצה לבן לשחרר את יעקב לחזור לארצו?", "options": ["כי חשש שעשו יבוא בדרך ויפגע בבנותיו ובנכדיו", "כי יעקב היה חייב לו כסף", "כי רצה שיעקב ילמד את בניו", "כי ידע שבזכות יעקב שורה הברכה בצאנו"], "correct": 3, "hint": "מה קרה לצאן של לבן מאז שיעקב הגיע?", "explain": "לבן ידע שהברכה בצאנו באה בזכות יעקב, ולכן רצה שיישאר אצלו וישרת אותו."}, {"q": "מה פירוש האזהרה \"השמר לך פן תדבר עם יעקב מטוב ועד רע\"?", "options": ["לא לשכנע אותו לחזור בהבטחות ולא לאיים עליו", "לדבר עם יעקב רק דברים טובים", "לא לדבר עם יעקב בכלל עד שיגיע בשלום אל ארצו ואל אביו", "לא לספר לבנותיו שיעקב בורח"], "correct": 0, "hint": "גם \"טוב\" אסור כאן.", "explain": "ה' אמר ללבן לא לנסות להחזיר את יעקב, לא בהבטחות טובות ולא באיומים, אלא לתת לו ללכת בשלום."}, {"q": "מה לחש רבי שלמה זלמן אויערבך לאישה בסיפור \"קבלה ושכר בצידה\"?", "options": ["שתתפלל בכל יום בכותל", "שאם תעשה משהו שאינה חייבת, גם ה' יעשה לה משהו שאינו חייב", "שתיתן מעשר מכל כספה", "שתחכה בסבלנות עוד שנה"], "correct": 1, "hint": "\"לא חייב\" מול \"לא חייב\".", "explain": "הרב אמר שה' לא חייב לאיש דבר, אבל מי שעושה לאחרים מעבר לחובה זוכה שה' יעשה לו מעבר. האישה התנדבה לשמח חולים וזכתה לילדים."}]};
+var screen = document.getElementById('screen');
+
+// ---------- כלים ----------
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function lsJson(k) { try { return JSON.parse(lsGet(k) || 'null'); } catch (e) { return null; } }
+function normalize(s) { return String(s == null ? '' : s).trim().replace(/\s+/g, ' ').replace(/["'״׳]/g, '').toLowerCase(); }
+function love() { var L = D.love; return '<div class="love">' + esc(L[Math.floor(Math.random() * L.length)]) + '</div>'; }
+function clean(s) { return String(s).replace(/[^א-ת ]/g, ''); }
+
+// ---------- צלילים (כמו במבדקים, אותו כפתור השתקה) ----------
+var AC = null;
+function muted() { return lsGet('pninei-mute') === '1'; }
+function tone(fs, step) { if (muted()) return; try { AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+  fs.forEach(function(f, i){ var o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime + i * (step || .11);
+    o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.25, t + .02);
+    g.gain.exponentialRampToValueAtTime(.0001, t + .3); o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + .32); }); } catch (e) {} }
+function sGood() { tone([523, 659, 784]); } function sBad() { tone([220, 185], .15); } function sWin() { tone([523, 659, 784, 1046, 784, 1046], .14); }
+var mb = document.getElementById('mute');
+function showMute() { mb.textContent = muted() ? '🔇' : '🔊'; }
+mb.addEventListener('click', function(){ lsSet('pninei-mute', muted() ? '0' : '1'); showMute(); }); showMute();
+
+// ---------- הבוס ----------
+var S = { hits: 0, total: 0, first: 0, items: 0, who: null, mode: null };
+function hit(firstTry) {
+  S.hits++; if (firstTry) S.first++;
+  var p = Math.min(1, S.hits / S.total);
+  var st = document.getElementById('stone');
+  st.style.transform = 'translateX(' + (-p * 150) + 'px) rotate(' + (-p * 200) + 'deg)';
+  st.classList.remove('hit'); void st.offsetWidth; st.classList.add('hit');
+  hpShow();
+}
+function hpShow() {
+  document.getElementById('hpBar').style.width = Math.round(S.hits / Math.max(1, S.total) * 100) + '%';
+  document.getElementById('hpTxt').textContent = '🪨 ' + S.hits + '/' + S.total;
+}
+
+// ---------- סבבים ----------
+function bossQuestions() {   // "הבוס זוכר": קודם מה שטעו בו במבדק וברמה הקשה
+  var miss = (lsJson(CONFIG.MISS_KEY) || []).filter(function(q){ return q && q.options && q.options.length >= 2; });
+  var pool = miss.slice(0, 5).map(function(q){ return { q: q.prompt, options: q.options, correct: q.correct, hint: q.hint, explain: q.explain, old: true }; });
+  var seen = pool.map(function(x){ return x.q; });
+  shuffle(D.hard).forEach(function(h){ if (pool.length < 5 && seen.indexOf(h.q) < 0) pool.push(h); });
+  return pool;
+}
+var ROUNDS;
+function setup() {
+  ROUNDS = [
+    { title: 'סבב 1: סדר האירועים', icon: '📜', kind: 'order' },
+    { title: 'סבב 2: מי אמר למי?', icon: '🗣️', kind: 'who', list: shuffle(D.who) },
+    { title: 'סבב 3: מילה מאותיות', icon: '🔤', kind: 'tiles', list: shuffle(D.tiles) },
+    { title: 'סבב 4: נכון או לא נכון?', icon: '⚖️', kind: 'tf', list: shuffle(D.tf) },
+    { title: 'סבב 5: הבוס זוכר!', icon: '🧠', kind: 'mc', list: bossQuestions(),
+      sub: 'הבוס שולף את השאלות שהיו לכם קשות במבדק – עכשיו תנצחו אותן!' }
+  ];
+  S.total = D.order.items.length + ROUNDS.reduce(function(n, r){ return n + (r.list ? r.list.length : 0); }, 0);
+  S.items = S.total; S.hits = 0; S.first = 0;
+  document.getElementById('stone').style.transform = ''; document.getElementById('water').className = 'water';
+  hpShow();
+}
+function header(r) { return '<div class="round"><b>' + r.icon + ' ' + esc(r.title) + '</b>' + (r.sub ? esc(r.sub) : '') + '</div>'; }
+
+function runRound(i) {
+  if (i >= ROUNDS.length) return victory();
+  var r = ROUNDS[i], next = function(){ runRound(i + 1); };
+  screen.innerHTML = '<div class="big">' + r.icon + '</div><h2 class="center">' + esc(r.title) + '</h2>' +
+    '<p class="center">' + esc(r.sub || '') + '</p><button class="primary" id="go" type="button">קדימה! 💪</button>';
+  document.getElementById('go').onclick = function(){
+    if (r.kind === 'order') roundOrder(r, next);
+    else queue(r, r.list.slice(), next);
+  };
+}
+
+// סבב 1: לוחצים על האירוע שקרה עכשיו
+function roundOrder(r, done) {
+  var items = D.order.items, pos = 0, tried = false, pool = shuffle(items.map(function(t, k){ return k; }));
+  function draw(msg) {
+    screen.innerHTML = header(r) + '<div class="q">' + esc(D.order.title) + '<br><small style="font-weight:400;color:var(--soft)">לחצו על מה שקרה ' + (pos ? 'אחר כך' : 'קודם') + '</small></div>' +
+      '<ol class="done-list">' + items.slice(0, pos).map(function(t){ return '<li>' + esc(t) + '</li>'; }).join('') + '</ol>' +
+      '<div class="pool">' + pool.filter(function(k){ return k >= pos; }).map(function(k){ return '<button class="opt" data-k="' + k + '" type="button">' + esc(items[k]) + '</button>'; }).join('') + '</div>' +
+      '<div id="fb">' + (msg || '') + '</div>';
+    Array.prototype.forEach.call(screen.querySelectorAll('.pool .opt'), function(b){
+      b.onclick = function(){
+        var k = +b.getAttribute('data-k');
+        if (k === pos) { sGood(); hit(!tried); pos++; tried = false;
+          if (pos >= items.length) { draw('<div class="fb good">✅ כל הכבוד! הכול בסדר הנכון.</div>'); setTimeout(done, 1500); } else draw();
+        } else { sBad(); tried = true; b.classList.add('no', 'shake'); b.disabled = true;
+          document.getElementById('fb').innerHTML = '<div class="fb retry">עוד לא… חשבו מה קרה ' + (pos ? 'מיד אחרי: «' + esc(items[pos - 1]) + '»' : 'ראשון בסיפור') + love() + '</div>'; }
+      };
+    });
+  }
+  draw();
+}
+
+// תור של פריטים: מה שנכשל פעמיים חוזר לסוף הסבב (בלי נקודות)
+function queue(r, list, done) {
+  var n0 = list.length, count = 0;
+  function step() {
+    if (!list.length) return done();
+    var it = list.shift(), again = !!it._again;
+    count++;
+    var ask = { who: askWho, tiles: askTiles, tf: askTf, mc: askMc }[r.kind];
+    ask(r, it, again, function(result){   // result: 'first' | 'second' | 'fail'
+      if (result === 'fail') { var c = {}; for (var k in it) c[k] = it[k]; c._again = true; list.push(c); }
+      else hit(result === 'first' && !again);
+      setTimeout(step, result === 'fail' ? 2600 : 1900);
+    });
+  }
+  step();
+}
+function progress(r) { return header(r); }
+
+function choice(r, top, opts, correctIdx, hint, explain, again, cb, row) {
+  var tries = 0;
+  screen.innerHTML = progress(r) + top + '<div class="' + (row ? 'row2' : '') + '">' +
+    opts.map(function(o, k){ return '<button class="opt" data-k="' + k + '" type="button">' + esc(o) + '</button>'; }).join('') +
+    '</div><div id="fb"></div>';
+  var btns = screen.querySelectorAll('.opt');
+  Array.prototype.forEach.call(btns, function(b){
+    b.onclick = function(){
+      var k = +b.getAttribute('data-k'), fb = document.getElementById('fb');
+      if (k === correctIdx) {
+        sGood(); b.classList.add('ok'); Array.prototype.forEach.call(btns, function(x){ x.disabled = true; });
+        fb.innerHTML = '<div class="fb good">✅ ' + (tries ? 'נכון! התעקשתם וניצחתם.' : 'נכון!') + (explain ? '<div>' + esc(explain) + '</div>' : '') + '</div>';
+        cb(tries ? 'second' : 'first');
+      } else {
+        sBad(); tries++; b.classList.add('no'); b.disabled = true;
+        if (tries >= 2 || opts.length - tries < 2) {
+          Array.prototype.forEach.call(btns, function(x){ x.disabled = true; if (+x.getAttribute('data-k') === correctIdx) x.classList.add('ok'); });
+          fb.innerHTML = '<div class="fb retry">התשובה: <b>' + esc(opts[correctIdx]) + '</b>' + (explain ? '<div>' + esc(explain) + '</div>' : '') +
+            '<div>השאלה תחזור עוד מעט 🔁</div>' + love() + '</div>';
+          cb('fail');
+        } else fb.innerHTML = '<div class="fb retry">לא בדיוק. רמז: ' + esc(hint) + love() + '</div>';
+      }
+    };
+  });
+}
+function askWho(r, it, again, cb) {
+  var opts = shuffle(it.options);
+  choice(r, '<div class="q">מי אמר?</div><div class="quote">«' + esc(it.quote) + '»</div>', opts, opts.indexOf(it.speaker),
+    'הדברים נאמרו אל ' + it.to + '. מי דיבר אליו?', esc(it.speaker) + ' אמר את זה אל ' + it.to + '.', again, cb);
+}
+function askTf(r, it, again, cb) {
+  var opts = ['✔ נכון', '✘ לא נכון'];
+  // בנכון/לא נכון אין ניסיון שני של ממש - טעות מציגה את ההסבר, והמשפט חוזר בסוף הסבב
+  choice(r, '<div class="q">נכון או לא נכון?</div><div class="quote">' + esc(it.s) + '</div>', opts, it.ok ? 0 : 1,
+    '', (it.ok ? 'נכון! ' : 'לא נכון. ') + it.fix, again, cb, true);
+}
+function askMc(r, it, again, cb) {
+  var idx = shuffle(it.options.map(function(_, k){ return k; }));
+  choice(r, (it.old ? '<div class="round">🧠 שאלה שהייתה קשה לכם</div>' : '') + '<div class="q">' + esc(it.q) + '</div>',
+    idx.map(function(k){ return it.options[k]; }), idx.indexOf(it.correct), it.hint, it.explain, again, cb);
+}
+function askTiles(r, it, again, cb) {
+  var ans = clean(it.answer).trim(), letters = ans.replace(/ /g, '').split('');
+  var ABC = 'אבגדהוזחטיכלמנסעפצקרשת'.split(''), decoy = [];
+  while (decoy.length < 3) { var c = ABC[Math.floor(Math.random() * ABC.length)]; if (letters.indexOf(c) < 0 && decoy.indexOf(c) < 0) decoy.push(c); }
+  var tiles = shuffle(letters.concat(decoy).map(function(ch){ return ch.replace(/[ךםןףץ]/, function(f){ return 'כמנפצ'['ךםןףץ'.indexOf(f)]; }); }));
+  var target = letters.map(function(ch){ return ch.replace(/[ךםןףץ]/, function(f){ return 'כמנפצ'['ךםןףץ'.indexOf(f)]; }); });
+  var fill = [], fixed = 0, tries = 0;   // fill[i] = אינדקס אריח
+  function slotsHtml() {
+    var h = '', li = 0;
+    ans.split('').forEach(function(ch){
+      if (ch === ' ') { h += '<span class="slot gap"></span>'; return; }
+      var t = fill[li]; h += '<span class="slot' + (li < fixed ? ' fixed' : '') + '" data-i="' + li + '">' + (t == null ? '' : tiles[t]) + '</span>'; li++;
+    });
+    return h;
+  }
+  function draw(msg) {
+    screen.innerHTML = progress(r) + '<div class="q">' + esc(it.clue) + '</div><div class="slots">' + slotsHtml() + '</div>' +
+      '<div class="tiles">' + tiles.map(function(t, k){ return '<button class="tile" data-k="' + k + '" type="button"' + (fill.indexOf(k) >= 0 ? ' disabled' : '') + '>' + t + '</button>'; }).join('') + '</div>' +
+      '<div class="note">לחצו על אות כדי למחוק אותה</div><div id="fb">' + (msg || '') + '</div>';
+    Array.prototype.forEach.call(screen.querySelectorAll('.tile'), function(b){
+      b.onclick = function(){ var i = 0; while (fill[i] != null) i++; if (i >= target.length) return; fill[i] = +b.getAttribute('data-k'); check(); };
+    });
+    Array.prototype.forEach.call(screen.querySelectorAll('.slot[data-i]'), function(s){
+      s.onclick = function(){ var i = +s.getAttribute('data-i'); if (i >= fixed && fill[i] != null) { fill[i] = null; draw(); } };
+    });
+  }
+  function check() {
+    var full = target.every(function(_, i){ return fill[i] != null; });
+    if (!full) return draw();
+    var ok = target.every(function(ch, i){ return tiles[fill[i]] === ch; });
+    if (ok) { sGood(); draw('<div class="fb good">✅ ' + esc(ans) + '! ' + (tries ? 'התעקשתם וניצחתם.' : 'מצוין!') + '</div>');
+      Array.prototype.forEach.call(screen.querySelectorAll('.tile'), function(b){ b.disabled = true; }); cb(tries ? 'second' : 'first'); return; }
+    sBad(); tries++;
+    if (tries >= 2) { draw('<div class="fb retry">המילה היא: <b>' + esc(ans) + '</b><div>היא תחזור עוד מעט 🔁</div>' + love() + '</div>');
+      Array.prototype.forEach.call(screen.querySelectorAll('.tile'), function(b){ b.disabled = true; }); cb('fail'); return; }
+    // רמז: האות הראשונה במקום
+    fill = []; var t0 = tiles.indexOf(target[0]); fill[0] = t0; fixed = 1;
+    draw('<div class="fb retry">לא בדיוק. רמז: האות הראשונה היא ' + target[0] + love() + '</div>');
+  }
+  draw();
+}
+
+// ---------- ניצחון, שאלה אישית, סיום ----------
+function victory() {
+  sWin();
+  document.getElementById('water').className = 'water up';
+  var st = document.getElementById('stone'); st.style.transform = 'translateX(-190px) rotate(-320deg)';
+  screen.innerHTML = '<div class="big">🎉💧</div><h2 class="center">ניצחתם את הבוס!</h2><p class="center">' + esc(CONFIG.BOSS.win) + '</p>' +
+    '<button class="primary" id="go" type="button">עוד שאלה אחת – רק בשבילכם 💛</button>';
+  document.getElementById('go').onclick = personal;
+}
+function personal() {
+  var p = D.personal;
+  screen.innerHTML = '<div class="big">🪞</div><h2 class="center">ומה זה אומר עליי?</h2><p class="center">' + esc(p.lead) + '</p>' +
+    '<p class="center" style="font-weight:700">מה אני רוצה לעשות השבוע?</p>' +
+    p.choices.map(function(c, k){ return '<button class="opt" data-k="' + k + '" type="button">' + esc(c) + '</button>'; }).join('') +
+    '<div class="note">התשובה נשארת רק אצלכם, במכשיר הזה. אף אחד אחר לא רואה אותה.</div>';
+  Array.prototype.forEach.call(screen.querySelectorAll('.opt'), function(b){
+    b.onclick = function(){ lsSet('pninei-kabbala-' + CONFIG.SLUG, p.choices[+b.getAttribute('data-k')]); finish(p.choices[+b.getAttribute('data-k')]); };
+  });
+}
+function finish(kab) {
+  var score = Math.round(S.first / S.items * 100), isClass = S.mode === 'class', who = S.who;
+  var top = '<h2 class="center">כל הכבוד, ' + esc(who.name) + '!</h2>';
+  if (isClass) top += '<div class="center">הציון של הכיתה בקרב הבוס:</div><div class="score">' + score + '</div>';
+  else if (score >= CONFIG.PASS) { lsSet('pninei-pass-' + CONFIG.GAME_ID, '1');
+    top += '<div class="big">👑</div><p class="center">ניצחתם את הבוס בגדול! הוספתם כתר לכיתה ' + esc(who.cls) + "' ולוח התלמידים.</p>"; }
+  else top += '<p class="center">ניצחתם את הבוס! 🌟 כדי לקבל כתר צריך לענות נכון בפעם הראשונה על 80% – נסו שוב ותצליחו.</p>';
+  screen.innerHTML = top + '<div class="blessing">✨ הקבלה שלי השבוע: <b>' + esc(kab) + '</b></div>' +
+    '<div class="blessing">' + esc(CONFIG.BLESSING) + '</div>' +
+    '<div id="send" class="note">שומר את התוצאה...</div>' +
+    '<button class="primary" id="again" type="button">לשחק שוב 🔄</button>' +
+    '<a class="secondary" href="https://www.kol-toda.co.il/pninei/">🗂 לכל המבדקים ולכתרי הכיתות</a>';
+  document.getElementById('again').onclick = function(){ setup(); runRound(0); };
+  fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify({ id: who.id, name: who.name, cls: who.cls, school: who.school, score: score,
+    game: isClass ? CONFIG.CLASS_GAME_ID : CONFIG.GAME_ID }) })
+    .then(function(){ document.getElementById('send').textContent = 'נשמר בהצלחה! ✅'; })
+    .catch(function(){ document.getElementById('send').textContent = 'לא הצלחנו לשמור את התוצאה (אין חיבור?).'; });
+}
+
+// ---------- פתיחה, זיהוי ונעילה ----------
+function passed(id, st) {
+  if (lsGet('pninei-pass-' + id) === '1') return true;
+  var s = lsJson('pninei-boards-v13');
+  return !!(s && s.rows && st && s.rows.some(function(r){ return r[0] === id && normalize(r[1]) === normalize(st.name) && String(r[2]) === String(st.cls) && +r[4] >= CONFIG.PASS; }));
+}
+function start(mode, who) { S.mode = mode; S.who = who; setup();
+  screen.innerHTML = '<div class="big">🪨</div><h2 class="center">' + esc(CONFIG.BOSS.name) + '</h2><p>' + esc(CONFIG.BOSS.intro) + '</p>' +
+    '<p class="note">5 סבבים, כל אחד משחק אחר. טעיתם? יש רמז וניסיון שני, ומה שלא הצלחתם – חוזר.</p>' +
+    '<button class="primary" id="go" type="button">' + esc(CONFIG.BOSS.verb) + '! 💪</button>';
+  document.getElementById('go').onclick = function(){ runRound(0); };
+}
+function locked(st) {
+  screen.innerHTML = '<div class="big">🔒</div><h2 class="center">קרב הבוס עוד נעול</h2>' +
+    '<p class="center">מגיעים לבוס אחרי שעוברים את ' + esc(CONFIG.REQUIRE.name) + ' (80 ומעלה).</p>' +
+    '<a class="primary" href="' + CONFIG.REQUIRE.url + '">ל' + esc(CONFIG.REQUIRE.name) + ' ←</a><div class="note" id="chk">' + (st ? 'כבר עברתם במכשיר אחר? בודקים בלוח...' : '') + '</div>' +
+    '<button class="secondary" id="back" type="button">חזרה</button>';
+  document.getElementById('back').onclick = boot;
+  if (!st) return;
+  fetch(CONFIG.API_URL + '?action=boards').then(function(r){ return r.json(); }).then(function(j){
+    if (j && j.ok && j.rows) lsSet('pninei-boards-v13', JSON.stringify({ t: Date.now(), rows: j.rows }));
+    if (passed(CONFIG.REQUIRE.id, st)) start('home', st); else document.getElementById('chk').textContent = 'בלוח עוד לא רשום שעברתם בשם הזה ובכיתה הזו.';
+  }).catch(function(){});
+}
+function boot() {
+  var st = lsJson('uq_student'), room = lsJson('uq_classroom');
+  screen.innerHTML = '<h2 class="center">איך משחקים?</h2>' +
+    '<button class="opt" id="mHome" type="button">🏠 <b>תלמיד בבית</b>' + (st ? ' – ' + esc(st.name) + ', כיתה ' + esc(st.cls) : '') + '</button>' +
+    '<button class="opt" id="mClass" type="button">🏫 <b>משחק כיתתי</b>' + (room ? ' – ' + esc(room.name) : '') + '</button>';
+  document.getElementById('mHome').onclick = function(){
+    if (!st) { screen.innerHTML = '<p class="center">כדי להיכנס לקרב הבוס צריך להירשם ולעבור את מבדק השבוע, ואחריו את הרמה הקשה.</p>' +
+      '<a class="primary" href="' + CONFIG.FIRST_URL + '">למבדק השבוע ←</a>'; return; }
+    if (passed(CONFIG.REQUIRE.id, st)) start('home', st); else locked(st);
+  };
+  document.getElementById('mClass').onclick = function(){
+    if (!room) { screen.innerHTML = '<p class="center">משחק כיתתי: קודם פותחים את מבדק השבוע במצב "משחק כיתתי" ונרשמים שם. אחר כך חוזרים לכאן.</p>' +
+      '<a class="primary" href="' + CONFIG.FIRST_URL + '">למבדק השבוע ←</a>'; return; }
+    start('class', room);
+  };
+}
+boot();
+</script>
+</body>
+</html>
