@@ -74,6 +74,15 @@ main{max-width:1200px;margin:0 auto;padding:6px 16px 40px}
 .head .home{margin-inline-start:auto;font-weight:700;font-size:15px;text-decoration:none;padding:8px 14px;border-radius:12px;
   background:var(--c);color:#fff}
 .head .back{font:inherit;font-weight:700;padding:7px 12px;border-radius:12px;border:2px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin:12px 0 8px}
+.tcard{position:relative;display:flex;flex-direction:column;text-align:right;font:inherit;cursor:pointer;border:0;color:#fff;border-radius:22px;padding:14px 14px 12px;min-height:150px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,.14);transition:transform .2s,box-shadow .2s}
+.tcard:hover{transform:translateY(-4px) rotate(-.5deg);box-shadow:0 14px 28px rgba(0,0,0,.2)}
+.tcard:before{content:"";position:absolute;inset:auto -30px -40px auto;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.16)}
+.tcard .ti{font-size:40px;line-height:1;filter:drop-shadow(0 3px 4px rgba(0,0,0,.2))}
+.tcard b{font-size:19px;margin-top:6px;text-shadow:0 1px 3px rgba(0,0,0,.25);line-height:1.3}
+.tcard .tn{margin-top:auto;padding-top:10px;align-self:flex-start;background:rgba(255,255,255,.25);border-radius:999px;padding:2px 10px;font-weight:800;font-size:14px}
+.tsub{margin:16px 0 0;font-size:20px;font-weight:900}
+@media (max-width:480px){.tgrid{grid-template-columns:1fr 1fr;gap:10px}.tcard{min-height:130px}.tcard .ti{font-size:32px}.tcard b{font-size:16px}}
 .grp{margin:22px 0 10px;font-size:19px;font-weight:800;display:flex;align-items:center;gap:8px}
 .grp:after{content:"";flex:1;height:2px;background:var(--line)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
@@ -124,7 +133,20 @@ const $=s=>document.querySelector(s), main=$("#main"), q=$("#q");
 const norm=s=>(s||"").replace(/[\u0591-\u05C7]/g,"").replace(/[״"׳']/g,"").toLowerCase();
 ITEMS.forEach(it=>it.s=norm(it[1]+" "+it[2]+" "+it[3]+" "+CM[it[0]].t));
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let cur="", limit=120;
+let cur="", limit=120, grp="";
+// כרטיס לכל נושא בתוך סדרה (15.11.2026, בקשת המשתמש – "כמו בקטלוג המידות"): נושאי 🌱 מתקפלים לכרטיס אחד של המידות
+const TPAL=[["#f4a261","#e76f51"],["#2a9d8f","#264653"],["#7b5cff","#c86dd7"],["#3a86ff","#1d4ed8"],["#ef476f","#b5179e"],["#06d6a0","#118ab2"],["#ff9f1c","#e85d04"],["#8338ec","#3a0ca3"],["#43aa8b","#277da1"],["#d62828","#9d0208"],["#f9c74f","#f3722c"],["#4cc9f0","#4361ee"],["#90be6d","#2d6a4f"],["#b5838d","#6d597a"]];
+function topics(k){
+  const m=new Map();
+  ITEMS.forEach(it=>{if(it[0]!==k||!it[1])return;const key=/^🌱/.test(it[1])&&CM.midot?"🌱":it[1];m.set(key,(m.get(key)||0)+1)});
+  return [...m].map(([g,n])=>{const sp=g.indexOf(" "),emo=sp>0&&!/[א-ת]/.test(g.slice(0,sp));
+    return g==="🌱"?{g,e:"🌱",t:"מִדּוֹת טוֹבוֹת",n,k:"midot"}:{g,e:emo?g.slice(0,sp):CM[k].e,t:emo?g.slice(sp+1):g,n}});
+}
+function topicCards(k){
+  const T=topics(k); if(T.length<3||T.length>30) return "";
+  return '<p class="tsub">🗺️ בּוֹחֲרִים נוֹשֵׂא</p><div class="tgrid">'+T.map((t,i)=>{const c=TPAL[i%TPAL.length];
+    return '<button class="tcard" '+(t.k?'data-k="'+t.k+'"':'data-g="'+esc(t.g)+'"')+' style="background:linear-gradient(145deg,'+c[0]+','+c[1]+')"><span class="ti">'+t.e+'</span><b>'+esc(t.t)+'</b><span class="tn">'+t.n+(t.n===1?' חידון':' חידונים')+'</span></button>'}).join("")+'</div>';
+}
 
 function chips(){
   $("#chips").innerHTML='<button class="chip" data-k="" aria-pressed="'+(!cur)+'">🎲 כל הסדרות</button>'+
@@ -147,11 +169,13 @@ function render(){
     return;
   }
   const words=term.split(/\s+/).filter(Boolean);
-  const list=ITEMS.filter(it=>(!cur||it[0]===cur)&&words.every(w=>it.s.includes(w)));
+  const list=ITEMS.filter(it=>(!cur||it[0]===cur)&&(!grp||term||it[1]===grp)&&words.every(w=>it.s.includes(w)));
   let h="";
   if(cur){const c=CM[cur];
     h+='<div class="head" style="--c:'+c.c+'"><button class="back" data-k="">→ כל הסדרות</button><h2>'+c.e+' '+esc(c.t)+'</h2>'+
-      (c.h?'<a class="home" href="'+c.h+'">לדף הסדרה ולוח המצטיינים ◀</a>':'')+'</div>';}
+      (c.h?'<a class="home" href="'+c.h+'">לדף הסדרה ולוח המצטיינים ◀</a>':'')+'</div>';
+    if(grp&&!term) h+='<div class="head"><button class="back" data-g="">→ כל הנושאים</button></div>';
+    else if(!term) h+=topicCards(cur);}
   if(term) h+='<div class="head"><h2 style="font-size:20px">'+list.length+' תוצאות</h2></div>';
   if(!list.length){main.innerHTML=h+'<p class="empty">לא נמצא חידון כזה. נסו מילה אחרת.</p>';return;}
   let last=null;const shown=list.slice(0,limit);let grid="";
@@ -164,8 +188,9 @@ function render(){
   if(list.length>limit) grid+='<button class="more" id="more">להציג עוד ('+(list.length-limit)+')</button>';
   main.innerHTML=h+grid;
 }
-function pick(k){cur=k;limit=120;render();window.scrollTo({top:0});try{history.replaceState(null,"",k?"#"+k:location.pathname)}catch(e){}}
+function pick(k){cur=k;grp="";limit=120;render();window.scrollTo({top:0});try{history.replaceState(null,"",k?"#"+k:location.pathname)}catch(e){}}
 document.addEventListener("click",e=>{
+  const tg=e.target.closest("[data-g]"); if(tg){grp=tg.dataset.g;limit=120;render();window.scrollTo({top:0});return;}
   const b=e.target.closest("[data-k]"); if(b){pick(b.dataset.k);return;}
   if(e.target.id==="more"){limit+=240;render();}
   if(e.target.id==="clear"){q.value="";render();q.focus();}
