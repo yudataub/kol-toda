@@ -56,6 +56,11 @@
 .kg-inline .kg-ask{box-shadow:0 4px 16px rgba(0,0,0,.08)}
 @media (max-width:520px){.kg-q{font-size:1.12rem}.kg-a{font-size:1.02rem;padding:11px 8px}.kg-stage{padding:10px}}
 .kg-facts{text-align:right;background:#fff8e1;border:2px solid #f2c94c;border-radius:14px;padding:10px 14px;margin:10px 0;line-height:1.7;font-size:1rem}
+.kg-wby{color:#5b6785;font-size:.92rem;font-weight:700;margin:-8px 0 12px}
+.kg-credits{margin:8px auto;max-width:520px;text-align:right;background:#fff;border-radius:12px;padding:8px 12px;font-size:.95rem}
+.kg-credits summary{cursor:pointer;font-weight:800;color:var(--c1);text-align:center}
+.kg-credits div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid #e6ebf5;line-height:1.4}
+.kg-credits b{flex:none;color:#23357a}
 
 /* "ילדים יוצרים משחק" – עיצוב הדף (בית, אשף, גלריות, מורה). מסגרת המשחק: style.css */
 *{box-sizing:border-box}
@@ -140,6 +145,12 @@ iframe.custom{width:100%;height:640px;border:0;border-radius:18px;background:#ff
 #app{padding-top:54px}
 @media print{.guide-link{display:none}}
 .in-code::placeholder{letter-spacing:0;font-size:1.05rem}
+.cg-card{align-items:stretch;text-align:right;border:3px solid #f2c94c}
+.cg-it{display:flex;gap:8px;align-items:center;justify-content:space-between;border-top:1px solid #e6ebf5;padding:6px 0;line-height:1.45}
+.cg-it span{flex:1;min-width:0;overflow-wrap:anywhere}.cg-it b{flex:none;color:#23357a;font-size:.92rem}
+.cg-btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:6px}
+.b-cg{background:linear-gradient(90deg,#f2994a,#eb5757)}
+.two{display:flex;gap:8px}.two .in{flex:1;min-width:0}
 
 </style>
 <meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-yotzrim-index.jpg">
@@ -347,6 +358,7 @@ iframe.custom{width:100%;height:640px;border:0;border-radius:18px;background:#ff
         var sec = a.timer || opts.timer || 0, barI = h('i');
         if (sec) box.appendChild(h('div', { cls: 'kg-time' }, [barI]));
         box.appendChild(h('div', { cls: 'kg-q', text: item.q }));
+        if (item.by) box.appendChild(h('div', { cls: 'kg-wby', text: '✍️ השאלה של ' + item.by }));
         var fb = h('div', { cls: 'kg-fb' });
         var btns = shuffle(item.a.map(function (t, i) { return { t: t, ok: i === 0 }; })).map(function (x) {
           var b = h('button', { cls: 'kg-a', text: x.t });
@@ -416,6 +428,15 @@ iframe.custom{width:100%;height:640px;border:0;border-radius:18px;background:#ff
         kids.push(h('button', { cls: 'kg-btn kg-back', text: '🏠 חזרה', on: { click: function () { if (o.onExit) o.onExit(); } } }));
         screen(kids);
       }
+      // משחק כיתתי: מי כתב כל פריט
+      function credits() {
+        var list = game.items.filter(function (x) { return x && x.by; });
+        if (!list.length) return null;
+        return h('details', { cls: 'kg-credits' }, [h('summary', { text: '✍️ מי כתב מה? (' + list.length + ')' })].concat(list.map(function (x) {
+          var t = x.q || (x.a && x.b ? x.a + ' ↔ ' + x.b : '') || (x.s && x.w ? x.s.replace('___', x.w) : '') || x.s || x.w || '';
+          return h('div', {}, [h('span', { text: t }), h('b', { text: x.by })]);
+        })));
+      }
       function fail() {
         end([h('div', { cls: 'kg-big', text: '💔' }), h('h2', { text: 'נגמרו הלבבות' }),
           h('p', { cls: 'kg-how', text: 'צברתם ' + c.points + ' נקודות. לא נורא – מנסים שוב, ובכל פעם זוכרים יותר!' })]);
@@ -428,7 +449,7 @@ iframe.custom{width:100%;height:640px;border:0;border-radius:18px;background:#ff
           h('div', { cls: 'kg-stars', text: new Array(stars + 1).join('⭐') + new Array(4 - stars).join('☆') }),
           h('p', { cls: 'kg-how', text: 'צברתם ' + c.points + ' נקודות.' }),
           opts.win ? h('p', { cls: 'kg-how kg-kid', text: opts.win }) : null,
-          game.name ? h('div', { cls: 'kg-by', text: '🎨 המשחק נוצר על ידי ' + game.name }) : null]);
+          game.name ? h('div', { cls: 'kg-by', text: '🎨 המשחק נוצר על ידי ' + game.name }) : null, credits()]);
         if (o.onDone) o.onDone({ stars: stars, points: c.points });
       }
       try { E.start(c); } catch (err) {
@@ -4272,7 +4293,7 @@ iframe.custom{width:100%;height:640px;border:0;border-radius:18px;background:#ff
   function saveD() { ls('kg-draft', D); }
   function loadClass(code, cb) {
     if (cls && cls.code === code) return cb(cls);
-    get({ action: 'class', cls: code }).then(function (r) { if (r.ok) { cls = r.cls; ls('kg-class', code); } cb(r.ok ? cls : null); }, function () { cb(null); });
+    get({ action: 'class', cls: code }).then(function (r) { if (r.ok) { cls = r.cls; cls._t = Date.now(); ls('kg-class', code); } cb(r.ok ? cls : null); }, function () { cb(null); });
   }
   function needClass(fn) {
     var code = ls('kg-class');
@@ -4292,6 +4313,18 @@ iframe.custom{width:100%;height:640px;border:0;border-radius:18px;background:#ff
     if (msg) kids.push(h('div', { cls: 'msg bad', text: msg }));
     if (cls && code) {
       kids.push(h('div', { cls: 'card cls' }, [h('div', { cls: 'cls-t', text: '🏫 ' + [cls.grade, cls.school].filter(String).join(' · ') }), h('div', { cls: 'sub', text: 'המורה: ' + cls.teacher })]));
+      (cls.cg || []).forEach(function (g) {
+        var E = eng(g.gtype); if (!E) return;
+        kids.push(btn('🤝 המשחק של כל הכיתה: ' + g.title + ' (' + g.n + ')', function () { go('#cg=' + g.cid); }, 'b-big b-cg'));
+      });
+      if (Date.now() - (cls._t || 0) > 15000) {            // המורה אולי פתח בינתיים משחק כיתתי
+        var old = JSON.stringify(cls.cg || []);
+        get({ action: 'class', cls: code }).then(function (r) {
+          if (!r.ok) return;
+          cls = r.cls; cls._t = Date.now();
+          if ((location.hash || '#') === '#' && JSON.stringify(cls.cg || []) !== old) home();
+        }, function () { });
+      }
       kids.push(h('div', { cls: 'big3' }, [
         btn('🎨 ליצור משחק', function () { go('#new'); }, 'b-big b-main'),
         btn('🎮 המשחקים של הכיתה', function () { go('#class'); }, 'b-big b-2'),
@@ -4521,6 +4554,154 @@ iframe.custom{width:100%;height:640px;border:0;border-radius:18px;background:#ff
       btn('📋 העתקה', function (e) { try { navigator.clipboard.writeText(url); e.target.textContent = '✔ הועתק'; } catch (x) { inp.select(); } }, 'b-sm b-2')]);
   }
 
+  // ---------- משחק כיתתי: המורה בוחר סוג משחק, וכל זוג כותב פריט אחד ----------
+  var CG_SHAPES = ['Q', 'P', 'T', 'W', 'M', 'C'];
+  var ONE = { Q: 'שאלה אחת', P: 'זוג אחד', T: 'משפט אחד', W: 'מילה אחת ורמז', M: 'חידת "מי אני?" אחת', C: 'משפט אחד' };
+  function cgLabel(shape, it) {
+    return shape === 'Q' ? it.q : shape === 'P' ? it.a + ' ↔ ' + it.b : shape === 'C' ? it.s.replace('___', it.w) : shape === 'T' ? it.s : it.w;
+  }
+  function cgFields(S, r, redraw) {
+    var body = h('div', { cls: 'row-b' });
+    S.f.forEach(function (f) {
+      if (f[0] === 't') {
+        var mk = function (val, text) { return h('button', { cls: 'tog' + ((r.t || '1') === val ? ' on' : ''), text: text, on: { click: function () { r.t = val; redraw(); } } }); };
+        return body.appendChild(h('div', { cls: 'togs' }, [mk('1', '✔ המשפט נכון'), mk('0', '✖ המשפט לא נכון')]));
+      }
+      if (f[0] === 'fix' && r.t !== '0') return;
+      body.appendChild(input(r[f[0]], f[1] + (f[3] ? ' – למשל: ' + f[3] : ''), f[2], function (v) { r[f[0]] = v; }));
+    });
+    return body;
+  }
+  function cgPage(cid) {
+    page([h('div', { cls: 'wait', text: '⏳ רגע...' })]);
+    get({ action: 'cg', cls: cls.code, cid: cid }).then(function (res) {
+      var E = res.ok && eng(res.cg.gtype);
+      if (!E) return page([head('לא מצאנו את המשחק 😕'), back()]);
+      var G = res.cg, S = SH[E.shape], N = ls('kg-pair') || {}, r = E.shape === 'T' ? { t: '1' } : {}, form = h('div', { cls: 'row' });
+      function draw() { form.textContent = ''; form.appendChild(cgFields(S, r, draw)); }
+      draw();
+      var kids = [head('🤝 ' + G.title, 'כל הכיתה יוצרת יחד משחק אחד: ' + E.icon + ' ' + E.name + ' · 📚 ' + G.topic)];
+      if (!G.open || G.n >= G.max) {
+        kids.push(h('div', { cls: 'msg', text: G.open ? 'המשחק כבר מלא – יש בו ' + G.n + '. 🙂' : 'המורה כבר סגר את המשחק. בקרוב הוא יופיע ב"🎮 המשחקים של הכיתה".' }));
+      } else {
+        kids.push(h('div', { cls: 'msg', text: 'כל זוג כותב ' + ONE[E.shape] + '. השמות שלכם יופיעו במשחק.' }));
+        kids.push(h('label', { cls: 'lbl', text: 'מי כותב? (שם פרטי)' }), h('div', { cls: 'two' }, [
+          input(N.a, 'שם ראשון', 20, function (v) { N.a = v; }), input(N.b, 'שם שני (אם אתם זוג)', 20, function (v) { N.b = v; })]));
+        kids.push(h('label', { cls: 'lbl', text: S.what }), form);
+        kids.push(helpBtn('איך כותבים טוב?', S.tips.concat(['כתבו רק דבר שאתם בטוחים שהוא נכון.', 'קראו למטה מה כבר נכתב, וכתבו משהו אחר.'])));
+        kids.push(btn('📤 מוסיפים למשחק של הכיתה', function () {
+          var a = String(N.a || '').trim(), b = String(N.b || '').trim(), x = toItems(E.shape, [r]);
+          if (!a) return warn('כתבו את השם שלכם 🙂');
+          if (x.err) return warn(x.err.replace('בשורה 1: ', ''));
+          if (!x.items.length) return warn('עוד לא כתבתם כלום 🙂');
+          ls('kg-pair', N);
+          var by = b ? a + ' ו' + b : a, it = x.items[0];
+          waitScreen('מוסיפים למשחק...');
+          post({ type: 'cg_add', c: cls.code, cid: cid, by: by, label: cgLabel(E.shape, it), item: JSON.stringify(it) }).then(function (z) {
+            if (cls) cls._t = 0;
+            if (!z.ok) return page([head('אוי 😕'), h('div', { cls: 'msg bad', text: z.error === 'full' ? 'המשחק כבר מלא.' : z.error === 'closed' ? 'המורה כבר סגר את המשחק.' : 'לא הצלחנו להוסיף. נסו שוב.' }), btn('→ חזרה', function () { cgPage(cid); }, 'b-main')]);
+            page([head('🎉 נכנס למשחק!'), h('div', { cls: 'msg good', text: 'תודה, ' + by + '! מה שכתבתם הוא מספר ' + z.n + ' במשחק של הכיתה. כשהמורה יסגור את המשחק, כולם יוכלו לשחק בו.' }),
+              btn('✏️ לכתוב עוד אחד', function () { cgPage(cid); }, 'b-2'), btn('🏠 לדף הבית', function () { go('#'); }, 'b-ghost')]);
+          }, function () { page([head('אין חיבור לאינטרנט'), btn('→ חזרה', function () { cgPage(cid); }, 'b-main')]); });
+        }, 'b-big b-main'));
+      }
+      kids.push(h('h3', { text: '📋 מה כבר נכתב (' + G.list.length + ' מתוך ' + G.max + ')' }));
+      kids.push(h('div', { cls: 'card cg-card' }, G.list.length ? G.list.map(function (i, n) {
+        return h('div', { cls: 'cg-it' }, [h('span', { text: (n + 1) + '. ' + i.label }), h('b', { text: i.by })]);
+      }) : [h('div', { cls: 'sub', text: 'עוד לא נכתב כלום. אתם הראשונים!' })]));
+      kids.push(back());
+      page(kids, 'cg');
+    }, function () { page([head('אין חיבור לאינטרנט'), back()]); });
+  }
+  function cgGame(G, C) {
+    return { gtype: G.gtype, title: G.title, name: 'כל הכיתה', topic: G.topic, cls: [C.grade, C.school].filter(String).join(' · '),
+      opts: { theme: 'sky', hero: '🦁', ideas: {}, intro: '', win: '', facts: [] },
+      items: G.items.map(function (i) { var o = JSON.parse(JSON.stringify(i.it)); o.by = i.by; return o; }) };
+  }
+  // דף המורה: פותחים משחק כיתתי חדש
+  function cgNew(code, ts) {
+    page([h('div', { cls: 'wait', text: '⏳ רגע...' })]);
+    get({ action: 'tclass', cls: code, ts: ts }).then(function (r) {
+      if (!r.ok) return page([head('הקישור לא נכון 😕'), back('#teacher')]);
+      var N = { title: '', topic: r.cls.topics.length === 1 ? r.cls.topics[0].t : '', gtype: '' }, box = h('div');
+      function draw() {
+        box.textContent = '';
+        box.appendChild(h('label', { cls: 'lbl', text: 'הנושא:' }));
+        box.appendChild(h('div', { cls: 'chips' }, r.cls.topics.map(function (t) { return h('button', { cls: 'opt' + (N.topic === t.t ? ' on' : ''), text: t.t, on: { click: function () { N.topic = t.t; draw(); } } }); })));
+        box.appendChild(h('label', { cls: 'lbl', text: 'סוג המשחק:' }));
+        CG_SHAPES.forEach(function (s) {
+          box.appendChild(h('div', { cls: 'grp' }, [h('h3', { text: SH[s].icon + ' ' + SH[s].name }), h('div', { cls: 'sub', text: 'כל זוג כותב ' + ONE[s] + '. צריך לפחות ' + SH[s].min + ', עד ' + SH[s].max + '.' })]));
+          box.appendChild(h('div', { cls: 'grid types' }, KG.order.filter(function (id) { return KG.E[id].shape === s; }).map(function (id) {
+            var E = KG.E[id];
+            return h('div', { cls: 'type' + (N.gtype === id ? ' on' : '') }, [h('div', { cls: 'type-i', text: E.icon }), h('b', { text: E.name }), h('span', { text: E.desc }),
+              h('div', { cls: 'type-b' }, [btn('▶ דוגמה', function () { demo(id); }, 'b-sm b-ghost'), btn(N.gtype === id ? '✔ נבחר' : 'בוחרים ✔', function () { N.gtype = id; draw(); }, 'b-sm b-main')])]);
+          })));
+        });
+      }
+      draw();
+      page([head('🤝 משחק כיתתי חדש', 'בוחרים נושא וסוג משחק. כל זוג תלמידים כותב פריט אחד, ויחד כל הכיתה יוצרת משחק. ליד כל שאלה יופיעו שמות הכותבים.'),
+        h('label', { cls: 'lbl', text: 'שם המשחק:' }), input('', 'למשל: החידון הגדול של ד\'2', 40, function (v) { N.title = v; }), box,
+        h('div', { cls: 'nav' }, [btn('→ חזרה', function () { go('#t=' + code + '.' + ts); }, 'b-ghost'), btn('✔ פותחים את המשחק', function () {
+          var E = KG.E[N.gtype];
+          if (!N.title.trim() || !N.topic || !E) return warn('צריך שם למשחק, נושא וסוג משחק.');
+          waitScreen('פותחים...');
+          post({ type: 'cg_new', c: code, ts: ts, title: N.title, topic: N.topic, gtype: N.gtype, max: SH[E.shape].max }).then(function (x) {
+            if (!x.ok) return page([head('לא הצלחנו לפתוח את המשחק 😕'), back('#t=' + code + '.' + ts)]);
+            cls = null; go('#t=' + code + '.' + ts);
+          }, function () { page([head('אין חיבור לאינטרנט'), back('#t=' + code + '.' + ts)]); });
+        }, 'b-main')])], 'teacher');
+    }, function () { page([head('אין חיבור לאינטרנט'), back('#teacher')]); });
+  }
+  // דף המורה: המשחקים הכיתתיים – מה נכתב, מחיקה, תצוגה מקדימה ושליחה לבדיקה
+  function cgTeacher(r, code, ts) {
+    var reload = function () { cls = null; teacherClass(code, ts); };
+    var act = function (d) { d.c = code; d.ts = ts; return post(d).then(reload, reload); };
+    var kids = [h('h3', { text: '🤝 משחק כיתתי – כל הכיתה יוצרת משחק אחד' }),
+      h('div', { cls: 'sub', text: 'אתם בוחרים סוג משחק, כל זוג כותב פריט אחד, ובמשחק מופיע ליד כל שאלה מי כתב אותה.' })];
+    (r.cg || []).forEach(function (G) {
+      var E = KG.E[G.gtype]; if (!E) return;
+      var S = SH[E.shape], min = Math.max(S.min, E.min || 1), res = G.res;
+      var st = G.open ? '✏️ פתוח לכתיבה' : !res || !res.verdict ? '⏳ בבדיקה (בערך דקה) – רעננו את הדף' : res.verdict === 'ok' ? '✅ פורסם' : res.verdict === 'fix' ? '✏️ הוחזר לתיקון' : '⏳ ממתין לבדיקה';
+      var card = h('div', { cls: 'card cg-card' }, [h('b', { text: E.icon + ' ' + G.title + ' – ' + E.name }),
+        h('div', { cls: 'sub', text: '📚 ' + G.topic + ' · ' + G.items.length + ' מתוך ' + G.max + ' (צריך לפחות ' + min + ') · ' + st })]);
+      if (!G.open && res && res.verdict === 'fix') card.appendChild(h('div', { cls: 'msg fix', text: res.msg }));
+      G.items.forEach(function (i, n) {
+        card.appendChild(h('div', { cls: 'cg-it' }, [h('span', { text: (n + 1) + '. ' + i.label }), h('b', { text: i.by }),
+          G.open ? h('button', { cls: 'row-x', text: '🗑', 'aria-label': 'מחיקה', on: { click: function () { act({ type: 'cg_del', cid: G.cid, k: i.k }); } } }) : null]));
+      });
+      var bs = h('div', { cls: 'cg-btns' });
+      if (G.items.length) bs.appendChild(btn('▶ לנסות את המשחק', function () {
+        var root = h('div'), m = h('div', { cls: 'modal play' }, [root]); document.body.appendChild(m);
+        var p = KG.play(root, cgGame(G, r.cls), { demo: true, onExit: function () { p.stop(); m.remove(); } });
+      }, 'b-sm b-2'));
+      if (G.open) {
+        bs.appendChild(btn('🔄 רענון', reload, 'b-sm b-ghost'));
+        bs.appendChild(btn('📤 סוגרים ושולחים לבדיקה', function () {
+          if (G.items.length < min) return warn('צריך לפחות ' + min + '. עד עכשיו נכתבו ' + G.items.length + '.');
+          var g = cgGame(G, r.cls), tk = rnd(24);
+          if (E.id === 'oddone' && !g.items.some(function (x) { return !x.t; })) return warn('במשחק הזה צריך גם משפטים לא נכונים.');
+          waitScreen('שולחים לבדיקה...');
+          post({ type: 'game', c: code, name: 'כל הכיתה', topic: G.topic, gtype: G.gtype, content: JSON.stringify(g), how: '', tk: tk, prev: G.tk || '' }).then(function (x) {
+            if (!x.ok) return reload();
+            act({ type: 'cg_state', cid: G.cid, state: 'sent', tk: tk });
+          }, reload);
+        }, 'b-sm b-main'));
+      } else {
+        if (res && res.id) bs.appendChild(btn('▶ המשחק שפורסם', function () { window.open(SITE + '#g=' + res.id); }, 'b-sm b-main'));
+        if (res && res.verdict === 'fix') bs.appendChild(btn('✏️ פותחים שוב לתיקון', function () { act({ type: 'cg_state', cid: G.cid, state: '' }); }, 'b-sm b-main'));
+        if (!res || !res.verdict) bs.appendChild(btn('🔄 רענון', reload, 'b-sm b-ghost'));
+      }
+      bs.appendChild(btn('🗑 מחיקת המשחק הכיתתי', function () {
+        var m = modal([h('p', { cls: 'warn-t', text: 'למחוק את "' + G.title + '" ואת כל מה שנכתב בו?' }),
+          btn('כן, למחוק', function () { m.remove(); act({ type: 'cg_state', cid: G.cid, state: 'x' }); }, 'b-main'), btn('לא', function () { m.remove(); }, 'b-ghost')]);
+      }, 'b-sm b-ghost'));
+      card.appendChild(bs);
+      kids.push(card);
+    });
+    kids.push(btn('➕ משחק כיתתי חדש', function () { go('#tg=' + code + '.' + ts); }, 'b-2'));
+    return kids;
+  }
+
   // ---------- גלריות ----------
   function gameCard(g) {
     var E = eng(g.gtype) || CUSTOM;
@@ -4590,7 +4771,8 @@ iframe.custom{width:100%;height:640px;border:0;border-radius:18px;background:#ff
         h('p', { text: '1. רושמים כאן את הנושאים שנלמדו (אפשר להוסיף לכל נושא את עיקרי החומר).' }),
         h('p', { text: '2. מקבלים קוד כיתה של 5 ספרות, ונותנים אותו לתלמידים.' }),
         h('p', { text: '3. כל תלמיד בוחר נושא וסוג משחק, כותב את החומר ומעצב את המשחק.' }),
-        h('p', { text: '4. החומר נבדק אוטומטית. משחק תקין מתפרסם בגלריה של הכיתה, ואתם יכולים להסתיר כל משחק.' })]),
+        h('p', { text: '4. החומר נבדק אוטומטית. משחק תקין מתפרסם בגלריה של הכיתה, ואתם יכולים להסתיר כל משחק.' }),
+        h('p', { text: '5. אפשר גם "משחק כיתתי": אתם בוחרים סוג משחק, כל זוג כותב שאלה אחת, ויחד כל הכיתה יוצרת משחק אחד.' })]),
       h('label', { cls: 'lbl', text: 'שם המורה:' }), input('', 'הרב ישראל ישראלי', 40, function (v) { T.teacher = v; }),
       h('label', { cls: 'lbl', text: 'בית הספר:' }), input('', '', 60, function (v) { T.school = v; }),
       h('label', { cls: 'lbl', text: 'הכיתה:' }), input('', "ד'2", 20, function (v) { T.grade = v; }),
@@ -4642,13 +4824,14 @@ iframe.custom{width:100%;height:640px;border:0;border-radius:18px;background:#ff
       page([head('🏫 ' + ([C.grade, C.school].filter(String).join(' · ') || 'הכיתה שלי'), 'המורה: ' + C.teacher),
         h('div', { cls: 'card codebox' }, [h('div', { cls: 'sub', text: 'קוד הכיתה לתלמידים:' }), h('div', { cls: 'code', text: code }),
           h('div', { cls: 'sub', text: 'או קישור ישיר:' }), linkIn, h('div', { cls: 'sub', text: '🔒 הקישור שלכם לניהול הכיתה – שמרו אותו (לא לתלמידים):' }), mng]),
+        ].concat(cgTeacher(r, code, ts)).concat([
         h('h3', { text: '📚 הנושאים' }), list, btn('➕ עוד נושא', function () { topics.push({}); draw(); }, 'b-2'),
         btn('💾 שומרים את הנושאים', function (e) {
           var tp = topics.filter(function (t) { return String(t.t || '').trim(); });
           if (!tp.length) return warn('צריך לפחות נושא אחד.');
           post({ type: 'class', code: code, ts: ts, topics: tp }).then(function (x) { e.target.textContent = x.ok ? '✔ נשמר' : 'לא נשמר – נסו שוב'; cls = null; });
         }, 'b-main'),
-        h('h3', { text: '🎮 המשחקים שהתלמידים שלחו (' + r.games.length + ')' }), games, back('#teacher')], 'teacher');
+        h('h3', { text: '🎮 המשחקים שהתלמידים שלחו (' + r.games.length + ')' }), games, back('#teacher')]), 'teacher');
     }, function () { page([head('אין חיבור לאינטרנט'), back('#teacher')]); });
   }
 
@@ -4658,6 +4841,8 @@ iframe.custom{width:100%;height:640px;border:0;border-radius:18px;background:#ff
     var x = location.hash || '#', m;
     if ((m = /^#g=([a-z0-9]{8})$/.exec(x))) return playGame(m[1]);
     if ((m = /^#t=(\d{5})\.([A-Za-z0-9]{16,40})$/.exec(x))) return teacherClass(m[1], m[2]);
+    if ((m = /^#tg=(\d{5})\.([A-Za-z0-9]{16,40})$/.exec(x))) return cgNew(m[1], m[2]);
+    if ((m = /^#cg=([a-z0-9]{6})$/.exec(x))) return needClass(function () { cgPage(m[1]); });
     if (x === '#teacher') return teacherNew();
     if (x === '#all') return gallery('🌍 משחקים מכל הכיתות', 'משחקים שילדים יצרו. לחצו על משחק כדי לשחק.', { action: 'games' });
     if (x === '#mine') return mine();
