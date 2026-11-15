@@ -39,6 +39,16 @@
         (a.querySelector("p") || {}).textContent || "", href, links];
     }).filter(x => x[1] && !/kol-toda\.co\.il\/chagim\/?$/.test(x[3]));
   }
+  // the works themselves, for the topic lists of the page (app.js puts each one under its matching topic, 15.11.2026:
+  // "all my works go into the topic that fits them too")
+  window.mineCards = function (cfg) {
+    const secs = (cfg && cfg.sections) || [], pages = [...new Set(secs.map(s => s[0]))];
+    return Promise.all(pages.map(get)).then(docs => {
+      const D = Object.fromEntries(pages.map((p, i) => [p, docs[i]])), seen = new Set(), out = [];
+      secs.forEach(([p, id]) => cardsOf(D[p], p, id).forEach(c => { if (!seen.has(c.href)) { seen.add(c.href); out.push(c); } }));
+      return out;
+    });
+  };
   window.renderMine = function (box, cfg) {
     if (!box || !cfg) return;
     const pages = [...new Set((cfg.sections || []).map(s => s[0]).concat(cfg.features ? [cfg.features] : []))];

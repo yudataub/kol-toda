@@ -87,7 +87,24 @@ function prep(a) {
   ITEMS = a.map(it => { const r = classify(it, PAGE); it._tp = r.tp; it._kd = r.kd; it._gr = r.gr; it._n = norm(it.t); it._th = thumbOf(it); it._own = 0; return it; });
   markOwn();
 }
-function markOwn() { if (OWN) ITEMS.forEach(i => i._own = OWN.has(ownKey(i.files[0].u)) ? 1 : 0); }
+function markOwn() { if (OWN) ITEMS.forEach(i => i._own = i._mine || OWN.has(ownKey(i.files[0].u)) ? 1 : 0); }
+// the user's own works (the "משחקים ומצגות של הרב טאוב" box, mine.js) also go into the topic lists, each under the topics its
+// title fits (the user, 15.11.2026). No catalog tab, so a tab-only topic does not take them; nothing fits -> the general topic.
+function addMine() {
+  if (!window.mineCards || !PAGE.mine) return;
+  window.mineCards(PAGE.mine).then(cs => {
+    const have = new Set(ITEMS.map(i => i.files[0].u));
+    const add = cs.filter(c => !have.has(c.href)).map(c => {
+      const id = "kt_" + c.href.replace(/^https?:\/\/[^/]+\//, "").replace(/[^\w.-]+/g, "_");   // a Firestore id has no "/"
+      const it = {t: c.t, c: c.game ? "game" : "pres", im: c.img || "", files: [{id, u: c.href, f: c.game ? "game" : "web"}]};
+      const r = classify(it, PAGE); it._tp = r.tp; it._kd = r.kd; it._gr = r.gr; it._n = norm(it.t); it._th = thumbOf(it);
+      it._own = 1; it._mine = 1; return it;
+    });
+    if (!add.length) return;
+    ITEMS = ITEMS.concat(add);
+    render();
+  }).catch(() => {});
+}
 
 // ---- filtering; "skip" leaves one filter out, to count what each chip would give ----
 function match(it, skip) {
@@ -232,7 +249,7 @@ if (emh) emh.addEventListener("click", () => { emh.classList.remove("dance"); vo
 readHash();
 loadData().then(a => { prep(a);
   document.getElementById("sub").textContent = `${ITEMS.length.toLocaleString()} חומרים ל${PAGE.forWhat} – מסודרים לפי נושא, לפי סוג ולפי כיתה`;
-  render();
+  render(); addMine();
 }).catch(() => { main.innerHTML = `<div class="empty"><span class="em">🕯️</span>לא הצלחנו לטעון את החומרים. <a href="../?full=1#${PAGE.hash}" style="text-decoration:underline">לקטלוג המלא</a></div>`; });
 window.addEventListener("ratings-ready", () => { if (ITEMS.length && !isHome()) render(); });
 fetch("https://www.kol-toda.co.il/search/mine.json").then(r => r.json()).then(a => { OWN = new Set(a); markOwn(); if (ITEMS.some(i => i._own)) render(); }).catch(() => {});
