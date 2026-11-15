@@ -54,7 +54,7 @@
     var c = $("#climb");
     if (!c) {
       c = document.createElement("div"); c.id = "climb";
-      c.innerHTML = '<div class="crown">👑</div><div class="ladder"><div class="fill"></div><div class="me">🧗</div></div><div class="pct">0%</div>';
+      c.innerHTML = '<div class="crown">👑</div><div class="ladder"><div class="fill"></div><div class="cl-me">🧗</div></div><div class="pct">0%</div>';
       document.body.appendChild(c); document.body.classList.add("climbing");
     }
     var n = (G && G.stages.length) || 1, f;
@@ -64,7 +64,7 @@
     $$(".mark", L).forEach(function (m) { L.removeChild(m); });
     for (var i = 1; i < n; i++) L.insertAdjacentHTML("beforeend", '<div class="mark" style="bottom:' + (100 * i / n) + '%"></div>');
     $(".fill", c).style.height = (f * 100) + "%";
-    $(".me", c).style.bottom = "calc(" + (f * 100) + "% - " + Math.round(f * 22) + "px)";
+    $(".cl-me", c).style.bottom = "calc(" + (f * 100) + "% - " + Math.round(f * 22) + "px)";
     $(".pct", c).textContent = Math.round(f * 100) + "%";
     c.classList.toggle("top", f >= 1);
   }
