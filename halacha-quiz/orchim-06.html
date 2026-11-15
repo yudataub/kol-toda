@@ -2074,6 +2074,84 @@ function loadBoards() {
     .then(function (r) { return r.json(); }).then(function (d) { if (d && d.ok) $("fPts").textContent = "⭐ הַנְּקֻדּוֹת שֶׁצָּבַרְתָּ עַד עַכְשָׁו: " + d.points; }).catch(function () {});
 }
 
+/* ---------- 🌱 הַדְּמוּת שֶׁגְּדֵלָה (רַק בְּחִידוֹנֵי הַמִּדּוֹת, 15.11.2026) ----------
+   כָּל חִידוֹן שָׁלֵם (שְׁלוֹשׁ הָרָמוֹת) מַגְדִּיל אֶת הַדְּמוּת שֶׁמַּחְמִיאָה: תִּינוֹק → יֶלֶד → בָּחוּר → אִישׁ → מוֹרֶה → רַב → אַדְמוֹ״ר.
+   הַמּוֹנֶה מְשֻׁתָּף לְכָל חִידוֹנֵי הַמִּדּוֹת (localStorage: midot-mentor). מוּזְרָק בְּ-build.py מִתּוֹךְ mentor/mentor.js. */
+var MENTOR = [{"n": "הַתִּינוֹק", "e": "👶", "t": "גּוּ גָּה! כָּל הַכָּבוֹד! אֲנִי עוֹד תִּינוֹק קָטָן, אֲבָל אִם תְּסַיֵּם חִידוֹן – אֶגְדַּל!"}, {"n": "הַיֶּלֶד", "e": "🧒", "t": "וָאוּ! סִיַּמְתָּ חִידוֹן שָׁלֵם, וְגָדַלְתִּי! עַכְשָׁו אֲנִי כְּבָר יֶלֶד!"}, {"n": "הַבָּחוּר", "e": "🧑", "t": "יִשַּׁר כֹּחַ! בִּזְכוּתְךָ גָּדַלְתִּי, וְעַכְשָׁו אֲנִי כְּבָר בָּחוּר יְשִׁיבָה!"}, {"n": "הָאִישׁ", "e": "👨", "t": "כָּל הַכָּבוֹד! גָּדַלְתִּי וְנַעֲשֵׂיתִי אִישׁ. וְגַם אַתָּה גָּדֵל בַּמִּדּוֹת הַטּוֹבוֹת!"}, {"n": "הַמּוֹרֶה", "e": "👨‍🏫", "t": "שָׁלוֹם, תַּלְמִיד יָקָר! עַכְשָׁו אֲנִי כְּבָר הַמּוֹרֶה שֶׁלְּךָ, וַאֲנִי גֵּאֶה בְּךָ מְאֹד!"}, {"n": "הָרַב", "e": "📜", "t": "אַשְׁרֶיךָ! אֲנִי כְּבָר רַב, וַאֲנִי שָׂמֵחַ מְאֹד בַּמִּדּוֹת הַטּוֹבוֹת שֶׁלְּךָ!"}, {"n": "הָאַדְמוֹ״ר", "e": "👑", "t": "אַשְׁרֶיךָ, יֶלֶד יָקָר! אֲנִי מְבָרֵךְ אוֹתְךָ שֶׁתִּזְכֶּה לְמִדּוֹת טוֹבוֹת כָּל יָמֶיךָ!"}];
+var MENTOR_IMG = ["https://yudataub.github.io/kol-toda-halacha/halacha-quiz/img/mentor-1.webp", "https://yudataub.github.io/kol-toda-halacha/halacha-quiz/img/mentor-2.webp", "https://yudataub.github.io/kol-toda-halacha/halacha-quiz/img/mentor-3.webp", "https://yudataub.github.io/kol-toda-halacha/halacha-quiz/img/mentor-4.webp", "https://yudataub.github.io/kol-toda-halacha/halacha-quiz/img/mentor-5.webp", "https://yudataub.github.io/kol-toda-halacha/halacha-quiz/img/mentor-6.webp", "https://yudataub.github.io/kol-toda-halacha/halacha-quiz/img/mentor-7.webp"];
+var MENTOR_AUD = ["https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/mentor-1.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/mentor-2.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/mentor-3.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/mentor-4.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/mentor-5.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/mentor-6.mp3", "https://yudataub.github.io/kol-toda-files/halacha-quiz/audio/mentor-7.mp3"];
+function mentorCount() { try { return parseInt(localStorage.getItem("midot-mentor") || "0", 10) || 0; } catch (e) { return 0; } }
+function mentorStage() { return Math.min(mentorCount(), MENTOR.length - 1); }
+(function () {
+  var st = document.createElement("style");
+  st.textContent =
+    ".mentor-say{display:flex;align-items:center;gap:10px;margin-bottom:6px}" +
+    ".mentor-say img{width:58px;height:58px;border-radius:50%;object-fit:cover;flex:none;border:3px solid #E8B923;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.15)}" +
+    ".mentor-say .who{font-size:.8em;opacity:.75;font-weight:700}" +
+    ".mentor-grow{margin:14px auto;padding:14px;border-radius:18px;background:linear-gradient(135deg,#fff8e1,#e8f5e9);color:#333;max-width:440px;cursor:pointer;animation:mgIn .7s cubic-bezier(.2,1.5,.4,1) both}" +
+    ".mentor-grow .row{display:flex;align-items:center;justify-content:center;gap:8px}" +
+    ".mentor-grow .old{width:54px;height:54px;border-radius:50%;object-fit:cover;opacity:.55;filter:grayscale(.3)}" +
+    ".mentor-grow .new{width:130px;height:130px;border-radius:50%;object-fit:cover;border:5px solid #E8B923;box-shadow:0 6px 18px rgba(0,0,0,.2);animation:mgGrow 1.1s ease-out both}" +
+    ".mentor-grow.talk .new{animation:mgBob .45s ease-in-out infinite alternate}" +
+    ".mentor-grow .arrow{font-size:1.6em}" +
+    ".mentor-grow h3{margin:8px 0 4px}" +
+    ".mentor-grow .bubble{background:#fff;border-radius:14px;padding:10px 12px;font-weight:700;line-height:1.5;margin-top:6px}" +
+    ".mentor-steps{display:flex;justify-content:center;align-items:flex-end;gap:5px;margin-top:10px}" +
+    ".mentor-steps img{width:30px;height:30px;border-radius:50%;object-fit:cover;opacity:.3;filter:grayscale(1)}" +
+    ".mentor-steps img.on{opacity:1;filter:none;border:2px solid #E8B923}" +
+    ".mentor-grow .nxt{font-size:.9em;margin-top:6px;opacity:.85}" +
+    "@keyframes mgIn{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}" +
+    "@keyframes mgGrow{0%{transform:scale(.35)}70%{transform:scale(1.12)}100%{transform:scale(1)}}" +
+    "@keyframes mgBob{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-5px) rotate(2deg)}}";
+  document.head.appendChild(st);
+})();
+/* מַחְמָאָה בְּתוֹךְ הַחִידוֹן: הַדְּמוּת הַנּוֹכְחִית לְיַד הַמַּחְמָאָה */
+var _mentorFeedback = feedback;
+feedback = function (ok, q, pts, hints) {
+  _mentorFeedback(ok, q, pts, hints);
+  if (!ok) return;
+  var t = $("qFb").querySelector(".t");
+  if (!t) return;
+  var s = mentorStage(), m = MENTOR[s];
+  var w = document.createElement("div");
+  w.className = "mentor-say";
+  w.innerHTML = '<img alt="" src="' + MENTOR_IMG[s] + '"><div><div class="who">' + m.e + " " + m.n + " אוֹמֵר:</div></div>";
+  t.parentNode.insertBefore(w, t);
+  w.lastChild.appendChild(t);
+};
+/* סִיּוּם הַחִידוֹן: הַדְּמוּת גְּדֵלָה */
+var _mentorFinish = finish;
+finish = function () {
+  var before = mentorStage();
+  try { localStorage.setItem("midot-mentor", String(mentorCount() + 1)); } catch (e) {}
+  _mentorFinish();
+  var s = mentorStage(), m = MENTOR[s], grew = s > before;
+  var box = document.createElement("div");
+  box.className = "mentor-grow";
+  box.innerHTML =
+    '<div class="row">' + (grew ? '<img class="old" alt="" src="' + MENTOR_IMG[before] + '"><span class="arrow">⬅️</span>' : "") +
+      '<img class="new" alt="' + m.n + '" src="' + MENTOR_IMG[s] + '"></div>' +
+    "<h3>" + (grew ? "🌱 הַדְּמוּת גָּדְלָה! עַכְשָׁו מַחְמִיא לְךָ " + m.n + " " + m.e : m.e + " " + m.n + " גֵּאֶה בְּךָ!") + "</h3>" +
+    '<div class="bubble">' + m.t + "</div>" +
+    '<div class="mentor-steps">' + MENTOR.map(function (x, i) { return '<img class="' + (i <= s ? "on" : "") + '" title="' + x.n + '" alt="' + x.n + '" src="' + MENTOR_IMG[i] + '">'; }).join("") + "</div>" +
+    '<div class="nxt">' + (s < MENTOR.length - 1 ? "סַיֵּם עוֹד חִידוֹן מִדּוֹת – וְ" + m.n + " יִגְדַּל לְ" + MENTOR[s + 1].n.replace(/^הַ|^הָ/, "") + "! " + MENTOR[s + 1].e : "הִגַּעְתָּ לַשָּׁלָב הָעֶלְיוֹן! 👑") + "</div>";
+  var msg = $("fMsg");
+  msg.parentNode.insertBefore(box, msg.nextSibling);
+  var a = null;
+  function say() {
+    try {
+      if (voiceOff()) return;
+      if (fbAudio) fbAudio.pause();
+      if (a) a.pause();
+      a = new Audio(MENTOR_AUD[s]);
+      box.className = "mentor-grow talk";
+      a.onended = a.onerror = function () { box.className = "mentor-grow"; };
+      a.play().catch(function () { box.className = "mentor-grow"; });
+    } catch (e) {}
+  }
+  box.onclick = say;
+  setTimeout(say, 1600);
+};
 init();
 </script>
 </body>
