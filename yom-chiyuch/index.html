@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>יום של חיוכים – משחק בחירות על מידת החיוך</title>
+<meta name="description" content="משחק בחירות לילדים על סבר פנים יפות: שישה רגעים ביום אחד, הילד בוחר מה לעשות ורואה מה קרה. עם מקורות מחז״ל, מחמאות, מנגינות ומשימה למחר.">
+<style>
+:root{
+  --bg:#fff7e0; --card:#ffffff; --ink:#3a2c12; --soft:#7a6642;
+  --sun:#ffb703; --sun-d:#e08a00; --sky:#dff3ff; --good:#e7f8e9; --good-b:#4caf50;
+  --mid:#fff3cd; --mid-b:#e0a800; --low:#eef0f4; --low-b:#8d99ae; --src:#f3ecff; --src-b:#7b5cc4;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--sky),var(--bg) 260px);color:var(--ink);
+  font-family:Arial,"Segoe UI","Arial Hebrew",sans-serif;font-size:21px;line-height:1.85;min-height:100vh}
+.wrap{max-width:700px;margin:0 auto;padding:16px 16px 40px}
+header{text-align:center;padding:8px 0 4px}
+header h1{margin:0;font-size:32px;line-height:1.5}
+header p{margin:0;color:var(--soft);font-size:17px}
+.meter{display:flex;justify-content:center;gap:8px;margin:12px 0 14px}
+.meter span{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:22px;line-height:1;background:#fff;border:2px dashed #d9c9a0;filter:grayscale(1);opacity:.45;transition:.4s}
+.meter span.l2{filter:none;opacity:1;border:2px solid var(--sun);background:#fff3c4;box-shadow:0 0 14px #ffd166}
+.meter span.l1{filter:grayscale(.5);opacity:.8;border:2px solid #e6cf8a}
+.meter span.l0{filter:grayscale(1);opacity:.7;border:2px solid var(--low-b)}
+.meter span.now{border-style:solid;border-color:var(--sun-d);opacity:1}
+.card{background:var(--card);border-radius:22px;padding:20px;box-shadow:0 6px 24px rgba(120,90,20,.15)}
+.time{display:inline-block;background:var(--sky);border-radius:99px;padding:0 14px;font-size:16px;color:#27506b;font-weight:700}
+.pic{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:16px;margin:10px 0 6px;background:#f3ead0}
+.pic.small{max-width:420px;margin-inline:auto}
+h2{margin:6px 0 6px;font-size:26px;line-height:1.6}
+.story{margin:0 0 12px}
+.ask{font-weight:700;margin:0 0 8px}
+.choice{display:block;width:100%;text-align:right;font:inherit;color:inherit;background:#fffaf0;
+  border:2px solid #f0dca8;border-radius:16px;padding:10px 14px;margin:0 0 10px;cursor:pointer;transition:.15s}
+.choice:hover,.choice:focus-visible{border-color:var(--sun-d);background:#fff3c4;transform:translateY(-2px);outline:none}
+.picked{background:#fffaf0;border:2px solid #f0dca8;border-radius:16px;padding:8px 14px;margin:0 0 12px;color:var(--soft)}
+.picked b{color:var(--ink)}
+.box{border-radius:16px;padding:10px 14px;margin:0 0 12px;border-right:6px solid}
+.box h3{margin:0;font-size:19px}
+.box p{margin:0}
+.r2{background:var(--good);border-color:var(--good-b)}
+.r1{background:var(--mid);border-color:var(--mid-b)}
+.r0{background:var(--low);border-color:var(--low-b)}
+.src{background:var(--src);border-color:var(--src-b)}
+.src cite{display:block;font-style:normal;font-size:16px;color:var(--src-b)}
+.praise{background:linear-gradient(135deg,#fff3b0,#ffd166);border:2px solid var(--sun-d);border-radius:16px;
+  padding:10px 14px;margin:0 0 12px;font-weight:700;text-align:center;animation:pop .5s ease-out}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+#muteBtn{position:fixed;top:10px;left:10px;width:46px;height:46px;border-radius:50%;border:2px solid #e3d3a6;
+  background:#fff;font-size:22px;line-height:1;cursor:pointer;z-index:5}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:99px;padding:8px 22px;cursor:pointer;
+  background:var(--sun);color:#3a2500;box-shadow:0 3px 0 var(--sun-d)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--sun-d)}
+.btn.ghost{background:#fff;border:2px solid #e3d3a6;box-shadow:none}
+.big{font-size:24px;padding:10px 34px}
+.center{text-align:center}
+ul.sum{list-style:none;padding:0;margin:10px 0 16px}
+ul.sum li{padding:4px 0;border-bottom:1px dashed #ead9ac}
+.note{color:var(--soft);font-size:18px}
+.kol{margin-top:26px;background:linear-gradient(135deg,#e8f4ff,#fff3c4);border:2px solid #b9d9f5;border-radius:18px;
+  padding:12px 16px;text-align:center;font-size:16px;line-height:1.7}
+.kol a{color:#0b5cab;font-weight:700}
+@media (max-width:480px){body{font-size:19px}header h1{font-size:26px}h2{font-size:23px}.meter span{width:32px;height:32px;font-size:18px}}
+</style>
+<meta property="og:title" content="יום של חיוכים – משחק בחירות על מידת החיוך">
+<meta property="og:description" content="משחק בחירות לילדים על סבר פנים יפות: שישה רגעים ביום אחד, הילד בוחר מה לעשות ורואה מה קרה. עם מקורות מחז״ל, מחמאות, מנגינות ומשימה למחר.">
+<meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-yom-chiyuch-index.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/yom-chiyuch/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://www.kol-toda.co.il/yom-chiyuch/">
+<script async src="https://www.kol-toda.co.il/a.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>☀️ יוֹם שֶׁל חִיּוּכִים</h1>
+    <p>מִשְׂחַק בְּחִירוֹת: אַתָּה מַחְלִיט, וְרוֹאִים מָה קוֹרֶה</p>
+  </header>
+  <div class="meter" id="meter" aria-label="מד האור"></div>
+  <main class="card" id="card"></main>
+
+  <div class="kol">
+    📚 עוד חומרי לימוד ומשחקים על מידות טובות – חינם, במאגר הקול החמישי:
+    <a href="https://www.kol-toda.co.il/search/">חיפוש במאגר</a><br>
+    המאגר המלא: <a href="https://www.kol-toda.co.il/">www.kol-toda.co.il</a>
+  </div>
+</div>
+
+<script>
+// כל תחנה: מצב מהחיים, שלוש בחירות, ולכל בחירה מה קרה לחבר ומה קרה לך.
+// light: 2 = פנים שהוארו, 1 = לא הזיק ולא האיר, 0 = פנים שכבו.
+// התמונות: מסדרת החיוך בספריית התמונות (halacha-quiz/img/chiyuch-NN).
+const STATIONS = [
+ {img:"s1", time:"בֹּקֶר · בַּכְּנִיסָה לַכִּתָּה", title:"הַיֶּלֶד הֶחָדָשׁ",
+  story:"אַתָּה נִכְנָס לַכִּתָּה. בְּאֶחָד הַשֻּׁלְחָנוֹת יוֹשֵׁב דָּוִד, יֶלֶד חָדָשׁ שֶׁהִגִּיעַ רַק אֶתְמוֹל. הוּא יוֹשֵׁב לְבַד וּמִסְתַּכֵּל עַל הַשֻּׁלְחָן. הַחֲבֵרִים שֶׁלְּךָ קוֹרְאִים לְךָ מֵהַצַּד הַשֵּׁנִי שֶׁל הַכִּתָּה.",
+  choices:[
+   {t:"עוֹצֵר לְיָדוֹ רֶגַע, מְחַיֵּךְ וְאוֹמֵר: ״בֹּקֶר טוֹב, דָּוִד!״", light:2,
+    him:"דָּוִד מֵרִים אֶת הָרֹאשׁ וּמְחַיֵּךְ בַּחֲזָרָה. בַּהַפְסָקָה הוּא כְּבָר בָּא לְשַׂחֵק אִתְּכֶם.",
+    me:"זֶה לָקַח לְךָ חָמֵשׁ שְׁנִיּוֹת, וְהִרְוַחְתָּ חָבֵר."},
+   {t:"רָץ יָשָׁר לַחֲבֵרִים. אֵין לִי זְמַן עַכְשָׁו.", light:0,
+    him:"דָּוִד רוֹאֶה שֶׁכֻּלָּם עוֹבְרִים לְיָדוֹ. הוּא נִשְׁאָר לְבַד גַּם בַּהַפְסָקָה.",
+    me:"לֹא עָשִׂיתָ שׁוּם דָּבָר רַע. רַק הִפְסַדְתָּ מַשֶּׁהוּ טוֹב שֶׁהָיָה מַמָּשׁ קָרוֹב."},
+   {t:"שָׂם לוֹ סֻכָּרִיָּה עַל הַשֻּׁלְחָן, בְּלִי לְהִסְתַּכֵּל עָלָיו וּבְלִי לוֹמַר מִלָּה.", light:1,
+    him:"דָּוִד לֹא מֵבִין שֶׁל מִי הַסֻּכָּרִיָּה. הוּא חוֹשֵׁב שֶׁמִּישֶׁהוּ שָׁכַח אוֹתָהּ שָׁם.",
+    me:"נָתַתָּ מַתָּנָה, אֲבָל בְּלִי פָּנִים מְאִירוֹת הִיא כִּמְעַט לֹא הֻרְגְּשָׁה."}],
+  q:"״הַמְקַבֵּל אֶת חֲבֵרוֹ בְּסֵבֶר פָּנִים יָפוֹת, אֲפִלּוּ לֹא נָתַן לוֹ כְּלוּם, מַעֲלֶה עָלָיו הַכָּתוּב כְּאִלּוּ נָתַן לוֹ כָּל מַתָּנוֹת טוֹבוֹת שֶׁבָּעוֹלָם.״",
+  ref:"אָבוֹת דְּרַבִּי נָתָן, פֶּרֶק יג"},
+
+ {img:"s2", time:"בֹּקֶר · בֶּחָצֵר, לִפְנֵי הַשִּׁעוּר", title:"קַמְתִּי עָיֵף",
+  story:"הַלַּיְלָה לֹא יָשַׁנְתָּ טוֹב, וְאַתָּה עָיֵף וְעַצְבָּנִי. יוֹסִי מִתְיַשֵּׁב לְיָדְךָ עַל הַסַּפְסָל וְאוֹמֵר בְּשִׂמְחָה: ״מָה נִשְׁמָע? רָאִיתָ אֵיזֶה יוֹם יָפֶה?״",
+  choices:[
+   {t:"״אֲנִי לֹא שָׂמֵחַ עַכְשָׁו, אָז אֲנִי לֹא מְחַיֵּךְ.״ וּמְסוֹבֵב אֶת הָרֹאשׁ.", light:0,
+    him:"יוֹסִי נִבְהָל. הוּא בָּטוּחַ שֶׁאַתָּה כּוֹעֵס עָלָיו, וְלֹא מֵבִין מָה הוּא עָשָׂה.",
+    me:"מַצַּב הָרוּחַ שֶׁלְּךָ נִשְׁאָר חָמוּץ, וְעַכְשָׁו גַּם שֶׁל יוֹסִי."},
+   {t:"מְחַיֵּךְ אֵלָיו בְּכָל זֹאת: ״בֹּקֶר טוֹב! אֲנִי קְצָת עָיֵף הַיּוֹם.״", light:2,
+    him:"יוֹסִי מְחַיֵּךְ: ״גַּם אֲנִי! בּוֹא נִתְעוֹרֵר בְּיַחַד.״",
+    me:"אַחֲרֵי כַּמָּה דַּקּוֹת אַתָּה שָׂם לֵב שֶׁגַּם בִּפְנִים נִהְיָה לְךָ קַל יוֹתֵר."},
+   {t:"מוֹשֵׁךְ אֶת הַכּוֹבַע עַל הָעֵינַיִם וְלֹא עוֹנֶה.", light:1,
+    him:"יוֹסִי מוֹשֵׁךְ בַּכְּתֵפַיִם וְהוֹלֵךְ לְחָבֵר אַחֵר.",
+    me:"אַף אֶחָד לֹא נִפְגַּע, אֲבָל הָעֲיֵפוּת נִשְׁאֲרָה אִתְּךָ כָּל הַבֹּקֶר."}],
+  q:"״אֲפִלּוּ לֹא הָיָה לִבְּךָ שָׂמֵחַ בְּכָךְ, הַרְאֵה אֶת עַצְמְךָ לְפָנָיו כְּשָׂמֵחַ.״ וְגַם: ״אַחֲרֵי הַפְּעֻלּוֹת נִמְשָׁכִים הַלְּבָבוֹת.״",
+  ref:"הַמְּאִירִי עַל אָבוֹת א · סֵפֶר הַחִנּוּךְ, מִצְוָה טז"},
+
+ {img:"s3", time:"הַפְסָקָה · בֶּחָצֵר", title:"כֻּלָּם צוֹחֲקִים",
+  story:"בְּאֶמְצַע הַמִּשְׂחָק נָתִי בּוֹעֵט, מַחְטִיא אֶת הַכַּדּוּר וְנוֹפֵל. כָּל הַיְּלָדִים צוֹחֲקִים בְּקוֹל. נָתִי קָם, וְהַפָּנִים שֶׁלּוֹ אֲדֻמּוֹת. הוּא הוֹלֵךְ לָשֶׁבֶת לְבַד בַּצַּד.",
+  choices:[
+   {t:"צוֹחֵק עִם כֻּלָּם. זֶה בֶּאֱמֶת הָיָה מַצְחִיק!", light:0,
+    him:"נָתִי נִשְׁאָר לָשֶׁבֶת בַּצַּד עַד סוֹף הַהַפְסָקָה.",
+    me:"צָחַקְתָּ, אֲבָל זֶה לֹא הָיָה חִיּוּךְ. חִיּוּךְ מֵאִיר פָּנִים, וְלַעַג מְכַבֶּה אוֹתָן."},
+   {t:"לֹא צוֹחֵק. מַמְשִׁיךְ לְשַׂחֵק בְּשֶׁקֶט.", light:1,
+    him:"נָתִי רוֹאֶה שֶׁלְּפָחוֹת אֶחָד לֹא צָחַק עָלָיו. זֶה כְּבָר מַשֶּׁהוּ.",
+    me:"נִזְהַרְתָּ לֹא לִפְגֹּעַ. אֶפְשָׁר הָיָה גַּם לַעֲזֹר."},
+   {t:"נִגָּשׁ אֵלָיו, מֵנִיחַ יָד עַל הַכָּתֵף וּמְחַיֵּךְ: ״גַּם אֲנִי נָפַלְתִּי כָּכָה אֶתְמוֹל. בּוֹא, חוֹזְרִים לְשַׂחֵק.״", light:2,
+    him:"נָתִי נוֹשֵׁם לִרְוָחָה, מְחַיֵּךְ וְחוֹזֵר לַמִּגְרָשׁ.",
+    me:"הָפַכְתָּ רֶגַע שֶׁל בּוּשָׁה לְרֶגַע שֶׁל חֲבֵרוּת. גַּם הַיְּלָדִים הָאֲחֵרִים הִפְסִיקוּ לִצְחֹק."}],
+  q:"״טוֹב הַמַּלְבִּין שִׁנַּיִם לַחֲבֵרוֹ יוֹתֵר מִמַּשְׁקֵהוּ חָלָב.״ וּלְהֵפֶךְ: ״כָּל הַמַּלְבִּין פְּנֵי חֲבֵרוֹ בָּרַבִּים כְּאִלּוּ שׁוֹפֵךְ דָּמִים.״",
+  ref:"כְּתֻבּוֹת קיא ע״ב · בָּבָא מְצִיעָא נח ע״ב"},
+
+ {img:"s4", time:"צָהֳרַיִם · בָּאוֹטוֹבּוּס הַבַּיְתָה", title:"הַנֶּהָג הֶעָיֵף",
+  story:"אַתָּה עוֹלֶה לָאוֹטוֹבּוּס. הַנֶּהָג נִרְאֶה עָיֵף מְאֹד. הוּא לֹא מִסְתַּכֵּל עַל אַף אֶחָד וְלֹא עוֹנֶה לַיְּלָדִים שֶׁעוֹלִים.",
+  choices:[
+   {t:"״הוּא לֹא מְחַיֵּךְ אֵלַי, אָז לָמָּה שֶׁאֲנִי אֲחַיֵּךְ אֵלָיו?״", light:0,
+    him:"הַנֶּהָג מַמְשִׁיךְ לִנְסֹעַ בְּפָנִים סְגוּרוֹת. עוֹד יֶלֶד עָבַר לְיָדוֹ כְּאִלּוּ הוּא אֲוִיר.",
+    me:"חִכִּיתָ שֶׁהוּא יַתְחִיל. כָּךְ אַף אֶחָד לֹא מַתְחִיל."},
+   {t:"מְחַיֵּךְ אֵלָיו וְאוֹמֵר: ״שָׁלוֹם! תּוֹדָה רַבָּה, שֶׁיִּהְיֶה לְךָ יוֹם טוֹב.״", light:2,
+    him:"הַנֶּהָג מֻפְתָּע. הוּא מְחַיֵּךְ וְאוֹמֵר: ״תּוֹדָה, חָמוּד.״ גַּם לַיֶּלֶד שֶׁעוֹלֶה אַחֲרֶיךָ הוּא כְּבָר אוֹמֵר שָׁלוֹם.",
+    me:"יֶלֶד עִם כִּפָּה חִיֵּךְ אֶל נֶהָג עָיֵף. הַנֶּהָג יִזְכֹּר אֶת זֶה."},
+   {t:"עוֹלֶה בְּשֶׁקֶט וּמִתְיַשֵּׁב.", light:1,
+    him:"הַנֶּהָג לֹא שָׂם לֵב אֵלֶיךָ.",
+    me:"הָיִיתָ מְנֻמָּס. הַחִיּוּךְ נִשְׁאַר בַּכִּיס."}],
+  q:"״כַּמַּיִם הַפָּנִים לַפָּנִים, כֵּן לֵב הָאָדָם לָאָדָם.״ כְּמוֹ בַּמַּיִם: הַפָּנִים שֶׁאַתָּה מַרְאֶה הֵן הַפָּנִים שֶׁחוֹזְרוֹת אֵלֶיךָ.",
+  ref:"מִשְׁלֵי כז, יט"},
+
+ {img:"s5", time:"אַחַר הַצָּהֳרַיִם · בַּבַּיִת", title:"אַבָּא חוֹזֵר מֵהָעֲבוֹדָה",
+  story:"אַתָּה בְּאֶמְצַע מִשְׂחָק. הַדֶּלֶת נִפְתַּחַת, וְאַבָּא נִכְנָס עָיֵף אַחֲרֵי יוֹם אָרֹךְ, וּבְיָדָיו אַרְגָּז כָּבֵד.",
+  choices:[
+   {t:"מַמְשִׁיךְ לְשַׂחֵק. אֲנִי בְּדִיּוּק בָּאֶמְצַע!", light:0,
+    him:"אַבָּא מֵנִיחַ אֶת הָאַרְגָּז לְבַד וּמִתְיַשֵּׁב בְּשֶׁקֶט. אַף אֶחָד לֹא קִבֵּל אֶת פָּנָיו.",
+    me:"הַמִּשְׂחָק נִמְשַׁךְ, אֲבָל הָאֲוִירָה בַּבַּיִת נִהְיְתָה קְצָת כְּבֵדָה."},
+   {t:"אוֹמֵר ״שָׁלוֹם אַבָּא״ בְּלִי לְהָרִים אֶת הָעֵינַיִם מֵהַמִּשְׂחָק.", light:1,
+    him:"אַבָּא עוֹנֶה ״שָׁלוֹם״ וּמְחַכֶּה רֶגַע שֶׁתִּסְתַּכֵּל. אַחַר כָּךְ הוּא הוֹלֵךְ לַמִּטְבָּח.",
+    me:"אָמַרְתָּ מִלָּה טוֹבָה, אֲבָל הַפָּנִים שֶׁלְּךָ לֹא אָמְרוּ אוֹתָהּ."},
+   {t:"קָם וְרָץ אֵלָיו בְּחִיּוּךְ: ״שָׁלוֹם אַבָּא! בּוֹא, אֲנִי אֶעֱזֹר לְךָ.״", light:2,
+    him:"הַפָּנִים שֶׁל אַבָּא מְאִירוֹת. ״כַּמָּה טוֹב לַחֲזֹר לְבַיִת כָּזֶה!״ הָעֲיֵפוּת שֶׁלּוֹ כִּמְעַט נֶעֶלְמָה.",
+    me:"זֶה לָקַח חֲצִי דַּקָּה. הַמִּשְׂחָק חִכָּה לְךָ בְּסַבְלָנוּת."}],
+  q:"״טוֹב אֲרֻחַת יָרָק וְאַהֲבָה שָׁם, מִשּׁוֹר אָבוּס וְשִׂנְאָה בוֹ.״ בַּיִת עִם פָּנִים מְאִירוֹת שָׁוֶה יוֹתֵר מִבַּיִת עִם סְעוּדָה גְּדוֹלָה.",
+  ref:"מִשְׁלֵי טו, יז"},
+
+ {img:"s6", time:"עֶרֶב · בָּרְחוֹב", title:"הַשָּׁכֵן שֶׁעוֹמֵד לְבַד",
+  story:"בַּדֶּרֶךְ הַבַּיְתָה אַתָּה רוֹאֶה אֶת ר׳ אַבְרָהָם, הַשָּׁכֵן, עוֹמֵד לְבַדּוֹ לְיַד הַבַּיִת. הוּא נִרְאֶה עָצוּב. אַתָּה מְמַהֵר לַאֲרוּחַת הָעֶרֶב.",
+  choices:[
+   {t:"עוֹצֵר לְיָדוֹ וּמְחַיֵּךְ: ״עֶרֶב טוֹב, ר׳ אַבְרָהָם! מָה שְׁלוֹמְךָ הַיּוֹם?״", light:2,
+    him:"הַפָּנִים שֶׁל ר׳ אַבְרָהָם נִפְתָּחוֹת. ״בָּרוּךְ הַשֵּׁם! אַתָּה הָרִאשׁוֹן שֶׁשּׁוֹאֵל אוֹתִי הַיּוֹם.״ הוּא מְסַפֵּר לְךָ סִפּוּר קָצָר מֵהַיַּלְדוּת שֶׁלּוֹ.",
+    me:"אֵחַרְתָּ לָאֲרוּחָה בִּשְׁתֵּי דַּקּוֹת, וְשִׂמַּחְתָּ אָדָם עָצוּב."},
+   {t:"מְנוֹפֵף לוֹ מֵרָחוֹק וּמַמְשִׁיךְ לָלֶכֶת.", light:1,
+    him:"ר׳ אַבְרָהָם מְהַנְהֵן וְחוֹזֵר לְהִסְתַּכֵּל עַל הָרִצְפָּה.",
+    me:"שַׂמְתָּ לֵב אֵלָיו. הוּא עֲדַיִן עוֹמֵד שָׁם לְבַד."},
+   {t:"עוֹבֵר לַצַּד הַשֵּׁנִי שֶׁל הָרְחוֹב. לֹא נָעִים לִי לְדַבֵּר עִם אֲנָשִׁים עֲצוּבִים.", light:0,
+    him:"ר׳ אַבְרָהָם נִשְׁאָר לַעֲמֹד שָׁם לְבַד עַד שֶׁהֶחְשִׁיךְ.",
+    me:"דַּוְקָא מִי שֶׁעָצוּב צָרִיךְ אֶת הַחִיּוּךְ שֶׁלְּךָ יוֹתֵר מִכֻּלָּם."}],
+  q:"אֵלִיָּהוּ הַנָּבִיא הֶרְאָה לְרַבִּי בְּרוֹקָא שְׁנֵי אֲנָשִׁים בַּשּׁוּק וְאָמַר: ״אֵלּוּ בְּנֵי הָעוֹלָם הַבָּא.״ מָה מַעֲשֵׂיהֶם? ״אֲנָשִׁים שְׂמֵחִים אֲנַחְנוּ, וּמְשַׂמְּחִים אֶת הָעֲצוּבִים.״",
+  ref:"עַל פִּי תַּעֲנִית כב ע״א"}
+];
+
+const MISSIONS = [
+ "אוֹמַר ״בֹּקֶר טוֹב״ עִם חִיּוּךְ לִשְׁלוֹשָׁה אֲנָשִׁים, לִפְנֵי שֶׁהֵם אוֹמְרִים לִי.",
+ "אֲחַיֵּךְ לְיֶלֶד שֶׁיּוֹשֵׁב לְבַד, וְאַזְמִין אוֹתוֹ לְשַׂחֵק.",
+ "כְּשֶׁמִּישֶׁהוּ בַּבַּיִת יִפְנֶה אֵלַי, אָרִים אֶת הָעֵינַיִם וַאֲחַיֵּךְ אֵלָיו.",
+ "אוֹמַר תּוֹדָה עִם חִיּוּךְ לַנֶּהָג, לַמּוֹכֵר אוֹ לַשּׁוֹמֵר."
+];
+
+// מחמאה לכל תחנה, למי שבחר בבחירה המאירה. היא משבחת את המעשה עצמו.
+const PRAISE = [
+ "אֵיזֶה לֵב טוֹב! רָאִיתָ יֶלֶד שֶׁיּוֹשֵׁב לְבַד, וְהֵאַרְתָּ לוֹ פָּנִים.",
+ "זוֹ גְּבוּרָה אֲמִתִּית! חִיַּכְתָּ גַּם כְּשֶׁהָיָה לְךָ קָשֶׁה.",
+ "אַשְׁרֶיךָ! כְּשֶׁכֻּלָּם צָחֲקוּ, אַתָּה בָּחַרְתָּ לִהְיוֹת חָבֵר.",
+ "קִדַּשְׁתָּ שֵׁם שָׁמַיִם! חִיּוּךְ אֶחָד שֶׁלְּךָ הֵאִיר אוֹטוֹבּוּס שָׁלֵם.",
+ "אֵיזֶה כִּבּוּד אָב יָפֶה! קַמְתָּ מֵהַמִּשְׂחָק וְקִבַּלְתָּ אֶת אַבָּא בְּפָנִים מְאִירוֹת.",
+ "שִׂמַּחְתָּ אָדָם עָצוּב, וּבוֹרֵא עוֹלָם שָׂמֵחַ בְּךָ. כָּךְ עוֹשִׂים בְּנֵי הָעוֹלָם הַבָּא!"
+];
+const PRAISE_AGAIN = "כָּל הַכָּבוֹד שֶׁחָזַרְתָּ וּבָחַרְתָּ בַּטּוֹב! ";
+
+const KEY = "chiyuch-dilemmas-mission";
+const N = STATIONS.length;
+const card = document.getElementById("card");
+const meter = document.getElementById("meter");
+let idx = 0, picks = [];
+
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+function pic(name,cls){return '<img class="pic '+(cls||'')+'" src="https://yudataub.github.io/kol-toda-img-4/yom-chiyuch/img/'+name+'.webp" alt="">';}
+function today(){const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||"null");}catch(e){return null;}}
+function save(o){try{o?localStorage.setItem(KEY,JSON.stringify(o)):localStorage.removeItem(KEY);}catch(e){}}
+
+// ---------- צלילים: Web Audio בלבד, בלי קובצי שמע ----------
+let audioCtx = null;
+function muted(){try{return localStorage.getItem("chiyuch-dilemmas-mute")==="1";}catch(e){return false;}}
+function song(seq){
+  if(muted()) return;
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    if(!audioCtx) audioCtx = new AC();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+    let t = audioCtx.currentTime + 0.05;
+    seq.forEach(n=>{
+      n[0].forEach((f,j)=>{
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = j ? "sine" : "triangle"; o.frequency.value = f; o.connect(g); g.connect(audioCtx.destination);
+        const v = j ? 0.09 : 0.2;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + n[1]*0.98);
+        o.start(t); o.stop(t + n[1]);
+      });
+      t += n[1];
+    });
+  }catch(e){}
+}
+const G4=392,C5=523,D5=587,E5=659,F5=698,G5=784,A5=880,B5=988,C6=1047,D6=1175,E6=1319,G6=1568;
+// שש מנגינות שמחות. ככל שהילד הדליק יותר שמשות, המנגינה ארוכה וחגיגית יותר.
+const TUNES = [
+ [[[G4],.12],[[C5],.12],[[E5],.12],[[G5],.3],[[E5],.12],[[G5,C5],.5]],
+ [[[C5],.13],[[D5],.13],[[E5],.13],[[C5],.13],[[E5],.13],[[G5],.13],[[C6,E5],.55]],
+ [[[E5],.14],[[G5],.14],[[A5],.14],[[G5],.14],[[E5],.14],[[G5],.14],[[C6,G5],.22],[[C6,E5],.55]],
+ [[[G5],.12],[[E5],.12],[[G5],.12],[[C6],.26],[[A5],.12],[[C6],.12],[[D6,G5],.26],[[C6,E5,G5],.65]],
+ [[[C5],.1],[[E5],.1],[[G5],.1],[[C6],.1],[[G5],.1],[[C6],.1],[[E6,C6],.36],[[D6,G5],.16],[[E6,G5],.16],[[C6,E5,G5],.7]],
+ [[[G4],.14],[[C5],.14],[[E5],.14],[[G5,C5],.34],[[E5,C5],.14],[[G5,E5],.42],
+  [[A5,F5],.14],[[G5,E5],.14],[[F5,D5],.14],[[E5,C5],.14],[[D5],.14],[[E5,C5],.34],
+  [[C5],.12],[[E5],.12],[[G5],.12],[[C6,E5],.12],[[E6,C6],.3],[[D6,G5],.16],[[C6,E5,G5,C5],1.2]]
+];
+const GRAND = TUNES[5].concat([[[G5],.12],[[C6],.12],[[E6],.12],[[G6,C6,E6],1.1]]);
+function tuneGood(n){ song(TUNES[Math.max(0, Math.min(n, TUNES.length) - 1)]); }
+function initMute(){
+  const b = document.createElement("button");
+  b.type = "button"; b.id = "muteBtn";
+  const draw = ()=>{ b.textContent = muted() ? "🔇" : "🔊"; b.setAttribute("aria-label", muted() ? "להפעיל צלילים" : "להשתיק צלילים"); };
+  b.onclick = ()=>{ try{localStorage.setItem("chiyuch-dilemmas-mute", muted() ? "0" : "1");}catch(e){} draw(); if(!muted()) song([[[E5],.1],[[G5],.14]]); };
+  draw(); document.body.appendChild(b);
+}
+
+function drawMeter(){
+  meter.innerHTML = STATIONS.map((s,i)=>{
+    const p = picks[i];
+    const cls = p==null ? (i===idx?"now":"") : "l"+s.choices[p].light;
+    return `<span class="${cls}">☀️</span>`;
+  }).join("");
+}
+function show(html){card.innerHTML = html; drawMeter(); window.scrollTo({top:0,behavior:"smooth"});}
+function head(i){return `<span class="time">תַּחֲנָה ${i+1} מִתּוֹךְ ${N} · ${esc(STATIONS[i].time)}</span>`;}
+
+function start(){
+  const m = load();
+  if(m && m.date !== today()){ return checkIn(m); }
+  show(`
+   ${pic("open")}
+   <h2 class="center">בּוֹא נַעֲבֹר יוֹם אֶחָד בְּיַחַד</h2>
+   <p>בַּיּוֹם הַזֶּה יִהְיוּ שִׁשָּׁה רְגָעִים שֶׁבָּהֶם <b>אַתָּה מַחְלִיט</b> מָה לַעֲשׂוֹת. אֵין כָּאן צִיּוּנִים. אַחֲרֵי כָּל בְּחִירָה תִּרְאֶה מָה קָרָה לֶחָבֵר, וּמָה קָרָה לְךָ.</p>
+   <p>כָּל פָּנִים שֶׁתָּאִיר מַדְלִיקוֹת שֶׁמֶשׁ אַחַת לְמַעְלָה. כַּמָּה שְׁמָשׁוֹת תַּדְלִיק הַיּוֹם?</p>
+   <p class="center"><button class="btn big" onclick="go(0)">יוֹצְאִים לַדֶּרֶךְ</button></p>`);
+}
+
+function go(i){
+  idx = i;
+  const s = STATIONS[i];
+  // סדר הבחירות קבוע בכוונה: הבחירה המאירה נמצאת בכל תחנה במקום אחר.
+  show(`
+   ${head(i)}
+   ${pic(s.img)}
+   <h2>${esc(s.title)}</h2>
+   <p class="story">${esc(s.story)}</p>
+   <p class="ask">מָה אַתָּה עוֹשֶׂה?</p>
+   ${s.choices.map((c,k)=>`<button class="choice" onclick="pick(${k})">${esc(c.t)}</button>`).join("")}`);
+}
+
+function pick(k){
+  const before = picks[idx];
+  picks[idx] = k;
+  const s = STATIONS[idx], c = s.choices[k], last = idx === N-1;
+  const againNow = before != null && s.choices[before].light < 2;
+  const praise = c.light === 2 ? `<div class="praise">🌟 ${againNow ? PRAISE_AGAIN : ""}${PRAISE[idx]}</div>` : "";
+  if(c.light === 2) tuneGood(picks.filter((p,i)=>p != null && STATIONS[i].choices[p].light === 2).length);
+  const face = ["😔","😐","😊"][c.light];
+  show(`
+   ${head(idx)}
+   <h2>${esc(s.title)}</h2>
+   <div class="picked">בָּחַרְתָּ: <b>${esc(c.t)}</b></div>
+   ${praise}
+   <div class="box r${c.light}"><h3>${face} מָה קָרָה לוֹ</h3><p>${esc(c.him)}</p></div>
+   <div class="box r${c.light}"><h3>🪞 וּמָה קָרָה לְךָ</h3><p>${esc(c.me)}</p></div>
+   <div class="box src"><h3>💡 מָה אָמְרוּ חֲכָמִים</h3><p>${esc(s.q)}</p><cite>${esc(s.ref)}</cite></div>
+   <div class="row">
+     <button class="btn" onclick="${last?"finish()":"go("+(idx+1)+")"}">${last?"לְסִכּוּם הַיּוֹם":"מַמְשִׁיכִים"}</button>
+     ${c.light<2?`<button class="btn ghost" onclick="go(${idx})">↩️ לַחֲזֹר לָרֶגַע הַזֶּה וְלִבְחֹר אַחֶרֶת</button>`:""}
+   </div>`);
+}
+
+function finish(){
+  idx = -1;
+  const lit = picks.filter((p,i)=>STATIONS[i].choices[p].light===2).length;
+  const line = lit===N ? "הֵאַרְתָּ אֶת כָּל הַפָּנִים שֶׁפָּגַשְׁתָּ הַיּוֹם. כָּךְ נִרְאֶה יוֹם שֶׁל ״מְקַבֵּל אֶת כָּל הָאָדָם בְּסֵבֶר פָּנִים יָפוֹת״."
+    : lit>=4 ? "הַרְבֵּה אֲנָשִׁים הוֹלְכִים לִישֹׁן הַלַּיְלָה שְׂמֵחִים יוֹתֵר בִּזְכוּתְךָ."
+    : lit>=2 ? "הָיוּ הַיּוֹם רְגָעִים שֶׁבָּהֶם הֵאַרְתָּ פָּנִים, וְהָיוּ רְגָעִים שֶׁאֶפְשָׁר לְנַסּוֹת שׁוּב."
+    : "הַיּוֹם הָיָה יוֹם קָשֶׁה. מָחָר מַתְחִיל יוֹם חָדָשׁ, וְאֶפְשָׁר גַּם לְשַׂחֵק שׁוּב וְלִבְחֹר אַחֶרֶת.";
+  if(lit === N) song(GRAND); else if(lit >= 4) song(TUNES[3]);
+  show(`
+   ${pic("end","small")}
+   <h2 class="center" data-lit="${lit}">הַיּוֹם נִגְמַר. הִדְלַקְתָּ ${lit} מִתּוֹךְ ${N} שְׁמָשׁוֹת</h2>
+   <p class="center">${line}</p>
+   <ul class="sum">${STATIONS.map((s,i)=>{
+      const c=s.choices[picks[i]];
+      return `<li>${["😔","😐","😊"][c.light]} <b>${esc(s.title)}:</b> ${esc(c.t)}</li>`;}).join("")}</ul>
+   <div class="box src"><h3>🎯 עַכְשָׁו בֶּאֱמֶת: הַמְּשִׂימָה שֶׁלִּי לְמָחָר</h3>
+     <p>הַמִּשְׂחָק הָיָה רַק אִמּוּן. בְּחַר מְשִׂימָה אַחַת שֶׁתַּעֲשֶׂה מָחָר בַּחַיִּים הָאֲמִתִּיִּים:</p></div>
+   ${MISSIONS.map((m,k)=>`<button class="choice" onclick="mission(${k})">${esc(m)}</button>`).join("")}
+   <div class="row"><button class="btn ghost" onclick="again()">🔁 לְשַׂחֵק שׁוּב אֶת כָּל הַיּוֹם</button></div>`);
+}
+
+function mission(k){
+  save({m:k, date:today()});
+  song(TUNES[1]);
+  show(`
+   ${pic("mission","small")}
+   <h2 class="center">קִבַּלְתָּ עַל עַצְמְךָ!</h2>
+   <div class="box r2"><h3>הַמְּשִׂימָה שֶׁלִּי לְמָחָר</h3><p>${esc(MISSIONS[k])}</p></div>
+   <p>כְּשֶׁתִּפְתַּח אֶת הַמִּשְׂחָק מָחָר, הוּא יִשְׁאַל אוֹתְךָ אֵיךְ הָלַךְ.</p>
+   <p class="note">רַעְיוֹן: סַפֵּר עַל הַמְּשִׂימָה לְאַבָּא, לְאִמָּא אוֹ לְחָבֵר. כָּךְ קַל יוֹתֵר לִזְכֹּר.</p>
+   <div class="row"><button class="btn ghost" onclick="again()">🔁 לְשַׂחֵק שׁוּב אֶת כָּל הַיּוֹם</button></div>`);
+}
+
+function checkIn(m){
+  idx = -1;
+  show(`
+   ${pic("mission","small")}
+   <h2 class="center" data-checkin="1">בָּרוּךְ הַשָּׁב!</h2>
+   <div class="box src"><h3>בַּפַּעַם הַקּוֹדֶמֶת קִבַּלְתָּ עַל עַצְמְךָ</h3><p>${esc(MISSIONS[m.m])}</p></div>
+   <p class="ask">אֵיךְ הָלַךְ?</p>
+   <button class="choice" onclick="checked(2)">😊 עָשִׂיתִי!</button>
+   <button class="choice" onclick="checked(1)">🙂 נִסִּיתִי, וְזֶה הָיָה קָשֶׁה</button>
+   <button class="choice" onclick="checked(0)">😶 שָׁכַחְתִּי</button>`);
+}
+function checked(r){
+  const m = load();
+  const txt = [
+   "זֶה קוֹרֶה לְכֻלָּם. הַמְּשִׂימָה נִשְׁאֶרֶת שֶׁלְּךָ גַּם לְהַיּוֹם. נַסֵּה לַעֲשׂוֹת אוֹתָהּ כְּבָר בַּשָּׁעָה הַקְּרוֹבָה.",
+   "עֶצֶם זֶה שֶׁנִּסִּיתָ הוּא כְּבָר הַתְחָלָה. מִי שֶׁמִּתְאַמֵּן כָּל יוֹם מְגַלֶּה שֶׁזֶּה נִהְיֶה קַל יוֹתֵר.",
+   "מִישֶׁהוּ פָּגַשׁ אֶתְמוֹל פָּנִים מְאִירוֹת בִּזְכוּתְךָ. סַפֵּר לְחָבֵר אוֹ לַמּוֹרֶה מָה קָרָה כְּשֶׁחִיַּכְתָּ."][r];
+  if(r===2){ save(null); song(GRAND); } else save({m:m.m, date:today()});
+  show(`
+   <p class="center" style="font-size:60px;margin:0">${["🌱","💪","🌟"][r]}</p>
+   <p class="center" style="font-size:23px">${txt}</p>
+   <p class="center"><button class="btn big" data-new="1" onclick="again()">לְיוֹם חָדָשׁ שֶׁל חִיּוּכִים</button></p>`);
+}
+function again(){picks=[]; idx=0; const m=load(); if(m){m.date=today(); save(m);} start();}
+
+initMute();
+start();
+</script>
+</body>
+</html>
