@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>צדקה ונתינה – 🪙 מפת המטמון</title>
+<meta name="description" content="מפת אוצר עם 12 מקומות – כל חידון נותן רמז מתוך השיעור, ומי שחופר במקום הנכון מוצא מטבע.">
+<style>
+:root{--bg:#fff8ee;--ink:#2b2b2b;--mut:#6b6257;--card:#fff;--line:#e3d6c3;--acc:#2a9d8f;--acc2:#e76f51;--c1:#2a9d8f;--c2:#e9c46a}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Assistant","Segoe UI",Arial,sans-serif;line-height:1.55;overflow-x:hidden}
+a{color:inherit}
+.mw-head{background:linear-gradient(135deg,var(--c1),var(--c2));color:#fff;padding:14px 16px 22px;text-align:center;position:relative}
+.mw-nav{display:flex;justify-content:space-between;gap:8px;max-width:1100px;margin:0 auto 6px;font-size:15px}
+.mw-nav a{color:#fff;text-decoration:none;background:rgba(0,0,0,.16);padding:4px 12px;border-radius:999px}
+.mw-head h1{margin:4px 0 2px;font-size:clamp(26px,5vw,40px)}
+.mw-mech{display:inline-block;background:rgba(255,255,255,.22);border-radius:999px;padding:4px 14px;font-weight:700;margin:4px 0}
+.mw-how{max-width:720px;margin:6px auto 0;font-size:17px;opacity:.97}
+main{max-width:1100px;margin:0 auto;padding:14px 16px 30px}
+.mw-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--card);border-radius:16px;padding:12px 14px;box-shadow:0 4px 14px rgba(0,0,0,.07)}
+#mwProg{flex:1 1 260px;display:flex;align-items:center;gap:10px;font-weight:700}
+.mw-bar{flex:1;height:12px;border-radius:8px;background:#efe6d8;overflow:hidden}
+.mw-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--c1),var(--c2));transition:width .6s}
+#mwWho{font-size:14px;color:var(--mut);flex:1 1 100%}
+#mwNext{margin:12px 0 0;text-align:center}
+#mwRoot{margin:16px 0;min-height:200px}
+.mw-btn{display:inline-block;border:0;cursor:pointer;font:inherit;font-weight:800;text-decoration:none;border-radius:12px;padding:9px 16px;background:var(--acc2);color:#fff;margin:3px}
+.mw-btn.mw-ghost{background:#f1ebe2;color:var(--ink)}
+.mw-go{background:var(--acc2)}
+.mw-bridge{display:block;margin:14px 0;padding:12px 16px;border-radius:14px;border:2px dashed var(--line);color:var(--mut);text-align:center;text-decoration:none}
+.mw-bridge.on{border:2px solid var(--c1);color:var(--ink);background:var(--card);animation:mwGlow 2s ease-in-out infinite alternate}
+@keyframes mwGlow{from{box-shadow:0 0 0 rgba(42,157,143,0)}to{box-shadow:0 0 18px rgba(42,157,143,.45)}}
+details.mw-ls{margin-top:12px;background:var(--card);border-radius:14px;padding:10px 14px}
+details.mw-ls summary{cursor:pointer;font-weight:800}
+#mwList{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px;margin-top:10px}
+.mw-les{display:flex;gap:8px;align-items:center;text-decoration:none;padding:6px 8px;border-radius:10px;background:var(--bg);font-size:15px}
+.mw-les span{min-width:28px;height:28px;border-radius:50%;background:var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.mw-les.done span{background:#d8f0dc}
+.mw-modal{position:fixed;inset:0;background:rgba(20,15,10,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px;animation:mwFade .2s}
+.mw-box{background:var(--card);color:var(--ink);border-radius:20px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:20px 20px 14px;box-shadow:0 20px 50px rgba(0,0,0,.3);animation:mwPop .25s;font-size:18px}
+.mw-box h3{margin:0 0 8px;font-size:23px}
+.mw-box-btns{text-align:center;margin-top:12px}
+.mw-lock{color:var(--mut)}
+@keyframes mwFade{from{opacity:0}}
+@keyframes mwPop{from{transform:scale(.85);opacity:0}}
+.mw-toast{position:fixed;bottom:18px;left:50%;transform:translate(-50%,120px);background:#2b2b2b;color:#fff;padding:10px 18px;border-radius:999px;font-weight:700;z-index:60;transition:transform .3s;max-width:92vw;text-align:center}
+.mw-toast.on{transform:translate(-50%,0)}
+.mw-confetti{position:fixed;inset:0;pointer-events:none;z-index:70;overflow:hidden}
+.mw-confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:2px;animation:mwFall 2.2s ease-in forwards}
+@keyframes mwFall{to{top:105%;transform:rotate(720deg)}}
+.mw-sig{max-width:1100px;margin:6px auto 26px;padding:14px 16px;border-radius:16px;background:#e8f4f2;border:2px solid #b9ddd7;text-align:center;font-size:16px}
+.mw-sig a{color:#1d6f65;font-weight:700}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1b19;--ink:#f2ede6;--mut:#b9b0a4;--card:#2a2724;--line:#4a443d}
+ :root:not([data-theme="light"]) .mw-btn.mw-ghost{background:#3a3631;color:var(--ink)}
+ :root:not([data-theme="light"]) .mw-bar{background:#3a3631}
+ :root:not([data-theme="light"]) .mw-sig{background:#1f3532;border-color:#2f5550}
+ :root:not([data-theme="light"]) .mw-sig a{color:#8fd3c9}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.tz-wrap{max-width:560px;margin:0 auto}
+.tz-purse{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px;background:#4a3218;border-radius:999px;padding:6px 12px;margin-bottom:10px;box-shadow:inset 0 2px 6px rgba(0,0,0,.4)}
+.tz-purse b{color:#ffe08a;margin-right:6px;font-size:16px}
+.tz-c{width:24px;height:24px;border-radius:50%;border:2px dashed rgba(255,224,138,.4);display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1}
+.tz-c.on{border:0;animation:tzPop .5s}
+.tz-c.cu{border:0;filter:sepia(1) hue-rotate(-20deg) saturate(1.6) brightness(.85)}
+.tz-tabs{display:flex;gap:5px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin}
+.tz-tab{flex:0 0 46px;height:54px;border:2px solid #d8c39a;border-radius:10px;background:#fbf1d9;cursor:pointer;font:inherit;font-size:22px;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#5b4320;padding:0}
+.tz-tab small{font-size:11px;font-weight:800}
+.tz-tab.lock{opacity:.6;border-style:dashed}
+.tz-tab.got{background:#f3e3b0;border-color:#c9a227}
+.tz-tab.cur{border-color:#e07a2f;background:#fff;box-shadow:0 0 0 3px rgba(224,122,47,.3);transform:translateY(-3px)}
+.tz-note{position:relative;background:linear-gradient(#fffaf0,#f7ebcf);border-radius:6px 18px 6px 18px;padding:12px 16px 8px;margin:6px 0 12px;box-shadow:0 6px 14px rgba(90,60,20,.18);border:1px solid #e3cf9f;font-size:18px;color:#3d2c12;animation:tzUnroll .4s}
+.tz-note.quiet{font-size:16px;text-align:center;color:#6b5a3a;padding:12px}
+.tz-nt{font-weight:800;color:#a0522d;margin-bottom:2px}
+.tz-note p{margin:4px 0}
+.tz-more{background:#fff1c9;border-radius:10px;padding:4px 10px;font-weight:700}
+.tz-go{font-size:15px;color:#2a7a6f;font-weight:800}
+.tz-map{position:relative;aspect-ratio:5/6;border-radius:18px;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#f6e6bf,#e9cf96 70%,#d6b26e);box-shadow:0 10px 24px rgba(90,60,20,.25),inset 0 0 0 5px #b98a45,inset 0 0 40px rgba(120,80,20,.35)}
+.tz-svg{position:absolute;inset:0;width:100%;height:100%}
+.tz-river{fill:none;stroke:#7cc0d8;stroke-width:5;opacity:.65;stroke-linecap:round}
+.tz-trail{fill:none;stroke:#a0522d;stroke-width:.9;stroke-dasharray:2 2;stroke-linecap:round;stroke-linejoin:round}
+.tz-rose{position:absolute;left:4%;bottom:3%;font-size:30px;opacity:.7}
+.tz-spot{position:absolute;transform:translate(-50%,-50%);border:0;background:none;cursor:pointer;padding:0;font:inherit;display:flex;flex-direction:column;align-items:center;width:23%;color:#4a3218}
+.tz-ic{font-size:clamp(26px,8vw,40px);line-height:1;filter:drop-shadow(0 3px 2px rgba(80,50,10,.35));transition:transform .15s}
+.tz-spot:active .tz-ic{transform:scale(.9)}
+.tz-spot small{font-size:clamp(10px,2.9vw,13px);font-weight:800;line-height:1.1;text-align:center;background:rgba(255,248,230,.75);border-radius:6px;padding:1px 4px;margin-top:2px}
+.tz-x{position:absolute;top:-6px;left:10%;font-size:18px;animation:tzPop .5s}
+.tz-spot.got .tz-ic{opacity:.75}
+.tz-spot.glow .tz-ic{animation:tzGlow 1.2s ease-in-out infinite alternate}
+.tz-spot.dig .tz-ic{animation:tzDig .6s ease-in-out}
+.tz-spot.dig:after{content:"⛏️";position:absolute;top:-14px;right:4px;font-size:22px;animation:tzShovel .3s ease-in-out 2}
+.tz-big{text-align:center;font-size:76px;line-height:1.1}
+.tz-big.spin{animation:tzSpin .9s ease-out}
+.tz-line{font-size:20px;font-weight:700}
+.tz-more2{color:var(--mut)}
+.tz-verse{color:#6b4f1d;font-style:italic}
+@keyframes tzPop{from{transform:scale(0)}}
+@keyframes tzUnroll{from{transform:scaleY(.6);opacity:0}}
+@keyframes tzGlow{to{filter:drop-shadow(0 0 10px #ffd23f) drop-shadow(0 0 4px #fff)}}
+@keyframes tzDig{30%{transform:translateY(3px) rotate(-6deg)}60%{transform:translateY(-2px) rotate(6deg)}}
+@keyframes tzShovel{50%{transform:rotate(-30deg)}}
+@keyframes tzSpin{from{transform:rotateY(0) scale(.4)}to{transform:rotateY(720deg) scale(1)}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tz-map{background:radial-gradient(ellipse at 50% 40%,#5d4b2c,#4d3c22 70%,#3d2f1a);box-shadow:0 10px 24px rgba(0,0,0,.4),inset 0 0 0 5px #6b5025}
+ :root:not([data-theme="light"]) .tz-spot{color:#f2e6cc}
+ :root:not([data-theme="light"]) .tz-spot small{background:rgba(40,30,15,.75)}
+ :root:not([data-theme="light"]) .tz-note{background:linear-gradient(#3a3020,#2f2718);color:#f2ede6;border-color:#5a4a2a}
+ :root:not([data-theme="light"]) .tz-note.quiet{color:#d8ccb4}
+ :root:not([data-theme="light"]) .tz-nt{color:#f0a868}
+ :root:not([data-theme="light"]) .tz-more{background:#4a3a1c}
+ :root:not([data-theme="light"]) .tz-go{color:#7fd6c9}
+ :root:not([data-theme="light"]) .tz-tab{background:#2a2420;color:#f2ede6;border-color:#5a4a35}
+ :root:not([data-theme="light"]) .tz-tab.got{background:#4a3c1a}
+ :root:not([data-theme="light"]) .tz-tab.cur{background:#3a3226}
+ :root:not([data-theme="light"]) .tz-verse{color:#e8c98f}}
+
+:root{--c1:#b8860b;--c2:#2a9d8f}
+</style>
+<meta property="og:title" content="צדקה ונתינה – 🪙 מפת המטמון">
+<meta property="og:description" content="מפת אוצר עם 12 מקומות – כל חידון נותן רמז מתוך השיעור, ומי שחופר במקום הנכון מוצא מטבע.">
+<meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-midot-tzedaka-index.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.kol-toda.co.il/midot/tzedaka/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="הקול החמישי – יהודה טאוב">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://www.kol-toda.co.il/midot/tzedaka/">
+<script async src="https://www.kol-toda.co.il/a.js"></script>
+</head>
+<body>
+<header class="mw-head">
+<div class="mw-nav"><a href="../">🌱 כָּל הַמִּדּוֹת</a><a href="../#worlds">🗺️ כָּל הָעוֹלָמוֹת</a></div>
+<h1>🪙 צְדָקָה וּנְתִינָה</h1>
+<div class="mw-mech">🪙 מַפַּת הַמַּטְמוֹן</div>
+<p class="mw-how">כָּל חִידוֹן שֶׁעוֹבְרִים נוֹתֵן רֶמֶז מִתּוֹךְ הַשִּׁעוּר. קוֹרְאִים אֶת הָרֶמֶז, לוֹחֲצִים עַל הַמָּקוֹם הַנָּכוֹן בַּמַּפָּה וְחוֹפְרִים – וּמוֹצְאִים מַטְבֵּעַ וּמִשְׁפָּט.</p>
+</header>
+<main>
+<div class="mw-top"><div id="mwProg"></div><div id="mwWho"></div></div>
+<div id="mwNext"></div>
+<div id="mwRoot"></div>
+<div id="mwBridge"></div>
+<details class="mw-ls"><summary>📚 כָּל הַשִּׁעוּרִים שֶׁל הַמִּדָּה</summary><div id="mwList"></div></details>
+</main>
+<div class="mw-sig">📚 עוד חומרי לימוד – חינם, במאגר הקול החמישי: <a href="https://www.kol-toda.co.il/midot/">מידות טובות</a> · <a href="https://www.kol-toda.co.il/mischakim/">משחקים ופעילויות</a><br>המאגר המלא: <a href="https://www.kol-toda.co.il/">https://www.kol-toda.co.il/</a></div>
+<div class="mw-toast" id="mwToast" role="status"></div>
+<script>window.MW_DATA={"slug": "tzedaka", "name": "צְדָקָה וּנְתִינָה", "icon": "🪙", "color": ["#b8860b", "#2a9d8f"], "content": {"mech_title": "🪙 מַפַּת הַמַּטְמוֹן", "teaser": "מפת אוצר עם 12 מקומות – כל חידון נותן רמז מתוך השיעור, ומי שחופר במקום הנכון מוצא מטבע.", "how": "כָּל חִידוֹן שֶׁעוֹבְרִים נוֹתֵן רֶמֶז מִתּוֹךְ הַשִּׁעוּר. קוֹרְאִים אֶת הָרֶמֶז, לוֹחֲצִים עַל הַמָּקוֹם הַנָּכוֹן בַּמַּפָּה וְחוֹפְרִים – וּמוֹצְאִים מַטְבֵּעַ וּמִשְׁפָּט.", "principle": "ציד מטמון עם רמזים", "color": ["#b8860b", "#2a9d8f"], "bridge": {"to": "chesed", "text": "צְדָקָה נוֹתְנִים כְּשֶׁחָסֵר לַשֵּׁנִי – וְחֶסֶד הוּא עוֹד יוֹתֵר."}, "spots": [{"k": "stone", "icon": "🪨", "name": "אֶבֶן הָאוֹתִיּוֹת", "x": 18, "y": 11}, {"k": "store", "icon": "🏚️", "name": "הַמַּחְסָן", "x": 50, "y": 8}, {"k": "wall", "icon": "🧱", "name": "הַקִּיר הַסָּדוּק", "x": 82, "y": 13}, {"k": "bowl", "icon": "🧺", "name": "הַקְּעָרָה הַמְּשֻׁתֶּפֶת", "x": 32, "y": 30}, {"k": "kupa", "icon": "🏛️", "name": "קֻפַּת הָעִיר", "x": 70, "y": 29}, {"k": "road", "icon": "🛤️", "name": "הַדֶּרֶךְ", "x": 13, "y": 50}, {"k": "door", "icon": "🚪", "name": "הַדֶּלֶת", "x": 48, "y": 50}, {"k": "field", "icon": "🌾", "name": "הַשָּׂדֶה", "x": 85, "y": 48}, {"k": "closet", "icon": "🗄️", "name": "הָאָרוֹן", "x": 26, "y": 70}, {"k": "treasury", "icon": "🏰", "name": "בֵּית הָאוֹצָר", "x": 66, "y": 69}, {"k": "home", "icon": "🏡", "name": "הַבַּיִת שֶׁלִּי", "x": 15, "y": 89}, {"k": "hill", "icon": "⛰️", "name": "הַגִּבְעָה הַגְּבוֹהָה", "x": 58, "y": 89}], "practice": {"spot": "home", "clue": "רֶמֶז לְאִמּוּן: אֵיפֹה כְּדַאי לָשִׂים קֻפַּת צְדָקָה קְטַנָּה, שֶׁמַּפְרִישִׁים לְתוֹכָהּ כָּל שָׁבוּעַ?", "hint": "בַּמָּקוֹם שֶׁבּוֹ אַתֶּם גָּרִים.", "line": "גַּם לִי יֵשׁ מַשֶּׁהוּ לָתֵת, וְאֶבְחַר דָּבָר אֶחָד.", "more": "מְתַכְנְנִים קֻפָּה וּמַפְרִישִׁים כָּל שָׁבוּעַ."}, "clues": [{"spot": "stone", "clue": "הַמִּלָּה ׳צְדָקָה׳ מַסְתִּירָה אַרְבַּע מִלִּים: צַדִּיק, דַּל, קָדוֹשׁ, חֹמֶשׁ. חַפְּשׂוּ מָקוֹם שֶׁחֲקוּקוֹת בּוֹ אוֹתִיּוֹת.", "hint": "זֶה דָּבָר קָשֶׁה וְכָבֵד, וְהָאוֹתִיּוֹת חֲקוּקוֹת עָלָיו.", "line": "כָּל מַה שֶׁיֵּשׁ לִי הוּא מַתָּנָה מֵה׳.", "more": "הַצַּדִּיק הַנּוֹתֵן וְהַדַּל הַמְקַבֵּל נִפְגָּשִׁים, וְשׁוֹרָה בֵּינֵיהֶם קְדֻשָּׁה.", "verse": "כִּי מִמְּךָ הַכֹּל וּמִיָּדְךָ נָתַנּוּ לָךְ"}, {"spot": "store", "clue": "רַבִּי אֶלְעָזָר נָתַן הַכֹּל לַיְתוֹמִים. בַּזּוּז הָאַחֲרוֹן קָנָה מְעַט חִטָּה, שָׁפַךְ אוֹתָהּ בַּפִּנָּה וְסָגַר אֶת הַדֶּלֶת. אֵיפֹה?", "hint": "מָקוֹם שֶׁשּׁוֹמְרִים בּוֹ תְּבוּאָה – עַד שֶׁהַדֶּלֶת לֹא נִפְתְּחָה מֵרֹב חִטָּה!", "line": "מִן הַמְּעַט שֶׁנִּשְׁאַר – הֵגִיעַ שֶׁפַע גָּדוֹל.", "more": "הַכֹּל שֶׁל ה׳, וְלָכֵן קַל לָתֵת.", "verse": "תֶּן לוֹ מִשֶּׁלּוֹ, שֶׁאַתָּה וְשֶׁלְּךָ שֶׁלּוֹ"}, {"spot": "wall", "clue": "בַּלַּיְלָה שֶׁל הַחֲתֻנָּה תָּקְעָה בַּת רַבִּי עֲקִיבָא סִיכָּה. אֵיפֹה?", "hint": "יֵשׁ בּוֹ סֶדֶק – וּבַבֹּקֶר נִמְצָא שָׁם נָחָשׁ מֵת עַל הַסִּיכָּה.", "line": "צְדָקָה, אֲפִלּוּ קְטַנָּה, הִיא מָגֵן.", "more": "בְּתוֹךְ שִׂמְחָה גְּדוֹלָה, אֶפְשָׁר לִזְכֹּר אֶת מִי שֶׁאֵין לוֹ.", "verse": "לֹא יוֹעִיל הוֹן בְּיוֹם עֶבְרָה וּצְדָקָה תַּצִּיל מִמָּוֶת"}, {"spot": "bowl", "clue": "לְפוֹעֵל אֶחָד לֹא הָיָה לֶחֶם, וְהוּא הִתְבַּיֵּשׁ. חָבֵר חָכָם אָסַף לֶחֶם מִכֻּלָּם – לְאָן?", "hint": "כֻּלָּם שָׂמוּ בָּהּ, וְכֻלָּם אָכְלוּ מִמֶּנָּה יַחַד.", "line": "בַּצְּדָקָה חָשׁוּב לֹא רַק מָה נוֹתְנִים, אֶלָּא גַּם אֵיךְ.", "more": "הֶעָנִי אָכַל בְּלִי בּוּשָׁה, כִּי שָׁמְרוּ עַל כְּבוֹדוֹ.", "verse": "לֹא יוֹעִילוּ אוֹצְרוֹת רֶשַׁע וּצְדָקָה תַּצִּיל מִמָּוֶת"}, {"spot": "kupa", "clue": "עָנִי בִּקֵּשׁ תַּרְנְגֹלֶת פְּטוּמָה וְיַיִן יָשָׁן, וְרָבָא הִתְלַבֵּט. עַל מָה הָיָה רָבָא אַחְרַאי בִּמְחוֹזָא?", "hint": "כָּל הָעִיר נוֹתֶנֶת לְתוֹכָהּ – וּמִמֶּנָּה נוֹתְנִים לָעֲנִיִּים.", "line": "נוֹתְנִים לֶעָנִי כְּפִי מַה שֶּׁחָסֵר לוֹ.", "more": "לְכָל אֶחָד וְאֶחָד ה׳ נוֹתֵן אֶת הַפַּרְנָסָה שֶׁלּוֹ בְּעִתּוֹ.", "verse": "עֵינֵי כֹל אֵלֶיךָ יְשַׂבֵּרוּ וְאַתָּה נוֹתֵן לָהֶם אֶת אָכְלָם בְּעִתּוֹ"}, {"spot": "road", "clue": "רַבִּי יוֹחָנָן פִּזֵּר מַטְבְּעוֹת, כְּדֵי שֶׁרַבִּי שִׁמְעוֹן יִמְצָא אוֹתָם וְלֹא יַרְגִּישׁ שֶׁקִּבֵּל צְדָקָה. אֵיפֹה פִּזֵּר?", "hint": "הַמָּקוֹם שֶׁהוֹלְכִים בּוֹ מִמָּקוֹם לְמָקוֹם.", "line": "מַתָּן בַּסֵּתֶר שׁוֹמֵר עַל כְּבוֹדוֹ שֶׁל הַמְקַבֵּל.", "more": "הַכָּבוֹד שֶׁל הַמְקַבֵּל חָשׁוּב כְּמוֹ הָעֶזְרָה.", "verse": "מַתָּן בַּסֵּתֶר יִכְפֶּה אָף"}, {"spot": "door", "clue": "הַזֹּהַר קוֹרֵא לֶעָנִי ׳דּוֹרוֹן׳ – מַתָּנָה שֶׁה׳ שׁוֹלֵחַ. אֵיפֹה הַמַּתָּנָה הַזֹּאת דּוֹפֶקֶת?", "hint": "שׁוֹמְעִים שָׁם ׳טוֹק־טוֹק׳.", "line": "הָעָנִי שֶׁדּוֹפֵק בַּדֶּלֶת הוּא מַתָּנָה שֶׁה׳ שׁוֹלֵחַ לָנוּ.", "more": "אוֹמְרִים תּוֹדָה לַה׳ וְגַם לֶעָנִי שֶׁנָּתַן לָנוּ לִזְכּוֹת.", "verse": "וּצְדָקָה תַּצִּיל מִמָּוֶת"}, {"spot": "field", "clue": "מִי שֶׁנּוֹתֵן מִן הַמְּעַט דּוֹמֶה לְאִכָּר שֶׁזּוֹרֵעַ. אֵיפֹה הָאִכָּר עוֹבֵד?", "hint": "שָׁם שָׂמִים זְרָעִים בָּאֲדָמָה, וְהֵם צוֹמְחִים לְהַרְבֵּה.", "line": "גַּם עָנִי נוֹתֵן.", "more": "מִי שֶׁנּוֹתֵן, כְּמוֹ זוֹרֵעַ, וְיִצְמַח לוֹ הַרְבֵּה.", "verse": "אֲפִילּוּ עָנִי הַמִּתְפַּרְנֵס מִן הַצְּדָקָה יַעֲשֶׂה צְדָקָה"}, {"spot": "closet", "clue": "יְהוּדִי בָּכָה לִפְנֵי הָאַדְמוֹ״ר מִסְּטוֹלִין. מֵאֵיפֹה הוֹצִיא הָרַבִּי עֶשְׂרִים וְתִשְׁעָה אֶלֶף?", "hint": "פּוֹתְחִים אוֹתוֹ בְּדֶלֶת, וְשׁוֹמְרִים בּוֹ דְּבָרִים.", "line": "נוֹתְנִים כְּשֶׁחוֹשְׁבִים עַל שִׂמְחַת הַמְּקַבֵּל.", "more": "הַמְּקַבֵּל שֶׁקִּבֵּל כְּבַקָּשָׁתוֹ הוֹלֵךְ שָׂמֵחַ בִּשְׁלֵמוּת.", "verse": "אַשְׁרֵי מַשְׂכִּיל אֶל דָּל בְּיוֹם רָעָה יְמַלְּטֵהוּ ה׳"}, {"spot": "treasury", "clue": "גִּזְבָּר שׁוֹמֵר עַל אוֹצָר שֶׁאֵינוֹ שֶׁלּוֹ. אֵיפֹה הוּא עוֹבֵד?", "hint": "שָׁם שׁוֹמְרִים אֶת הָאוֹצָר הַגָּדוֹל – מְאֹד מְאֹד שָׁמוּר.", "line": "אָנוּ גִּזְבָּרִים שֶׁל אוֹצָר שֶׁה׳ נָתַן.", "more": "מַעֲשֵׂר = עֲשִׂירִית, וְהוּא מַעֲשִׁיר.", "verse": "עַשֵּׂר תְּעַשֵּׂר אֵת כָּל תְּבוּאַת זַרְעֶךָ הַיֹּצֵא הַשָּׂדֶה שָׁנָה שָׁנָה"}], "final": {"spot": "hill", "clue": "הָרֶמֶז הָאַחֲרוֹן: ׳כִּי מִמְּךָ הַכֹּל׳ – הַכֹּל מַתָּנָה מִלְמַעְלָה. חַפְּשׂוּ אֶת הַמָּקוֹם הֲכִי גָּבוֹהַּ בַּמַּפָּה.", "title": "הַתֵּבָה הַגְּדוֹלָה", "line": "מִי שֶׁזּוֹכֵר שֶׁהַכֹּל מַתָּנָה, אוֹהֵב אֶת הַנּוֹתֵן.", "more": "נוֹתְנִים בְּשִׂמְחָה – זֶה הַסִּימָן שֶׁאֲנִי מוֹדֶה.", "verse": "כִּי מִמְּךָ הַכֹּל וּמִיָּדְךָ נָתַנּוּ לָךְ"}}, "lessons": [{"id": "tzedaka-01", "n": 1, "t": "מַהִי צְדָקָה?", "st": "לָמָּה צְדָקָה אֵינָהּ ׳לָתֵת מִשֶּׁלִּי׳, מָה מְסֻתָּר בָּאוֹתִיּוֹת שֶׁל הַמִּלָּה, וְאֵיךְ נוֹתְנִים מִתּוֹךְ הוֹדָיָה"}, {"id": "tzedaka-02", "n": 2, "t": "תֶּן לוֹ מִשֶּׁלּוֹ – רַבִּי אֶלְעָזָר אִישׁ בַּרְתּוֹתָא", "st": "הַגַּבָּאִים בּוֹרְחִים, הַיְתוֹמִים קוֹדְמִים, וּמַחְסָן אֶחָד מִתְמַלֵּא בְּחִטָּה"}, {"id": "tzedaka-03", "n": 3, "t": "צְדָקָה תַּצִּיל מִמָּוֶת – בַּת רַבִּי עֲקִיבָא", "st": "עָנִי בַּפֶּתַח, סִיכָּה בַּקִּיר, וְהַנֵּס שֶׁל הַמַּעֲשֶׂה הַקָּטָן"}, {"id": "tzedaka-04", "n": 4, "t": "בְּלִי לְהַלְבִּין פָּנִים – הַצְּרוֹר וְהַנָּחָשׁ", "st": "פּוֹעֵל אֶחָד אָסַף לֶחֶם מִכֻּלָּם, וְהָעָנִי אָכַל בְּכָבוֹד – וְנִמְצָא נָחָשׁ חָתוּךְ בַּצְּרוֹר"}, {"id": "tzedaka-05", "n": 5, "t": "דֵּי מַחְסוֹרוֹ – רָבָא וְקֻפַּת הַצְּדָקָה", "st": "מָה בִּקֵּשׁ עָנִי מִקֻּפַּת הַצְּדָקָה, לָמָּה רָבָא הִתְלַבֵּט, וְאֵיךְ בָּאָה הַתְּשׁוּבָה בְּדִיּוּק בַּזְּמַן"}, {"id": "tzedaka-06", "n": 6, "t": "מַתָּן בַּסֵּתֶר – הַדִּינָר שֶׁל רַבִּי שִׁמְעוֹן בַּר בָּא", "st": "אֵיךְ עוֹזְרִים לְחָבֵר בְּלִי לְהַבִּיךְ אוֹתוֹ, מָה לָמַדְנוּ מִשְּׁנֵי חֲכָמִים גְּדוֹלִים, וּמָה אוֹמֵר הָרַמְבַּ״ם"}, {"id": "tzedaka-07", "n": 7, "t": "הַדּוֹרוֹן שֶׁל הַקָּדוֹשׁ בָּרוּךְ הוּא", "st": "לָמָּה הַזֹּהַר קוֹרֵא לֶעָנִי דּוֹרוֹן, מָה הוּא חוּט הַחֶסֶד, וְאֵיךְ חֹדֶשׁ שֶׁל שְׂכִירוּת חָזַר בְּרָכָה"}, {"id": "tzedaka-08", "n": 8, "t": "גַּם הֶעָנִי נוֹתֵן", "st": "מַר זוּטְרָא אוֹמֵר: גַּם מִי שֶׁמְּקַבֵּל עֶזְרָה יָכוֹל לָתֵת. מָשָׁל הַזּוֹרֵעַ, הַגּוּף הַמִּתְחַדֵּשׁ וְהַבִּטָּחוֹן בַּה׳"}, {"id": "tzedaka-09", "n": 9, "t": "לְשַׂמֵּחַ אֶת הַמְּקַבֵּל", "st": "הָאַדְמוֹ״ר מִסְּטוֹלִין נָתַן עֶשְׂרִים וְתִשְׁעָה אֶלֶף מִתּוֹךְ שְׁלוֹשִׁים, כְּדֵי שֶׁהַיְּהוּדִי יֵצֵא שָׂמֵחַ בִּשְׁלֵמוּת"}, {"id": "tzedaka-10", "n": 10, "t": "עַשֵּׂר בִּשְׁבִיל שֶׁתִּתְעַשֵּׁר", "st": "הַגִּזְבָּר הַנֶּאֱמָן שׁוֹמֵר עַל אוֹצָר שֶׁאֵינוֹ שֶׁלּוֹ, וְכָךְ הוּא מִתְקַדֵּם: מַעֲשֵׂר, חֹמֶשׁ וְקֻפַּת צְדָקָה"}], "worlds": {"chiyuch": {"name": "הַחִיּוּךְ", "icon": "😊"}, "ayin": {"name": "עַיִן טוֹבָה", "icon": "👁️"}, "simcha": {"name": "שִׂמְחָה", "icon": "🎶"}, "hodaya": {"name": "הַכָּרַת הַטּוֹב לַה׳ (הוֹדָיָה)", "icon": "🙏"}, "hakarat": {"name": "הַכָּרַת הַטּוֹב לַחֲבֵרִים וְלַהוֹרִים", "icon": "🤝"}, "kibud": {"name": "כִּבּוּד אָב וָאֵם", "icon": "👨‍👦"}, "chesed": {"name": "חֶסֶד", "icon": "💝"}, "orchim": {"name": "הַכְנָסַת אוֹרְחִים", "icon": "🏠"}, "tzedaka": {"name": "צְדָקָה וּנְתִינָה", "icon": "🪙"}, "shalom": {"name": "שָׁלוֹם וְוִתּוּר", "icon": "🕊️"}, "reim": {"name": "אַהֲבַת יִשְׂרָאֵל", "icon": "💛"}, "kavod": {"name": "כְּבוֹד הַבְּרִיּוֹת", "icon": "🎩"}, "zechut": {"name": "דָּן לְכַף זְכוּת", "icon": "⚖️"}, "emunah": {"name": "אֱמוּנָה", "icon": "✨"}, "bitachon": {"name": "בִּטָּחוֹן בַּה׳", "icon": "🛡️"}, "yira": {"name": "יִרְאַת שָׁמַיִם", "icon": "👑"}, "lev": {"name": "תְּפִלָּה מִן הַלֵּב", "icon": "🤲"}, "eretz": {"name": "אַהֲבַת אֶרֶץ יִשְׂרָאֵל", "icon": "🌄"}, "torah": {"name": "אַהֲבַת הַתּוֹרָה", "icon": "📜"}, "ratzon": {"name": "רָצוֹן וְחֵשֶׁק לַעֲבוֹדַת ה׳", "icon": "🔥"}, "cheshbon": {"name": "חֶשְׁבּוֹן הַנֶּפֶשׁ", "icon": "📝"}, "oneg": {"name": "כְּבוֹד שַׁבָּת וְעֹנֶג שַׁבָּת", "icon": "🕯️"}, "zrizut": {"name": "זְרִיזוּת", "icon": "🏃"}, "emet": {"name": "אֱמֶת", "icon": "✅"}, "lashon": {"name": "שְׁמִירַת הַלָּשׁוֹן", "icon": "👄"}, "nefesh": {"name": "עֲנָוָה וְנַחַת", "icon": "🌿"}}};window.MW_API="https://script.google.com/macros/s/AKfycbxnmfZcen-MXI1Af0a61_m2awo_WIz19wcbWnl_pgywOYpj2f7kgT9T08icGmRV8Oa7/exec";</script>
+<script>
+/* 🌱 עולמות המידות – מנוע משותף (15.11.2026, בקשת המשתמש: "כל עיקרונות החוקר, עיקרון אחר בכל מידה").
+   כל עמוד עולם = המנוע הזה + מכניקה אחת (mech/<slug>.js) + תוכן (content/<slug>.json), מוטמעים ע"י build_worlds.py.
+   ההתקדמות: אותה התקדמות של החידונים – hq-lv-<id> (במחשב) + action=me בשרת (למי שנרשם). שיעור "פתוח" = עבר לפחות רמה א׳.
+   מצב המכניקה (מה נמצא, מה נכתב) נשמר במחשב, לכל תלמיד בנפרד: mw-<slug>|<שם|כיתה|בית ספר>.
+   בדיקה: ?demo=N מסמן את N השיעורים הראשונים כפתורים (בלי לשמור). */
+(function () {
+  "use strict";
+  var W = window.MW_DATA, API_URL = window.MW_API || "";
+  var MECH = null;
+  window.MW = { register: function (fn) { MECH = fn; } };
+
+  function $(id) { return document.getElementById(id); }
+  function esc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function md(t) { return esc(t).replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>"); }
+  function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } }
+  var me = null; try { me = JSON.parse(ls("hq-me") || "null"); } catch (e) {}
+  var who = me ? [me.name, me.cls, me.school].join("|") : "";
+  var demo = (location.search.match(/[?&]demo=(\d+)/) || [])[1];
+  var SKEY = (demo != null ? "mw-demo-" : "mw-") + W.slug + "|" + who;   // במצב בדיקה לא נוגעים במצב האמיתי
+  var state = {}; try { state = JSON.parse(ls(SKEY) || "{}") || {}; } catch (e) { state = {}; }
+
+  /* ---------- ההתקדמות ---------- */
+  var server = null;
+  function lessonState() {
+    W.lessons.forEach(function (l, i) {
+      var r = 0;
+      try { var o = JSON.parse(ls("hq-lv-" + l.id) || "null"); if (o && o.r && (!me || o.who === who)) r = o.r; } catch (e) {}
+      if (server) { var st = (server.stages || {})[l.id]; if (st && st.r) r = Math.max(r, st.r); if ((server.games || {})[l.id] != null && !r) r = 1; }
+      if (demo != null) r = i < +demo ? 3 : 0;
+      l.lv = r; l.done = r >= 1; l.score = server && (server.games || {})[l.id];
+    });
+  }
+
+  /* ---------- צלילים (WebAudio, בלי קבצים) ---------- */
+  var ac = null;
+  function tone(f, t0, d, type, vol) {
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      var o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + (t0 || 0);
+      o.type = type || "sine"; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol || 0.18, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + d + 0.05);
+    } catch (e) {}
+  }
+  var SFX = {
+    open: function () { tone(523, 0, .18); tone(659, .09, .18); tone(784, .18, .3); },
+    find: function () { tone(880, 0, .12, "triangle"); tone(1175, .08, .25, "triangle"); },
+    win: function () { [523, 659, 784, 1047, 784, 1047].forEach(function (f, i) { tone(f, i * .11, .28, "triangle"); }); },
+    tick: function () { tone(660, 0, .06, "square", .05); },
+    lock: function () { tone(196, 0, .15, "sawtooth", .07); tone(165, .1, .2, "sawtooth", .06); },
+    note: function (f, d, type) { tone(f, 0, d || .5, type || "triangle", .2); },   // sfx("note", הרץ, שניות, צורת גל)
+    knock: function (hollow) { tone(hollow ? 220 : 110, 0, .12, "square", .12); if (hollow) { tone(220, .18, .3, "sine", .07); tone(220, .4, .35, "sine", .035); } }
+  };
+  function sfx(n, a, b, c) { if (ls("hq-mute") === "1") return; (SFX[n] || SFX.tick)(a, b, c); }
+
+  /* ---------- חלון, הודעה, קונפטי ---------- */
+  function modal(html, opts) {
+    opts = opts || {};
+    var bg = document.createElement("div"); bg.className = "mw-modal";
+    bg.innerHTML = '<div class="mw-box" role="dialog" aria-modal="true">' + html + '<div class="mw-box-btns"><button class="mw-btn" data-x>' + (opts.ok || "סָגוֹר ✓") + "</button></div></div>";
+    function close() { if (bg.parentNode) bg.parentNode.removeChild(bg); if (opts.onClose) opts.onClose(); }
+    bg.addEventListener("click", function (e) { if (e.target === bg || e.target.hasAttribute("data-x")) close(); });
+    document.body.appendChild(bg); bg.close = close;
+    var f = bg.querySelector("input,button"); if (f) try { f.focus(); } catch (e) {}
+    return bg;
+  }
+  var tt = null;
+  function toast(t) {
+    var el = $("mwToast"); el.innerHTML = t; el.className = "mw-toast on";
+    clearTimeout(tt); tt = setTimeout(function () { el.className = "mw-toast"; }, 2600);
+  }
+  function celebrate() {
+    var c = document.createElement("div"); c.className = "mw-confetti";
+    var cols = ["#f6a623", "#2a9d8f", "#e76f51", "#e9c46a", "#8ab17d", "#457b9d"], h = "";
+    for (var i = 0; i < 60; i++) h += '<i style="right:' + Math.random() * 100 + "%;background:" + cols[i % 6] + ";animation-delay:" + Math.random() * .6 + "s;transform:rotate(" + Math.random() * 360 + 'deg)"></i>';
+    c.innerHTML = h; document.body.appendChild(c); setTimeout(function () { c.remove(); }, 2600);
+  }
+
+  /* ---------- ההקשר שהמכניקה מקבלת ---------- */
+  var ctx = {
+    slug: W.slug, name: W.name, icon: W.icon, color: W.color, C: W.content, lessons: W.lessons,
+    esc: esc, md: md, modal: modal, toast: toast, sfx: sfx, celebrate: celebrate,
+    get: function (k, d) { return k in state ? state[k] : d; },
+    set: function (k, v) { state[k] = v; ls(SKEY, JSON.stringify(state)); },
+    quizUrl: function (l) { return "/halacha-quiz/" + l.id + ".html"; },
+    bookUrl: function (l, lv) { return "/halacha-quiz/books/" + l.id + "-" + (lv || "a") + ".html"; },
+    /* כפתור "לחידון" + שורת הנעילה – לשימוש בתוך חלונות המכניקה */
+    goLearn: function (l) {
+      return '<p class="mw-lock">🔒 ' + (l.done ? "" : "כְּדֵי לְגַלּוֹת – פּוֹתְרִים אֶת חִידוֹן " + l.n + ": <b>" + esc(l.t) + "</b>") + '</p><p><a class="mw-btn mw-go" href="' + ctx.quizUrl(l) + '">🎯 לַחִידוֹן</a> <a class="mw-btn mw-ghost" href="' + ctx.bookUrl(l) + '">📖 לַסֵּפֶר</a></p>';
+    },
+    lessonBadge: function (l) { return l.done ? "✅" : "🔒"; },
+    nextLesson: function () { for (var i = 0; i < W.lessons.length; i++) if (!W.lessons[i].done) return W.lessons[i]; return null; },
+    rerender: function () { draw(); },
+    /* מצב שקט (למשל oneg בשבת): מסתיר התקדמות, "הגילוי הבא" והשביל הסודי */
+    quiet: function () { ["mwNext", "mwBridge"].forEach(function (id) { $(id).innerHTML = ""; }); var t = document.querySelector(".mw-top"); if (t) t.style.display = "none"; var d = document.querySelector(".mw-ls"); if (d) d.style.display = "none"; }
+  };
+  Object.defineProperty(ctx, "done", { get: function () { return W.lessons.filter(function (l) { return l.done; }).length; } });
+  ctx.total = W.lessons.length;
+
+  /* ---------- ציור העמוד ---------- */
+  function drawTop() {
+    var n = ctx.done, T = ctx.total, pct = Math.round(100 * n / T);
+    $("mwProg").innerHTML = '<div class="mw-bar"><i style="width:' + pct + '%"></i></div><span>' + n + " / " + T + " שִׁעוּרִים נִפְתְּחוּ" + (n === T ? " 🏆" : "") + "</span>";
+    $("mwWho").innerHTML = me && me.name ? "👤 " + esc(me.name) + " – הַגִּלּוּיִים שֶׁלְּךָ נִשְׁמָרִים כָּאן." :
+      "👤 כְּדֵי שֶׁהָעוֹלָם יִזְכֹּר אֶתְכֶם – נִכְנָסִים לְחִידוֹן וְרוֹשְׁמִים שֵׁם. כָּל חִידוֹן שֶׁעוֹבְרִים פּוֹתֵחַ כָּאן מַשֶּׁהוּ חָדָשׁ.";
+    var nx = ctx.nextLesson();
+    $("mwNext").innerHTML = nx ? '<a class="mw-btn mw-go" href="' + ctx.quizUrl(nx) + '">🎯 הַגִּלּוּי הַבָּא: חִידוֹן ' + nx.n + " – " + esc(nx.t) + "</a>" : "<b>🏆 פְּתַחְתֶּם אֶת כָּל הָעוֹלָם! עַכְשָׁו חַפְּשׂוּ אֶת מָה שֶׁעוֹד מֻסְתָּר…</b>";
+    var b = W.content.bridge;
+    if (b && b.to && W.worlds[b.to]) {
+      var open = n >= 3, w = W.worlds[b.to];
+      $("mwBridge").innerHTML = open ? '<a class="mw-bridge on" href="../' + b.to + '/">🗝️ <b>נִפְתַּח שְׁבִיל סוֹדִי!</b> ' + esc(b.text || "") + " ← " + w.icon + " " + esc(w.name) + "</a>" :
+        '<div class="mw-bridge">🌫️ שְׁבִיל סוֹדִי מֻסְתָּר כָּאן… הוּא יִפָּתַח אַחֲרֵי 3 שִׁעוּרִים.</div>';
+    }
+    $("mwList").innerHTML = W.lessons.map(function (l) {
+      return '<a class="mw-les' + (l.done ? " done" : "") + '" href="' + ctx.quizUrl(l) + '"><span>' + (l.done ? "✅" : l.n) + "</span>" + esc(l.t) + "</a>";
+    }).join("");
+  }
+  function draw() {
+    lessonState(); drawTop();
+    var root = $("mwRoot"); root.innerHTML = "";
+    if (MECH) try { MECH(root, ctx); } catch (e) { root.innerHTML = '<p class="mw-lock">אוּפְּס, מַשֶּׁהוּ לֹא נִטְעַן. נַסּוּ לְרַעְנֵן.</p>'; if (window.console) console.error(e); }
+  }
+  function loadServer() {
+    if (!API_URL || !me || !me.name || demo != null) return;
+    fetch(API_URL + "?action=me&name=" + encodeURIComponent(me.name) + "&cls=" + encodeURIComponent(me.cls || "") + "&school=" + encodeURIComponent(me.school || ""))
+      .then(function (r) { return r.json(); }).then(function (d) {
+        if (!d || !d.ok) return;
+        var before = W.lessons.map(function (l) { return l.lv; }).join();
+        server = d; lessonState();
+        if (W.lessons.map(function (l) { return l.lv; }).join() !== before) draw();
+      }).catch(function () {});
+  }
+  document.addEventListener("DOMContentLoaded", function () { draw(); loadServer(); });
+})();
+
+</script>
+<script>
+/* 🪙 צדקה – מפת המטמון (עיקרון: ציד מטמון עם רמזים).
+   מפה עם 12 מקומות. כל שיעור שנפתח = פתק רמז מתוך השיעור שמצביע על מקום אחד. בוחרים רמז, לוחצים על מקום וחופרים.
+   נכון → מטבע ומשפט מהשיעור. לא כאן → רמז נוסף (בלי עונש). רמז אימון פתוח מההתחלה (מטבע נחושת).
+   אחרי 10 מטבעות נפתח הרמז האחרון – התיבה הגדולה על הגבעה. השביל על המפה מצויר לפי סדר המציאות. */
+MW.register(function (root, ctx) {
+  var C = ctx.C, L = ctx.lessons, SP = C.spots;
+  var found = ctx.get("found", {}), tries = ctx.get("tries", {}), order = ctx.get("order", []);
+  var cur = null;                                   // הרמז הנבחר: "p" (אימון), "f" (אחרון) או אינדקס שיעור
+
+  function spot(k) { for (var i = 0; i < SP.length; i++) if (SP[i].k === k) return SP[i]; return null; }
+  function clueOf(c) { return c === "p" ? C.practice : c === "f" ? C.final : C.clues[c]; }
+  function fkey(c) { return c === "p" ? "_p" : c === "f" ? "_f" : L[c].id; }
+  function coins() { return L.filter(function (l) { return found[l.id]; }).length; }
+  function allCoins() { return coins() === L.length; }
+  function openClues() {                            // רמזים פתוחים שעוד לא נמצאו
+    var a = [];
+    if (!found._p) a.push("p");
+    L.forEach(function (l, i) { if (l.done && !found[l.id] && C.clues[i]) a.push(i); });
+    if (allCoins() && !found._f) a.push("f");
+    return a;
+  }
+  function spotOwner(k) {                           // איזה רמז כבר נמצא במקום הזה
+    if (found._p && C.practice.spot === k) return "p";
+    if (found._f && C.final.spot === k) return "f";
+    for (var i = 0; i < L.length; i++) if (found[L[i].id] && C.clues[i] && C.clues[i].spot === k) return i;
+    return null;
+  }
+
+  function paint(dug) {
+    var oc = openClues();
+    if (cur === null || oc.indexOf(cur) < 0) cur = oc.length ? oc[0] : null;
+    var h = '<div class="tz-wrap">';
+    // ארנק המטבעות
+    h += '<div class="tz-purse" aria-label="הַמַּטְבְּעוֹת שֶׁלִּי">' + (found._p ? '<span class="tz-c cu" title="מַטְבֵּעַ אִמּוּן">🪙</span>' : "");
+    L.forEach(function (l) { h += '<span class="tz-c' + (found[l.id] ? " on" : "") + '">' + (found[l.id] ? "🪙" : "") + "</span>"; });
+    h += '<b>' + coins() + " / " + L.length + "</b></div>";
+    // פתקי הרמזים
+    h += '<div class="tz-tabs">';
+    h += '<button class="tz-tab' + (found._p ? " got" : "") + (cur === "p" ? " cur" : "") + '" data-c="p">🎓<small>אִמּוּן</small></button>';
+    L.forEach(function (l, i) {
+      var st = found[l.id] ? " got" : l.done ? "" : " lock";
+      h += '<button class="tz-tab' + st + (cur === i ? " cur" : "") + '" data-c="' + i + '" aria-label="רֶמֶז ' + l.n + '">' + (found[l.id] ? "🪙" : l.done ? "📜" : "🔒") + "<small>" + l.n + "</small></button>";
+    });
+    h += '<button class="tz-tab' + (found._f ? " got" : allCoins() ? "" : " lock") + (cur === "f" ? " cur" : "") + '" data-c="f" aria-label="הָרֶמֶז הָאַחֲרוֹן">' + (found._f ? "💎" : allCoins() ? "🗝️" : "🔒") + "<small>סוֹף</small></button></div>";
+    // הפתק הפעיל
+    if (cur !== null) {
+      var cl = clueOf(cur), k = fkey(cur);
+      h += '<div class="tz-note"><div class="tz-nt">' + (cur === "p" ? "🎓 רֶמֶז אִמּוּן" : cur === "f" ? "🗝️ הָרֶמֶז הָאַחֲרוֹן" : "📜 רֶמֶז " + L[cur].n) + '</div><p>' + ctx.esc(cl.clue) + "</p>" +
+        (tries[k] ? '<p class="tz-more">💡 עוֹד רֶמֶז: ' + ctx.esc(cl.hint || "") + "</p>" : "") + '<p class="tz-go">⛏️ לַחֲצוּ עַל הַמָּקוֹם בַּמַּפָּה וְחִפְרוּ!</p></div>';
+    } else {
+      var nx = ctx.nextLesson();
+      h += '<div class="tz-note quiet">' + (found._f ? "💎 מְצָאתֶם אֶת כָּל הַמַּטְמוֹן! לַחֲצוּ עַל מָקוֹם כְּדֵי לִקְרֹא שׁוּב." :
+        "📜 כָּל הָרְמָזִים שֶׁלָּכֶם נִפְתְּרוּ. " + (nx ? "הָרֶמֶז הַבָּא מְחַכֶּה בְּחִידוֹן " + nx.n + "." : "")) + "</div>";
+    }
+    // המפה
+    h += '<div class="tz-map"><svg class="tz-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">' +
+      '<path class="tz-river" d="M-5,62 C20,55 30,78 52,66 S80,52 105,60"/>';
+    var pts = order.map(function (k) { var s = spot(k); return s ? s.x + "," + s.y : null; }).filter(Boolean);
+    if (pts.length > 1) h += '<polyline class="tz-trail" points="' + pts.join(" ") + '"/>';
+    h += "</svg><span class=\"tz-rose\" aria-hidden=\"true\">🧭</span>";
+    SP.forEach(function (s) {
+      var own = spotOwner(s.k), isHill = s.k === C.final.spot;
+      var cls = "tz-spot" + (own !== null ? " got" : "") + (isHill && allCoins() && !found._f ? " glow" : "") + (dug === s.k ? " dig" : "");
+      h += '<button class="' + cls + '" data-s="' + s.k + '" style="left:' + s.x + "%;top:" + s.y + '%" aria-label="' + ctx.esc(s.name) + '"><span class="tz-ic">' + s.icon + "</span>" +
+        (own !== null ? '<span class="tz-x">' + (own === "f" ? "💎" : "🪙") + "</span>" : "") + "<small>" + ctx.esc(s.name) + "</small></button>";
+    });
+    h += "</div></div>";
+    root.innerHTML = h;
+    bind();
+  }
+
+  function reward(c, fresh) {
+    var cl = clueOf(c), l = typeof c === "number" ? L[c] : null;
+    var big = c === "f" ? "💎" : "🪙";
+    var html = '<div class="tz-big' + (fresh ? " spin" : "") + '">' + big + "</div><h3>" + (c === "f" ? "🎉 " + ctx.esc(C.final.title) : c === "p" ? "מַטְבֵּעַ הָאִמּוּן" : (fresh ? "מְצָאתֶם! " : "") + "מַטְבֵּעַ " + l.n + " – " + ctx.esc(l.t)) +
+      '</h3><p class="tz-line">' + ctx.esc(cl.line) + '</p><p class="tz-more2">' + ctx.esc(cl.more) + "</p>" + (cl.verse ? '<p class="tz-verse">„' + ctx.esc(cl.verse) + "“</p>" : "") +
+      (l ? '<p><a class="mw-btn mw-ghost" href="' + ctx.bookUrl(l) + '">📖 לַסֵּפֶר</a></p>' : c === "p" ? '<p class="tz-more2">כָּל חִידוֹן שֶׁתַּעַבְרוּ יִתֵּן לָכֶם רֶמֶז אֲמִתִּי לְמַטְבֵּעַ.</p>' : "");
+    ctx.modal(html, { onClose: function () {
+      if (fresh && c !== "f" && allCoins() && !found._f) { ctx.toast("🗝️ כָּל הַמַּטְבְּעוֹת אֶצְלְכֶם! נִפְתַּח הָרֶמֶז הָאַחֲרוֹן…"); ctx.sfx("open"); }
+    } });
+  }
+
+  function dig(k) {
+    if (cur === null) {
+      var own = spotOwner(k);
+      if (own !== null) { reward(own); return; }
+      var nx = ctx.nextLesson();
+      ctx.sfx("lock");
+      if (k === C.final.spot && !allCoins()) { ctx.toast("🔒 עַל הַגִּבְעָה מְחַכָּה תֵּבָה – אַחֲרֵי שֶׁמּוֹצְאִים אֶת כָּל הַמַּטְבְּעוֹת"); return; }
+      if (nx) ctx.modal("<h3>📜 אֵין רֶמֶז פָּתוּחַ כָּרֶגַע</h3><p>הָרֶמֶז הַבָּא מְחַכֶּה בַּחִידוֹן.</p>" + ctx.goLearn(nx));
+      else ctx.toast("🤔 כָּאן אֵין מַטְמוֹן");
+      return;
+    }
+    var own2 = spotOwner(k);
+    if (own2 !== null) { reward(own2); return; }
+    var cl = clueOf(cur), key = fkey(cur);
+    ctx.sfx("tick"); paint(k);
+    setTimeout(function () {
+      if (cl.spot === k) {
+        found[key] = 1; ctx.set("found", found);
+        order.push(k); ctx.set("order", order);
+        ctx.sfx(cur === "f" ? "win" : "find"); if (cur === "f" || (allCoins() && key !== "_p")) ctx.celebrate();
+        var c = cur; cur = null; paint();
+        reward(c, true);
+      } else {
+        tries[key] = (tries[key] || 0) + 1; ctx.set("tries", tries);
+        ctx.sfx("lock"); paint();
+        ctx.toast("🤔 לֹא כָּאן… " + (tries[key] === 1 ? "קִבַּלְתֶּם רֶמֶז נוֹסָף בַּפֶּתֶק" : "קִרְאוּ שׁוּב אֶת הָרֶמֶז הַנּוֹסָף"));
+      }
+    }, 650);
+  }
+
+  function bind() {
+    root.querySelectorAll(".tz-tab").forEach(function (b) {
+      b.onclick = function () {
+        var c = b.dataset.c; c = c === "p" || c === "f" ? c : +c;
+        if (c === "f" && !allCoins()) { ctx.sfx("lock"); ctx.toast("🔒 הָרֶמֶז הָאַחֲרוֹן נִפְתָּח אַחֲרֵי " + L.length + " מַטְבְּעוֹת (יֵשׁ " + coins() + ")"); return; }
+        if (typeof c === "number" && !L[c].done) { ctx.sfx("lock"); ctx.modal("<h3>🔒 רֶמֶז " + L[c].n + "</h3><p>הַפֶּתֶק הַזֶּה עוֹד מְקֻפָּל…</p>" + ctx.goLearn(L[c])); return; }
+        if (found[fkey(c)]) { reward(c); return; }
+        ctx.sfx("tick"); cur = c; paint();
+      };
+    });
+    root.querySelectorAll(".tz-spot").forEach(function (b) { b.onclick = function () { dig(b.dataset.s); }; });
+  }
+
+  paint();
+});
+
+</script>
+</body>
+</html>
