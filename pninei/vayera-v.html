@@ -579,6 +579,16 @@
   @keyframes ladderPulse { 50% { transform: scale(1.03); } }
   .crowns-box .cc-sub { font-size: .9em; font-weight: 600; margin-top: 6px; opacity: .9; }
   .crowns-box .cc-n { font-size: 1.35em; }
+  .rv { margin: 6px auto 10px; max-width: 230px; }
+  .rv-pic { position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 1; box-shadow: 0 4px 14px var(--shadow); }
+  .rv-pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rv-grid { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr); }
+  .rv-t { display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: rgba(255,255,255,.75);
+    background: linear-gradient(135deg, var(--green), var(--teal)); border: 1px solid rgba(255,255,255,.35);
+    transition: opacity .6s ease, transform .6s ease; }
+  .rv-t.off { opacity: 0; transform: scale(.6) rotate(8deg); pointer-events: none; }
+  .rv-cap { text-align: center; font-size: 13px; color: var(--text-soft); margin-top: 6px; }
+  .rv-cap.done { font-size: 15px; color: var(--text); }
 </style>
 <meta property="og:title" content="מבדק פרשת וירא - כיתה ו&#x27;">
 <meta property="og:description" content="מבדק פרשת וירא - כיתה ו&#x27;">
@@ -633,6 +643,7 @@
 (function(){
 
 var CONFIG = {
+  REVEAL: [null, {"src": "https://yudataub.github.io/kol-toda-img-2/pninei/img/seder-vayera-4.webp", "cap": "אַבְרָהָם הִתְפַּלֵּל עַל אַנְשֵׁי סְדוֹם"}, {"src": "https://yudataub.github.io/kol-toda-img-2/pninei/img/seder-vayera-3.webp", "cap": "אַבְרָהָם הִגִּישׁ לָאוֹרְחִים אֹכֶל טָעִים"}],
   NEXT: null,
   REQUIRE: null,
   LOVE: [],
@@ -1311,6 +1322,36 @@ function globalQuestionIndex() {
   return n + state.qIdx;
 }
 
+
+// ---------- 16.11 (המשתמש): תמונה שנחשפת בהדרגה - מדרגה 2, כל תשובה נכונה מסירה עוד חלק ----------
+var RV_N = 12;
+function rvOrder(li) {
+  var a = [], s = li * 7 + 3;
+  for (var i = 0; i < RV_N; i++) a.push(i);
+  for (var j = a.length - 1; j > 0; j--) { s = (s * 9301 + 49297) % 233280; var r = Math.floor(s / 233280 * (j + 1)), t = a[j]; a[j] = a[r]; a[r] = t; }
+  return a;
+}
+function rvShown(li, done) { return Math.round(RV_N * done / LEVELS[li].questions.length); }
+function revealHtml() {
+  var p = CONFIG.REVEAL && CONFIG.REVEAL[state.levelIdx];
+  if (!p) return '';
+  var k = rvShown(state.levelIdx, state.qIdx), ord = rvOrder(state.levelIdx), open = {}, t = '';
+  for (var i = 0; i < k; i++) open[ord[i]] = 1;
+  for (var x = 0; x < RV_N; x++) t += '<span class="rv-t' + (open[x] ? ' off' : '') + '" data-t="' + x + '">?</span>';
+  return '<div class="rv"><div class="rv-pic"><img src="' + p.src + '" alt=""><div class="rv-grid">' + t + '</div></div>' +
+    '<div class="rv-cap" id="rvCap">🔍 כל תשובה נכונה חושפת עוד חלק. מה מסתתר בתמונה?</div></div>';
+}
+function revealMore() {
+  var p = CONFIG.REVEAL && CONFIG.REVEAL[state.levelIdx];
+  if (!p) return false;
+  var ord = rvOrder(state.levelIdx), to = rvShown(state.levelIdx, state.qIdx + 1);
+  for (var i = 0; i < to; i++) { var el = document.querySelector('.rv-t[data-t="' + ord[i] + '"]'); if (el) el.classList.add('off'); }
+  if (to < RV_N) return false;
+  var c = document.getElementById('rvCap');
+  if (c) { c.innerHTML = '🖼️ זו התמונה: <b>' + escapeHtml(p.cap) + '</b>'; c.className = 'rv-cap done'; }
+  return true;
+}
+
 function renderQuestion() {
   var level = LEVELS[state.levelIdx];
   var q = currentQuestion();
@@ -1336,6 +1377,7 @@ function renderQuestion() {
   screen.innerHTML =
     '<div class="progress-row"><span>שאלה ' + (gi+1) + ' מתוך ' + TOTAL_QUESTIONS + '</span><div class="dots">' + dots + '</div></div>' +
     '<div class="level-badge">' + escapeHtml(level.title) + '</div>' +
+    revealHtml() +
     '<div class="q-prompt">' + escapeHtml(q.prompt) + '</div>' +
     picHtml(q) +
     '<div class="opt-list' + (q.image ? ' opt-row' : '') + (q.image && q.options.length > 3 ? ' opt-row4' : '') + '" id="optList">' + optsHtml + '</div>' +
@@ -1357,10 +1399,11 @@ function renderQuestion() {
         state.levelRunPoints += pts;
         btn.classList.add('opt-correct');
         playCorrect();
+        var rvDone = revealMore();
         Array.prototype.forEach.call(document.querySelectorAll('#optList .opt-btn'), function(b){ b.disabled = true; });
         fb.innerHTML = '<div class="feedback good">' + randomCompliment() +
           '<div class="explain">' + escapeHtml(q.explain) + '</div></div>';
-        setTimeout(nextStep, 2400);
+        setTimeout(nextStep, rvDone ? 3800 : 2400);
       } else {
         state.attempts++;
         rememberMiss(q);
