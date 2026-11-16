@@ -22,7 +22,7 @@
   .hero { text-align:center; padding:8px 0 2px; }
   .hero h1 { margin:6px 0 0; font-size:32px; color:var(--c2); }
   .hero .sub { font-size:19px; opacity:.95; }
-  .ari { width:96px; height:96px; object-fit:contain; flex:none; }
+  .ari { width:96px; height:96px; object-fit:contain; flex:none; border-radius:22px; }
   .ari.lg { width:150px; height:150px; }
   .row { display:flex; gap:12px; align-items:center; }
   .meter { height:22px; background:rgba(255,255,255,.18); border-radius:12px; overflow:hidden; margin:6px 0 2px; }
@@ -90,6 +90,12 @@
   .sig { background:rgba(255,255,255,.12); border-radius:14px; padding:10px 16px; font-size:15px; margin-top:22px; }
   .sig a { color:#fde68a; }
   .small { font-size:15px; opacity:.85; }
+  .who { display:flex; align-items:center; gap:8px; font-size:17px; flex:1; }
+  .who button { background:rgba(255,255,255,.14); color:#fff; padding:4px 10px; font-size:14px; }
+  .inp { display:block; width:100%; font:inherit; padding:10px 12px; margin:8px 0; border:2px solid #c9d5dd; border-radius:12px; background:#fff; color:var(--ink); }
+  .grade { background:rgba(255,255,255,.12); border-radius:14px; padding:8px 14px; margin:10px 0; font-size:18px; }
+  .grade b { color:var(--c2); font-size:24px; }
+  .msg { color:#a8322d; font-weight:700; min-height:1.4em; }
   @media (max-width:520px) { body { font-size:17px; } .q { font-size:20px; } .hero h1 { font-size:26px; } .ari { width:72px; height:72px; } }
 </style>
 <meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-class-quiz-devarim-review-2.jpg">
@@ -119,9 +125,64 @@ const ALLQ = D.stations.flatMap(s => s.qs);
 const QBY = Object.fromEntries(ALLQ.map(q => [q.id, q]));
 
 /* ---------- שמירה ---------- */
-let S = { st:{}, snd:true, seen:false };
-try { const x = JSON.parse(localStorage.getItem(KEY) || "null"); if (x && x.st) S = Object.assign(S, x); } catch (e) {}
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+/* פרופיל לכל תלמיד (שם|כיתה|בית ספר) – כדי שבמחשב משותף כל ילד ימשיך מהמקום שלו. בלי שם: אורח. */
+const API = "https://script.google.com/macros/s/AKfycbxnmfZcen-MXI1Af0a61_m2awo_WIz19wcbWnl_pgywOYpj2f7kgT9T08icGmRV8Oa7/exec", GID = "devarim-review-2";
+const norm = s => String(s || "").trim().replace(/\s+/g, " ");
+const enc = encodeURIComponent;
+const pkey = m => KEY + ":" + [m.name, m.cls, m.school].map(x => norm(x).toLowerCase().replace(/[^א-תa-z0-9]/g, "")).join("|");
+const lsGet = k => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+let ME = null, VIEW = "", S = { st:{}, snd:true, run:null };
+function loadProfile(m) {
+  ME = m && m.name ? m : null; S = { st:{}, snd:true, run:null };
+  const x = lsGet(ME ? pkey(ME) : KEY); if (x && x.st) S = Object.assign(S, x);
+  lsSet(KEY + ":me", ME);
+}
+const save = () => lsSet(ME ? pkey(ME) : KEY, S);
+const grd = (a, n) => n ? Math.round(100 * a / n) : 0;
+function totals() { let f = 0, n = 0; D.stations.forEach((s, i) => { const r = S.st[i]; if (r && r.done) { f += r.first || 0; n += s.qs.length; } }); return { f, n }; }
+/* ענן: הציון של כל תחנה נשמר על שם התלמיד (אותו שרת של חידוני האתר), וכך ממשיכים גם במחשב אחר */
+function cloudPush(i, first) {
+  if (!API || !ME) return;
+  const body = { game: GID + "-s" + (i + 1), name: ME.name, cls: ME.cls, school: ME.school, score: first * 10, a: first, b: D.stations[i].qs.length };
+  try { fetch(API, { method:"POST", headers:{ "Content-Type":"text/plain" }, body: JSON.stringify(body) }).catch(() => {}); } catch (e) {}
+}
+function cloudPull() {
+  if (!API || !ME || S.noPull) return;
+  const me = ME;
+  try {
+    fetch(API + "?action=me&name=" + enc(me.name) + "&cls=" + enc(me.cls) + "&school=" + enc(me.school)).then(r => r.json()).then(d => {
+      if (ME !== me || S.noPull || !d || !d.games) return;
+      let ch = 0;
+      D.stations.forEach((s, i) => {
+        const v = d.games[GID + "-s" + (i + 1)]; if (v == null) return;
+        const f = Math.max(0, Math.min(s.qs.length, Math.round(v / 10))), c = S.st[i];
+        if (!c || !c.done) { S.st[i] = { done:true, first:f, wrong:[] }; ch++; } else if (f > (c.first || 0)) { c.first = f; ch++; }
+      });
+      if (ch) { save(); if (VIEW === "home" && !$("#ovs").innerHTML) home(); }
+    }).catch(() => {});
+  } catch (e) {}
+}
+/* מסך "מי משחק?" */
+function who() {
+  ovClose(); VIEW = "who"; window.scrollTo(0, 0);
+  const hq = lsGet("hq-me") || {}, m = ME || hq;
+  $("#app").innerHTML = `<div class="hero"><img class="ari lg" src="${ARI.hello}" alt=""><h1>${esc(D.title)}</h1><div class="sub">${esc(D.sub)}</div></div>
+  <div class="card"><h2>מִי מְשַׂחֵק?</h2><p>כְּתֹב אֶת שִׁמְךָ, וְהַמִּשְׂחָק יִזְכֹּר אֵיפֹה עָצַרְתָּ וּמָה הַצִּיּוּן שֶׁלְּךָ. כָּךְ תּוּכַל לְהַמְשִׁיךְ אַחַר כָּךְ. תַּחֲנוֹת שֶׁסִּיַּמְתָּ נִשְׁמָרוֹת גַּם לְמַחְשֵׁב אַחֵר.</p>
+  <input class="inp" id="wn" maxlength="30" placeholder="שֵׁם וְשֵׁם מִשְׁפָּחָה" value="${esc(ME ? "" : m.name || "")}">
+  <input class="inp" id="wc" maxlength="15" placeholder="כִּתָּה (לְמָשָׁל: ו׳2)" value="${esc(m.cls || "")}">
+  <input class="inp" id="ws" maxlength="40" placeholder="בֵּית סֵפֶר" value="${esc(m.school || "")}">
+  <div class="msg" id="wm"></div>
+  <button class="big" id="wg">מַתְחִילִים!</button><button class="ghost" id="wx">לְשַׂחֵק בְּלִי שֵׁם (הַצִּיּוּן לֹא יִשָּׁמֵר)</button></div>`;
+  $("#wg").onclick = () => {
+    const name = norm($("#wn").value), cls = norm($("#wc").value), school = norm($("#ws").value);
+    if (!name) { $("#wm").textContent = "✍️ כְּתֹב אֶת שִׁמְךָ כְּדֵי לְהַתְחִיל"; $("#wn").focus(); return; }
+    if (!cls) { $("#wm").textContent = "✍️ כְּתֹב גַּם אֶת הַכִּתָּה"; $("#wc").focus(); return; }
+    lsSet("hq-me", Object.assign({}, hq, { name, cls, school }));   // אותה הרשמה של חידוני האתר
+    loadProfile({ name, cls, school }); home(); cloudPull();
+  };
+  $("#wx").onclick = () => { loadProfile(null); home(); };
+}
 const doneN = () => D.stations.filter((s, i) => S.st[i] && S.st[i].done).length;
 const wrongAll = () => Object.values(S.st).flatMap(x => x.wrong || []).filter(id => QBY[id]);
 
@@ -157,8 +218,12 @@ function home() {
   const dn = doneN(), all = dn === D.stations.length, nx = D.stations.findIndex((s, i) => !(S.st[i] && S.st[i].done));
   const pct = Math.round(8 + 92 * dn / D.stations.length);
   const left = D.stations.length - dn;
-  let h = `<div class="top"><div class="ttl"></div>${sndBtn()}</div>
+  VIEW = "home";
+  const tt = totals(), run = S.run && D.stations[S.run.si] ? S.run : null;
+  let h = `<div class="top"><div class="who">👤 ${ME ? esc(ME.name) + (ME.cls ? " · " + esc(ME.cls) : "") : "אוֹרֵחַ"} <button id="sw">${ME ? "הַחֲלֵף תַּלְמִיד" : "לִכְתֹּב שֵׁם"}</button></div>${sndBtn()}</div>
   <div class="hero"><img class="ari lg" src="${all ? ARI.grown : ARI.hello}" alt=""><h1>${esc(D.title)}</h1><div class="sub">${esc(D.sub)}</div></div>`;
+  if (tt.n) h += `<div class="grade">הַצִּיּוּן שֶׁלְּךָ עַד עַכְשָׁו: <b>${grd(tt.f, tt.n)}</b> · יָדַעְתָּ ${tt.f} מִתּוֹךְ ${tt.n} בַּפַּעַם הָרִאשׁוֹנָה${ME ? " · נִשְׁמַר עַל שִׁמְךָ ✓" : ""}</div>`;
+  if (run) h += `<button class="big" id="rsm">▶ לְהַמְשִׁיךְ אֶת תַּחֲנָה ${run.si + 1} מֵהַמָּקוֹם שֶׁעָצַרְתָּ</button>`;
   if (!dn) h += `<div class="card">${md(D.intro)}</div>`;
   h += `<div class="mlab">${all ? "הִגַּעְתָּ אֶל הַיַּרְדֵּן! 🎉" : dn ? (left === 1 ? "עוֹד תַּחֲנָה אַחַת, וְהַמְּגִלָּה נִפְתַּחַת!" : `עוֹד ${left} תַּחֲנוֹת עַד הַיַּרְדֵּן`) : "הַמַּסָּע מַתְחִיל כָּאן"}</div>
   <div class="meter"><i style="width:${pct}%"></i></div>`;
@@ -179,12 +244,14 @@ function home() {
   if (dn) h += `<button class="ghost small" id="rs">לְהַתְחִיל אֶת הַמַּסָּע מֵחָדָשׁ</button>`;
   h += `<div class="sig">📚 עוֹד חָמְרֵי לִמּוּד עַל פָּרָשַׁת הַשָּׁבוּעַ – חִנָּם, בְּמַאֲגַר הַקּוֹל הַחֲמִישִׁי: <a href="https://www.kol-toda.co.il/t/parasha.html" target="_blank" rel="noopener">kol-toda.co.il/t/parasha.html</a> · הַמַּאֲגָר הַמָּלֵא: <a href="https://www.kol-toda.co.il/" target="_blank" rel="noopener">kol-toda.co.il</a></div>`;
   $("#app").innerHTML = h; bindSnd();
+  $("#sw").onclick = who;
+  if ($("#rsm")) $("#rsm").onclick = resume;
   document.querySelectorAll(".st").forEach(b => b.onclick = () => enter(+b.dataset.i));
   if ($("#fin")) $("#fin").onclick = finale;
   if ($("#pw")) $("#pw").onclick = () => startPractice(w.map(id => QBY[id]), "🔧 מְתַקְּנִים אֶת הַטָּעֻיּוֹת", true);
   $("#pm").onclick = () => startPractice(ALLQ.filter(q => q.moe), "📋 שְׁאֵלוֹת הַמְּשִׂימָה הָאַרְצִית", false);
   if ($("#rs")) $("#rs").onclick = function () {
-    if (this.dataset.sure) { S.st = {}; save(); home(); }
+    if (this.dataset.sure) { S.st = {}; S.run = null; S.noPull = true; save(); home(); }
     else { this.dataset.sure = 1; this.textContent = "בָּטוּחַ? לְחִיצָה נוֹסֶפֶת תִּמְחַק אֶת הַהִתְקַדְּמוּת"; }
   };
 }
@@ -192,10 +259,12 @@ function home() {
 /* ---------- כניסה לתחנה ---------- */
 let P = null;
 function enter(i) {
+  if (S.run && S.run.si === i) return resume();
   const s = D.stations[i], prev = i > 0 ? D.stations[i - 1].cliff : "";
   const c = ov(`<div class="center" style="font-size:44px">${s.icon}</div><h2 class="center">תַּחֲנָה ${i + 1}: ${esc(s.name)}</h2>
     ${prev ? `<div class="small">בַּתַּחֲנָה הַקּוֹדֶמֶת עָצַרְנוּ כָּאן:</div><div class="cliff">${esc(prev)}</div><p>הַהֶמְשֵׁךְ מִסְתַּתֵּר בַּשְּׁאֵלוֹת.</p>` : `<p>${md(D.intro)}</p>`}
     <p>🖼️ בַּתַּחֲנָה מִסְתַּתֶּרֶת תְּמוּנָה. כָּל תְּשׁוּבָה נְכוֹנָה פּוֹתַחַת חֵלֶק מִמֶּנָּה. מָה מְצֻיָּר בָּהּ?</p>
+    ${S.run && S.run.si !== i ? `<p class="msg">שִׂים לֵב: הַמָּקוֹם שֶׁשָּׁמַרְתָּ בְּתַחֲנָה ${S.run.si + 1} יִמָּחֵק, וְהִיא תַּתְחִיל מֵחָדָשׁ.</p>` : ""}
     <button class="big" id="go">יוֹצְאִים לַדֶּרֶךְ!</button><button class="ghost" id="bk">חֲזָרָה לַמַּפָּה</button>`);
   c.querySelector("#go").onclick = () => { ovClose(); startStation(i); };
   c.querySelector("#bk").onclick = home;
@@ -204,7 +273,7 @@ function startStation(i) {
   const s = D.stations[i];
   P = { si:i, s, queue:s.qs.slice(), idx:0, fix:false, wrongNow:[], first:0, marks:[], open:[], order:shuf([...Array(NT).keys()]),
         guessed:false, guessLock:false, lastGold:-9, golds:0, ari:shuf(s.ari), ariLast:-9, practice:false, title:s.name, n:s.qs.length };
-  S.seen = true; save(); renderQ();
+  renderQ();
 }
 function startPractice(list, title, fixing) {
   if (!list.length) return;
@@ -212,9 +281,26 @@ function startPractice(list, title, fixing) {
   renderQ();
 }
 
+/* שמירת המקום בתוך תחנה: לפני כל שאלה (ans=false) ואחרי כל תשובה (ans=true) */
+function snap(ans) {
+  if (!P.practice) S.run = { si:P.si, idx:P.idx, ans, fix:P.fix, q:P.queue.map(q => q.id), w:P.wrongNow.map(q => q.id), first:P.first, marks:P.marks.slice(),
+    open:P.open.slice(), order:P.order, guessed:P.guessed, golds:P.golds, lastGold:P.lastGold, ari:P.ari.length, ariLast:P.ariLast };
+  save();
+}
+function resume() {
+  const r = S.run, s = D.stations[r.si];
+  if (!s || !Array.isArray(r.q) || !Array.isArray(r.w) || !Array.isArray(r.order) || !Array.isArray(r.open) || !Array.isArray(r.marks)) { S.run = null; save(); return s ? startStation(r.si) : home(); }
+  P = { si:r.si, s, queue:r.q.map(id => QBY[id]).filter(Boolean), idx:r.idx, fix:r.fix, wrongNow:r.w.map(id => QBY[id]).filter(Boolean), first:r.first, marks:r.marks.slice(),
+        open:r.open.slice(), order:r.order, guessed:r.guessed, guessLock:false, lastGold:r.lastGold, golds:r.golds, ari:shuf(s.ari).slice(0, r.ari), ariLast:r.ariLast,
+        practice:false, title:s.name, n:s.qs.length };
+  ovClose();
+  if (!P.queue.length || P.idx >= P.queue.length) { S.run = null; save(); return startStation(r.si); }
+  r.ans ? next() : renderQ();
+}
+
 /* ---------- שאלה ---------- */
 function renderQ() {
-  window.scrollTo(0, 0);
+  VIEW = "q"; window.scrollTo(0, 0);
   const q = P.queue[P.idx], last = P.idx === P.queue.length - 1, left = P.queue.length - P.idx;
   // שאלת זהב: בהפתעה, לא בשאלה הראשונה, לא שתיים ברצף
   P.gold = !P.practice && !P.fix && !P.guessed && P.idx > 0 && P.idx - P.lastGold > 2 && P.golds < 2 && Math.random() < .24;
@@ -222,6 +308,7 @@ function renderQ() {
   P.bet = !P.gold && !P.fix && P.idx > 0 && Math.random() < .28;
   P.susp = P.gold || (last && !P.practice) || Math.random() < .3;
   P.t0 = Date.now(); P.picked = null; P.conf = 0;
+  snap(false);
   const opts = shuf(q.o.map((t, k) => ({ t, k })));
   let h = `<div class="top"><button class="ic" id="hm">🗺️</button><div class="ttl">${P.fix ? "🔧 סִבּוּב תִּקּוּן" : esc(P.title)}</div>${sndBtn()}</div>
   <div class="dots">${P.queue.map((x, k) => `<i class="${k < P.idx ? (P.marks[k] ? "ok" : "no") : k === P.idx ? "cur" : ""}"></i>`).join("")}</div>`;
@@ -238,7 +325,7 @@ function renderQ() {
     <div id="mid"></div><div id="fb"></div></div>`;
   $("#app").innerHTML = h; bindSnd();
   if (P.gold) snd.gold();
-  $("#hm").onclick = function () { if (P.practice || this.dataset.sure) home(); else { this.dataset.sure = 1; this.textContent = "לָצֵאת? הַתַּחֲנָה תַּתְחִיל מֵחָדָשׁ"; } };
+  $("#hm").onclick = home;   // המקום נשמר (snap), אפשר לחזור ולהמשיך
   if ($("#pv")) $("#pv").onclick = () => { $("#ps").hidden = !$("#ps").hidden; };
   if ($("#kn")) $("#kn").onclick = () => guess(false);
   P.tq = Date.now();
@@ -275,7 +362,7 @@ function reveal() {
     line = P.conf === 1 ? "יָדַעְתָּ שֶׁאֵינְךָ בָּטוּחַ – גַּם זוֹ חָכְמָה. הִנֵּה הַתְּשׁוּבָה:" : P.conf === 3 ? "טוֹב שֶׁבָּדַקְנוּ! בִּשְׁבִיל זֶה חוֹזְרִים לִפְנֵי הַמִּבְחָן:" : "עוֹד לֹא – הִנֵּה הַתְּשׁוּבָה הַנְּכוֹנָה:";
     if (!P.fix) { P.wrongNow.push(q); line += P.practice ? "" : " (הַשְּׁאֵלָה תַּחֲזֹר בְּסוֹף הַתַּחֲנָה)"; }
   }
-  save();
+  snap(true);
   $("#fb").innerHTML = `<div class="fb"><div class="row"><img class="ari" src="${img}" alt=""><div class="ln">${esc(line)}</div></div>
     <div class="ex">${md(q.ex)}</div><div class="m">${md(q.m)}</div><button class="big" id="nx">הָלְאָה ←</button></div>`;
   $("#nx").onclick = next;
@@ -306,6 +393,7 @@ function guess(final, then) {
     if (final) { ovClose(); then(ok); return; }
     if (ok) {
       P.guessed = true; ovClose(); openAll(); snd.seal();
+      if (S.run) { S.run.guessed = true; S.run.open = P.open.slice(); save(); }
       const kn = $("#kn"); if (kn) { kn.disabled = true; kn.textContent = "✓ נִחַשְׁתָּ"; }
       const g = document.querySelector(".goal"); if (g) g.textContent = "נִחַשְׁתָּ מֻקְדָּם! " + s.cap;
     } else {
@@ -349,14 +437,15 @@ function endStation() {
   const i = P.si, s = P.s, prev = S.st[i], n = s.qs.length;
   const stillWrong = P.wrongNow.map(q => q.id);
   S.st[i] = { done:true, first:Math.max(P.first, prev ? prev.first || 0 : 0), wrong:stillWrong };
-  save();
+  S.run = null; save(); cloudPush(i, P.first); VIEW = "end";
   const show = (g) => {
     window.scrollTo(0, 0);
     const nxt = D.stations[i + 1], all = doneN() === D.stations.length;
     let h = `<div class="top"><div class="ttl">${s.icon} ${esc(s.name)}</div>${sndBtn()}</div>
     <div class="board"><img src="${s.img}" alt=""></div>
     <div class="card"><div class="row"><img class="ari" src="${ARI.joy}" alt=""><div><div class="ln" style="font-weight:700;font-size:21px">${g === true ? "נִחַשְׁתָּ! " : g === false ? "הִנֵּה הַתְּמוּנָה: " : ""}${esc(s.capline)}</div></div></div>
-    <p>יָדַעְתָּ <b>${P.first} מִתּוֹךְ ${n}</b> בַּפַּעַם הָרִאשׁוֹנָה${stillWrong.length ? `, וְחָזַרְתָּ עַל הַשְּׁאָר` : ""}.${prev && prev.done && P.first > prev.first ? ` בַּפַּעַם הַקּוֹדֶמֶת יָדַעְתָּ ${prev.first} – הִשְׁתַּפַּרְתָּ!` : ""}</p></div>
+    <p>יָדַעְתָּ <b>${P.first} מִתּוֹךְ ${n}</b> בַּפַּעַם הָרִאשׁוֹנָה${stillWrong.length ? `, וְחָזַרְתָּ עַל הַשְּׁאָר` : ""}.${prev && prev.done && P.first > prev.first ? ` בַּפַּעַם הַקּוֹדֶמֶת יָדַעְתָּ ${prev.first} – הִשְׁתַּפַּרְתָּ!` : ""}</p>
+    <p>הַצִּיּוּן בַּתַּחֲנָה: <b style="font-size:24px;color:#1f4e5f">${grd(P.first, n)}</b>${ME ? " · נִשְׁמַר עַל שִׁמְךָ ✓" : ""}</p></div>
     <div class="scroll"><h2>📜 חוֹתָם ${i + 1} נִשְׁבַּר!</h2><div class="seal open new"><span class="n">✓</span><span><span class="v">׳${esc(s.verse)}׳</span> <span class="r">(${esc(s.vref)})</span></span></div></div>`;
     if (nxt) h += `<div class="card"><h2>וּמָה קָרָה אַחַר כָּךְ?</h2><div class="cliff">${esc(s.cliff)}</div>
       <p class="small">🚪 הַהֶמְשֵׁךְ מְחַכֶּה בַּתַּחֲנָה הַבָּאָה: <b>${nxt.icon} ${esc(nxt.name)}</b>. אֶפְשָׁר לְהַמְשִׁיךְ עַכְשָׁו, וְאֶפְשָׁר לַחֲזֹר מָתַי שֶׁתִּרְצֶה. הַמָּקוֹם נִשְׁמָר.</p>
@@ -369,6 +458,7 @@ function endStation() {
   if (P.guessed) show(null); else guess(true, show);
 }
 function endPractice() {
+  VIEW = "end";
   const n = P.n, w = P.wrongNow.length;
   $("#app").innerHTML = `<div class="hero"><img class="ari lg" src="${w ? ARI.proud : ARI.joy}" alt=""><h1>${esc(P.title)}</h1></div>
   <div class="card center"><p style="font-size:24px"><b>${P.first} מִתּוֹךְ ${n}</b></p><p>${w ? "כָּל שְׁאֵלָה שֶׁטָּעִיתָ בָּהּ הִיא שְׁאֵלָה שֶׁעַכְשָׁו אַתָּה מַכִּיר טוֹב יוֹתֵר." : "יָדַעְתָּ אֶת הַכֹּל. אַתָּה מוּכָן! 💛"}</p>
@@ -380,17 +470,17 @@ function endPractice() {
 
 /* ---------- הסיום: המגילה נפתחת ---------- */
 function finale() {
-  window.scrollTo(0, 0);
+  VIEW = "end"; window.scrollTo(0, 0);
   const tot = ALLQ.length, first = D.stations.reduce((a, s, i) => a + (S.st[i] ? S.st[i].first || 0 : 0), 0), w = wrongAll();
   let h = `<div class="top"><div class="ttl"></div>${sndBtn()}</div><div class="hero"><img class="ari lg" src="${ARI.grown}" alt=""><h1>📜 ${esc(D.scroll_title)} נִפְתְּחָה!</h1></div><div class="scroll">`;
   D.stations.forEach((s, i) => { h += `<div class="seal open new" style="animation-delay:${i * .5}s;animation-fill-mode:backwards"><span class="n">${i + 1}</span><span><span class="v">׳${esc(s.verse)}׳</span> <span class="r">(${esc(s.vref)})</span></span></div>`; });
-  h += `</div><div class="card center"><p style="font-size:21px"><b>${esc(D.scroll_end)}</b></p><p>עָבַרְתָּ שֶׁבַע תַּחֲנוֹת, וְיָדַעְתָּ <b>${first} מִתּוֹךְ ${tot}</b> שְׁאֵלוֹת בַּפַּעַם הָרִאשׁוֹנָה.</p>
+  h += `</div><div class="card center"><p style="font-size:21px"><b>${esc(D.scroll_end)}</b></p><p style="font-size:22px">הַצִּיּוּן שֶׁלְּךָ: <b style="font-size:34px;color:#1f4e5f">${grd(first, tot)}</b></p><p>עָבַרְתָּ שֶׁבַע תַּחֲנוֹת, וְיָדַעְתָּ <b>${first} מִתּוֹךְ ${tot}</b> שְׁאֵלוֹת בַּפַּעַם הָרִאשׁוֹנָה.${ME ? " הַצִּיּוּן נִשְׁמַר עַל שִׁמְךָ ✓" : ""}</p>
     ${w.length ? `<button class="big" id="pw">🔧 לְתַרְגֵּל אֶת מָה שֶׁטָּעִיתִי (${w.length})</button>` : ""}<button class="ghost" id="bk">חֲזָרָה לַמַּפָּה</button></div>`;
   $("#app").innerHTML = h; bindSnd(); snd.seal();
   if ($("#pw")) $("#pw").onclick = () => startPractice(w.map(id => QBY[id]), "🔧 מְתַקְּנִים אֶת הַטָּעֻיּוֹת", true);
   $("#bk").onclick = home;
 }
-home();
+{ const last = lsGet(KEY + ":me"); if (last && last.name) { loadProfile(last); home(); cloudPull(); } else who(); }
 </script>
 </body>
 </html>
