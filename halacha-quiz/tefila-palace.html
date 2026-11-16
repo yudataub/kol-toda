@@ -33,6 +33,22 @@ button{font-family:inherit}
 .hello .edit{background:transparent;color:#fff;opacity:.8;font-size:13px;padding:2px 6px}
 .speed{display:inline-block;margin:6px 0 0;border:0;border-radius:14px;padding:8px 16px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;background:#fff;color:var(--c1);box-shadow:inset 0 0 0 2px var(--c1)}
 .speed.on{background:linear-gradient(135deg,#ffb300,#ff6d00);color:#fff;box-shadow:none}
+/* אֲרִי – גּוּר הָאַרְיֵה שֶׁמְּלַוֶּה אֶת הַיֶּלֶד */
+.ari{display:flex;gap:10px;align-items:center;margin:4px 0 8px;text-align:right}
+.ari .face{flex:none;width:84px;height:84px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.ari .face img{width:100%;height:100%;object-fit:cover;transform-origin:50% 90%}
+.ari .bub{position:relative;flex:1;min-width:0;background:#fff;color:#3b1f78;border:2px solid #ffd76a;border-radius:16px;padding:8px 12px;font-weight:700;font-size:17px;line-height:1.5}
+.ari .bub:before{content:"";position:absolute;right:-15px;top:50%;margin-top:-7px;border:7px solid transparent;border-left-color:#ffd76a}
+.ari.big .face{width:110px;height:110px}
+.ari.joy .face img{animation:ariJump .9s ease}
+.ari.proud .face img{animation:ariPop .8s ease}
+.ari.cheer .face img{animation:ariTilt .9s ease}
+.ari.ok .face img{animation:ariNod .6s ease}
+@keyframes ariJump{0%,100%{transform:translateY(0)}30%{transform:translateY(-16px) scale(1.06)}55%{transform:translateY(0)}75%{transform:translateY(-6px)}}
+@keyframes ariPop{0%{transform:scale(.8)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes ariTilt{0%,100%{transform:rotate(0)}30%{transform:rotate(-7deg)}65%{transform:rotate(5deg)}}
+@keyframes ariNod{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+.hero .ari .bub{font-size:16px}
 .praise{background:#fff3c4;border-radius:10px;padding:6px 10px;margin:4px 0;font-weight:700;color:#7a5200}
 .path{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .hall{position:relative;background:var(--card);border-radius:18px;padding:14px 12px 12px;box-shadow:0 3px 12px rgba(60,30,120,.12);cursor:pointer;border:0;text-align:right;color:var(--ink);transition:transform .15s}
@@ -211,6 +227,7 @@ button{font-family:inherit}
       <div class="rank" id="rank"></div>
       <div class="hello" id="hello"></div>
     </div>
+    <div id="mAri"></div>
     <div class="path" id="path"></div>
     <div class="sig">
       📚 עוֹד חִידוֹנִים בְּהִלְכוֹת תְּפִלָּה וּבְכָל הַהֲלָכָה – חִנָּם:
@@ -220,6 +237,7 @@ button{font-family:inherit}
   </div>
   <!-- כניסה לאולם -->
   <div class="scr" id="sHall">
+    <div id="hAri"></div>
     <div class="letter"><div class="hd">📜 מִכְתָּב מֵהָאַרְמוֹן</div><div id="hLetter"></div></div>
     <div class="center"><span class="role" id="hRole"></span><br><span id="hSpeed"></span></div>
     <h2 class="center" id="hTitle" style="margin:6px 0 0"></h2>
@@ -256,6 +274,7 @@ button{font-family:inherit}
     <div class="scene" id="scene2"></div>
     <div class="end">
       <div class="big" id="eStars"></div>
+      <div id="eAri"></div>
       <h2 id="eTitle"></h2>
       <div id="eText" style="font-size:18px"></div>
       <div class="mission" id="eMission"></div>
@@ -330,7 +349,7 @@ function stars(n, max) { var s = ""; for (var i = 0; i < (max || 3); i++) s += i
 function renderMap() {
   updTop();
   $("rank").textContent = "הַדַּרְגָּה שֶׁלְּךָ: " + rankName() + " · " + totalStars() + " ⭐";
-  drawHello();
+  drawHello(); drawMapAri();
   var firstOpen = -1;
   $("path").innerHTML = HALLS.map(function (h, i) {
     var open = hallOpen(i), done = hallDone(h);
@@ -352,6 +371,44 @@ function renderMap() {
 
 /* ---------- שֵׁם וּ"בָרוּךְ שׁוּבְךָ" (שַׁיָּכוּת – הַשֵּׁם נִשְׁמָר רַק בַּמַּכְשִׁיר) ---------- */
 function nm() { return SAVE.name ? ", " + SAVE.name : ""; }
+
+/* ---------- אֲרִי – גּוּר הָאַרְיֵה שֶׁל הָאַרְמוֹן ----------
+   דְּמוּת שֶׁשְּׂמֵחָה בִּשְׁבִיל הַיֶּלֶד (לֹא רַק "מְאַשֶּׁרֶת"): מְגִיבָה לְפִי הָרֶגַע, זוֹכֶרֶת, וְגְדֵלָה יַחַד אִתּוֹ –
+   כָּל אוּלָם שֶׁהַיֶּלֶד מְסַיֵּם מַגְדִּיל אוֹתוֹ קְצָת, וּבְסוֹף הַמַּסָּע הוּא אַרְיֵה עִם כֶּתֶר (אֶפֶקְט הַ"חָנִיךְ"). */
+function hallsDone() { return HALLS.filter(hallDone).length; }
+function ari(mood, text, big) {
+  var grown = bossBeaten(), sc = grown ? 1 : (0.74 + 0.26 * hallsDone() / HALLS.length).toFixed(2);
+  var img = "img/ari-" + (grown ? "grown" : mood) + ".webp";
+  return '<div class="ari ' + mood + (big ? " big" : "") + '"><div class="face"><img src="' + img + '" alt="אֲרִי" style="width:' + (sc * 100) + "%;height:" + (sc * 100) + '%"></div><div class="bub">' + text + "</div></div>";
+}
+var ARI = {
+  ok: ["יֵשׁ! 😊", "יָדַעְתִּי שֶׁאַתָּה יוֹדֵעַ!", "אַתָּה מְלַמֵּד גַּם אוֹתִי!", "נָכוֹן! אֲנִי שָׂמֵחַ!", "בְּדִיּוּק! 👏"],
+  run3: ["שָׁלוֹשׁ בְּרֶצֶף! אֲנִי קוֹפֵץ מִשִּׂמְחָה! 🎉", "אַתָּה בִּתְנוּפָה! עוֹד אַחַת?", "שָׁלוֹשׁ בְּרֶצֶף – אֵיזֶה כֵּיף לִלְמֹד אִתְּךָ!"],
+  run5: ["חָמֵשׁ בְּרֶצֶף!! אֲנִי כְּבָר לֹא יָכוֹל לַעֲמֹד בַּמָּקוֹם! 🦁", "וָואוּ! חָמֵשׁ בְּרֶצֶף – אֲנִי מְסַפֵּר לְכׇל הָאַרְמוֹן!"],
+  bad: ["לֹא נוֹרָא, גַּם אֲנִי טוֹעֶה לִפְעָמִים. בּוֹא נִלְמַד יַחַד!", "אֲנִי אִתְּךָ! עַכְשָׁו נִזְכֹּר אֶת זֶה.", "זֶה בְּסֵדֶר – כָּכָה לוֹמְדִים. נַמְשִׁיךְ?", "כִּמְעַט! קְרָא אִתִּי מָה נָכוֹן 👇"]
+};
+var ARI_EFFORT = ["יָדַעְתִּי שֶׁתַּצְלִיחַ! לֹא וִתַּרְתָּ – אֲנִי גֵּאֶה בְּךָ! 💪", "טָעִיתָ, לָמַדְתָּ וְהִצְלַחְתָּ – כָּכָה גְּדֵלִים! 🌱", "רָאִיתָ? הִתְאַמַּצְתָּ וְזֶה הִצְלִיחַ! אֲנִי קוֹפֵץ מִשִּׂמְחָה!"];
+function withName(t) { return SAVE.name ? t.replace("!", ", " + esc(SAVE.name) + "!") : t; }
+function daysAway() { return SAVE.seen ? Math.floor((Date.now() - SAVE.seen) / 864e5) : 0; }
+function drawMapAri() {
+  var t, d = daysAway(), n = hallsDone();
+  if (!SAVE.seen) t = "שָׁלוֹם! אֲנִי אֲרִי, גּוּר הָאַרְיֵה שֶׁל הָאַרְמוֹן. אֲנִי אֶלְוֶה אוֹתְךָ בַּמַּסָּע – וְכׇל אוּלָם שֶׁנְּסַיֵּם יַחַד, אֲנִי גָּדֵל קְצָת! 🦁";
+  else if (bossBeaten()) t = withName("תִּרְאֶה אוֹתִי! גָּדַלְתִּי לְאַרְיֵה שֶׁל הַמֶּלֶךְ – בִּזְכוּתְךָ! 👑");
+  else if (d >= 2) t = withName("חִכִּיתִי לְךָ!") + " לֹא רָאִיתִי אוֹתְךָ " + d + " יָמִים – הִתְגַּעְגַּעְתִּי! 😊";
+  else if (n) t = withName("אֵיזֶה כֵּיף שֶׁחָזַרְתָּ!") + " כְּבָר עָבַרְנוּ יַחַד " + n + " אוּלָמוֹת – תִּרְאֶה כַּמָּה גָּדַלְתִּי!";
+  else t = withName("הִנֵּה אַתָּה!") + " בּוֹא נִכָּנֵס לְשַׁעַר הַשַּׁחַר 🌅";
+  $("mAri").innerHTML = ari(bossBeaten() ? "proud" : "hello", t, true);
+  SAVE.seen = Date.now(); persist();
+}
+function hallAri(h) {
+  var st = hallStars(h), t, mood = "hello";
+  if (h.mech === "boss") { t = "אֲנִי קְצָת מְפַחֵד מֵהֶעָנָן… אֲבָל אִתְּךָ אֲנִי לֹא מְפַחֵד! 💛"; mood = "cheer"; }
+  else if (st >= h.stages.length * 3) { t = withName("כָּאן כְּבָר הִשַּׂגְנוּ אֶת כׇּל הַכּוֹכָבִים!") + " רוֹצֶה לַחֲזֹר בִּשְׁבִיל הַכֵּיף?"; mood = "proud"; }
+  else if (st) t = "בַּפַּעַם הַקּוֹדֶמֶת הִשַּׂגְנוּ כָּאן " + st + " ⭐. נַשִּׂיג עוֹד אֶחָד?";
+  else if (h.mech === "keys") t = "אוֹצַר הַמַּפְתְּחוֹת! כָּל מִלָּה שֶׁתָּבִין – מַפְתֵּחַ. כְּבָר יֵשׁ לָנוּ " + keysCount() + " 🗝️";
+  else { t = withName("אוּלָם חָדָשׁ!") + " אֲנִי קְצָת מִתְרַגֵּשׁ. בּוֹא נִכָּנֵס יַחַד"; mood = "joy"; }
+  $("hAri").innerHTML = ari(mood, t);
+}
 function drawHello() {
   var el = $("hello");
   if (!SAVE.name || drawHello.edit) {
@@ -388,7 +445,7 @@ function openHall(i) {
   var h = HALLS[i]; G.hi = i; G.h = h; theme(h);
   SAVE.last = i; persist();
   $("hLetter").textContent = (SAVE.name ? "שָׁלוֹם, " + SAVE.name + "! " : "") + h.letter;
-  drawSpeed(h);
+  drawSpeed(h); hallAri(h);
   $("hRole").textContent = "🎭 " + h.role;
   $("hTitle").textContent = h.icon + " " + h.name;
   $("hSub").textContent = h.title + " · " + h.subtitle;
@@ -429,7 +486,7 @@ $("stGo").onclick = function () { startStage(); };
 function startStage() {
   var h = G.h;
   G.list = G.s.questions.slice();
-  G.qi = 0; G.right = 0; G.wrong = 0; G.bonus = 0; G.kav = 100; G.fog = 0; G.prevWrong = false; G.prog = 0;
+  G.qi = 0; G.right = 0; G.wrong = 0; G.bonus = 0; G.kav = 100; G.fog = 0; G.run = 0; G.prevWrong = false; G.prog = 0;
   show("sPlay"); drawScene($("scene")); renderQ();
 }
 function renderQ() {
@@ -591,8 +648,11 @@ function resolve(ok, hinted) {
   if (ok) { if (h.mech === "bells") sBell(); else if (h.mech === "music") musicNotes(); else sOk(); } else sBad();
   var q = G.list[G.qi], fb = $("qFb");
   fb.className = "fb on " + (ok ? "ok" : "bad");
+  G.run = ok ? (G.run || 0) + 1 : 0;
+  var mood = !ok ? "cheer" : effort || G.run === 3 || G.run === 5 || G.run === 8 ? "joy" : "ok";
+  var say = !ok ? pick(ARI.bad) : effort ? withName(pick(ARI_EFFORT)) : G.run >= 5 && G.run % 5 === 0 || G.run === 8 ? pick(ARI.run5) : G.run === 3 ? pick(ARI.run3) : pick(ARI.ok);
   fb.innerHTML = '<div class="t">' + (ok ? "✅ " + pick(OK_T) + extra : "💡 " + pick(BAD_T)) + "</div>" +
-    (effort ? '<div class="praise">' + pick(EFFORT_T).replace("!", nm() + "!") + "</div>" : "") + "<div>" + esc(q.explain) + "</div>" +
+    ari(mood, say) + "<div>" + esc(q.explain) + "</div>" +
     (q.why ? '<div class="why">💡 <b>טַעַם הַדִּין:</b> ' + esc(q.why) + "</div>" : "") + (q.src ? '<div class="src">📖 ' + esc(q.src) + "</div>" : "");
   $("qNext").textContent = G.qi + 1 < G.list.length ? "הַמְשֵׁךְ ←" : "🏁 סִיּוּם הַשָּׁלָב";
   $("qNext").style.display = "inline-block";
@@ -648,6 +708,14 @@ function endStage() {
   else { nb.textContent = "🗺️ לַמַּפָּה"; nb.onclick = renderMap; }
   if (!wasDone && hallDone(h)) setTimeout(function () { toast("🎉 " + (G.hi + 1 < HALLS.length ? "נִפְתַּח אוּלָם חָדָשׁ בַּמַּפָּה!" : "")); }, 900);
   if (!prevBoss && bossBeaten()) setTimeout(function () { toast("👑 הִגַּעְתָּ לְדַרְגַּת בֶּן הֵיכַל הַמֶּלֶךְ!"); }, 1200);
+  var am, at;
+  if (!prevBoss && bossBeaten()) { am = "proud"; at = withName("תִּרְאֶה מָה קָרָה לִי! גָּדַלְתִּי לְאַרְיֵה שֶׁל הַמֶּלֶךְ – וְזֶה בִּזְכוּתְךָ!") + " 👑"; }
+  else if (!wasDone && hallDone(h)) { am = "joy"; at = withName("פָּתַחְנוּ אוּלָם חָדָשׁ!") + " וְתִרְאֶה – גָּדַלְתִּי קְצָת! 🦁"; }
+  else if (played && G.right > prevBest) { am = "proud"; at = withName("הִשְׁתַּפַּרְתָּ!") + " רָאִיתִי כַּמָּה הִתְאַמַּצְתָּ – אֲנִי כׇּל כָּךְ גֵּאֶה בְּךָ!"; }
+  else if (st === 3) { am = "proud"; at = withName("שְׁלוֹשָׁה כּוֹכָבִים!") + " אֲנִי מוֹחֵא כַּפַּיִם בִּשְׁבִילְךָ 👏"; }
+  else if (st > 0) { am = "ok"; at = "עָבַרְנוּ! 😊 אִם תִּרְצֶה, בַּפַּעַם הַבָּאָה נַשִּׂיג עוֹד כּוֹכָב."; }
+  else { am = "cheer"; at = withName("אֲנִי לֹא זָז מִכָּאן!") + " נְנַסֶּה שׁוּב יַחַד – הַפַּעַם זֶה יִהְיֶה קַל יוֹתֵר, כִּי כְּבָר לָמַדְנוּ."; }
+  $("eAri").innerHTML = ari(am, at, true);
   show("sEnd");
 }
 $("eRetry").onclick = function () { startStage(); };
