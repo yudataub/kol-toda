@@ -577,6 +577,8 @@
   .pc-mine { margin: 10px auto 4px; padding: 10px; border-radius: 14px; border: 1.5px dashed var(--gold); font-size: 15px; line-height: 1.6; }
   .ladder-go { margin: 14px 0 6px; font-size: 18px; padding: 15px; background: linear-gradient(135deg, #e8590c, #c92a2a); box-shadow: 0 6px 16px rgba(201,42,42,.3); animation: ladderPulse 1.6s ease-in-out infinite; }
   @keyframes ladderPulse { 50% { transform: scale(1.03); } }
+  .crowns-box .cc-sub { font-size: .9em; font-weight: 600; margin-top: 6px; opacity: .9; }
+  .crowns-box .cc-n { font-size: 1.35em; }
 </style>
 <meta property="og:title" content="מבדק פרשת ויצא - כיתה ד&#x27;">
 <meta property="og:description" content="מבדק פרשת ויצא - כיתה ד&#x27;">
@@ -1524,11 +1526,77 @@ function renderBonus() {
   boyCheer();   // 15.11: הילד שמדבר בסוף כל השלבים
 }
 
+
+// ---------- 16.11 (המשתמש): "הוספת לכיתה שלך את הכתר ה-13" - כל ילד רואה שהוא חלק מהכיתה ----------
+// אותה ספירה כמו "כתרי הכיתות" בדף הראשי (class_boards.classGroups): תלמיד אחד = כתר אחד בכל פרשה, רק נעם קרית אתא.
+function ccCovers(a, b) {
+  var A = a.split(' '), B = b.split(' ');
+  if (A.length > B.length || a === b) return false;
+  for (var i = 0; i < A.length; i++) {
+    if (A[i] === B[i]) continue;
+    if (i === A.length - 1 && A.length > 1 && B[i].indexOf(A[i]) === 0) continue;
+    return false;
+  }
+  return true;
+}
+function ccWho(rows) {
+  var byCls = {}, map = {};
+  function ck(r) { return String(r.cls == null ? '' : r.cls).trim() + '|' + schoolKey(r.school); }
+  rows.forEach(function(r){ (byCls[ck(r)] = byCls[ck(r)] || {})[normalize(r.name)] = 1; });
+  Object.keys(byCls).forEach(function(c){
+    var names = Object.keys(byCls[c]);
+    var full = names.filter(function(b){ return !names.some(function(x){ return ccCovers(b, x); }); });
+    names.forEach(function(a){ var hits = full.filter(function(b){ return ccCovers(a, b); }); if (hits.length === 1) map[a + '|' + c] = hits[0]; });
+  });
+  return function(r){ var n = normalize(r.name); return (map[n + '|' + ck(r)] || n) + '|' + ck(r); };
+}
+// {n: כמה כתרים יש לכיתה שלי בכל הפרשות, had: האם כבר יש לי כתר בפרשה הזו}
+function ccCount(rows, me) {
+  var mine = { game: CONFIG.GAME_ID, name: me.name, cls: me.cls, school: me.school, score: 0 };
+  rows = rows.concat([mine]);
+  var who = ccWho(rows), seen = {}, n = 0, myCls = String(me.cls) + '|' + schoolKey(me.school);
+  rows.forEach(function(r){
+    if ((Number(r.score) || 0) < CONFIG.PASS_SCORE || !isNoam(r.school)) return;
+    var sk = who(r) + '|' + parashaOf(r.game);
+    if (seen[sk]) return;
+    seen[sk] = 1;
+    if (String(r.cls) + '|' + schoolKey(r.school) === myCls) n++;
+  });
+  return { n: n, had: !!seen[who(mine) + '|' + CONFIG.SLUG] };
+}
+var ccBefore = null;   // לפני השליחה: האם כבר היה לתלמיד כתר בפרשה (null = לא ידוע)
+function ccRemember(who) {
+  ccBefore = null;
+  try { if (scholars && scholars.length !== undefined && isNoam(who.school)) ccBefore = ccCount(scholars, who).had; } catch (e) {}
+}
+function ccShow(rows, payload) {
+  var box = document.getElementById('ccBox');
+  if (!box || !isNoam(payload.school)) return;
+  var now = ccCount(rows.concat([{ game: payload.game, name: payload.name, cls: payload.cls, school: payload.school, score: payload.score }]), payload);
+  var cls = escapeHtml(clsLabel(payload.cls)), n = now.n;
+  var together = '<div class="cc-sub">כל הכיתה יחד אספה ' + (n === 1 ? 'כתר אחד' : n + ' כתרים') +
+    (n > 1 ? ' – ואחד מהם שלך 💪' : ' – והוא שלך! 💪') + '</div>';
+  if (ccBefore === false)
+    box.innerHTML = '<div class="big">👑</div>' + (n === 1 ? 'הוספת לכיתה ' + cls + ' את הכתר הראשון שלה!'
+      : 'הוספת לכיתה ' + cls + ' את הכתר ה-<b class="cc-n">' + n + '</b>!') + together;
+  else if (ccBefore === true)
+    box.innerHTML = '<div class="big">👑</div>כל הכבוד! הכתר שלך בפרשת ' + escapeHtml(CONFIG.PARASHA) + ' כבר נמצא בכיתה ' + cls + '.' + together;
+  else
+    box.innerHTML = '<div class="big">👑</div>כל הכבוד! הוספת כתר לכיתה ' + cls + '!' + together;
+}
+function ccRefresh(payload) {
+  fetch(CONFIG.API_URL + '?action=boards').then(function(r){ return r.json(); }).then(function(j){
+    if (!j || !j.ok || !j.rows) throw new Error('no boards');
+    try { localStorage.setItem(BOARDS_LS, JSON.stringify({ t: Date.now(), rows: j.rows })); } catch (e) {}
+    applyAllBoards(j.rows);
+    ccShow(scholars || [], payload);
+  }).catch(function(){ refreshLeaderboard(); });
+}
 function sendWithStatus(payload) {
   sendScore(payload).then(function(ok){
     var st = document.getElementById('sendStatus');
     if (!st) return;
-    if (ok) { st.textContent = 'נשמר בהצלחה! ✅'; refreshLeaderboard(); return; }
+    if (ok) { st.textContent = 'נשמר בהצלחה! ✅'; if (document.getElementById('ccBox')) ccRefresh(payload); else refreshLeaderboard(); return; }
     st.innerHTML = 'לא הצלחנו לשמור את התוצאה. ' +
       '<div class="send-fail"><button class="secondary" id="retrySend" type="button">נסו שוב</button></div>';
     document.getElementById('retrySend').addEventListener('click', function(){
@@ -1590,7 +1658,8 @@ function renderFinish() {
     top += '<div class="result-badge">🌟 כל הכבוד – פתרתם את כל החידות!</div>' +
       '<p>במשחק הזה יש עדיין פחות מ-8 חידות, ולכן הוא לא נותן כתר. כתרים מקבלים במבדקים של הכיתות 👑</p>';
   } else if (score >= CONFIG.PASS_SCORE) {
-    top += '<div class="crowns-box"><div class="big">👑</div>כל הכבוד! הוספתם כתר לכיתה ' + escapeHtml(clsLabel(who.cls)) + '!</div>' +
+    ccRemember(who);
+    top += '<div class="crowns-box" id="ccBox"><div class="big">👑</div>כל הכבוד! הוספתם כתר לכיתה ' + escapeHtml(clsLabel(who.cls)) + '!</div>' +
       '<div class="hint-note">🎓 ואם זה מבדק שעוד לא עברתם – יש לכם עוד כתר בלוח התלמידים! (עשרה כתרים = תלמיד חכם 🎓)</div>' + pcFinishHtml();
   } else {
     top += '<div class="result-badge">🌟 כל הכבוד על ההשתתפות!</div><p>נסו שוב - ותוסיפו כתר לכיתה שלכם 👑</p>';
