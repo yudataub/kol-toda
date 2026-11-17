@@ -5,7 +5,7 @@
 <meta name="description" content="שואלים בשפה חופשית ומקבלים חומרי לימוד מתאימים מתוך מאגר הקול החמישי – דפי עבודה, מצגות, מבחנים וסיפורים – וגם תשובות לשאלות בתורה ובחינוך.">
 <meta property="og:title" content="הבוט של הקול החמישי">
 <meta property="og:description" content="מחפשים חומר לשיעור? שואלים את הבוט ומקבלים קישורים מתוך עשרות אלפי חומרי הלימוד שבמאגר.">
-<link rel="preload" href="https://yudataub.github.io/kol-toda-apps/search/items.json" as="fetch" crossorigin>
+<link rel="preload" href="../search/items.json" as="fetch" crossorigin>
 <script async src="https://www.kol-toda.co.il/a.js"></script>
 <style>
 :root{--bg:#f4f1fa;--card:#fff;--ink:#1f2937;--muted:#6b7280;--line:#e5e0f0;--acc:#6d28d9;--acc2:#ede7fb;--me:#e0e7ff;--ok:#15803d;--warn:#b45309;--link:#4338ca}
@@ -115,7 +115,7 @@ const dataP = (async () => {
   CATS = reg.cats; KINDS = reg.kinds;
   N = await fetch("../search/nodes.json").then(r => r.json());
   for (let i = 0; i < N.length; i++) { NN[i] = norm(N[i][0]); NP[i] = N[i][3] >= 0 ? NP[N[i][3]] + " " + NN[i] : NN[i]; }
-  I = await fetch("https://yudataub.github.io/kol-toda-apps/search/items.json").then(r => r.json());
+  I = await fetch("../search/items.json").then(r => r.json());
   for (let i = 0; i < I.length; i++) IT[i] = norm(I[i][0]);
   // not deep.json (the files inside the Drive folders): the bot finds only what is on the site (29.10, the user)
 })();
@@ -277,16 +277,25 @@ async function searchContent({query, kind}) {
     top.push([p, d]);
   }
   const ws = words.map(loose);
-  return {query, found: ranked.length, all_words: most === words.length,
-    results: top.map(([p, [d, text]]) => {
+  // 17.11: the best results come with the whole passage and the one after it, so the bot can answer at once –
+  // a read_passage round cost another 5-10 seconds
+  const FULL = 3;
+  const results = await Promise.all(top.map(async ([p, [d, text]], i) => {
+    const o = {passage: "p" + p, source: CD.docs[d][0], kind: CD.docs[d][2], url: ref(CD.docs[d][1])};
+    if (i < FULL) {
+      const nx = p + 1 < CD.n ? await passage(p + 1) : null;
+      o.text = (text + (nx && nx[0] === d ? "\n" + nx[1] : "")).replace(/[ \t]+/g, " ");
+    } else {
       const lt = loose(norm(text)); let at = -1; for (const w of ws) { at = lt.indexOf(w); if (at >= 0) break; }
       const from = Math.max(0, Math.round(at / Math.max(1, lt.length) * text.length) - 200);
-      const o = {passage: "p" + p, source: CD.docs[d][0], kind: CD.docs[d][2], url: ref(CD.docs[d][1]),
-              excerpt: (from ? "…" : "") + text.slice(from, from + 600).replace(/\s+/g, " ") + (from + 600 < text.length ? "…" : "")};
-      if (CD.docs[d][4]) o.deck = ref(CD.docs[d][4]);   // a story's classroom presentation
-      return o;
-    }),
-    how_to_link: "url הוא מזהה קישור: [שם](r12). deck = מצגת לכיתה על הסיפור – אם יש, אמור שיש מצגת וקשר אליה: [מצגת](r13). לקטע מלא – read_passage עם ה-passage.",
+      o.excerpt = (from ? "…" : "") + text.slice(from, from + 500).replace(/\s+/g, " ") + (from + 500 < text.length ? "…" : "");
+    }
+    if (CD.docs[d][4]) o.deck = ref(CD.docs[d][4]);   // a story's classroom presentation
+    return o;
+  }));
+  return {query, found: ranked.length, all_words: most === words.length, results,
+    how_to_link: "url הוא מזהה קישור: [שם](r12). deck = מצגת לכיתה על הסיפור – אם יש, אמור שיש מצגת וקשר אליה: [מצגת](r13). " +
+      "לתוצאות הראשונות יש text = הקטע המלא – ענה ממנו ישר. read_passage רק לתוצאה שיש לה excerpt בלבד ואין ברירה.",
     ...(SCOPE ? {searched_only: SCOPE} : {})};
 }
 async function readPassage({passage: id}) {
