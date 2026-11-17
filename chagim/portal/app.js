@@ -40,8 +40,15 @@ const state = {q: "", tp: "", kd: "", gr: "", gu: "", fav: "", so: ""};
 const main = document.getElementById("main"), qEl = document.getElementById("q");
 
 // ---- the address keeps the choice, so a teacher can send a colleague the exact list ----
+// a subject that has a page of its own (PAGE.moved: {topic: address}, the user 17.11.2026: "בית המקדש למורה") opens it
+function moved(tp, p) {
+  const to = PAGE.moved && PAGE.moved[tp]; if (!to) return false;
+  p = new URLSearchParams(p); p.delete("tp"); const h = p.toString();
+  location.replace(to + (h ? "#" + h : "")); return true;
+}
 function readHash() {
   const p = new URLSearchParams(location.hash.slice(1));
+  if (moved(p.get("tp"), p)) return;
   Object.keys(state).forEach(k => state[k] = p.get(k) || "");
   if (state.tp && !TP[state.tp]) state.tp = ""; if (state.kd && !KD[state.kd]) state.kd = "";
   qEl.value = state.q; document.getElementById("search").classList.toggle("has", !!state.q);
@@ -51,7 +58,7 @@ function writeHash(push) {
   const h = p.toString(), url = location.pathname + location.search + (h ? "#" + h : "");
   if (push) history.pushState(null, "", url); else history.replaceState(null, "", url);
 }
-function go(patch, push = true) { Object.assign(state, patch); shown = 48; writeHash(push); render(); if (push) window.scrollTo({top: isHome() ? 0 : document.querySelector("main").offsetTop - 4}); }
+function go(patch, push = true) { if (patch.tp && moved(patch.tp, Object.entries(Object.assign({}, state, patch)).filter(e => e[1]))) return; Object.assign(state, patch); shown = 48; writeHash(push); render(); if (push) window.scrollTo({top: isHome() ? 0 : document.querySelector("main").offsetTop - 4}); }
 const isHome = () => !state.q && !state.tp && !state.kd && !state.gr && !state.fav;
 
 // ---- data: the holidays catalog's own files (the parts of this page's tabs), so every new material shows here by itself ----
@@ -60,9 +67,10 @@ function loadData() {
     const tabs = new Set(PAGE.tabs), groups = new Set(d.tabs.filter(t => tabs.has(t.k)).map(t => t.g));
     const parts = (d.parts || []).filter(p => groups.has(p.g));
     return (parts.length ? Promise.all(parts.map(p => fetch(p.u).then(r => r.json()))).then(a => [].concat(...a)) : Promise.resolve(d.items))
-      .then(a => a.filter(i => tabs.has(i.tab)));
+      .then(a => a.filter(i => tabs.has(i.tab)).map(stripT).filter(i => !PAGE.keep || PAGE.keep(i.t)));
   });
 }
+const stripT = it => { if (PAGE.strip) it.t = it.t.replace(PAGE.strip, ""); return it; };
 const ownKey = u => { const m = u.match(/(?:drive|docs)\.google\.com\/(?:file\/d\/|(?:document|presentation|spreadsheets)\/d\/|open\?id=|drive\/folders\/)([\w-]{20,})/); return m ? m[1] : u; };
 function thumbOf(it) {
   if (it.im && it.im.includes("/ach/")) return null;   // Achiya's own banner, the same on every card
@@ -94,7 +102,7 @@ function addMine() {
   if (!window.mineCards || !PAGE.mine) return;
   window.mineCards(PAGE.mine).then(cs => {
     const have = new Set(ITEMS.map(i => i.files[0].u));
-    const add = cs.filter(c => !have.has(c.href)).map(c => {
+    const add = cs.filter(c => !have.has(c.href) && (!PAGE.keep || PAGE.keep(c.t) || (PAGE.keepHref && PAGE.keepHref.test(c.href)))).map(c => {
       const id = "kt_" + c.href.replace(/^https?:\/\/[^/]+\//, "").replace(/[^\w.-]+/g, "_");   // a Firestore id has no "/"
       const it = {t: c.t, c: c.game ? "game" : "pres", im: c.img || "", files: [{id, u: c.href, f: c.game ? "game" : "web"}]};
       const r = classify(it, PAGE); it._tp = r.tp; it._kd = r.kd; it._gr = r.gr; it._n = norm(it.t); it._th = thumbOf(it);

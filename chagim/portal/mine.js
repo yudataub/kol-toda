@@ -57,6 +57,7 @@
       const extra = (cfg.features ? featuresOf(D[cfg.features], cfg.features) : []).concat(cfg.extra || []).map(banner).join("");
       const seen = new Set(), cards = [];
       (cfg.sections || []).forEach(([p, id]) => cardsOf(D[p], p, id).forEach(c => { if (!seen.has(c.href)) { seen.add(c.href); cards.push(c); } }));
+      if (cfg.keep && window.PAGE && PAGE.keep) for (let i = cards.length - 1; i >= 0; i--) if (!PAGE.keep(cards[i].t) && !(PAGE.keepHref && PAGE.keepHref.test(cards[i].href))) cards.splice(i, 1);   // a one-subject page
       cards.sort((a, b) => b.game - a.game);   // games first
       if (!cards.length && !extra) { box.innerHTML = ""; return; }
       const many = cards.length > 8;
