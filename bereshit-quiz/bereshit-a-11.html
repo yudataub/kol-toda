@@ -228,6 +228,31 @@ span.chip{cursor:default}
 .board .pts{float:left;font-weight:800;color:var(--c3)}
 .board .cl{color:var(--soft);font-size:.8em}
 .badge-line{font-weight:800;font-size:1.15em;text-align:center}
+.myst{display:flex;align-items:center;justify-content:center;gap:10px;margin:4px 0 8px;cursor:pointer}
+.myst .mg,.mystBig{position:relative;border-radius:10px;overflow:hidden;background:#e9d5ff}
+.myst .mg{width:84px;height:56px;flex:none}
+.myst img,.mystBig img{width:100%;height:100%;object-fit:cover;display:block}
+.tiles{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr)}
+.tiles i{background:linear-gradient(135deg,#7c3aed,#c084fc);border:1px solid rgba(255,255,255,.4);transition:opacity .7s,transform .7s}
+.tiles i:nth-child(3n){background:linear-gradient(135deg,#9333ea,#e879f9)}
+.tiles i.off{opacity:0;transform:scale(.2) rotate(40deg)}
+.myst .lbl{font-size:.9em;font-weight:700;color:#6d28d9;line-height:1.3}
+.mystBig{width:min(340px,90%);aspect-ratio:3/2;margin:10px auto}
+.opt.wait,.pic-zone.wait{animation:waitP .4s infinite alternate}
+@keyframes waitP{from{transform:scale(1);box-shadow:0 0 0 0 #fde68a}to{transform:scale(1.035);box-shadow:0 0 0 5px #fde68a}}
+.opt.flip{animation:flipH 1.7s ease-in-out}
+@keyframes flipH{0%{transform:perspective(500px) rotateY(0)}30%{transform:perspective(500px) rotateY(84deg);box-shadow:0 0 0 5px #fde68a}85%{transform:perspective(500px) rotateY(84deg);box-shadow:0 0 0 5px #fde68a}100%{transform:perspective(500px) rotateY(0)}}
+.myst.shake .mg{animation:shk .5s infinite}
+@keyframes shk{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+.mGuess{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+.mGuess button{font:inherit;padding:9px 12px;border-radius:12px;border:2px solid #c4b5fd;background:#faf5ff;cursor:pointer;text-align:right}
+.mGuess button:disabled{opacity:1;color:inherit;cursor:default}
+.mGuess button.ok{border-color:#16a34a;background:#dcfce7}.mGuess button.bad{border-color:#f59e0b;background:#fef3c7}
+.peek{margin:12px 0 4px;padding:10px 12px;border-radius:12px;background:#f1f5f9;border:2px dashed #94a3b8;font-weight:600}
+.peek .cut{background:linear-gradient(90deg,#334155 40%,transparent);-webkit-background-clip:text;background-clip:text;color:transparent}
+.gold{margin:8px auto;padding:6px 12px;border-radius:12px;background:linear-gradient(90deg,#fef3c7,#fde68a);color:#92400e;font-weight:800;display:inline-block;animation:goldIn .6s}
+@keyframes goldIn{from{transform:scale(.3) rotate(-12deg);opacity:0}to{transform:none;opacity:1}}
+.eff{font-weight:700;color:#0f766e;margin:4px 0}
 .progress{text-align:center;margin:10px 0}
 .progress .gain{font-weight:800;color:#15803d;font-size:1.05em;margin:0 0 6px}
 .bbar{height:14px;border-radius:8px;background:#eee;overflow:hidden;margin:8px 0 4px}
@@ -358,7 +383,7 @@ body.inq .me-btn.named{display:inline-block;font-size:.72em;top:6px;padding:3px 
 body.inq #lbBtn{top:6px;right:auto;left:50%;transform:translateX(-50%);font-size:.72em;padding:3px 10px}
 header.top.hasreg{padding-top:84px}
 body.inq header.top.hasreg{padding-top:34px}
-body.inq .ptsbadge{top:40px}
+body.inq .ptsbadge{top:40px}   /* 14.11: מתחת לכפתור השם, שלא יסתיר אותו */
 #lbScreen{position:fixed;top:0;right:0;bottom:0;left:0;z-index:9998;background:rgba(30,20,60,.55);display:none;align-items:flex-start;justify-content:center;padding:16px;overflow:auto}
 #lbScreen.on{display:flex}
 #lbScreen .rbox{background:#fff;border-radius:24px;max-width:520px;width:100%;padding:20px 18px;font-family:Rubik,Arial,sans-serif;color:#2b2340;line-height:1.6;margin-top:20px}
@@ -555,6 +580,7 @@ body.inq .ptsbadge{top:40px}
     <div class="box">
       <div class="qhead"><span id="qLevel"></span><span id="qPts" class="ptsbadge" title="הַנְּקֻדּוֹת שֶׁלְּךָ">⭐ <b>0</b></span><span id="qNum"></span></div>
       <div class="bar"><i id="qBar"></i></div>
+      <div class="myst" id="qMyst" style="display:none"></div>
       <div class="prompt" id="qPrompt"></div>
       <div id="qBody"></div>
       <div class="fb" id="qFb"></div>
@@ -567,6 +593,7 @@ body.inq .ptsbadge{top:40px}
       <div style="font-size:3em" id="lvIcon"></div>
       <h2 id="lvTitle"></h2>
       <p id="lvText"></p>
+      <div id="lvMyst"></div>
       <button class="btn" id="lvBtn"></button>
     </div>
   </section>
@@ -662,7 +689,7 @@ body.inq .ptsbadge{top:40px}
 
 
 <script>
-var QUIZ = {"id": "bereshit-a-11", "num": 11, "series": "bereshit-a", "title": "מִשֵּׁת עַד נֹחַ", "subtitle": "שֵׁת, אֱנוֹשׁ, חֲנוֹךְ וַעֲשָׂרָה דּוֹרוֹת", "source": "חֻמַּשׁ בְּרֵאשִׁית, פֶּרֶק ד׳, פְּסוּקִים כ״ה–כ״ו; פֶּרֶק ה׳", "parasha": "בְּרֵאשִׁית", "theme": ["#4a235a", "#85c1e9", "#f5b041"], "verse": "וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת־הָאֱלֹהִים", "think": ["מִי נוֹלַד אַחֲרֵי הֶבֶל?", "מָה כָּתוּב עַל חֲנוֹךְ?", "אֵיךְ אֲנִי הוֹלֵךְ עִם ה׳ הַשָּׁבוּעַ?"], "levels": [{"key": "a", "name": "רָמָה א׳ – שֵׁת, חֲנוֹךְ וְנֹחַ", "points": 5, "cards": [{"icon": "👶", "title": "שֵׁת", "text": "אָדָם וְחַוָּה קָרְאוּ לַבֵּן שֶׁנּוֹלַד אַחֲרֵי הֶבֶל: ׳שֵׁת׳. ׳כִּי שָׁת לִי אֱלֹהִים זֶרַע אַחֵר׳.", "mark": "הַבֵּן שֶׁנּוֹלַד אַחֲרֵי הֶבֶל – שֵׁת.", "ahava": "ה׳ נוֹתֵן לָנוּ שִׂמְחָה חֲדָשָׁה אַחֲרֵי עֶצֶב 💛", "src": "פֶּרֶק ד׳, פָּסוּק כ״ה"}, {"icon": "🙏", "title": "אֱנוֹשׁ", "text": "לְשֵׁת נוֹלַד בֵּן, ׳אֱנוֹשׁ׳. ׳אָז הוּחַל לִקְרֹא בְּשֵׁם ה׳׳.", "mark": "׳אָז הוּחַל לִקְרֹא בְּשֵׁם ה׳׳.", "ahava": "אֲנִי קוֹרֵא בְּשֵׁם ה׳, וְהוּא שׁוֹמֵעַ אוֹתִי 💛", "src": "פֶּרֶק ד׳, פָּסוּק כ״ו"}, {"icon": "📜", "title": "סֵפֶר תּוֹלְדֹת אָדָם", "text": "׳זֶה סֵפֶר תּוֹלְדֹת אָדָם׳. אָדָם הָיָה הָאִישׁ הָרִאשׁוֹן.", "mark": "׳זֶה סֵפֶר תּוֹלְדֹת אָדָם׳.", "ahava": "ה׳ בָּרָא אֶת הָאָדָם בְּאַהֲבָה 💛", "src": "פֶּרֶק ה׳, פָּסוּק א׳"}, {"icon": "🔟", "title": "עֲשָׂרָה דּוֹרוֹת", "text": "מֵאָדָם עַד נֹחַ יֵשׁ עֲשָׂרָה דּוֹרוֹת: אָדָם, שֵׁת, אֱנוֹשׁ, קֵינָן, מַהֲלַלְאֵל, יֶרֶד, חֲנוֹךְ, מְתוּשֶׁלַח, לֶמֶךְ, נֹחַ.", "mark": "עֲשָׂרָה דּוֹרוֹת, מֵאָדָם עַד נֹחַ.", "ahava": "ה׳ שׁוֹמֵר עַל הָעוֹלָם דּוֹר אַחַר דּוֹר 💛", "src": "פֶּרֶק ה׳, פְּסוּקִים ג׳–ל״ב"}, {"icon": "🚶", "title": "חֲנוֹךְ", "text": "׳וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת הָאֱלֹהִים׳. חֲנוֹךְ הָלַךְ עִם ה׳ בְּדֶרֶךְ טוֹבָה.", "mark": "חֲנוֹךְ הָלַךְ עִם ה׳.", "ahava": "אֲנִי רוֹצֶה לָלֶכֶת עִם ה׳ כָּל יוֹם 💛", "src": "פֶּרֶק ה׳, פְּסוּקִים כ״ב–כ״ד"}, {"icon": "🌳", "title": "מְתוּשֶׁלַח", "text": "מְתוּשֶׁלַח חַי תְּשַׁע מֵאוֹת שִׁשִּׁים וְתֵשַׁע שָׁנָה. הוּא חַי הֲכִי הַרְבֵּה שָׁנִים.", "mark": "מְתוּשֶׁלַח חַי הֲכִי הַרְבֵּה שָׁנִים.", "ahava": "ה׳ נוֹתֵן חַיִּים, וַאֲנִי אוֹמֵר לוֹ תּוֹדָה 💛", "src": "פֶּרֶק ה׳, פָּסוּק כ״ז"}, {"icon": "🚢", "title": "נֹחַ", "text": "לֶמֶךְ קָרָא לִבְנוֹ ׳נֹחַ׳. נֹחַ הוּא הַדּוֹר הָעֲשִׂירִי.", "mark": "נֹחַ – הַדּוֹר הָעֲשִׂירִי.", "ahava": "ה׳ הֵכִין לָעוֹלָם אִישׁ טוֹב בְּשֵׁם נֹחַ 💛", "src": "פֶּרֶק ה׳, פְּסוּקִים כ״ח–כ״ט"}, {"icon": "👦", "title": "שְׁלוֹשָׁה בָּנִים", "text": "לְנֹחַ הָיוּ שְׁלוֹשָׁה בָּנִים: שֵׁם, חָם וָיֶפֶת.", "mark": "שֵׁם, חָם וָיֶפֶת.", "ahava": "ה׳ נוֹתֵן לִי מִשְׁפָּחָה לֶאֱהֹב 💛", "src": "פֶּרֶק ה׳, פָּסוּק ל״ב"}], "inspire": "ה׳ שׁוֹמֵר עַל הָעוֹלָם דּוֹר אַחַר דּוֹר. חֲנוֹךְ הָלַךְ עִם ה׳, וְגַם אֲנִי יָכוֹל לָלֶכֶת עִם ה׳ כָּל יוֹם, כִּי הוּא אוֹהֵב אוֹתָנוּ.", "questions": [{"prompt": "מִי נוֹלַד אַחֲרֵי הֶבֶל?", "options": ["שֵׁת", "קַיִן", "נֹחַ"], "correct": 0, "explain": "׳וַתִּקְרָא אֶת שְׁמוֹ שֵׁת כִּי שָׁת לִי אֱלֹהִים זֶרַע אַחֵר תַּחַת הֶבֶל׳.", "src": "פֶּרֶק ד׳, פָּסוּק כ״ה", "art": ["a simple wooden baby cradle with a soft blanket in a tent, no people, no text", "שת", "a wooden plough standing in a brown field, no people, no text", "קין", "a big wooden ark floating on calm water, no people, no text", "נח"], "captions": ["שת", "קין", "נח"], "pic_answers": ["שת", "קין", "נח"], "image": "a1.jpg"}, {"prompt": "כַּמָּה דּוֹרוֹת מֵאָדָם עַד נֹחַ?", "options": ["שְׁלוֹשָׁה", "עֲשָׂרָה", "שֵׁשׁ"], "correct": 1, "explain": "מֵאָדָם עַד נֹחַ יֵשׁ עֲשָׂרָה דּוֹרוֹת.", "src": "פֶּרֶק ה׳, פְּסוּקִים ג׳–ל״ב", "art": ["three small round stones in a row, no people, no text", "שלושה", "ten small round stones in two neat rows, no people, no text", "עשרה", "six small round stones in two neat rows, no people, no text", "שש"], "captions": ["שלושה", "עשרה", "שש"], "pic_answers": ["שלושה", "עשרה", "שש"], "image": "a2.jpg"}, {"prompt": "זֶה... תּוֹלְדֹת אָדָם", "options": ["סֵפֶר", "שֻׁלְחָן", "כִּסֵּא"], "correct": 0, "explain": "׳זֶה סֵפֶר תּוֹלְדֹת אָדָם׳.", "src": "פֶּרֶק ה׳, פָּסוּק א׳", "art": ["an open scroll on a wooden table, no people, no text", "ספר", "a plain wooden table, no people, no text", "שולחן", "a plain wooden stool, no people, no text", "כסא"], "captions": ["ספר", "שולחן", "כסא"], "pic_answers": ["ספר", "שולחן", "כסא"], "image": "a3.jpg"}, {"prompt": "מִי הָיָה הָאִישׁ הָרִאשׁוֹן?", "options": ["קַיִן", "אָדָם", "נֹחַ"], "correct": 1, "explain": "אָדָם הָיָה הָאִישׁ הָרִאשׁוֹן. ׳זֶה סֵפֶר תּוֹלְדֹת אָדָם׳.", "src": "פֶּרֶק ה׳, פָּסוּק א׳", "art": ["a wooden plough standing in a brown field, no people, no text", "קין", "a green garden with a tall fruit tree, no people, no text", "אדם", "a big wooden ark floating on calm water, no people, no text", "נח"], "captions": ["קין", "אדם", "נח"], "pic_answers": ["קין", "אדם", "נח"], "image": "a4.jpg"}, {"prompt": "מִי הָיָה הַדּוֹר הָעֲשִׂירִי?", "options": ["שֵׁת", "חֲנוֹךְ", "נֹחַ"], "correct": 2, "explain": "נֹחַ הוּא הַדּוֹר הָעֲשִׂירִי מֵאָדָם.", "src": "פֶּרֶק ה׳, פְּסוּקִים כ״ח–ל״ב", "art": ["a simple wooden baby cradle with a soft blanket in a tent, no people, no text", "שת", "a sunlit path winding through green hills at dawn, no people, no text", "חנוך", "a big wooden ark floating on calm water, no people, no text", "נח"], "captions": ["שת", "חנוך", "נח"], "pic_answers": ["שת", "חנוך", "נח"], "image": "a5.jpg"}, {"prompt": "לְנֹחַ הָיוּ שְׁלוֹשָׁה...", "options": ["סוּסִים", "בָּנִים", "גְּמַלִּים"], "correct": 1, "explain": "׳וַיּוֹלֶד נֹחַ אֶת שֵׁם אֶת חָם וְאֶת יָפֶת׳.", "src": "פֶּרֶק ה׳, פָּסוּק ל״ב", "art": ["three horses grazing in a meadow, no people, no text", "סוסים", "three young men in simple tunics standing together near a tent, no people, no text", "בנים", "three camels resting by a palm tree, no people, no text", "גמלים"], "captions": ["סוסים", "בנים", "גמלים"], "pic_answers": ["סוסים", "בנים", "גמלים"], "image": "a6.jpg"}, {"prompt": "מִי הָלַךְ עִם ה׳?", "options": ["קַיִן", "מְתוּשֶׁלַח", "חֲנוֹךְ"], "correct": 2, "explain": "׳וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת הָאֱלֹהִים׳.", "src": "פֶּרֶק ה׳, פָּסוּק כ״ב", "art": ["a wooden plough standing in a brown field, no people, no text", "קין", "a huge ancient oak tree with a thick trunk, no people, no text", "מתושלח", "a sunlit path winding through green hills at dawn, no people, no text", "חנוך"], "captions": ["קין", "מתושלח", "חנוך"], "pic_answers": ["קין", "מתושלח", "חנוך"], "image": "a7.jpg"}, {"prompt": "מִי חַי הֲכִי הַרְבֵּה שָׁנִים?", "options": ["שֵׁת", "נֹחַ", "מְתוּשֶׁלַח"], "correct": 2, "explain": "מְתוּשֶׁלַח חַי תְּשַׁע מֵאוֹת שִׁשִּׁים וְתֵשַׁע שָׁנָה.", "src": "פֶּרֶק ה׳, פָּסוּק כ״ז", "art": ["a simple wooden baby cradle with a soft blanket in a tent, no people, no text", "שת", "a big wooden ark floating on calm water, no people, no text", "נח", "a huge ancient oak tree with a thick trunk, no people, no text", "מתושלח"], "captions": ["שת", "נח", "מתושלח"], "pic_answers": ["שת", "נח", "מתושלח"], "image": "a8.jpg"}]}, {"key": "b", "name": "רָמָה ב׳ – שְׁאֵלוֹת לַחֲכָמִים", "points": 8, "cards": [{"icon": "👶", "title": "שֵׁת", "text": "הָאָדָם יָדַע אֶת אִשְׁתּוֹ, וְנוֹלַד לָהֶם בֵּן. הֵם קָרְאוּ לוֹ ׳שֵׁת׳, ׳כִּי שָׁת לִי אֱלֹהִים זֶרַע אַחֵר תַּחַת הֶבֶל׳.", "mark": "׳כִּי שָׁת לִי אֱלֹהִים זֶרַע אַחֵר׳.", "ahava": "ה׳ נוֹתֵן לָנוּ שִׂמְחָה חֲדָשָׁה אַחֲרֵי עֶצֶב 💛", "src": "פֶּרֶק ד׳, פָּסוּק כ״ה"}, {"icon": "🙏", "title": "אֱנוֹשׁ", "text": "לְשֵׁת נוֹלַד בֵּן וּשְׁמוֹ אֱנוֹשׁ. כָּתוּב: ׳אָז הוּחַל לִקְרֹא בְּשֵׁם ה׳׳. הָאֲנָשִׁים הִתְחִילוּ לִקְרֹא לַה׳.", "mark": "׳אָז הוּחַל לִקְרֹא בְּשֵׁם ה׳׳.", "ahava": "אֲנִי קוֹרֵא בְּשֵׁם ה׳, וְהוּא שׁוֹמֵעַ אוֹתִי 💛", "src": "פֶּרֶק ד׳, פָּסוּק כ״ו"}, {"icon": "📜", "title": "סֵפֶר תּוֹלְדֹת אָדָם", "text": "׳זֶה סֵפֶר תּוֹלְדֹת אָדָם׳ – רְשִׁימָה שֶׁל הַדּוֹרוֹת. אָדָם חַי תְּשַׁע מֵאוֹת וּשְׁלֹשִׁים שָׁנָה. אַחֲרָיו בָּא שֵׁת, וְאַחֲרָיו אֱנוֹשׁ.", "mark": "סֵפֶר תּוֹלְדֹת אָדָם – דּוֹר אַחַר דּוֹר.", "ahava": "ה׳ שׁוֹמֵר עַל הָעוֹלָם דּוֹר אַחַר דּוֹר 💛", "src": "פֶּרֶק ה׳, פְּסוּקִים א׳–ח׳"}, {"icon": "🚶", "title": "חֲנוֹךְ", "text": "חֲנוֹךְ הוּא הַדּוֹר הַשְּׁבִיעִי. ׳וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת הָאֱלֹהִים׳ – הוּא הָלַךְ עִם ה׳ בְּדֶרֶךְ טוֹבָה. ׳כִּי לָקַח אֹתוֹ אֱלֹהִים׳.", "mark": "׳וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת הָאֱלֹהִים׳.", "ahava": "אֲנִי רוֹצֶה לָלֶכֶת עִם ה׳ כָּל יוֹם 💛", "src": "פֶּרֶק ה׳, פְּסוּקִים כ״א–כ״ד"}, {"icon": "🚢", "title": "נֹחַ", "text": "מְתוּשֶׁלַח חַי תְּשַׁע מֵאוֹת שִׁשִּׁים וְתֵשַׁע שָׁנָה – הַכִּי הַרְבֵּה. אַחֲרָיו בָּא לֶמֶךְ, וְלֶמֶךְ קָרָא לִבְנוֹ ׳נֹחַ׳. לְנֹחַ הָיוּ שְׁלוֹשָׁה בָּנִים: שֵׁם, חָם וָיֶפֶת.", "mark": "נֹחַ – הַדּוֹר הָעֲשִׂירִי. שְׁלוֹשָׁה בָּנִים.", "ahava": "ה׳ הֵכִין לָעוֹלָם אִישׁ טוֹב בְּשֵׁם נֹחַ 💛", "src": "פֶּרֶק ה׳, פְּסוּקִים כ״ז–ל״ב"}], "inspire": "בְּסֵפֶר תּוֹלְדֹת אָדָם כָּל שֵׁם הוּא דּוֹר חָשׁוּב. ׳אָז הוּחַל לִקְרֹא בְּשֵׁם ה׳׳ – וְגַם אֲנִי קוֹרֵא לַה׳ וְהוּא שׁוֹמֵעַ אוֹתִי.", "questions": [{"prompt": "מִי נוֹלַד לְאָדָם אַחֲרֵי הֶבֶל?", "options": ["שֵׁת, כִּי ה׳ נָתַן לָהֶם בֵּן אַחֵר", "קַיִן, כִּי ה׳ נָתַן לָהֶם בֵּן רִאשׁוֹן", "נֹחַ, כִּי ה׳ נָתַן לָהֶם בֵּן", "אֱנוֹשׁ, כִּי ה׳ נָתַן לָהֶם בֵּן רִאשׁוֹן בָּעוֹלָם"], "correct": 0, "explain": "׳וַתִּקְרָא אֶת שְׁמוֹ שֵׁת כִּי שָׁת לִי אֱלֹהִים זֶרַע אַחֵר׳.", "why": "אֲנִי מוֹדֶה לַה׳ עַל כָּל מַתָּנָה חֲדָשָׁה.", "src": "פֶּרֶק ד׳, פָּסוּק כ״ה", "art": "a simple wooden cradle with a soft blanket in a tent, no people, no text", "image": "b1.jpg"}, {"prompt": "מָה קָרָה בִּימֵי אֱנוֹשׁ בֶּן שֵׁת?", "options": ["הָאֲנָשִׁים הִתְחִילוּ לִקְרֹא בְּשֵׁם ה׳", "הָאֲנָשִׁים הִתְחִילוּ לִבְנוֹת תֵּבָה גְּדוֹלָה", "הָאֲנָשִׁים הִתְחִילוּ לִרְעוֹת צֹאן בַּשָּׂדֶה", "הֵם הִתְחִילוּ לָגוּר בְּאֹהָלִים גְּדוֹלִים"], "correct": 0, "explain": "׳אָז הוּחַל לִקְרֹא בְּשֵׁם ה׳׳.", "why": "גַּם אֲנִי קוֹרֵא לַה׳ בִּתְפִלָּה.", "src": "פֶּרֶק ד׳, פָּסוּק כ״ו", "art": "a quiet green hill at sunrise with golden light, no people, no text", "image": "b2.jpg"}, {"prompt": "מָה כָּתוּב עַל חֲנוֹךְ?", "options": ["הוּא בָּנָה אֶת הַתֵּבָה הַגְּדוֹלָה שֶׁל נֹחַ", "הוּא חַי הֲכִי הַרְבֵּה שָׁנִים בָּעוֹלָם", "הוּא הִתְהַלֵּךְ עִם הָאֱלֹהִים כָּל חַיָּיו", "הוּא הָיָה הָאָב שֶׁל נֹחַ"], "correct": 2, "explain": "׳וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת הָאֱלֹהִים׳.", "why": "גַּם אֲנִי רוֹצֶה לָלֶכֶת עִם ה׳ בַּדֶּרֶךְ הַטּוֹבָה.", "src": "פֶּרֶק ה׳, פָּסוּק כ״ב", "art": "a sunlit path winding through green hills at dawn, no people, no text", "image": "b3.jpg"}, {"prompt": "מִי חַי הֲכִי הַרְבֵּה שָׁנִים?", "options": ["אָדָם, שֶׁחַי תְּשַׁע מֵאוֹת וּשְׁלֹשִׁים שָׁנָה", "מְתוּשֶׁלַח, שֶׁחַי כִּמְעַט אֶלֶף שָׁנָה", "שֵׁת, שֶׁחַי תְּשַׁע מֵאוֹת וּשְׁתֵּים עֶשְׂרֵה שָׁנָה", "נֹחַ, שֶׁחַי שְׁלוֹשׁ מֵאוֹת שָׁנָה"], "correct": 1, "explain": "מְתוּשֶׁלַח חַי תְּשַׁע מֵאוֹת שִׁשִּׁים וְתֵשַׁע שָׁנָה.", "why": "ה׳ נוֹתֵן חַיִּים, וַאֲנִי אוֹמֵר לוֹ תּוֹדָה.", "src": "פֶּרֶק ה׳, פָּסוּק כ״ז", "art": "a huge ancient oak tree with a thick trunk in a sunny field, no people, no text", "image": "b4.jpg"}, {"prompt": "מִי הָיָה הַדּוֹר הָעֲשִׂירִי מֵאָדָם?", "options": ["שֵׁת, הַבֵּן שֶׁנּוֹלַד לְאָדָם אַחֲרֵי הֶבֶל", "חֲנוֹךְ, הָאִישׁ שֶׁהָלַךְ עִם ה׳", "נֹחַ, הַבֵּן שֶׁל לֶמֶךְ בֶּן מְתוּשֶׁלַח", "קֵינָן, הַבֵּן שֶׁל אֱנוֹשׁ בֶּן שֵׁת"], "correct": 2, "explain": "נֹחַ, בְּנוֹ שֶׁל לֶמֶךְ, הוּא הַדּוֹר הָעֲשִׂירִי.", "why": "בְּסוֹף הָרְשִׁימָה בָּא נֹחַ, וְהַסִּפּוּר מַמְשִׁיךְ אִתּוֹ.", "src": "פֶּרֶק ה׳, פְּסוּקִים כ״ח–כ״ט", "art": "a big wooden ark floating on calm water, no people, no text", "image": "b5.jpg"}, {"prompt": "מָה שְׁמוֹת שְׁלוֹשֶׁת בְּנֵי נֹחַ?", "options": ["שְׁלוֹשָׁה בָּנִים: שֵׁם, חָם וָיֶפֶת", "שְׁלוֹשָׁה בָּנִים: שֵׁת, אֱנוֹשׁ וְקֵינָן", "שְׁלוֹשָׁה בָּנִים: אָדָם, שֵׁת וְקַיִן", "שְׁלוֹשָׁה בָּנִים: חֲנוֹךְ, לֶמֶךְ וּמְתוּשֶׁלַח"], "correct": 0, "explain": "׳וַיּוֹלֶד נֹחַ אֶת שֵׁם אֶת חָם וְאֶת יָפֶת׳.", "why": "אֲנִי קוֹרֵא שֵׁמוֹת בְּדִיּוּק, כְּמוֹ שֶׁכָּתוּב.", "src": "פֶּרֶק ה׳, פָּסוּק ל״ב", "art": "three simple tents standing side by side in a green field, no people, no text", "image": "b6.jpg"}]}, {"key": "c", "name": "רָמָה ג׳ – מִשְׂחָקִים", "points": 10, "cards": [{"icon": "🔟", "title": "מֵאָדָם עַד נֹחַ", "text": "עֲשָׂרָה דּוֹרוֹת: אָדָם, שֵׁת, אֱנוֹשׁ, קֵינָן, מַהֲלַלְאֵל, יֶרֶד, חֲנוֹךְ, מְתוּשֶׁלַח, לֶמֶךְ, נֹחַ.", "mark": "עֲשָׂרָה דּוֹרוֹת.", "ahava": "ה׳ שׁוֹמֵר עַל הָעוֹלָם דּוֹר אַחַר דּוֹר 💛", "src": "פֶּרֶק ה׳, פְּסוּקִים ג׳–ל״ב"}, {"icon": "🚶", "title": "חֲנוֹךְ", "text": "׳וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת הָאֱלֹהִים׳. זֶה פָּסוּק קָצָר שֶׁאֶפְשָׁר לִזְכֹּר.", "mark": "חֲנוֹךְ הָלַךְ עִם ה׳.", "ahava": "אֲנִי רוֹצֶה לָלֶכֶת עִם ה׳ כָּל יוֹם 💛", "src": "פֶּרֶק ה׳, פָּסוּק כ״ב"}], "inspire": "כְּשֶׁאֲנִי קוֹרֵא שֵׁמוֹת בְּדִיּוּק וּמְסַדֵּר אוֹתָם, אֲנִי לוֹמֵד אֶת הַתּוֹרָה. ה׳ אוֹהֵב אוֹתָנוּ וְנוֹתֵן לָנוּ דּוֹר אַחַר דּוֹר.", "questions": [{"game": "order", "prompt": "סַדְּרוּ אֶת הַדּוֹרוֹת, לְפִי הַסֵּדֶר", "say": "מֵאָדָם", "target": {"icon": "🔟", "label": "הַדּוֹרוֹת הָרִאשׁוֹנִים"}, "items": ["אָדָם", "שֵׁת", "אֱנוֹשׁ", "קֵינָן", "מַהֲלַלְאֵל"], "explain": "אָדָם, שֵׁת, אֱנוֹשׁ, קֵינָן, מַהֲלַלְאֵל – כָּךְ כָּתוּב בְּסֵפֶר תּוֹלְדֹת אָדָם.", "src": "פֶּרֶק ה׳, פְּסוּקִים ג׳–י״ז"}, {"game": "match", "prompt": "חַבְּרוּ: מִי עָשָׂה מָה?", "say": "הַשֵּׁם וְהַמַּעֲשֶׂה", "pairs": [["חֲנוֹךְ", "הִתְהַלֵּךְ עִם ה׳"], ["מְתוּשֶׁלַח", "חַי הֲכִי הַרְבֵּה"], ["שֵׁת", "נוֹלַד אַחֲרֵי הֶבֶל"], ["נֹחַ", "הַדּוֹר הָעֲשִׂירִי"]], "explain": "חֲנוֹךְ הָלַךְ עִם ה׳, מְתוּשֶׁלַח חַי הֲכִי הַרְבֵּה, שֵׁת נוֹלַד אַחֲרֵי הֶבֶל, וְנֹחַ הוּא הַדּוֹר הָעֲשִׂירִי.", "src": "פֶּרֶק ד׳ כ״ה; פֶּרֶק ה׳, פְּסוּקִים כ״ב, כ״ז, כ״ט"}, {"game": "truefalse", "prompt": "נָכוֹן אוֹ לֹא נָכוֹן?", "labels": ["נָכוֹן", "לֹא נָכוֹן"], "items": [{"t": "שֵׁת נוֹלַד אַחֲרֵי הֶבֶל", "ok": true}, {"t": "מֵאָדָם עַד נֹחַ יֵשׁ שְׁלוֹשָׁה דּוֹרוֹת", "ok": false}, {"t": "חֲנוֹךְ הִתְהַלֵּךְ עִם הָאֱלֹהִים", "ok": true}, {"t": "לְנֹחַ הָיוּ שְׁלוֹשָׁה בָּנִים", "ok": true}, {"t": "נֹחַ הוּא הַדּוֹר הָרִאשׁוֹן", "ok": false}], "explain": "מֵאָדָם עַד נֹחַ יֵשׁ עֲשָׂרָה דּוֹרוֹת. נֹחַ הוּא הַדּוֹר הָעֲשִׂירִי, וְאָדָם הוּא הָרִאשׁוֹן.", "src": "פֶּרֶק ד׳ כ״ה; פֶּרֶק ה׳, פְּסוּקִים ג׳–ל״ב"}, {"game": "sort", "prompt": "מַיְּנוּ: לִפְנֵי אוֹ אַחֲרֵי חֲנוֹךְ?", "say": "בְּסֵפֶר תּוֹלְדֹת אָדָם", "bins": [{"icon": "⬅️", "label": "לִפְנֵי חֲנוֹךְ"}, {"icon": "➡️", "label": "אַחֲרֵי חֲנוֹךְ"}], "items": [{"t": "אָדָם", "bin": 0}, {"t": "שֵׁת", "bin": 0}, {"t": "אֱנוֹשׁ", "bin": 0}, {"t": "מְתוּשֶׁלַח", "bin": 1}, {"t": "לֶמֶךְ", "bin": 1}, {"t": "נֹחַ", "bin": 1}], "explain": "חֲנוֹךְ הוּא הַדּוֹר הַשְּׁבִיעִי. אַחֲרָיו: מְתוּשֶׁלַח, לֶמֶךְ וְנֹחַ.", "src": "פֶּרֶק ה׳, פְּסוּקִים ג׳–ל״ב"}, {"game": "verse", "prompt": "הַשְׁלִימוּ אֶת הַפָּסוּק", "say": "פֶּרֶק ה׳, פָּסוּק כ״ב", "text": "וַיִּתְהַלֵּךְ [חֲנוֹךְ] אֶת־[הָאֱלֹהִים].", "extra": ["נֹחַ", "הַצֹּאן"], "explain": "׳וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת הָאֱלֹהִים׳.", "src": "פֶּרֶק ה׳, פָּסוּק כ״ב"}]}], "book": "חֻמַּשׁ בְּרֵאשִׁית", "sefer": ""};
+var QUIZ = {"id": "bereshit-a-11", "num": 11, "series": "bereshit-a", "title": "מִשֵּׁת עַד נֹחַ", "subtitle": "שֵׁת, אֱנוֹשׁ, חֲנוֹךְ וַעֲשָׂרָה דּוֹרוֹת", "source": "חֻמַּשׁ בְּרֵאשִׁית, פֶּרֶק ד׳, פְּסוּקִים כ״ה–כ״ו; פֶּרֶק ה׳", "parasha": "בְּרֵאשִׁית", "theme": ["#4a235a", "#85c1e9", "#f5b041"], "verse": "וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת־הָאֱלֹהִים", "think": ["מִי נוֹלַד אַחֲרֵי הֶבֶל?", "מָה כָּתוּב עַל חֲנוֹךְ?", "אֵיךְ אֲנִי הוֹלֵךְ עִם ה׳ הַשָּׁבוּעַ?"], "levels": [{"key": "a", "name": "רָמָה א׳ – שֵׁת, חֲנוֹךְ וְנֹחַ", "points": 5, "cards": [{"icon": "👶", "title": "שֵׁת", "text": "אָדָם וְחַוָּה קָרְאוּ לַבֵּן שֶׁנּוֹלַד אַחֲרֵי הֶבֶל: ׳שֵׁת׳. ׳כִּי שָׁת לִי אֱלֹהִים זֶרַע אַחֵר׳.", "mark": "הַבֵּן שֶׁנּוֹלַד אַחֲרֵי הֶבֶל – שֵׁת.", "ahava": "ה׳ נוֹתֵן לָנוּ שִׂמְחָה חֲדָשָׁה אַחֲרֵי עֶצֶב 💛", "src": "פֶּרֶק ד׳, פָּסוּק כ״ה"}, {"icon": "🙏", "title": "אֱנוֹשׁ", "text": "לְשֵׁת נוֹלַד בֵּן, ׳אֱנוֹשׁ׳. ׳אָז הוּחַל לִקְרֹא בְּשֵׁם ה׳׳.", "mark": "׳אָז הוּחַל לִקְרֹא בְּשֵׁם ה׳׳.", "ahava": "אֲנִי קוֹרֵא בְּשֵׁם ה׳, וְהוּא שׁוֹמֵעַ אוֹתִי 💛", "src": "פֶּרֶק ד׳, פָּסוּק כ״ו"}, {"icon": "📜", "title": "סֵפֶר תּוֹלְדֹת אָדָם", "text": "׳זֶה סֵפֶר תּוֹלְדֹת אָדָם׳. אָדָם הָיָה הָאִישׁ הָרִאשׁוֹן.", "mark": "׳זֶה סֵפֶר תּוֹלְדֹת אָדָם׳.", "ahava": "ה׳ בָּרָא אֶת הָאָדָם בְּאַהֲבָה 💛", "src": "פֶּרֶק ה׳, פָּסוּק א׳"}, {"icon": "🔟", "title": "עֲשָׂרָה דּוֹרוֹת", "text": "מֵאָדָם עַד נֹחַ יֵשׁ עֲשָׂרָה דּוֹרוֹת: אָדָם, שֵׁת, אֱנוֹשׁ, קֵינָן, מַהֲלַלְאֵל, יֶרֶד, חֲנוֹךְ, מְתוּשֶׁלַח, לֶמֶךְ, נֹחַ.", "mark": "עֲשָׂרָה דּוֹרוֹת, מֵאָדָם עַד נֹחַ.", "ahava": "ה׳ שׁוֹמֵר עַל הָעוֹלָם דּוֹר אַחַר דּוֹר 💛", "src": "פֶּרֶק ה׳, פְּסוּקִים ג׳–ל״ב"}, {"icon": "🚶", "title": "חֲנוֹךְ", "text": "׳וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת הָאֱלֹהִים׳. חֲנוֹךְ הָלַךְ עִם ה׳ בְּדֶרֶךְ טוֹבָה.", "mark": "חֲנוֹךְ הָלַךְ עִם ה׳.", "ahava": "אֲנִי רוֹצֶה לָלֶכֶת עִם ה׳ כָּל יוֹם 💛", "src": "פֶּרֶק ה׳, פְּסוּקִים כ״ב–כ״ד"}, {"icon": "🌳", "title": "מְתוּשֶׁלַח", "text": "מְתוּשֶׁלַח חַי תְּשַׁע מֵאוֹת שִׁשִּׁים וְתֵשַׁע שָׁנָה. הוּא חַי הֲכִי הַרְבֵּה שָׁנִים.", "mark": "מְתוּשֶׁלַח חַי הֲכִי הַרְבֵּה שָׁנִים.", "ahava": "ה׳ נוֹתֵן חַיִּים, וַאֲנִי אוֹמֵר לוֹ תּוֹדָה 💛", "src": "פֶּרֶק ה׳, פָּסוּק כ״ז"}, {"icon": "🚢", "title": "נֹחַ", "text": "לֶמֶךְ קָרָא לִבְנוֹ ׳נֹחַ׳. נֹחַ הוּא הַדּוֹר הָעֲשִׂירִי.", "mark": "נֹחַ – הַדּוֹר הָעֲשִׂירִי.", "ahava": "ה׳ הֵכִין לָעוֹלָם אִישׁ טוֹב בְּשֵׁם נֹחַ 💛", "src": "פֶּרֶק ה׳, פְּסוּקִים כ״ח–כ״ט"}, {"icon": "👦", "title": "שְׁלוֹשָׁה בָּנִים", "text": "לְנֹחַ הָיוּ שְׁלוֹשָׁה בָּנִים: שֵׁם, חָם וָיֶפֶת.", "mark": "שֵׁם, חָם וָיֶפֶת.", "ahava": "ה׳ נוֹתֵן לִי מִשְׁפָּחָה לֶאֱהֹב 💛", "src": "פֶּרֶק ה׳, פָּסוּק ל״ב"}], "inspire": "ה׳ שׁוֹמֵר עַל הָעוֹלָם דּוֹר אַחַר דּוֹר. חֲנוֹךְ הָלַךְ עִם ה׳, וְגַם אֲנִי יָכוֹל לָלֶכֶת עִם ה׳ כָּל יוֹם, כִּי הוּא אוֹהֵב אוֹתָנוּ.", "questions": [{"prompt": "מִי נוֹלַד אַחֲרֵי הֶבֶל?", "options": ["שֵׁת", "קַיִן", "נֹחַ"], "correct": 0, "explain": "׳וַתִּקְרָא אֶת שְׁמוֹ שֵׁת כִּי שָׁת לִי אֱלֹהִים זֶרַע אַחֵר תַּחַת הֶבֶל׳.", "src": "פֶּרֶק ד׳, פָּסוּק כ״ה", "pic_answers": ["שת", "קין", "נח"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-11-a1.webp", "zones": [[5, 90.5, 65.5, 96.7], [5, 90.5, 34.3, 65.5], [5, 90.5, 3.1, 34.3]], "picOnly": true}, {"prompt": "כַּמָּה דּוֹרוֹת מֵאָדָם עַד נֹחַ?", "options": ["שְׁלוֹשָׁה", "עֲשָׂרָה", "שֵׁשׁ"], "correct": 1, "explain": "מֵאָדָם עַד נֹחַ יֵשׁ עֲשָׂרָה דּוֹרוֹת.", "src": "פֶּרֶק ה׳, פְּסוּקִים ג׳–ל״ב", "pic_answers": ["שלושה", "עשרה", "שש"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-11-a2.webp", "zones": [[5, 93.0, 65.93, 97.7], [5, 93.0, 34.17, 65.93], [5, 93.0, 2.4, 34.17]], "picOnly": true}, {"prompt": "זֶה... תּוֹלְדֹת אָדָם", "options": ["סֵפֶר", "שֻׁלְחָן", "כִּסֵּא"], "correct": 0, "explain": "׳זֶה סֵפֶר תּוֹלְדֹת אָדָם׳.", "src": "פֶּרֶק ה׳, פָּסוּק א׳", "pic_answers": ["ספר", "שולחן", "כסא"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-11-a3.webp", "zones": [[5, 91.5, 65.6, 97.1], [5, 91.5, 34.1, 65.6], [5, 91.5, 2.6, 34.1]], "picOnly": true}, {"prompt": "מִי הָיָה הָאִישׁ הָרִאשׁוֹן?", "options": ["קַיִן", "אָדָם", "נֹחַ"], "correct": 1, "explain": "אָדָם הָיָה הָאִישׁ הָרִאשׁוֹן. ׳זֶה סֵפֶר תּוֹלְדֹת אָדָם׳.", "src": "פֶּרֶק ה׳, פָּסוּק א׳", "pic_answers": ["קין", "אדם", "נח"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-11-a4.webp", "zones": [[5, 86.3, 65.57, 96.8], [5, 86.3, 34.33, 65.57], [5, 86.3, 3.1, 34.33]], "picOnly": true}, {"prompt": "מִי הָיָה הַדּוֹר הָעֲשִׂירִי?", "options": ["שֵׁת", "חֲנוֹךְ", "נֹחַ"], "correct": 2, "explain": "נֹחַ הוּא הַדּוֹר הָעֲשִׂירִי מֵאָדָם.", "src": "פֶּרֶק ה׳, פְּסוּקִים כ״ח–ל״ב", "pic_answers": ["שת", "חנוך", "נח"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-11-a5.webp", "zones": [[5, 90.3, 66.0, 98.1], [5, 90.3, 33.9, 66.0], [5, 90.3, 1.8, 33.9]], "picOnly": true}, {"prompt": "לְנֹחַ הָיוּ שְׁלוֹשָׁה...", "options": ["סוּסִים", "בָּנִים", "גְּמַלִּים"], "correct": 1, "explain": "׳וַיּוֹלֶד נֹחַ אֶת שֵׁם אֶת חָם וְאֶת יָפֶת׳.", "src": "פֶּרֶק ה׳, פָּסוּק ל״ב", "pic_answers": ["סוסים", "בנים", "גמלים"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-11-a6.webp", "zones": [[5, 89.0, 65.9, 97.8], [5, 89.0, 34.0, 65.9], [5, 89.0, 2.1, 34.0]], "picOnly": true}, {"prompt": "מִי הָלַךְ עִם ה׳?", "options": ["קַיִן", "מְתוּשֶׁלַח", "חֲנוֹךְ"], "correct": 2, "explain": "׳וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת הָאֱלֹהִים׳.", "src": "פֶּרֶק ה׳, פָּסוּק כ״ב", "pic_answers": ["קין", "מתושלח", "חנוך"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-11-a7.webp", "zones": [[5, 97.6, 66.0, 98.1], [5, 97.6, 33.9, 66.0], [5, 97.6, 1.8, 33.9]], "picOnly": true}, {"prompt": "מִי חַי הֲכִי הַרְבֵּה שָׁנִים?", "options": ["שֵׁת", "נֹחַ", "מְתוּשֶׁלַח"], "correct": 2, "explain": "מְתוּשֶׁלַח חַי תְּשַׁע מֵאוֹת שִׁשִּׁים וְתֵשַׁע שָׁנָה.", "src": "פֶּרֶק ה׳, פָּסוּק כ״ז", "pic_answers": ["שת", "נח", "מתושלח"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-11-a8.webp", "zones": [[5, 86.4, 65.4, 96.3], [5, 86.4, 34.5, 65.4], [5, 86.4, 3.6, 34.5]], "picOnly": true}]}, {"key": "b", "name": "רָמָה ב׳ – שְׁאֵלוֹת לַחֲכָמִים", "points": 8, "cards": [{"icon": "👶", "title": "שֵׁת", "text": "הָאָדָם יָדַע אֶת אִשְׁתּוֹ, וְנוֹלַד לָהֶם בֵּן. הֵם קָרְאוּ לוֹ ׳שֵׁת׳, ׳כִּי שָׁת לִי אֱלֹהִים זֶרַע אַחֵר תַּחַת הֶבֶל׳.", "mark": "׳כִּי שָׁת לִי אֱלֹהִים זֶרַע אַחֵר׳.", "ahava": "ה׳ נוֹתֵן לָנוּ שִׂמְחָה חֲדָשָׁה אַחֲרֵי עֶצֶב 💛", "src": "פֶּרֶק ד׳, פָּסוּק כ״ה"}, {"icon": "🙏", "title": "אֱנוֹשׁ", "text": "לְשֵׁת נוֹלַד בֵּן וּשְׁמוֹ אֱנוֹשׁ. כָּתוּב: ׳אָז הוּחַל לִקְרֹא בְּשֵׁם ה׳׳. הָאֲנָשִׁים הִתְחִילוּ לִקְרֹא לַה׳.", "mark": "׳אָז הוּחַל לִקְרֹא בְּשֵׁם ה׳׳.", "ahava": "אֲנִי קוֹרֵא בְּשֵׁם ה׳, וְהוּא שׁוֹמֵעַ אוֹתִי 💛", "src": "פֶּרֶק ד׳, פָּסוּק כ״ו"}, {"icon": "📜", "title": "סֵפֶר תּוֹלְדֹת אָדָם", "text": "׳זֶה סֵפֶר תּוֹלְדֹת אָדָם׳ – רְשִׁימָה שֶׁל הַדּוֹרוֹת. אָדָם חַי תְּשַׁע מֵאוֹת וּשְׁלֹשִׁים שָׁנָה. אַחֲרָיו בָּא שֵׁת, וְאַחֲרָיו אֱנוֹשׁ.", "mark": "סֵפֶר תּוֹלְדֹת אָדָם – דּוֹר אַחַר דּוֹר.", "ahava": "ה׳ שׁוֹמֵר עַל הָעוֹלָם דּוֹר אַחַר דּוֹר 💛", "src": "פֶּרֶק ה׳, פְּסוּקִים א׳–ח׳"}, {"icon": "🚶", "title": "חֲנוֹךְ", "text": "חֲנוֹךְ הוּא הַדּוֹר הַשְּׁבִיעִי. ׳וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת הָאֱלֹהִים׳ – הוּא הָלַךְ עִם ה׳ בְּדֶרֶךְ טוֹבָה. ׳כִּי לָקַח אֹתוֹ אֱלֹהִים׳.", "mark": "׳וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת הָאֱלֹהִים׳.", "ahava": "אֲנִי רוֹצֶה לָלֶכֶת עִם ה׳ כָּל יוֹם 💛", "src": "פֶּרֶק ה׳, פְּסוּקִים כ״א–כ״ד"}, {"icon": "🚢", "title": "נֹחַ", "text": "מְתוּשֶׁלַח חַי תְּשַׁע מֵאוֹת שִׁשִּׁים וְתֵשַׁע שָׁנָה – הַכִּי הַרְבֵּה. אַחֲרָיו בָּא לֶמֶךְ, וְלֶמֶךְ קָרָא לִבְנוֹ ׳נֹחַ׳. לְנֹחַ הָיוּ שְׁלוֹשָׁה בָּנִים: שֵׁם, חָם וָיֶפֶת.", "mark": "נֹחַ – הַדּוֹר הָעֲשִׂירִי. שְׁלוֹשָׁה בָּנִים.", "ahava": "ה׳ הֵכִין לָעוֹלָם אִישׁ טוֹב בְּשֵׁם נֹחַ 💛", "src": "פֶּרֶק ה׳, פְּסוּקִים כ״ז–ל״ב"}], "inspire": "בְּסֵפֶר תּוֹלְדֹת אָדָם כָּל שֵׁם הוּא דּוֹר חָשׁוּב. ׳אָז הוּחַל לִקְרֹא בְּשֵׁם ה׳׳ – וְגַם אֲנִי קוֹרֵא לַה׳ וְהוּא שׁוֹמֵעַ אוֹתִי.", "questions": [{"prompt": "מִי נוֹלַד לְאָדָם אַחֲרֵי הֶבֶל?", "options": ["שֵׁת, כִּי ה׳ נָתַן לָהֶם בֵּן אַחֵר", "קַיִן, כִּי ה׳ נָתַן לָהֶם בֵּן רִאשׁוֹן", "נֹחַ, כִּי ה׳ נָתַן לָהֶם בֵּן", "אֱנוֹשׁ, כִּי ה׳ נָתַן לָהֶם בֵּן רִאשׁוֹן בָּעוֹלָם"], "correct": 0, "explain": "׳וַתִּקְרָא אֶת שְׁמוֹ שֵׁת כִּי שָׁת לִי אֱלֹהִים זֶרַע אַחֵר׳.", "why": "אֲנִי מוֹדֶה לַה׳ עַל כָּל מַתָּנָה חֲדָשָׁה.", "src": "פֶּרֶק ד׳, פָּסוּק כ״ה", "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-11-b1.webp"}, {"prompt": "מָה קָרָה בִּימֵי אֱנוֹשׁ בֶּן שֵׁת?", "options": ["הָאֲנָשִׁים הִתְחִילוּ לִקְרֹא בְּשֵׁם ה׳", "הָאֲנָשִׁים הִתְחִילוּ לִבְנוֹת תֵּבָה גְּדוֹלָה", "הָאֲנָשִׁים הִתְחִילוּ לִרְעוֹת צֹאן בַּשָּׂדֶה", "הֵם הִתְחִילוּ לָגוּר בְּאֹהָלִים גְּדוֹלִים"], "correct": 0, "explain": "׳אָז הוּחַל לִקְרֹא בְּשֵׁם ה׳׳.", "why": "גַּם אֲנִי קוֹרֵא לַה׳ בִּתְפִלָּה.", "src": "פֶּרֶק ד׳, פָּסוּק כ״ו", "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-11-b2.webp"}, {"prompt": "מָה כָּתוּב עַל חֲנוֹךְ?", "options": ["הוּא בָּנָה אֶת הַתֵּבָה הַגְּדוֹלָה שֶׁל נֹחַ", "הוּא חַי הֲכִי הַרְבֵּה שָׁנִים בָּעוֹלָם", "הוּא הִתְהַלֵּךְ עִם הָאֱלֹהִים כָּל חַיָּיו", "הוּא הָיָה הָאָב שֶׁל נֹחַ"], "correct": 2, "explain": "׳וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת הָאֱלֹהִים׳.", "why": "גַּם אֲנִי רוֹצֶה לָלֶכֶת עִם ה׳ בַּדֶּרֶךְ הַטּוֹבָה.", "src": "פֶּרֶק ה׳, פָּסוּק כ״ב", "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-11-b3.webp"}, {"prompt": "מִי חַי הֲכִי הַרְבֵּה שָׁנִים?", "options": ["אָדָם, שֶׁחַי תְּשַׁע מֵאוֹת וּשְׁלֹשִׁים שָׁנָה", "מְתוּשֶׁלַח, שֶׁחַי כִּמְעַט אֶלֶף שָׁנָה", "שֵׁת, שֶׁחַי תְּשַׁע מֵאוֹת וּשְׁתֵּים עֶשְׂרֵה שָׁנָה", "נֹחַ, שֶׁחַי שְׁלוֹשׁ מֵאוֹת שָׁנָה"], "correct": 1, "explain": "מְתוּשֶׁלַח חַי תְּשַׁע מֵאוֹת שִׁשִּׁים וְתֵשַׁע שָׁנָה.", "why": "ה׳ נוֹתֵן חַיִּים, וַאֲנִי אוֹמֵר לוֹ תּוֹדָה.", "src": "פֶּרֶק ה׳, פָּסוּק כ״ז", "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-11-b4.webp"}, {"prompt": "מִי הָיָה הַדּוֹר הָעֲשִׂירִי מֵאָדָם?", "options": ["שֵׁת, הַבֵּן שֶׁנּוֹלַד לְאָדָם אַחֲרֵי הֶבֶל", "חֲנוֹךְ, הָאִישׁ שֶׁהָלַךְ עִם ה׳", "נֹחַ, הַבֵּן שֶׁל לֶמֶךְ בֶּן מְתוּשֶׁלַח", "קֵינָן, הַבֵּן שֶׁל אֱנוֹשׁ בֶּן שֵׁת"], "correct": 2, "explain": "נֹחַ, בְּנוֹ שֶׁל לֶמֶךְ, הוּא הַדּוֹר הָעֲשִׂירִי.", "why": "בְּסוֹף הָרְשִׁימָה בָּא נֹחַ, וְהַסִּפּוּר מַמְשִׁיךְ אִתּוֹ.", "src": "פֶּרֶק ה׳, פְּסוּקִים כ״ח–כ״ט", "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-11-b5.webp"}, {"prompt": "מָה שְׁמוֹת שְׁלוֹשֶׁת בְּנֵי נֹחַ?", "options": ["שְׁלוֹשָׁה בָּנִים: שֵׁם, חָם וָיֶפֶת", "שְׁלוֹשָׁה בָּנִים: שֵׁת, אֱנוֹשׁ וְקֵינָן", "שְׁלוֹשָׁה בָּנִים: אָדָם, שֵׁת וְקַיִן", "שְׁלוֹשָׁה בָּנִים: חֲנוֹךְ, לֶמֶךְ וּמְתוּשֶׁלַח"], "correct": 0, "explain": "׳וַיּוֹלֶד נֹחַ אֶת שֵׁם אֶת חָם וְאֶת יָפֶת׳.", "why": "אֲנִי קוֹרֵא שֵׁמוֹת בְּדִיּוּק, כְּמוֹ שֶׁכָּתוּב.", "src": "פֶּרֶק ה׳, פָּסוּק ל״ב", "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-11-b6.webp"}]}, {"key": "c", "name": "רָמָה ג׳ – מִשְׂחָקִים", "points": 10, "cards": [{"icon": "🔟", "title": "מֵאָדָם עַד נֹחַ", "text": "עֲשָׂרָה דּוֹרוֹת: אָדָם, שֵׁת, אֱנוֹשׁ, קֵינָן, מַהֲלַלְאֵל, יֶרֶד, חֲנוֹךְ, מְתוּשֶׁלַח, לֶמֶךְ, נֹחַ.", "mark": "עֲשָׂרָה דּוֹרוֹת.", "ahava": "ה׳ שׁוֹמֵר עַל הָעוֹלָם דּוֹר אַחַר דּוֹר 💛", "src": "פֶּרֶק ה׳, פְּסוּקִים ג׳–ל״ב"}, {"icon": "🚶", "title": "חֲנוֹךְ", "text": "׳וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת הָאֱלֹהִים׳. זֶה פָּסוּק קָצָר שֶׁאֶפְשָׁר לִזְכֹּר.", "mark": "חֲנוֹךְ הָלַךְ עִם ה׳.", "ahava": "אֲנִי רוֹצֶה לָלֶכֶת עִם ה׳ כָּל יוֹם 💛", "src": "פֶּרֶק ה׳, פָּסוּק כ״ב"}], "inspire": "כְּשֶׁאֲנִי קוֹרֵא שֵׁמוֹת בְּדִיּוּק וּמְסַדֵּר אוֹתָם, אֲנִי לוֹמֵד אֶת הַתּוֹרָה. ה׳ אוֹהֵב אוֹתָנוּ וְנוֹתֵן לָנוּ דּוֹר אַחַר דּוֹר.", "questions": [{"game": "order", "prompt": "סַדְּרוּ אֶת הַדּוֹרוֹת, לְפִי הַסֵּדֶר", "say": "מֵאָדָם", "target": {"icon": "🔟", "label": "הַדּוֹרוֹת הָרִאשׁוֹנִים"}, "items": ["אָדָם", "שֵׁת", "אֱנוֹשׁ", "קֵינָן", "מַהֲלַלְאֵל"], "explain": "אָדָם, שֵׁת, אֱנוֹשׁ, קֵינָן, מַהֲלַלְאֵל – כָּךְ כָּתוּב בְּסֵפֶר תּוֹלְדֹת אָדָם.", "src": "פֶּרֶק ה׳, פְּסוּקִים ג׳–י״ז"}, {"game": "match", "prompt": "חַבְּרוּ: מִי עָשָׂה מָה?", "say": "הַשֵּׁם וְהַמַּעֲשֶׂה", "pairs": [["חֲנוֹךְ", "הִתְהַלֵּךְ עִם ה׳"], ["מְתוּשֶׁלַח", "חַי הֲכִי הַרְבֵּה"], ["שֵׁת", "נוֹלַד אַחֲרֵי הֶבֶל"], ["נֹחַ", "הַדּוֹר הָעֲשִׂירִי"]], "explain": "חֲנוֹךְ הָלַךְ עִם ה׳, מְתוּשֶׁלַח חַי הֲכִי הַרְבֵּה, שֵׁת נוֹלַד אַחֲרֵי הֶבֶל, וְנֹחַ הוּא הַדּוֹר הָעֲשִׂירִי.", "src": "פֶּרֶק ד׳ כ״ה; פֶּרֶק ה׳, פְּסוּקִים כ״ב, כ״ז, כ״ט"}, {"game": "truefalse", "prompt": "נָכוֹן אוֹ לֹא נָכוֹן?", "labels": ["נָכוֹן", "לֹא נָכוֹן"], "items": [{"t": "שֵׁת נוֹלַד אַחֲרֵי הֶבֶל", "ok": true}, {"t": "מֵאָדָם עַד נֹחַ יֵשׁ שְׁלוֹשָׁה דּוֹרוֹת", "ok": false}, {"t": "חֲנוֹךְ הִתְהַלֵּךְ עִם הָאֱלֹהִים", "ok": true}, {"t": "לְנֹחַ הָיוּ שְׁלוֹשָׁה בָּנִים", "ok": true}, {"t": "נֹחַ הוּא הַדּוֹר הָרִאשׁוֹן", "ok": false}], "explain": "מֵאָדָם עַד נֹחַ יֵשׁ עֲשָׂרָה דּוֹרוֹת. נֹחַ הוּא הַדּוֹר הָעֲשִׂירִי, וְאָדָם הוּא הָרִאשׁוֹן.", "src": "פֶּרֶק ד׳ כ״ה; פֶּרֶק ה׳, פְּסוּקִים ג׳–ל״ב"}, {"game": "sort", "prompt": "מַיְּנוּ: לִפְנֵי אוֹ אַחֲרֵי חֲנוֹךְ?", "say": "בְּסֵפֶר תּוֹלְדֹת אָדָם", "bins": [{"icon": "⬅️", "label": "לִפְנֵי חֲנוֹךְ"}, {"icon": "➡️", "label": "אַחֲרֵי חֲנוֹךְ"}], "items": [{"t": "אָדָם", "bin": 0}, {"t": "שֵׁת", "bin": 0}, {"t": "אֱנוֹשׁ", "bin": 0}, {"t": "מְתוּשֶׁלַח", "bin": 1}, {"t": "לֶמֶךְ", "bin": 1}, {"t": "נֹחַ", "bin": 1}], "explain": "חֲנוֹךְ הוּא הַדּוֹר הַשְּׁבִיעִי. אַחֲרָיו: מְתוּשֶׁלַח, לֶמֶךְ וְנֹחַ.", "src": "פֶּרֶק ה׳, פְּסוּקִים ג׳–ל״ב"}, {"game": "verse", "prompt": "הַשְׁלִימוּ אֶת הַפָּסוּק", "say": "פֶּרֶק ה׳, פָּסוּק כ״ב", "text": "וַיִּתְהַלֵּךְ [חֲנוֹךְ] אֶת־[הָאֱלֹהִים].", "extra": ["נֹחַ", "הַצֹּאן"], "explain": "׳וַיִּתְהַלֵּךְ חֲנוֹךְ אֶת הָאֱלֹהִים׳.", "src": "פֶּרֶק ה׳, פָּסוּק כ״ב"}]}], "book": "חֻמַּשׁ בְּרֵאשִׁית", "sefer": ""};
 // שורת מקור ("פֶּרֶק ב׳, הֲלָכָה א׳; פֶּרֶק ג׳, הֲלָכָה א׳") -> קישורים להלכה בספר המלא, בלשונית חדשה
 function hebNum(s){var v={"א":1,"ב":2,"ג":3,"ד":4,"ה":5,"ו":6,"ז":7,"ח":8,"ט":9,"י":10,"כ":20,"ך":20,"ל":30,"מ":40,"ם":40,"נ":50,"ן":50,"ס":60,"ע":70,"פ":80,"ף":80,"צ":90,"ץ":90,"ק":100,"ר":200,"ש":300,"ת":400};
   var n=0;String(s||"").replace(/[^א-ת]/g,"").split("").forEach(function(c){n+=v[c]||0});return n;}
@@ -771,7 +798,9 @@ function soundStreak(n) {
   var k = Math.min(n + 1, 9), base = Math.min(n - 1, 3);
   tone(SCALE.slice(base, base + k), Math.max(0.07, 0.14 - n * 0.008));
 }
-function soundBad() { tone([330, 262], 0.18); }
+function soundBad() { tone([440, 392], 0.15); }   // צְלִיל רַךְ – טָעוּת לֹא מַעֲנִישָׁה (עֶקְרוֹנוֹת הַקֶּשֶׁב, 16.11)
+function soundDrum() { tone([196, 196, 208, 196, 220, 208, 233, 220, 247, 262, 294], 0.14); }   // תֹּף מִתְגַּלְגֵּל וְעוֹלֶה
+function soundGold() { tone([1047, 1319, 1568, 2093], 0.09); }
 function soundWin() { tone([523, 659, 784, 1047, 784, 659], 0.14); }
 /* מַנְגִּינַת סִיּוּם שְׁלוֹשֶׁת הַשְּׁלַבִּים (כ-5 שְׁנִיּוֹת): מַנְגִּינָה עִם הַרְמוֹנְיָה וְאַקּוֹרְד סִיּוּם */
 function song(seq) {
@@ -1008,6 +1037,25 @@ function init() {
   $("toQuiz").onclick = startLevelQuestions;
   $("qNext").onclick = nextQuestion;
   $("again").onclick = function () { location.reload(); };
+  goFromBook(run);
+}
+/* "עַכְשָׁו – לַחִידוֹן!" בְּסוֹף הַסֵּפֶר הַמְדַפְדֵּף (בַּקָּשַׁת הַמִּשְׁתַּמֵּשׁ, 16.11.2026): פּוֹתְחִים יָשָׁר אֶת שְׁאֵלוֹת הָרָמָה
+   בִּמְקוֹם מָסַךְ הַפְּתִיחָה עִם "יֵשׁ חִידוֹן שֶׁעוֹד לֹא נִגְמַר". הָרָמָה מִ-#go=<key>, וּבַסְּפָרִים הַיְּשָׁנִים – מִשֵּׁם הַסֵּפֶר שֶׁבָּא מִמֶּנּוּ (books/<id>-<key>.html). */
+function goFromBook(run) {
+  var h = /[#&]go=([a-z])/.exec(location.hash), key = h && h[1], ref = document.referrer || "";
+  if (h) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
+  else {
+    var r = /\/books\/([\w-]+)-([a-z])\.html/.exec(ref);
+    if (!r || r[1] !== QUIZ.id) return;
+    try { if (sessionStorage.getItem("hq-go-" + QUIZ.id) === ref) return; sessionStorage.setItem("hq-go-" + QUIZ.id, ref); } catch (e) {}   // רִעֲנוּן / "שׁוּב" – לֹא קוֹפְצִים שׁוּב
+    key = r[2];
+  }
+  var k = -1;
+  for (var i = 0; i < QUIZ.levels.length; i++) if (QUIZ.levels[i].key === key) k = i;
+  if (k < 0) return;
+  if (run && run.lv === k) { resumeRun(run); if (run.phase !== "quiz") startLevelQuestions(); return; }
+  if (k === 0) start(); else if (LV_ST && LV_ST.r >= k) startAt(k, LV_ST); else return;
+  if ($("sStudy").classList.contains("on")) startLevelQuestions();
 }
 function loadMyPoints() {
   var m = readMe();
@@ -1212,6 +1260,7 @@ function startLevelQuestions() {
   S.list = L.questions.slice();
   S.q = 0; S.right = 0; S.wrong = [];   // הַשְּׁאֵלוֹת שֶׁטָּעָה בָּהֶן בַּנִּסָּיוֹן הַזֶּה – נִשְׁלָחוֹת לְדַף הַמּוֹרֶה
   if (!S.retry) { S.scores[L.key] = 0; S.maxes[L.key] = L.points * L.questions.length; S.lvPts = S.lvPts || {}; S.lvPts[L.key] = 0; }
+  mystPick(L); S.gold = S.retry ? S.gold || 0 : 0; S.sinceGold = 0; S.lastBad = false;
   S.cur = 0; S.curPts = 0;   // הַנִּסָּיוֹן הַזֶּה בָּרָמָה. בַּחֲזָרָה נִסְפֶּרֶת הַתּוֹצָאָה הַטּוֹבָה מִבֵּין הַנִּסְיוֹנוֹת (בַּקָּשַׁת הַמִּשְׁתַּמֵּשׁ, 9.11.2026)
   renderQuestion();
   show("sQuiz");
@@ -1221,6 +1270,7 @@ function renderQuestion() {
   $("qLevel").textContent = L.name;
   $("qNum").textContent = "שְׁאֵלָה " + (S.q + 1) + " מִתּוֹךְ " + S.list.length;
   $("qBar").style.width = (S.q / S.list.length * 100) + "%";
+  mystDraw(); S.qT = Date.now();
   $("qPrompt").innerHTML = hlTerms(escapeHtml(q.prompt));
   $("qFb").className = "fb"; $("qFb").innerHTML = "";
   $("qNext").style.display = "none";
@@ -1252,8 +1302,26 @@ function renderQuestion() {
     b.onclick = function () { answer(+b.dataset.i); };   // ברמת תמונה האפשרויות לא מעורבבות – מספר הלוח = מספר האפשרות
   });
 }
+/* "הָרֶגַע שֶׁלִּפְנֵי" (16.11): הַקְּלָף מִסְתּוֹבֵב וְנֶעֱצָר עַל הַצַּד ~1.7 שְׁנִיּוֹת לִפְנֵי שֶׁמְּגַלִּים אִם צָדַק.
+   לֹא בְּכָל שְׁאֵלָה – רַק בְּרִגְעֵי שִׂיא: הַשְּׁאֵלָה הָאַחֲרוֹנָה בַּשָּׁלָב, וּפַעַם בְּכַמָּה שְׁאֵלוֹת בְּלִי דֶּפוּס קָבוּעַ */
+function wantSuspense() {
+  S.sinceSusp = (S.sinceSusp || 0) + 1;
+  if (S.q === S.list.length - 1 || (S.sinceSusp >= 3 && Math.random() < 0.3)) { S.sinceSusp = 0; return true; }
+  return false;
+}
 function answer(k) {
   if (S.busy) return; S.busy = true;
+  S.thinkMs = Date.now() - (S.qT || Date.now());
+  if (!wantSuspense()) return answerReveal(k);
+  var all = $("qBody").querySelectorAll(".opt,.pic-zone");
+  Array.prototype.forEach.call(all, function (b) { b.disabled = true; });
+  var ch = $("qBody").querySelector('.opt[data-k="' + k + '"]'), z = $("qBody").querySelector('.pic-zone[data-i="' + S.opts[k].i + '"]');
+  if (ch && ch.offsetParent) ch.classList.add("flip");
+  if (z) z.classList.add("wait");
+  soundDrum();
+  setTimeout(function () { [ch, z].forEach(function (b) { if (b) b.classList.remove("flip", "wait"); }); answerReveal(k); }, 1700);
+}
+function answerReveal(k) {
   var L = QUIZ.levels[S.lv], q = S.list[S.q], o = S.opts[k];
   var btns = $("qBody").querySelectorAll(".opt"), zones = $("qBody").querySelectorAll(".pic-zone");
   S.opts.forEach(function (x, j) {
@@ -1291,7 +1359,10 @@ function feedback(ok, q, pts, hints) {
       (lvl >= 8 ? love + "<div>" + hlTerms(escapeHtml(q.explain)) + "</div>" + whyBox(q) : "<div>" + hlTerms(escapeHtml(q.explain)) + "</div>" + whyBox(q) + love) +
       '<div class="src">📖 ' + srcLinks(q.src) + "</div>";
     if (extra) addPts(extra);
+    fb.innerHTML = fb.innerHTML.replace('<div class="t">', effLine() + goldLine() + '<div class="t">');
+    S.lastBad = false; mystDraw(true);
   } else {
+    S.lastBad = true;
     S.streak = 0;
     if (lvl >= 2) soundBad();
     fb.className = "fb on bad" + (lvl >= 3 ? " l3" : "");
@@ -1953,6 +2024,7 @@ function levelEnd() {
   var L = QUIZ.levels[S.lv], n = S.list.length, ratio = S.right / n;
   pingAttempt(L.key, S.right, n, ratio >= PASS);
   $("qBar").style.width = "100%";
+  $("lvBtn").style.visibility = "visible";
   if (ratio >= PASS) {
     S.lv++; S.retry = false;
     var justDid = QUIZ.levels[S.lv - 1].key;   // כִּתּוֹת א׳-ג׳ מְסַיְּמוֹת כָּאן, אַחֲרֵי רָמָה ב׳ (בְּלִי רָמָה ג׳, הַכְּתִיבָה)
@@ -1973,7 +2045,104 @@ function levelEnd() {
     $("lvBtn").textContent = "חוֹזְרִים עַל הַלִּמּוּד 📜";
     $("lvBtn").onclick = openStudy;
   }
+  var lm = $("lvMyst"); lm.innerHTML = "";
+  if (S.myst && ratio >= PASS && S.mystQ) mystGuess(lm);   // הַתְּמוּנָה נֶעֶצְרָה בְּאֶמְצַע – קֹדֶם מְנַחֲשִׁים, אַחַר כָּךְ מְגַלִּים
+  else if (S.myst) {
+    var t = mystTiles();
+    lm.innerHTML = '<div style="font-weight:800;color:#6d28d9">🖼️ הַתְּמוּנָה הַנִּסְתֶּרֶת – ' + t.off + " מִתּוֹךְ " + t.n + " חֲלוֹנוֹת</div>" +
+      '<div class="mystBig"><img src="' + S.myst + '" alt="">' + mystGrid(t.off, t.n) + "</div>";
+  }
+  if (S.gold) lm.insertAdjacentHTML("beforeend", '<div class="gold">⭐ אָסַפְתָּ ' + (S.gold === 1 ? "כּוֹכַב זָהָב אֶחָד" : S.gold + " כּוֹכְבֵי זָהָב") + " בַּשָּׁלָב הַזֶּה</div>");
+  if (ratio >= PASS && S.lv < QUIZ.levels.length && !(S.young && QUIZ.levels[S.lv - 1].key === "b")) lm.insertAdjacentHTML("beforeend", peekNext());
   show("sLevel");
+}
+
+/* ---------- עֶקְרוֹנוֹת הַקֶּשֶׁב (16.11.2026): תְּמוּנָה נִסְתֶּרֶת, כּוֹכַב זָהָב, מַחְמָאָה מְדֻיֶּקֶת ----------
+   תְּמוּנָה מִתּוֹךְ הַחִידוֹן מְכֻסָּה בְּ-12 חֲלוֹנוֹת; כָּל תְּשׁוּבָה נְכוֹנָה פּוֹתַחַת חֲלוֹנוֹת, וּבְסוֹף הַשָּׁלָב רוֹאִים אוֹתָהּ גְּדוֹלָה. */
+function mystPick(L) {   // תְּמוּנָה שֶׁל שְׁאֵלָה מֵהַשָּׁלָב הַזֶּה (אוֹ, אִם אֵין, מִשָּׁלָב קוֹדֵם) – בַּסּוֹף מְנַחֲשִׁים לְאֵיזוֹ שְׁאֵלָה הִיא שַׁיֶּכֶת
+  if (S.retry && S.myst) return;
+  var cand = [], li = QUIZ.levels.indexOf(L);
+  for (var d = 0; d <= li && !cand.length; d++)
+    QUIZ.levels[li - d].questions.forEach(function (q) { if (q.img && QUIZ.levels[li - d].questions.length >= 3) cand.push({ q: q, L: QUIZ.levels[li - d] }); });
+  S.mystUsed = S.mystUsed || [];
+  var fresh = cand.filter(function (c) { return S.mystUsed.indexOf(c.q.img) < 0; });
+  var c = (fresh.length ? fresh : cand)[Math.floor(Math.random() * (fresh.length || cand.length))];
+  S.myst = c ? c.q.img : null; S.mystQ = c ? c.q : null; S.mystL = c ? c.L : null;
+  if (S.myst) S.mystUsed.push(S.myst);
+  S.mystOrder = null;
+}
+var MYST_CAP = 8;   // בְּמַהֲלַךְ הַשָּׁלָב נִפְתָּחִים לְכָל הַיּוֹתֵר 8 מִתּוֹךְ 12 (כ-65%) – הָעֲצִירָה בְּאֶמְצַע הַגִּלּוּי
+function mystTiles() { var n = 12, len = S.list.length || 1; return { n: n, off: Math.min(MYST_CAP, Math.round(n * S.right / len)) }; }
+function mystGrid(off, n) {
+  var order = S.mystOrder; if (!order || order.length !== n) { order = S.mystOrder = shuffleArray(Array.apply(null, Array(n)).map(function (_, i) { return i; })); }
+  var h = '<div class="tiles">';
+  for (var i = 0; i < n; i++) h += "<i" + (order.indexOf(i) < off ? ' class="off"' : "") + "></i>";
+  return h + "</div>";
+}
+function mystDraw(anim) {
+  var box = $("qMyst"); if (!box) return;
+  if (!S.myst) { box.style.display = "none"; return; }
+  var t = mystTiles(), lastQ = !anim && S.q === S.list.length - 1;
+  if (anim && box.querySelector(".tiles")) {
+    var is = box.querySelectorAll(".tiles i");
+    S.mystOrder.forEach(function (ti, r) { if (r < t.off) is[ti].classList.add("off"); });
+  } else box.innerHTML = '<div class="mg"><img src="' + S.myst + '" alt="">' + mystGrid(t.off, t.n) + '</div><div class="lbl"></div>';
+  box.querySelector(".lbl").innerHTML = lastQ ? "🎁 עוֹד שְׁאֵלָה אַחַת –<br>וּמְגַלִּים אֶת הַתְּמוּנָה!" :
+    t.off >= MYST_CAP ? "🖼️ כִּמְעַט רוֹאִים הַכֹּל...<br>אֶת הַשְּׁאָר תְּגַלֶּה בְּסוֹף הַשָּׁלָב" :
+    "🖼️ תְּמוּנָה נִסְתֶּרֶת<br>כָּל תְּשׁוּבָה נְכוֹנָה פּוֹתַחַת חַלּוֹן (" + t.off + "/" + t.n + ")";
+  box.classList.toggle("shake", lastQ);
+  box.style.display = "flex";
+}
+function shortQ(q) { var t = String(q.prompt || "").replace(/\s+/g, " ").trim(); return t.length > 70 ? t.slice(0, 68) + "…" : t; }
+function mystGuess(lm) {   // "מָה לְדַעְתְּךָ בַּתְּמוּנָה?" – בּוֹחֲרִים לְאֵיזוֹ שְׁאֵלָה הִיא שַׁיֶּכֶת, וְרַק אָז הִיא נֶחְשֶׂפֶת
+  var t = mystTiles(), right = S.mystQ;
+  var others = shuffleArray(S.mystL.questions.filter(function (q) { return q !== right && q.img !== right.img && q.prompt; })).slice(0, 2);
+  var opts = shuffleArray([right].concat(others));
+  lm.innerHTML = '<div style="font-weight:800;color:#6d28d9">🖼️ הַתְּמוּנָה הַנִּסְתֶּרֶת נֶעֶצְרָה בָּאֶמְצַע!</div>' +
+    '<div class="mystBig"><img src="' + S.myst + '" alt="">' + mystGrid(t.off, t.n) + "</div>" +
+    "<div><b>🤔 מָה לְדַעְתְּךָ יֵשׁ בַּתְּמוּנָה? לְאֵיזוֹ שְׁאֵלָה הִיא שַׁיֶּכֶת?</b></div>" +
+    '<div class="mGuess">' + opts.map(function (q, i) { return '<button type="button" data-i="' + i + '">' + hlTerms(escapeHtml(shortQ(q))) + "</button>"; }).join("") + "</div>";
+  var btn = $("lvBtn"); btn.style.visibility = "hidden";
+  Array.prototype.forEach.call(lm.querySelectorAll(".mGuess button"), function (b) {
+    b.onclick = function () {
+      var ok = opts[+b.dataset.i] === right;
+      Array.prototype.forEach.call(lm.querySelectorAll(".mGuess button"), function (x) { x.disabled = true; if (opts[+x.dataset.i] === right) x.classList.add("ok"); });
+      if (!ok) b.classList.add("bad");
+      soundDrum();
+      setTimeout(function () {
+        Array.prototype.forEach.call(lm.querySelectorAll(".tiles i"), function (x) { x.classList.add("off"); });
+        var img = lm.querySelector(".mystBig img"); img.onclick = function () { zoomPic(S.myst); };
+        if (ok) soundGold(); 
+        var m = document.createElement("div"); m.className = "eff";
+        m.innerHTML = nm(ok ? "🎉 נִחַשְׁתָּ נָכוֹן, {n}! זָכַרְתָּ אֶת הַתְּמוּנָה מֵהַשְּׁאֵלָה" : "🖼️ הִנֵּה הִיא! הִיא שַׁיֶּכֶת לַשְּׁאֵלָה הַמְּסֻמֶּנֶת בְּיָרֹק");
+        lm.querySelector(".mGuess").after(m);
+        btn.style.visibility = "visible";
+      }, 1500);
+    };
+  });
+}
+function peekNext() {   // סוֹף שָׁלָב עִם רֶמֶז לַבָּא: חֲצִי מֵהַשְּׁאֵלָה הָרִאשׁוֹנָה שֶׁל הַשָּׁלָב הַבָּא, וְנֶעֱצָרִים
+  var N = QUIZ.levels[S.lv], q = N && N.questions[0]; if (!q || !q.prompt) return "";
+  var t = String(q.prompt).replace(/\s+/g, " ").trim(), w = t.split(" "), half = Math.max(2, Math.ceil(w.length / 2));
+  return '<div class="peek">🔒 הַצָּצָה לַשָּׁלָב הַבָּא – ' + escapeHtml(N.name) + ':<br>«' + escapeHtml(w.slice(0, half).join(" ")) +
+    ' <span class="cut">' + escapeHtml(w.slice(half, half + 2).join(" ")) + "</span>...»</div>";
+}
+var GOLD = ["⭐ כּוֹכַב זָהָב! הַפְתָּעָה – עוֹד כּוֹכָב לָאוֹסֶף שֶׁלְּךָ", "🌟 כּוֹכַב זָהָב! לֹא צִפִּיתָ לָזֶה, נָכוֹן?", "✨ כּוֹכַב זָהָב נָחַת אֶצְלְךָ!"];
+function goldLine() {   // בְּלִי דֶּפוּס קָבוּעַ: אַחֲרֵי 2 נְכוֹנוֹת לְפָחוֹת, בְּסִכּוּי שֶׁל רְבִיעַ
+  S.sinceGold = (S.sinceGold || 0) + 1;
+  if (S.sinceGold < 3 || Math.random() > 0.27) return "";
+  S.sinceGold = 0; S.gold = (S.gold || 0) + 1; setTimeout(soundGold, 350);
+  return '<div class="gold">' + draw("gold", GOLD) + "</div>";
+}
+var EFF_BACK = ["אַחֲרֵי טָעוּת חָזַרְתָּ וְעָנִיתָ נָכוֹן – כָּךְ לוֹמְדִים בֶּאֱמֶת! 💪", "לֹא נִבְהַלְתָּ מֵהַטָּעוּת, וְהִנֵּה הַצְלָחָה! 🌱"],
+    EFF_THINK = ["רָאִיתִי שֶׁעָצַרְתָּ לַחְשֹׁב לִפְנֵי שֶׁעָנִיתָ – זוֹ הַדֶּרֶךְ! 🧠", "חָשַׁבְתָּ בְּרֹגַע וְלֹא מִהַרְתָּ – וְזֶה הִשְׁתַּלֵּם 🧠"],
+    EFF_TRY2 = ["לֹא וִתַּרְתָּ, תִּקַּנְתָּ וְהִצְלַחְתָּ! 🔧", "בַּנִּסָּיוֹן הַשֵּׁנִי מָצָאתָ אֶת הַדֶּרֶךְ – כָּל הַכָּבוֹד עַל הַהַתְמָדָה 🔧"];
+function effLine() {   // מַחְמָאָה עַל הַדֶּרֶךְ וְהַמַּאֲמָץ, לֹא עַל כִּשָּׁרוֹן
+  var t = "";
+  if (S.g && S.g.q === S.list[S.q] && S.g.tries === 2) t = draw("efft2", EFF_TRY2);
+  else if (S.lastBad) t = draw("effb", EFF_BACK);
+  else if (!S.g || S.g.q !== S.list[S.q]) { if ((S.thinkMs || 0) > 9000) t = draw("efft", EFF_THINK); }
+  return t ? '<div class="eff">' + nm(t) + "</div>" : "";
 }
 
 

@@ -228,6 +228,31 @@ span.chip{cursor:default}
 .board .pts{float:left;font-weight:800;color:var(--c3)}
 .board .cl{color:var(--soft);font-size:.8em}
 .badge-line{font-weight:800;font-size:1.15em;text-align:center}
+.myst{display:flex;align-items:center;justify-content:center;gap:10px;margin:4px 0 8px;cursor:pointer}
+.myst .mg,.mystBig{position:relative;border-radius:10px;overflow:hidden;background:#e9d5ff}
+.myst .mg{width:84px;height:56px;flex:none}
+.myst img,.mystBig img{width:100%;height:100%;object-fit:cover;display:block}
+.tiles{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr)}
+.tiles i{background:linear-gradient(135deg,#7c3aed,#c084fc);border:1px solid rgba(255,255,255,.4);transition:opacity .7s,transform .7s}
+.tiles i:nth-child(3n){background:linear-gradient(135deg,#9333ea,#e879f9)}
+.tiles i.off{opacity:0;transform:scale(.2) rotate(40deg)}
+.myst .lbl{font-size:.9em;font-weight:700;color:#6d28d9;line-height:1.3}
+.mystBig{width:min(340px,90%);aspect-ratio:3/2;margin:10px auto}
+.opt.wait,.pic-zone.wait{animation:waitP .4s infinite alternate}
+@keyframes waitP{from{transform:scale(1);box-shadow:0 0 0 0 #fde68a}to{transform:scale(1.035);box-shadow:0 0 0 5px #fde68a}}
+.opt.flip{animation:flipH 1.7s ease-in-out}
+@keyframes flipH{0%{transform:perspective(500px) rotateY(0)}30%{transform:perspective(500px) rotateY(84deg);box-shadow:0 0 0 5px #fde68a}85%{transform:perspective(500px) rotateY(84deg);box-shadow:0 0 0 5px #fde68a}100%{transform:perspective(500px) rotateY(0)}}
+.myst.shake .mg{animation:shk .5s infinite}
+@keyframes shk{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+.mGuess{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+.mGuess button{font:inherit;padding:9px 12px;border-radius:12px;border:2px solid #c4b5fd;background:#faf5ff;cursor:pointer;text-align:right}
+.mGuess button:disabled{opacity:1;color:inherit;cursor:default}
+.mGuess button.ok{border-color:#16a34a;background:#dcfce7}.mGuess button.bad{border-color:#f59e0b;background:#fef3c7}
+.peek{margin:12px 0 4px;padding:10px 12px;border-radius:12px;background:#f1f5f9;border:2px dashed #94a3b8;font-weight:600}
+.peek .cut{background:linear-gradient(90deg,#334155 40%,transparent);-webkit-background-clip:text;background-clip:text;color:transparent}
+.gold{margin:8px auto;padding:6px 12px;border-radius:12px;background:linear-gradient(90deg,#fef3c7,#fde68a);color:#92400e;font-weight:800;display:inline-block;animation:goldIn .6s}
+@keyframes goldIn{from{transform:scale(.3) rotate(-12deg);opacity:0}to{transform:none;opacity:1}}
+.eff{font-weight:700;color:#0f766e;margin:4px 0}
 .progress{text-align:center;margin:10px 0}
 .progress .gain{font-weight:800;color:#15803d;font-size:1.05em;margin:0 0 6px}
 .bbar{height:14px;border-radius:8px;background:#eee;overflow:hidden;margin:8px 0 4px}
@@ -358,7 +383,7 @@ body.inq .me-btn.named{display:inline-block;font-size:.72em;top:6px;padding:3px 
 body.inq #lbBtn{top:6px;right:auto;left:50%;transform:translateX(-50%);font-size:.72em;padding:3px 10px}
 header.top.hasreg{padding-top:84px}
 body.inq header.top.hasreg{padding-top:34px}
-body.inq .ptsbadge{top:40px}
+body.inq .ptsbadge{top:40px}   /* 14.11: מתחת לכפתור השם, שלא יסתיר אותו */
 #lbScreen{position:fixed;top:0;right:0;bottom:0;left:0;z-index:9998;background:rgba(30,20,60,.55);display:none;align-items:flex-start;justify-content:center;padding:16px;overflow:auto}
 #lbScreen.on{display:flex}
 #lbScreen .rbox{background:#fff;border-radius:24px;max-width:520px;width:100%;padding:20px 18px;font-family:Rubik,Arial,sans-serif;color:#2b2340;line-height:1.6;margin-top:20px}
@@ -555,6 +580,7 @@ body.inq .ptsbadge{top:40px}
     <div class="box">
       <div class="qhead"><span id="qLevel"></span><span id="qPts" class="ptsbadge" title="הַנְּקֻדּוֹת שֶׁלְּךָ">⭐ <b>0</b></span><span id="qNum"></span></div>
       <div class="bar"><i id="qBar"></i></div>
+      <div class="myst" id="qMyst" style="display:none"></div>
       <div class="prompt" id="qPrompt"></div>
       <div id="qBody"></div>
       <div class="fb" id="qFb"></div>
@@ -567,6 +593,7 @@ body.inq .ptsbadge{top:40px}
       <div style="font-size:3em" id="lvIcon"></div>
       <h2 id="lvTitle"></h2>
       <p id="lvText"></p>
+      <div id="lvMyst"></div>
       <button class="btn" id="lvBtn"></button>
     </div>
   </section>
@@ -662,7 +689,7 @@ body.inq .ptsbadge{top:40px}
 
 
 <script>
-var QUIZ = {"id": "bereshit-a-13", "num": 13, "series": "bereshit-a", "title": "נֹחַ אִישׁ צַדִּיק וְהַתֵּבָה", "subtitle": "ה׳ אָמַר לְנֹחַ לִבְנוֹת תֵּבָה", "source": "חֻמַּשׁ בְּרֵאשִׁית, פֶּרֶק ו׳, פְּסוּקִים ט׳–כ״ב", "parasha": "נֹחַ", "theme": ["#6e4b2a", "#f4d03f", "#2e86c1"], "verse": "וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר צִוָּה אֹתוֹ אֱלֹהִים כֵּן עָשָׂה", "think": ["מָה נֹחַ בָּנָה?", "מִי הָיוּ בָּנָיו שֶׁל נֹחַ?", "מָה אֲנִי אֶעֱשֶׂה הַשָּׁבוּעַ כְּדֵי לִשְׁמֹעַ בְּקוֹל הוֹרַי כְּמוֹ נֹחַ?"], "levels": [{"key": "a", "name": "רָמָה א׳ – נֹחַ וְהַתֵּבָה", "points": 5, "cards": [{"icon": "👨", "title": "נֹחַ הַצַּדִּיק", "text": "׳נֹחַ אִישׁ צַדִּיק תָּמִים׳. נֹחַ הָלַךְ עִם ה׳.", "mark": "׳נֹחַ אִישׁ צַדִּיק׳.", "ahava": "ה׳ אוֹהֵב אֶת מִי שֶׁהוֹלֵךְ אִתּוֹ 💛", "src": "פֶּרֶק ו׳, פָּסוּק ט׳"}, {"icon": "👦", "title": "שְׁלוֹשָׁה בָּנִים", "text": "לְנֹחַ הָיוּ שְׁלוֹשָׁה בָּנִים: שֵׁם, חָם וָיֶפֶת.", "mark": "שֵׁם, חָם וָיֶפֶת.", "ahava": "ה׳ נָתַן לְנֹחַ מִשְׁפָּחָה 💛", "src": "פֶּרֶק ו׳, פָּסוּק י׳"}, {"icon": "😞", "title": "הָעוֹלָם הָיָה רַע", "text": "הָאֲנָשִׁים עָשׂוּ דְּבָרִים רָעִים. ה׳ אָמַר לְנֹחַ: ׳אֲנִי אָבִיא מַבּוּל׳.", "mark": "הָאֲנָשִׁים עָשׂוּ דְּבָרִים רָעִים.", "ahava": "ה׳ סִפֵּר לְנֹחַ, כִּי נֹחַ הָיָה קָרוֹב אֵלָיו 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים י״א–י״ג"}, {"icon": "🚢", "title": "בּוֹנִים תֵּבָה", "text": "ה׳ אָמַר: ׳עֲשֵׂה לְךָ תֵּבָה׳. הַתֵּבָה הָיְתָה מֵעֵץ.", "mark": "׳עֲשֵׂה לְךָ תֵּבָה׳.", "ahava": "ה׳ הֵכִין לְנֹחַ מָקוֹם בָּטוּחַ 💛", "src": "פֶּרֶק ו׳, פָּסוּק י״ד"}, {"icon": "📏", "title": "תֵּבָה גְּדוֹלָה", "text": "הַתֵּבָה הָיְתָה גְּדוֹלָה מְאֹד. הָיָה לָהּ פֶּתַח בַּצַּד וְשָׁלוֹשׁ קוֹמוֹת.", "mark": "פֶּתַח בַּצַּד וְשָׁלוֹשׁ קוֹמוֹת.", "ahava": "ה׳ דָּאַג לְכָל פְּרָט בַּתֵּבָה 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים ט״ו–ט״ז"}, {"icon": "🐘", "title": "שְׁנַיִם שְׁנַיִם", "text": "ה׳ אָמַר לְנֹחַ לָקַחַת לַתֵּבָה חַיּוֹת. שְׁנַיִם מִכָּל מִין.", "mark": "שְׁנַיִם מִכָּל מִין.", "ahava": "ה׳ שׁוֹמֵר גַּם עַל הַחַיּוֹת 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים י״ט–כ׳"}, {"icon": "🍎", "title": "אֹכֶל לַתֵּבָה", "text": "נֹחַ אָסַף אֹכֶל לוֹ וְלַחַיּוֹת. ׳וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר צִוָּה אֹתוֹ אֱלֹהִים׳.", "mark": "נֹחַ עָשָׂה כְּמוֹ שֶׁה׳ אָמַר.", "ahava": "ה׳ נוֹתֵן לָנוּ אֹכֶל, וְגַם כֹּחַ לִשְׁמֹעַ 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים כ״א–כ״ב"}], "inspire": "נֹחַ הָיָה צַדִּיק. הוּא שָׁמַע לְה׳ וּבָנָה תֵּבָה גְּדוֹלָה. ה׳ שָׁמַר עַל נֹחַ כִּי הוּא אוֹהֵב אֶת מִי שֶׁשּׁוֹמֵעַ לוֹ.", "questions": [{"prompt": "מָה נֹחַ בָּנָה?", "options": ["גֶּשֶׁר", "תֵּבָה", "אַרְמוֹן"], "correct": 1, "explain": "׳עֲשֵׂה לְךָ תֵּבָה׳.", "src": "פֶּרֶק ו׳, פָּסוּק י״ד", "art": ["a wooden bridge over a river, no people, no text", "גשר", "a big wooden ark with a roof on dry ground, no people, no text", "תיבה", "a big stone palace with towers, no people, no text", "ארמון"], "captions": ["גשר", "תיבה", "ארמון"], "pic_answers": ["גשר", "תיבה", "ארמון"], "image": "a1.jpg"}, {"prompt": "כַּמָּה בָּנִים הָיוּ לְנֹחַ?", "options": ["אֶחָד", "שְׁלוֹשָׁה", "עֲשָׂרָה"], "correct": 1, "explain": "׳שְׁלֹשָׁה בָנִים: שֵׁם, חָם וָיֶפֶת׳.", "src": "פֶּרֶק ו׳, פָּסוּק י׳", "art": ["one young man in a simple robe standing alone, no text", "אחד", "three young men in simple robes standing side by side, no text", "שלושה", "ten young men in simple robes standing in two rows, no text", "עשרה"], "captions": ["אחד", "שלושה", "עשרה"], "pic_answers": ["אחד", "שלושה", "עשרה"], "image": "a2.jpg"}, {"prompt": "מִמָּה עָשׂוּ אֶת הַתֵּבָה?", "options": ["אֶבֶן", "זְכוּכִית", "עֵץ"], "correct": 2, "explain": "׳תֵּבַת עֲצֵי־גֹפֶר׳ – עֵץ.", "src": "פֶּרֶק ו׳, פָּסוּק י״ד", "art": ["a pile of grey stones, no people, no text", "אבן", "a pile of shiny glass bottles, no people, no text", "זכוכית", "a pile of wooden planks and logs, no people, no text", "עץ"], "captions": ["אבן", "זכוכית", "עץ"], "pic_answers": ["אבן", "זכוכית", "עץ"], "image": "a3.jpg"}, {"prompt": "מִי בָּא לַתֵּבָה בִּשְׁנַיִם בִּשְׁנַיִם?", "options": ["סְפָרִים", "חַיּוֹת", "אֲבָנִים"], "correct": 1, "explain": "׳מִכָּל־הָחַי... שְׁנַיִם מִכֹּל תָּבִיא אֶל־הַתֵּבָה׳.", "src": "פֶּרֶק ו׳, פָּסוּק י״ט", "art": ["a stack of books, no people, no text", "ספרים", "pairs of animals, two elephants and two lions, walking together, no people, no text", "חיות", "a heap of round stones, no people, no text", "אבנים"], "captions": ["ספרים", "חיות", "אבנים"], "pic_answers": ["ספרים", "חיות", "אבנים"], "image": "a4.jpg"}, {"prompt": "מָה הָיָה בְּצַד הַתֵּבָה?", "options": ["גַּג", "חַלּוֹנוֹת", "פֶּתַח"], "correct": 2, "explain": "׳וּפֶתַח הַתֵּבָה בְּצִדָּהּ תָּשִׂים׳.", "src": "פֶּרֶק ו׳, פָּסוּק ט״ז", "art": ["a wooden roof on top of an ark, no people, no text", "גג", "a wooden ark with many round windows, no text", "חלונות", "a big open doorway in the side of a wooden ark, no people, no text", "פתח"], "captions": ["גג", "חלונות", "פתח"], "pic_answers": ["גג", "חלונות", "פתח"], "image": "a5.jpg"}, {"prompt": "מָה נֹחַ לָקַח לַתֵּבָה?", "options": ["אֹכֶל", "צַעֲצוּעִים", "כִּסְאוֹת"], "correct": 0, "explain": "׳קַח־לְךָ מִכָּל־מַאֲכָל אֲשֶׁר יֵאָכֵל׳.", "src": "פֶּרֶק ו׳, פָּסוּק כ״א", "art": ["baskets full of fruit, grain and vegetables, no people, no text", "אוכל", "a pile of toy balls and wooden toys, no people, no text", "צעצועים", "a few wooden chairs, no people, no text", "כיסאות"], "captions": ["אוכל", "צעצועים", "כיסאות"], "pic_answers": ["אוכל", "צעצועים", "כיסאות"], "image": "a6.jpg"}, {"prompt": "כַּמָּה קוֹמוֹת הָיוּ בַּתֵּבָה?", "options": ["אַחַת", "שֶׁבַע", "שָׁלוֹשׁ"], "correct": 2, "explain": "׳תַּחְתִּיִּם שְׁנִיִּם וּשְׁלִשִׁים תַּעֲשֶׂהָ׳ – שָׁלוֹשׁ קוֹמוֹת.", "src": "פֶּרֶק ו׳, פָּסוּק ט״ז", "art": ["a wooden ark with only one level, no people, no text", "אחת", "a wooden ark with seven levels of decks, no people, no text", "שבע", "a wooden ark with three levels of decks, no people, no text", "שלוש"], "captions": ["אחת", "שבע", "שלוש"], "pic_answers": ["אחת", "שבע", "שלוש"], "image": "a7.jpg"}, {"prompt": "׳וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר צִוָּה אֹתוֹ אֱלֹהִים כֵּן...׳", "options": ["נָח", "עָשָׂה", "הִתְעַצֵּל"], "correct": 1, "explain": "׳כֵּן עָשָׂה׳ – נֹחַ עָשָׂה כְּמוֹ שֶׁה׳ אָמַר.", "src": "פֶּרֶק ו׳, פָּסוּק כ״ב", "art": ["a wooden bed with a blanket, resting, no people, no text", "נח", "a hammer and wooden planks on a workbench, a finished ark behind, no people, no text", "עשה", "a pile of tools lying forgotten on the ground, no people, no text", "התעצל"], "captions": ["נח", "עשה", "התעצל"], "pic_answers": ["נח", "עשה", "התעצל"], "image": "a8.jpg"}]}, {"key": "b", "name": "רָמָה ב׳ – שְׁאֵלוֹת לַחֲכָמִים", "points": 8, "cards": [{"icon": "📖", "title": "נֹחַ אִישׁ צַדִּיק", "text": "׳אֵלֶּה תּוֹלְדֹת נֹחַ, נֹחַ אִישׁ צַדִּיק תָּמִים הָיָה׳. עוֹד כָּתוּב: ׳אֶת־הָאֱלֹהִים הִתְהַלֶּךְ־נֹחַ׳ – נֹחַ הָלַךְ עִם ה׳.", "mark": "׳נֹחַ אִישׁ צַדִּיק תָּמִים׳.", "ahava": "ה׳ אוֹהֵב צַדִּיקִים, וְהוּא אוֹהֵב גַּם אוֹתִי 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים ט׳–י׳"}, {"icon": "🌍", "title": "הָאָרֶץ מְלֵאָה חָמָס", "text": "׳וַתִּמָּלֵא הָאָרֶץ חָמָס׳. ה׳ אָמַר לְנֹחַ: ׳אֲנִי מֵבִיא אֶת הַמַּבּוּל׳.", "mark": "חָמָס = מַעֲשִׂים רָעִים.", "ahava": "ה׳ סִפֵּר לְנֹחַ מַה יִּהְיֶה, כִּי נֹחַ הָיָה קָרוֹב אֵלָיו 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים י״א–י״ז"}, {"icon": "🪵", "title": "עֲשֵׂה לְךָ תֵּבָה", "text": "׳עֲשֵׂה לְךָ תֵּבַת עֲצֵי־גֹפֶר׳. צָרִיךְ לִמְרֹחַ אֶת הַתֵּבָה בְּ׳כֹּפֶר׳, מִבִּפְנִים וּמִבַּחוּץ.", "mark": "תֵּבַת עֲצֵי־גֹפֶר.", "ahava": "ה׳ לָמַד אוֹתִי אֵיךְ לִבְנוֹת מָקוֹם בָּטוּחַ 💛", "src": "פֶּרֶק ו׳, פָּסוּק י״ד"}, {"icon": "📐", "title": "הַמִּדּוֹת שֶׁל הַתֵּבָה", "text": "הַתֵּבָה הָיְתָה אֲרֻכָּה: ׳שְׁלֹשׁ מֵאוֹת אַמָּה׳. הָיָה בָּהּ פֶּתַח בַּצַּד וְשָׁלוֹשׁ קוֹמוֹת.", "mark": "שָׁלוֹשׁ קוֹמוֹת וּפֶתַח בַּצַּד.", "ahava": "ה׳ אָמַר בְּדִיּוּק מָה לַעֲשׂוֹת 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים ט״ו–ט״ז"}, {"icon": "🐾", "title": "נִכְנָסִים לַתֵּבָה", "text": "נֹחַ וּבָנָיו נִכְנָסִים לַתֵּבָה. מִכָּל חַיָּה נִכְנָסִים שְׁנַיִם. נֹחַ אָסַף אֹכֶל לַכֹּל, וְ׳כֵּן עָשָׂה׳.", "mark": "׳וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר צִוָּה׳.", "ahava": "ה׳ דּוֹאֵג שֶׁיִּהְיֶה לָנוּ אֹכֶל 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים י״ח–כ״ב"}], "inspire": "נֹחַ שָׁמַע לְה׳ בְּכָל פְּרָט. כְּשֶׁאֲנִי עוֹשֶׂה מַה שֶּׁאוֹמְרִים לִי הוֹרַי וְהַמּוֹרִים, אֲנִי כְּמוֹ נֹחַ.", "questions": [{"prompt": "מָה ה׳ אָמַר לְנֹחַ לַעֲשׂוֹת?", "options": ["לִבְנוֹת מִגְדָּל גָּבוֹהַּ מְאֹד בַּשָּׂדֶה", "לִבְנוֹת בַּיִת קָטָן לְכָל הַמִּשְׁפָּחָה", "לִבְנוֹת תֵּבָה גְּדוֹלָה מֵעֲצֵי גֹּפֶר", "לָלֶכֶת לְמָקוֹם רָחוֹק בְּלִי תֵּבָה"], "correct": 2, "explain": "׳עֲשֵׂה לְךָ תֵּבַת עֲצֵי־גֹפֶר׳.", "why": "נֹחַ שָׁמַע וְעָשָׂה, וְכָךְ גַּם אֲנִי.", "src": "פֶּרֶק ו׳, פָּסוּק י״ד", "art": "an open scroll beside wooden planks and a hammer, no people, no text", "image": "b1.jpg"}, {"prompt": "מָה כָּתוּב עַל נֹחַ בַּתּוֹרָה?", "options": ["נֹחַ הָיָה אִישׁ עָשִׁיר וְחָזָק מְאֹד", "נֹחַ הָיָה מֶלֶךְ גָּדוֹל שֶׁל כָּל הָעוֹלָם", "נֹחַ הָיָה אִישׁ שֶׁלֹּא שָׁמַע לְה׳", "נֹחַ הָיָה אִישׁ צַדִּיק תָּמִים"], "correct": 3, "explain": "׳נֹחַ אִישׁ צַדִּיק תָּמִים הָיָה׳.", "why": "אֲנִי רוֹצֶה לִהְיוֹת טוֹב כְּמוֹ נֹחַ.", "src": "פֶּרֶק ו׳, פָּסוּק ט׳", "art": "a peaceful green field with a lone olive tree, no people, no text", "image": "b2.jpg"}, {"prompt": "מָה שְׁמוֹת שְׁלוֹשֶׁת בָּנָיו שֶׁל נֹחַ?", "options": ["הַבָּנִים הֵם שֵׁם, חָם וְיֶפֶת", "הַבָּנִים הֵם אַבְרָהָם, יִצְחָק וְיַעֲקֹב", "הַבָּנִים הֵם קַיִן, הֶבֶל וְשֵׁת", "הַבָּנִים הֵם מֹשֶׁה, אַהֲרֹן וְכָלֵב"], "correct": 0, "explain": "׳אֶת־שֵׁם אֶת־חָם וְאֶת־יָפֶת׳.", "why": "שֵׁם הוּא הָרִאשׁוֹן, וְהַשְּׁלוֹשָׁה בָּנוּ עִם אַבָּא.", "src": "פֶּרֶק ו׳, פָּסוּק י׳", "art": "three wooden stools next to a small campfire, no people, no text", "image": "b3.jpg"}, {"prompt": "מִמָּה צָרִיךְ לַעֲשׂוֹת אֶת הַתֵּבָה?", "options": ["הַתֵּבָה הָיְתָה עֲשׂוּיָה כֻּלָּהּ מִזָּהָב וְכֶסֶף", "הַתֵּבָה הָיְתָה מִבַּד רַךְ וְצֶמֶר", "הַתֵּבָה הָיְתָה עֲשׂוּיָה מֵעֲצֵי גֹּפֶר", "הַתֵּבָה הָיְתָה עֲשׂוּיָה מֵאֶבֶן קָשָׁה"], "correct": 2, "explain": "׳תֵּבַת עֲצֵי־גֹפֶר׳.", "why": "כָּל מִלָּה בַּפָּסוּק חֲשׁוּבָה.", "src": "פֶּרֶק ו׳, פָּסוּק י״ד", "art": "stacks of fresh cut wooden planks, no people, no text", "image": "b4.jpg"}, {"prompt": "אֵיפֹה הָיָה הַפֶּתַח שֶׁל הַתֵּבָה?", "options": ["הַפֶּתַח הָיָה רַק בַּגַּג שֶׁלָּהּ", "הַפֶּתַח הָיָה בַּצַּד שֶׁל הַתֵּבָה", "הַפֶּתַח הָיָה לְמַטָּה בְּתוֹךְ הָרִצְפָּה", "הַפֶּתַח הָיָה בְּתוֹךְ הַמַּיִם הַגְּדוֹלִים"], "correct": 1, "explain": "׳וּפֶתַח הַתֵּבָה בְּצִדָּהּ תָּשִׂים׳.", "why": "קוֹרְאִים לְאַט, כְּדֵי לִמְצֹא אֶת הַמִּלָּה הַנְּכוֹנָה.", "src": "פֶּרֶק ו׳, פָּסוּק ט״ז", "art": "a wooden ark with a large door in its side, no people, no text", "image": "b5.jpg"}, {"prompt": "כַּמָּה חַיּוֹת מִכָּל מִין נִכְנְסוּ לַתֵּבָה?", "options": ["אַחַת מִכָּל מִין נִכְנְסָה לַתֵּבָה", "אַרְבַּע מִכָּל מִין נִכְנְסוּ לַתֵּבָה", "עֶשֶׂר מִכָּל מִין נִכְנְסוּ לַתֵּבָה", "שְׁתַּיִם מִכָּל מִין נִכְנְסוּ לַתֵּבָה"], "correct": 3, "explain": "׳שְׁנַיִם מִכֹּל תָּבִיא אֶל־הַתֵּבָה׳.", "why": "ה׳ רוֹצֶה שֶׁכָּל הַחַיּוֹת יִשָּׁמְרוּ.", "src": "פֶּרֶק ו׳, פָּסוּק י״ט", "art": "pairs of animals, two giraffes and two sheep, walking towards a wooden ark, no people, no text", "image": "b6.jpg"}, {"prompt": "מָה נֹחַ עָשָׂה אַחֲרֵי שֶׁה׳ אָמַר לוֹ מָה לַעֲשׂוֹת?", "options": ["הוּא חִכָּה הַרְבֵּה וְלֹא עָשָׂה כְּלוּם", "הוּא עָשָׂה בְּדִיּוּק כְּמוֹ שֶׁה׳ אָמַר לוֹ", "הוּא שָׁאַל אֶת כֻּלָּם אִם כְּדַאי לַעֲשׂוֹת בִּכְלָל", "הוּא עָשָׂה מַשֶּׁהוּ אַחֵר מִמַּה שֶּׁנֶּאֱמַר"], "correct": 1, "explain": "׳וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר צִוָּה אֹתוֹ אֱלֹהִים כֵּן עָשָׂה׳.", "why": "גַּם אֲנִי רוֹצֶה לַעֲשׂוֹת מִיָּד אֶת מַה שֶּׁצָּרִיךְ.", "src": "פֶּרֶק ו׳, פָּסוּק כ״ב", "art": "a half-built wooden ark with tools resting on a plank, no people, no text", "image": "b7.jpg"}]}, {"key": "c", "name": "רָמָה ג׳ – מִשְׂחָקִים", "points": 10, "cards": [{"icon": "📖", "title": "׳כְּכֹל אֲשֶׁר צִוָּה׳", "text": "׳וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר צִוָּה אֹתוֹ אֱלֹהִים כֵּן עָשָׂה׳. נֹחַ שָׁמַע לְה׳.", "mark": "נֹחַ עָשָׂה כְּמוֹ שֶׁה׳ אָמַר.", "ahava": "ה׳ אוֹהֵב כְּשֶׁאֲנִי שׁוֹמֵעַ לוֹ 💛", "src": "פֶּרֶק ו׳, פָּסוּק כ״ב"}, {"icon": "🚢", "title": "הַתֵּבָה", "text": "הַתֵּבָה הָיְתָה גְּדוֹלָה. הָיָה בָּהּ פֶּתַח וְשָׁלוֹשׁ קוֹמוֹת.", "mark": "פֶּתַח וְשָׁלוֹשׁ קוֹמוֹת.", "ahava": "ה׳ הֵכִין לְנֹחַ מָקוֹם בָּטוּחַ 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים י״ד–ט״ז"}], "inspire": "נֹחַ שָׁמַע לְה׳ וּבָנָה תֵּבָה. כְּשֶׁאֲנִי מְחַבֵּר, מְסַדֵּר וּמַשְׁלִים, אֲנִי לוֹמֵד אֶת הַסִּפּוּר שֶׁל נֹחַ.", "questions": [{"game": "match", "prompt": "חַבְּרוּ: מִי אוֹ מָה?", "say": "מִי אוֹ מָה בַּסִּפּוּר?", "pairs": [["נֹחַ", "אִישׁ צַדִּיק"], ["שֵׁם, חָם וָיֶפֶת", "בָּנָיו"], ["עֲצֵי גֹּפֶר", "הַתֵּבָה"], ["שְׁנַיִם", "מִכָּל חַיָּה"]], "explain": "נֹחַ אִישׁ צַדִּיק (ט׳), שֵׁם חָם וָיֶפֶת בָּנָיו (י׳), הַתֵּבָה מֵעֲצֵי גֹּפֶר (י״ד), שְׁנַיִם מִכָּל חַיָּה (י״ט).", "src": "פֶּרֶק ו׳, פְּסוּקִים ט׳–י״ט"}, {"game": "order", "prompt": "סַדְּרוּ מָה קָרָה, לְפִי הַסֵּדֶר", "say": "מִן הַהַתְחָלָה", "target": {"icon": "🚢", "label": "הַתֵּבָה"}, "items": ["ה׳ אָמַר לְנֹחַ: ׳עֲשֵׂה תֵּבָה׳", "נֹחַ בָּנָה אֶת הַתֵּבָה", "נֹחַ אָסַף אֹכֶל", "הַחַיּוֹת נִכְנְסוּ לַתֵּבָה"], "explain": "קֹדֶם ה׳ אָמַר, אַחַר כָּךְ נֹחַ בָּנָה וְאָסַף אֹכֶל, וְאָז הַחַיּוֹת נִכְנְסוּ.", "src": "פֶּרֶק ו׳, פְּסוּקִים י״ג–כ״ב"}, {"game": "verse", "prompt": "הַשְׁלִימוּ אֶת הַפָּסוּק", "say": "פָּסוּק כ״ב", "text": "וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר [צִוָּה] אֹתוֹ [אֱלֹהִים] כֵּן עָשָׂה.", "extra": ["אָמַר", "הַמֶּלֶךְ"], "explain": "׳וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר צִוָּה אֹתוֹ אֱלֹהִים כֵּן עָשָׂה׳.", "src": "פֶּרֶק ו׳, פָּסוּק כ״ב"}, {"game": "truefalse", "prompt": "נָכוֹן אוֹ לֹא נָכוֹן?", "labels": ["נָכוֹן", "לֹא נָכוֹן"], "items": [{"t": "נֹחַ הָיָה אִישׁ צַדִּיק", "ok": true}, {"t": "לְנֹחַ הָיוּ עֲשָׂרָה בָּנִים", "ok": false}, {"t": "הַתֵּבָה הָיְתָה מֵעֲצֵי גֹּפֶר", "ok": true}, {"t": "הַפֶּתַח הָיָה בַּגַּג", "ok": false}, {"t": "מִכָּל חַיָּה נִכְנְסוּ שְׁנַיִם", "ok": true}], "explain": "לְנֹחַ הָיוּ שְׁלוֹשָׁה בָּנִים, וְהַפֶּתַח הָיָה בַּצַּד.", "src": "פֶּרֶק ו׳, פְּסוּקִים ט׳–ט״ז"}, {"game": "whoami", "prompt": "מִי אֲנִי?", "say": "רְמָזִים", "clues": ["הָיִיתִי אִישׁ צַדִּיק", "הָיוּ לִי שְׁלוֹשָׁה בָּנִים", "בָּנִיתִי תֵּבָה גְּדוֹלָה"], "options": ["אַבְרָהָם", "נֹחַ", "מֹשֶׁה"], "correct": 1, "explain": "נֹחַ בָּנָה תֵּבָה, כְּמוֹ שֶׁה׳ אָמַר.", "src": "פֶּרֶק ו׳, פְּסוּקִים ט׳–י״ד"}]}], "book": "חֻמַּשׁ בְּרֵאשִׁית", "sefer": ""};
+var QUIZ = {"id": "bereshit-a-13", "num": 13, "series": "bereshit-a", "title": "נֹחַ אִישׁ צַדִּיק וְהַתֵּבָה", "subtitle": "ה׳ אָמַר לְנֹחַ לִבְנוֹת תֵּבָה", "source": "חֻמַּשׁ בְּרֵאשִׁית, פֶּרֶק ו׳, פְּסוּקִים ט׳–כ״ב", "parasha": "נֹחַ", "theme": ["#6e4b2a", "#f4d03f", "#2e86c1"], "verse": "וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר צִוָּה אֹתוֹ אֱלֹהִים כֵּן עָשָׂה", "think": ["מָה נֹחַ בָּנָה?", "מִי הָיוּ בָּנָיו שֶׁל נֹחַ?", "מָה אֲנִי אֶעֱשֶׂה הַשָּׁבוּעַ כְּדֵי לִשְׁמֹעַ בְּקוֹל הוֹרַי כְּמוֹ נֹחַ?"], "levels": [{"key": "a", "name": "רָמָה א׳ – נֹחַ וְהַתֵּבָה", "points": 5, "cards": [{"icon": "👨", "title": "נֹחַ הַצַּדִּיק", "text": "׳נֹחַ אִישׁ צַדִּיק תָּמִים׳. נֹחַ הָלַךְ עִם ה׳.", "mark": "׳נֹחַ אִישׁ צַדִּיק׳.", "ahava": "ה׳ אוֹהֵב אֶת מִי שֶׁהוֹלֵךְ אִתּוֹ 💛", "src": "פֶּרֶק ו׳, פָּסוּק ט׳"}, {"icon": "👦", "title": "שְׁלוֹשָׁה בָּנִים", "text": "לְנֹחַ הָיוּ שְׁלוֹשָׁה בָּנִים: שֵׁם, חָם וָיֶפֶת.", "mark": "שֵׁם, חָם וָיֶפֶת.", "ahava": "ה׳ נָתַן לְנֹחַ מִשְׁפָּחָה 💛", "src": "פֶּרֶק ו׳, פָּסוּק י׳"}, {"icon": "😞", "title": "הָעוֹלָם הָיָה רַע", "text": "הָאֲנָשִׁים עָשׂוּ דְּבָרִים רָעִים. ה׳ אָמַר לְנֹחַ: ׳אֲנִי אָבִיא מַבּוּל׳.", "mark": "הָאֲנָשִׁים עָשׂוּ דְּבָרִים רָעִים.", "ahava": "ה׳ סִפֵּר לְנֹחַ, כִּי נֹחַ הָיָה קָרוֹב אֵלָיו 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים י״א–י״ג"}, {"icon": "🚢", "title": "בּוֹנִים תֵּבָה", "text": "ה׳ אָמַר: ׳עֲשֵׂה לְךָ תֵּבָה׳. הַתֵּבָה הָיְתָה מֵעֵץ.", "mark": "׳עֲשֵׂה לְךָ תֵּבָה׳.", "ahava": "ה׳ הֵכִין לְנֹחַ מָקוֹם בָּטוּחַ 💛", "src": "פֶּרֶק ו׳, פָּסוּק י״ד"}, {"icon": "📏", "title": "תֵּבָה גְּדוֹלָה", "text": "הַתֵּבָה הָיְתָה גְּדוֹלָה מְאֹד. הָיָה לָהּ פֶּתַח בַּצַּד וְשָׁלוֹשׁ קוֹמוֹת.", "mark": "פֶּתַח בַּצַּד וְשָׁלוֹשׁ קוֹמוֹת.", "ahava": "ה׳ דָּאַג לְכָל פְּרָט בַּתֵּבָה 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים ט״ו–ט״ז"}, {"icon": "🐘", "title": "שְׁנַיִם שְׁנַיִם", "text": "ה׳ אָמַר לְנֹחַ לָקַחַת לַתֵּבָה חַיּוֹת. שְׁנַיִם מִכָּל מִין.", "mark": "שְׁנַיִם מִכָּל מִין.", "ahava": "ה׳ שׁוֹמֵר גַּם עַל הַחַיּוֹת 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים י״ט–כ׳"}, {"icon": "🍎", "title": "אֹכֶל לַתֵּבָה", "text": "נֹחַ אָסַף אֹכֶל לוֹ וְלַחַיּוֹת. ׳וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר צִוָּה אֹתוֹ אֱלֹהִים׳.", "mark": "נֹחַ עָשָׂה כְּמוֹ שֶׁה׳ אָמַר.", "ahava": "ה׳ נוֹתֵן לָנוּ אֹכֶל, וְגַם כֹּחַ לִשְׁמֹעַ 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים כ״א–כ״ב"}], "inspire": "נֹחַ הָיָה צַדִּיק. הוּא שָׁמַע לְה׳ וּבָנָה תֵּבָה גְּדוֹלָה. ה׳ שָׁמַר עַל נֹחַ כִּי הוּא אוֹהֵב אֶת מִי שֶׁשּׁוֹמֵעַ לוֹ.", "questions": [{"prompt": "מָה נֹחַ בָּנָה?", "options": ["גֶּשֶׁר", "תֵּבָה", "אַרְמוֹן"], "correct": 1, "explain": "׳עֲשֵׂה לְךָ תֵּבָה׳.", "src": "פֶּרֶק ו׳, פָּסוּק י״ד", "pic_answers": ["גשר", "תיבה", "ארמון"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-a1.webp", "zones": [[5, 91.6, 65.9, 97.8], [5, 91.6, 34.0, 65.9], [5, 91.6, 2.1, 34.0]], "picOnly": true}, {"prompt": "כַּמָּה בָּנִים הָיוּ לְנֹחַ?", "options": ["אֶחָד", "שְׁלוֹשָׁה", "עֲשָׂרָה"], "correct": 1, "explain": "׳שְׁלֹשָׁה בָנִים: שֵׁם, חָם וָיֶפֶת׳.", "src": "פֶּרֶק ו׳, פָּסוּק י׳", "pic_answers": ["אחד", "שלושה", "עשרה"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-a2.webp", "zones": [[5, 90.3, 65.9, 97.8], [5, 90.3, 34.0, 65.9], [5, 90.3, 2.1, 34.0]], "picOnly": true}, {"prompt": "מִמָּה עָשׂוּ אֶת הַתֵּבָה?", "options": ["אֶבֶן", "זְכוּכִית", "עֵץ"], "correct": 2, "explain": "׳תֵּבַת עֲצֵי־גֹפֶר׳ – עֵץ.", "src": "פֶּרֶק ו׳, פָּסוּק י״ד", "pic_answers": ["אבן", "זכוכית", "עץ"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-a3.webp", "zones": [[5, 93.0, 66.07, 98.3], [5, 93.0, 33.83, 66.07], [5, 93.0, 1.6, 33.83]], "picOnly": true}, {"prompt": "מִי בָּא לַתֵּבָה בִּשְׁנַיִם בִּשְׁנַיִם?", "options": ["סְפָרִים", "חַיּוֹת", "אֲבָנִים"], "correct": 1, "explain": "׳מִכָּל־הָחַי... שְׁנַיִם מִכֹּל תָּבִיא אֶל־הַתֵּבָה׳.", "src": "פֶּרֶק ו׳, פָּסוּק י״ט", "pic_answers": ["ספרים", "חיות", "אבנים"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-a4.webp", "zones": [[5, 86.6, 65.67, 97.2], [5, 86.6, 34.13, 65.67], [5, 86.6, 2.6, 34.13]], "picOnly": true}, {"prompt": "מָה הָיָה בְּצַד הַתֵּבָה?", "options": ["גַּג", "חַלּוֹנוֹת", "פֶּתַח"], "correct": 2, "explain": "׳וּפֶתַח הַתֵּבָה בְּצִדָּהּ תָּשִׂים׳.", "src": "פֶּרֶק ו׳, פָּסוּק ט״ז", "pic_answers": ["גג", "חלונות", "פתח"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-a5.webp", "zones": [[5, 90.5, 65.93, 97.9], [5, 90.5, 33.97, 65.93], [5, 90.5, 2.0, 33.97]], "picOnly": true}, {"prompt": "מָה נֹחַ לָקַח לַתֵּבָה?", "options": ["אֹכֶל", "צַעֲצוּעִים", "כִּסְאוֹת"], "correct": 0, "explain": "׳קַח־לְךָ מִכָּל־מַאֲכָל אֲשֶׁר יֵאָכֵל׳.", "src": "פֶּרֶק ו׳, פָּסוּק כ״א", "pic_answers": ["אוכל", "צעצועים", "כיסאות"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-a6.webp", "zones": [[5, 94.6, 65.43, 96.5], [5, 94.6, 34.37, 65.43], [5, 94.6, 3.3, 34.37]], "picOnly": true}, {"prompt": "כַּמָּה קוֹמוֹת הָיוּ בַּתֵּבָה?", "options": ["אַחַת", "שֶׁבַע", "שָׁלוֹשׁ"], "correct": 2, "explain": "׳תַּחְתִּיִּם שְׁנִיִּם וּשְׁלִשִׁים תַּעֲשֶׂהָ׳ – שָׁלוֹשׁ קוֹמוֹת.", "src": "פֶּרֶק ו׳, פָּסוּק ט״ז", "pic_answers": ["אחת", "שבע", "שלוש"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-a7.webp", "zones": [[5, 88.0, 65.63, 97.0], [5, 88.0, 34.27, 65.63], [5, 88.0, 2.9, 34.27]], "picOnly": true}, {"prompt": "׳וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר צִוָּה אֹתוֹ אֱלֹהִים כֵּן...׳", "options": ["נָח", "עָשָׂה", "הִתְעַצֵּל"], "correct": 1, "explain": "׳כֵּן עָשָׂה׳ – נֹחַ עָשָׂה כְּמוֹ שֶׁה׳ אָמַר.", "src": "פֶּרֶק ו׳, פָּסוּק כ״ב", "pic_answers": ["נח", "עשה", "התעצל"], "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-a8.webp", "zones": [[5, 89.8, 65.63, 97.0], [5, 89.8, 34.27, 65.63], [5, 89.8, 2.9, 34.27]], "picOnly": true}]}, {"key": "b", "name": "רָמָה ב׳ – שְׁאֵלוֹת לַחֲכָמִים", "points": 8, "cards": [{"icon": "📖", "title": "נֹחַ אִישׁ צַדִּיק", "text": "׳אֵלֶּה תּוֹלְדֹת נֹחַ, נֹחַ אִישׁ צַדִּיק תָּמִים הָיָה׳. עוֹד כָּתוּב: ׳אֶת־הָאֱלֹהִים הִתְהַלֶּךְ־נֹחַ׳ – נֹחַ הָלַךְ עִם ה׳.", "mark": "׳נֹחַ אִישׁ צַדִּיק תָּמִים׳.", "ahava": "ה׳ אוֹהֵב צַדִּיקִים, וְהוּא אוֹהֵב גַּם אוֹתִי 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים ט׳–י׳"}, {"icon": "🌍", "title": "הָאָרֶץ מְלֵאָה חָמָס", "text": "׳וַתִּמָּלֵא הָאָרֶץ חָמָס׳. ה׳ אָמַר לְנֹחַ: ׳אֲנִי מֵבִיא אֶת הַמַּבּוּל׳.", "mark": "חָמָס = מַעֲשִׂים רָעִים.", "ahava": "ה׳ סִפֵּר לְנֹחַ מַה יִּהְיֶה, כִּי נֹחַ הָיָה קָרוֹב אֵלָיו 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים י״א–י״ז"}, {"icon": "🪵", "title": "עֲשֵׂה לְךָ תֵּבָה", "text": "׳עֲשֵׂה לְךָ תֵּבַת עֲצֵי־גֹפֶר׳. צָרִיךְ לִמְרֹחַ אֶת הַתֵּבָה בְּ׳כֹּפֶר׳, מִבִּפְנִים וּמִבַּחוּץ.", "mark": "תֵּבַת עֲצֵי־גֹפֶר.", "ahava": "ה׳ לָמַד אוֹתִי אֵיךְ לִבְנוֹת מָקוֹם בָּטוּחַ 💛", "src": "פֶּרֶק ו׳, פָּסוּק י״ד"}, {"icon": "📐", "title": "הַמִּדּוֹת שֶׁל הַתֵּבָה", "text": "הַתֵּבָה הָיְתָה אֲרֻכָּה: ׳שְׁלֹשׁ מֵאוֹת אַמָּה׳. הָיָה בָּהּ פֶּתַח בַּצַּד וְשָׁלוֹשׁ קוֹמוֹת.", "mark": "שָׁלוֹשׁ קוֹמוֹת וּפֶתַח בַּצַּד.", "ahava": "ה׳ אָמַר בְּדִיּוּק מָה לַעֲשׂוֹת 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים ט״ו–ט״ז"}, {"icon": "🐾", "title": "נִכְנָסִים לַתֵּבָה", "text": "נֹחַ וּבָנָיו נִכְנָסִים לַתֵּבָה. מִכָּל חַיָּה נִכְנָסִים שְׁנַיִם. נֹחַ אָסַף אֹכֶל לַכֹּל, וְ׳כֵּן עָשָׂה׳.", "mark": "׳וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר צִוָּה׳.", "ahava": "ה׳ דּוֹאֵג שֶׁיִּהְיֶה לָנוּ אֹכֶל 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים י״ח–כ״ב"}], "inspire": "נֹחַ שָׁמַע לְה׳ בְּכָל פְּרָט. כְּשֶׁאֲנִי עוֹשֶׂה מַה שֶּׁאוֹמְרִים לִי הוֹרַי וְהַמּוֹרִים, אֲנִי כְּמוֹ נֹחַ.", "questions": [{"prompt": "מָה ה׳ אָמַר לְנֹחַ לַעֲשׂוֹת?", "options": ["לִבְנוֹת מִגְדָּל גָּבוֹהַּ מְאֹד בַּשָּׂדֶה", "לִבְנוֹת בַּיִת קָטָן לְכָל הַמִּשְׁפָּחָה", "לִבְנוֹת תֵּבָה גְּדוֹלָה מֵעֲצֵי גֹּפֶר", "לָלֶכֶת לְמָקוֹם רָחוֹק בְּלִי תֵּבָה"], "correct": 2, "explain": "׳עֲשֵׂה לְךָ תֵּבַת עֲצֵי־גֹפֶר׳.", "why": "נֹחַ שָׁמַע וְעָשָׂה, וְכָךְ גַּם אֲנִי.", "src": "פֶּרֶק ו׳, פָּסוּק י״ד", "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-b1.webp"}, {"prompt": "מָה כָּתוּב עַל נֹחַ בַּתּוֹרָה?", "options": ["נֹחַ הָיָה אִישׁ עָשִׁיר וְחָזָק מְאֹד", "נֹחַ הָיָה מֶלֶךְ גָּדוֹל שֶׁל כָּל הָעוֹלָם", "נֹחַ הָיָה אִישׁ שֶׁלֹּא שָׁמַע לְה׳", "נֹחַ הָיָה אִישׁ צַדִּיק תָּמִים"], "correct": 3, "explain": "׳נֹחַ אִישׁ צַדִּיק תָּמִים הָיָה׳.", "why": "אֲנִי רוֹצֶה לִהְיוֹת טוֹב כְּמוֹ נֹחַ.", "src": "פֶּרֶק ו׳, פָּסוּק ט׳", "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-b2.webp"}, {"prompt": "מָה שְׁמוֹת שְׁלוֹשֶׁת בָּנָיו שֶׁל נֹחַ?", "options": ["הַבָּנִים הֵם שֵׁם, חָם וְיֶפֶת", "הַבָּנִים הֵם אַבְרָהָם, יִצְחָק וְיַעֲקֹב", "הַבָּנִים הֵם קַיִן, הֶבֶל וְשֵׁת", "הַבָּנִים הֵם מֹשֶׁה, אַהֲרֹן וְכָלֵב"], "correct": 0, "explain": "׳אֶת־שֵׁם אֶת־חָם וְאֶת־יָפֶת׳.", "why": "שֵׁם הוּא הָרִאשׁוֹן, וְהַשְּׁלוֹשָׁה בָּנוּ עִם אַבָּא.", "src": "פֶּרֶק ו׳, פָּסוּק י׳", "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-b3.webp"}, {"prompt": "מִמָּה צָרִיךְ לַעֲשׂוֹת אֶת הַתֵּבָה?", "options": ["הַתֵּבָה הָיְתָה עֲשׂוּיָה כֻּלָּהּ מִזָּהָב וְכֶסֶף", "הַתֵּבָה הָיְתָה מִבַּד רַךְ וְצֶמֶר", "הַתֵּבָה הָיְתָה עֲשׂוּיָה מֵעֲצֵי גֹּפֶר", "הַתֵּבָה הָיְתָה עֲשׂוּיָה מֵאֶבֶן קָשָׁה"], "correct": 2, "explain": "׳תֵּבַת עֲצֵי־גֹפֶר׳.", "why": "כָּל מִלָּה בַּפָּסוּק חֲשׁוּבָה.", "src": "פֶּרֶק ו׳, פָּסוּק י״ד", "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-b4.webp"}, {"prompt": "אֵיפֹה הָיָה הַפֶּתַח שֶׁל הַתֵּבָה?", "options": ["הַפֶּתַח הָיָה רַק בַּגַּג שֶׁלָּהּ", "הַפֶּתַח הָיָה בַּצַּד שֶׁל הַתֵּבָה", "הַפֶּתַח הָיָה לְמַטָּה בְּתוֹךְ הָרִצְפָּה", "הַפֶּתַח הָיָה בְּתוֹךְ הַמַּיִם הַגְּדוֹלִים"], "correct": 1, "explain": "׳וּפֶתַח הַתֵּבָה בְּצִדָּהּ תָּשִׂים׳.", "why": "קוֹרְאִים לְאַט, כְּדֵי לִמְצֹא אֶת הַמִּלָּה הַנְּכוֹנָה.", "src": "פֶּרֶק ו׳, פָּסוּק ט״ז", "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-b5.webp"}, {"prompt": "כַּמָּה חַיּוֹת מִכָּל מִין נִכְנְסוּ לַתֵּבָה?", "options": ["אַחַת מִכָּל מִין נִכְנְסָה לַתֵּבָה", "אַרְבַּע מִכָּל מִין נִכְנְסוּ לַתֵּבָה", "עֶשֶׂר מִכָּל מִין נִכְנְסוּ לַתֵּבָה", "שְׁתַּיִם מִכָּל מִין נִכְנְסוּ לַתֵּבָה"], "correct": 3, "explain": "׳שְׁנַיִם מִכֹּל תָּבִיא אֶל־הַתֵּבָה׳.", "why": "ה׳ רוֹצֶה שֶׁכָּל הַחַיּוֹת יִשָּׁמְרוּ.", "src": "פֶּרֶק ו׳, פָּסוּק י״ט", "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-b6.webp"}, {"prompt": "מָה נֹחַ עָשָׂה אַחֲרֵי שֶׁה׳ אָמַר לוֹ מָה לַעֲשׂוֹת?", "options": ["הוּא חִכָּה הַרְבֵּה וְלֹא עָשָׂה כְּלוּם", "הוּא עָשָׂה בְּדִיּוּק כְּמוֹ שֶׁה׳ אָמַר לוֹ", "הוּא שָׁאַל אֶת כֻּלָּם אִם כְּדַאי לַעֲשׂוֹת בִּכְלָל", "הוּא עָשָׂה מַשֶּׁהוּ אַחֵר מִמַּה שֶּׁנֶּאֱמַר"], "correct": 1, "explain": "׳וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר צִוָּה אֹתוֹ אֱלֹהִים כֵּן עָשָׂה׳.", "why": "גַּם אֲנִי רוֹצֶה לַעֲשׂוֹת מִיָּד אֶת מַה שֶּׁצָּרִיךְ.", "src": "פֶּרֶק ו׳, פָּסוּק כ״ב", "img": "https://yudataub.github.io/kol-toda-img-4/bereshit-quiz/img/bereshit-a-13-b7.webp"}]}, {"key": "c", "name": "רָמָה ג׳ – מִשְׂחָקִים", "points": 10, "cards": [{"icon": "📖", "title": "׳כְּכֹל אֲשֶׁר צִוָּה׳", "text": "׳וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר צִוָּה אֹתוֹ אֱלֹהִים כֵּן עָשָׂה׳. נֹחַ שָׁמַע לְה׳.", "mark": "נֹחַ עָשָׂה כְּמוֹ שֶׁה׳ אָמַר.", "ahava": "ה׳ אוֹהֵב כְּשֶׁאֲנִי שׁוֹמֵעַ לוֹ 💛", "src": "פֶּרֶק ו׳, פָּסוּק כ״ב"}, {"icon": "🚢", "title": "הַתֵּבָה", "text": "הַתֵּבָה הָיְתָה גְּדוֹלָה. הָיָה בָּהּ פֶּתַח וְשָׁלוֹשׁ קוֹמוֹת.", "mark": "פֶּתַח וְשָׁלוֹשׁ קוֹמוֹת.", "ahava": "ה׳ הֵכִין לְנֹחַ מָקוֹם בָּטוּחַ 💛", "src": "פֶּרֶק ו׳, פְּסוּקִים י״ד–ט״ז"}], "inspire": "נֹחַ שָׁמַע לְה׳ וּבָנָה תֵּבָה. כְּשֶׁאֲנִי מְחַבֵּר, מְסַדֵּר וּמַשְׁלִים, אֲנִי לוֹמֵד אֶת הַסִּפּוּר שֶׁל נֹחַ.", "questions": [{"game": "match", "prompt": "חַבְּרוּ: מִי אוֹ מָה?", "say": "מִי אוֹ מָה בַּסִּפּוּר?", "pairs": [["נֹחַ", "אִישׁ צַדִּיק"], ["שֵׁם, חָם וָיֶפֶת", "בָּנָיו"], ["עֲצֵי גֹּפֶר", "הַתֵּבָה"], ["שְׁנַיִם", "מִכָּל חַיָּה"]], "explain": "נֹחַ אִישׁ צַדִּיק (ט׳), שֵׁם חָם וָיֶפֶת בָּנָיו (י׳), הַתֵּבָה מֵעֲצֵי גֹּפֶר (י״ד), שְׁנַיִם מִכָּל חַיָּה (י״ט).", "src": "פֶּרֶק ו׳, פְּסוּקִים ט׳–י״ט"}, {"game": "order", "prompt": "סַדְּרוּ מָה קָרָה, לְפִי הַסֵּדֶר", "say": "מִן הַהַתְחָלָה", "target": {"icon": "🚢", "label": "הַתֵּבָה"}, "items": ["ה׳ אָמַר לְנֹחַ: ׳עֲשֵׂה תֵּבָה׳", "נֹחַ בָּנָה אֶת הַתֵּבָה", "נֹחַ אָסַף אֹכֶל", "הַחַיּוֹת נִכְנְסוּ לַתֵּבָה"], "explain": "קֹדֶם ה׳ אָמַר, אַחַר כָּךְ נֹחַ בָּנָה וְאָסַף אֹכֶל, וְאָז הַחַיּוֹת נִכְנְסוּ.", "src": "פֶּרֶק ו׳, פְּסוּקִים י״ג–כ״ב"}, {"game": "verse", "prompt": "הַשְׁלִימוּ אֶת הַפָּסוּק", "say": "פָּסוּק כ״ב", "text": "וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר [צִוָּה] אֹתוֹ [אֱלֹהִים] כֵּן עָשָׂה.", "extra": ["אָמַר", "הַמֶּלֶךְ"], "explain": "׳וַיַּעַשׂ נֹחַ כְּכֹל אֲשֶׁר צִוָּה אֹתוֹ אֱלֹהִים כֵּן עָשָׂה׳.", "src": "פֶּרֶק ו׳, פָּסוּק כ״ב"}, {"game": "truefalse", "prompt": "נָכוֹן אוֹ לֹא נָכוֹן?", "labels": ["נָכוֹן", "לֹא נָכוֹן"], "items": [{"t": "נֹחַ הָיָה אִישׁ צַדִּיק", "ok": true}, {"t": "לְנֹחַ הָיוּ עֲשָׂרָה בָּנִים", "ok": false}, {"t": "הַתֵּבָה הָיְתָה מֵעֲצֵי גֹּפֶר", "ok": true}, {"t": "הַפֶּתַח הָיָה בַּגַּג", "ok": false}, {"t": "מִכָּל חַיָּה נִכְנְסוּ שְׁנַיִם", "ok": true}], "explain": "לְנֹחַ הָיוּ שְׁלוֹשָׁה בָּנִים, וְהַפֶּתַח הָיָה בַּצַּד.", "src": "פֶּרֶק ו׳, פְּסוּקִים ט׳–ט״ז"}, {"game": "whoami", "prompt": "מִי אֲנִי?", "say": "רְמָזִים", "clues": ["הָיִיתִי אִישׁ צַדִּיק", "הָיוּ לִי שְׁלוֹשָׁה בָּנִים", "בָּנִיתִי תֵּבָה גְּדוֹלָה"], "options": ["אַבְרָהָם", "נֹחַ", "מֹשֶׁה"], "correct": 1, "explain": "נֹחַ בָּנָה תֵּבָה, כְּמוֹ שֶׁה׳ אָמַר.", "src": "פֶּרֶק ו׳, פְּסוּקִים ט׳–י״ד"}]}], "book": "חֻמַּשׁ בְּרֵאשִׁית", "sefer": ""};
 // שורת מקור ("פֶּרֶק ב׳, הֲלָכָה א׳; פֶּרֶק ג׳, הֲלָכָה א׳") -> קישורים להלכה בספר המלא, בלשונית חדשה
 function hebNum(s){var v={"א":1,"ב":2,"ג":3,"ד":4,"ה":5,"ו":6,"ז":7,"ח":8,"ט":9,"י":10,"כ":20,"ך":20,"ל":30,"מ":40,"ם":40,"נ":50,"ן":50,"ס":60,"ע":70,"פ":80,"ף":80,"צ":90,"ץ":90,"ק":100,"ר":200,"ש":300,"ת":400};
   var n=0;String(s||"").replace(/[^א-ת]/g,"").split("").forEach(function(c){n+=v[c]||0});return n;}
@@ -771,7 +798,9 @@ function soundStreak(n) {
   var k = Math.min(n + 1, 9), base = Math.min(n - 1, 3);
   tone(SCALE.slice(base, base + k), Math.max(0.07, 0.14 - n * 0.008));
 }
-function soundBad() { tone([330, 262], 0.18); }
+function soundBad() { tone([440, 392], 0.15); }   // צְלִיל רַךְ – טָעוּת לֹא מַעֲנִישָׁה (עֶקְרוֹנוֹת הַקֶּשֶׁב, 16.11)
+function soundDrum() { tone([196, 196, 208, 196, 220, 208, 233, 220, 247, 262, 294], 0.14); }   // תֹּף מִתְגַּלְגֵּל וְעוֹלֶה
+function soundGold() { tone([1047, 1319, 1568, 2093], 0.09); }
 function soundWin() { tone([523, 659, 784, 1047, 784, 659], 0.14); }
 /* מַנְגִּינַת סִיּוּם שְׁלוֹשֶׁת הַשְּׁלַבִּים (כ-5 שְׁנִיּוֹת): מַנְגִּינָה עִם הַרְמוֹנְיָה וְאַקּוֹרְד סִיּוּם */
 function song(seq) {
@@ -1008,6 +1037,25 @@ function init() {
   $("toQuiz").onclick = startLevelQuestions;
   $("qNext").onclick = nextQuestion;
   $("again").onclick = function () { location.reload(); };
+  goFromBook(run);
+}
+/* "עַכְשָׁו – לַחִידוֹן!" בְּסוֹף הַסֵּפֶר הַמְדַפְדֵּף (בַּקָּשַׁת הַמִּשְׁתַּמֵּשׁ, 16.11.2026): פּוֹתְחִים יָשָׁר אֶת שְׁאֵלוֹת הָרָמָה
+   בִּמְקוֹם מָסַךְ הַפְּתִיחָה עִם "יֵשׁ חִידוֹן שֶׁעוֹד לֹא נִגְמַר". הָרָמָה מִ-#go=<key>, וּבַסְּפָרִים הַיְּשָׁנִים – מִשֵּׁם הַסֵּפֶר שֶׁבָּא מִמֶּנּוּ (books/<id>-<key>.html). */
+function goFromBook(run) {
+  var h = /[#&]go=([a-z])/.exec(location.hash), key = h && h[1], ref = document.referrer || "";
+  if (h) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
+  else {
+    var r = /\/books\/([\w-]+)-([a-z])\.html/.exec(ref);
+    if (!r || r[1] !== QUIZ.id) return;
+    try { if (sessionStorage.getItem("hq-go-" + QUIZ.id) === ref) return; sessionStorage.setItem("hq-go-" + QUIZ.id, ref); } catch (e) {}   // רִעֲנוּן / "שׁוּב" – לֹא קוֹפְצִים שׁוּב
+    key = r[2];
+  }
+  var k = -1;
+  for (var i = 0; i < QUIZ.levels.length; i++) if (QUIZ.levels[i].key === key) k = i;
+  if (k < 0) return;
+  if (run && run.lv === k) { resumeRun(run); if (run.phase !== "quiz") startLevelQuestions(); return; }
+  if (k === 0) start(); else if (LV_ST && LV_ST.r >= k) startAt(k, LV_ST); else return;
+  if ($("sStudy").classList.contains("on")) startLevelQuestions();
 }
 function loadMyPoints() {
   var m = readMe();
@@ -1212,6 +1260,7 @@ function startLevelQuestions() {
   S.list = L.questions.slice();
   S.q = 0; S.right = 0; S.wrong = [];   // הַשְּׁאֵלוֹת שֶׁטָּעָה בָּהֶן בַּנִּסָּיוֹן הַזֶּה – נִשְׁלָחוֹת לְדַף הַמּוֹרֶה
   if (!S.retry) { S.scores[L.key] = 0; S.maxes[L.key] = L.points * L.questions.length; S.lvPts = S.lvPts || {}; S.lvPts[L.key] = 0; }
+  mystPick(L); S.gold = S.retry ? S.gold || 0 : 0; S.sinceGold = 0; S.lastBad = false;
   S.cur = 0; S.curPts = 0;   // הַנִּסָּיוֹן הַזֶּה בָּרָמָה. בַּחֲזָרָה נִסְפֶּרֶת הַתּוֹצָאָה הַטּוֹבָה מִבֵּין הַנִּסְיוֹנוֹת (בַּקָּשַׁת הַמִּשְׁתַּמֵּשׁ, 9.11.2026)
   renderQuestion();
   show("sQuiz");
@@ -1221,6 +1270,7 @@ function renderQuestion() {
   $("qLevel").textContent = L.name;
   $("qNum").textContent = "שְׁאֵלָה " + (S.q + 1) + " מִתּוֹךְ " + S.list.length;
   $("qBar").style.width = (S.q / S.list.length * 100) + "%";
+  mystDraw(); S.qT = Date.now();
   $("qPrompt").innerHTML = hlTerms(escapeHtml(q.prompt));
   $("qFb").className = "fb"; $("qFb").innerHTML = "";
   $("qNext").style.display = "none";
@@ -1252,8 +1302,26 @@ function renderQuestion() {
     b.onclick = function () { answer(+b.dataset.i); };   // ברמת תמונה האפשרויות לא מעורבבות – מספר הלוח = מספר האפשרות
   });
 }
+/* "הָרֶגַע שֶׁלִּפְנֵי" (16.11): הַקְּלָף מִסְתּוֹבֵב וְנֶעֱצָר עַל הַצַּד ~1.7 שְׁנִיּוֹת לִפְנֵי שֶׁמְּגַלִּים אִם צָדַק.
+   לֹא בְּכָל שְׁאֵלָה – רַק בְּרִגְעֵי שִׂיא: הַשְּׁאֵלָה הָאַחֲרוֹנָה בַּשָּׁלָב, וּפַעַם בְּכַמָּה שְׁאֵלוֹת בְּלִי דֶּפוּס קָבוּעַ */
+function wantSuspense() {
+  S.sinceSusp = (S.sinceSusp || 0) + 1;
+  if (S.q === S.list.length - 1 || (S.sinceSusp >= 3 && Math.random() < 0.3)) { S.sinceSusp = 0; return true; }
+  return false;
+}
 function answer(k) {
   if (S.busy) return; S.busy = true;
+  S.thinkMs = Date.now() - (S.qT || Date.now());
+  if (!wantSuspense()) return answerReveal(k);
+  var all = $("qBody").querySelectorAll(".opt,.pic-zone");
+  Array.prototype.forEach.call(all, function (b) { b.disabled = true; });
+  var ch = $("qBody").querySelector('.opt[data-k="' + k + '"]'), z = $("qBody").querySelector('.pic-zone[data-i="' + S.opts[k].i + '"]');
+  if (ch && ch.offsetParent) ch.classList.add("flip");
+  if (z) z.classList.add("wait");
+  soundDrum();
+  setTimeout(function () { [ch, z].forEach(function (b) { if (b) b.classList.remove("flip", "wait"); }); answerReveal(k); }, 1700);
+}
+function answerReveal(k) {
   var L = QUIZ.levels[S.lv], q = S.list[S.q], o = S.opts[k];
   var btns = $("qBody").querySelectorAll(".opt"), zones = $("qBody").querySelectorAll(".pic-zone");
   S.opts.forEach(function (x, j) {
@@ -1291,7 +1359,10 @@ function feedback(ok, q, pts, hints) {
       (lvl >= 8 ? love + "<div>" + hlTerms(escapeHtml(q.explain)) + "</div>" + whyBox(q) : "<div>" + hlTerms(escapeHtml(q.explain)) + "</div>" + whyBox(q) + love) +
       '<div class="src">📖 ' + srcLinks(q.src) + "</div>";
     if (extra) addPts(extra);
+    fb.innerHTML = fb.innerHTML.replace('<div class="t">', effLine() + goldLine() + '<div class="t">');
+    S.lastBad = false; mystDraw(true);
   } else {
+    S.lastBad = true;
     S.streak = 0;
     if (lvl >= 2) soundBad();
     fb.className = "fb on bad" + (lvl >= 3 ? " l3" : "");
@@ -1953,6 +2024,7 @@ function levelEnd() {
   var L = QUIZ.levels[S.lv], n = S.list.length, ratio = S.right / n;
   pingAttempt(L.key, S.right, n, ratio >= PASS);
   $("qBar").style.width = "100%";
+  $("lvBtn").style.visibility = "visible";
   if (ratio >= PASS) {
     S.lv++; S.retry = false;
     var justDid = QUIZ.levels[S.lv - 1].key;   // כִּתּוֹת א׳-ג׳ מְסַיְּמוֹת כָּאן, אַחֲרֵי רָמָה ב׳ (בְּלִי רָמָה ג׳, הַכְּתִיבָה)
@@ -1973,7 +2045,104 @@ function levelEnd() {
     $("lvBtn").textContent = "חוֹזְרִים עַל הַלִּמּוּד 📜";
     $("lvBtn").onclick = openStudy;
   }
+  var lm = $("lvMyst"); lm.innerHTML = "";
+  if (S.myst && ratio >= PASS && S.mystQ) mystGuess(lm);   // הַתְּמוּנָה נֶעֶצְרָה בְּאֶמְצַע – קֹדֶם מְנַחֲשִׁים, אַחַר כָּךְ מְגַלִּים
+  else if (S.myst) {
+    var t = mystTiles();
+    lm.innerHTML = '<div style="font-weight:800;color:#6d28d9">🖼️ הַתְּמוּנָה הַנִּסְתֶּרֶת – ' + t.off + " מִתּוֹךְ " + t.n + " חֲלוֹנוֹת</div>" +
+      '<div class="mystBig"><img src="' + S.myst + '" alt="">' + mystGrid(t.off, t.n) + "</div>";
+  }
+  if (S.gold) lm.insertAdjacentHTML("beforeend", '<div class="gold">⭐ אָסַפְתָּ ' + (S.gold === 1 ? "כּוֹכַב זָהָב אֶחָד" : S.gold + " כּוֹכְבֵי זָהָב") + " בַּשָּׁלָב הַזֶּה</div>");
+  if (ratio >= PASS && S.lv < QUIZ.levels.length && !(S.young && QUIZ.levels[S.lv - 1].key === "b")) lm.insertAdjacentHTML("beforeend", peekNext());
   show("sLevel");
+}
+
+/* ---------- עֶקְרוֹנוֹת הַקֶּשֶׁב (16.11.2026): תְּמוּנָה נִסְתֶּרֶת, כּוֹכַב זָהָב, מַחְמָאָה מְדֻיֶּקֶת ----------
+   תְּמוּנָה מִתּוֹךְ הַחִידוֹן מְכֻסָּה בְּ-12 חֲלוֹנוֹת; כָּל תְּשׁוּבָה נְכוֹנָה פּוֹתַחַת חֲלוֹנוֹת, וּבְסוֹף הַשָּׁלָב רוֹאִים אוֹתָהּ גְּדוֹלָה. */
+function mystPick(L) {   // תְּמוּנָה שֶׁל שְׁאֵלָה מֵהַשָּׁלָב הַזֶּה (אוֹ, אִם אֵין, מִשָּׁלָב קוֹדֵם) – בַּסּוֹף מְנַחֲשִׁים לְאֵיזוֹ שְׁאֵלָה הִיא שַׁיֶּכֶת
+  if (S.retry && S.myst) return;
+  var cand = [], li = QUIZ.levels.indexOf(L);
+  for (var d = 0; d <= li && !cand.length; d++)
+    QUIZ.levels[li - d].questions.forEach(function (q) { if (q.img && QUIZ.levels[li - d].questions.length >= 3) cand.push({ q: q, L: QUIZ.levels[li - d] }); });
+  S.mystUsed = S.mystUsed || [];
+  var fresh = cand.filter(function (c) { return S.mystUsed.indexOf(c.q.img) < 0; });
+  var c = (fresh.length ? fresh : cand)[Math.floor(Math.random() * (fresh.length || cand.length))];
+  S.myst = c ? c.q.img : null; S.mystQ = c ? c.q : null; S.mystL = c ? c.L : null;
+  if (S.myst) S.mystUsed.push(S.myst);
+  S.mystOrder = null;
+}
+var MYST_CAP = 8;   // בְּמַהֲלַךְ הַשָּׁלָב נִפְתָּחִים לְכָל הַיּוֹתֵר 8 מִתּוֹךְ 12 (כ-65%) – הָעֲצִירָה בְּאֶמְצַע הַגִּלּוּי
+function mystTiles() { var n = 12, len = S.list.length || 1; return { n: n, off: Math.min(MYST_CAP, Math.round(n * S.right / len)) }; }
+function mystGrid(off, n) {
+  var order = S.mystOrder; if (!order || order.length !== n) { order = S.mystOrder = shuffleArray(Array.apply(null, Array(n)).map(function (_, i) { return i; })); }
+  var h = '<div class="tiles">';
+  for (var i = 0; i < n; i++) h += "<i" + (order.indexOf(i) < off ? ' class="off"' : "") + "></i>";
+  return h + "</div>";
+}
+function mystDraw(anim) {
+  var box = $("qMyst"); if (!box) return;
+  if (!S.myst) { box.style.display = "none"; return; }
+  var t = mystTiles(), lastQ = !anim && S.q === S.list.length - 1;
+  if (anim && box.querySelector(".tiles")) {
+    var is = box.querySelectorAll(".tiles i");
+    S.mystOrder.forEach(function (ti, r) { if (r < t.off) is[ti].classList.add("off"); });
+  } else box.innerHTML = '<div class="mg"><img src="' + S.myst + '" alt="">' + mystGrid(t.off, t.n) + '</div><div class="lbl"></div>';
+  box.querySelector(".lbl").innerHTML = lastQ ? "🎁 עוֹד שְׁאֵלָה אַחַת –<br>וּמְגַלִּים אֶת הַתְּמוּנָה!" :
+    t.off >= MYST_CAP ? "🖼️ כִּמְעַט רוֹאִים הַכֹּל...<br>אֶת הַשְּׁאָר תְּגַלֶּה בְּסוֹף הַשָּׁלָב" :
+    "🖼️ תְּמוּנָה נִסְתֶּרֶת<br>כָּל תְּשׁוּבָה נְכוֹנָה פּוֹתַחַת חַלּוֹן (" + t.off + "/" + t.n + ")";
+  box.classList.toggle("shake", lastQ);
+  box.style.display = "flex";
+}
+function shortQ(q) { var t = String(q.prompt || "").replace(/\s+/g, " ").trim(); return t.length > 70 ? t.slice(0, 68) + "…" : t; }
+function mystGuess(lm) {   // "מָה לְדַעְתְּךָ בַּתְּמוּנָה?" – בּוֹחֲרִים לְאֵיזוֹ שְׁאֵלָה הִיא שַׁיֶּכֶת, וְרַק אָז הִיא נֶחְשֶׂפֶת
+  var t = mystTiles(), right = S.mystQ;
+  var others = shuffleArray(S.mystL.questions.filter(function (q) { return q !== right && q.img !== right.img && q.prompt; })).slice(0, 2);
+  var opts = shuffleArray([right].concat(others));
+  lm.innerHTML = '<div style="font-weight:800;color:#6d28d9">🖼️ הַתְּמוּנָה הַנִּסְתֶּרֶת נֶעֶצְרָה בָּאֶמְצַע!</div>' +
+    '<div class="mystBig"><img src="' + S.myst + '" alt="">' + mystGrid(t.off, t.n) + "</div>" +
+    "<div><b>🤔 מָה לְדַעְתְּךָ יֵשׁ בַּתְּמוּנָה? לְאֵיזוֹ שְׁאֵלָה הִיא שַׁיֶּכֶת?</b></div>" +
+    '<div class="mGuess">' + opts.map(function (q, i) { return '<button type="button" data-i="' + i + '">' + hlTerms(escapeHtml(shortQ(q))) + "</button>"; }).join("") + "</div>";
+  var btn = $("lvBtn"); btn.style.visibility = "hidden";
+  Array.prototype.forEach.call(lm.querySelectorAll(".mGuess button"), function (b) {
+    b.onclick = function () {
+      var ok = opts[+b.dataset.i] === right;
+      Array.prototype.forEach.call(lm.querySelectorAll(".mGuess button"), function (x) { x.disabled = true; if (opts[+x.dataset.i] === right) x.classList.add("ok"); });
+      if (!ok) b.classList.add("bad");
+      soundDrum();
+      setTimeout(function () {
+        Array.prototype.forEach.call(lm.querySelectorAll(".tiles i"), function (x) { x.classList.add("off"); });
+        var img = lm.querySelector(".mystBig img"); img.onclick = function () { zoomPic(S.myst); };
+        if (ok) soundGold(); 
+        var m = document.createElement("div"); m.className = "eff";
+        m.innerHTML = nm(ok ? "🎉 נִחַשְׁתָּ נָכוֹן, {n}! זָכַרְתָּ אֶת הַתְּמוּנָה מֵהַשְּׁאֵלָה" : "🖼️ הִנֵּה הִיא! הִיא שַׁיֶּכֶת לַשְּׁאֵלָה הַמְּסֻמֶּנֶת בְּיָרֹק");
+        lm.querySelector(".mGuess").after(m);
+        btn.style.visibility = "visible";
+      }, 1500);
+    };
+  });
+}
+function peekNext() {   // סוֹף שָׁלָב עִם רֶמֶז לַבָּא: חֲצִי מֵהַשְּׁאֵלָה הָרִאשׁוֹנָה שֶׁל הַשָּׁלָב הַבָּא, וְנֶעֱצָרִים
+  var N = QUIZ.levels[S.lv], q = N && N.questions[0]; if (!q || !q.prompt) return "";
+  var t = String(q.prompt).replace(/\s+/g, " ").trim(), w = t.split(" "), half = Math.max(2, Math.ceil(w.length / 2));
+  return '<div class="peek">🔒 הַצָּצָה לַשָּׁלָב הַבָּא – ' + escapeHtml(N.name) + ':<br>«' + escapeHtml(w.slice(0, half).join(" ")) +
+    ' <span class="cut">' + escapeHtml(w.slice(half, half + 2).join(" ")) + "</span>...»</div>";
+}
+var GOLD = ["⭐ כּוֹכַב זָהָב! הַפְתָּעָה – עוֹד כּוֹכָב לָאוֹסֶף שֶׁלְּךָ", "🌟 כּוֹכַב זָהָב! לֹא צִפִּיתָ לָזֶה, נָכוֹן?", "✨ כּוֹכַב זָהָב נָחַת אֶצְלְךָ!"];
+function goldLine() {   // בְּלִי דֶּפוּס קָבוּעַ: אַחֲרֵי 2 נְכוֹנוֹת לְפָחוֹת, בְּסִכּוּי שֶׁל רְבִיעַ
+  S.sinceGold = (S.sinceGold || 0) + 1;
+  if (S.sinceGold < 3 || Math.random() > 0.27) return "";
+  S.sinceGold = 0; S.gold = (S.gold || 0) + 1; setTimeout(soundGold, 350);
+  return '<div class="gold">' + draw("gold", GOLD) + "</div>";
+}
+var EFF_BACK = ["אַחֲרֵי טָעוּת חָזַרְתָּ וְעָנִיתָ נָכוֹן – כָּךְ לוֹמְדִים בֶּאֱמֶת! 💪", "לֹא נִבְהַלְתָּ מֵהַטָּעוּת, וְהִנֵּה הַצְלָחָה! 🌱"],
+    EFF_THINK = ["רָאִיתִי שֶׁעָצַרְתָּ לַחְשֹׁב לִפְנֵי שֶׁעָנִיתָ – זוֹ הַדֶּרֶךְ! 🧠", "חָשַׁבְתָּ בְּרֹגַע וְלֹא מִהַרְתָּ – וְזֶה הִשְׁתַּלֵּם 🧠"],
+    EFF_TRY2 = ["לֹא וִתַּרְתָּ, תִּקַּנְתָּ וְהִצְלַחְתָּ! 🔧", "בַּנִּסָּיוֹן הַשֵּׁנִי מָצָאתָ אֶת הַדֶּרֶךְ – כָּל הַכָּבוֹד עַל הַהַתְמָדָה 🔧"];
+function effLine() {   // מַחְמָאָה עַל הַדֶּרֶךְ וְהַמַּאֲמָץ, לֹא עַל כִּשָּׁרוֹן
+  var t = "";
+  if (S.g && S.g.q === S.list[S.q] && S.g.tries === 2) t = draw("efft2", EFF_TRY2);
+  else if (S.lastBad) t = draw("effb", EFF_BACK);
+  else if (!S.g || S.g.q !== S.list[S.q]) { if ((S.thinkMs || 0) > 9000) t = draw("efft", EFF_THINK); }
+  return t ? '<div class="eff">' + nm(t) + "</div>" : "";
 }
 
 
