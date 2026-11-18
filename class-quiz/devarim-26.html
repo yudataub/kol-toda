@@ -5,11 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>נְבִיא הַשֶּׁקֶר – חידון כיתתי</title>
 <meta name="description" content="נביא השקר – חידון כיתתי להקרנה על הלוח. חומש דברים, פרק י״ג, פסוקים ב׳–י״ט – שיעור 26. בימי ירמיהו רבים הלכו אחרי חנניה בן עזור, נביא השקר. מה משך אותם אחריו?">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   :root { --c1:#36454f; --c2:#f2a93b; --c3:#b23a3a; --ink:#1b2333; --ok:#16a34a; --bad:#dc2626; }
   * { box-sizing:border-box; }
   html, body { margin:0; height:100%; }
-  body { font-family:"Rubik","Segoe UI",Arial,sans-serif; background:linear-gradient(160deg,var(--c1),#0f2747); color:#fff; overflow:hidden; }
+  body { font-family:Heebo,"Segoe UI",Arial,sans-serif; background:linear-gradient(160deg,var(--c1),#0f2747); color:#fff; overflow:hidden; }
   #top { position:fixed; top:0; left:0; right:0; display:flex; align-items:center; gap:12px; padding:10px 18px; background:rgba(0,0,0,.25); font-size:18px; z-index:2; }
   #top .t { font-weight:800; }
   #top .chip { background:var(--c2); color:#1b2333; border-radius:20px; padding:3px 12px; font-weight:700; font-size:15px; }
@@ -111,6 +114,24 @@
   .sdots span { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); }
   .sdots .y { background:#1f9d55; } .sdots .x { background:#f4a261; color:#3b2412; }
   #nm button.v { background:#e8ecf3; color:var(--ink); font-size:16px; font-weight:400; }
+  /* שאלת חידוד של תלמיד (Q.chid) – בעמוד ההסבר */
+  .box.chid { background:#f3efff; border-inline-start:8px solid #7c3aed; }
+  .box.chid h3 { color:#6d28d9; font-size:1em; }
+  .chid .cq { font-weight:800; font-size:1.15em; }
+  .chid .by { font-size:.62em; color:#6b7280; margin:2px 0 10px; }
+  .chid details { margin:6px 0 4px; }
+  .chid summary { display:inline-block; list-style:none; cursor:pointer; background:#7c3aed; color:#fff; font-weight:700; border-radius:14px; padding:8px 22px; font-size:.9em; user-select:none; }
+  .chid summary::-webkit-details-marker { display:none; }
+  .chid details[open] summary { background:#ede9fe; color:#5b21b6; }
+  .chid .ca { margin-top:10px; background:#fff; border-radius:14px; padding:12px 16px; white-space:pre-line; font-size:.92em; }
+  .chid .snd { margin-top:14px; padding-top:12px; border-top:2px dashed #c4b5fd; font-size:.72em; display:flex; flex-direction:column; gap:8px; }
+  .chid .snd b { color:#5b21b6; font-size:1.1em; }
+  .chid .snd .rw { display:flex; gap:8px; flex-wrap:wrap; }
+  .chid .snd input, .chid .snd textarea { font:inherit; border:2px solid #c4b5fd; border-radius:12px; padding:8px 12px; flex:1; min-width:min(100%,220px); background:#fff; color:var(--ink); }
+  .chid .snd textarea { min-height:3.4em; resize:vertical; width:100%; }
+  .chid .snd button { font:inherit; font-weight:700; border:0; border-radius:12px; padding:8px 22px; background:#7c3aed; color:#fff; cursor:pointer; }
+  .chid .snd button:disabled { opacity:.5; cursor:default; }
+  .chid .snd .msg { font-weight:700; color:#5b21b6; align-self:center; }
 </style>
 <meta property="og:title" content="נְבִיא הַשֶּׁקֶר – חידון כיתתי">
 <meta property="og:description" content="נְבִיא הַשֶּׁקֶר – חידון כיתתי">
@@ -199,6 +220,48 @@ function learnHtml(D) {
       : D.v ? `<div class="vs">׳${rich(D.v)}׳</div>` : "") + (D.x ? `<div class="box">${rich(D.x)}</div>` : "") +
     (r ? `<div class="box m"><h3>📜 ${esc(r[0])}</h3>${rich(r[1])}</div>` : "") + (D.n ? `<div class="box">${rich(D.n)}</div>` : "") + `</div>`;
 }
+// Q.chid = { q: שאלת חידוד ששאל תלמיד, by: שם השואל, a: תשובת המורה } – תיבה בעמוד ההסבר (וגם בתרגול לבד).
+// התשובה נפתחת בלחיצה (details – בלי לבנות את הדף מחדש). מתחת: תלמיד כותב חידה משלו, והיא נשלחת למייל של המורה (action=riddle בשרת הציונים).
+const RIDDLE_API = "https://script.google.com/macros/s/AKfycbxnmfZcen-MXI1Af0a61_m2awo_WIz19wcbWnl_pgywOYpj2f7kgT9T08icGmRV8Oa7/exec";
+// הטופס לא מוצג במקרן ובלוח המורה. מה שהילד כתב נשמר ב-RD ומוחזר לשדות אחרי כל בנייה מחדש של הדף (rdFill),
+// כך שמעבר עמוד או עדכון חי לא מוחקים טיוטה, והמחרוזת ש-chidHtml מחזיר קבועה.
+const RD_FORM = window.parent === window && params.get("view") !== "1" && ls("cq:view") !== "1";
+const RD = { t: {}, m: {}, n: "", c: ls("cq:rdc") || "" };
+try { RD.n = (JSON.parse(ls("hq-me") || "{}") || {}).name || ""; } catch (e) {}
+function rdFill() {
+  const b = $("rdS"); if (!b) return;
+  const q = +b.dataset.rd;
+  $("rdT").value = RD.t[q] || ""; $("rdN").value = RD.n || webName || ""; $("rdC").value = RD.c; $("rdM").textContent = RD.m[q] || "";
+}
+function chidHtml(Q) {
+  const C = Q.chid; if (!C || !C.q) return "";
+  return `<div class="box chid"><h3>🧠 שְׁאֵלַת חִדּוּד</h3><div class="cq">${rich(C.q)}</div>` +
+    (C.by ? `<div class="by">${esc(C.by)}</div>` : "") +
+    (C.a ? `<details><summary>💡 תְּשׁוּבַת הַמּוֹרֶה – לוֹחֲצִים כָּאן</summary><div class="ca">${rich(C.a)}</div></details>` : "") +
+    (RIDDLE_API && RD_FORM ? `<div class="snd"><b>✍️ רוֹצֶה גַּם אַתָּה לְהַכְנִיס חִידָה? כְּתֹב כָּאן:</b>
+      <textarea id="rdT" maxlength="1000" placeholder="הַשְּׁאֵלָה שֶׁלִּי עַל הַפְּסוּקִים…"></textarea>
+      <div class="rw"><input id="rdN" maxlength="40" placeholder="הַשֵּׁם שֶׁלִּי"><input id="rdC" maxlength="40" placeholder="כִּתָּה וּבֵית סֵפֶר">
+      <button id="rdS" data-rd="${CQ.qs.indexOf(Q)}">📨 שְׁלִיחָה לַמּוֹרֶה</button></div><span class="msg" id="rdM"></span></div>` : "") + `</div>`;
+}
+function sendRiddle(q) {
+  const t = $("rdT").value.trim(), n = $("rdN").value.replace(/\s+/g, " ").trim(), c = $("rdC").value.replace(/\s+/g, " ").trim(), b = $("rdS");
+  const say = x => { RD.m[q] = x; const m = $("rdM"), s2 = $("rdS"); if (m && s2 && +s2.dataset.rd === q) m.textContent = x; };
+  if (t.length < 5) return say("✍️ כִּתְבוּ אֶת הַשְּׁאֵלָה");
+  if (!n) return say("✍️ כִּתְבוּ אֶת הַשֵּׁם");
+  ls("cq:rdc", c);
+  b.disabled = true; say("שׁוֹלֵחַ…");
+  const page = (location.pathname.split("/").pop() || "").replace(/\.html$/, "") || CQ.id.replace(/-cq$/, "");
+  fetch(RIDDLE_API, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ action: "riddle", page, title: CQ.title, where: "שאלה " + (q + 1) + ": " + CQ.qs[q].t, name: n, cls: c, text: t }) })
+    .then(r => r.json()).then(d => {
+      if (d && d.ok) { say("✅ תּוֹדָה! הַשְּׁאֵלָה נִשְׁלְחָה לַמּוֹרֶה."); if (RD.t[q] === t || (RD.t[q] || "").trim() === t) { RD.t[q] = ""; const s2 = $("rdS"); if (s2 && +s2.dataset.rd === q) $("rdT").value = ""; } }
+      else say(d && d.error === "limit" ? "כְּבָר נִשְׁלְחוּ כַּמָּה שְׁאֵלוֹת – נַסּוּ שׁוּב מְאֻחָר יוֹתֵר" : "⚠️ הַשְּׁלִיחָה לֹא הִצְלִיחָה. נַסּוּ שׁוּב.");
+    }).catch(() => say("⚠️ אֵין חִבּוּר. נַסּוּ שׁוּב מְאֻחָר יוֹתֵר."))
+    .then(() => { if ($("rdS")) $("rdS").disabled = false; });
+}
+$("stage").addEventListener("input", e => {
+  const b = $("rdS"); if (!b) return;
+  if (e.target.id === "rdT") RD.t[+b.dataset.rd] = e.target.value; else if (e.target.id === "rdN") RD.n = e.target.value; else if (e.target.id === "rdC") RD.c = e.target.value;
+});
 // צלילים – נוצרים בדפדפן (Web Audio), בלי קבצים. 🔊/🔇 בפס העליון, נשמר בדפדפן.
 // ברירת מחדל: דולק במקרן/לוח ובתרגול לבד; כבוי במחשבי התלמידים בשיעור (שלושים מחשבים לא מצפצפים יחד), ואפשר להדליק.
 // טעות = צליל רך ונמוך, לא מעניש. תקתוק רק ב-10 השניות האחרונות, הולך ומתחזק.
@@ -327,11 +390,11 @@ function render() {
     if (w.s === 3) {
       h += `<div class="opts"><div class="opt right"><span class="l">${LET[Q.c]}</span><span class="tx">${esc(Q.o[Q.c])} ✔</span></div></div>` +
         (Q.ex ? `<div class="box"><h3>💡 לָמָּה זוֹ הַתְּשׁוּבָה?</h3>${rich(Q.ex)}</div>` : "") +
-        (Q.m ? `<div class="box m"><h3>🌱 מָה לוֹמְדִים מִזֶּה?</h3>${rich(Q.m)}</div>` : "");
+        (Q.m ? `<div class="box m"><h3>🌱 מָה לוֹמְדִים מִזֶּה?</h3>${rich(Q.m)}</div>` : "") + chidHtml(Q);
     }
   }
   if (WEB && STUDENT && !run) h += `<div class="wait">⏳ מְחַכִּים שֶׁהַמּוֹרֶה יַצְמִיד אֶת הַחִידוֹן לַכִּתָּה…</div>`;
-  if (h !== lastHtml) { lastHtml = h; $("stage").innerHTML = h; }   // בלי לבנות מחדש כשאין שינוי (גלילה, ריחוף)
+  if (h !== lastHtml) { lastHtml = h; $("stage").innerHTML = h; rdFill(); }   // בלי לבנות מחדש כשאין שינוי (גלילה, ריחוף)
   tick();
   if ($("who").innerHTML !== who) $("who").innerHTML = who;
   $("who").classList.toggle("hidden", !who);
@@ -403,16 +466,17 @@ function soloRender() {
       `<button class="opt${done ? (j === Q.c ? " right" : j === k ? " wrong" : " dim") : ""}" data-sk="${j}"><span class="l">${LET[j]}</span><span class="tx">${esc(o)}${done && j === Q.c ? " ✔" : ""}</span></button>`).join("") + `</div>`;
     if (!done) h += `<div class="sbtns">${Q.L && !S.learn ? `<button class="solo-go alt" data-solo="learn">📖 לְהַצִּיג אֶת דַּף הַלִּמּוּד</button>` : ""}<button class="solo-go alt" data-solo="exit">✕ יְצִיאָה מֵהַתִּרְגּוּל</button></div>`;
     else h += (k === Q.c ? `<div class="note ok">✔ נָכוֹן! כׇּל הַכָּבוֹד</div>` : `<div class="note bad">✘ לֹא הַפַּעַם – הַתְּשׁוּבָה הַנְּכוֹנָה בַּיָּרֹק</div>`) +
-      (Q.ex ? `<div class="box"><h3>💡 לָמָּה זוֹ הַתְּשׁוּבָה?</h3>${rich(Q.ex)}</div>` : "") + (Q.m ? `<div class="box m"><h3>🌱 מָה לוֹמְדִים מִזֶּה?</h3>${rich(Q.m)}</div>` : "") +
+      (Q.ex ? `<div class="box"><h3>💡 לָמָּה זוֹ הַתְּשׁוּבָה?</h3>${rich(Q.ex)}</div>` : "") + (Q.m ? `<div class="box m"><h3>🌱 מָה לוֹמְדִים מִזֶּה?</h3>${rich(Q.m)}</div>` : "") + chidHtml(Q) +
       `<button class="solo-go" data-solo="next">${S.pos + 1 < S.list.length ? (S.fix ? "לַטָּעוּת הַבָּאָה ←" : "לַשְּׁאֵלָה הַבָּאָה ←") : "🏁 לַצִּיּוּן"}</button>`;
   }
-  if (h !== lastHtml) { lastHtml = h; $("stage").innerHTML = h; $("stage").scrollTop = 0; }
+  if (h !== lastHtml) { lastHtml = h; $("stage").innerHTML = h; $("stage").scrollTop = 0; rdFill(); }
   const st = {}; CQ.qs.forEach((Q, i) => { if (S.a[i] != null) st[i] = S.a[i] === Q.c ? "y" : "x"; });
   const done = Object.keys(S.a).length;
   $("map").innerHTML = mapHtml(S.q < N ? S.q : -1, st, Math.round(done * 100 / N), N - done);
   milestone("solo", Math.round(done * 100 / N));
   layout(false);
 }
+$("stage").addEventListener("click", e => { const r = e.target.closest("[data-rd]"); if (r) sendRiddle(+r.dataset.rd); });
 $("stage").addEventListener("click", e => {
   const b = e.target.closest("[data-solo]");
   if (b) {
@@ -435,7 +499,7 @@ $("stage").addEventListener("click", e => {
 $("nxt").onclick = () => { if (!locked) go(pg + 1); };
 $("prv").onclick = () => { if (!locked) go(pg - 1); };
 document.addEventListener("keydown", e => {
-  if (locked) return;
+  if (locked || /^(INPUT|TEXTAREA)$/.test(e.target.tagName) || (e.key === " " && e.target.closest("summary,button"))) return;
   if (["ArrowLeft", "PageDown", " "].includes(e.key)) { e.preventDefault(); go(pg + 1); }
   if (["ArrowRight", "PageUp"].includes(e.key)) { e.preventDefault(); go(pg - 1); }
 });
@@ -470,7 +534,9 @@ if (CLS && window.EventSource) {
   const es = new EventSource(`https://kol-kiosk-class-default-rtdb.europe-west1.firebasedatabase.app/classes/${CLS}/state/lesson.json`);
   let les = null;
   const same = u => { try { return new URL(u).pathname === location.pathname; } catch (e) { return false; } };
-  const apply = () => { if (les && les.mode === "page" && same(les.url || "")) { KolBook.lock(true); KolQuiz.live({ ...(les.cq || {}), run: les.ts }); go(les.pg || 0); } };
+  const apply = () => { if (!les || les.mode !== "page") return; const two = les.lead2 && les.url2, lead = same((two ? les.url2 : les.url) || "");   // lead2: המורה מדפדף בדף השני
+    if (lead) { KolBook.lock(true); KolQuiz.live({ ...(les.cq || {}), run: les.ts }); go(les.pg || 0); }
+    else if (les.url2 && same((two ? les.url : les.url2) || "")) { KolBook.lock(true); go(les.pgAlt || 0); } };
   es.addEventListener("put", e => { const m = JSON.parse(e.data); if (m.path === "/") les = m.data; else if (les) { const k = m.path.slice(1).split("/"); let o = les; for (let i = 0; i < k.length - 1; i++) o = o[k[i]] = o[k[i]] || {}; o[k[k.length - 1]] = m.data; } apply(); });
   es.addEventListener("patch", e => { const m = JSON.parse(e.data); if (les && m.path === "/") Object.assign(les, m.data); apply(); });
 }
