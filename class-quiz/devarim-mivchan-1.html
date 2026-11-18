@@ -168,12 +168,12 @@ function who() {
   ovClose(); VIEW = "who"; window.scrollTo(0, 0);
   const hq = lsGet("hq-me") || {}, m = ME || hq;
   $("#app").innerHTML = `<div class="hero"><img class="ari lg" src="${ARI.hello}" alt=""><h1>${esc(D.title)}</h1><div class="sub">${esc(D.sub)}</div></div>
-  <div class="card"><h2>מִי מְשַׂחֵק?</h2><p>כְּתֹב אֶת שִׁמְךָ, וְהַמִּשְׂחָק יִזְכֹּר אֵיפֹה עָצַרְתָּ וּמָה הַצִּיּוּן שֶׁלְּךָ. כָּךְ תּוּכַל לְהַמְשִׁיךְ אַחַר כָּךְ. תַּחֲנוֹת שֶׁסִּיַּמְתָּ נִשְׁמָרוֹת גַּם לְמַחְשֵׁב אַחֵר.</p>
+  <div class="card"><h2>מִי מְשַׂחֵק?</h2><p>${D.exam ? "כְּתֹב אֶת שִׁמְךָ וְאֶת הַכִּתָּה, וְהַצִּיּוּן יִשָּׁמֵר עַל שִׁמְךָ.</p><p hidden>" : ""}כְּתֹב אֶת שִׁמְךָ, וְהַמִּשְׂחָק יִזְכֹּר אֵיפֹה עָצַרְתָּ וּמָה הַצִּיּוּן שֶׁלְּךָ. כָּךְ תּוּכַל לְהַמְשִׁיךְ אַחַר כָּךְ. תַּחֲנוֹת שֶׁסִּיַּמְתָּ נִשְׁמָרוֹת גַּם לְמַחְשֵׁב אַחֵר.</p>
   <input class="inp" id="wn" maxlength="30" placeholder="שֵׁם וְשֵׁם מִשְׁפָּחָה" value="${esc(ME ? "" : m.name || "")}">
   <input class="inp" id="wc" maxlength="15" placeholder="כִּתָּה (לְמָשָׁל: ו׳2)" value="${esc(m.cls || "")}">
   <input class="inp" id="ws" maxlength="40" placeholder="בֵּית סֵפֶר" value="${esc(m.school || "")}">
   <div class="msg" id="wm"></div>
-  <button class="big" id="wg">מַתְחִילִים!</button><button class="ghost" id="wx">לְשַׂחֵק בְּלִי שֵׁם (הַצִּיּוּן לֹא יִשָּׁמֵר)</button></div>`;
+  <button class="big" id="wg">מַתְחִילִים!</button>${D.exam ? "" : `<button class="ghost" id="wx">לְשַׂחֵק בְּלִי שֵׁם (הַצִּיּוּן לֹא יִשָּׁמֵר)</button>`}</div>`;
   $("#wg").onclick = () => {
     const name = norm($("#wn").value), cls = norm($("#wc").value), school = norm($("#ws").value);
     if (!name) { $("#wm").textContent = "✍️ כְּתֹב אֶת שִׁמְךָ כְּדֵי לְהַתְחִיל"; $("#wn").focus(); return; }
@@ -181,7 +181,7 @@ function who() {
     lsSet("hq-me", Object.assign({}, hq, { name, cls, school }));   // אותה הרשמה של חידוני האתר
     loadProfile({ name, cls, school }); START(); cloudPull();
   };
-  $("#wx").onclick = () => { loadProfile(null); START(); };
+  if ($("#wx")) $("#wx").onclick = () => { loadProfile(null); START(); };
 }
 const doneN = () => D.stations.filter((s, i) => S.st[i] && S.st[i].done).length;
 const wrongAll = () => Object.values(S.st).flatMap(x => x.wrong || []).filter(id => QBY[id]);
@@ -481,18 +481,35 @@ function finale() {
 const EXQ = D.exam ? D.exam.ids.map(id => D.exam.qs.find(q => q.id === id)) : [];
 function examHome() {
   ovClose(); VIEW = "exam"; window.scrollTo(0, 0);
-  const pr = S.exam, mid = S.ex && S.ex.ans && S.ex.ans.length < EXQ.length && S.ex.ans.length > 0;
-  $("#app").innerHTML = `<div class="top"><div class="who">👤 ${ME ? esc(ME.name) + (ME.cls ? " · " + esc(ME.cls) : "") : "אוֹרֵחַ"} <button id="sw">${ME ? "הַחֲלֵף תַּלְמִיד" : "לִכְתֹּב שֵׁם"}</button></div>${sndBtn()}</div>
+  if (!ME) return who();   // מבחן רק עם שם
+  const pr = S.exam, mid = !pr && S.ex && Array.isArray(S.ex.order) && S.ex.ans.length > 0 && S.ex.ans.length < EXQ.length;
+  $("#app").innerHTML = `<div class="top"><div class="who">👤 ${esc(ME.name) + (ME.cls ? " · " + esc(ME.cls) : "")} <button id="sw">הַחֲלֵף תַּלְמִיד</button></div>${sndBtn()}</div>
   <div class="hero"><h1>${esc(D.title)}</h1><div class="sub">${esc(D.sub)}</div></div>
-  <div class="card"><p>לְפָנֶיךָ <b>${EXQ.length} שְׁאֵלוֹת</b>. עוֹנִים עַל כָּל שְׁאֵלָה פַּעַם אַחַת, בְּלִי רְמָזִים. בַּסּוֹף תְּקַבֵּל צִיּוּן, וְתִרְאֶה אֶת הַהֶסְבֵּר לְכָל שְׁאֵלָה שֶׁטָּעִיתָ בָּהּ.</p>
-  ${pr ? `<p>הַצִּיּוּן שֶׁלְּךָ בַּפַּעַם הַקּוֹדֶמֶת: <b style="font-size:24px;color:#1f4e5f">${pr.grade}</b></p>` : ""}
-  <button class="big" id="xs">${mid ? "▶ לְהַמְשִׁיךְ מֵהַמָּקוֹם שֶׁעָצַרְתָּ" : pr ? "לְהִבָּחֵן שׁוּב" : "מַתְחִילִים אֶת הַמִּבְחָן"}</button></div>`;
+  <div class="card">${pr ? `<p class="center" style="font-size:22px">כְּבָר נִבְחַנְתָּ. הַצִּיּוּן שֶׁלְּךָ: <b style="font-size:40px;color:#1f4e5f">${pr.grade}</b></p><p class="center">אֶת הַמִּבְחָן עוֹשִׂים פַּעַם אַחַת, וְהַצִּיּוּן נִשְׁמַר עַל שִׁמְךָ.</p>`
+    : `<p>לְפָנֶיךָ <b>${EXQ.length} שְׁאֵלוֹת</b>. עוֹנִים עַל כָּל שְׁאֵלָה פַּעַם אַחַת, בְּלִי רְמָזִים. אֶת הַמִּבְחָן עוֹשִׂים <b>פַּעַם אַחַת בִּלְבַד</b>. בַּסּוֹף תְּקַבֵּל צִיּוּן, וְתִרְאֶה אֶת הַהֶסְבֵּר לְכָל שְׁאֵלָה שֶׁטָּעִיתָ בָּהּ.</p>
+  <button class="big" id="xs">${mid ? "▶ לְהַמְשִׁיךְ מֵהַמָּקוֹם שֶׁעָצַרְתָּ" : "מַתְחִילִים אֶת הַמִּבְחָן"}</button>`}</div>`;
   bindSnd(); $("#sw").onclick = who;
-  $("#xs").onclick = () => { if (!mid) { S.ex = { ans:[] }; save(); } examQ(); };
+  const xs = $("#xs"); if (!xs) return;
+  /* לכל תלמיד סדר שאלות אקראי משלו (order), שנשמר כדי שהמשך מאמצע יהיה באותו סדר */
+  xs.onclick = () => { if (!mid) { S.ex = { ans:[], order:shuf([...Array(EXQ.length).keys()]) }; save(); } examQ(); };
+  /* ניסיון אחד: בודקים גם בשרת אם התלמיד כבר נבחן (במחשב אחר). בלי רשת – מאפשרים להתחיל. */
+  if (API && !mid) {
+    const me = ME, lbl = xs.textContent; xs.disabled = true; xs.textContent = "רֶגַע…";
+    const free = () => { if (ME === me && $("#xs") === xs) { xs.disabled = false; xs.textContent = lbl; } };
+    const tm = setTimeout(free, 7000);
+    try {
+      fetch(API + "?action=me&name=" + enc(me.name) + "&cls=" + enc(me.cls) + "&school=" + enc(me.school)).then(r => r.json()).then(d => {
+        clearTimeout(tm); const v = d && d.games ? d.games[D.exam.gid] : null;
+        if (v == null || ME !== me) return free();
+        const right = Math.max(0, Math.min(EXQ.length, Math.round(v / 10)));
+        S.exam = { grade:grd(right, EXQ.length), right, n:EXQ.length }; S.ex = null; save(); if (VIEW === "exam" && $("#xs") === xs) examHome();
+      }).catch(() => { clearTimeout(tm); free(); });
+    } catch (e) { clearTimeout(tm); free(); }
+  }
 }
 function examQ() {
   VIEW = "exam"; window.scrollTo(0, 0);
-  const i = S.ex.ans.length, q = EXQ[i];
+  const i = S.ex.ans.length, q = EXQ[S.ex.order[i]];
   if (!q) return examEnd();
   const opts = shuf(q.o.map((t, k) => ({ t, k }))), t0 = Date.now();
   $("#app").innerHTML = `<div class="top"><div class="ttl">שְׁאֵלָה ${i + 1} מִתּוֹךְ ${EXQ.length}</div>${sndBtn()}</div>
@@ -507,12 +524,12 @@ function examQ() {
 }
 function examEnd() {
   VIEW = "exam"; window.scrollTo(0, 0);
-  const ans = S.ex.ans, right = EXQ.filter((q, i) => ans[i] === q.c).length, grade = grd(right, EXQ.length);
+  const ans = S.ex.ans, QS = S.ex.order.map(k => EXQ[k]), right = QS.filter((q, i) => ans[i] === q.c).length, grade = grd(right, EXQ.length);
   S.exam = { grade, right, n:EXQ.length }; S.ex = null; save();
   if (API && ME) try { fetch(API, { method:"POST", headers:{ "Content-Type":"text/plain" }, body: JSON.stringify({ game:D.exam.gid, name:ME.name, cls:ME.cls, school:ME.school, score:right * 10, a:right, b:EXQ.length }) }).catch(() => {}); } catch (e) {}
   let h = `<div class="top"><div class="ttl"></div>${sndBtn()}</div><div class="hero"><img class="ari lg" src="${right === EXQ.length ? ARI.joy : ARI.proud}" alt=""><h1>${esc(D.title)}</h1></div>
   <div class="card center"><p style="font-size:22px">הַצִּיּוּן שֶׁלְּךָ: <b style="font-size:40px;color:#1f4e5f">${grade}</b></p><p>עָנִיתָ נָכוֹן עַל <b>${right} מִתּוֹךְ ${EXQ.length}</b> שְׁאֵלוֹת.${ME ? " הַצִּיּוּן נִשְׁמַר עַל שִׁמְךָ ✓" : ""}</p></div>`;
-  EXQ.forEach((q, i) => { if (ans[i] !== q.c) h += `<div class="card"><span class="tag">שְׁאֵלָה ${i + 1}</span><div class="q">${md(q.t)}</div>
+  QS.forEach((q, i) => { if (ans[i] !== q.c) h += `<div class="card"><span class="tag">שְׁאֵלָה ${i + 1}</span><div class="q">${md(q.t)}</div>
     <div class="opts"><button disabled class="badp">${md(q.o[ans[i]])}</button><button disabled class="good">${md(q.o[q.c])}</button></div><div class="fb"><div class="ex">${md(q.ex)}</div><div class="m">${md(q.m)}</div></div></div>`; });
   h += `<button class="ghost" id="bk">סִיּוּם</button>`;
   $("#app").innerHTML = h; bindSnd(); snd.seal(); $("#bk").onclick = examHome;
