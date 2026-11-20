@@ -25,6 +25,9 @@
   #who { box-sizing:border-box; }
   #stage { position:fixed; inset:48px 0 0 0; overflow:auto; display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:20px; padding:24px 24px 90px; text-align:center; }
   .q { font-size:clamp(24px,3.6vw,48px); font-weight:800; line-height:1.45; max-width:1100px; }
+  #stage.fit > * { zoom:var(--fit,1); }
+  #stage.fit .opts { width:min(calc(1150px / var(--fit,1)), calc(100% / var(--fit,1))); grid-template-columns:repeat(auto-fit,minmax(min(100%,calc(420px / var(--fit,1))),1fr)); }
+  #stage.fit .q { max-width:calc(1100px / var(--fit,1)); }
   .q b { color:var(--c2); } .box b { color:var(--c1); }
   .wait { font-size:22px; opacity:.85; }
   .opts { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr)); gap:14px; width:min(1150px,100%); }
@@ -336,11 +339,31 @@ function layout(whoOn) {
   wEl.style.height = whoH + "px";
   $("stage").style.top = (m + whoH) + "px";
 }
+// עמוד התשובות נכנס תמיד למסך (20.11.2026): במחשבי התלמידים (מסך קטן, תצוגה מוגדלת) התשובות התחתונות היו מתחת לקצה המסך,
+// התלמידים גללו כדי להגיע אליהן, והלחיצה נפלה בזמן הגלילה על תשובה אחרת. מקטינים את התוכן עד שהוא נכנס בלי גלילה (לא פחות מ-45%).
+let fitKey = "";
+function fitStage(on) {
+  const st = $("stage");
+  if (!on) { if (fitKey) { fitKey = ""; st.classList.remove("fit"); st.style.removeProperty("--fit"); } return; }
+  const key = lastHtml.length + "|" + st.clientWidth + "x" + st.clientHeight + "|" + st.style.top;
+  if (key === fitKey) return;
+  fitKey = key;
+  st.classList.add("fit");
+  const over = z => { st.style.setProperty("--fit", z.toFixed(3)); return st.scrollHeight > st.clientHeight + 1; };
+  if (over(1)) {
+    // הגודל הגדול ביותר שנכנס במסך (חיפוש בינארי), ולא פחות מ-45%
+    let lo = 0.45, hi = 1;
+    for (let i = 0; i < 7; i++) { const mid = (lo + hi) / 2; if (over(mid)) hi = mid; else lo = mid; }
+    over(lo);
+  }
+  st.scrollTop = 0;
+}
+addEventListener("resize", () => { fitKey = ""; render(); });
 // מעקב אחרי לחיצות חשודות (20.11.2026): התוכנה רושמת אותן כתקלה (cq_early / cq_shift / cq_change), כדי לדעת למה "לחצתי ג וסימן ב".
 let pgAt = Date.now(), optY = null, shiftAt = 0, shiftDy = 0, pickAt = 0;
 function noteKiosk(kind, msg) { try { if (W) W.postMessage(JSON.stringify({ kk: "note", k: kind, m: CQ.id + " " + msg })); } catch (e) {} }
 function watchShift() {
-  const b = document.querySelector(".ans .opt"), y = b ? Math.round(b.getBoundingClientRect().top) : null;
+  const b = document.querySelector(".ans .opt"), y = b ? Math.round(b.getBoundingClientRect().top + $("stage").scrollTop) : null;   // בלי הגלילה של התלמיד עצמו
   if (Date.now() - pgAt < 700 || y == null) { optY = y; return; }
   if (optY != null && Math.abs(y - optY) >= 6) { shiftAt = Date.now(); shiftDy = y - optY; }
   optY = y;
@@ -417,6 +440,7 @@ function render() {
   if ($("who").innerHTML !== who) $("who").innerHTML = who;
   $("who").classList.toggle("hidden", !who);
   classMap(); layout(!!who);
+  fitStage(w.s === 1 || w.s === 2);   // אחרי layout: גובה האזור כבר סופי
   $("cnt").textContent = (pg + 1) + " מִתּוֹךְ " + PAGES;
   $("prv").disabled = pg <= 0; $("nxt").disabled = pg >= PAGES - 1;
 }

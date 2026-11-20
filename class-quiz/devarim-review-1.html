@@ -20,9 +20,14 @@
   #who { position:fixed; top:48px; left:0; right:0; display:flex; flex-wrap:wrap; gap:6px; padding:8px 18px; background:rgba(0,0,0,.15); z-index:2; max-height:30vh; overflow:auto; }
   #who .c { background:rgba(255,255,255,.14); border-radius:20px; padding:3px 12px; font-size:15px; }
   #who .c.ok { background:var(--ok); }
-  #who .c.n { background:none; font-weight:800; }
+  #who .c.n { background:none; font-weight:800; min-width:9.5em; }
+  #who .c .mk { display:inline-block; width:1.2em; text-align:center; font-style:normal; }
+  #who { box-sizing:border-box; }
   #stage { position:fixed; inset:48px 0 0 0; overflow:auto; display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:20px; padding:24px 24px 90px; text-align:center; }
   .q { font-size:clamp(24px,3.6vw,48px); font-weight:800; line-height:1.45; max-width:1100px; }
+  #stage.fit > * { zoom:var(--fit,1); }
+  #stage.fit .opts { width:min(calc(1150px / var(--fit,1)), calc(100% / var(--fit,1))); grid-template-columns:repeat(auto-fit,minmax(min(100%,calc(420px / var(--fit,1))),1fr)); }
+  #stage.fit .q { max-width:calc(1100px / var(--fit,1)); }
   .q b { color:var(--c2); } .box b { color:var(--c1); }
   .wait { font-size:22px; opacity:.85; }
   .opts { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr)); gap:14px; width:min(1150px,100%); }
@@ -197,7 +202,7 @@ function whoHtml(answeredMode) {
   if (!w.length) return "";
   const n = w.filter(x => x[1]).length;
   return `<span class="c n">${answeredMode ? `ענו ${n} מתוך ${w.length}` : `מחוברים: ${w.length}`}</span>` +
-    w.map(x => `<span class="c${answeredMode && x[1] ? " ok" : ""}">${answeredMode ? (x[1] ? "✓ " : "… ") : ""}${esc(x[0])}</span>`).join("");
+    w.map(x => `<span class="c${answeredMode && x[1] ? " ok" : ""}">${answeredMode ? `<i class="mk">${x[1] ? "✓" : "…"}</i>` : ""}${esc(x[0])}</span>`).join("");
 }
 function optsHtml(q, mode) {   // mode: "ans" (אפשר לענות) / "res" (תוצאות)
   const Q = CQ.qs[q], cnt = (L.cnt || {})[q], tot = cnt ? cnt.reduce((a, b) => a + (+b || 0), 0) : 0;
@@ -295,6 +300,7 @@ let lastSec = -1, sndPg = -1;
 // השעון מתעדכן בלי לבנות את הדף מחדש; כשהזמן נגמר – render אחד שסוגר את התשובות.
 let wasUp = {};
 function tick() {
+  watchShift();
   const w = where(pg), el = $("tmr");
   if (!el || w.q == null || w.s !== 1) return;
   const s = secOf(w.q), l = left(w.q), up = l <= 0;
@@ -322,10 +328,45 @@ function milestone(key, pct) {
   if (hit[0] < 100) sfx("ms");
   const el = $("ms"); el.textContent = hit[1]; el.classList.add("on"); clearTimeout(msT); msT = setTimeout(() => el.classList.remove("on"), 2200);
 }
+// פס השמות שומר על גובה אחד כל זמן שנמצאים באותו עמוד: כשתלמידים עונים או מתחברים הפס לא גדל (שמות עודפים נגללים בתוכו),
+// והתשובות לא זזות מתחת לעכבר. עד 20.11.2026 הפס גדל בשורה, התשובות ירדו, ולחיצה נפלה על תשובה אחרת.
+let whoPg = -1, whoH = 0;
 function layout(whoOn) {
   const t = $("top").offsetHeight; $("map").style.top = t + "px";
-  const m = t + $("map").offsetHeight; $("who").style.top = m + "px";
-  $("stage").style.top = (whoOn ? m + $("who").offsetHeight : m) + "px";
+  const m = t + $("map").offsetHeight, wEl = $("who"); wEl.style.top = m + "px";
+  if (!whoOn) { whoPg = -1; wEl.style.height = ""; $("stage").style.top = m + "px"; return; }
+  if (whoPg !== pg) { whoPg = pg; wEl.style.height = ""; whoH = wEl.offsetHeight; }
+  wEl.style.height = whoH + "px";
+  $("stage").style.top = (m + whoH) + "px";
+}
+// עמוד התשובות נכנס תמיד למסך (20.11.2026): במחשבי התלמידים (מסך קטן, תצוגה מוגדלת) התשובות התחתונות היו מתחת לקצה המסך,
+// התלמידים גללו כדי להגיע אליהן, והלחיצה נפלה בזמן הגלילה על תשובה אחרת. מקטינים את התוכן עד שהוא נכנס בלי גלילה (לא פחות מ-45%).
+let fitKey = "";
+function fitStage(on) {
+  const st = $("stage");
+  if (!on) { if (fitKey) { fitKey = ""; st.classList.remove("fit"); st.style.removeProperty("--fit"); } return; }
+  const key = lastHtml.length + "|" + st.clientWidth + "x" + st.clientHeight + "|" + st.style.top;
+  if (key === fitKey) return;
+  fitKey = key;
+  st.classList.add("fit");
+  const over = z => { st.style.setProperty("--fit", z.toFixed(3)); return st.scrollHeight > st.clientHeight + 1; };
+  if (over(1)) {
+    // הגודל הגדול ביותר שנכנס במסך (חיפוש בינארי), ולא פחות מ-45%
+    let lo = 0.45, hi = 1;
+    for (let i = 0; i < 7; i++) { const mid = (lo + hi) / 2; if (over(mid)) hi = mid; else lo = mid; }
+    over(lo);
+  }
+  st.scrollTop = 0;
+}
+addEventListener("resize", () => { fitKey = ""; render(); });
+// מעקב אחרי לחיצות חשודות (20.11.2026): התוכנה רושמת אותן כתקלה (cq_early / cq_shift / cq_change), כדי לדעת למה "לחצתי ג וסימן ב".
+let pgAt = Date.now(), optY = null, shiftAt = 0, shiftDy = 0, pickAt = 0;
+function noteKiosk(kind, msg) { try { if (W) W.postMessage(JSON.stringify({ kk: "note", k: kind, m: CQ.id + " " + msg })); } catch (e) {} }
+function watchShift() {
+  const b = document.querySelector(".ans .opt"), y = b ? Math.round(b.getBoundingClientRect().top + $("stage").scrollTop) : null;   // בלי הגלילה של התלמיד עצמו
+  if (Date.now() - pgAt < 700 || y == null) { optY = y; return; }
+  if (optY != null && Math.abs(y - optY) >= 6) { shiftAt = Date.now(); shiftDy = y - optY; }
+  optY = y;
 }
 function classMap() {
   const w = where(pg), cur = w.q != null ? w.q : -1, st = {};
@@ -399,6 +440,7 @@ function render() {
   if ($("who").innerHTML !== who) $("who").innerHTML = who;
   $("who").classList.toggle("hidden", !who);
   classMap(); layout(!!who);
+  fitStage(w.s === 1 || w.s === 2);   // אחרי layout: גובה האזור כבר סופי
   $("cnt").textContent = (pg + 1) + " מִתּוֹךְ " + PAGES;
   $("prv").disabled = pg <= 0; $("nxt").disabled = pg >= PAGES - 1;
 }
@@ -408,6 +450,13 @@ $("stage").addEventListener("click", e => {
   if (!W && !run) return;                       // בלי התוכנה: עוד לא הגיעו הנתונים מהכיתה
   const k = +b.dataset.k;
   const q = w.q;
+  watchShift();
+  // לחיצה בחצי השנייה הראשונה אחרי שהעמוד התחלף היא לחיצה שכוונה לעמוד הקודם (לחיצה כפולה, או שהמורה דפדף בדיוק אז): לא נספרת
+  if (Date.now() - pgAt < 500) { noteKiosk("early", "q" + (q + 1) + " k" + k + " " + (Date.now() - pgAt) + "ms after the page changed"); return; }
+  // התשובות זזו ממש עכשיו: הלחיצה אולי נפלה על תשובה אחרת. לא נספרת, והתלמיד לוחץ שוב.
+  if (Date.now() - shiftAt < 400) { noteKiosk("shift", "q" + (q + 1) + " k" + k + " moved " + shiftDy + "px " + (Date.now() - shiftAt) + "ms before the click"); return; }
+  if (mine[q] != null && mine[q] !== k && Date.now() - pickAt < 3000) noteKiosk("change", "q" + (q + 1) + " " + mine[q] + "→" + k + " after " + (Date.now() - pickAt) + "ms");
+  pickAt = Date.now();
   mine[q] = k; failNote = false; saveMine(); sfx("pop"); render();
   if (W) { try { W.postMessage(JSON.stringify({ kk: "cq", id: CQ.id, q: w.q, a: k })); } catch (e) {} return; }
   // בלי התוכנה: כותבים ישר לכיתה, כמו שהקיוסק כותב (cqa/<run>/<q>/<id> = { a, s, ts }).
@@ -439,7 +488,7 @@ function nameBar() {
   a.onclick = () => { ls("cq:name", null); webName = ""; newId(); mine = {}; STUDENT = false; document.body.classList.remove("student"); a.remove(); lastHtml = ""; render(); askName(); };
   $("top").appendChild(a);
 }
-function go(i) { i = Math.max(0, Math.min(PAGES - 1, +i || 0)); if (SOLO) { pg = i; return; } if (i !== pg) { pg = i; render(); } }   // בתרגול: זוכרים את עמוד המורה, לא מציגים
+function go(i) { i = Math.max(0, Math.min(PAGES - 1, +i || 0)); if (SOLO) { pg = i; return; } if (i !== pg) { pg = i; pgAt = Date.now(); render(); } }   // בתרגול: זוכרים את עמוד המורה, לא מציגים
 // תרגול לבד (מדף הסיום): כל תלמיד עושה שוב את החידון במכשיר שלו – בלי מורה, בלי שעון, משוב והסבר אחרי כל שאלה, וציון בסוף.
 // לא נשלח לכיתה; השיא נשמר בדפדפן (cq:solo:<id>).
 const soloBest = v => { const k = "cq:solo:" + CQ.id; if (v == null) return +ls(k) || 0; if (v > (+ls(k) || 0)) ls(k, String(v)); };
