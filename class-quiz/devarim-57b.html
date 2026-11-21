@@ -44,7 +44,7 @@
   .opt.right .l { background:var(--ok); }
   .opt.wrong { background:#ffe8d6; border-color:#f4a261; }
   .opt.dim { opacity:.55; }
-  .big { font-size:clamp(22px,2.8vw,38px); font-weight:800; }
+  .big { font-size:clamp(22px,2.8vw,38px); font-weight:800; }  .top3 { text-align:center; margin:10px auto 4px; } .top3 .tl { font-size:clamp(16px,1.8vw,24px); font-weight:700; opacity:.85; } .top3 .t { display:block; width:fit-content; margin:6px auto 0; padding:4px 22px; border-radius:999px; font-weight:800; color:#2a1b00; box-shadow:0 4px 12px rgba(0,0,0,.22); } .top3 .t1 { font-size:clamp(30px,4.2vw,58px); background:linear-gradient(90deg,#fde047,#f59e0b); } .top3 .t2 { font-size:clamp(23px,3vw,42px); background:linear-gradient(90deg,#f1f5f9,#cbd5e1); } .top3 .t3 { font-size:clamp(18px,2.2vw,30px); background:linear-gradient(90deg,#fed7aa,#d9a066); }
   .praise { display:inline-block; margin:6px auto 10px; padding:8px 22px; border-radius:999px; background:linear-gradient(90deg,#fde047,#f59e0b); color:#3b2300; font-size:clamp(22px,2.6vw,36px); font-weight:800; box-shadow:0 6px 18px rgba(0,0,0,.25); animation:praiseIn .7s cubic-bezier(.2,1.6,.4,1) both; }
   @keyframes praiseIn { from { transform:scale(.3) rotate(-6deg); opacity:0; } to { transform:none; opacity:1; } }
   .note { font-size:clamp(18px,2vw,26px); font-weight:700; }
@@ -359,8 +359,9 @@ function fitStage(on) {
   st.scrollTop = 0;
 }
 addEventListener("resize", () => { fitKey = ""; render(); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { fitKey = ""; render(); });   // הגופן נטען מאוחר: מתאימים שוב
 // מעקב אחרי לחיצות חשודות (20.11.2026): התוכנה רושמת אותן כתקלה (cq_early / cq_shift / cq_change), כדי לדעת למה "לחצתי ג וסימן ב".
-let pgAt = Date.now(), optY = null, shiftAt = 0, shiftDy = 0, pickAt = 0;
+let againNote = false, pgAt = Date.now(), optY = null, shiftAt = 0, shiftDy = 0, pickAt = 0;
 function noteKiosk(kind, msg) { try { if (W) W.postMessage(JSON.stringify({ kk: "note", k: kind, m: CQ.id + " " + msg })); } catch (e) {} }
 function watchShift() {
   const b = document.querySelector(".ans .opt"), y = b ? Math.round(b.getBoundingClientRect().top + $("stage").scrollTop) : null;   // בלי הגלילה של התלמיד עצמו
@@ -416,6 +417,7 @@ function render() {
       const open = !cntRev(w.q), up = open && timeUp(w.q);
       if (open && secOf(w.q)) { startT0(w.q); h += `<div class="tmr" id="tmr"></div>`; }
       h += optsHtml(w.q, "ans").replace('class="opts ans"', up ? 'class="opts closed"' : 'class="opts ans"');
+      if (STUDENT && againNote && !up) h += `<div class="note bad">👆 הַלְּחִיצָה לֹא נִקְלְטָה – לַחֲצוּ שׁוּב עַל הַתְּשׁוּבָה</div>`;
       if (STUDENT && failNote) h += `<div class="note bad">⚠ הַשְּׁלִיחָה נִכְשְׁלָה – נַסּוּ שׁוּב</div>`;
       if (STUDENT) h += `<div class="note">${up ? (mine[w.q] != null ? "⏰ הַזְּמַן נִגְמַר – הַתְּשׁוּבָה שֶׁלְּךָ נִשְׁלְחָה" : "⏰ הַזְּמַן נִגְמַר – לֹא הִסְפַּקְתָּ לַעֲנוֹת") : mine[w.q] != null ? `✓ הַתְּשׁוּבָה נִשְׁלְחָה – אֶפְשָׁר לְשַׁנּוֹת עַד ${secOf(w.q) ? "שֶׁהַזְּמַן נִגְמָר" : "שֶׁהַמּוֹרֶה יַחְשֹׂף"}` : "בַּחֲרוּ תְּשׁוּבָה"}</div>`;
       who = whoHtml(true);
@@ -426,6 +428,8 @@ function render() {
       h += optsHtml(w.q, "res");
       const cnt = (L.cnt || {})[w.q], tot = cnt ? cnt.reduce((a, b) => a + (+b || 0), 0) : 0;
       if (tot) { const ok = Math.round((+cnt[Q.c] || 0) * 100 / tot); h += `<div class="big">✔ ${ok}% עָנוּ נָכוֹן · ✘ ${100 - ok}% טָעוּ</div>`; }
+      const tp = Array.isArray(L.top) && +L.top[0] === w.q && Array.isArray(L.top[1]) ? L.top[1].slice(0, 3) : [];   // 21.11.2026: מי ענה נכון ראשון, שני ושלישי (הלוח שולח רק כשהמורה בחר)
+      if (tp.length) h += `<div class="top3"><div class="tl">⚡ עָנוּ נָכוֹן רִאשׁוֹנִים</div>${tp.map((n, i) => `<div class="t t${i + 1}">${["🥇", "🥈", "🥉"][i]} ${esc(n)}</div>`).join("")}</div>`;
       if (STUDENT) h += mine[w.q] == null ? `<div class="note">לֹא עָנִיתָ עַל הַשְּׁאֵלָה הַזֹּאת</div>` : mine[w.q] === Q.c ? `<div class="note ok">✔ צָדַקְתָּ! כׇּל הַכָּבוֹד</div>` : `<div class="note bad">✘ לֹא הַפַּעַם – הַתְּשׁוּבָה הַנְּכוֹנָה בַּיָּרֹק</div>`;
     }
     if (w.s === 3) {
@@ -452,11 +456,11 @@ $("stage").addEventListener("click", e => {
   const q = w.q;
   watchShift();
   // לחיצה בחצי השנייה הראשונה אחרי שהעמוד התחלף היא לחיצה שכוונה לעמוד הקודם (לחיצה כפולה, או שהמורה דפדף בדיוק אז): לא נספרת
-  if (Date.now() - pgAt < 500) { noteKiosk("early", "q" + (q + 1) + " k" + k + " " + (Date.now() - pgAt) + "ms after the page changed"); return; }
+  if (Date.now() - pgAt < 500) { noteKiosk("early", "q" + (q + 1) + " k" + k + " " + (Date.now() - pgAt) + "ms after the page changed"); againNote = true; lastHtml = ""; render(); optY = null; return; }
   // התשובות זזו ממש עכשיו: הלחיצה אולי נפלה על תשובה אחרת. לא נספרת, והתלמיד לוחץ שוב.
-  if (Date.now() - shiftAt < 400) { noteKiosk("shift", "q" + (q + 1) + " k" + k + " moved " + shiftDy + "px " + (Date.now() - shiftAt) + "ms before the click"); return; }
+  if (Date.now() - shiftAt < 400) { noteKiosk("shift", "q" + (q + 1) + " k" + k + " moved " + shiftDy + "px " + (Date.now() - shiftAt) + "ms before the click"); againNote = true; lastHtml = ""; render(); optY = null; shiftAt = 0; return; }
   if (mine[q] != null && mine[q] !== k && Date.now() - pickAt < 3000) noteKiosk("change", "q" + (q + 1) + " " + mine[q] + "→" + k + " after " + (Date.now() - pickAt) + "ms");
-  pickAt = Date.now();
+  pickAt = Date.now(); againNote = false;
   mine[q] = k; failNote = false; saveMine(); sfx("pop"); render();
   if (W) { try { W.postMessage(JSON.stringify({ kk: "cq", id: CQ.id, q: w.q, a: k })); } catch (e) {} return; }
   // בלי התוכנה: כותבים ישר לכיתה, כמו שהקיוסק כותב (cqa/<run>/<q>/<id> = { a, s, ts }).
@@ -488,7 +492,7 @@ function nameBar() {
   a.onclick = () => { ls("cq:name", null); webName = ""; newId(); mine = {}; STUDENT = false; document.body.classList.remove("student"); a.remove(); lastHtml = ""; render(); askName(); };
   $("top").appendChild(a);
 }
-function go(i) { i = Math.max(0, Math.min(PAGES - 1, +i || 0)); if (SOLO) { pg = i; return; } if (i !== pg) { pg = i; pgAt = Date.now(); render(); } }   // בתרגול: זוכרים את עמוד המורה, לא מציגים
+function go(i) { i = Math.max(0, Math.min(PAGES - 1, +i || 0)); if (SOLO) { pg = i; return; } if (i !== pg) { pg = i; pgAt = Date.now(); againNote = false; render(); } }   // בתרגול: זוכרים את עמוד המורה, לא מציגים
 // תרגול לבד (מדף הסיום): כל תלמיד עושה שוב את החידון במכשיר שלו – בלי מורה, בלי שעון, משוב והסבר אחרי כל שאלה, וציון בסוף.
 // לא נשלח לכיתה; השיא נשמר בדפדפן (cq:solo:<id>).
 const soloBest = v => { const k = "cq:solo:" + CQ.id; if (v == null) return +ls(k) || 0; if (v > (+ls(k) || 0)) ls(k, String(v)); };
