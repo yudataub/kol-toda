@@ -350,7 +350,7 @@ body.inq .setbtn{top:6px;left:132px;font-size:.72em;padding:3px 9px}
 </head>
 <body>
 <header class="top">
-  <a class="home-btn" href="./" title="חֲזָרָה לְכָל הַחִידוֹנִים">🏠 כָּל הַחִידוֹנִים</a>
+  <a class="home-btn" href="../chagim/shavuot/" title="חֲזָרָה לְשָׁבוּעוֹת לַמּוֹרֶה">⛰️ כָּל הַחִידוֹנִים</a>
   <button class="setbtn" id="setBtn" type="button" title="הַגְדָּרוֹת">⚙️<span class="sl"> הַגְדָּרוֹת</span></button>
   <a class="home-btn me-btn" href="profile.html" title="כַּמָּה הֲלָכוֹת לָמַדְתִּי">👤 שֶׁלִּי</a>
   <h1 id="ttl"></h1>
@@ -633,7 +633,7 @@ body.inq .ptsbadge{top:40px}   /* 14.11: מתחת לכפתור השם, שלא י
       <p>הָרַב יְהוּדָה טָאוּב מִקִּרְיַת אָתָא, 📞 0527139520</p>
       <div class="crow">
         <a class="btn" id="nextQuiz" href="#" style="display:none">לַחִידוֹן הַבָּא ⬅️</a>
-        <a class="btn ghost" href="./">כָּל הַחִידוֹנִים</a>
+        <a class="btn ghost" href="../chagim/shavuot/">כָּל הַחִידוֹנִים</a>
         <button class="btn ghost" id="again">🔄 שׁוּב</button>
       </div>
     </div>
@@ -1149,6 +1149,17 @@ function applyLayout() {
   fitPic();
 }
 function fitPic() {
+  /* לוחות עם אזורי לחיצה (רמה א׳): כל התמונה, כולל פס התשובות שבתחתיתה, נכנסת במסך בלי לגלול (בקשת המשתמש, 21.11.2026).
+     מודדים כמה מקום באמת נשאר מתחת לראש התמונה – הכותרות שמעליה משתנות בגובהן ממסך למסך */
+  var zp = $("qBody") && $("qBody").querySelector(".pic .pic-zone");
+  if (zp) {
+    var zi = zp.parentNode.querySelector("img"), zo = $("qBody").querySelector(".opts");
+    if (!zi.offsetParent) return;   // הַמָּסָךְ עוֹד מֻסְתָּר – מוֹדְדִים שׁוּב כְּשֶׁיּוֹפִיעַ
+    var below = 16 + (zo && zo.style.display !== "none" ? zo.offsetHeight + 10 : 0);
+    var zav = window.innerHeight - (zi.getBoundingClientRect().top + window.scrollY) - below;
+    zi.style.maxHeight = Math.max(200, zav) + "px";
+    return;
+  }
   var sp = $("qBody") && $("qBody").querySelector(".split"); if (!sp) return;
   var img = sp.querySelector("img.gen"), opts = sp.querySelector(".opts"); if (!img || !opts) return;
   var side = layout() === "side" || (layout() === "" && window.innerWidth >= 860);
@@ -1292,7 +1303,7 @@ function renderQuestion() {
   }).join("") + "</div>";
   if (q.img && !q.zones) body = '<div class="split">' + body + "</div>";   // תְּמוּנָה + תְּשׁוּבוֹת בְּחַלּוֹן אֶחָד (מ-6.11)
   $("qBody").innerHTML = body;
-  fitPic();
+  fitPic(); setTimeout(fitPic, 0); setTimeout(fitPic, 400);   // שׁוּב אַחֲרֵי שֶׁהַמָּסָךְ מוּצָג וְהַכּוֹתָרוֹת שֶׁמֵּעַל הִתְיַשְּׁבוּ
   var gi = $("qBody").querySelector("img.gen");
   if (gi) gi.onclick = function () { zoomPic(gi.src); };
   Array.prototype.forEach.call($("qBody").querySelectorAll(".opt"), function (b) {
