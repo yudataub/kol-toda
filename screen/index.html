@@ -126,6 +126,9 @@ function okSlide(s){
   return false;
 }
 function fullSrc(u){u=String(u);return /^(https?:)?\/\//.test(u)||u.charAt(0)==='/'?u:BASE+u;}
+function musicOf(a){
+  return (Array.isArray(a)?a:[]).filter(function(m){return m&&m.src;}).map(function(m){return {src:fullSrc(m.src),name:String(m.name||'')};});
+}
 function slidesOf(a){
   return (Array.isArray(a)?a.filter(okSlide):[]).map(function(s){
     if(!s.src)return s;
@@ -137,12 +140,14 @@ function normalize(o){
   var c={schoolName:String(o.schoolName||''),
     slideSeconds:Math.max(2,Number(o.slideSeconds)||10),
     refreshMinutes:Math.max(1,Number(o.refreshMinutes)||5),
-    'default':slidesOf(o['default']),breaks:[]};
+    'default':slidesOf(o['default']),breaks:[],
+    music:musicOf(o.defaultMusic),
+    volume:Math.min(100,Math.max(0,o.musicVolume==null?60:Number(o.musicVolume)||0))/100};
   (Array.isArray(o.breaks)?o.breaks:[]).forEach(function(b){
     if(!b||typeof b!=='object')return;
-    var s=mins(b.start),e=mins(b.end),sl=slidesOf(b.slides);
-    if(s===null||e===null||!sl.length)return;
-    c.breaks.push({name:String(b.name||'הפסקה'),days:Array.isArray(b.days)?b.days.map(Number):null,start:s,end:e,slides:sl});
+    var s=mins(b.start),e=mins(b.end),sl=slidesOf(b.slides),mu=musicOf(b.music);
+    if(s===null||e===null||(!sl.length&&!mu.length))return;
+    c.breaks.push({name:String(b.name||'הפסקה'),days:Array.isArray(b.days)?b.days.map(Number):null,start:s,end:e,slides:sl,music:mu});
   });
   if(!c['default'].length&&!c.breaks.length)return null;
   return c;
@@ -155,6 +160,7 @@ function useCfg(text,c,source){
   cfgSource=source;
   if(text===cfgRaw)return;        // לא השתנה: לא נוגעים במה שמוצג
   cfgRaw=text;cfg=c;keep={};
+  if(audio)audio.volume=c.volume;
   document.getElementById('school').innerHTML='';
   var sc=document.getElementById('school');
   sc.appendChild(document.createTextNode(cfg.schoolName));
@@ -202,7 +208,8 @@ function activeBreak(d){
 function pickList(){
   if(!cfg)return;
   var b=activeBreak(now());
-  var sl=b?b.slides:cfg['default'];
+  var sl=b&&b.slides.length?b.slides:cfg['default'];      // חלון של מנגינות בלבד: השקופיות הרגילות ממשיכות
+  setMusic(b?b.music:cfg.music);                          // חלון בלי מנגינות = שקט
   if(!sl.length)sl=[{type:'text',title:cfg.schoolName||FALLBACK['default'][0].title}];
   var sig=(b?'b:'+b.name+b.start:'default')+JSON.stringify(sl);
   activeName=b?b.name:'default (מחוץ להפסקות)';
@@ -292,6 +299,45 @@ function display(i,s){
   if(n&&n.src&&list.length>1)preload(n.src);   // התמונה הבאה מוכנה מראש
 }
 
+// ---------- מנגינות ----------
+var audio=null,mList=[],mSig='[]',mi=0,mFails=0,mState='אין',mWatchAt=0;
+try{audio=new Audio();audio.preload='auto';}catch(e){}
+function setMusic(l){
+  if(!audio)return;
+  l=l||[];
+  var sig=JSON.stringify(l);
+  if(sig===mSig)return;                      // אותה רשימה: לא נוגעים במה שמתנגן
+  mSig=sig;mList=l;mi=0;mFails=0;
+  if(!l.length){try{audio.pause();audio.removeAttribute('src');audio.load();}catch(e){}mState='אין';return;}
+  playTrack();
+}
+function playTrack(){
+  if(!audio||!mList.length)return;
+  var t=mList[mi%mList.length];
+  try{
+    audio.src=t.src;audio.volume=cfg?cfg.volume:0.6;
+    mState='מנגן: '+(t.name||'מנגינה '+(mi+1));
+    var p=audio.play();
+    if(p&&p['catch'])p['catch'](function(){mState='ממתין – הדפדפן חוסם צליל עד שלוחצים על הדף';});
+  }catch(e){}
+}
+function nextTrack(){if(!mList.length)return;mi=(mi+1)%mList.length;playTrack();}
+if(audio){
+  audio.addEventListener('ended',function(){mFails=0;nextTrack();});
+  audio.addEventListener('error',function(){          // קובץ שלא נטען: מדלגים בשקט
+    if(!mList.length)return;
+    mFails++;mWatchAt=Date.now()+60000;
+    setTimeout(nextTrack,mFails>=mList.length?60000:3000);
+  });
+  ['click','keydown','touchstart'].forEach(function(ev){
+    document.addEventListener(ev,function(){if(mList.length&&audio.paused)playTrack();});
+  });
+}
+function musicWatch(){                                // הנגינה נעצרה (חסימה, נפילת רשת): מנסים שוב כל חצי דקה
+  if(!audio||!mList.length||!audio.paused||Date.now()<mWatchAt)return;
+  mWatchAt=Date.now()+30000;playTrack();
+}
+
 // ---------- שעון ותאריך עברי ----------
 function two(n){return (n<10?'0':'')+n;}
 function hhmm(d){return two(d.getHours())+':'+two(d.getMinutes());}
@@ -327,6 +373,7 @@ function tick(){
   var k=d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();
   if(k!==dateKey){dateKey=k;document.getElementById('hdate').textContent=hebDate(d);}
   pickList();
+  musicWatch();
   dailyReload();
   if(TEST)showTest(d);
 }
@@ -355,7 +402,8 @@ function showTest(d){
     '\nשקופית: '+(idx+1)+' מתוך '+list.length+
     '\nרענון התוכן הבא בעוד: '+Math.floor(left/60)+':'+two(left%60)+
     '\nטעינה אחרונה: '+lastLoad+
-    '\nמקור התוכן: '+cfgSource;
+    '\nמקור התוכן: '+cfgSource+
+    '\nמנגינה: '+mState+(audio&&mList.length&&!audio.paused?' ('+Math.floor(audio.currentTime)+' שנ׳)':'');
 }
 
 // ---------- הפעלה ----------
