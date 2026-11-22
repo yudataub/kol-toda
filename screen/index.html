@@ -89,6 +89,8 @@ var FALLBACK={schoolName:'',slideSeconds:10,refreshMinutes:5,
   'default':[{type:'text',title:"טוב להודות לה'",body:'ולזמר לשמך עליון'}],breaks:[]};
 var LS_KEY='kol-screen-config-v1';
 var SITE='kol-toda.co.il';
+// התוכן (config.json והתמונות) יושב בריפו נפרד, כדי שאפשר יהיה לעדכן אותו ישר ב-GitHub בלי לפרסם את האתר
+var BASE='https://yudataub.github.io/school-screen/';
 
 // ---------- פרמטרים בכתובת: ?test=1 , ?time=10:05&day=2 ----------
 var qs={};
@@ -123,7 +125,13 @@ function okSlide(s){
   if(s.type==='image-text')return !!(s.src||s.title||s.body);
   return false;
 }
-function slidesOf(a){return Array.isArray(a)?a.filter(okSlide):[];}
+function fullSrc(u){u=String(u);return /^(https?:)?\/\//.test(u)||u.charAt(0)==='/'?u:BASE+u;}
+function slidesOf(a){
+  return (Array.isArray(a)?a.filter(okSlide):[]).map(function(s){
+    if(!s.src)return s;
+    var c={},k;for(k in s)c[k]=s[k];c.src=fullSrc(s.src);return c;
+  });
+}
 function normalize(o){
   if(!o||typeof o!=='object'||Array.isArray(o))return null;
   var c={schoolName:String(o.schoolName||''),
@@ -173,7 +181,7 @@ function loadConfig(){
   }
   try{
     x=new XMLHttpRequest();
-    x.open('GET','config.json?v='+Date.now(),true);
+    x.open('GET',BASE+'config.json?v='+Date.now(),true);
     x.timeout=20000;
     x.onload=function(){finish(x.status>=200&&x.status<300?x.responseText:null);};
     x.onerror=x.ontimeout=x.onabort=function(){finish(null);};
