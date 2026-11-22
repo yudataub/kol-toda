@@ -3,5 +3,5 @@
 הדף: https://www.kol-toda.co.il/screen/
 כאן נמצא רק הדף עצמו (`index.html`). את התוכן לא מעדכנים כאן.
 
-התוכן (`config.json` והתמונות) נמצא בריפו נפרד, ושם גם הוראות העדכון:
-https://github.com/yudataub/school-screen
+התוכן (שקופיות, תמונות ושעות) מנוהל באתר הניהול: https://school-screen.kol-bot.workers.dev/
+הקוד של אתר הניהול והשרת: https://github.com/yudataub/school-screen (במחשב: `C:\school-screen`).
