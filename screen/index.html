@@ -58,6 +58,10 @@ html,body{margin:0;padding:0;width:100vw;height:100vh;overflow:hidden;background
 #school small{font-size:.5em;font-weight:400;color:#a5a0c0;margin-right:1.2vw;direction:ltr;display:inline-block}
 #hdate{color:#ddd6fe}
 #clock{font-weight:900;font-size:1.25em;direction:ltr;font-variant-numeric:tabular-nums}
+#clockwrap{display:inline-flex;align-items:center;direction:ltr}
+/* נקודה אפורה קטנה ליד השעה: אין אינטרנט, מוצג תוכן שמור */
+#net{display:none;width:1.1vh;height:1.1vh;border-radius:50%;background:#8b8799;margin-left:1vw}
+#net.off{display:inline-block}
 
 /* מצב בדיקה */
 #test{display:none;position:fixed;top:5vh;left:5vw;z-index:9;max-width:42vw;padding:1.2vh 1.2vw;border-radius:1vh;
@@ -77,7 +81,7 @@ html,body{margin:0;padding:0;width:100vw;height:100vh;overflow:hidden;background
 <body>
 <div id="safe">
   <div id="stage"><div class="layer" id="L0"></div><div class="layer" id="L1"></div></div>
-  <div id="bar"><span id="school"></span><span id="hdate"></span><span id="clock"></span></div>
+  <div id="bar"><span id="school"></span><span id="hdate"></span><span id="clockwrap"><span id="clock"></span><span id="net"></span></span></div>
 </div>
 <div id="test"></div>
 <script>
@@ -115,7 +119,9 @@ var idx=-1,cur=0,showToken=0,slideTimer=null;
 var layers=[document.getElementById('L0'),document.getElementById('L1')];
 var keep={};                      // תמונות שנטענו מראש (שלא ישתחררו מהזיכרון)
 var nextRefreshAt=0,lastLoad='עוד לא נטען',cfgSource='';
-var loadedAt=Date.now(),nextReloadTry=0;
+var loadedAt=Date.now(),nextReloadTry=0,reloadCheck=false;
+var online=true,cfgTimer=null,cfgBusy=false;   // online: התשובה האחרונה מהרשת הצליחה
+var AT_KEY=LS_KEY+'-at';             // מתי התוכן השמור נטען לאחרונה מהרשת
 
 // ---------- config ----------
 function okSlide(s){
@@ -168,33 +174,55 @@ function useCfg(text,c,source){
   pickList();
 }
 
+// בקשה אמיתית לרשת (cache:'no-store' – ה-Service Worker לא עונה עליה מהשמור)
+function getFresh(url,ms,cb){
+  var done=false;
+  function fin(t){if(done)return;done=true;cb(t);}
+  setTimeout(function(){fin(null);},ms);
+  try{
+    if(window.fetch){
+      fetch(url,{cache:'no-store',credentials:'omit'})
+        .then(function(r){return r.ok?r.text():null;})
+        .then(fin,function(){fin(null);});
+      return;
+    }
+    var x=new XMLHttpRequest();
+    x.open('GET',url,true);
+    x.onload=function(){fin(x.status>=200&&x.status<300?x.responseText:null);};
+    x.onerror=x.ontimeout=x.onabort=function(){fin(null);};
+    x.send();
+  }catch(e){fin(null);}
+}
+
+function setOnline(v){
+  online=v;
+  document.getElementById('net').className=v?'':'off';
+}
+
 function loadConfig(){
-  var done=false,x;
-  function finish(text){
-    if(done)return;done=true;
+  if(cfgBusy)return;cfgBusy=true;
+  clearTimeout(cfgTimer);
+  getFresh(BASE+'config.json?v='+Date.now(),25000,function(text){
+    cfgBusy=false;
     var c=text===null?null:parseCfg(text);
     if(c){
       lastLoad='הצליחה ('+hhmm(new Date())+')';
+      setOnline(true);
       useCfg(text,c,'רשת');
-      try{localStorage.setItem(LS_KEY,text);}catch(e){}
+      try{localStorage.setItem(LS_KEY,text);localStorage.setItem(AT_KEY,String(Date.now()));}catch(e){}
     }else{
       lastLoad='נכשלה ('+hhmm(new Date())+') – ממשיך עם התוכן האחרון';
+      setOnline(false);
       if(!cfg)useCfg(JSON.stringify(FALLBACK),normalize(FALLBACK),'תוכן חירום מובנה');
     }
     var wait=(cfg?cfg.refreshMinutes:5)*60000;
     nextRefreshAt=Date.now()+wait;
-    setTimeout(loadConfig,wait);
-  }
-  try{
-    x=new XMLHttpRequest();
-    x.open('GET',BASE+'config.json?v='+Date.now(),true);
-    x.timeout=20000;
-    x.onload=function(){finish(x.status>=200&&x.status<300?x.responseText:null);};
-    x.onerror=x.ontimeout=x.onabort=function(){finish(null);};
-    x.send();
-  }catch(e){finish(null);}
-  setTimeout(function(){finish(null);},30000);
+    cfgTimer=setTimeout(loadConfig,wait);
+  });
 }
+// הרשת חזרה: בודקים מיד, בלי לחכות לרענון הבא
+window.addEventListener('online',function(){loadConfig();});
+window.addEventListener('offline',function(){setOnline(false);});
 
 // ---------- איזו רשימה מוצגת עכשיו ----------
 function activeBreak(d){
@@ -378,25 +406,34 @@ function tick(){
   if(TEST)showTest(d);
 }
 
-// ---------- רענון מלא פעם ביום, ב-03:00 (רק אם יש רשת, כדי לא להגיע למסך שגיאה) ----------
+// ---------- רענון מלא פעם בלילה, 03:00–06:00, רק אם יש אינטרנט ----------
+// לפני הרענון בודקים שה-config.json עונה (200 ו-JSON תקין). אין חיבור: מנסים שוב כל 15 דקות עד 06:00.
 function dailyReload(){
-  var r=new Date();
-  if(r.getHours()!==3||Date.now()-loadedAt<3600000||Date.now()<nextReloadTry)return;
-  nextReloadTry=Date.now()+10*60000;
-  try{
-    var x=new XMLHttpRequest();
-    x.open('GET','index.html?v='+Date.now(),true);
-    x.timeout=20000;
-    x.onload=function(){if(x.status>=200&&x.status<300&&x.responseText.indexOf('kol-screen-config')>0)location.reload();};
-    x.send();
-  }catch(e){}
+  var r=new Date(),h=r.getHours();
+  if(h<3||h>=6||reloadCheck||Date.now()<nextReloadTry)return;
+  var from=new Date(r.getFullYear(),r.getMonth(),r.getDate(),3,0,0,0).getTime();
+  if(loadedAt>=from)return;                   // הדף כבר נטען הלילה (אחרי 03:00)
+  reloadCheck=true;
+  getFresh(BASE+'config.json?v='+Date.now(),20000,function(text){
+    reloadCheck=false;
+    var ok=false;
+    if(text!==null){try{JSON.parse(text);ok=true;}catch(e){}}
+    if(ok){location.reload();return;}
+    nextReloadTry=Date.now()+15*60000;
+  });
 }
 
 function showTest(d){
   var left=Math.max(0,Math.round((nextRefreshAt-Date.now())/1000));
   var t=document.getElementById('test');
   t.style.display='block';
-  t.textContent='מצב בדיקה'+
+  var off='';
+  if(!online){
+    var at=0;try{at=+localStorage.getItem(AT_KEY)||0;}catch(e){}
+    var ad=new Date(at),td=new Date();
+    off='\nאופליין, מציג תוכן מ-'+(at?(ad.toDateString()===td.toDateString()?'':ad.getDate()+'/'+(ad.getMonth()+1)+' ')+hhmm(ad):'לא ידוע');
+  }
+  t.textContent='מצב בדיקה'+off+
     '\nמוצג עכשיו: '+activeName+
     '\nשעה: '+hhmm(d)+' · יום '+d.getDay()+(offsetMs?' (מדומה)':'')+
     '\nשקופית: '+(idx+1)+' מתוך '+list.length+
@@ -407,6 +444,10 @@ function showTest(d){
 }
 
 // ---------- הפעלה ----------
+// Service Worker: שומר את הדף, config.json והתמונות כדי שהמסך ייטען גם בלי אינטרנט. פעיל רק ב-/screen/
+if('serviceWorker' in navigator&&/\/screen\/(index\.html)?$/.test(location.pathname)){
+  try{navigator.serviceWorker.register('sw.js',{scope:'./'})['catch'](function(){});}catch(e){}
+}
 try{
   var saved=localStorage.getItem(LS_KEY),sc=saved?parseCfg(saved):null;
   if(sc)useCfg(saved,sc,'עותק שמור במכשיר');      // מוצג מיד, עוד לפני שהרשת עונה
