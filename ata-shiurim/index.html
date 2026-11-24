@@ -94,6 +94,13 @@ section.cat{background:#fff;border-radius:22px;box-shadow:0 4px 18px rgba(30,30,
 .badge.upd{background:var(--gold);color:var(--ink)}
 .badge.cancel{background:#888;color:#fff}
 .zoom{display:inline-block;margin-top:6px;background:var(--c);color:#fff;text-decoration:none;border-radius:9px;padding:4px 10px;font-size:14px}
+/* weekday bands (women) */
+.dnav{display:flex;flex-wrap:wrap;gap:6px;padding:14px 20px 0}
+.dnav a{text-decoration:none;font-weight:800;font-size:14px;color:#fff;background:var(--d);border-radius:10px;padding:5px 12px;box-shadow:0 2px 6px color-mix(in srgb,var(--d) 35%,transparent)}
+.dband{margin:22px 0 0;padding:10px 20px;display:flex;align-items:center;gap:12px;background:linear-gradient(270deg,var(--d) 0%,var(--d) 35%,color-mix(in srgb,var(--d) 45%,#fff) 80%,color-mix(in srgb,var(--d) 12%,#fff) 100%);color:#fff;scroll-margin-top:110px}
+.dband b{font-family:"Frank Ruhl Libre",serif;font-size:23px;font-weight:900;text-shadow:0 1px 4px rgba(0,0,0,.2)}
+.dband span{background:rgba(255,255,255,.9);color:var(--d);font-weight:800;font-size:13px;border-radius:999px;padding:2px 10px}
+.dband:after{display:none}
 .hidden{display:none!important}
 .empty{text-align:center;color:var(--ink2);padding:20px}
 .sig{background:linear-gradient(135deg,#FFF6D6,#E6F2FB);border:1.5px solid var(--gold);border-radius:16px;padding:16px 18px;margin:26px 0 12px;text-align:center}
@@ -150,6 +157,8 @@ var DATA = (location.hostname.indexOf("kol-toda") >= 0 ? "/ata-shiurim/" : "") +
 var CATN = {kolelim:"כוללים לפנסיונרים",daf:"דף היומי",boker:"שיעורי בוקר",mincha:"מנחה–ערבית",erev:"שיעורי ערב",shishi:"יום שישי",shabbat:"שבת קודש",nashim:"שיעורים לנשים",noar:"ילדים ונוער",kiruv:"קירוב רחוקים",online:"שיעורים בזום"};
 var COL = {kolelim:"#6D4BC4",daf:"#1A6FA8",boker:"#E07B12",mincha:"#0E8F83",erev:"#2E3F9E",shishi:"#A8740A",shabbat:"#8E2D5A",nashim:"#D13F78",noar:"#2B8F3A",kiruv:"#0090BE",online:"#5F7380"};
 function col(k){ return COL[k]||"#1A6FA8"; }
+var DCOL = {1:"#E4572E",2:"#E8A10C",3:"#24A06B",4:"#2D7DD2",5:"#7B4FC9",6:"#A8740A",7:"#8E2D5A"};
+function cnt(items){ return items.filter(function(x){ return !x.dup; }).length; }
 var data = null, live = [];
 function el(tag, cls, txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
 function tel(s){ return s.replace(/(0\d{1,2}-?\d{3}-?\d{4}|0\d{8,9})/g, "\u0001$1\u0001"); }
@@ -187,7 +196,7 @@ function render(){
   var cats=data.cats.slice();
   Object.keys(byCat).forEach(function(k){ if(!cats.some(function(c){return c.key===k;})) cats.push({key:k,icon:"🆕",title:CATN[k]||k,sub:"",groups:[]}); });
   cats.forEach(function(c){
-    var n=0; c.groups.forEach(function(g){ n+=g.items.length; }); n+=(byCat[c.key]||[]).length;
+    var n=0; c.groups.forEach(function(g){ n+=cnt(g.items); }); n+=(byCat[c.key]||[]).length;
     if(!n) return;
     var s=el("section","cat"); s.id=c.key; s.style.setProperty("--c",col(c.key)); total+=n; ncat++;
     var h=el("header"); h.appendChild(el("span","ic",c.icon));
@@ -196,8 +205,11 @@ function render(){
     if(byCat[c.key]){ s.appendChild(el("div","grp","🆕 נוסף לאחרונה ע\"י הגולשים")); var w=el("div","items"); byCat[c.key].forEach(function(x){ w.appendChild(card(x,true)); }); s.appendChild(w); }
     c.groups.forEach(function(g){
       if(!g.items.length) return;
-      if(g.title) s.appendChild(el("div","grp",g.title));
-      var w=el("div","items"); g.items.forEach(function(it){ w.appendChild(card(it,false)); }); s.appendChild(w);
+      if(g.day){
+        if(!s.querySelector(".dnav")){ var nv=el("div","dnav"); c.groups.forEach(function(x){ if(!x.day||!x.items.length) return; var a=el("a",null,x.title); a.href="#"+c.key+"-d"+x.day; a.style.setProperty("--d",DCOL[x.day]); nv.appendChild(a); }); s.appendChild(nv); }
+        var bd=el("div","dband grp"); bd.id=c.key+"-d"+g.day; bd.style.setProperty("--d",DCOL[g.day]); bd.appendChild(el("b",null,(g.day===7?"🕯️ ":"📅 ")+g.title)); var k=g.items.length; bd.appendChild(el("span",null,k+(k===1?" שיעור":" שיעורים"))); s.appendChild(bd);
+      } else if(g.title) s.appendChild(el("div","grp",g.title));
+      var w=el("div","items"); if(g.day) w.style.setProperty("--c",DCOL[g.day]); g.items.forEach(function(it){ w.appendChild(card(it,false)); }); s.appendChild(w);
     });
     root.appendChild(s);
     var li=el("li"), a=el("a",null,c.icon+" "+c.title); a.href="#"+c.key; a.style.setProperty("--c",col(c.key)); a.appendChild(el("i",null,n)); li.appendChild(a); toc.appendChild(li);
