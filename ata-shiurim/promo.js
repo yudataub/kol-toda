@@ -58,6 +58,7 @@ var css = ""
 +".kp-grid .g a i{font-style:normal;font-size:30px}"
 +".kp-grid .g a:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.1)}"
 +".kp-grid .home{display:inline-block;margin-top:16px;background:linear-gradient(110deg,#E8337A,#6D4BC4);color:#fff;text-decoration:none;font-weight:800;font-size:17px;border-radius:14px;padding:12px 26px}"
++".kp-sis{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:18px 0 0}.kp-sis a{background:#fff;border:1.5px solid #e6e2d8;border-radius:999px;padding:7px 15px;text-decoration:none;color:#152536;font-weight:700;font-size:15px}"
 +"body.kp-search .kp-mid{display:none}"
 +"@media (max-width:560px){.kp-mid{padding:18px 14px}.kp-mid .big{font-size:46px;top:18px;transform:none}.kp-mid p{padding-left:0}.kp-mid h3{padding-left:52px}.kp-strip .go{display:none}.kp-grid .g{grid-template-columns:repeat(3,1fr)}.kp-grid .g a{font-size:13px;padding:10px 4px}}";
 function el(t,c,x){ var e=document.createElement(t); if(c) e.className=c; if(x!=null) e.textContent=x; return e; }
@@ -98,8 +99,13 @@ function init(){
   if(root){ new MutationObserver(function(){ if(!busy) place(); }).observe(root,{childList:true}); place(); }
   var q=document.getElementById("q");
   if(q) q.addEventListener("input",function(){ document.body.classList.toggle("kp-search",!!q.value.trim()); });
-  // 4. tile grid before the signature
+  // 4. tile grid before the signature (+ the four Kiryat Ata pages, if the page has no such row)
   var sig=document.querySelector(".sig");
+  if(sig && !document.querySelector(".sister")){
+    var sr=el("div","kp-sis"); [["📖 שיעורי תורה","/ata-shiurim/"],["🕍 זמני תפילות","/ata-tfilot/"],["🤝 גמ״חים","/ata-gmachim/"],["💼 עסקים ובעלי מקצוע","/ata-asakim/"]].forEach(function(x){
+      if(location.pathname.indexOf(x[1])===0) return; var a=el("a",null,x[0]); a.href=x[1]; sr.appendChild(a); });
+    sig.parentNode.insertBefore(sr,sig);
+  }
   if(sig){
     var g=el("div","kp-grid"); g.appendChild(el("h3",null,"🌟 עוד מהקול החמישי – הכול בחינם"));
     g.appendChild(el("p","s","מאגר חומרי הלימוד התורני: חידונים ומשחקים לילדים, פניני הפרשה, משניות וש״ס, הלכה, בוטים למורים ודפי הדרכה"));
