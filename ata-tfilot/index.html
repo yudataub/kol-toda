@@ -81,8 +81,19 @@ section.cat{background:#fff;border-radius:18px;box-shadow:0 3px 14px rgba(40,40,
 .n-ot{border-right-color:#ea580c}.n-ot .nu{background:#fff1e6}
 .foot{background:#f6f7fd;padding:10px 18px;font-size:14.5px;color:var(--ink2);border-top:1px solid var(--line)}
 .foot div+div{margin-top:4px}
-.legend{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:4px 0 18px;font-size:14px}
-.legend span{border-right:4px solid;padding:2px 9px;background:#fff;border-radius:6px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin:4px 0 18px;font-size:14px}
+.legend b{color:var(--ink2);font-weight:500}
+.legend button{border:1.5px solid var(--line);border-right:5px solid;padding:4px 11px;background:#fff;border-radius:8px;font:inherit;font-size:14.5px;cursor:pointer;color:var(--ink)}
+.legend button.on{background:var(--ink);color:#fff}
+.next{display:flex;gap:12px;align-items:center;background:linear-gradient(90deg,#fff7d6,#fff);border:2px solid var(--gold);border-radius:16px;padding:12px 16px;margin:0 0 14px;box-shadow:0 4px 16px rgba(120,90,0,.10)}
+.next .big{font-size:30px}
+.next .t1{font-size:19px;font-weight:800;color:var(--ink)}
+.next .t1 em{font-style:normal;color:var(--pink)}
+.next .t2{font-size:15px;color:var(--ink2);margin-top:2px}
+.next .t3{font-size:13px;color:#8a8fa8;margin-top:4px}
+.next.top{margin:-48px auto 16px;position:relative}
+.hero.noai .next.top{margin-top:0}
+.ask{margin-top:0!important}
 .hidden{display:none!important}
 .empty{text-align:center;color:var(--ink2);padding:20px}
 .sig{background:linear-gradient(135deg,#FFF6D6,#e9ecfc);border:1.5px solid var(--gold);border-radius:16px;padding:16px 18px;margin:26px 0 12px;text-align:center}
@@ -100,6 +111,7 @@ footer.f{text-align:center;color:var(--ink2);font-size:14px;padding:6px 16px 30p
   <div class="meta" id="meta">📍 קרית אתא</div>
 </div>
 <div class="wrap">
+  <div class="next hidden top" id="next" aria-live="polite"><span class="big">⏰</span><div><div class="t1" id="n1"></div><div class="t2" id="n2"></div><div class="t3" id="n3"></div></div></div>
   <div class="ask hidden" id="ask">
     <h2>🤖 מכירים מניין שלא מופיע כאן? השעה השתנתה?</h2>
     <p class="sub">כתבו כאן במילים שלכם (איזה בית כנסת, איזו תפילה ובאיזו שעה). אשאל כמה שאלות קצרות כדי לדייק, ואכניס את המניין לדף במקום הנכון.</p>
@@ -114,7 +126,7 @@ footer.f{text-align:center;color:var(--ink2);font-size:14px;padding:6px 16px 30p
     <input id="q" type="search" placeholder="🔎 חיפוש: בית כנסת, רחוב, נוסח, שעה…" aria-label="חיפוש מניין">
   </div>
   <div class="chips" id="chips"></div>
-  <div class="legend"><span style="border-color:#22c55e">עדות המזרח</span><span style="border-color:#f59e0b">ספרד</span><span style="border-color:#0ea5e9">אשכנז</span><span style="border-color:#a855f7">חב"ד</span><span style="border-color:#ea580c">אחר / לפי החזן</span></div>
+  <div class="legend" id="nus"><b>סינון לפי נוסח:</b><button data-n="" class="on" style="border-right-color:#999">כל הנוסחים</button><button data-n="n-mz" style="border-right-color:#22c55e">עדות המזרח</button><button data-n="n-sf" style="border-right-color:#f59e0b">ספרד</button><button data-n="n-as" style="border-right-color:#0ea5e9">אשכנז</button><button data-n="n-ch" style="border-right-color:#a855f7">חב"ד</button><button data-n="n-ot" style="border-right-color:#ea580c">אחר / לפי החזן</button></div>
   <div id="cats"><div class="empty">טוען את זמני התפילות…</div></div>
   <div class="empty hidden" id="none">לא נמצא מניין מתאים. מכירים כזה? כתבו ל-052-7139520 🙂</div>
   <p class="note" style="text-align:center">הזמנים נאספו מהודעות הקהילה ומבתי הכנסת. זמנים משתנים לפי עונה — כדאי לוודא בבית הכנסת.</p>
@@ -131,9 +143,9 @@ var DATA=(location.hostname.indexOf("kol-toda")>=0?"/ata-tfilot/":"")+"times.jso
 var SEC={shacharit:["shacharit",""],mincha:["mincha",""],mincha_friday:["mincha","מנחה ביום שישי – בזמנים מיוחדים"],maariv:["maariv",""],
  kabbalat_shabbat:["shabbat","🌟 ליל שבת"],shabbat_shacharit:["shabbat","☀️ שחרית בשבת"],shabbat_mincha:["shabbat","🌤️ מנחה בשבת"],motzash:["shabbat","🌠 ערבית במוצאי שבת"]};
 var SECN={shacharit:"שחרית בימי חול",mincha:"מנחה בימי חול",mincha_friday:"מנחה ביום שישי",maariv:"ערבית בימי חול",kabbalat_shabbat:"ליל שבת",shabbat_shacharit:"שחרית בשבת",shabbat_mincha:"מנחה בשבת",motzash:"מוצאי שבת"};
-var data=null, live=[], only="";
+var data=null, live=[], only="", nus="";
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
-function nuCls(n){n=n||"";if(/חב"?ד/.test(n))return"n-ch";if(/מזרח|עה"מ|ספרדי/.test(n)&&!/^ספרד$/.test(n))return /ספרדי/.test(n)?"n-sf":"n-mz";if(/ספרד/.test(n))return"n-sf";if(/אשכנז/.test(n))return"n-as";return"n-ot";}
+function nuCls(n){n=(n||"").replace(/["'׳״]/g,"");if(/חבד|תהילת/.test(n))return"n-ch";if(/מזרח|עהמ/.test(n))return"n-mz";if(/ספרד/.test(n))return"n-sf";if(/אשכנז/.test(n))return"n-as";return"n-ot";}
 function fmtD(d){if(!d)return"";var p=d.split("-");return p[1]+"/"+p[0];}
 function row(it,web){
   var r=el("div","r "+nuCls(it.nu)+(web?" web":""));
@@ -171,13 +183,14 @@ function filter(){
   var q=document.getElementById("q").value.trim().replace(/["'׳״]/g,""), w=q?q.split(/\s+/):[], any=false;
   document.querySelectorAll("section.cat").forEach(function(s){
     var shown=0, catOk=!only||s.dataset.k===only;
-    s.querySelectorAll(".r").forEach(function(r){ var t=r.dataset.q.replace(/["'׳״]/g,""); var ok=catOk&&w.every(function(x){return t.indexOf(x)>=0;}); r.classList.toggle("hidden",!ok); if(ok) shown++; });
+    s.querySelectorAll(".r").forEach(function(r){ var t=r.dataset.q.replace(/["'׳״]/g,""); var ok=catOk&&(!nus||r.classList.contains(nus))&&w.every(function(x){return t.indexOf(x)>=0;}); r.classList.toggle("hidden",!ok); if(ok) shown++; });
     s.querySelectorAll(".list").forEach(function(l){ var has=!!l.querySelector(".r:not(.hidden)"); l.classList.toggle("hidden",!has); var p=l.previousElementSibling; if(p&&p.classList.contains("grp")) p.classList.toggle("hidden",!has); });
     s.classList.toggle("hidden",!shown); if(shown) any=true;
   });
   document.getElementById("none").classList.toggle("hidden",any);
 }
 document.getElementById("q").addEventListener("input",filter);
+document.querySelectorAll("#nus button").forEach(function(b){ b.onclick=function(){ nus=b.dataset.n; document.querySelectorAll("#nus button").forEach(function(x){x.classList.toggle("on",x===b);}); filter(); nextBanner(); }; });
 function loadLive(){ return fetch(API+"/list?board="+BOARD,{cache:"no-store"}).then(function(r){return r.json();}).then(function(d){live=(d&&d.items)||[];}).catch(function(){live=[];}); }
 fetch(DATA,{cache:"no-cache"}).then(function(r){return r.json();}).then(function(d){
   data=d; if(d.season) document.getElementById("season").textContent=d.season;
@@ -185,7 +198,65 @@ fetch(DATA,{cache:"no-cache"}).then(function(r){return r.json();}).then(function
   chips();
   if(!d.ai){ document.querySelector(".hero").classList.add("noai"); return; }
   document.getElementById("ask").classList.remove("hidden"); return loadLive();
-}).then(function(){ if(data) render(); }).catch(function(){ document.getElementById("cats").innerHTML='<div class="empty">לא הצלחנו לטעון את הזמנים. נסו לרענן.</div>'; });
+}).then(function(){ if(data){ render(); nextBanner(); setInterval(nextBanner,30000); } }).catch(function(){ document.getElementById("cats").innerHTML='<div class="empty">לא הצלחנו לטעון את הזמנים. נסו לרענן.</div>'; });
+
+/* ---- the next minyan: today's times in Kiryat Ata (sunset computed here; times relative to sunset/candles/end of Shabbat) ---- */
+var LAT=32.809, LON=35.106;
+function sunTimes(d){ // NOAA approximation, minutes after local midnight (Israel time zone of that date)
+  var rad=Math.PI/180, start=new Date(d.getFullYear(),0,0), N=Math.floor((d-start)/864e5);
+  var g=2*Math.PI/365*(N-1);
+  var eq=229.18*(0.000075+0.001868*Math.cos(g)-0.032077*Math.sin(g)-0.014615*Math.cos(2*g)-0.040849*Math.sin(2*g));
+  var decl=0.006918-0.399912*Math.cos(g)+0.070257*Math.sin(g)-0.006758*Math.cos(2*g)+0.000907*Math.sin(2*g)-0.002697*Math.cos(3*g)+0.00148*Math.sin(3*g);
+  var ha=Math.acos(Math.cos(90.833*rad)/(Math.cos(LAT*rad)*Math.cos(decl))-Math.tan(LAT*rad)*Math.tan(decl))/rad;
+  var tz=-new Date(d.getFullYear(),d.getMonth(),d.getDate(),12).getTimezoneOffset();
+  if(Math.abs(tz-120)>60) tz=new Date(d.getFullYear(),2,30)<d&&d<new Date(d.getFullYear(),9,25)?180:120; // viewer outside Israel: rough IST/IDT
+  return {rise:720-4*(LON+ha)-eq+tz, set:720-4*(LON-ha)-eq+tz};
+}
+function parseT(s,sun){
+  s=String(s||""); var m=s.match(/^\D{0,3}?(\d{1,2})[:.](\d{2})/);
+  if(m&&!/לפי הלוח/.test(s)) return +m[1]*60+ +m[2];
+  if(/ותיקין/.test(s)) return Math.round(sun.rise-30);
+  var base=null;
+  if(/השקיעה/.test(s)) base=sun.set; else if(/הדל"?נ|הדלקת/.test(s)) base=sun.set-30; else if(/צאת השבת|יציאת השבת/.test(s)) base=sun.set+37; else if(/צאת הכוכבים/.test(s)) base=sun.set+18;
+  if(base==null) return null;
+  if(/^שעה לפני/.test(s)) return Math.round(base-60);
+  var k=s.match(/(\d+)\s*דק/); var mins=k?+k[1]:0;
+  if(/לפני/.test(s)) return Math.round(base-mins);
+  if(/אחרי|לאחר/.test(s)) return Math.round(base+mins);
+  return Math.round(base);
+}
+var PNAME={shacharit:"שחרית",mincha:"מנחה",maariv:"ערבית"};
+function todays(day){ // [{min, name, it}] for a weekday 0..6
+  var out=[], sun=sunTimes(day), wd=day.getDay();
+  data.cats.forEach(function(c){ c.groups.forEach(function(g){
+    var name=null;
+    if(c.key==="shabbat"){ if(wd===5&&/ליל שבת/.test(g.title)) name="קבלת שבת"; if(wd===6){ if(/שחרית/.test(g.title)) name="שחרית של שבת"; else if(/מנחה/.test(g.title)) name="מנחה של שבת"; else if(/מוצאי/.test(g.title)) name="ערבית של מוצאי שבת"; } }
+    else if(wd!==6){ if(c.key==="mincha"&&/שישי/.test(g.title)) { if(wd===5) name="מנחה של ערב שבת"; }
+      else if(c.key==="mincha"){ if(wd!==5) name="מנחה"; }
+      else if(c.key==="maariv"){ if(wd!==5) name="ערבית"; }
+      else name=PNAME[c.key]; }
+    if(!name) return;
+    g.items.forEach(function(it){ var mm=parseT(it.t,sun); if(mm!=null) out.push({min:mm,name:name,it:it}); });
+  }); });
+  return out.sort(function(a,b){return a.min-b.min;});
+}
+function hm(m){ m=Math.round(m); return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0"); }
+function nextBanner(){
+  if(!data) return;
+  var okN=function(x){return !nus||nuCls(x.it.nu)===nus;};
+  var now=new Date(), nm=now.getHours()*60+now.getMinutes(), list=todays(now).filter(function(x){return x.min>=nm&&okN(x);}), when="";
+  if(!list.length){ var tm=new Date(now.getTime()+864e5); list=todays(tm).filter(okN); when="מחר "; nm-=1440; }
+  if(!list.length) return;
+  var a=list[0], d=a.min-nm, it=a.it, el1=document.getElementById("n1");
+  var inTxt = when ? when+"ב-"+hm(a.min) : d<=0 ? "מתחילה עכשיו" : d<60 ? "עוד "+d+" דקות" : "עוד "+Math.floor(d/60)+" שע' ו-"+(d%60)+" דק' ("+hm(a.min)+")";
+  el1.innerHTML=""; el1.appendChild(document.createTextNode("התפילה הקרובה: "+a.name+" "));
+  var em=document.createElement("em"); em.textContent=inTxt; el1.appendChild(em);
+  var addr=it.a||it.n||"";
+  document.getElementById("n2").textContent="בבית הכנסת "+it.p+(addr?" · "+addr:"")+(it.nu?" · נוסח "+it.nu:"");
+  var more=list.slice(1,4).map(function(x){return hm(x.min)+" "+x.it.p;});
+  document.getElementById("n3").textContent=(more.length?"אחריה: "+more.join(" | ")+" · ":"")+"השעות לפי השקיעה מחושבות בקירוב — כדאי לוודא בבית הכנסת";
+  document.getElementById("next").classList.remove("hidden");
+}
 
 var sid=(function(){var s="";try{s=sessionStorage.getItem("ata_tsid")||"";}catch(e){} if(s)return s; for(var i=0;i<20;i++) s+="abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random()*36)]; try{sessionStorage.setItem("ata_tsid",s);}catch(e){} return s;})();
 var msgs=[],busy=false,chat=document.getElementById("chat"),inp=document.getElementById("inp"),send=document.getElementById("send");
