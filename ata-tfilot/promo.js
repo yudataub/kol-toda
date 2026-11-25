@@ -110,7 +110,7 @@ function howTo(){
   var st;
   if(ios) st=[["1","לפתוח את הדף בדפדפן <b>ספארי</b> (המצפן הכחול)."],["2","ללחוץ על כפתור <b>השיתוף</b> – ריבוע עם חץ למעלה ⬆️, בתחתית המסך."],["3","לגלול מעט ולבחור <b>\"הוספה למסך הבית\"</b> ➕."],["4","ללחוץ <b>\"הוסף\"</b> למעלה – והאייקון של קרית אתא מופיע במסך הבית."]];
   else if(sam) st=[["1","ללחוץ על <b>☰</b> (שלושה קווים) בתחתית המסך."],["2","לבחור <b>\"הוסף דף אל\"</b>."],["3","לבחור <b>\"מסך הבית\"</b> ואז <b>\"הוסף\"</b>."]];
-  else if(andr) st=[["1","ללחוץ על <b>⋮</b> (שלוש נקודות) בפינה העליונה."],["2","לבחור <b>\"התקנת אפליקציה\"</b> או <b>\"הוספה למסך הבית\"</b>."],["3","ללחוץ <b>\"התקנה\"</b> – והאייקון של קרית אתא מופיע במסך הבית."]];
+  else if(andr) st=[["1","ללחוץ על <b>⋮</b> (שלוש נקודות) בפינה העליונה של כרום."],["2","לבחור <b>\"הוספה למסך הבית\"</b> (או <b>\"התקנת אפליקציה\"</b>)."],["3","אם שואלים \"התקנה\" או \"יצירת קיצור דרך\" – לבחור <b>\"התקנה\"</b>. קיצור דרך נפתח בדפדפן ולא כאפליקציה."],["4","ללחוץ שוב <b>\"התקנה\"</b> – והאייקון של קרית אתא מופיע במסך הבית."]];
   else st=[["1","בכרום או באדג': ללחוץ על סמל ההתקנה <b>⊕</b> בצד שורת הכתובת למעלה."],["2","או: <b>⋮</b> / <b>…</b> ← \"שמירה ושיתוף\" / \"אפליקציות\" ← <b>\"התקנת הדף כאפליקציה\"</b>."],["3","ללחוץ <b>\"התקנה\"</b> – ונוצר אייקון בשולחן העבודה ובתפריט התחל."]];
   var bg=el("div","kp-modal"), box=el("div","box");
   box.innerHTML='<img src="'+APPI+'icon-192.png" alt="" width="84" height="84"><h3>📲 התקנת האפליקציה של קרית אתא</h3>'
@@ -121,7 +121,10 @@ function howTo(){
   var go=el("button","go","📲 התקנה עכשיו – לחיצה אחת"); go.type="button"; go.style.display="none";
   go.onclick=function(){ if(deferred){ clog("install_click",{extra:"prompt (modal)"}); deferred.prompt(); deferred.userChoice.then(function(c){ clog("install_choice",{extra:c&&c.outcome}); deferred=null; bg.remove(); }); } };
   box.insertBefore(go, ol);
-  (function wait(n){ if(!document.body.contains(bg)) return; if(deferred){ go.style.display="block"; ol.style.display="none"; return; } if(n<40) setTimeout(function(){ wait(n+1); },250); })(0);
+  // Chrome on Android offers the install only after the visitor spent a little time on the page – keep waiting while open
+  var hint=el("p","s","⏳ עוד כמה שניות יופיע כאן כפתור התקנה ישיר. אפשר גם לפי השלבים:");
+  if(andr && !deferred) box.insertBefore(hint, ol);
+  (function wait(){ if(!document.body.contains(bg)) return; if(deferred){ go.style.display="block"; ol.style.display="none"; hint.remove(); return; } setTimeout(wait,300); })();
   bg.appendChild(box); document.body.appendChild(bg);
   bg.addEventListener("click",function(e){ if(e.target===bg||e.target.className==="ok") bg.remove(); });
 }
