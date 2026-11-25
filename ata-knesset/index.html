@@ -84,7 +84,9 @@ section.L{margin:0 0 26px;scroll-margin-top:120px}
 .sig a{font-weight:700}
 footer.f{text-align:center;color:var(--ink2);font-size:14px;padding:6px 16px 30px}
 @media (max-width:560px){.wa .t{display:none}.stats div{min-width:80px;padding:6px 10px}.sh{padding:12px 12px 10px}.sh .nm{font-size:21px}}
-</style>
+a.wz{color:inherit;text-decoration:underline;text-decoration-color:rgba(51,204,255,.7);text-underline-offset:3px}
+a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;background:#33A9E0;border-radius:999px;padding:1px 9px;margin-right:4px;text-decoration:none;vertical-align:1px;white-space:nowrap}
+.sh .ad a.gm{font-size:12.5px;margin-right:6px;color:var(--ink2)}</style>
 <link rel="canonical" href="https://www.kol-toda.co.il/ata-knesset/">
 <script async src="https://www.kol-toda.co.il/a.js"></script>
 </head>
@@ -129,6 +131,17 @@ var DATA = (location.hostname.indexOf("kol-toda") >= 0 ? "/ata-knesset/" : "") +
 var IC = {shacharit:"🌅", mincha:"🌇", maariv:"🌙", shabbat:""};
 var WA = '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.7 1.2 1.6 2 1.1 1 2 1.3 2.3 1.4.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.7-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.2z"/></svg>';
 function el(t,c,x){ var e=document.createElement(t); if(c) e.className=c; if(x!=null) e.textContent=x; return e; }
+// Waze links on addresses (user 25.11.2026: "clicking an address opens Waze"). city=false: don't add "קרית אתא".
+function wazeUrl(q, city){
+  q=String(q||"").replace(/\([^)]*\)/g,"").replace(/\s+/g," ").replace(/[,\s–—-]+$/,"").trim();
+  if(city!==false && !/קרית|קריית|חיפה|רכסים|מוצקין|ביאליק|נשר|טבעון|עכו|נהרי|כפר |מושב|קיבוץ|צור שלום|ים\b/.test(q)) q+=", קרית אתא";
+  return "https://waze.com/ul?q="+encodeURIComponent(q)+"&navigate=yes";
+}
+function wazeLink(label, q, city){
+  var a=document.createElement("a"); a.className="wz"; a.href=wazeUrl(q, city); a.target="_blank"; a.rel="noopener";
+  a.title="ניווט בווייז"; a.appendChild(document.createTextNode(label+" ")); var c=document.createElement("span"); c.className="wzb"; c.textContent="🚗 ווייז"; a.appendChild(c); return a;
+}
+
 function tels(box, list){
   list.forEach(function(p){
     var d=p.replace(/[^\d]/g,""); if(d.length<9) return;
@@ -140,7 +153,7 @@ function phonesIn(s){ return (s||"").match(/0\d{1,2}-?\d{3}-?\d{3,4}/g)||[]; }
 function card(s, i){
   var b=el("article","sh"); b.id="s"+i;
   b.appendChild(el("h3","nm",s.name));
-  if(s.addr){ var ad=el("div","ad"), a=el("a",null,"📍 "+s.addr); a.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(s.addr.replace(/\(.*?\)/g,"")+" קרית אתא"); a.target="_blank"; a.rel="noopener"; ad.appendChild(a); b.appendChild(ad); }
+  if(s.addr){ var ad=el("div","ad","📍 "); ad.appendChild(wazeLink(s.addr, s.addr)); var gm=el("a","gm","🗺️ מפה"); gm.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(s.addr.replace(/\(.*?\)/g,"")+" קרית אתא"); gm.target="_blank"; gm.rel="noopener"; ad.appendChild(gm); b.appendChild(ad); }
   var ch=el("div","chips");
   if(s.nusach) ch.appendChild(el("span","chip","נוסח "+s.nusach.replace(/^נוסח /,"")));
   if(s.prayers.length) ch.appendChild(el("span","chip",s.prayers.length+" מניינים"));
@@ -211,6 +224,6 @@ fetch(DATA,{cache:"no-cache"}).then(function(r){return r.json();}).then(render)
   .catch(function(){ document.getElementById("list").innerHTML='<div class="empty">לא הצלחנו לטעון. נסו לרענן את הדף.</div>'; });
 })();
 </script>
-<script src="/ata-shiurim/promo.js?v=8" defer></script>
+<script src="/ata-shiurim/promo.js?v=9" defer></script>
 </body>
 </html>

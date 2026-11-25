@@ -101,6 +101,8 @@ footer.f{text-align:center;color:var(--ink2);font-size:14px;padding:6px 16px 30p
 @media (max-width:600px){.r{grid-template-columns:1fr auto}.r .tm{grid-column:1/3}.r .x,.r .src{grid-column:1/3}.row{flex-direction:column;align-items:stretch}.ask{padding:14px 12px}}
 @media print{.ask,.tools,.chips,.sig{display:none}.hero{padding:10px;color:#000;background:none}section.cat{box-shadow:none;break-inside:avoid}}
 .heroimg{display:block;width:min(580px,100%);height:auto;margin:20px auto 0;border-radius:18px;box-shadow:0 14px 34px rgba(0,0,0,.35);border:3px solid rgba(255,255,255,.65)}
+a.wz{color:inherit;text-decoration:underline;text-decoration-color:rgba(51,204,255,.7);text-underline-offset:3px}
+a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;background:#33A9E0;border-radius:999px;padding:1px 9px;margin-right:4px;text-decoration:none;vertical-align:1px;white-space:nowrap}
 </style>
 <link rel="canonical" href="https://www.kol-toda.co.il/ata-tfilot/">
 <script async src="https://www.kol-toda.co.il/a.js"></script>
@@ -147,6 +149,20 @@ var SEC={shacharit:["shacharit",""],mincha:["mincha",""],mincha_friday:["mincha"
 var SECN={shacharit:"שחרית בימי חול",mincha:"מנחה בימי חול",mincha_friday:"מנחה ביום שישי",maariv:"ערבית בימי חול",kabbalat_shabbat:"ליל שבת",shabbat_shacharit:"שחרית בשבת",shabbat_mincha:"מנחה בשבת",motzash:"מוצאי שבת"};
 var data=null, live=[], only="", nus="";
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+// Waze links on addresses (user 25.11.2026: "clicking an address opens Waze"). city=false: don't add "קרית אתא".
+function wazeUrl(q, city){
+  q=String(q||"").replace(/\([^)]*\)/g,"").replace(/\s+/g," ").replace(/[,\s–—-]+$/,"").trim();
+  if(city!==false && !/קרית|קריית|חיפה|רכסים|מוצקין|ביאליק|נשר|טבעון|עכו|נהרי|כפר |מושב|קיבוץ|צור שלום|ים\b/.test(q)) q+=", קרית אתא";
+  return "https://waze.com/ul?q="+encodeURIComponent(q)+"&navigate=yes";
+}
+function wazeLink(label, q, city){
+  var a=document.createElement("a"); a.className="wz"; a.href=wazeUrl(q, city); a.target="_blank"; a.rel="noopener";
+  a.title="ניווט בווייז"; a.appendChild(document.createTextNode(label+" ")); var c=document.createElement("span"); c.className="wzb"; c.textContent="🚗 ווייז"; a.appendChild(c); return a;
+}
+var KADDR={};   // synagogue name → address, from the synagogues page (knesset_build.py "addr")
+function normP(s){ s=String(s||"").replace(/["'׳״]/g,"").trim().replace(/^(בית הכנסת|בית כנסת|ביהכנס|ביכנ)\s+/,""); return s.replace(/\s+/g," ").trim(); }
+fetch("/ata-knesset/list.json",{cache:"no-cache"}).then(function(r){return r.json();}).then(function(d){ KADDR=d.addr||{}; if(typeof data!=="undefined"&&data) render(); }).catch(function(){});
+
 function nuCls(n){n=(n||"").replace(/["'׳״]/g,"");if(/חבד|תהילת/.test(n))return"n-ch";if(/מזרח|עהמ/.test(n))return"n-mz";if(/ספרד/.test(n))return"n-sf";if(/אשכנז/.test(n))return"n-as";return"n-ot";}
 function fmtD(d){if(!d)return"";var p=d.split("-");return p[1]+"/"+p[0];}
 function row(it,web){
@@ -155,7 +171,9 @@ function row(it,web){
   if(web){var bt=it.action==="cancel"?["cancel","⚠️ דווח שהופסק – טרם אומת"]:it.action==="update"?["upd","✏️ עדכון מגולש – טרם אומת"]:["","🆕 נוסף ע\"י גולש – טרם אומת"];var b=el("span","badge "+bt[0],bt[1]);tm.appendChild(b);}
   tm.appendChild(document.createTextNode([web?it.days:"",it.t].filter(Boolean).join(" | ")));
   r.appendChild(tm);
-  var pl=el("div","pl",it.p); var ad=web?it.a:""; if(ad){pl.appendChild(document.createTextNode(" "));pl.appendChild(el("span","ad","— "+ad));}
+  var ad=web?it.a:"", ka=ad||KADDR[normP(it.p)]||KADDR[normP(String(it.p).split(/ [—–-] /)[0])]||"", pl=el("div","pl");
+  if(ka) pl.appendChild(wazeLink(it.p, ka)); else pl.appendChild(document.createTextNode(it.p));
+  if(ad){pl.appendChild(document.createTextNode(" "));pl.appendChild(el("span","ad","— "+ad));}
   r.appendChild(pl);
   r.appendChild(el("span","nu",it.nu||"—"));
   var x=[it.n,web&&it.season&&it.season!=="כל השנה"?"("+it.season+")":"",it.c?"📞 "+it.c:""].filter(Boolean).join(" · ");
@@ -288,6 +306,6 @@ send.onclick=go;
 inp.addEventListener("keydown",function(e){ if(e.key==="Enter"&&!e.shiftKey&&window.innerWidth>700){e.preventDefault();go();} });
 })();
 </script>
-<script src="promo.js?v=8" defer></script>
+<script src="promo.js?v=9" defer></script>
 </body>
 </html>

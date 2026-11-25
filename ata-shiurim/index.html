@@ -108,6 +108,8 @@ section.cat{background:#fff;border-radius:22px;box-shadow:0 4px 18px rgba(30,30,
 footer.f{text-align:center;color:var(--ink2);font-size:14px;padding:6px 16px 30px}
 @media (max-width:560px){.ask{padding:14px 12px}.items{padding:12px 12px 16px}.grp{margin:14px 12px 0}.cat>header{padding:13px 12px}.cat>header h2{font-size:22px}.cat>header .ic{width:44px;height:44px;font-size:24px}.cat>header p{display:none}.row{flex-direction:column;align-items:stretch}.wa .t{display:none}.stats div{min-width:80px;padding:6px 10px}}
 .heroimg{display:block;width:min(580px,100%);height:auto;margin:20px auto 0;border-radius:18px;box-shadow:0 14px 34px rgba(0,0,0,.35);border:3px solid rgba(255,255,255,.65)}
+a.wz{color:inherit;text-decoration:underline;text-decoration-color:rgba(51,204,255,.7);text-underline-offset:3px}
+a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;background:#33A9E0;border-radius:999px;padding:1px 9px;margin-right:4px;text-decoration:none;vertical-align:1px;white-space:nowrap}
 </style>
 <link rel="canonical" href="https://www.kol-toda.co.il/ata-shiurim/">
 <script async src="https://www.kol-toda.co.il/a.js"></script>
@@ -163,6 +165,20 @@ var DCOL = {1:"#E4572E",2:"#E8A10C",3:"#24A06B",4:"#2D7DD2",5:"#7B4FC9",6:"#A874
 function cnt(items){ return items.filter(function(x){ return !x.dup; }).length; }
 var data = null, live = [];
 function el(tag, cls, txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
+// Waze links on addresses (user 25.11.2026: "clicking an address opens Waze"). city=false: don't add "קרית אתא".
+function wazeUrl(q, city){
+  q=String(q||"").replace(/\([^)]*\)/g,"").replace(/\s+/g," ").replace(/[,\s–—-]+$/,"").trim();
+  if(city!==false && !/קרית|קריית|חיפה|רכסים|מוצקין|ביאליק|נשר|טבעון|עכו|נהרי|כפר |מושב|קיבוץ|צור שלום|ים\b/.test(q)) q+=", קרית אתא";
+  return "https://waze.com/ul?q="+encodeURIComponent(q)+"&navigate=yes";
+}
+function wazeLink(label, q, city){
+  var a=document.createElement("a"); a.className="wz"; a.href=wazeUrl(q, city); a.target="_blank"; a.rel="noopener";
+  a.title="ניווט בווייז"; a.appendChild(document.createTextNode(label+" ")); var c=document.createElement("span"); c.className="wzb"; c.textContent="🚗 ווייז"; a.appendChild(c); return a;
+}
+var KADDR={};   // synagogue name → address, from the synagogues page (knesset_build.py "addr")
+function normP(s){ s=String(s||"").replace(/["'׳״]/g,"").trim().replace(/^(בית הכנסת|בית כנסת|ביהכנס|ביכנ)\s+/,""); return s.replace(/\s+/g," ").trim(); }
+fetch("/ata-knesset/list.json",{cache:"no-cache"}).then(function(r){return r.json();}).then(function(d){ KADDR=d.addr||{}; if(typeof data!=="undefined"&&data) render(); }).catch(function(){});
+
 function tel(s){ return s.replace(/(0\d{1,2}-?\d{3}-?\d{4}|0\d{8,9})/g, "\u0001$1\u0001"); }
 function contact(box, c){
   if(!c) return;
@@ -180,7 +196,8 @@ function card(it, web){
     b.appendChild(el("span","badge "+bt[0],bt[1]));
   }
   b.appendChild(el("div","tm","⏰ "+[web?it.days:"",it.t].filter(Boolean).join(" | ")));
-  b.appendChild(el("div","pl","📍 "+it.p));
+  var pp=String(it.p||"").split(" — "), adr=pp.length>1&&/\d/.test(pp[1])?pp[1]:(KADDR[normP(pp[0])]||(pp.length===1&&/\d/.test(pp[0])?pp[0]:""));
+  var pl=el("div","pl","📍 "); if(adr) pl.appendChild(wazeLink(it.p, adr)); else pl.appendChild(document.createTextNode(it.p)); b.appendChild(pl);
   if(it.s) b.appendChild(el("div","sb","📖 "+it.s));
   if(it.r) b.appendChild(el("div","rb","👤 "+it.r));
   if(web && it.aud) b.appendChild(el("div","rb","👥 "+it.aud));
@@ -292,6 +309,6 @@ send.onclick=go;
 inp.addEventListener("keydown",function(e){ if(e.key==="Enter"&&!e.shiftKey&&window.innerWidth>700){ e.preventDefault(); go(); } });
 })();
 </script>
-<script src="promo.js?v=8" defer></script>
+<script src="promo.js?v=9" defer></script>
 </body>
 </html>

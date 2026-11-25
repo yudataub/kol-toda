@@ -116,8 +116,17 @@ function howTo(){
    +'<p class="s">אחרי ההתקנה יש אייקון במסך הבית – לחיצה אחת וכל המידע פתוח: תפילות, בתי כנסת, שיעורים, גמ"חים ועסקים.</p><ol></ol>'
    +'<button type="button" class="ok">הבנתי</button>';
   var ol=box.querySelector("ol"); st.forEach(function(x){ var li=document.createElement("li"); li.innerHTML=x[1]; ol.appendChild(li); });
+  // Android/computer: when the browser offers a direct install, a big button does it in one tap (and the steps become a fallback)
+  var go=el("button","go","📲 התקנה עכשיו – לחיצה אחת"); go.type="button"; go.style.display="none";
+  go.onclick=function(){ if(deferred){ deferred.prompt(); deferred.userChoice.then(function(){ deferred=null; bg.remove(); }); } };
+  box.insertBefore(go, ol);
+  (function wait(n){ if(!document.body.contains(bg)) return; if(deferred){ go.style.display="block"; ol.style.display="none"; return; } if(n<40) setTimeout(function(){ wait(n+1); },250); })(0);
   bg.appendChild(box); document.body.appendChild(bg);
   bg.addEventListener("click",function(e){ if(e.target===bg||e.target.className==="ok") bg.remove(); });
+}
+if(/[?&]install=1/.test(location.search) && !STANDALONE){
+  var openIt=function(){ setTimeout(function(){ howTo(); },600); };
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",openIt); else openIt();
 }
 function install(){
   if(deferred){ deferred.prompt(); deferred.userChoice.then(function(){ deferred=null; }); return; }
@@ -130,6 +139,7 @@ css+=".kp-nav a.kp-inst{background:#F5C842;color:#0D2A3E;cursor:pointer}"
 +".kp-modal .box{background:#fff;color:#0D2A3E;border-radius:22px;max-width:460px;width:100%;max-height:92vh;overflow:auto;padding:22px 20px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.4)}"
 +".kp-modal img{border-radius:20px}.kp-modal h3{font-size:23px;margin:10px 0 6px}.kp-modal .s{font-size:17px;color:#355;margin:0 0 12px;line-height:1.5}"
 +".kp-modal ol{text-align:right;font-size:19px;line-height:1.6;padding-right:24px;margin:0 0 16px}.kp-modal li{margin:0 0 8px}"
++".kp-modal .go{display:block;width:100%;font:800 21px Heebo,Arial,sans-serif;background:#F5C842;color:#0D2A3E;border:0;border-radius:16px;padding:16px;margin:0 0 14px;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.18)}"
 +".kp-modal .ok{font:800 20px Heebo,Arial,sans-serif;background:#1A6FA8;color:#fff;border:0;border-radius:14px;padding:12px 40px;cursor:pointer}";
 function A(t,h,c){ var a=el("a",c,t); a.href=h; a.target="_blank"; a.rel="noopener"; return a; }
 function col(e,ad){ e.style.setProperty("--a",ad.c); e.style.setProperty("--b",ad.c2); }
