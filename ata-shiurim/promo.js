@@ -38,7 +38,7 @@ var NAV = [
   ["תורה", [["📖 שיעורי תורה","/ata-shiurim/"]]],
   ["עבודה", [["🕍 זמני תפילות","/ata-tfilot/"],["🏛️ בתי כנסת","/ata-knesset/"]]],
   ["גמילות חסדים", [["🤝 גמ״חים","/ata-gmachim/"],["💼 עסקים","/ata-asakim/"]]],
-  ["עוד", [["ℹ️ מידעאתא","/ata-meida/"],["📜 תולדות העיר","/ata-toldot/"],["📷 תמונות","/ata-tmunot/"]]]
+  ["עוד", [["ℹ️ מידעאתא","/ata-meida/"],["🥾 טיולים","/ata-tiyulim/"],["📜 תולדות העיר","/ata-toldot/"],["📷 תמונות","/ata-tmunot/"]]]
 ];
 var css = ""
 +".kp-nav{position:sticky;top:0;z-index:60;background:#0D2A3E;box-shadow:0 2px 10px rgba(0,0,0,.18);transition:transform .25s;font-family:Heebo,Arial,sans-serif;direction:rtl}"
@@ -139,7 +139,7 @@ function init(){
   // 4. tile grid before the signature (+ the four Kiryat Ata pages, if the page has no such row)
   var sig=document.querySelector(".sig");
   if(sig && !document.querySelector(".sister")){
-    var sr=el("div","kp-sis"); [["🏙️ כל קרית אתא","/ata/"],["📖 שיעורי תורה","/ata-shiurim/"],["🕍 זמני תפילות","/ata-tfilot/"],["🏛️ בתי הכנסת","/ata-knesset/"],["🤝 גמ״חים","/ata-gmachim/"],["💼 עסקים ובעלי מקצוע","/ata-asakim/"],["ℹ️ מידעאתא","/ata-meida/"],["📜 תולדות העיר","/ata-toldot/"],["📷 תמונות היסטוריות","/ata-tmunot/"]].forEach(function(x){
+    var sr=el("div","kp-sis"); [["🏙️ כל קרית אתא","/ata/"],["📖 שיעורי תורה","/ata-shiurim/"],["🕍 זמני תפילות","/ata-tfilot/"],["🏛️ בתי הכנסת","/ata-knesset/"],["🤝 גמ״חים","/ata-gmachim/"],["💼 עסקים ובעלי מקצוע","/ata-asakim/"],["ℹ️ מידעאתא","/ata-meida/"],["🥾 קום והתהלך בארץ","/ata-tiyulim/"],["📜 תולדות העיר","/ata-toldot/"],["📷 תמונות היסטוריות","/ata-tmunot/"]].forEach(function(x){
       if(location.pathname.indexOf(x[1])===0) return; var a=el("a",null,x[0]); a.href=x[1]; sr.appendChild(a); });
     sig.parentNode.insertBefore(sr,sig);
   }
