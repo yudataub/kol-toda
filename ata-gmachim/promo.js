@@ -82,6 +82,55 @@ var css = ""
 +"body.kp-search .kp-mid{display:none}"
 +"@media (max-width:560px){.kp-mid{padding:18px 14px}.kp-mid .big{font-size:46px;top:18px;transform:none}.kp-mid p{padding-left:0}.kp-mid h3{padding-left:52px}.kp-strip .go{display:none}.kp-grid .g{grid-template-columns:repeat(3,1fr)}.kp-grid .g a{font-size:13px;padding:10px 4px}}";
 function el(t,c,x){ var e=document.createElement(t); if(c) e.className=c; if(x!=null) e.textContent=x; return e; }
+
+// ---- the Kiryat Ata app (PWA, user 25.11.2026: "older people asked for an app on the phone's home screen") ----
+// manifest /ata/manifest.json + service worker /ata/sw.js; a gold "📲 התקנה" button in the top bar and on every
+// [data-kp-install] element opens the browser's install prompt, or simple steps for iPhone / Android / computer.
+var APPI="https://yudataub.github.io/kol-toda-img-4/ata/app/", deferred=null;
+var STANDALONE=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
+window.addEventListener("beforeinstallprompt",function(e){ e.preventDefault(); deferred=e; });
+window.addEventListener("appinstalled",function(){ deferred=null; document.documentElement.classList.add("kp-app"); });
+function appHead(){
+  var h=document.head;
+  function add(tag,at){ var x=document.createElement(tag); for(var k in at) x.setAttribute(k,at[k]); h.appendChild(x); }
+  if(!h.querySelector('link[rel="manifest"]')) add("link",{rel:"manifest",href:"/ata/manifest.json"});
+  if(!h.querySelector('link[rel="apple-touch-icon"]')) add("link",{rel:"apple-touch-icon",href:APPI+"apple-180.png"});
+  if(!h.querySelector('meta[name="theme-color"]')) add("meta",{name:"theme-color",content:"#0D2A3E"});
+  add("meta",{name:"apple-mobile-web-app-capable",content:"yes"});
+  add("meta",{name:"mobile-web-app-capable",content:"yes"});
+  add("meta",{name:"apple-mobile-web-app-title",content:"קרית אתא"});
+  if(STANDALONE) document.documentElement.classList.add("kp-app");
+  if("serviceWorker" in navigator) navigator.serviceWorker.register("/ata/sw.js",{scope:"/ata/"}).catch(function(){});
+}
+appHead();
+function howTo(){
+  var ua=navigator.userAgent, ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&"ontouchend" in document),
+      andr=/Android/.test(ua), sam=/SamsungBrowser/.test(ua);
+  var st;
+  if(ios) st=[["1","לפתוח את הדף בדפדפן <b>ספארי</b> (המצפן הכחול)."],["2","ללחוץ על כפתור <b>השיתוף</b> – ריבוע עם חץ למעלה ⬆️, בתחתית המסך."],["3","לגלול מעט ולבחור <b>\"הוספה למסך הבית\"</b> ➕."],["4","ללחוץ <b>\"הוסף\"</b> למעלה – והאייקון של קרית אתא מופיע במסך הבית."]];
+  else if(sam) st=[["1","ללחוץ על <b>☰</b> (שלושה קווים) בתחתית המסך."],["2","לבחור <b>\"הוסף דף אל\"</b>."],["3","לבחור <b>\"מסך הבית\"</b> ואז <b>\"הוסף\"</b>."]];
+  else if(andr) st=[["1","ללחוץ על <b>⋮</b> (שלוש נקודות) בפינה העליונה."],["2","לבחור <b>\"התקנת אפליקציה\"</b> או <b>\"הוספה למסך הבית\"</b>."],["3","ללחוץ <b>\"התקנה\"</b> – והאייקון של קרית אתא מופיע במסך הבית."]];
+  else st=[["1","בכרום או באדג': ללחוץ על סמל ההתקנה <b>⊕</b> בצד שורת הכתובת למעלה."],["2","או: <b>⋮</b> / <b>…</b> ← \"שמירה ושיתוף\" / \"אפליקציות\" ← <b>\"התקנת הדף כאפליקציה\"</b>."],["3","ללחוץ <b>\"התקנה\"</b> – ונוצר אייקון בשולחן העבודה ובתפריט התחל."]];
+  var bg=el("div","kp-modal"), box=el("div","box");
+  box.innerHTML='<img src="'+APPI+'icon-192.png" alt="" width="84" height="84"><h3>📲 התקנת האפליקציה של קרית אתא</h3>'
+   +'<p class="s">אחרי ההתקנה יש אייקון במסך הבית – לחיצה אחת וכל המידע פתוח: תפילות, בתי כנסת, שיעורים, גמ"חים ועסקים.</p><ol></ol>'
+   +'<button type="button" class="ok">הבנתי</button>';
+  var ol=box.querySelector("ol"); st.forEach(function(x){ var li=document.createElement("li"); li.innerHTML=x[1]; ol.appendChild(li); });
+  bg.appendChild(box); document.body.appendChild(bg);
+  bg.addEventListener("click",function(e){ if(e.target===bg||e.target.className==="ok") bg.remove(); });
+}
+function install(){
+  if(deferred){ deferred.prompt(); deferred.userChoice.then(function(){ deferred=null; }); return; }
+  howTo();
+}
+css+=".kp-nav a.kp-inst{background:#F5C842;color:#0D2A3E;cursor:pointer}"
++".kp-nav a.kp-back{background:rgba(255,255,255,.22)}"
++".kp-app .kp-nav a.kp-inst,.kp-app [data-kp-install-box]{display:none!important}"
++".kp-modal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;direction:rtl;font-family:Heebo,Arial,sans-serif}"
++".kp-modal .box{background:#fff;color:#0D2A3E;border-radius:22px;max-width:460px;width:100%;max-height:92vh;overflow:auto;padding:22px 20px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.4)}"
++".kp-modal img{border-radius:20px}.kp-modal h3{font-size:23px;margin:10px 0 6px}.kp-modal .s{font-size:17px;color:#355;margin:0 0 12px;line-height:1.5}"
++".kp-modal ol{text-align:right;font-size:19px;line-height:1.6;padding-right:24px;margin:0 0 16px}.kp-modal li{margin:0 0 8px}"
++".kp-modal .ok{font:800 20px Heebo,Arial,sans-serif;background:#1A6FA8;color:#fff;border:0;border-radius:14px;padding:12px 40px;cursor:pointer}";
 function A(t,h,c){ var a=el("a",c,t); a.href=h; a.target="_blank"; a.rel="noopener"; return a; }
 function col(e,ad){ e.style.setProperty("--a",ad.c); e.style.setProperty("--b",ad.c2); }
 function init(){
@@ -92,6 +141,11 @@ function init(){
   document.body.insertBefore(rib, document.body.firstChild);
   // 0. top navigation (above the ribbon)
   var nav=el("nav","kp-nav"), nin=el("div","in"), cur=null; nav.setAttribute("aria-label","דפי קרית אתא");
+  var ig=el("span","gp");
+  if(STANDALONE && history.length>1){ var bk=el("a","kp-back","→ חזרה"); bk.href="#"; bk.onclick=function(e){ e.preventDefault(); history.back(); }; ig.appendChild(bk); }
+  var ib=el("a","kp-inst","📲 התקנת האפליקציה"); ib.href="#"; ib.onclick=function(e){ e.preventDefault(); install(); }; ig.appendChild(ib);
+  nin.appendChild(ig);
+  document.querySelectorAll("[data-kp-install]").forEach(function(b){ b.addEventListener("click",function(e){ e.preventDefault(); install(); }); });
   NAV.forEach(function(G){
     var gp=el("span","gp"); if(G[0]) gp.appendChild(el("span","lb",G[0]+":"));
     G[1].forEach(function(L){ var a=el("a",null,L[0]); a.href=L[1];
