@@ -193,6 +193,7 @@ function chatBox(){
   send.parentNode.parentNode.insertBefore(tip, send.parentNode.nextSibling);
   function say(t,bad){ tip.textContent=t; tip.className="kp-mtip"+(bad?" bad":""); tip.style.display=t?"block":"none"; }
   var rec=null, on=false, base="", acc="", andr=/Android/i.test(navigator.userAgent), started=0;
+  var ios=/iPhone|iPad|iPod/i.test(navigator.userAgent), IOSMSG="באייפון ההקלטה הישירה לא זמינה כאן. לוחצים בתוך התיבה, ואז על סמל המיקרופון 🎤 במקלדת (למטה), ומדברים – הדיבור ייכתב בתיבה. (אם אין מיקרופון במקלדת: הגדרות ← כללי ← מקלדת ← הפעלת הכתבה.)";
   function paint(interim){ var a=(base&&acc?base+" ":base)+acc; inp.value=(a+(interim?(a?" ":"")+interim:"")).replace(/\s+/g," ").trimStart(); }
   function stop(msg){ on=false; mic.classList.remove("on"); mic.textContent="🎤 דיבור"; try{ rec&&rec.stop(); }catch(e){} paint("");
     say(msg!=null?msg:(inp.value.trim()?"✔️ זה מה שנכתב. אפשר לתקן בתיבה, להמשיך לדבר, ואז ללחוץ \"שליחה\".":"")); }
@@ -203,6 +204,8 @@ function chatBox(){
       if(fin){ acc=(acc?acc+" ":"")+fin.trim(); } paint(mid); };
     rec.onerror=function(e){ var er=e.error||"err";
       if(er==="no-speech"||er==="aborted") return;
+      // iPhone: service-not-allowed = dictation (Siri) is off or the home-screen app may not record (log 25.11.2026) → point to the keyboard mic, and go straight there next time
+      if(ios && er==="service-not-allowed"){ try{ localStorage.setItem("ata_nosr","1"); }catch(x){} clog("voice_error",{err:er}); stop(IOSMSG); inp.focus(); return; }
       var m=er==="not-allowed"||er==="service-not-allowed"?"הדפדפן לא קיבל רשות למיקרופון. לוחצים על המנעול 🔒 ליד הכתובת ומאשרים מיקרופון – או מקלידים, או לוחצים על המיקרופון 🎤 שבמקלדת של הטלפון.":
             er==="network"?"אין חיבור לשירות התמלול. נסו שוב, או לחצו על המיקרופון 🎤 שבמקלדת של הטלפון.":"ההקלטה נעצרה ("+er+"). נסו שוב.";
       clog("voice_error",{err:er}); stop(m); };
@@ -211,6 +214,8 @@ function chatBox(){
   }
   mic.onclick=function(){
     if(!SR){ clog("voice_unsupported",{}); say("בדפדפן הזה אין הקלטה ישירה. אפשר ללחוץ על סמל המיקרופון 🎤 במקלדת של הטלפון ולדבר – הדיבור ייכתב בתיבה.",true); inp.focus(); return; }
+    var nosr=false; try{ nosr=ios && localStorage.getItem("ata_nosr")==="1"; }catch(x){}
+    if(nosr && !on){ clog("voice_ios_keyboard",{}); say(IOSMSG,true); inp.focus(); return; }
     if(on){ stop(); return; }
     on=true; base=inp.value.trim(); acc=""; started=Date.now(); mic.classList.add("on"); mic.textContent="⏹️ סיום";
     say("🔴 מקליט… דברו בחופשיות – מה, איפה, מתי ומי. כשמסיימים לוחצים \"⏹️ סיום\".");
