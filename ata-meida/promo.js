@@ -89,7 +89,7 @@ function el(t,c,x){ var e=document.createElement(t); if(c) e.className=c; if(x!=
 var APPI="https://yudataub.github.io/kol-toda-img-4/ata/app/", deferred=null;
 var STANDALONE=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
 window.addEventListener("beforeinstallprompt",function(e){ e.preventDefault(); deferred=e; });
-window.addEventListener("appinstalled",function(){ deferred=null; document.documentElement.classList.add("kp-app"); });
+window.addEventListener("appinstalled",function(){ setTimeout(function(){ try{ clog("app_installed",{}); }catch(e){} },0); deferred=null; document.documentElement.classList.add("kp-app"); });
 function appHead(){
   var h=document.head;
   function add(tag,at){ var x=document.createElement(tag); for(var k in at) x.setAttribute(k,at[k]); h.appendChild(x); }
@@ -103,6 +103,7 @@ function appHead(){
   if("serviceWorker" in navigator) navigator.serviceWorker.register("/ata/sw.js",{scope:"/ata/"}).catch(function(){});
 }
 appHead();
+if(/[?&]src=app/.test(location.search)) setTimeout(function(){ clog(STANDALONE?"app_open_standalone":"app_open_in_browser",{}); },0);
 function howTo(){
   var ua=navigator.userAgent, ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&"ontouchend" in document),
       andr=/Android/.test(ua), sam=/SamsungBrowser/.test(ua);
@@ -118,7 +119,7 @@ function howTo(){
   var ol=box.querySelector("ol"); st.forEach(function(x){ var li=document.createElement("li"); li.innerHTML=x[1]; ol.appendChild(li); });
   // Android/computer: when the browser offers a direct install, a big button does it in one tap (and the steps become a fallback)
   var go=el("button","go","📲 התקנה עכשיו – לחיצה אחת"); go.type="button"; go.style.display="none";
-  go.onclick=function(){ if(deferred){ deferred.prompt(); deferred.userChoice.then(function(){ deferred=null; bg.remove(); }); } };
+  go.onclick=function(){ if(deferred){ clog("install_click",{extra:"prompt (modal)"}); deferred.prompt(); deferred.userChoice.then(function(c){ clog("install_choice",{extra:c&&c.outcome}); deferred=null; bg.remove(); }); } };
   box.insertBefore(go, ol);
   (function wait(n){ if(!document.body.contains(bg)) return; if(deferred){ go.style.display="block"; ol.style.display="none"; return; } if(n<40) setTimeout(function(){ wait(n+1); },250); })(0);
   bg.appendChild(box); document.body.appendChild(bg);
@@ -129,7 +130,8 @@ if(/[?&]install=1/.test(location.search) && !STANDALONE){
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",openIt); else openIt();
 }
 function install(){
-  if(deferred){ deferred.prompt(); deferred.userChoice.then(function(){ deferred=null; }); return; }
+  clog("install_click",{extra:(deferred?"prompt":"steps")+" "+(window.matchMedia?matchMedia("(display-mode: browser)").matches:"")});
+  if(deferred){ deferred.prompt(); deferred.userChoice.then(function(c){ clog("install_choice",{extra:c&&c.outcome}); deferred=null; }); return; }
   howTo();
 }
 css+=".kp-nav a.kp-inst{background:#F5C842;color:#0D2A3E;cursor:pointer}"
