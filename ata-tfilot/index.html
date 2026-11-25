@@ -103,6 +103,23 @@ footer.f{text-align:center;color:var(--ink2);font-size:14px;padding:6px 16px 30p
 .heroimg{display:block;width:min(580px,100%);height:auto;margin:20px auto 0;border-radius:18px;box-shadow:0 14px 34px rgba(0,0,0,.35);border:3px solid rgba(255,255,255,.65)}
 a.wz{color:inherit;text-decoration:underline;text-decoration-color:rgba(51,204,255,.7);text-underline-offset:3px}
 a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;background:#33A9E0;border-radius:999px;padding:1px 9px;margin-right:4px;text-decoration:none;vertical-align:1px;white-space:nowrap}
+.today{display:flex;gap:14px;align-items:stretch;margin:-48px auto 16px;position:relative}
+.hero.noai+.wrap .today{margin-top:0}
+.today .next{flex:1;margin:0;align-self:stretch}
+.today .zm{flex:1.25;min-width:0}
+.zm{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 6px 20px rgba(76,29,149,.16);border:1px solid #e6defa}
+.zm-head{background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;padding:10px 14px;text-align:center}
+.zm-title{font-size:19px;font-weight:800}.zm-date{font-size:14px;opacity:.92;margin-top:2px}
+.zm-list{list-style:none;margin:0;padding:4px 0;display:grid;grid-template-columns:1fr 1fr}
+.zm-list li{display:flex;justify-content:space-between;gap:6px;padding:6px 12px;border-bottom:1px solid #f0ebfd;font-size:14.5px}
+.zm-list li:nth-child(odd){border-left:1px solid #f0ebfd}
+.zm-list li.next{background:#f3eeff;font-weight:800;color:#4c1d95}
+.zm-list li.past{color:#9a9ab0}
+.zm-t{font-variant-numeric:tabular-nums;font-weight:700;color:#5b21b6;white-space:nowrap}
+.zm-list li.past .zm-t{color:#a99fc8}
+.zm-foot{font-size:12px;color:#6b7280;text-align:center;padding:6px;background:#faf7ff}.zm-foot a{color:#6d28d9}
+.cat>header .zmh{margin-top:4px;font-size:14px;font-weight:700;background:rgba(255,255,255,.2);border-radius:999px;padding:2px 10px;display:inline-block}
+@media (max-width:760px){.today{flex-direction:column;margin-top:-30px}.zm-list li{font-size:15px}}
 </style>
 <link rel="canonical" href="https://www.kol-toda.co.il/ata-tfilot/">
 <script async src="https://www.kol-toda.co.il/a.js"></script>
@@ -115,7 +132,14 @@ a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;backg
   <img class="heroimg" src="https://yudataub.github.io/kol-toda-img-4/ata-tfilot/img/og.jpg" alt="זמני תפילות בקרית אתא" width="1200" height="630">
 </div>
 <div class="wrap">
-  <div class="next hidden top" id="next" aria-live="polite"><span class="big">⏰</span><div><div class="t1" id="n1"></div><div class="t2" id="n2"></div><div class="t3" id="n3"></div></div></div>
+  <div class="today">
+  <div class="next hidden" id="next" aria-live="polite"><span class="big">⏰</span><div><div class="t1" id="n1"></div><div class="t2" id="n2"></div><div class="t3" id="n3"></div></div></div>
+  <div class="zm" id="zm" dir="rtl">
+    <div class="zm-head"><div class="zm-title">🌅 זמני היום</div><div class="zm-date" id="zm-date">טוען…</div></div>
+    <ul class="zm-list" id="zm-list"></ul>
+    <div class="zm-foot">קרית אתא · זריחה ושקיעה: <a href="https://www.hebcal.com" target="_blank" rel="noopener">Hebcal</a> · יש לבדוק בלוח מוסמך</div>
+  </div>
+  </div>
   <div class="ask hidden" id="ask">
     <h2>🤖 מכירים מניין שלא מופיע כאן? השעה השתנתה?</h2>
     <p class="sub">כתבו כאן במילים שלכם (איזה בית כנסת, איזו תפילה ובאיזו שעה). אשאל כמה שאלות קצרות כדי לדייק, ואכניס את המניין לדף במקום הנכון.</p>
@@ -159,6 +183,51 @@ function wazeLink(label, q, city){
   var a=document.createElement("a"); a.className="wz"; a.href=wazeUrl(q, city); a.target="_blank"; a.rel="noopener";
   a.title="ניווט בווייז"; a.appendChild(document.createTextNode(label+" ")); var c=document.createElement("span"); c.className="wzb"; c.textContent="🚗 ווייז"; a.appendChild(c); return a;
 }
+
+/* ---- זמני היום (the user's widget, 25.11.2026): sunrise/sunset from Hebcal, the rest computed (GRA / MGA 72) ---- */
+var ZM=null;
+function zmLine(k){
+  if(!ZM) return "";
+  var f=function(n){ return n+" "+zfmt(ZM[n]); };
+  if(k==="shacharit") return "🌅 "+[f("הנץ החמה"),"סוף ק\"ש "+zfmt(ZM["סוף זמן ק\"ש גר\"א"]),"סוף תפילה "+zfmt(ZM["סוף זמן תפילה גר\"א"])].join(" · ");
+  if(k==="mincha") return "☀️ "+["מנחה גדולה "+zfmt(ZM["מנחה גדולה"]),"שקיעה "+zfmt(ZM["שקיעת החמה"])].join(" · ");
+  if(k==="maariv") return "🌙 "+["שקיעה "+zfmt(ZM["שקיעת החמה"]),"צאת הכוכבים "+zfmt(ZM["צאת הכוכבים (20 דק')"])].join(" · ");
+  return "";
+}
+var ZTZ="Asia/Jerusalem", ZMIN=60000;
+function zfmt(ms){ return new Date(ms).toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit",timeZone:ZTZ}); }
+(function(){
+  var LAT=32.8106, LNG=35.1060;
+  var dateStr=function(o){ return new Date(Date.now()+o*86400000).toLocaleDateString("en-CA",{timeZone:ZTZ}); };
+  function calc(sr,ss,nsr){
+    var gh=(ss-sr)/12, ms=sr-72*ZMIN, me=ss+72*ZMIN, mh=(me-ms)/12;
+    return [["עלות השחר (72 דק')",ms],["הנץ החמה",sr],["סוף זמן ק\"ש מג\"א",ms+3*mh],["סוף זמן ק\"ש גר\"א",sr+3*gh],
+      ["סוף זמן תפילה מג\"א",ms+4*mh],["סוף זמן תפילה גר\"א",sr+4*gh],["חצות היום",sr+6*gh],["מנחה גדולה",sr+6.5*gh],
+      ["שקיעת החמה",ss],["צאת הכוכבים (20 דק')",ss+20*ZMIN],["צאת הכוכבים לר\"ת (72 דק')",ss+72*ZMIN],["חצות הלילה",ss+(nsr-ss)/2]];
+  }
+  function paint(list){
+    var now=Date.now(), marked=false, ul=document.getElementById("zm-list"); ul.innerHTML="";
+    list.forEach(function(x){ var li=document.createElement("li");
+      if(!marked&&x[1]>now){ marked=true; li.className="next"; } else if(x[1]<=now) li.className="past";
+      var a=document.createElement("span"); a.textContent=x[0]; var b=document.createElement("span"); b.className="zm-t"; b.textContent=zfmt(x[1]);
+      li.appendChild(a); li.appendChild(b); ul.appendChild(li); });
+    document.getElementById("zm-date").textContent=new Date().toLocaleDateString("he-IL-u-ca-hebrew",{weekday:"long",day:"numeric",month:"long",timeZone:ZTZ})+" · "+new Date().toLocaleDateString("he-IL",{timeZone:ZTZ});
+  }
+  function getDay(date){
+    var key="zm2_"+date;
+    try{ var c=localStorage.getItem(key); if(c) return Promise.resolve(JSON.parse(c)); }catch(e){}
+    return fetch("https://www.hebcal.com/zmanim?cfg=json&latitude="+LAT+"&longitude="+LNG+"&tzid="+ZTZ+"&date="+date).then(function(r){return r.json();}).then(function(j){
+      var d={sunrise:new Date(j.times.sunrise).getTime(),sunset:new Date(j.times.sunset).getTime()};
+      try{ localStorage.setItem(key,JSON.stringify(d)); }catch(e){} return d; });
+  }
+  function load(){
+    Promise.all([getDay(dateStr(0)),getDay(dateStr(1))]).then(function(r){
+      var list=calc(r[0].sunrise,r[0].sunset,r[1].sunrise), had=!!ZM; ZM={}; list.forEach(function(x){ ZM[x[0]]=x[1]; });
+      paint(list); if(!had && typeof data!=="undefined" && data) render();
+    }).catch(function(){ document.getElementById("zm-date").textContent="לא ניתן לטעון זמנים כרגע"; });
+  }
+  load(); setInterval(load,5*60*1000);
+})();
 var KADDR={};   // synagogue name → address, from the synagogues page (knesset_build.py "addr")
 function normP(s){ s=String(s||"").replace(/["'׳״]/g,"").trim().replace(/^(בית הכנסת|בית כנסת|ביהכנס|ביכנ)\s+/,""); return s.replace(/\s+/g," ").trim(); }
 fetch("/ata-knesset/list.json",{cache:"no-cache"}).then(function(r){return r.json();}).then(function(d){ KADDR=d.addr||{}; if(typeof data!=="undefined"&&data) render(); }).catch(function(){});
@@ -187,7 +256,7 @@ function render(){
   var add={}; live.forEach(function(x){var s=SEC[x.cat]||["shacharit",""];(add[s[0]]=add[s[0]]||[]).push(x);});
   data.cats.forEach(function(c){
     var s=el("section","cat"); s.id=c.key; s.dataset.k=c.key;
-    var h=el("header","h-"+c.key); h.appendChild(el("span","ic",c.icon)); var hd=el("div"); hd.appendChild(el("h2",null,c.title)); if(c.sub) hd.appendChild(el("p",null,c.sub)); h.appendChild(hd); s.appendChild(h);
+    var h=el("header","h-"+c.key); h.appendChild(el("span","ic",c.icon)); var hd=el("div"); hd.appendChild(el("h2",null,c.title)); if(c.sub) hd.appendChild(el("p",null,c.sub)); var zl=zmLine(c.key); if(zl) hd.appendChild(el("div","zmh",zl)); h.appendChild(hd); s.appendChild(h);
     if(add[c.key]){ s.appendChild(el("div","grp","🆕 נוסף לאחרונה ע\"י הגולשים")); var l=el("div","list"); add[c.key].forEach(function(x){ var r=row(x,true); var sn=SECN[x.cat]; if(sn&&c.key==="shabbat"||x.cat==="mincha_friday"){ r.querySelector(".tm").appendChild(document.createTextNode(" ("+sn+")")); } l.appendChild(r);}); s.appendChild(l); }
     c.groups.forEach(function(g){ if(!g.items.length) return; if(g.title) s.appendChild(el("div","grp",g.title)); var l=el("div","list"); g.items.forEach(function(it){ l.appendChild(row(it,false)); }); s.appendChild(l); });
     if(c.notes&&c.notes.length){ var f=el("div","foot"); c.notes.forEach(function(n){ f.appendChild(el("div",null,n)); }); s.appendChild(f); }
