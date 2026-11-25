@@ -95,6 +95,19 @@ section.cat{background:#fff;border-radius:22px;box-shadow:0 4px 18px rgba(30,30,
 .sister a{background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;text-decoration:none;color:var(--ink);font-weight:700;font-size:14.5px}
 footer.f{text-align:center;color:var(--ink2);font-size:14px;padding:6px 16px 30px}
 @media (max-width:560px){.ask{padding:14px 12px}.items{padding:12px 12px 16px}.cat>header{padding:13px 12px}.cat>header h2{font-size:22px}.cat>header .ic{width:44px;height:44px;font-size:24px}.row{flex-direction:column;align-items:stretch}.wa .t{display:none}.stats div{min-width:80px;padding:6px 10px}}
+.thead{margin:6px 0 4px;font-size:22px;font-family:"Frank Ruhl Libre",serif}
+.thead small{font-family:Heebo,Arial,sans-serif;font-size:14px;color:var(--ink2);font-weight:500;margin-inline-start:6px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin:10px 0 26px}
+.tile{position:relative;overflow:hidden;text-align:right;border:0;cursor:pointer;font:inherit;border-radius:22px;padding:18px 18px 16px;color:#fff;min-height:132px;display:flex;flex-direction:column;
+  background:linear-gradient(135deg,var(--c),color-mix(in srgb,var(--c) 62%,#000));box-shadow:0 6px 0 color-mix(in srgb,var(--c) 55%,#000),0 14px 24px rgba(31,35,64,.16);transition:.16s}
+.tile:hover{transform:translateY(-4px) rotate(-.4deg);filter:saturate(1.15)}
+.tile:active{transform:translateY(3px);box-shadow:0 2px 0 color-mix(in srgb,var(--c) 55%,#000)}
+.tile .em{position:absolute;left:10px;bottom:-12px;font-size:84px;line-height:1;opacity:.28;transform:rotate(-12deg)}
+.tile b{font-size:20px;font-weight:800;line-height:1.2;max-width:88%}
+.tile i{font-style:normal;font-size:13.5px;opacity:.92;margin-top:4px;max-width:82%}
+.tile .n{margin-top:auto;padding-top:10px;font-size:14px;font-weight:700}
+.tile .n span{background:rgba(255,255,255,.22);padding:3px 11px;border-radius:99px}
+@media (max-width:560px){.tiles{grid-template-columns:1fr 1fr;gap:10px}.tile{min-height:112px;padding:13px 12px;border-radius:18px}.tile b{font-size:16px;max-width:100%}.tile i{display:none}.tile .em{font-size:60px}}
 .heroimg{display:block;width:min(580px,100%);height:auto;margin:20px auto 0;border-radius:18px;box-shadow:0 14px 34px rgba(0,0,0,.35);border:3px solid rgba(255,255,255,.65)}
 </style>
 <link rel="canonical" href="https://www.kol-toda.co.il/ata-gmachim/">
@@ -121,6 +134,8 @@ footer.f{text-align:center;color:var(--ink2);font-size:14px;padding:6px 16px 30p
     </div>
     <p class="note">חובה טלפון של האחראי על הגמ&quot;ח (הוא מתפרסם בדף). התוספת מופיעה מיד עם התווית &quot;נוסף ע&quot;י גולש&quot;, ותאומת בהמשך.</p>
   </div>
+
+  <div id="tilebox" class="hidden"><h2 class="thead">🧭 מה מחפשים? <small>לוחצים על תחום ומגיעים ישר אליו</small></h2><div class="tiles" id="tiles"></div></div>
 
   <div class="bar">
     <div class="tools">
@@ -208,6 +223,20 @@ function render(){
     root.appendChild(s);
     var li=el("li"), a=el("a",null,c.icon+" "+c.title); a.href="#"+c.key; a.style.setProperty("--c",col(c.key)); a.appendChild(el("i",null,n)); li.appendChild(a); toc.appendChild(li);
   });
+  // big colourful topic tiles at the top (like the holiday catalogs) – only when the page's categories have a description
+  var tl=document.getElementById("tiles"); tl.innerHTML="";
+  if(data.cats.some(function(c){ return c.d; })){
+    data.cats.forEach(function(c){
+      var sec=document.getElementById(c.key); if(!sec) return;
+      var n=sec.querySelectorAll(".it").length;
+      var b=el("button","tile"); b.type="button"; b.style.setProperty("--c",col(c.key));
+      b.appendChild(el("span","em",c.icon)); b.appendChild(el("b",null,c.title)); if(c.d) b.appendChild(el("i",null,c.d));
+      var nn=el("span","n"); nn.appendChild(el("span",null,n+" "+(n===1?UNIT[0]:UNIT[1]))); b.appendChild(nn);
+      b.onclick=function(){ var q=document.getElementById("q"); if(q.value){ q.value=""; filter(); } sec.scrollIntoView({behavior:"smooth"}); };
+      tl.appendChild(b);
+    });
+    document.getElementById("tilebox").classList.remove("hidden");
+  }
   var st=document.getElementById("stats"); st.innerHTML="";
   [[total,UNIT[1]],[ncat,"תחומים"],["🤖","מוסיפים בבוט"]].forEach(function(x){ var d=el("div"); d.appendChild(el("b",null,x[0])); d.appendChild(el("span",null,x[1])); st.appendChild(d); });
   filter();
