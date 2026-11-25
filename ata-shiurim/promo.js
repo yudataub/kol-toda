@@ -102,7 +102,7 @@ function init(){
   // 4. tile grid before the signature (+ the four Kiryat Ata pages, if the page has no such row)
   var sig=document.querySelector(".sig");
   if(sig && !document.querySelector(".sister")){
-    var sr=el("div","kp-sis"); [["🏙️ כל קרית אתא","/ata/"],["📖 שיעורי תורה","/ata-shiurim/"],["🕍 זמני תפילות","/ata-tfilot/"],["🤝 גמ״חים","/ata-gmachim/"],["💼 עסקים ובעלי מקצוע","/ata-asakim/"],["ℹ️ מידעאתא","/ata-meida/"]].forEach(function(x){
+    var sr=el("div","kp-sis"); [["🏙️ כל קרית אתא","/ata/"],["📖 שיעורי תורה","/ata-shiurim/"],["🕍 זמני תפילות","/ata-tfilot/"],["🤝 גמ״חים","/ata-gmachim/"],["💼 עסקים ובעלי מקצוע","/ata-asakim/"],["ℹ️ מידעאתא","/ata-meida/"],["📜 תולדות העיר","/ata-toldot/"],["📷 תמונות היסטוריות","/ata-tmunot/"]].forEach(function(x){
       if(location.pathname.indexOf(x[1])===0) return; var a=el("a",null,x[0]); a.href=x[1]; sr.appendChild(a); });
     sig.parentNode.insertBefore(sr,sig);
   }
