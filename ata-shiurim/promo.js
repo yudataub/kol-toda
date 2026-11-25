@@ -164,6 +164,9 @@ var _fetch=window.fetch.bind(window);
 if(MYBOARD) window.fetch=function(u, opt){
   var url=String(u&&u.url||u), m=url.indexOf(ATA_API)===0 && /\/(chat|save)$/.exec(url);
   if(!m) return _fetch(u, opt);
+  // a fixed visitor id (this browser), so the bot remembers earlier conversations and additions (user 25.11.2026)
+  var vid=""; try{ vid=localStorage.getItem("ata_vid")||""; if(!/^[a-z0-9]{8,40}$/.test(vid)){ vid="v"+LSID+Math.random().toString(36).slice(2,8); localStorage.setItem("ata_vid",vid); } }catch(e){ vid=""; }
+  try{ var bb=JSON.parse(opt&&opt.body||"{}"); if(vid){ bb.vid=vid; opt=Object.assign({},opt,{body:JSON.stringify(bb)}); } }catch(e){}
   var info={}; try{ var b=JSON.parse(opt&&opt.body||"{}"); info.sid=b.sid; lastSid=b.sid||lastSid;
     var us=(b.msgs||[]).filter(function(x){return x.r==="u";}); info.text=us.length?us[us.length-1].t:""; info.extra=b.by||b.byc?"name/phone given":""; }catch(e){}
   var t0=Date.now();
