@@ -31,7 +31,27 @@ var TILES = [
   ["👑","גדולי ישראל",K+"/gedolim/"],["🎉","חגים ומועדים",K+"/chagim/"],["🙏","תפילה",K+"/tefila/"],["📕","ספרים",
   "https://sfarim.kol-toda.co.il/"]
 ];
+// top navigation between the Kiryat Ata pages (user request 25.11.2026): תורה · עבודה · גמילות חסדים + home.
+// Hides while scrolling down, comes back on scroll up; the sticky search bar (.bar) moves below it.
+var NAV = [
+  ["", [["🏠 דף ראשי","/ata/"]]],
+  ["תורה", [["📖 שיעורי תורה","/ata-shiurim/"]]],
+  ["עבודה", [["🕍 זמני תפילות","/ata-tfilot/"]]],
+  ["גמילות חסדים", [["🤝 גמ״חים","/ata-gmachim/"],["💼 עסקים","/ata-asakim/"]]],
+  ["עוד", [["ℹ️ מידעאתא","/ata-meida/"],["📜 תולדות העיר","/ata-toldot/"],["📷 תמונות","/ata-tmunot/"]]]
+];
 var css = ""
++".kp-nav{position:sticky;top:0;z-index:60;background:#0D2A3E;box-shadow:0 2px 10px rgba(0,0,0,.18);transition:transform .25s;font-family:Heebo,Arial,sans-serif;direction:rtl}"
++".kp-nav.kp-hide{transform:translateY(-110%)}"
++".kp-nav .in{display:flex;align-items:center;gap:6px;overflow-x:auto;white-space:nowrap;padding:6px 10px;max-width:1100px;margin:0 auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}"
++".kp-nav .in::-webkit-scrollbar{display:none}"
++".kp-nav .gp{display:flex;align-items:center;gap:4px;flex:none;padding:0 4px}"
++".kp-nav .gp+.gp{border-right:1px solid rgba(255,255,255,.18);padding-right:9px}"
++".kp-nav .lb{color:#F5C842;font-size:12.5px;font-weight:800}"
++".kp-nav a{color:#fff;text-decoration:none;font-size:14.5px;font-weight:700;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.1)}"
++".kp-nav a:hover{background:rgba(255,255,255,.22)}"
++".kp-nav a.on{background:#F5C842;color:#0D2A3E}"
++".bar{top:var(--kpn,0px)!important;transition:top .25s}"
 +".kp-rib{background:#0D2A3E;color:#fff;text-align:center;font:600 14px Heebo,Arial,sans-serif;padding:7px 12px}"
 +".kp-rib a{color:#F5C842;font-weight:800;text-decoration:none}"
 +".kp-strip{display:flex;align-items:center;gap:12px;margin:0 0 14px;padding:12px 16px;border-radius:16px;color:#fff;text-decoration:none;"
@@ -70,6 +90,23 @@ function init(){
   var rib=el("div","kp-rib"); rib.appendChild(document.createTextNode("📚 מבית הקול החמישי – אלפי חומרי לימוד תורניים לילדים ולמורים, בחינם: "));
   rib.appendChild(A("חידונים, משחקים, משניות, הלכה ובוטים למורים ←",K+"/"));
   document.body.insertBefore(rib, document.body.firstChild);
+  // 0. top navigation (above the ribbon)
+  var nav=el("nav","kp-nav"), nin=el("div","in"), cur=null; nav.setAttribute("aria-label","דפי קרית אתא");
+  NAV.forEach(function(G){
+    var gp=el("span","gp"); if(G[0]) gp.appendChild(el("span","lb",G[0]+":"));
+    G[1].forEach(function(L){ var a=el("a",null,L[0]); a.href=L[1];
+      if(location.pathname.replace(/index\.html$/,"")===L[1]){ a.className="on"; cur=a; }
+      gp.appendChild(a); });
+    nin.appendChild(gp); });
+  nav.appendChild(nin); document.body.insertBefore(nav, document.body.firstChild);
+  if(cur && nin.scrollWidth>nin.clientWidth){ var r=cur.getBoundingClientRect(), rn=nin.getBoundingClientRect(); nin.scrollLeft += (r.left+r.width/2)-(rn.left+rn.width/2); }
+  var lastY=window.scrollY, hidden=false, root0=document.documentElement;
+  function setNav(h){ hidden=h; nav.classList.toggle("kp-hide",h); root0.style.setProperty("--kpn",h?"0px":nav.offsetHeight+"px"); }
+  setNav(false);
+  window.addEventListener("scroll",function(){ var y=window.scrollY;
+    if(y>lastY+6 && y>140 && !hidden) setNav(true); else if((y<lastY-6 || y<60) && hidden) setNav(false);
+    if(Math.abs(y-lastY)>6) lastY=y; },{passive:true});
+  window.addEventListener("resize",function(){ if(!hidden) setNav(false); });
   // 2. rotating strip above the search
   var anchor=document.querySelector(".bar")||document.querySelector(".tools");
   if(anchor){
