@@ -141,10 +141,89 @@ css+=".kp-nav a.kp-inst{background:#F5C842;color:#0D2A3E;cursor:pointer}"
 +".kp-modal ol{text-align:right;font-size:19px;line-height:1.6;padding-right:24px;margin:0 0 16px}.kp-modal li{margin:0 0 8px}"
 +".kp-modal .go{display:block;width:100%;font:800 21px Heebo,Arial,sans-serif;background:#F5C842;color:#0D2A3E;border:0;border-radius:16px;padding:16px;margin:0 0 14px;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.18)}"
 +".kp-modal .ok{font:800 20px Heebo,Arial,sans-serif;background:#1A6FA8;color:#fff;border:0;border-radius:14px;padding:12px 40px;cursor:pointer}";
+
+// ---- the AI window: failure log + voice (user 25.11.2026: "people tried to add info and failed – keep every attempt,
+// Enter = new line, and let them speak instead of typing") ----
+var ATA_API="https://kol-ata.kol-bot.workers.dev/ata";
+var BOARDS={"/ata-shiurim/":"shiurim","/ata-tfilot/":"tfilot","/ata-gmachim/":"gmachim","/ata-asakim/":"asakim","/ata-meida/":"meida"};
+var MYBOARD=BOARDS[location.pathname.replace(/index\.html$/,"")]||"";
+var LSID=(function(){ var x=""; for(var i=0;i<16;i++) x+="abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random()*36)]; return x; })(), lastSid=LSID;
+function clog(stage, o){
+  o=o||{}; var body=JSON.stringify({board:MYBOARD, sid:o.sid||lastSid, stage:stage, err:String(o.err||"").slice(0,300), status:o.status||0,
+    text:String(o.text||"").slice(0,1500), page:location.pathname, ua:navigator.userAgent, online:navigator.onLine, extra:String(o.extra||"").slice(0,600)});
+  try{ if(o.beacon && navigator.sendBeacon){ navigator.sendBeacon(ATA_API+"/clog", body); return; } }catch(e){}
+  try{ _fetch(ATA_API+"/clog",{method:"POST",headers:{"Content-Type":"text/plain"},body:body,keepalive:true}).catch(function(){}); }catch(e){}
+}
+// every call of the page to /chat or /save that fails (no network, no answer, an error) is logged with what was written
+var _fetch=window.fetch.bind(window);
+if(MYBOARD) window.fetch=function(u, opt){
+  var url=String(u&&u.url||u), m=url.indexOf(ATA_API)===0 && /\/(chat|save)$/.exec(url);
+  if(!m) return _fetch(u, opt);
+  var info={}; try{ var b=JSON.parse(opt&&opt.body||"{}"); info.sid=b.sid; lastSid=b.sid||lastSid;
+    var us=(b.msgs||[]).filter(function(x){return x.r==="u";}); info.text=us.length?us[us.length-1].t:""; info.extra=b.by||b.byc?"name/phone given":""; }catch(e){}
+  var t0=Date.now();
+  return _fetch(u, opt).then(function(r){
+    if(!r.ok) r.clone().text().then(function(x){ info.status=r.status; info.err=x.slice(0,200); clog(m[1]+"_http",info); });
+    else if(Date.now()-t0>20000){ info.err="slow "+Math.round((Date.now()-t0)/1000)+"s"; clog(m[1]+"_slow",info); }
+    return r;
+  },function(e){ info.err=String(e&&e.message||e); clog(m[1]+"_net",info); throw e; });
+};
+function chatBox(){
+  var inp=document.getElementById("inp"), send=document.getElementById("send"), chat=document.getElementById("chat");
+  if(!inp||!send||inp.tagName!=="TEXTAREA") return;
+  // leaving the page with text that was never sent, or with an approval card not pressed → logged (sendBeacon)
+  window.addEventListener("pagehide",function(){
+    var c=chat&&chat.querySelector(".confirm");
+    if(c) clog("left_unsaved",{beacon:1, text:c.textContent.slice(0,600)});
+    else if(inp.value.trim()) clog("left_unsent",{beacon:1, text:inp.value});
+  });
+  // the voice button
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  var mic=el("button","btn kp-mic","🎤 דיבור"); mic.type="button"; mic.title="לחצו ודברו – הדיבור נכתב בתיבה";
+  var tip=el("div","kp-mtip"); tip.style.display="none";
+  send.parentNode.insertBefore(mic, send);
+  send.parentNode.parentNode.insertBefore(tip, send.parentNode.nextSibling);
+  function say(t,bad){ tip.textContent=t; tip.className="kp-mtip"+(bad?" bad":""); tip.style.display=t?"block":"none"; }
+  var rec=null, on=false, base="", acc="", andr=/Android/i.test(navigator.userAgent), started=0;
+  function paint(interim){ var a=(base&&acc?base+" ":base)+acc; inp.value=(a+(interim?(a?" ":"")+interim:"")).replace(/\s+/g," ").trimStart(); }
+  function stop(msg){ on=false; mic.classList.remove("on"); mic.textContent="🎤 דיבור"; try{ rec&&rec.stop(); }catch(e){} paint("");
+    say(msg!=null?msg:(inp.value.trim()?"✔️ זה מה שנכתב. אפשר לתקן בתיבה, להמשיך לדבר, ואז ללחוץ \"שליחה\".":"")); }
+  function start(){
+    rec=new SR(); rec.lang="he-IL"; rec.interimResults=true; rec.continuous=!andr; rec.maxAlternatives=1;
+    rec.onresult=function(e){ var fin="", mid="";
+      for(var i=e.resultIndex;i<e.results.length;i++){ var r=e.results[i]; if(r.isFinal) fin+=r[0].transcript; else mid+=r[0].transcript; }
+      if(fin){ acc=(acc?acc+" ":"")+fin.trim(); } paint(mid); };
+    rec.onerror=function(e){ var er=e.error||"err";
+      if(er==="no-speech"||er==="aborted") return;
+      var m=er==="not-allowed"||er==="service-not-allowed"?"הדפדפן לא קיבל רשות למיקרופון. לוחצים על המנעול 🔒 ליד הכתובת ומאשרים מיקרופון – או מקלידים, או לוחצים על המיקרופון 🎤 שבמקלדת של הטלפון.":
+            er==="network"?"אין חיבור לשירות התמלול. נסו שוב, או לחצו על המיקרופון 🎤 שבמקלדת של הטלפון.":"ההקלטה נעצרה ("+er+"). נסו שוב.";
+      clog("voice_error",{err:er}); stop(m); };
+    rec.onend=function(){ if(on && Date.now()-started<180000){ try{ rec.start(); return; }catch(e){} } if(on) stop(); };
+    try{ rec.start(); }catch(e){ clog("voice_error",{err:"start: "+e.message}); stop("לא הצלחתי להתחיל להקליט. נסו שוב."); }
+  }
+  mic.onclick=function(){
+    if(!SR){ clog("voice_unsupported",{}); say("בדפדפן הזה אין הקלטה ישירה. אפשר ללחוץ על סמל המיקרופון 🎤 במקלדת של הטלפון ולדבר – הדיבור ייכתב בתיבה.",true); inp.focus(); return; }
+    if(on){ stop(); return; }
+    on=true; base=inp.value.trim(); acc=""; started=Date.now(); mic.classList.add("on"); mic.textContent="⏹️ סיום";
+    say("🔴 מקליט… דברו בחופשיות – מה, איפה, מתי ומי. כשמסיימים לוחצים \"⏹️ סיום\".");
+    start();
+  };
+  send.addEventListener("click",function(){ if(on) stop(""); },true);
+  // Enter = a new line; only the "שליחה" button sends
+  var ph=el("div","kp-ent","↵ Enter יורד שורה. כדי לשלוח – לוחצים על \"שליחה\".");
+  tip.parentNode.insertBefore(ph, tip.nextSibling);
+}
+css+=".kp-mic{background:#fff!important;color:#B4232A!important;border:2px solid #B4232A!important;white-space:nowrap}"
++".kp-mic.on{background:#B4232A!important;color:#fff!important;animation:kpPulse 1.2s infinite}"
++"@keyframes kpPulse{0%,100%{box-shadow:0 0 0 0 rgba(180,35,42,.5)}50%{box-shadow:0 0 0 8px rgba(180,35,42,0)}}"
++".kp-mtip{margin:8px 0 0;padding:9px 12px;border-radius:12px;background:#EAF6EC;color:#1d5a2a;font-size:15.5px;line-height:1.5}"
++".kp-mtip.bad{background:#FFF1E6;color:#8a3b00}"
++".kp-ent{margin:6px 2px 0;font-size:13px;color:#667}";
 function A(t,h,c){ var a=el("a",c,t); a.href=h; a.target="_blank"; a.rel="noopener"; return a; }
 function col(e,ad){ e.style.setProperty("--a",ad.c); e.style.setProperty("--b",ad.c2); }
 function init(){
   var st=el("style"); st.textContent=css; document.head.appendChild(st);
+  try{ chatBox(); }catch(e){ clog("chatbox_js",{err:e.message}); }
   // 1. ribbon
   var rib=el("div","kp-rib"); rib.appendChild(document.createTextNode("📚 מבית הקול החמישי – אלפי חומרי לימוד תורניים לילדים ולמורים, בחינם: "));
   rib.appendChild(A("חידונים, משחקים, משניות, הלכה ובוטים למורים ←",K+"/"));
