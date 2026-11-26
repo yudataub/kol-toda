@@ -192,16 +192,27 @@ function chatBox(){
   send.parentNode.insertBefore(mic, send);
   send.parentNode.parentNode.insertBefore(tip, send.parentNode.nextSibling);
   function say(t,bad){ tip.textContent=t; tip.className="kp-mtip"+(bad?" bad":""); tip.style.display=t?"block":"none"; }
-  var rec=null, on=false, base="", acc="", andr=/Android/i.test(navigator.userAgent), started=0;
+  var rec=null, on=false, base="", acc="", sess="", andr=/Android/i.test(navigator.userAgent), started=0;
+  // (26.11.2026) Android repeats words: each result holds the whole phrase so far → keep the longest, never append twice;
+  // and remove a word/phrase said twice in a row ("שלום שלום שלום" → "שלום")
+  function dedup(t){ var w=t.split(/\s+/).filter(Boolean), ch=true;
+    while(ch){ ch=false; for(var n=Math.min(8,Math.floor(w.length/2));n>=1;n--){ for(var i=0;i+2*n<=w.length;i++){
+      if(w.slice(i,i+n).join(" ")===w.slice(i+n,i+2*n).join(" ")){ w.splice(i+n,n); ch=true; break; } } if(ch) break; } }
+    return w.join(" "); }
+  function merge(a,b){ a=a.trim(); b=b.trim(); if(!a) return b; if(!b) return a;
+    if(b.indexOf(a)===0) return b; if(a.indexOf(b)>=0) return a; return a+" "+b; }
   var ios=/iPhone|iPad|iPod/i.test(navigator.userAgent), IOSMSG="באייפון ההקלטה הישירה לא זמינה כאן. לוחצים בתוך התיבה, ואז על סמל המיקרופון 🎤 במקלדת (למטה), ומדברים – הדיבור ייכתב בתיבה. (אם אין מיקרופון במקלדת: הגדרות ← כללי ← מקלדת ← הפעלת הכתבה.)";
-  function paint(interim){ var a=(base&&acc?base+" ":base)+acc; inp.value=(a+(interim?(a?" ":"")+interim:"")).replace(/\s+/g," ").trimStart(); }
-  function stop(msg){ on=false; mic.classList.remove("on"); mic.textContent="🎤 דיבור"; try{ rec&&rec.stop(); }catch(e){} paint("");
+  function paint(interim){ if(!on && interim) return; var said=dedup(merge(merge(acc,sess),interim||""));
+    var a=(base&&said?base+" ":base)+said; inp.value=a.replace(/\s+/g," ").trimStart(); }
+  function stop(msg){ if(rec){ rec.onresult=null; rec.onend=null; rec.onerror=null; } acc=merge(acc,sess); sess=""; paint(""); on=false;
+    mic.classList.remove("on"); mic.textContent="🎤 דיבור"; try{ rec&&rec.abort(); }catch(e){}
     say(msg!=null?msg:(inp.value.trim()?"✔️ זה מה שנכתב. אפשר לתקן בתיבה, להמשיך לדבר, ואז ללחוץ \"שליחה\".":"")); }
   function start(){
     rec=new SR(); rec.lang="he-IL"; rec.interimResults=true; rec.continuous=!andr; rec.maxAlternatives=1;
-    rec.onresult=function(e){ var fin="", mid="";
-      for(var i=e.resultIndex;i<e.results.length;i++){ var r=e.results[i]; if(r.isFinal) fin+=r[0].transcript; else mid+=r[0].transcript; }
-      if(fin){ acc=(acc?acc+" ":"")+fin.trim(); } paint(mid); };
+    rec.onresult=function(e){ if(!on) return; var fin="", mid="";
+      // read ALL results of this session every time (not from resultIndex), merging cumulative ones
+      for(var i=0;i<e.results.length;i++){ var r=e.results[i], t=r[0].transcript; if(r.isFinal) fin=merge(fin,t); else mid=merge(mid,t); }
+      sess=merge(sess,fin); paint(mid); };
     rec.onerror=function(e){ var er=e.error||"err";
       if(er==="no-speech"||er==="aborted") return;
       // iPhone: service-not-allowed = dictation (Siri) is off or the home-screen app may not record (log 25.11.2026) → point to the keyboard mic, and go straight there next time
@@ -209,7 +220,7 @@ function chatBox(){
       var m=er==="not-allowed"||er==="service-not-allowed"?"הדפדפן לא קיבל רשות למיקרופון. לוחצים על המנעול 🔒 ליד הכתובת ומאשרים מיקרופון – או מקלידים, או לוחצים על המיקרופון 🎤 שבמקלדת של הטלפון.":
             er==="network"?"אין חיבור לשירות התמלול. נסו שוב, או לחצו על המיקרופון 🎤 שבמקלדת של הטלפון.":"ההקלטה נעצרה ("+er+"). נסו שוב.";
       clog("voice_error",{err:er}); stop(m); };
-    rec.onend=function(){ if(on && Date.now()-started<180000){ try{ rec.start(); return; }catch(e){} } if(on) stop(); };
+    rec.onend=function(){ acc=merge(acc,sess); sess=""; if(on && Date.now()-started<180000){ try{ rec.start(); return; }catch(e){} } if(on) stop(); };
     try{ rec.start(); }catch(e){ clog("voice_error",{err:"start: "+e.message}); stop("לא הצלחתי להתחיל להקליט. נסו שוב."); }
   }
   mic.onclick=function(){
@@ -221,7 +232,8 @@ function chatBox(){
     say("🔴 מקליט… דברו בחופשיות – מה, איפה, מתי ומי. כשמסיימים לוחצים \"⏹️ סיום\".");
     start();
   };
-  send.addEventListener("click",function(){ if(on) stop(""); },true);
+  // "שליחה": stop recording first (the page reads the box), then forget what was said, so nothing is written back into the emptied box
+  send.addEventListener("click",function(){ if(on) stop(""); setTimeout(function(){ base=""; acc=""; sess=""; },0); },true);
   // Enter = a new line; only the "שליחה" button sends
   var ph=el("div","kp-ent","↵ Enter יורד שורה. כדי לשלוח – לוחצים על \"שליחה\".");
   tip.parentNode.insertBefore(ph, tip.nextSibling);
