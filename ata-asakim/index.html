@@ -82,6 +82,8 @@ section.cat{background:#fff;border-radius:22px;box-shadow:0 4px 18px rgba(30,30,
 .tel{display:inline-flex;align-items:center;gap:5px;background:var(--c);color:#fff;text-decoration:none;border-radius:10px;padding:5px 11px;font-weight:700;font-size:14.5px;direction:ltr}
 .tel.w{background:#25D366;padding:5px 9px}
 .tel svg{width:16px;height:16px;fill:#fff}
+.tel.cp{border:1.5px solid var(--c);background:#fff;color:var(--c);cursor:pointer;font:inherit;font-weight:700;font-size:14px;direction:rtl}
+.tel.cp:hover{background:color-mix(in srgb,var(--c) 10%,#fff)}
 .it.web{border-color:var(--new);border-inline-start-color:var(--new);background:#FFF7FB}
 .badge{align-self:flex-start;display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:1px 9px;margin-bottom:6px}
 .badge.new{background:var(--new);color:#fff}
@@ -194,6 +196,23 @@ function phones(it){
   if(it.tels && it.tels.length) return it.tels;
   return ((it.c||"").match(/0\d{1,2}-?\d{3}-?\d{3,4}|\*\d{3,5}/g)||[]);
 }
+// Copy button (user 26.11.2026, business page only): copies name, address and phones.
+var COPY = "ata-asakim"==="ata-asakim";
+function copyText(s, done){
+  if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(s).then(done, function(){ oldCopy(s); done(); }); }
+  else { oldCopy(s); done(); }
+}
+function oldCopy(s){ var ta=document.createElement("textarea"); ta.value=s; ta.setAttribute("readonly",""); ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); }catch(e){} document.body.removeChild(ta); }
+function copyBtn(it, ps){
+  var bt=el("button","tel cp","📋 העתקה"); bt.type="button"; bt.title="העתקת שם העסק, הכתובת והטלפון";
+  bt.onclick=function(){
+    var lines=[(it.name||"")+(it.what?" – "+it.what:"")];
+    if(it.addr) lines.push("📍 "+it.addr);
+    if(ps.length) lines.push("📞 "+ps.join(", "));
+    copyText(lines.join("\n"), function(){ bt.textContent="✓ הועתק"; setTimeout(function(){ bt.textContent="📋 העתקה"; },1600); });
+  };
+  return bt;
+}
 function card(it, web){
   var b=el("div","it"+(web?" web":""));
   if(web){
@@ -215,13 +234,14 @@ function card(it, web){
   if(it.n||it.note) b.appendChild(el("div","nt",it.n||it.note));
   var ps=phones(it);
   if(web && it.c && !ps.length) b.appendChild(el("div","ln","📞 "+it.c));
-  if(ps.length){
+  if(ps.length || COPY){
     var t=el("div","tels");
     ps.forEach(function(p){
       var d=p.replace(/[^\d*]/g,"");
       var a=el("a","tel","📞 "+p); a.href="tel:"+d; t.appendChild(a);
       if(/^05\d{8}$/.test(d) && !it.nowa){ var w=el("a","tel w"); w.innerHTML=WA; w.href="https://wa.me/972"+d.slice(1); w.target="_blank"; w.rel="noopener"; w.title="וואטסאפ"; t.appendChild(w); }
     });
+    if(COPY) t.appendChild(copyBtn(it, ps));
     b.appendChild(t);
   }
   b.dataset.q=[it.name,it.what,it.addr,it.hours,it.kosher,it.fit,it.price,it.go,it.n,it.note,it.c,ps.join(" ")].join(" ");
