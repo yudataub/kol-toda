@@ -266,10 +266,16 @@ function dist(a,b,c,d){ var r=Math.PI/180, x=Math.sin((c-a)*r/2), y=Math.sin((d-
 function walkTxt(m, ex){ var w=Math.max(1,Math.round(m*1.25/80)); return (ex?"":"בערך ")+(m<950?Math.round(m/50)*50+" מ'":(m/1000).toFixed(1)+' ק"מ')+" · "+w+" דק' הליכה"; }
 function goCard(i){ var c=document.getElementById("s"+i); if(!c) return; document.getElementById("q").value=""; filter();
   c.scrollIntoView({behavior:"smooth",block:"start"}); c.classList.add("hl"); setTimeout(function(){ c.classList.remove("hl"); },2500); }
+function kindOf(p){ // shacharit / mincha / maariv – also for Shabbat groups
+  if(p.k==="shacharit"||p.k==="mincha"||p.k==="maariv") return p.k;
+  return /מנחה/.test(p.g)?"mincha":/ערבית|מוצאי|ליל שבת|קבלת/.test(p.g)?"maariv":/שחרית/.test(p.g)?"shacharit":"other";
+}
+var KN={shacharit:"שחרית", mincha:"מנחה", maariv:"ערבית", other:"תפילה"};
+var NEAR_KIND="";
 function nearRow(x, now){
   var r=el("div","nr"), w=el("div","when"+(x.p&&x.pm-now<=20?" soon":""));
   if(x.p){ w.appendChild(document.createTextNode((x.pt.ap?"~":"")+hm(x.pm))); var d=Math.round(x.pm-now); w.appendChild(el("small",null, d<=0?"עכשיו":d<60?"בעוד "+d+" דק'":"בעוד "+hm(d)+" ש'")); }
-  else w.appendChild(el("small",null,"אין עוד היום"));
+  else w.appendChild(el("small",null,"אין עוד "+(KN[NEAR_KIND]||"")+" היום"));
   r.appendChild(w); var bd=el("div","bd"); bd.appendChild(el("b",null,x.s.name)); bd.appendChild(el("br"));
   if(x.p) bd.appendChild(el("div","x",(IC[x.p.k]?IC[x.p.k]+" ":"")+x.p.g.replace(/^[^֐-׿]+/,"")+" · "+x.p.t));
   var l=el("div","x","🚶 "+walkTxt(x.d, x.s.ll[2])); var a=el("a",null,"לכרטיס ←"); a.href="#s"+x.i; a.onclick=function(e){ e.preventDefault(); goCard(x.i); }; l.appendChild(a);
@@ -279,13 +285,19 @@ function showNear(lat, lng){
   var box=document.getElementById("near"); box.innerHTML=""; box.classList.remove("hidden");
   var cl=el("button","cl","✕"); cl.title="סגירה"; cl.onclick=function(){ box.classList.add("hidden"); }; box.appendChild(cl);
   var D=new Date(), now=D.getHours()*60+D.getMinutes(), dow=D.getDay(), sun=sunTimes(D, 32.81, 35.11);
-  var list=ALL.filter(function(x){ return x.s.ll; }).map(function(x){
+  // (user 26.11) one prayer at a time: never mix mincha with maariv, and never show mincha after sunset
+  function upcoming(kind){ return ALL.filter(function(x){ return x.s.ll; }).map(function(x){
     var d=dist(lat,lng,x.s.ll[0],x.s.ll[1]), best=null;
     x.s.prayers.forEach(function(p){ if(!dayOk(p.g,dow)) return; var pt=pTime(p,sun,dow); if(!pt) return;
+      var k=kindOf(p); if(k==="mincha" && pt.m>sun.set) return; if(kind && k!==kind) return;
       if(pt.m>=now-3 && (!best || pt.m<best.pm)) best={p:p, pt:pt, pm:pt.m}; });
     return {s:x.s, i:x.i, d:d, walk:d*1.25/80, p:best&&best.p, pt:best&&best.pt, pm:best&&best.pm};
-  });
-  box.appendChild(el("h2",null,"📍 מניין קרוב אליך שמתחיל בקרוב"));
+  }); }
+  var any=upcoming("").filter(function(x){ return x.p && x.walk<=30 && x.walk<=x.pm-now+4; })
+    .sort(function(a,b){ return Math.max(a.pm-now,a.walk)-Math.max(b.pm-now,b.walk) || a.d-b.d; });
+  NEAR_KIND = any.length ? kindOf(any[0].p) : (now<sun.set && now>=720 ? "mincha" : now>=sun.set ? "maariv" : "shacharit");
+  var list=upcoming(NEAR_KIND);
+  box.appendChild(el("h2",null,"📍 "+KN[NEAR_KIND]+" – מניין קרוב אליך שמתחיל בקרוב"));
   var far=list.length && Math.min.apply(null,list.map(function(x){return x.d;}))>6000;
   box.appendChild(el("div","sub", far ? "נראה שאינך בקרית אתא כרגע – המרחקים מחושבים מהמקום שבו אתה נמצא." :
     "לפי המקום שלך והשעה עכשיו ("+hm(now)+"). זמן שמסומן ~ מחושב לפי השקיעה או הזריחה ולכן משוער. המיקום לא נשלח לשום מקום."));
@@ -294,7 +306,8 @@ function showNear(lat, lng){
     .sort(function(a,b){ return Math.max(a.pm-now,a.walk)-Math.max(b.pm-now,b.walk) || a.d-b.d; }).slice(0,6);
   if(soon.length) soon.forEach(function(x){ box.appendChild(nearRow(x,now)); });
   else box.appendChild(el("div","x","אין מניין קרוב אליך בשעתיים וחצי הקרובות שאנחנו יודעים עליו. הנה בתי הכנסת הקרובים אליך:"));
-  box.appendChild(el("h3",null,"🕍 בתי הכנסת הכי קרובים אליך"));
+  if(NEAR_KIND==="mincha" && soon.length) box.appendChild(el("div","sub","השקיעה היום ב-~"+hm(sun.set)+". אחריה כבר לא מתפללים מנחה, ולכן לא מוצגים כאן מניינים מאוחרים יותר."));
+  box.appendChild(el("h3",null,"🕍 בתי הכנסת הכי קרובים אליך – "+KN[NEAR_KIND]));
   list.slice().sort(function(a,b){ return a.d-b.d; }).slice(0,5).forEach(function(x){ box.appendChild(nearRow(x,now)); });
   box.appendChild(el("div","sub","יש זמן שהשתנה או בית כנסת שחסר? לחצו על \"שלחו לנו\" בכרטיס שלו."));
   box.scrollIntoView({behavior:"smooth",block:"start"});
