@@ -86,7 +86,18 @@ footer.f{text-align:center;color:var(--ink2);font-size:14px;padding:6px 16px 30p
 .sh .ph{display:block;position:relative;margin:-14px -16px 12px;border-radius:13px 13px 0 0;overflow:hidden;background:#eee}
 .sh .ph img{display:block;width:100%;height:210px;object-fit:cover}
 .sh .ph .cap{position:absolute;bottom:0;right:0;left:0;padding:14px 10px 6px;font-size:12.5px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.65))}
-@media (max-width:560px){.sh .ph{margin:-12px -12px 10px}.wa .t{display:none}.stats div{min-width:80px;padding:6px 10px}.sh{padding:12px 12px 10px}.sh .nm{font-size:21px}}
+.nb{border:0;cursor:pointer;background:var(--c);color:#fff;border-radius:999px;padding:9px 14px;font:inherit;font-weight:700;white-space:nowrap;font-size:15px}
+.near{background:#fff;border-radius:18px;border-top:5px solid var(--c);box-shadow:0 8px 24px rgba(30,30,60,.1);margin:0 0 18px;padding:14px 16px}
+.near h2{margin:0 0 4px;font-size:20px;color:var(--c)}.near h3{margin:14px 0 6px;font-size:16.5px;color:var(--ink)}
+.near .sub{font-size:13.5px;color:var(--ink2);margin-bottom:8px}
+.nr{display:flex;gap:10px;align-items:flex-start;border-top:1px solid var(--line);padding:9px 0}
+.nr .when{min-width:74px;text-align:center;background:#F1ECFB;color:var(--c);border-radius:12px;padding:4px 6px;font-weight:800;line-height:1.25}
+.nr .when small{display:block;font-weight:600;font-size:12px}.nr .when.soon{background:#E7F6EE;color:#14866A}
+.nr .bd{flex:1;min-width:0}.nr .bd b{font-size:16.5px}.nr .bd .x{font-size:13.5px;color:var(--ink2)}
+.nr .bd a{font-size:13.5px;margin-inline-start:8px}
+.near .cl{float:left;border:0;background:none;font-size:20px;cursor:pointer;color:var(--ink2)}
+.sh.hl{outline:3px solid var(--gold)}
+@media (max-width:560px){.nb .t{display:none}.sh .ph{margin:-12px -12px 10px}.wa .t{display:none}.stats div{min-width:80px;padding:6px 10px}.sh{padding:12px 12px 10px}.sh .nm{font-size:21px}}
 a.wz{color:inherit;text-decoration:underline;text-decoration-color:rgba(51,204,255,.7);text-underline-offset:3px}
 a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;background:#33A9E0;border-radius:999px;padding:1px 9px;margin-right:4px;text-decoration:none;vertical-align:1px;white-space:nowrap}
 .sh .ad a.gm{font-size:12.5px;margin-right:6px;color:var(--ink2)}</style>
@@ -114,10 +125,12 @@ a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;backg
   <div class="bar">
     <div class="tools">
       <input id="q" type="search" placeholder="חיפוש: שם בית כנסת, רחוב, רב, נוסח, שעה…" aria-label="חיפוש">
+      <button class="nb" id="nearBtn" type="button" title="מניין קרוב אליי שמתחיל בקרוב">📍<span class="t"> מניין קרוב אליי</span></button>
       <a class="wa" href="https://wa.me/9720527139520" target="_blank" rel="noopener">💬<span class="t"> עדכונים</span></a>
     </div>
     <ul class="abc" id="abc"></ul>
   </div>
+  <div class="near hidden" id="near"></div>
   <div id="list"><div class="empty">טוען…</div></div>
   <div class="empty hidden" id="none">לא נמצא. מכירים בית כנסת שחסר? <a href="https://wa.me/9720527139520" target="_blank" rel="noopener">שלחו לנו</a> 🙂</div>
 
@@ -204,18 +217,94 @@ function render(d){
   var root=document.getElementById("list"), abc=document.getElementById("abc"); root.innerHTML=""; var i=0;
   d.cats.forEach(function(c){
     var s=el("section","L"); s.id=c.key; s.appendChild(el("h2",null,c.title));
-    var g=el("div","grid"); c.groups[0].items.forEach(function(x){ g.appendChild(card(x,i++)); }); s.appendChild(g); root.appendChild(s);
+    var g=el("div","grid"); c.groups[0].items.forEach(function(x){ ALL.push({s:x,i:i}); g.appendChild(card(x,i++)); }); s.appendChild(g); root.appendChild(s);
     var li=el("li"), a=el("a",null,c.title); a.href="#"+c.key; li.appendChild(a); abc.appendChild(li);
   });
   if(d.other && d.other.length){
     var s=el("section","L"); s.id="other"; s.appendChild(el("h2",null,"מניינים מחוץ לבית הכנסת"));
     s.appendChild(el("p","none","מניינים במקומות עבודה, במרכז קניות ובבית ספר."));
-    var g=el("div","grid"); d.other.forEach(function(x){ var c=card(x,i++); c.querySelector(".nogb")&&c.querySelector(".nogb").remove(); g.appendChild(c); }); s.appendChild(g); root.appendChild(s);
+    var g=el("div","grid"); d.other.forEach(function(x){ ALL.push({s:x,i:i}); var c=card(x,i++); c.querySelector(".nogb")&&c.querySelector(".nogb").remove(); g.appendChild(c); }); s.appendChild(g); root.appendChild(s);
     var li=el("li"), a=el("a","o","🏭 מקומות עבודה"); a.href="#other"; li.appendChild(a); abc.appendChild(li);
   }
   if(d.updated){ var p=d.updated.split("-"); document.getElementById("meta").textContent="עודכן "+p[2]+"."+p[1]+"."+p[0]; }
   filter();
 }
+
+// ===== "📍 מניין קרוב אליי" (26.11.2026): near AND starting soon. Location stays in the phone. =====
+var ALL=[];
+function sunTimes(d, lat, lng){ // NOAA approximation → {rise, set} in local minutes since midnight
+  var rad=Math.PI/180, N=Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(d.getFullYear(),0,0))/864e5);
+  var g=2*Math.PI/365*(N-1), eq=229.18*(0.000075+0.001868*Math.cos(g)-0.032077*Math.sin(g)-0.014615*Math.cos(2*g)-0.040849*Math.sin(2*g));
+  var dec=0.006918-0.399912*Math.cos(g)+0.070257*Math.sin(g)-0.006758*Math.cos(2*g)+0.000907*Math.sin(2*g)-0.002697*Math.cos(3*g)+0.00148*Math.sin(3*g);
+  var ha=Math.acos(Math.cos(90.833*rad)/(Math.cos(lat*rad)*Math.cos(dec))-Math.tan(lat*rad)*Math.tan(dec))/rad;
+  var off=-d.getTimezoneOffset();
+  return {rise:720-4*(lng+ha)-eq+off, set:720-4*(lng-ha)-eq+off};
+}
+function dayOk(g, dow){ // which prayer groups belong to today (0=Sunday … 6=Shabbat)
+  if(/ליל שבת/.test(g)) return dow===5;
+  if(/מוצאי שבת/.test(g)) return dow===6;
+  if(/בשבת/.test(g)) return dow===6;
+  if(/יום שישי/.test(g)) return dow===5;
+  if(/שחרית בימי חול/.test(g)) return dow<=5;
+  if(/בימי חול/.test(g)) return dow<=4;
+  return false;
+}
+function pTime(p, sun, dow){ // → {m: minutes since midnight, ap: approximate}
+  var t=p.t, set=sun.set, m;
+  var rel=t.match(/(\d+)\s*דק[^\s]*\s*(לפני|אחרי|לאחר)\s*(ה?שקיעה|הדלקת נרות|צאת השבת|יציאת השבת)/);
+  if(!rel && /שעה לפני השקיעה/.test(t)) rel=[0,"60","לפני","השקיעה"];
+  if(rel){ var base=/נרות/.test(rel[3])?set-30:/שבת/.test(rel[3])?set+40:set; return {m:base+(rel[2]==="לפני"?-1:1)*(+rel[1]), ap:true}; }
+  if(/ותיקין/.test(t)) return {m:sun.rise-35, ap:true};
+  if(/רבינו תם/.test(t)) return {m:set+72, ap:true};
+  var h=t.match(/(\d{1,2}):(\d{2})/); if(!h) return null;
+  m=(+h[1])*60+(+h[2]); if((p.k==="mincha"||p.k==="maariv"||/מנחה|ערבית|מוצאי/.test(p.g)) && +h[1]<12) m+=720;
+  return {m:m, ap:false};
+}
+function hm(m){ m=Math.round(m); return Math.floor(m/60)+":"+("0"+(m%60)).slice(-2); }
+function dist(a,b,c,d){ var r=Math.PI/180, x=Math.sin((c-a)*r/2), y=Math.sin((d-b)*r/2); return 12742000*Math.asin(Math.sqrt(x*x+Math.cos(a*r)*Math.cos(c*r)*y*y)); }
+function walkTxt(m, ex){ var w=Math.max(1,Math.round(m*1.25/80)); return (ex?"":"בערך ")+(m<950?Math.round(m/50)*50+" מ'":(m/1000).toFixed(1)+' ק"מ')+" · "+w+" דק' הליכה"; }
+function goCard(i){ var c=document.getElementById("s"+i); if(!c) return; document.getElementById("q").value=""; filter();
+  c.scrollIntoView({behavior:"smooth",block:"start"}); c.classList.add("hl"); setTimeout(function(){ c.classList.remove("hl"); },2500); }
+function nearRow(x, now){
+  var r=el("div","nr"), w=el("div","when"+(x.p&&x.pm-now<=20?" soon":""));
+  if(x.p){ w.appendChild(document.createTextNode((x.pt.ap?"~":"")+hm(x.pm))); var d=Math.round(x.pm-now); w.appendChild(el("small",null, d<=0?"עכשיו":d<60?"בעוד "+d+" דק'":"בעוד "+hm(d)+" ש'")); }
+  else w.appendChild(el("small",null,"אין עוד היום"));
+  r.appendChild(w); var bd=el("div","bd"); bd.appendChild(el("b",null,x.s.name)); bd.appendChild(el("br"));
+  if(x.p) bd.appendChild(el("div","x",(IC[x.p.k]?IC[x.p.k]+" ":"")+x.p.g.replace(/^[^֐-׿]+/,"")+" · "+x.p.t));
+  var l=el("div","x","🚶 "+walkTxt(x.d, x.s.ll[2])); var a=el("a",null,"לכרטיס ←"); a.href="#s"+x.i; a.onclick=function(e){ e.preventDefault(); goCard(x.i); }; l.appendChild(a);
+  if(x.s.addr) l.appendChild(wazeLink("", x.s.addr)); bd.appendChild(l); r.appendChild(bd); return r;
+}
+function showNear(lat, lng){
+  var box=document.getElementById("near"); box.innerHTML=""; box.classList.remove("hidden");
+  var cl=el("button","cl","✕"); cl.title="סגירה"; cl.onclick=function(){ box.classList.add("hidden"); }; box.appendChild(cl);
+  var D=new Date(), now=D.getHours()*60+D.getMinutes(), dow=D.getDay(), sun=sunTimes(D, 32.81, 35.11);
+  var list=ALL.filter(function(x){ return x.s.ll; }).map(function(x){
+    var d=dist(lat,lng,x.s.ll[0],x.s.ll[1]), best=null;
+    x.s.prayers.forEach(function(p){ if(!dayOk(p.g,dow)) return; var pt=pTime(p,sun,dow); if(!pt) return;
+      if(pt.m>=now-3 && (!best || pt.m<best.pm)) best={p:p, pt:pt, pm:pt.m}; });
+    return {s:x.s, i:x.i, d:d, walk:d*1.25/80, p:best&&best.p, pt:best&&best.pt, pm:best&&best.pm};
+  });
+  box.appendChild(el("h2",null,"📍 מניין קרוב אליך שמתחיל בקרוב"));
+  var far=list.length && Math.min.apply(null,list.map(function(x){return x.d;}))>6000;
+  box.appendChild(el("div","sub", far ? "נראה שאינך בקרית אתא כרגע – המרחקים מחושבים מהמקום שבו אתה נמצא." :
+    "לפי המקום שלך והשעה עכשיו ("+hm(now)+"). זמן שמסומן ~ מחושב לפי השקיעה או הזריחה ולכן משוער. המיקום לא נשלח לשום מקום."));
+  // soonest minyan you can actually reach in time: rank by max(minutes until it starts, walking minutes)
+  var soon=list.filter(function(x){ return x.p && x.pm-now<=150 && x.walk<=30 && x.walk<=x.pm-now+4; })
+    .sort(function(a,b){ return Math.max(a.pm-now,a.walk)-Math.max(b.pm-now,b.walk) || a.d-b.d; }).slice(0,6);
+  if(soon.length) soon.forEach(function(x){ box.appendChild(nearRow(x,now)); });
+  else box.appendChild(el("div","x","אין מניין קרוב אליך בשעתיים וחצי הקרובות שאנחנו יודעים עליו. הנה בתי הכנסת הקרובים אליך:"));
+  box.appendChild(el("h3",null,"🕍 בתי הכנסת הכי קרובים אליך"));
+  list.slice().sort(function(a,b){ return a.d-b.d; }).slice(0,5).forEach(function(x){ box.appendChild(nearRow(x,now)); });
+  box.appendChild(el("div","sub","יש זמן שהשתנה או בית כנסת שחסר? לחצו על \"שלחו לנו\" בכרטיס שלו."));
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+document.getElementById("nearBtn").addEventListener("click", function(){
+  var box=document.getElementById("near"); box.classList.remove("hidden"); box.innerHTML='<div class="sub">📍 מחפש את המיקום שלך… (אם הטלפון שואל – אשרו שיתוף מיקום)</div>';
+  if(!navigator.geolocation){ box.innerHTML='<div class="sub">הדפדפן הזה לא מאפשר מיקום. נסו בדפדפן אחר, או חפשו לפי שם הרחוב בתיבת החיפוש.</div>'; return; }
+  navigator.geolocation.getCurrentPosition(function(pos){ showNear(pos.coords.latitude, pos.coords.longitude); },
+    function(e){ box.innerHTML='<div class="sub">'+(e.code===1?"לא אושר שיתוף מיקום. כדי לראות מניין קרוב, אשרו מיקום לאתר בהגדרות הדפדפן ולחצו שוב, או חפשו לפי שם הרחוב בתיבת החיפוש.":"לא הצלחנו לקבל את המיקום. נסו שוב בעוד רגע (רצוי עם GPS פתוח).")+'</div>'; },
+    {enableHighAccuracy:true, timeout:15000, maximumAge:60000});
+});
 function filter(){
   var q=document.getElementById("q").value.trim().replace(/["'׳״]/g,"");
   var words=q?q.split(/\s+/):[], any=false;
