@@ -132,7 +132,8 @@ a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;backg
 .mhd .mc{font-size:13.5px;opacity:.9}
 .mhd h2{margin:4px 0 4px;font-family:"Frank Ruhl Libre",serif;font-size:28px;line-height:1.2;padding-left:40px}
 .mhd p{margin:0;font-size:15.5px;opacity:.95}
-.mx{position:absolute;left:12px;top:12px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.22);color:#fff;font-size:22px;cursor:pointer;line-height:1}
+.mbox{position:relative}
+.mx{position:absolute;z-index:3;left:12px;top:12px;box-shadow:0 0 0 2px rgba(255,255,255,.4);width:38px;height:38px;border-radius:50%;border:0;background:rgba(0,0,0,.35);color:#fff;font-size:22px;cursor:pointer;line-height:1}
 .mbd{padding:6px 20px 20px}
 .ms{margin-top:16px}
 .ms h3{margin:0 0 6px;font-size:17px;color:var(--c);display:flex;align-items:center;gap:6px}
@@ -166,6 +167,13 @@ a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;backg
 .pst small{color:#46665a;margin-inline-start:6px;font-size:13px}
 .pst p{margin:2px 0 0;font-size:15px}
 .it.tc .more i.pl{color:#0B4D3B;background:#EEF8F1;border-color:#B8DCC6}
+.it.tc .ph{margin:-12px -14px 10px;margin-inline-start:-14px;height:150px;overflow:hidden;border-radius:9px 9px 0 0;background:color-mix(in srgb,var(--c) 15%,#fff)}
+.it.tc .ph img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.it.tc:hover .ph img{transform:scale(1.05)}
+.mph{position:relative;background:#222}
+.mph img{display:block;width:100%;max-height:340px;object-fit:cover}
+.mph .cr{position:absolute;left:8px;bottom:6px;font-size:11.5px;color:#fff;background:rgba(0,0,0,.5);border-radius:6px;padding:1px 7px;max-width:80%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mph .cr a{color:#fff}
 body.mo{overflow:hidden}
 @media (max-width:560px){.md{padding:0}.mbox{border-radius:0;min-height:100%}.mhd h2{font-size:24px}.mbd{padding:4px 14px 16px}}
 </style>
@@ -288,6 +296,7 @@ function navq(it){ var x=it.x||{}; return x.waze || ((it.name||"")+" "+(/בוו�
 function tcard(it, ck){
   var b=el("div","it tc"); b.tabIndex=0; b.setAttribute("role","button"); b.setAttribute("aria-label","פרטים על "+(it.name||""));
   BYID[it.id]={it:it,ck:ck}; ORDER.push(it.id);
+  if(it.img){ var ph=el("div","ph"), id=it.id; ph.innerHTML='<img loading="lazy" src="https://yudataub.github.io/kol-toda-img-4/ata-tiyulim/img/'+id+'.webp" alt="">'; b.appendChild(ph); }
   b.appendChild(el("div","nm",it.name||""));
   var x=it.x||{};
   if(it.what) b.appendChild(el("div","wh",it.what));
@@ -313,10 +322,14 @@ var lastFocus=null;
 function openP(id, noHash){
   var o=BYID[id]; if(!o) return; var it=o.it, x=it.x||{}, ck=o.ck;
   var md=document.getElementById("md"), bx=document.getElementById("mbox"); bx.innerHTML=""; bx.style.setProperty("--c",col(ck));
+  if(it.img){ var mp=el("div","mph"), id=it.id; mp.innerHTML='<img src="https://yudataub.github.io/kol-toda-img-4/ata-tiyulim/img/'+id+'.webp" alt="">';
+    if(it.img.u){ var cr=el("div","cr","📷 "); var ca=el("a",null,(it.img.by||"")+(it.img.lic?" · "+it.img.lic:"")); ca.href=it.img.u; ca.target="_blank"; ca.rel="noopener"; cr.appendChild(ca); mp.appendChild(cr); }
+    else mp.appendChild(el("div","cr","🎨 "+(it.img.by||"איור להמחשה")));
+    bx.appendChild(mp); }
   var hd=el("div","mhd"); hd.appendChild(el("div","mc",(CATI[ck]||"")+" "+(CATN[ck]||"")));
   var h=el("h2",null,it.name||""); h.id="mtitle"; hd.appendChild(h);
   if(it.what) hd.appendChild(el("p",null,it.what));
-  var xb=el("button","mx","✕"); xb.type="button"; xb.setAttribute("aria-label","סגירה"); xb.onclick=closeP; hd.appendChild(xb);
+  var xb=el("button","mx","✕"); xb.type="button"; xb.setAttribute("aria-label","סגירה"); xb.onclick=closeP; bx.appendChild(xb);
   bx.appendChild(hd);
   var bd=el("div","mbd"); bx.appendChild(bd);
   if(x.about){ var s1=sec(bd,"🏞️","על המקום"); x.about.split(/\n+/).forEach(function(p){ s1.appendChild(el("p",null,p)); }); }
