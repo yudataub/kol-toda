@@ -144,6 +144,7 @@ a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;backg
 <script>
 (function(){
 var DATA = (location.hostname.indexOf("kol-toda") >= 0 ? "/ata-knesset/" : "") + "list.json";
+var SLUGS = {}; // 27.11.2026: a page for every synagogue (s/<slug>.html, built by C:\Users\User\ata-knesset-pages\build.py)
 var IC = {shacharit:"🌅", mincha:"🌇", maariv:"🌙", shabbat:""};
 var WA = '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.7 1.2 1.6 2 1.1 1 2 1.3 2.3 1.4.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.7-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.2z"/></svg>';
 function el(t,c,x){ var e=document.createElement(t); if(c) e.className=c; if(x!=null) e.textContent=x; return e; }
@@ -171,13 +172,14 @@ function card(s, i){
   if(s.img){ var ph=el("a","ph"), big=s.img.src||"https://drive.google.com/thumbnail?id="+s.img.id+"&sz=w1600"; ph.href=big; ph.target="_blank"; ph.rel="noopener"; ph.title="להגדלה";
     var im=el("img"); im.src=s.img.src||"https://drive.google.com/thumbnail?id="+s.img.id+"&sz=w800"; im.alt=s.img.t; im.loading="lazy"; im.referrerPolicy="no-referrer";
     im.onerror=function(){ ph.remove(); }; ph.appendChild(im); ph.appendChild(el("span","cap","📷 "+s.img.t+(s.img.src?"":" · מארכיון קרית אתא"))); b.appendChild(ph); }
-  b.appendChild(el("h3","nm",s.name));
+  var nm=el("h3","nm"); if(SLUGS[s.name]){ var la=el("a",null,s.name); la.href="s/"+SLUGS[s.name]+".html"; la.style.color="inherit"; la.style.textDecoration="none"; nm.appendChild(la); } else nm.textContent=s.name; b.appendChild(nm);
   if(s.addr){ var ad=el("div","ad","📍 "); ad.appendChild(wazeLink(s.addr, s.addr)); var gm=el("a","gm","🗺️ מפה"); gm.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(s.addr.replace(/\(.*?\)/g,"")+" קרית אתא"); gm.target="_blank"; gm.rel="noopener"; ad.appendChild(gm); b.appendChild(ad); }
   var ch=el("div","chips");
   if(s.note) ch.appendChild(el("span","chip","🕯️ "+s.note));
   if(s.nusach) ch.appendChild(el("span","chip","נוסח "+s.nusach.replace(/^נוסח /,"")));
   if(s.prayers.length) ch.appendChild(el("span","chip",s.prayers.length+" מניינים"));
   if(s.lessons.length) ch.appendChild(el("span","chip g",s.lessons.length+" שיעורים"));
+  if(SLUGS[s.name]){ var pg=el("a","chip pgl","🕍 לדף בית הכנסת: הסיפור, תמונות ומפה ←"); pg.href="s/"+SLUGS[s.name]+".html"; pg.style.textDecoration="none"; pg.style.background="#2E1F66"; pg.style.color="#fff"; ch.appendChild(pg); }
   if(ch.childNodes.length) b.appendChild(ch);
   if(s.contacts.length){
     s.contacts.forEach(function(c){ var g=el("div","gb"); g.appendChild(el("span",null,"👤 ")); var r=el("b",null,c.role+(c.name?":":"")); g.appendChild(r); if(c.name) g.appendChild(el("span",null,c.name)); tels(g,[c.tel]); b.appendChild(g); });
@@ -330,7 +332,7 @@ function filter(){
   document.getElementById("none").classList.toggle("hidden", any || !words.length);
 }
 document.getElementById("q").addEventListener("input", filter);
-fetch(DATA,{cache:"no-cache"}).then(function(r){return r.json();}).then(render)
+Promise.all([fetch(DATA,{cache:"no-cache"}).then(function(r){return r.json();}), fetch((location.hostname.indexOf("kol-toda") >= 0 ? "/ata-knesset/" : "")+"s/slugs.json").then(function(r){return r.json();}).catch(function(){return {};})]).then(function(a){ SLUGS=a[1]||{}; render(a[0]); })
   .catch(function(){ document.getElementById("list").innerHTML='<div class="empty">לא הצלחנו לטעון. נסו לרענן את הדף.</div>'; });
 })();
 </script>
