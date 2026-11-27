@@ -26,6 +26,7 @@ html,body{margin:0;padding:0;width:100vw;height:100vh;overflow:hidden;background
 /* שקופית תמונה */
 .s-image{width:100%;height:100%;background:var(--dark)}
 .s-image img{display:block;width:100%;height:100%;object-fit:contain}
+.s-image video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
 
 /* שקופית טקסט */
 .s-text{width:100%;height:100%;padding:5vh 5vw;font-size:1vh;overflow:hidden;
@@ -121,6 +122,7 @@ var loadedAt=Date.now(),nextReloadTry=0;
 function okSlide(s){
   if(!s||typeof s!=='object')return false;
   if(s.type==='image')return !!s.src;
+  if(s.type==='video')return !!s.src;                 // סרטון (27.11.2026): מתנגן עד הסוף, המנגינה נעצרת בזמנו
   if(s.type==='text')return !!(s.title||s.body);
   if(s.type==='image-text')return !!(s.src||s.title||s.body);
   return false;
@@ -241,7 +243,7 @@ function preload(src,cb){
 function tryShow(i,tries){
   var token=++showToken,s=list[i];
   if(tries>=list.length){schedule(30000);return;}        // שום שקופית לא נטענה: נשארים על הקיים ומנסים שוב
-  if(!s.src){display(i,s);return;}
+  if(!s.src||s.type==='video'){display(i,s);return;}
   preload(s.src,function(ok){
     if(token!==showToken)return;
     if(ok)display(i,s);
@@ -254,7 +256,9 @@ function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=c
 
 function build(s){
   var root,img,cap,inner;
-  if(s.type==='image'){
+  if(s.type==='video'){
+    root=el('div','s-image');var v=el('video');v.src=s.src;v.setAttribute('playsinline','');v.preload='auto';root.appendChild(v);
+  }else if(s.type==='image'){
     root=el('div','s-image');img=el('img');img.alt='';img.src=s.src;root.appendChild(img);
   }else if(s.type==='image-text'&&s.src){
     root=el('div','s-imgtext');
@@ -284,7 +288,8 @@ function fit(root){
 
 function display(i,s){
   var next=layers[1-cur],prev=layers[cur];
-  next.innerHTML='';
+  stopMedia(next);next.innerHTML='';
+  if(s.type!=='video')stopMedia(prev);           // הסרטון הקודם לא ממשיך להתנגן מאחורי השקופית החדשה
   var root=build(s);
   next.appendChild(root);
   fit(root);
@@ -293,10 +298,12 @@ function display(i,s){
   void next.offsetWidth;                    // מפעיל את המעבר
   next.className='layer top on';
   cur=1-cur;idx=i;
-  setTimeout(function(){if(layers[cur]===next){prev.className='layer';prev.innerHTML='';}},1400);
-  schedule(secondsOf(s)*1000);
+  setTimeout(function(){if(layers[cur]===next){prev.className='layer';stopMedia(prev);prev.innerHTML='';}},1400);
+  videoOn=s.type==='video';
+  if(videoOn)playVideo(root.firstChild,s);
+  else{schedule(secondsOf(s)*1000);musicBack();}
   var n=list[(i+1)%list.length];
-  if(n&&n.src&&list.length>1)preload(n.src);   // התמונה הבאה מוכנה מראש
+  if(n&&n.src&&n.type!=='video'&&list.length>1)preload(n.src);   // התמונה הבאה מוכנה מראש
 }
 
 // ---------- מנגינות ----------
@@ -333,8 +340,31 @@ if(audio){
     document.addEventListener(ev,function(){if(mList.length&&audio.paused)playTrack();});
   });
 }
+// ---------- סרטון ----------
+// מנסים עם קול (המנגינה נעצרת בינתיים); אם הדפדפן חוסם קול – בלי קול. עוברים הלאה בסוף הסרטון,
+// ואם לא נגמר (נתקע/לא נטען) – אחרי האורך שלו + 5 שניות, או "שניות" של השקופית, או 4 דקות.
+var videoOn=false,musicHeld=false;
+function stopMedia(layer){
+  var vs=layer.getElementsByTagName('video');
+  for(var k=0;k<vs.length;k++){vs[k]._gone=true;try{vs[k].pause();vs[k].removeAttribute('src');vs[k].load();}catch(e){}}
+}
+function playVideo(v,s){
+  var done=false,fin=function(){if(done||v._gone)return;done=true;advance();};
+  schedule((Number(s.seconds)||240)*1000);
+  v.addEventListener('loadedmetadata',function(){if(!s.seconds&&v.duration>0&&isFinite(v.duration))schedule(v.duration*1000+5000);});
+  v.addEventListener('ended',fin);
+  v.addEventListener('error',function(){setTimeout(fin,1000);});
+  if(audio&&!audio.paused){try{audio.pause();}catch(e){}musicHeld=true;}
+  v.muted=false;v.volume=1;
+  var p=v.play();
+  if(p&&p['catch'])p['catch'](function(){v.muted=true;var q=v.play();if(q&&q['catch'])q['catch'](function(){setTimeout(fin,1000);});});
+}
+function musicBack(){
+  if(!musicHeld)return;musicHeld=false;
+  if(audio&&mList.length&&audio.paused){var p=audio.play();if(p&&p['catch'])p['catch'](function(){});}
+}
 function musicWatch(){                                // הנגינה נעצרה (חסימה, נפילת רשת): מנסים שוב כל חצי דקה
-  if(!audio||!mList.length||!audio.paused||Date.now()<mWatchAt)return;
+  if(videoOn||!audio||!mList.length||!audio.paused||Date.now()<mWatchAt)return;
   mWatchAt=Date.now()+30000;playTrack();
 }
 
