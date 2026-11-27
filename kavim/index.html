@@ -276,6 +276,13 @@ function nextTimes(v,off){
   (v.d[d]||[]).forEach(function(t){ var m=+t.slice(0,2)*60+ +t.slice(3,5)+off; if(m>=nm-1) out.push(m); });
   return out.sort(function(a,b){return a-b;}).slice(0,3);
 }
+// the first trip on the coming days, e.g. "מוצ"ש 19:43" / "ראשון 06:10"
+function nextDay(v,off){
+  for(var k=1;k<=7;k++){ var d=(today+k)%7, ts=v.d[d]||[]; if(!ts.length) continue;
+    var m=+ts[0].slice(0,2)*60+ +ts[0].slice(3,5)+off;
+    return (d===6&&m>=960?"מוצ\"ש":k===1?"מחר":DAYL[d])+" "+clock(m); }
+  return "";
+}
 function clock(m){ m=((m%1440)+1440)%1440; return ("0"+Math.floor(m/60)).slice(-2)+":"+("0"+m%60).slice(-2); }
 document.getElementById("nearbtn").onclick=function(){
   var b=this;
@@ -324,7 +331,7 @@ function nearUpdate(P){
       row1.appendChild(tx);
       var w=el("div","when"+(it.t.length?"":" none"));
       if(it.t.length){ var mm=it.t[0]-nm; w.appendChild(el("b",null,mm<=0?"עכשיו":(mm<60?"בעוד "+mm+" דק'":clock(it.t[0])))); w.appendChild(el("span",null,mm<60&&mm>0?clock(it.t[0]):"")); }
-      else w.appendChild(el("b",null,"אין עוד היום"));
+      else { w.appendChild(el("b",null,"אין עוד היום")); var nx=nextDay(it.v,it.v.s[it.i][2]); if(nx) w.appendChild(el("span",null,"הבא: "+nx)); }
       row1.appendChild(w);
       row1.onclick=function(){ var rr=row(r,{si:it.i}); wrap.parentNode.insertBefore(rr,wrap.nextSibling); rr.querySelector(".rh").click(); rr.scrollIntoView({behavior:"smooth",block:"start"}); };
       wrap.appendChild(row1);
