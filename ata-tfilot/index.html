@@ -101,6 +101,14 @@ footer.f{text-align:center;color:var(--ink2);font-size:14px;padding:6px 16px 30p
 @media (max-width:600px){.r{grid-template-columns:1fr auto}.r .tm{grid-column:1/3}.r .x,.r .src{grid-column:1/3}.row{flex-direction:column;align-items:stretch}.ask{padding:14px 12px}}
 @media print{.ask,.tools,.chips,.sig{display:none}.hero{padding:10px;color:#000;background:none}section.cat{box-shadow:none;break-inside:avoid}}
 .heroimg{display:block;width:min(580px,100%);height:auto;margin:20px auto 0;border-radius:18px;box-shadow:0 14px 34px rgba(0,0,0,.35);border:3px solid rgba(255,255,255,.65)}
+.walkbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}
+.walkbtn{font:inherit;font-weight:800;font-size:15px;border:0;border-radius:999px;padding:8px 16px;background:linear-gradient(135deg,#16a34a,#0d9488);color:#fff;cursor:pointer}
+.walkbtn:disabled{opacity:.7;cursor:wait}
+.walkmsg{font-size:13.5px;color:var(--ink2)}
+.walkbar label{font-size:14px;font-weight:700;color:var(--ink2);display:none;align-items:center;gap:4px;cursor:pointer}
+.walkbar.on label{display:inline-flex}
+.wk{display:inline-block;font-size:12.5px;font-weight:800;color:#065f46;background:#d1fae5;border-radius:999px;padding:1px 9px;margin-right:6px;white-space:nowrap;vertical-align:1px}
+.wk.far{color:#7c2d12;background:#ffedd5}
 a.wz{color:inherit;text-decoration:underline;text-decoration-color:rgba(51,204,255,.7);text-underline-offset:3px}
 a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;background:#33A9E0;border-radius:999px;padding:1px 9px;margin-right:4px;text-decoration:none;vertical-align:1px;white-space:nowrap}
 .today{display:flex;gap:14px;align-items:stretch;margin:-48px auto 16px;position:relative}
@@ -153,6 +161,7 @@ a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;backg
   <div class="tools">
     <input id="q" type="search" placeholder="🔎 חיפוש: בית כנסת, רחוב, נוסח, שעה…" aria-label="חיפוש מניין">
   </div>
+  <div class="walkbar" id="walkbar"><button class="walkbtn" id="walkbtn" type="button">📍 כמה דקות הליכה ממני?</button><span class="walkmsg" id="walkmsg">נראה ליד כל בית כנסת כמה דקות הליכה הוא מהמקום שלך</span><label><input type="checkbox" id="walksort"> הקרובים אליי קודם</label></div>
   <div class="chips" id="chips"></div>
   <div class="legend" id="nus"><b>סינון לפי נוסח:</b><button data-n="" class="on" style="border-right-color:#999">כל הנוסחים</button><button data-n="n-mz" style="border-right-color:#22c55e">עדות המזרח</button><button data-n="n-sf" style="border-right-color:#f59e0b">ספרד</button><button data-n="n-as" style="border-right-color:#0ea5e9">אשכנז</button><button data-n="n-ch" style="border-right-color:#a855f7">חב"ד</button><button data-n="n-ot" style="border-right-color:#ea580c">אחר / לפי החזן</button></div>
   <div id="cats"><div class="empty">טוען את זמני התפילות…</div></div>
@@ -232,6 +241,37 @@ var KADDR={};   // synagogue name → address, from the synagogues page (knesset
 function normP(s){ s=String(s||"").replace(/["'׳״]/g,"").trim().replace(/^(בית הכנסת|בית כנסת|ביהכנס|ביכנ)\s+/,""); return s.replace(/\s+/g," ").trim(); }
 fetch("/ata-knesset/list.json",{cache:"no-cache"}).then(function(r){return r.json();}).then(function(d){ KADDR=d.addr||{}; if(typeof data!=="undefined"&&data) render(); }).catch(function(){});
 
+/* ---- walking minutes from the viewer (user 27.11.2026): browser location + geo.json (OSM Nominatim, built by ata-tfilot/geocode.py in the user's folder) ---- */
+var GEO={}, ME=null, WSORT=false;
+fetch((location.hostname.indexOf("kol-toda")>=0?"/ata-tfilot/":"")+"geo.json",{cache:"no-cache"}).then(function(r){return r.json();}).then(function(d){ GEO=d||{}; if(ME&&data) render(); }).catch(function(){});
+function placeAddr(it){ return it.a||KADDR[normP(it.p)]||KADDR[normP(String(it.p).split(/ [—–-] /)[0])]||""; }
+function walkMin(it){ // null = unknown
+  if(!ME) return null; var g=GEO[placeAddr(it)]; if(!g) return null;
+  var R=6371000, rad=Math.PI/180, dLa=(g[0]-ME[0])*rad, dLo=(g[1]-ME[1])*rad;
+  var h=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(ME[0]*rad)*Math.cos(g[0]*rad)*Math.sin(dLo/2)*Math.sin(dLo/2);
+  var m=2*R*Math.asin(Math.sqrt(h))*1.3;            // streets are not straight lines: ~1.3x the air distance
+  return {min:Math.max(1,Math.round(m/80)), km:m/1000}; // ~80 m a minute (4.8 km/h)
+}
+function walkTxt(w){ return w.min<=60 ? "🚶 "+w.min+" דק' הליכה" : "📍 "+(w.km<10?w.km.toFixed(1):Math.round(w.km))+" ק\"מ ממך"; }
+function walkBadge(it){ var w=walkMin(it); if(!w) return null; var b=el("span","wk"+(w.min>60?" far":""),walkTxt(w)); b.title="בקירוב, לפי המרחק מהמקום שלך"; return b; }
+function locate(auto){
+  var btn=document.getElementById("walkbtn"), msg=document.getElementById("walkmsg");
+  if(!navigator.geolocation){ msg.textContent="הדפדפן לא מאפשר לזהות מיקום"; return; }
+  btn.disabled=true; if(!auto) msg.textContent="מזהה את המיקום שלך…";
+  navigator.geolocation.getCurrentPosition(function(p){
+    ME=[p.coords.latitude,p.coords.longitude]; btn.disabled=false; btn.textContent="🔄 עדכן מיקום";
+    try{ localStorage.setItem("ata_walk","1"); }catch(e){}
+    document.getElementById("walkbar").classList.add("on");
+    msg.textContent="ליד כל בית כנסת כתוב כמה דקות הליכה (בקירוב). המיקום לא נשמר ולא נשלח לשום מקום.";
+    if(data) render(); nextBanner();
+  },function(e){ btn.disabled=false; try{ localStorage.removeItem("ata_walk"); }catch(x){}
+    msg.textContent= e&&e.code===1 ? "לא התקבלה הרשאה למיקום. אפשר לאשר בהגדרות הדפדפן ולנסות שוב." : "לא הצלחנו לזהות מיקום. נסו שוב בעוד רגע.";
+  },{enableHighAccuracy:true,timeout:15000,maximumAge:60000});
+}
+document.getElementById("walkbtn").onclick=function(){ locate(false); };
+document.getElementById("walksort").onchange=function(){ WSORT=this.checked; if(data) render(); };
+try{ if(localStorage.getItem("ata_walk")==="1" && navigator.permissions) navigator.permissions.query({name:"geolocation"}).then(function(r){ if(r.state==="granted") locate(true); }).catch(function(){}); }catch(e){}
+
 function nuCls(n){n=(n||"").replace(/["'׳״]/g,"");if(/חבד|תהילת/.test(n))return"n-ch";if(/מזרח|עהמ/.test(n))return"n-mz";if(/ספרד/.test(n))return"n-sf";if(/אשכנז/.test(n))return"n-as";return"n-ot";}
 function fmtD(d){if(!d)return"";var p=d.split("-");return p[1]+"/"+p[0];}
 function row(it,web){
@@ -240,9 +280,10 @@ function row(it,web){
   if(web){var bt=it.action==="cancel"?["cancel","⚠️ דווח שהופסק – טרם אומת"]:it.action==="update"?["upd","✏️ עדכון מגולש – טרם אומת"]:["","🆕 נוסף ע\"י גולש – טרם אומת"];var b=el("span","badge "+bt[0],bt[1]);tm.appendChild(b);}
   tm.appendChild(document.createTextNode([web?it.days:"",it.t].filter(Boolean).join(" | ")));
   r.appendChild(tm);
-  var ad=web?it.a:"", ka=ad||KADDR[normP(it.p)]||KADDR[normP(String(it.p).split(/ [—–-] /)[0])]||"", pl=el("div","pl");
+  var ad=web?it.a:"", ka=placeAddr(it), pl=el("div","pl");
   if(ka) pl.appendChild(wazeLink(it.p, ka)); else pl.appendChild(document.createTextNode(it.p));
   if(ad){pl.appendChild(document.createTextNode(" "));pl.appendChild(el("span","ad","— "+ad));}
+  var wb=walkBadge(it); if(wb) pl.appendChild(wb);
   r.appendChild(pl);
   r.appendChild(el("span","nu",it.nu||"—"));
   var x=[it.n,web&&it.season&&it.season!=="כל השנה"?"("+it.season+")":"",it.c?"📞 "+it.c:""].filter(Boolean).join(" · ");
@@ -258,7 +299,7 @@ function render(){
     var s=el("section","cat"); s.id=c.key; s.dataset.k=c.key;
     var h=el("header","h-"+c.key); h.appendChild(el("span","ic",c.icon)); var hd=el("div"); hd.appendChild(el("h2",null,c.title)); if(c.sub) hd.appendChild(el("p",null,c.sub)); var zl=zmLine(c.key); if(zl) hd.appendChild(el("div","zmh",zl)); h.appendChild(hd); s.appendChild(h);
     if(add[c.key]){ s.appendChild(el("div","grp","🆕 נוסף לאחרונה ע\"י הגולשים")); var l=el("div","list"); add[c.key].forEach(function(x){ var r=row(x,true); var sn=SECN[x.cat]; if(sn&&c.key==="shabbat"||x.cat==="mincha_friday"){ r.querySelector(".tm").appendChild(document.createTextNode(" ("+sn+")")); } l.appendChild(r);}); s.appendChild(l); }
-    c.groups.forEach(function(g){ if(!g.items.length) return; if(g.title) s.appendChild(el("div","grp",g.title)); var l=el("div","list"); g.items.forEach(function(it){ l.appendChild(row(it,false)); }); s.appendChild(l); });
+    c.groups.forEach(function(g){ if(!g.items.length) return; if(g.title) s.appendChild(el("div","grp",g.title)); var l=el("div","list"); var its=g.items; if(WSORT&&ME){ its=its.slice().sort(function(a,b){ var x=walkMin(a), y=walkMin(b); return (x?x.min:1e9)-(y?y.min:1e9); }); } its.forEach(function(it){ l.appendChild(row(it,false)); }); s.appendChild(l); });
     if(c.notes&&c.notes.length){ var f=el("div","foot"); c.notes.forEach(function(n){ f.appendChild(el("div",null,n)); }); s.appendChild(f); }
     root.appendChild(s);
   });
@@ -341,7 +382,8 @@ function nextBanner(){
   el1.innerHTML=""; el1.appendChild(document.createTextNode("התפילה הקרובה: "+a.name+" "));
   var em=document.createElement("em"); em.textContent=inTxt; el1.appendChild(em);
   var addr=it.a||it.n||"";
-  document.getElementById("n2").textContent="בבית הכנסת "+it.p+(addr?" · "+addr:"")+(it.nu?" · נוסח "+it.nu:"");
+  var wm=walkMin(it);
+  document.getElementById("n2").textContent="בבית הכנסת "+it.p+(addr?" · "+addr:"")+(it.nu?" · נוסח "+it.nu:"")+(wm?" · "+walkTxt(wm):"");
   var more=list.slice(1,4).map(function(x){return hm(x.min)+" "+x.it.p;});
   document.getElementById("n3").textContent=(more.length?"אחריה: "+more.join(" | ")+" · ":"")+"השעות לפי השקיעה מחושבות בקירוב — כדאי לוודא בבית הכנסת";
   document.getElementById("next").classList.remove("hidden");
