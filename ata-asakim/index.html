@@ -128,6 +128,16 @@ footer.f{text-align:center;color:var(--ink2);font-size:14px;padding:6px 16px 30p
 .heroimg{display:block;width:min(580px,100%);height:auto;margin:20px auto 0;border-radius:18px;box-shadow:0 14px 34px rgba(0,0,0,.35);border:3px solid rgba(255,255,255,.65)}
 a.wz{color:inherit;text-decoration:underline;text-decoration-color:rgba(51,204,255,.7);text-underline-offset:3px}
 a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;background:#33A9E0;border-radius:999px;padding:1px 9px;margin-right:4px;text-decoration:none;vertical-align:1px;white-space:nowrap}
+.kvb{margin-top:8px;align-self:flex-start}
+.kv{margin-top:8px;background:#fff;border:1.5px solid color-mix(in srgb,var(--c) 35%,#fff);border-radius:12px;padding:9px 10px;font-size:14.5px}
+.kv .kr{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:7px}
+.kv .kc{border:1.5px solid var(--c);background:#fff;color:var(--c);border-radius:999px;padding:3px 11px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+.kv .kc.on{background:var(--c);color:#fff}
+.kv input,.kv select{font:inherit;font-size:14.5px;padding:3px 6px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.kv .ko{border-top:1px dashed var(--line);padding-top:7px}
+.kv .kt{font-size:22px;font-weight:800;color:var(--c);direction:ltr;display:inline-block}
+.kv .ks{color:var(--ink2);font-size:13.5px}
+.kv .kn{color:#6b6b6b;font-size:12.5px;margin-top:5px}
 </style>
 <link rel="canonical" href="https://www.kol-toda.co.il/ata-asakim/">
 <script async src="https://www.kol-toda.co.il/a.js"></script>
@@ -233,6 +243,83 @@ function loadBiz(){
   var t=new Promise(function(r){ setTimeout(r, 2500); });
   return Promise.race([fetch(BIZ_IDX).then(function(r){ return r.json(); }).then(function(d){ BIZ=d||{}; }).catch(function(){}), t]);
 }
+// live "when is the next bus" box on a line card (extra.json "kav": "954|בני ברק"), from the kavim catalog data (27.11.2026)
+var KV={P:null,D:null,G:null,SH:{},LOC:null}, KVD="https://www.kol-toda.co.il/kavim/data/", KDAYL=["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"], KATA="קרית אתא";
+function kvIndex(){ if(!KV.P) KV.P=fetch(KVD+"index.json").then(function(r){return r.json();}).then(function(d){ KV.D=d; return d; }); return KV.P; }
+function kvShard(n){ if(!KV.SH[n]) KV.SH[n]=fetch(KVD+"d/"+n+".json").then(function(r){return r.json();}); return KV.SH[n]; }
+function kvClock(m){ m=((m%1440)+1440)%1440; return ("0"+Math.floor(m/60)).slice(-2)+":"+("0"+m%60).slice(-2); }
+function kvDist(a,b,c,d){ var x=(d-b)*Math.PI/180*Math.cos((a+c)/2*Math.PI/180), y=(c-a)*Math.PI/180; return Math.round(6371000*Math.sqrt(x*x+y*y)); }
+function kvBox(kav){
+  var num=kav.split("|")[0], city=kav.split("|")[1]||"";
+  var wrap=el("div"), btn=el("button","tel cp kvb","🕐 מתי הקו הבא? לפי שעה ומיקום"), box=el("div","kv"); box.style.display="none";
+  wrap.appendChild(btn); wrap.appendChild(box);
+  var dir=0, today=new Date().getDay(), out;
+  var r1=el("div","kr"), bOut=el("button","kc on","ל"+city), bBack=el("button","kc","ל"+KATA);
+  r1.appendChild(bOut); r1.appendChild(bBack);
+  var r2=el("div","kr"), at=document.createElement("input"), atd=document.createElement("select"), bNow=el("button","kc","עכשיו"), bLoc=el("button","kc","📍 לפי המיקום שלי");
+  at.type="time"; at.setAttribute("aria-label","שעה"); atd.setAttribute("aria-label","יום");
+  for(var i=0;i<7;i++){ var d=(today+i)%7, o=el("option",null,i===0?"היום ("+KDAYL[d]+")":i===1?"מחר ("+KDAYL[d]+")":"יום "+KDAYL[d]); o.value=d; atd.appendChild(o); }
+  r2.appendChild(el("span",null,"🕐")); r2.appendChild(at); r2.appendChild(atd); r2.appendChild(bNow); r2.appendChild(bLoc);
+  out=el("div","ko","טוען את לוח הזמנים…");
+  box.appendChild(r1); box.appendChild(r2); box.appendChild(out);
+  btn.onclick=function(){ var open=box.style.display==="none"; box.style.display=open?"":"none"; if(open) draw(); };
+  bOut.onclick=function(){ dir=0; bOut.classList.add("on"); bBack.classList.remove("on"); draw(); };
+  bBack.onclick=function(){ dir=1; bBack.classList.add("on"); bOut.classList.remove("on"); draw(); };
+  at.onchange=draw; atd.onchange=draw; bNow.onclick=function(){ at.value=""; atd.value=today; draw(); };
+  bLoc.onclick=function(){
+    if(KV.LOC){ KV.LOC=null; bLoc.classList.remove("on"); draw(); return; }
+    if(!navigator.geolocation){ alert("הדפדפן לא מאפשר לדעת את המיקום."); return; }
+    out.textContent="📍 מאתר את המיקום שלך…";
+    navigator.geolocation.getCurrentPosition(function(p){
+      KV.LOC={lat:p.coords.latitude, lon:p.coords.longitude};
+      (KV.G?Promise.resolve(KV.G):fetch(KVD+"geo.json").then(function(r){return r.json();})).then(function(g){ KV.G=g; bLoc.classList.add("on"); draw(); })
+        .catch(function(){ KV.LOC=null; out.textContent="לא הצלחנו לטעון את התחנות. נסו שוב."; });
+    }, function(){ out.textContent="לא קיבלנו את המיקום. צריך לאשר לדפדפן לדעת את המיקום (בהגדרות האתר), ולנסות שוב."; draw(); }, {enableHighAccuracy:true, timeout:15000, maximumAge:60000});
+  };
+  function draw(){
+    kvIndex().then(function(D){
+      var ia=D.cities.indexOf(KATA), ix=D.cities.indexOf(city), from=dir?ix:ia, to=dir?ia:ix;
+      var rs=D.routes.filter(function(r){ var a=r[7].indexOf(from), b=r[7].indexOf(to); return r[1]===num && a>=0 && b>a; });
+      if(!rs.length){ out.textContent="הקו לא נמצא בלוח של השבוע. אפשר לחפש בדף כל הקווים."; return; }
+      return Promise.all(rs.map(function(r){ return kvShard(r[0]%D.shards).then(function(x){ return [r,x[r[0]]]; }); })).then(function(res){
+        var nm=at.value?(+at.value.slice(0,2)*60+ +at.value.slice(3,5)):null, day=+atd.value, now0=(nm==null && day===today);
+        if(nm==null) nm=day===today?(new Date().getHours()*60+new Date().getMinutes()):0;
+        out.innerHTML="";
+        var anyFar=0;
+        res.forEach(function(a){
+          var v=a[1]; if(!v) return; var far=0; var st=v.s, first=-1, j;
+          for(j=0;j<st.length;j++) if(st[j][1]===to){ first=j; break; }
+          var k=-1, m=null;
+          if(KV.LOC && KV.G){ for(j=0;j<first;j++){ var g=KV.G[st[j][3]]; if(!g||!g[0]) continue; var dd=kvDist(KV.LOC.lat,KV.LOC.lon,g[0]/1e5,g[1]/1e5); if(m==null||dd<m){ m=dd; k=j; } } }
+          if(m!=null && m>5000){ k=-1; m=null; far=1; }   // far from this line (e.g. the other direction): show its first stop in the city
+          if(k<0){ for(j=0;j<first;j++) if(st[j][1]===from){ k=j; break; } }
+          if(k<0) return; if(far) anyFar=1;
+          var off=st[k][2], ts=[];
+          if(nm<300) (v.d[(day+6)%7]||[]).forEach(function(t){ var x=+t.slice(0,2)*60+ +t.slice(3,5)+off-1440; if(x>=nm-1) ts.push(x); });
+          (v.d[day]||[]).forEach(function(t){ var x=+t.slice(0,2)*60+ +t.slice(3,5)+off; if(x>=nm-1) ts.push(x); });
+          ts.sort(function(p,q){return p-q;});
+          var line=el("div");
+          line.appendChild(el("div","ks","🚏 "+st[k][0]+(m!=null?" · "+(m<1000?m+" מ'":(m/1000).toFixed(1)+" ק\"מ")+" ממך":"")));
+          if(ts.length){
+            var d0=ts[0]-nm, big=el("div");
+            big.appendChild(el("span","kt",kvClock(ts[0])));
+            big.appendChild(el("span","ks",now0?(d0<=0?"  · עכשיו":d0<60?"  · בעוד "+d0+" דק'":""):(day===6&&ts[0]>=960?"  · במוצאי שבת":"  · ביום "+KDAYL[day])));
+            line.appendChild(big);
+            if(ts.length>1) line.appendChild(el("div","ks","ואחר כך: "+ts.slice(1,4).map(kvClock).join(", ")));
+          } else {
+            line.appendChild(el("div",null,now0?"אין עוד היום.":"אין עוד באותו יום."));
+            for(var q=1;q<=7;q++){ var dn=(day+q)%7, tt=v.d[dn]||[]; if(!tt.length) continue; var x0=+tt[0].slice(0,2)*60+ +tt[0].slice(3,5)+off;
+              line.appendChild(el("div","ks","הבא: "+(dn===6&&x0>=960?"מוצאי שבת":"יום "+KDAYL[dn])+" "+kvClock(x0))); break; }
+          }
+          out.appendChild(line);
+        });
+        if(!out.childNodes.length) out.textContent="לא מצאנו תחנה של הקו בכיוון הזה.";
+        out.appendChild(el("div","kn",(KV.LOC&&!anyFar?"התחנה של הקו הכי קרובה אליך, בכיוון הנכון. ":KV.LOC?"המיקום שלך רחוק מהקו בכיוון הזה – מוצגת התחנה הראשונה שלו ב"+D.cities[from]+". ":"בלי מיקום – התחנה הראשונה של הקו ב"+D.cities[from]+". ")+"השעות בתחנה משוערות, לפי הלוח הרשמי של משרד התחבורה (שבוע "+D.week[0].split("-").reverse().slice(0,2).join(".")+"–"+D.week[1].split("-").reverse().slice(0,2).join(".")+")."));
+      });
+    }).catch(function(){ out.textContent="לא הצלחנו לטעון את לוח הזמנים. נסו שוב מאוחר יותר."; });
+  }
+  return wrap;
+}
 function card(it, web){
   var b=el("div","it"+(web?" web":""));
   var bp = COPY && it.id && BIZ[it.id];
@@ -270,6 +357,7 @@ function card(it, web){
   }
   // a link button on a card (extra.json: "link", "linkt"), e.g. the national lines search (27.11.2026)
   if(it.link && /^https:\/\//.test(it.link)){ var lt=el("div","tels"), la=el("a","tel pg",it.linkt||"🔗 לפרטים"); la.href=it.link; lt.appendChild(la); b.appendChild(lt); }
+  if(it.kav) b.appendChild(kvBox(it.kav));
   b.dataset.q=[it.name,it.what,it.addr,it.hours,it.kosher,it.fit,it.price,it.go,it.n,it.note,it.c,ps.join(" ")].join(" ");
   return b;
 }
