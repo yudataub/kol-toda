@@ -259,7 +259,8 @@
         .final-score p {
             font-size: 1.3em;
         }
-    </style>
+    @media (max-width:900px){body{padding-top:44px}} /* room for the kt-game.js top bar */
+</style>
 <meta property="og:title" content="מבחן אמריקאי - יחוס השבטים">
 <meta property="og:description" content="מבחן אמריקאי - יחוס השבטים">
 <meta property="og:image" content="https://yudataub.github.io/kol-toda-og/og/sr-games-d5c7b9dd.jpg">
@@ -463,6 +464,7 @@
     
     <div class="feedback" id="feedback"></div>
     
+    <script src="../parasha-games/kt-game.js"></script>
     <script>
         let score = 0;
         let totalQuestions = 16;
@@ -509,17 +511,17 @@
             oscillator.stop(audioContext.currentTime + 0.4);
         }
         
-        function showFeedback(isCorrect, correctAnswer = '') {
+        function showFeedback(isCorrect, correctAnswer = '', questionNum = '') {
             const feedback = document.getElementById('feedback');
             
             if (isCorrect) {
                 feedback.textContent = '🎉 נכון מאוד! 🎉';
                 feedback.className = 'feedback correct';
-                playCorrectSound();
+                window.KT ? KT.ok(1, questionNum) : playCorrectSound();
             } else {
                 feedback.textContent = `❌ לא נכון. התשובה הנכונה: ${correctAnswer}`;
                 feedback.className = 'feedback incorrect';
-                playIncorrectSound();
+                window.KT ? KT.bad() : playIncorrectSound();
             }
             
             feedback.style.display = 'block';
@@ -552,6 +554,7 @@
             
             if (answered.length === totalQuestions) {
                 document.getElementById('final-score').style.display = 'block';
+                if (window.KT && !window.__ktDone) { window.__ktDone = true; KT.end(); }
             }
         }
         
@@ -597,7 +600,7 @@
                     if (selectedAnswer === correctAnswer) {
                         this.classList.add('correct');
                         score++;
-                        showFeedback(true);
+                        showFeedback(true, '', questionNum);
                     } else {
                         this.classList.add('incorrect');
                         // Highlight the correct answer
@@ -628,6 +631,7 @@
         
         // Start the quiz when page loads
         document.addEventListener('DOMContentLoaded', initializeQuiz);
+        window.KT&&KT.init({ id: "g3-d5c7b9dd", title: "מבחן אמריקאי – יחוס השבטים", again: function(){ location.reload(); } });
     </script>
 </body>
 </html>

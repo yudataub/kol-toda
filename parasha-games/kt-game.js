@@ -9,6 +9,7 @@
      KT.ok()     – תשובה/צעד נכון (מוסיף 10 נקודות, צליל ומחמאה). KT.ok(2) = 20 נקודות.
      KT.ok(1, key) – עם מזהה שאלה: במשחק שאפשר לחזור בו על שיעור, שאלה שכבר נענתה נכון לא נותנת שוב נקודות.
      KT.bad()    – טעות (צליל עדין ומילת עידוד; לא מוריד נקודות).
+     KT.init({..., quiet: true}) – נְקֻדּוֹת, רִשּׁוּם וְלוּחַ בְּלִי צְלִילִים וּמַחְמָאוֹת שֶׁל הַשִּׁכְבָה (לְמִשְׂחָק שֶׁיֵּשׁ לוֹ מִשֶּׁלּוֹ).
      KT.end()    – סוף המשחק: שומר את הנקודות בשרת ופותח את לוח המצטיינים. אחרי end, ה-ok הבא פותח סבב חדש.
    הדף לא נשבר אם הקובץ לא נטען: במשחקים קוראים ל-window.KT && KT.ok(). */
 (function () {
@@ -150,7 +151,7 @@
     "הַקָּדוֹשׁ בָּרוּךְ הוּא אוֹהֵב אוֹתְךָ מְאוֹד עַל הַהַשְׁקָעָה וְהַחֵשֶׁק הַזֶּה! 💗",
     "הוֹסַפְתָּ עַכְשָׁו עוֹד יַהֲלוֹם מֵאִיר בַּכֶּתֶר שֶׁל מֶלֶךְ מַלְכֵי הַמְּלָכִים! 💎"];
   var PRAISE_AUDIO = ["https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise01.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise02.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise03.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise04.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise05.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise06.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise07.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise08.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise09.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise10.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise11.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise12.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise13.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise14.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise15.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise16.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise17.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise18.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise19.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise20.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise21.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise22.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise23.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise24.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise25.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise26.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise27.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise28.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise29.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise30.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise31.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise32.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise33.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise34.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise35.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise36.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise37.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise38.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise39.mp3", "https://yudataub.github.io/kol-toda-files/parasha-games/audio/praise40.mp3"];
-  var PARASHA_PAGE = /\/(parasha-games|apps)\//.test(location.pathname);
+  var PARASHA_PAGE = /\/(parasha-games|apps|games)\//.test(location.pathname);
   var BADGES = [{ min: 0, e: "🌱", n: "מַתְחִיל" }, { min: 50, e: "🥉", n: "לוֹמֵד מַתְמִיד" }, { min: 200, e: "🥈", n: "לוֹמֵד מְצֻיָּן" },
     { min: 500, e: "🥇", n: "חָכָם צָעִיר" }, { min: 1000, e: "💎", n: "תַּלְמִיד חָכָם" }, { min: 2500, e: "👑", n: "אַלּוּף הַפָּרָשָׁה" }];
   function badge(p) { var c = BADGES[0], nx = null; for (var i = 0; i < BADGES.length; i++) { if (p >= BADGES[i].min) c = BADGES[i]; else { nx = BADGES[i]; break; } } return { c: c, nx: nx }; }
@@ -258,6 +259,7 @@
     n = Math.max(1, Math.round(Number(n) || 1));
     if (key != null) { R.seen = R.seen || {}; if (R.seen[key]) n = 0; else R.seen[key] = 1; }
     R.pts += PER_RIGHT * n; if (n) R.right++; R.answered++; R.streak++;
+    if (G.quiet) { drawBar(); return; }   // quiet (27.11.2026, מִשְׂחֲקֵי סֵדֶר הַתְּמוּנוֹת): נְקֻדּוֹת בִּלְבַד – לַמִּשְׂחָק יֵשׁ מַחְמָאוֹת וּצְלִילִים מִשֶּׁלּוֹ
     soundStreak(R.streak);
     var head = R.answered < FB_OK.length ? FB_OK[R.answered] : draw("ok10", FB_OK_10);
     if (G.praise && G.praise.tiers) {   // מַחְמָאוֹת שֶׁל סִדְרָה (מִשְׂחֲקֵי הַשַּׁ"ס, 8.11): עוֹלוֹת לְפִי כָּל הַתְּשׁוּבוֹת הַנְּכוֹנוֹת שֶׁל הַיֶּלֶד בְּכָל הַמִּשְׂחָקִים
@@ -284,6 +286,7 @@
     newRunIfEnded();
     if (!R.started) { R.started = true; ping("start"); }
     R.answered++; R.streak = 0;
+    if (G.quiet) return;
     soundBad();
     toast("bad", "<b>" + nm(draw("oops", OOPS)) + "</b><small>" + draw("lovebad", LOVE_BAD) + "</small>", 2400);
   }
@@ -331,7 +334,7 @@
   }
   function endNow() {
     var m = me();
-    soundGrand();
+    if (!G.quiet) soundGrand();
     ping("end");
     if (!real(m)) { openBoard(true, "✍️ כְּדֵי לְהִכָּנֵס לְלוּחַ הַמְּצֻיָּנִים – הוֹסִיפוּ כִּתָּה וּבֵית סֵפֶר (👤 לְמַעְלָה)."); return; }
     if (!R.pts) { openBoard(true, ""); return; }
@@ -353,6 +356,7 @@
     G.title = (o && o.title) || document.title || "";
     G.again = o && o.again;
     G.home = o && o.home; G.homeTxt = o && o.homeTxt; G.road = o && o.road;
+    G.quiet = !!(o && o.quiet);
     G.praise = o && o.praise;   // {at:[0,10,…], tiers:[[…],[…]]} – מַחְמָאוֹת מִשֶּׁלָּהּ, בִּמְקוֹם FB_OK (מִשְׂחֲקֵי הַשַּׁ"ס: shas-games/praise.js)   // משחק מחוץ לפרשה (כמו ketuvim/): לאן מוביל "לכל המשחקים"
     var go = function () { if (!$("ktBar")) build(); drawBar(); fetchBase(); if (!me().name) openReg(); };
     if (document.body) go(); else document.addEventListener("DOMContentLoaded", go);
