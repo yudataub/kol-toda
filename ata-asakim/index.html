@@ -50,6 +50,8 @@ a{color:var(--c)}
 .btn:disabled{opacity:.5;cursor:default}
 .btn.ghost{background:#fff;color:var(--ink2);border:1.5px solid var(--line)}
 .btn.ok{background:#1f9d55}
+.answ{align-self:stretch;display:flex;flex-direction:column;gap:8px;padding:2px 0 4px}
+.answ .it{margin:0}
 .confirm{align-self:stretch;border:2px dashed var(--c);border-radius:14px;padding:12px;background:#FCFBF8}
 .confirm .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .confirm .who{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
@@ -142,11 +144,11 @@ a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;backg
 
 <div class="wrap">
   <div class="ask hidden" id="ask">
-    <h2>🤖 יש לכם עסק, או מכירים בעל מקצוע טוב שלא מופיע כאן?</h2>
-    <p class="sub">כתבו כאן במילים שלכם: שם העסק, מה הוא עושה, טלפון וכתובת. אשאל שאלה או שתיים כדי לדייק, ואכניס אותו לדף במקום הנכון.</p>
+    <h2>🤖 מה אתם מחפשים? שאלו אותי – אני מכיר את כל העסקים בדף</h2>
+    <p class="sub">כתבו במילים שלכם מה אתם צריכים, למשל: &quot;יש בקרית אתא מטפל רגשי לילדים?&quot; או &quot;צריך חשמלאי דחוף&quot; – ואציע למי לפנות, עם הטלפונים. יש לכם עסק, או מכירים בעל מקצוע שלא מופיע כאן? כתבו את השם, מה הוא עושה והטלפון, ואכניס אותו לדף.</p>
     <div class="chat" id="chat" aria-live="polite"></div>
     <div class="row">
-      <textarea id="inp" placeholder="למשל: משה כהן, חשמלאי מוסמך בקרית אתא, טלפון 050-1234567, עובד גם בערבים" rows="2"></textarea>
+      <textarea id="inp" placeholder="למשל: יש מטפל רגשי לילדים? / מי עושה עוגות לשבת? / משה כהן, חשמלאי, 050-1234567" rows="2"></textarea>
       <button class="btn" id="send">שליחה</button>
     </div>
     <p class="note">חובה טלפון של העסק (הוא מתפרסם בדף). בלי מבצעים ומחירים — רק פרטי העסק. התוספת מופיעה מיד עם התווית &quot;נוסף ע&quot;י גולש&quot;.</p>
@@ -367,6 +369,12 @@ function confirmCard(e){
   fix.onclick=function(){ box.remove(); bubble("a","מה צריך לתקן?"); msgs.push({r:"a",t:"מה צריך לתקן?"}); inp.focus(); };
   chat.appendChild(box); chat.scrollTop=chat.scrollHeight;
 }
+function answerCards(ids){   // the businesses the AI recommended, as real cards (27.11.2026)
+  var by={}; data.cats.forEach(function(c){ c.groups.forEach(function(g){ g.items.forEach(function(it){ by[it.id]={it:it,cat:c.key}; }); }); });
+  var box=el("div","answ");
+  ids.forEach(function(id){ var x=by[id]; if(!x) return; var w=el("div"); w.style.setProperty("--c",col(x.cat)); w.appendChild(card(x.it)); box.appendChild(w); });
+  if(box.childNodes.length){ chat.appendChild(box); chat.scrollTop=chat.scrollHeight; }
+}
 function go(){
   var t=inp.value.trim(); if(!t||busy) return;
   busy=true; send.disabled=true; inp.value="";
@@ -376,6 +384,7 @@ function go(){
     typing.remove();
     if(d.reply){ bubble("a",d.reply); msgs.push({r:"a",t:d.reply}); }
     if(d.kind==="confirm" && d.entry) confirmCard(d.entry);
+    if(d.kind==="answer" && d.ids && d.ids.length) answerCards(d.ids);
     if(d.kind==="off") msgs=[];
   }).catch(function(d){ typing.remove(); msgs.pop(); if(!inp.value.trim()) inp.value=t; bubble("a",ERR[d&&d.error]||"לא הצלחתי להתחבר כרגע. נסו שוב בעוד רגע, או התקשרו ל-052-7139520.","err"); })
   .then(function(){ busy=false; send.disabled=false; inp.focus(); });
