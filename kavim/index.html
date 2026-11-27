@@ -65,6 +65,9 @@ ol.stops li.me{font-weight:700;color:#0B3C5D}
 .more{display:block;margin:12px auto;border:0;background:var(--c);color:#fff;border-radius:999px;padding:10px 22px;font-size:15px;cursor:pointer;font-family:inherit}
 .nearbtn{margin-top:10px;width:100%;border:0;border-radius:14px;padding:12px;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#14967F,#0E6BA8);color:#fff}
 .nearbtn.on{background:#0B3C5D}
+.atrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:9px;font-size:15px;color:var(--ink2)}
+.atrow input{font-size:16px;padding:6px 8px;border:1px solid #cfd9e4;border-radius:10px;font-family:inherit}
+.atrow.set input,.atrow.set select{border-color:#14967F;background:#F2FBF8}
 .near{background:#fff;border:2px solid #14967F;border-radius:16px;padding:12px;margin:14px 0 4px}
 .near h3{margin:0 0 4px;font-size:17px;color:#0B5F52}
 .near .sub{font-size:13px;color:var(--ink2);margin:0 0 8px}
@@ -103,6 +106,11 @@ ol.stops li.me{font-weight:700;color:#0B3C5D}
     <div class="chips" id="ex"></div>
     <div class="flt" id="flt"></div>
     <button class="nearbtn" id="nearbtn">📍 מתי מגיע הקו לתחנה הקרובה אליי?</button>
+    <div class="atrow"><span>🕐 לאיזו שעה?</span>
+      <input type="time" id="at" aria-label="שעה">
+      <select id="atd" aria-label="יום"></select>
+      <button class="chip" id="atnow">עכשיו</button>
+    </div>
   </div>
   <div id="nearbox"></div>
   <div class="sum" id="sum">טוען את כל הקווים…</div>
@@ -116,7 +124,7 @@ ol.stops li.me{font-weight:700;color:#0B3C5D}
 </div>
 <script>
 (function(){
-var D=null, SH={}, shown=0, list=[], PAGE=40, curCities=[], dayF=-1, typeF=0, LOC=null, GEO=null, nearSeq=0;
+var qAT=null, D=null, SH={}, shown=0, list=[], PAGE=40, curCities=[], dayF=-1, typeF=0, LOC=null, GEO=null, nearSeq=0, AT=null, ATD=null;
 var DAYN=["א'","ב'","ג'","ד'","ה'","ו'","ש'"], DAYL=["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
 var COLORS={"אגד":"#1E8C45","דן":"#1B5FAA","קווים":"#D9801A","אלקטרה אפיקים":"#6A3FA0","סופרבוס":"#C0392B","נתיב אקספרס":"#2C7A8C","מטרופולין":"#E26A16","אקסטרה":"#8E2D5A","רכבת ישראל":"#3B4A9A","בית שמש אקספרס":"#B8860B","תנופה":"#0E8F83","גלים":"#2E86C1","אלקטרה אפיקים תחבורה":"#6A3FA0"};
 function el(t,c,x){var e=document.createElement(t); if(c) e.className=c; if(x!=null) e.textContent=x; return e;}
@@ -155,6 +163,8 @@ function fromHash(){ var m=location.hash.match(/q=([^&]*)/); if(m){ q.value=deco
 var ALIAS=[[/ (תל אביב|תא)(?! יפו) /g," תל אביב יפו "],[/ קרית ספר /g," מודיעין עילית "],[/ מודיעין(?! עילית| מכבים) /g," מודיעין מכבים רעות "],
   [/ ביתר(?! עילית) /g," ביתר עילית "],[/ נצרת עילית /g," נוף הגליל "],[/ ראשלצ /g," ראשון לציון "],[/ פת /g," פתח תקוה "],[/ באר שבע /g," באר שבע "]];
 function parse(s){
+  var tm=s.match(/(?:^|\s|ב)(\d{1,2}):(\d{2})(?=\s|$)/); qAT=null;
+  if(tm && +tm[1]<30 && +tm[2]<60){ qAT=+tm[1]*60+ +tm[2]; s=s.replace(tm[0]," "); }
   var t=" "+norm(s)+" ", found=[];
   ALIAS.forEach(function(a){ t=t.replace(a[0],a[1]); t=t.replace(a[0],a[1]); });
   D.byLen.forEach(function(i){
@@ -165,7 +175,7 @@ function parse(s){
   found.sort(function(a,b){return a[0]-b[0];});
   var rest=t.replace(/·+/g," ").replace(/\s+/g," ").trim();
   var nums=[], words=[];
-  rest.split(" ").forEach(function(w){ if(!w) return; if(/^\d+[א-ת]?$/.test(w)) nums.push(w); else if(!/^(מ|ל|אל|עד|דרך|קו|קווים|אוטובוס|לכיוון|את|של|ו)$/.test(w)) words.push(w); });
+  rest.split(" ").forEach(function(w){ if(!w) return; if(/^\d+[א-ת]?$/.test(w)) nums.push(w); else if(!/^(מ|ל|אל|עד|דרך|קו|קווים|אוטובוס|לכיוון|את|של|ו|בשעה|שעה|היום|עכשיו)$/.test(w)) words.push(w); });
   var train=false; words=words.filter(function(w){ if(/^(רכבת|ברכבת|רכבות)$/.test(w)){ train=true; return false; } return true; });
   return {cities:found.map(function(x){return x[1];}).slice(0,2), nums:nums, words:words, train:train};
 }
@@ -228,7 +238,7 @@ function detail(det,r,v,pre){
   var si=0; if(curCities.length){ for(var i=0;i<st.length;i++) if(st[i][1]===curCities[0]){ si=i; break; } }
   if(LOC && GEO){ var b=bestStop(st,curCities); if(b) si=b.i; }
   if(pre && pre.si!=null) si=pre.si;
-  var day=days[today].length?today:-1; if(day<0) for(var k=0;k<7;k++) if(days[k].length){ day=k; break; }
+  var day=days[baseDay()].length?baseDay():-1; if(day<0) for(var k=0;k<7;k++) if(days[k].length){ day=k; break; }
   det.appendChild(el("p","lbl","🚏 מאיזו תחנה עולים?"));
   var sel=el("select"); st.forEach(function(s,i){ var o=el("option",null,(i+1)+". "+s[0]+(s[1]>=0?" ("+D.cities[s[1]]+")":"")); o.value=i; sel.appendChild(o); }); sel.value=si; det.appendChild(sel);
   det.appendChild(el("p","lbl","🗓️ באיזה יום?")).style.marginTop="10px";
@@ -240,18 +250,27 @@ function detail(det,r,v,pre){
   sel.onchange=function(){ si=+sel.value; draw(); };
   function draw(){
     tb.innerHTML=""; [].forEach.call(ol.children,function(li,i){ li.className=i===si?"me":""; });
-    var off=st[si][2], now=new Date(), nm=now.getHours()*60+now.getMinutes(), first=true;
+    var off=st[si][2], nm=baseMin(), first=true;
     if(day<0){ tb.textContent="הקו לא נוסע השבוע."; return; }
     days[day].forEach(function(t){
       var tt=addMin(t,off), m=+tt.slice(0,2)*60+ +tt.slice(3,5), sp=el("span",null,hm(tt)+(+tt.slice(0,2)>=24?" 🌙":""));
-      if(day===today){ if(m<nm) sp.className="past"; else if(first){ sp.className="next"; first=false; } }
+      if(day===baseDay()){ if(m<nm) sp.className="past"; else if(first){ sp.className="next"; first=false; } }
       tb.appendChild(sp);
     });
-    nt.textContent=(si===0?"שעות היציאה מתחנת המוצא.":"שעות משוערות בתחנה "+st[si][0]+" (כ-"+off+" דקות אחרי היציאה).")+" 🌙 = אחרי חצות."+(day===today?" בצהוב – האוטובוס הבא.":"");
+    nt.textContent=(si===0?"שעות היציאה מתחנת המוצא.":"שעות משוערות בתחנה "+st[si][0]+" (כ-"+off+" דקות אחרי היציאה).")+" 🌙 = אחרי חצות."+(day===baseDay()?(isNow()?" בצהוב – האוטובוס הבא.":" בצהוב – הראשון מ-"+clock(nm)+"."):"");
   }
   draw();
 }
 
+(function(){
+  var at=document.getElementById("at"), atd=document.getElementById("atd"), row=at.parentNode;
+  DAYL.forEach(function(n,i){ var o=el("option",null,n+(i===today?" (היום)":"")); o.value=i; atd.appendChild(o); }); atd.value=today;
+  function upd(){ AT=at.value? (+at.value.slice(0,2)*60+ +at.value.slice(3,5)) : null; ATD=(+atd.value===today && AT==null)? null : +atd.value;
+    row.classList.toggle("set", !isNow()); run(true);
+    if(!LOC && !isNow()) document.getElementById("sum").textContent+=" · כדי לראות מתי הקו מגיע לתחנה הקרובה אליכם בשעה הזו – לחצו על 📍 למעלה."; }
+  at.addEventListener("change",upd); atd.addEventListener("change",upd);
+  document.getElementById("atnow").onclick=function(){ at.value=""; atd.value=today; upd(); };
+})();
 /* ---- by location and time (27.11.2026): when does the line come to the stop nearest to me ---- */
 var RBY=null;
 function rById(id){ if(!RBY){ RBY={}; D.routes.forEach(function(r){ RBY[r[0]]=r; }); } return RBY[id]; }
@@ -270,17 +289,21 @@ function bestStop(st,cities){
   return first>0 ? near(first) : null;
 }
 function nowMin(){ var n=new Date(); return n.getHours()*60+n.getMinutes(); }
+// the time the visitor asked about (time box, or a time typed in the search), else now
+function baseMin(){ return AT!=null?AT:(qAT!=null?qAT:nowMin()); }
+function baseDay(){ return ATD!=null?ATD:today; }
+function isNow(){ return AT==null && qAT==null && ATD==null; }
 function nextTimes(v,off){
-  var d=today, nm=nowMin(), out=[];
+  var d=baseDay(), nm=baseMin(), out=[];
   if(nm<300) (v.d[(d+6)%7]||[]).forEach(function(t){ var m=+t.slice(0,2)*60+ +t.slice(3,5)+off-1440; if(m>=nm-1) out.push(m); });
   (v.d[d]||[]).forEach(function(t){ var m=+t.slice(0,2)*60+ +t.slice(3,5)+off; if(m>=nm-1) out.push(m); });
   return out.sort(function(a,b){return a-b;}).slice(0,3);
 }
 // the first trip on the coming days, e.g. "מוצ"ש 19:43" / "ראשון 06:10"
 function nextDay(v,off){
-  for(var k=1;k<=7;k++){ var d=(today+k)%7, ts=v.d[d]||[]; if(!ts.length) continue;
+  for(var k=1;k<=7;k++){ var d=(baseDay()+k)%7, ts=v.d[d]||[]; if(!ts.length) continue;
     var m=+ts[0].slice(0,2)*60+ +ts[0].slice(3,5)+off;
-    return (d===6&&m>=960?"מוצ\"ש":k===1?"מחר":DAYL[d])+" "+clock(m); }
+    return (d===6&&m>=960?"מוצ\"ש":(k===1&&isNow())?"מחר":DAYL[d])+" "+clock(m); }
   return "";
 }
 function clock(m){ m=((m%1440)+1440)%1440; return ("0"+Math.floor(m/60)).slice(-2)+":"+("0"+m%60).slice(-2); }
@@ -320,8 +343,8 @@ function nearUpdate(P){
       items.push({r:r,v:v,i:b.i,m:b.m,t:nextTimes(v,v.s[b.i][2])}); });
     // a line in both directions passes the same stop: keep the useful ones, soonest first
     items.sort(function(a,b){ var x=a.t.length?a.t[0]:1e6, y=b.t.length?b.t[0]:1e6; return x-y || a.m-b.m; });
-    var nm=nowMin();
-    sub.textContent=items.length? ("לפי השעה עכשיו ("+clock(nm)+") והתחנות עד "+(R>=1000?(R/1000)+" ק\"מ":R+" מ'")+" ממך. השעות בתחנה משוערות. לחיצה – כל השעות והתחנות.") : "לא מצאנו קו מתאים לידך.";
+    var nm=baseMin(), now0=isNow();
+    sub.textContent=items.length? ((now0?"לפי השעה עכשיו ("+clock(nm)+")":"מ-"+clock(nm)+" ביום "+DAYL[baseDay()]+(baseDay()===today?" (היום)":""))+" והתחנות עד "+(R>=1000?(R/1000)+" ק\"מ":R+" מ'")+" ממך. השעות בתחנה משוערות. לחיצה – כל השעות והתחנות.") : "לא מצאנו קו מתאים לידך.";
     items.slice(0,12).forEach(function(it){
       var r=it.r, ag=D.agencies[r[2]], row1=el("div","nr");
       var n=el("div","num",r[1]||"🚆"); n.style.setProperty("--ac",COLORS[ag]||"#4A5D73"); row1.appendChild(n);
@@ -330,8 +353,9 @@ function nearUpdate(P){
       if(it.t.length>1) tx.appendChild(el("div",null,"ואחר כך: "+it.t.slice(1).map(clock).join(", ")));
       row1.appendChild(tx);
       var w=el("div","when"+(it.t.length?"":" none"));
-      if(it.t.length){ var mm=it.t[0]-nm; w.appendChild(el("b",null,mm<=0?"עכשיו":(mm<60?"בעוד "+mm+" דק'":clock(it.t[0])))); w.appendChild(el("span",null,mm<60&&mm>0?clock(it.t[0]):"")); }
-      else { w.appendChild(el("b",null,"אין עוד היום")); var nx=nextDay(it.v,it.v.s[it.i][2]); if(nx) w.appendChild(el("span",null,"הבא: "+nx)); }
+      if(it.t.length){ var mm=it.t[0]-nm; if(!now0){ w.appendChild(el("b",null,clock(it.t[0]))); w.appendChild(el("span",null,"ביום "+DAYL[baseDay()])); }
+        else { w.appendChild(el("b",null,mm<=0?"עכשיו":(mm<60?"בעוד "+mm+" דק'":clock(it.t[0])))); w.appendChild(el("span",null,mm<60&&mm>0?clock(it.t[0]):"")); } }
+      else { w.appendChild(el("b",null,now0?"אין עוד היום":"אין עוד באותו יום")); var nx=nextDay(it.v,it.v.s[it.i][2]); if(nx) w.appendChild(el("span",null,"הבא: "+nx)); }
       row1.appendChild(w);
       row1.onclick=function(){ var rr=row(r,{si:it.i}); wrap.parentNode.insertBefore(rr,wrap.nextSibling); rr.querySelector(".rh").click(); rr.scrollIntoView({behavior:"smooth",block:"start"}); };
       wrap.appendChild(row1);
