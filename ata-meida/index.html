@@ -50,6 +50,8 @@ a{color:var(--c)}
 .btn:disabled{opacity:.5;cursor:default}
 .btn.ghost{background:#fff;color:var(--ink2);border:1.5px solid var(--line)}
 .btn.ok{background:#1f9d55}
+.answ{align-self:stretch;display:flex;flex-direction:column;gap:8px;padding:2px 0 4px}
+.answ .it{margin:0}
 .confirm{align-self:stretch;border:2px dashed var(--c);border-radius:14px;padding:12px;background:#FCFBF8}
 .confirm .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .confirm .who{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
@@ -82,6 +84,11 @@ section.cat{background:#fff;border-radius:22px;box-shadow:0 4px 18px rgba(30,30,
 .tel{display:inline-flex;align-items:center;gap:5px;background:var(--c);color:#fff;text-decoration:none;border-radius:10px;padding:5px 11px;font-weight:700;font-size:14.5px;direction:ltr}
 .tel.w{background:#25D366;padding:5px 9px}
 .tel svg{width:16px;height:16px;fill:#fff}
+.tel.cp{border:1.5px solid var(--c);background:#fff;color:var(--c);cursor:pointer;font:inherit;font-weight:700;font-size:14px;direction:rtl}
+.tel.cp:hover{background:color-mix(in srgb,var(--c) 10%,#fff)}
+.tel.pg{background:var(--c);color:#fff;font-weight:700}
+.it .bimg{display:block;margin:-12px -14px 10px;border-radius:13px 13px 0 0;overflow:hidden}
+.it .bimg img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#eee}
 .it.web{border-color:var(--new);border-inline-start-color:var(--new);background:#FFF7FB}
 .badge{align-self:flex-start;display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:1px 9px;margin-bottom:6px}
 .badge.new{background:var(--new);color:#fff}
@@ -95,6 +102,12 @@ section.cat{background:#fff;border-radius:22px;box-shadow:0 4px 18px rgba(30,30,
 .sister a{background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;text-decoration:none;color:var(--ink);font-weight:700;font-size:14.5px}
 footer.f{text-align:center;color:var(--ink2);font-size:14px;padding:6px 16px 30px}
 @media (max-width:560px){.ask{padding:14px 12px}.items{padding:12px 12px 16px}.cat>header{padding:13px 12px}.cat>header h2{font-size:22px}.cat>header .ic{width:44px;height:44px;font-size:24px}.row{flex-direction:column;align-items:stretch}.wa .t{display:none}.stats div{min-width:80px;padding:6px 10px}}
+.promo{background:linear-gradient(135deg,#0F7B5F,#1FA67A);color:#fff;border-radius:18px;padding:16px 18px;margin:0 0 18px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;box-shadow:0 4px 14px rgba(15,123,95,.25)}
+.promo .pt{flex:1 1 260px}
+.promo h2{margin:0 0 4px;font-size:19px;color:#fff}
+.promo p{margin:0;font-size:15px;line-height:1.55;opacity:.95}
+.promo a.pb{background:#fff;color:#0F7B5F;font-weight:800;text-decoration:none;border-radius:999px;padding:10px 18px;font-size:16px;white-space:nowrap}
+.promo a.pb:hover{background:#FFF8E1}
 .links{background:#fff;border:1.5px solid var(--gold);border-radius:16px;padding:12px 16px;margin:0 0 18px;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}
 .links b{width:100%;font-size:15.5px}
 .links a{background:#FFF8E1;border:1px solid #F1E2B0;border-radius:999px;padding:5px 13px;text-decoration:none;font-weight:700;font-size:14.5px;color:var(--ink)}
@@ -141,6 +154,7 @@ a.wz .wzb{display:inline-block;font-size:12.5px;font-weight:800;color:#fff;backg
     <p class="note">מידע חדש מופיע מיד עם התווית &quot;נוסף ע&quot;י גולש&quot;, ומאומת בהמשך. בלי מבצעים ומחירים, ובלי פרטים אישיים.</p>
   </div>
 
+  
   
   <div id="tilebox" class="hidden"><h2 class="thead">🧭 מה מחפשים? <small>לוחצים על תחום ומגיעים ישר אליו</small></h2><div class="tiles" id="tiles"></div></div>
 
@@ -194,8 +208,36 @@ function phones(it){
   if(it.tels && it.tels.length) return it.tels;
   return ((it.c||"").match(/0\d{1,2}-?\d{3}-?\d{3,4}|\*\d{3,5}/g)||[]);
 }
+// Copy button (user 26.11.2026, business page only): copies name, address and phones.
+var COPY = "ata-meida"==="ata-asakim";
+function copyText(s, done){
+  if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(s).then(done, function(){ oldCopy(s); done(); }); }
+  else { oldCopy(s); done(); }
+}
+function oldCopy(s){ var ta=document.createElement("textarea"); ta.value=s; ta.setAttribute("readonly",""); ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); }catch(e){} document.body.removeChild(ta); }
+function copyBtn(it, ps){
+  var bt=el("button","tel cp","📋 העתקה"); bt.type="button"; bt.title="העתקת שם העסק, הכתובת והטלפון";
+  bt.onclick=function(){
+    var lines=[(it.name||"")+(it.what?" – "+it.what:"")];
+    if(it.addr) lines.push("📍 "+it.addr);
+    if(ps.length) lines.push("📞 "+ps.join(", "));
+    copyText(lines.join("\n"), function(){ bt.textContent="✓ הועתק"; setTimeout(function(){ bt.textContent="📋 העתקה"; },1600); });
+  };
+  return bt;
+}
+// Business pages (27.11.2026): a business that sent the WhatsApp bot pictures/details has its own page;
+// the card shows its first picture and a "דף העסק" button. Index from the bot, loaded before render (asakim only).
+var BIZ = {}, BIZ_IDX = "https://esek-bot.kol-bot.workers.dev/biz/index.json", BIZ_PAGE = "https://esek-bot.kol-bot.workers.dev/b/";
+function loadBiz(){
+  if(!COPY) return Promise.resolve();
+  var t=new Promise(function(r){ setTimeout(r, 2500); });
+  return Promise.race([fetch(BIZ_IDX).then(function(r){ return r.json(); }).then(function(d){ BIZ=d||{}; }).catch(function(){}), t]);
+}
 function card(it, web){
   var b=el("div","it"+(web?" web":""));
+  var bp = COPY && it.id && BIZ[it.id];
+  if(bp && bp.img){ var ia=el("a","bimg"); ia.href=BIZ_PAGE+it.id; ia.target="_blank"; ia.rel="noopener";
+    var im=document.createElement("img"); im.src=bp.img; im.alt=it.name||""; im.loading="lazy"; ia.appendChild(im); b.appendChild(ia); }
   if(web){
     var bt = it.action==="cancel" ? ["cancel","⚠️ דווח שהופסק — טרם אומת"] : it.action==="update" ? ["upd","✏️ עדכון מגולש — טרם אומת"] : ["new","🆕 נוסף ע\"י גולש — טרם אומת"];
     b.appendChild(el("span","badge "+bt[0],bt[1]));
@@ -215,13 +257,15 @@ function card(it, web){
   if(it.n||it.note) b.appendChild(el("div","nt",it.n||it.note));
   var ps=phones(it);
   if(web && it.c && !ps.length) b.appendChild(el("div","ln","📞 "+it.c));
-  if(ps.length){
+  if(ps.length || COPY){
     var t=el("div","tels");
     ps.forEach(function(p){
       var d=p.replace(/[^\d*]/g,"");
       var a=el("a","tel","📞 "+p); a.href="tel:"+d; t.appendChild(a);
       if(/^05\d{8}$/.test(d) && !it.nowa){ var w=el("a","tel w"); w.innerHTML=WA; w.href="https://wa.me/972"+d.slice(1); w.target="_blank"; w.rel="noopener"; w.title="וואטסאפ"; t.appendChild(w); }
     });
+    if(bp){ var pg=el("a","tel pg","🌐 דף העסק"); pg.href=BIZ_PAGE+it.id; pg.target="_blank"; pg.rel="noopener"; t.appendChild(pg); }
+    if(COPY) t.appendChild(copyBtn(it, ps));
     b.appendChild(t);
   }
   b.dataset.q=[it.name,it.what,it.addr,it.hours,it.kosher,it.fit,it.price,it.go,it.n,it.note,it.c,ps.join(" ")].join(" ");
@@ -289,7 +333,7 @@ fetch(DATA,{cache:"no-cache"}).then(function(r){return r.json();}).then(function
   data=d; d.cats.forEach(function(c){ CATN[c.key]=c.title; });
   if(!data.ai){ document.querySelector(".hero").classList.add("noai"); return; }
   document.getElementById("ask").classList.remove("hidden"); return loadLive();
-}).then(function(){
+}).then(loadBiz).then(function(){
   if(data.updated){ var p=data.updated.split("-"); document.getElementById("meta").textContent="עודכן "+p[2]+"."+p[1]+"."+p[0]; }
   render();
 }).catch(function(){ document.getElementById("cats").innerHTML='<div class="empty">לא הצלחנו לטעון. נסו לרענן את הדף.</div>'; });
@@ -325,6 +369,12 @@ function confirmCard(e){
   fix.onclick=function(){ box.remove(); bubble("a","מה צריך לתקן?"); msgs.push({r:"a",t:"מה צריך לתקן?"}); inp.focus(); };
   chat.appendChild(box); chat.scrollTop=chat.scrollHeight;
 }
+function answerCards(ids){   // the businesses the AI recommended, as real cards (27.11.2026)
+  var by={}; data.cats.forEach(function(c){ c.groups.forEach(function(g){ g.items.forEach(function(it){ by[it.id]={it:it,cat:c.key}; }); }); });
+  var box=el("div","answ");
+  ids.forEach(function(id){ var x=by[id]; if(!x) return; var w=el("div"); w.style.setProperty("--c",col(x.cat)); w.appendChild(card(x.it)); box.appendChild(w); });
+  if(box.childNodes.length){ chat.appendChild(box); chat.scrollTop=chat.scrollHeight; }
+}
 function go(){
   var t=inp.value.trim(); if(!t||busy) return;
   busy=true; send.disabled=true; inp.value="";
@@ -334,6 +384,7 @@ function go(){
     typing.remove();
     if(d.reply){ bubble("a",d.reply); msgs.push({r:"a",t:d.reply}); }
     if(d.kind==="confirm" && d.entry) confirmCard(d.entry);
+    if(d.kind==="answer" && d.ids && d.ids.length) answerCards(d.ids);
     if(d.kind==="off") msgs=[];
   }).catch(function(d){ typing.remove(); msgs.pop(); if(!inp.value.trim()) inp.value=t; bubble("a",ERR[d&&d.error]||"לא הצלחתי להתחבר כרגע. נסו שוב בעוד רגע, או התקשרו ל-052-7139520.","err"); })
   .then(function(){ busy=false; send.disabled=false; inp.focus(); });
