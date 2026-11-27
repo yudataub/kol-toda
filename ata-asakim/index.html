@@ -84,6 +84,9 @@ section.cat{background:#fff;border-radius:22px;box-shadow:0 4px 18px rgba(30,30,
 .tel svg{width:16px;height:16px;fill:#fff}
 .tel.cp{border:1.5px solid var(--c);background:#fff;color:var(--c);cursor:pointer;font:inherit;font-weight:700;font-size:14px;direction:rtl}
 .tel.cp:hover{background:color-mix(in srgb,var(--c) 10%,#fff)}
+.tel.pg{background:var(--c);color:#fff;font-weight:700}
+.it .bimg{display:block;margin:-12px -14px 10px;border-radius:13px 13px 0 0;overflow:hidden}
+.it .bimg img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#eee}
 .it.web{border-color:var(--new);border-inline-start-color:var(--new);background:#FFF7FB}
 .badge{align-self:flex-start;display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:1px 9px;margin-bottom:6px}
 .badge.new{background:var(--new);color:#fff}
@@ -213,8 +216,19 @@ function copyBtn(it, ps){
   };
   return bt;
 }
+// Business pages (27.11.2026): a business that sent the WhatsApp bot pictures/details has its own page;
+// the card shows its first picture and a "דף העסק" button. Index from the bot, loaded before render (asakim only).
+var BIZ = {}, BIZ_IDX = "https://esek-bot.kol-bot.workers.dev/biz/index.json", BIZ_PAGE = "https://esek-bot.kol-bot.workers.dev/b/";
+function loadBiz(){
+  if(!COPY) return Promise.resolve();
+  var t=new Promise(function(r){ setTimeout(r, 2500); });
+  return Promise.race([fetch(BIZ_IDX).then(function(r){ return r.json(); }).then(function(d){ BIZ=d||{}; }).catch(function(){}), t]);
+}
 function card(it, web){
   var b=el("div","it"+(web?" web":""));
+  var bp = COPY && it.id && BIZ[it.id];
+  if(bp && bp.img){ var ia=el("a","bimg"); ia.href=BIZ_PAGE+it.id; ia.target="_blank"; ia.rel="noopener";
+    var im=document.createElement("img"); im.src=bp.img; im.alt=it.name||""; im.loading="lazy"; ia.appendChild(im); b.appendChild(ia); }
   if(web){
     var bt = it.action==="cancel" ? ["cancel","⚠️ דווח שהופסק — טרם אומת"] : it.action==="update" ? ["upd","✏️ עדכון מגולש — טרם אומת"] : ["new","🆕 נוסף ע\"י גולש — טרם אומת"];
     b.appendChild(el("span","badge "+bt[0],bt[1]));
@@ -241,6 +255,7 @@ function card(it, web){
       var a=el("a","tel","📞 "+p); a.href="tel:"+d; t.appendChild(a);
       if(/^05\d{8}$/.test(d) && !it.nowa){ var w=el("a","tel w"); w.innerHTML=WA; w.href="https://wa.me/972"+d.slice(1); w.target="_blank"; w.rel="noopener"; w.title="וואטסאפ"; t.appendChild(w); }
     });
+    if(bp){ var pg=el("a","tel pg","🌐 דף העסק"); pg.href=BIZ_PAGE+it.id; pg.target="_blank"; pg.rel="noopener"; t.appendChild(pg); }
     if(COPY) t.appendChild(copyBtn(it, ps));
     b.appendChild(t);
   }
@@ -309,7 +324,7 @@ fetch(DATA,{cache:"no-cache"}).then(function(r){return r.json();}).then(function
   data=d; d.cats.forEach(function(c){ CATN[c.key]=c.title; });
   if(!data.ai){ document.querySelector(".hero").classList.add("noai"); return; }
   document.getElementById("ask").classList.remove("hidden"); return loadLive();
-}).then(function(){
+}).then(loadBiz).then(function(){
   if(data.updated){ var p=data.updated.split("-"); document.getElementById("meta").textContent="עודכן "+p[2]+"."+p[1]+"."+p[0]; }
   render();
 }).catch(function(){ document.getElementById("cats").innerHTML='<div class="empty">לא הצלחנו לטעון. נסו לרענן את הדף.</div>'; });
